@@ -8,6 +8,7 @@ import android.view.View.VISIBLE
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
@@ -22,9 +23,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
@@ -33,23 +32,20 @@ import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
+import one.mixin.android.ui.wallet.TypeMenuData
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
-import kotlin.collections.isNotEmpty
 
 @AndroidEntryPoint
 class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3TransactionItem>>(R.layout.fragment_all_transactions) {
     companion object {
         const val TAG = "AllTransactionsFragment"
-        const val ARGS_USER = "args_user"
         const val ARGS_TOKEN = "args_token"
 
-        fun newInstance(user: UserItem? = null, tokenItem: Web3Token? = null): AllWeb3TransactionsFragment {
+        fun newInstance(tokenItem: Web3TokenItem? = null): AllWeb3TransactionsFragment {
             return AllWeb3TransactionsFragment().withArgs {
-                putParcelable(ARGS_USER, user)
                 putParcelable(ARGS_TOKEN, tokenItem)
             }
         }
@@ -72,7 +68,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        // adapter.listener = this
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
@@ -118,15 +113,17 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         binding.apply {
             filterType.setOnClickListener {
                 filterType.open()
-                typeAdapter.checkPosition = filterParams.type.value
+                typeAdapter.checkPosition = when (filterParams.tokenFilterType) {
+                    Web3TokenFilterType.ALL -> 0
+                    Web3TokenFilterType.SEND -> 1
+                    else -> 2
+                }
                 typeMenu.show()
             }
             filterAsset.setOnClickListener {
                 selectAsset()
             }
-            filterUser.setOnClickListener {
-                selectUser()
-            }
+            filterUser.isVisible = false
             filterTime.setOnClickListener {
                 datePicker()
             }
@@ -137,7 +134,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     private fun loadFilter() {
         binding.apply {
-            filterType.setTitle(filterParams.typeTitle)
+            filterType.updateWeb3TokenFilterType(filterParams.tokenFilterType)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
             titleView.setSubTitle(
@@ -154,55 +151,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             bindLiveData()
         }
     }
-
-    // override fun <T> onNormalItemClick(item: T) {
-    //     lifecycleScope.launch {
-    //         val snapshot = item as SnapshotItem
-    //         val a =
-    //             withContext(Dispatchers.IO) {
-    //                 walletViewModel.simpleAssetItem(snapshot.assetId)
-    //             }
-    //         a?.let {
-    //             if (viewDestroyed()) return@launch
-    //
-    //             if (requireActivity() !is WalletActivity) {
-    //                 activity?.addFragment(
-    //                     this@AllWeb3TransactionsFragment,
-    //                     TransactionFragment.newInstance(snapshot, it),
-    //                     TransactionFragment.TAG,
-    //                 )
-    //             } else {
-    //                 view?.navigate(
-    //                     R.id.action_all_transactions_fragment_to_transaction_fragment,
-    //                     Bundle().apply {
-    //                         putParcelable(ARGS_SNAPSHOT, snapshot)
-    //                         putParcelable(ARGS_ASSET, it)
-    //                     },
-    //                 )
-    //             }
-    //         }
-    //     }
-    // }
-    //
-    // override fun onUserClick(userId: String) {
-    //     lifecycleScope.launch {
-    //         val user =
-    //             withContext(Dispatchers.IO) {
-    //                 walletViewModel.getUser(userId)
-    //             } ?: return@launch
-    //         if (user.notMessengerUser()) {
-    //             NonMessengerUserBottomSheetDialogFragment.newInstance(user)
-    //                 .showNow(parentFragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
-    //         } else {
-    //             val f = UserBottomSheetDialogFragment.newInstance(user)
-    //             f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-    //         }
-    //     }
-    // }
-    //
-    // override fun onMoreClick() {
-    //     // Do noting
-    // }
 
     override fun onApplyClick() {
         // Do noting
@@ -262,18 +210,10 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         }
     }
 
-
     private fun selectAsset() {
         binding.filterAsset.open()
-        // multiSelectTokenListBottomSheetDialogFragment
-        //     .showNow(parentFragmentManager, MultiSelectTokenListBottomSheetDialogFragment.TAG)
-    }
-
-
-    private fun selectUser() {
-        binding.filterUser.open()
-        // multiSelectRecipientsListBottomSheetDialogFragment.setType(filterParams.type)
-        // multiSelectRecipientsListBottomSheetDialogFragment.showNow(parentFragmentManager, MultiSelectRecipientsListBottomSheetDialogFragment.TAG)
+        multiSelectWeb3TokenListBottomSheetDialogFragment
+            .showNow(parentFragmentManager, MultiSelectWeb3TokenListBottomSheetDialogFragment.TAG)
     }
 
     private fun dateRangePicker(): MaterialDatePicker<Pair<Long, Long>> {
@@ -362,19 +302,11 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             anchorView = binding.filterType
             setAdapter(typeAdapter)
             setOnItemClickListener { _, _, position, _ ->
-                filterParams.type = when (position) {
-                    1 -> SnapshotType.deposit
-                    2 -> SnapshotType.withdrawal
-                    3 -> SnapshotType.snapshot
-                    else -> SnapshotType.all
+                filterParams.tokenFilterType = when (position) {
+                    0 -> Web3TokenFilterType.ALL
+                    1 -> Web3TokenFilterType.SEND
+                    else -> Web3TokenFilterType.RECEIVE
                 }
-                // if (filterParams.recipients?.isNotEmpty() == true) {
-                //     if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal) {
-                //         filterParams.recipients = filterParams.recipients?.filterIsInstance<AddressItem>()
-                //     } else if (filterParams.type == SnapshotType.snapshot) {
-                //         filterParams.recipients = filterParams.recipients?.filterIsInstance<UserItem>()
-                //     }
-                // }
                 loadFilter()
                 dismiss()
             }
@@ -391,16 +323,38 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         }
     }
 
-    private val typeAdapter: TypeMenuAdapter by lazy {
+    private val typeAdapter: Web3TypeMenuAdapter by lazy {
         val menuItems = listOf(
-            TypeMenuData(SnapshotType.all, null, R.string.All),
-            TypeMenuData(SnapshotType.deposit, R.drawable.ic_menu_type_deoisit, R.string.Deposit),
-            TypeMenuData(SnapshotType.withdrawal, R.drawable.ic_menu_type_withdrawal, R.string.Withdrawal),
-            TypeMenuData(SnapshotType.snapshot, R.drawable.ic_menu_type_transfer, R.string.Transfer),
+            Web3TypeMenuData(Web3TokenFilterType.ALL, null, Web3TokenFilterType.ALL.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.SEND, R.drawable.ic_menu_type_withdrawal, Web3TokenFilterType.SEND.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.RECEIVE, R.drawable.ic_menu_type_deoisit, Web3TokenFilterType.RECEIVE.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.Contract, R.drawable.ic_menu_type_deoisit, Web3TokenFilterType.Contract.titleRes),
         )
-        TypeMenuAdapter(requireContext(), menuItems).apply {
-            checkPosition = filterParams.type.value
+        Web3TypeMenuAdapter(requireContext(), menuItems).apply {
+            checkPosition = when (filterParams.tokenFilterType) {
+                Web3TokenFilterType.ALL -> 0
+                Web3TokenFilterType.SEND -> 1
+                else -> 2
+            }
         }
     }
 
+    private val multiSelectWeb3TokenListBottomSheetDialogFragment by lazy {
+        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance()
+            .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+                override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
+                    filterParams.tokenItems = tokenItems
+                    loadFilter()
+                }
+
+                override fun onDismiss() {
+                    binding.filterAsset.close()
+                }
+            })
+            .setDateProvider(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.DataProvider {
+                override fun getCurrentTokens(): List<Web3TokenItem> {
+                    return filterParams.tokenItems ?: emptyList()
+                }
+            })
+    }
 }

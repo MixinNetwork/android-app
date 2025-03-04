@@ -10,13 +10,13 @@ import org.threeten.bp.format.DateTimeFormatter
 
 class Web3FilterParams(
     var order: SortOrder = SortOrder.Recent,
-    var type: SnapshotType = SnapshotType.all,
+    var tokenFilterType: Web3TokenFilterType = Web3TokenFilterType.ALL,
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
 ) {
     override fun toString(): String {
-        return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} " +
+        return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
             "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
             "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
     }
@@ -32,16 +32,9 @@ class Web3FilterParams(
                 return "${formatter.format(start)} - ${formatter.format(end)}"
             }
         }
-
-    val typeTitle: Int
-        get() {
-            return when (type) {
-                SnapshotType.all -> R.string.All
-                SnapshotType.withdrawal -> R.string.Withdrawal
-                SnapshotType.deposit -> R.string.Deposit
-                SnapshotType.snapshot -> R.string.Transfer
-            }
-        }
+        
+    val tokenTypeTitle: Int
+        get() = tokenFilterType.titleRes
         
     fun formatDate(timestamp: Long): String {
         val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
@@ -51,24 +44,6 @@ class Web3FilterParams(
 
     fun buildQuery(): SimpleSQLiteQuery {
         val filters = mutableListOf<String>()
-
-        if (type != SnapshotType.all) {
-            when (type) {
-                SnapshotType.snapshot -> {
-                    filters.add("(deposit IS NULL OR deposit = 'null')")
-                    filters.add("(withdrawal IS NULL OR withdrawal = 'null')")
-                }
-                SnapshotType.deposit -> {
-                    filters.add("deposit IS NOT NULL")
-                    filters.add("deposit != 'null'")
-                }
-                SnapshotType.withdrawal -> {
-                    filters.add("withdrawal IS NOT NULL")
-                    filters.add("withdrawal != 'null'")
-                }
-                else -> {}
-            }
-        }
 
         tokenItems?.let {
             if (it.isNotEmpty()) {

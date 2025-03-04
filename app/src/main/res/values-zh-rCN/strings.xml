@@ -1121,6 +1121,7 @@
     <string name="Voice_call">语音通话</string>
     <string name="Waiting">等待中</string>
     <string name="Wallet">钱包</string>
+    <string name="Wallets">钱包</string>
     <string name="wallet_add_asset_already_hidden">资产 %1$s 已被你隐藏，要在钱包首页立刻显示？</string>
     <string name="wallet_address_add_tip">Mixin 不支持提现到</string>
     <string name="wallet_already_hidden">已隐藏 %1$s</string>

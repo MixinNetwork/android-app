@@ -80,7 +80,7 @@ internal constructor(
 
     fun web3Tokens() = web3Repository.web3Tokens()
 
-    fun web3Transactions() = web3Repository.web3Transactions()
+    fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
     fun tokenExtraFlow(assetId: String) =
         tokenRepository.tokenExtraFlow(assetId)

@@ -52,6 +52,7 @@ class RefreshWeb3TransactionJob(
                 if (result.isNullOrEmpty()) {
                     Timber.d("No transactions returned from API for address $addressId")
                 } else {
+                    web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $addressId")
                 }
             },

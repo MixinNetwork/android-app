@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import java.math.BigDecimal
 
 @Parcelize
@@ -76,7 +77,7 @@ data class Web3TransactionItem(
 
     fun getFormattedAmount(): String {
         return try {
-            BigDecimal(amount).numberFormat2()
+            BigDecimal(amount).numberFormat8()
         } catch (e: Exception) {
             amount
         }
@@ -93,25 +94,4 @@ data class Web3TransactionItem(
         )
     }
 
-    fun getDirectionText(context: Context, address: String): SpannedString {
-        return when {
-            isSend(address) -> buildAmountSymbol(
-                context,
-                "-${getFormattedAmount()}",
-                symbol,
-                context.resources.getColor(R.color.wallet_pink, null),
-                context.colorFromAttribute(R.attr.text_primary)
-            )
-
-            isReceive(address) -> buildAmountSymbol(
-                context,
-                "+${getFormattedAmount()}",
-                symbol,
-                context.resources.getColor(R.color.wallet_green, null),
-                context.colorFromAttribute(R.attr.text_primary)
-            )
-
-            else -> SpannedString(getFormattedAmount())
-        }
-    }
 }

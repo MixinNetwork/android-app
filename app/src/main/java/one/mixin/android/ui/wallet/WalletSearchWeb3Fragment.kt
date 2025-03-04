@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.viewDestroyed

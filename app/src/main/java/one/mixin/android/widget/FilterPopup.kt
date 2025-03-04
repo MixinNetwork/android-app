@@ -9,11 +9,12 @@ import android.widget.LinearLayout
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.databinding.ViewFilterPopupBinding
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.ui.wallet.Web3TokenFilterType
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.UserItem
@@ -48,7 +49,33 @@ class FilterPopup @JvmOverloads constructor(
     }
 
     fun updateWeb3Tokens(@StringRes strRes: Int, tokens: List<Web3TokenItem>?) {
+        if (tokens.isNullOrEmpty()) {
+            binding.iconGroup.isVisible = false
+            setTitle(strRes)
+            return
+        }
 
+        binding.iconGroup.isVisible = true
+
+        val icons = listOf(
+            binding.icon1, binding.icon2, binding.icon3, binding.icon4, binding.icon5,
+            binding.icon6, binding.icon7, binding.icon8, binding.icon9, binding.icon10
+        )
+        icons.forEach { it.isVisible = false }
+
+        val count = tokens.size.coerceAtMost(10)
+
+        for (i in 0 until count) {
+            icons[i].isVisible = true
+            icons[i].loadUrl(tokens[i].iconUrl, holder = R.drawable.ic_avatar_place_holder)
+        }
+
+        if (count == 1) {
+            val item = tokens[0]
+            setTitle(item.symbol)
+        } else {
+            setTitle(context.getString(R.string.number_of_assets, tokens.size))
+        }
     }
 
     fun updateTokens(@StringRes strRes: Int, tokens: List<TokenItem>?) {
@@ -123,6 +150,11 @@ class FilterPopup @JvmOverloads constructor(
         } else if (recipient is AddressItem){
             avatarView.loadUrl(recipient.iconUrl, R.drawable.ic_avatar_place_holder)
         }
+    }
+
+    fun updateWeb3TokenFilterType(filterType: Web3TokenFilterType) {
+        binding.iconGroup.isVisible = false
+        setTitle(context.getString(filterType.titleRes))
     }
 
     fun open() {

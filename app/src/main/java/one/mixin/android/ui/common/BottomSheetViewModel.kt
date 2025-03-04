@@ -1454,4 +1454,6 @@ class BottomSheetViewModel
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
             return privateKeyToAddress(spendKey, chainId)
         }
+
+        fun web3TokenItems() = tokenRepository.web3TokenItems()
 }

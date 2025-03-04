@@ -13,16 +13,23 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
+import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
 import timber.log.Timber
+import java.math.BigDecimal
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -72,8 +79,21 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.apply {
             transactionIdTv.text = transaction.transactionHash
             transactionHashTv.text = transaction.transactionHash
-            valueTv.text = transaction.getFormattedAmount()
-            valueAsTv.text = transaction.amount
+            val amountColor = if (transaction.amount.toBigDecimal() > BigDecimal.ZERO) {
+                R.color.wallet_green
+            } else {
+                R.color.wallet_pink
+            }
+            val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
+            valueTv.text = buildAmountSymbol(requireContext(), transaction.amount, transaction.symbol, amountColor, symbolColor)
+            val amount = (BigDecimal(transaction.amount).abs() * token.priceFiat()).numberFormat2()
+            val pricePerUnit =
+                "(${Fiats.getSymbol()}${token.priceFiat().priceFormat2()}/${token.symbol})"
+            valueAsTv.text =
+                getString(
+                    R.string.value_now,
+                    "${Fiats.getSymbol()}$amount $pricePerUnit",
+                )
             fromTv.text = transaction.sender
             toTv.text = transaction.receiver
             avatar.bg.loadImage(transaction.iconUrl, R.drawable.ic_avatar_place_holder)
@@ -87,11 +107,9 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 avatar.badge.isVisible = true
                 avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
             }
-            // Todo
-            // feeTv.text = "${transaction.fee.amount} ${transaction.fee.symbol}"
             dateTv.text = transaction.createdAt.fullDate()
-            // Todo
-            // statusTv.text = transaction.status.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            feeLl.isVisible = false
+            statusLl.isVisible = false
         }
     }
 

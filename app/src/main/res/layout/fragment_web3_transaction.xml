@@ -213,6 +213,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/fee_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -252,6 +253,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/status_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">

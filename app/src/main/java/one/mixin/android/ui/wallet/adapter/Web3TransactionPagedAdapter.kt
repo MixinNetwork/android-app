@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemWeb3TransactionBinding
+import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -52,7 +52,7 @@ class Web3TransactionPagedAdapter :
         viewType: Int,
     ): Web3TransactionHolder {
         return Web3TransactionHolder(
-            ItemWeb3TransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ItemWalletTransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
     }
 }

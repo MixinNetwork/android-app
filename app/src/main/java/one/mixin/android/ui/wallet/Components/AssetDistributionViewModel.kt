@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.vo.safe.TokenItem

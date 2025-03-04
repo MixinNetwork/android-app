@@ -51,14 +51,6 @@ data class Web3Transaction(
     @SerializedName("amount")
     val amount: String,
     
-    @ColumnInfo(name = "symbol")
-    @SerializedName("symbol")
-    val symbol: String = "",
-    
-    @ColumnInfo(name = "icon_url")
-    @SerializedName("icon_url")
-    val iconUrl: String = "",
-    
     @ColumnInfo(name = "created_at")
     @SerializedName("created_at")
     val createdAt: String,

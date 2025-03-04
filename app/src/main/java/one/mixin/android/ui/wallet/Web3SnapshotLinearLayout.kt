@@ -6,7 +6,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemWeb3TransactionBinding
+import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
@@ -48,24 +48,24 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
                 addView(headerView)
             }
 
-            val itemView = ItemWeb3TransactionBinding.inflate(LayoutInflater.from(context), this, false)
-            val holder = Web3TransactionHolder(itemView)
+            val itemBinding = ItemWalletTransactionsBinding.inflate(LayoutInflater.from(context), this, false)
+            val holder = Web3TransactionHolder(itemBinding)
             holder.bind(item)
             holder.itemView.setOnClickListener {
                 listener?.onNormalItemClick(item)
             }
             debugLongClick(
-                itemView.root,
+                itemBinding.root,
                 {
                     context.getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, item.transactionId))
                 },
             )
-            addView(itemView.root)
+            addView(itemBinding.root)
         }
         if (list.size > 20) {
             val itemView = LayoutInflater.from(context)
-                .inflate(R.layout.item_web3_transaction, this, false)
+                .inflate(R.layout.item_wallet_transactions, this, false)
             itemView.setOnClickListener {
                 listener?.onMoreClick()
             }

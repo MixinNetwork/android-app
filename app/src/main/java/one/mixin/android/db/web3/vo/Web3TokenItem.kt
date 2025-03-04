@@ -70,21 +70,21 @@ data class Web3TokenItem(
     
     fun getChainDisplayName(): String {
         return chainName ?: when {
-            chainId.equals("ethereum", true) -> "Ethereum"
-            chainId.equals("base", true) -> "Base"
-            chainId.equals("blast", true) -> "Blast"
-            chainId.equals("arbitrum", true) -> "Arbitrum"
-            chainId.equals("optimism", true) -> "Optimism"
-            chainId.equals("polygon", true) -> "Polygon"
-            chainId.equals("binance-smart-chain", true) -> "BNB Chain"
-            chainId.equals("avalanche", true) -> "Avalanche"
-            chainId.equals("solana", true) -> "Solana"
+            chainId == Constants.ChainId.ETHEREUM_CHAIN_ID -> "Ethereum"
+            chainId == Constants.ChainId.Base -> "ETH"
+            // chainId.equals("blast", true) -> "Blast"
+            // chainId.equals("arbitrum", true) -> "Arbitrum"
+            // chainId.equals("optimism", true) -> "Optimism"
+            chainId == Constants.ChainId.BinanceSmartChain -> "Polygon"
+            chainId == Constants.ChainId.Polygon -> "BNB Chain"
+            chainId == Constants.ChainId.Avalanche -> "Avalanche"
+            chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
     }
     
     fun isSolana(): Boolean {
-        return chainId.equals("solana", true)
+        return chainId.equals(Constants.ChainId.SOLANA_CHAIN_ID, true)
     }
     
     override fun toSwapToken(): SwapToken {
@@ -127,7 +127,8 @@ data class Web3TokenItem(
     }
     
     fun fiat(): BigDecimal = try {
-        BigDecimal(balance).multiply(priceFiat())
+        if (balance.isBlank()) BigDecimal.ZERO
+        else BigDecimal(balance).multiply(priceFiat())
     } catch (e: NumberFormatException) {
         BigDecimal.ZERO
     }
@@ -266,15 +267,15 @@ suspend fun Web3TokenItem.buildTransaction(
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
     } else {
         JsSigner.useEvm()
+        // (chainId.equals("base", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
+        // (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
+        // (chainId.equals("arbitrum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
+        // (chainId.equals("optimism", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
-            if ((chainId.equals("ethereum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId.equals("base", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId.equals("arbitrum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId.equals("optimism", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId.equals("polygon", true) && assetKey == "0x0000000000000000000000000000000000001010") ||
-                (chainId.equals("binance-smart-chain", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId.equals("avalanche", true) && assetKey == "0x0000000000000000000000000000000000000000")
+            if ((chainId == Constants.ChainId.ETHEREUM_CHAIN_ID && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainId == Constants.ChainId.Polygon && assetKey == "0x0000000000000000000000000000000000001010") ||
+                (chainId == Constants.ChainId.BinanceSmartChain && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000")
             ) {
                 val value = Numeric.toHexStringWithPrefix(Convert.toWei(v, Convert.Unit.ETHER).toBigInteger())
                 WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)

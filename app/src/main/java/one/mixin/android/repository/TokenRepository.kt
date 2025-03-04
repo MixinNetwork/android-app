@@ -38,7 +38,6 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.RouteService
@@ -132,6 +131,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.ui.wallet.Web3FilterParams
 
@@ -470,6 +470,8 @@ class TokenRepository
         suspend fun findAssetItemsWithBalance(): List<TokenItem> = tokenDao.findAssetItemsWithBalance()
 
         suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
+
+        fun web3TokenItems(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems()
 
         suspend fun fuzzySearchToken(
             query: String,

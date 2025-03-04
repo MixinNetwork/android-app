@@ -19,17 +19,20 @@ import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -43,6 +46,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -52,6 +56,7 @@ import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHA
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -184,7 +189,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 bottomBinding.apply {
                     title.text = token.name
                     addressTv.text = token.assetKey
-                    view.setOnClickListener {
+                    explorer.setOnClickListener {
                         if (token.isSolana()) {
                             context?.openUrl("https://solscan.io/token/" + token.assetKey)
                         } else {
@@ -223,25 +228,24 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
             binding.apply {
                 web3ViewModel.marketById(token.assetId).observe(viewLifecycleOwner) { market ->
-                    // todo
-                    // if (market != null) {
-                    //     val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
-                    //     val isRising = priceChangePercentage24H >= BigDecimal.ZERO
-                    //     rise.setQuoteText(
-                    //         "${(priceChangePercentage24H).numberFormat2()}%",
-                    //         isRising
-                    //     )
-                    // } else if (asset.priceUsd == "0") {
-                    //     rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                    //     rise.text = "0.00%"
-                    // } else if (asset.changeUsd.isNotEmpty()) {
-                    //     val changeUsd = BigDecimal(asset.changeUsd)
-                    //     val isRising = changeUsd >= BigDecimal.ZERO
-                    //     rise.setQuoteText(
-                    //         "${(changeUsd * BigDecimal(100)).numberFormat2()}%",
-                    //         isRising
-                    //     )
-                    // }
+                    if (market != null) {
+                        val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
+                        val isRising = priceChangePercentage24H >= BigDecimal.ZERO
+                        rise.setQuoteText(
+                            "${(priceChangePercentage24H).numberFormat2()}%",
+                            isRising
+                        )
+                    } else if (token.priceUsd == "0") {
+                        rise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
+                        rise.text = "0.00%"
+                    } else if (token.changeUsd.isNotEmpty()) {
+                        val changeUsd = BigDecimal(token.changeUsd)
+                        val isRising = changeUsd >= BigDecimal.ZERO
+                        rise.setQuoteText(
+                            "${(changeUsd * BigDecimal(100)).numberFormat2()}%",
+                            isRising
+                        )
+                    }
                 }
                 if (token.isSolToken()) {
                     stake.root.visibility = View.VISIBLE
@@ -280,11 +284,16 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     AnalyticsTracker.trackSwapStart("solana", "solana")
                     navTo(SwapFragment.newInstance<Web3TokenItem>(web3tokens), SwapFragment.TAG)
                 }
+                transactionsTitleLl.setOnClickListener {
+                    navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+                }
             }
         }
 
-        web3ViewModel.web3Transactions().observe(viewLifecycleOwner) {
-            binding.transactionsRv.list = it
+        web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list->
+            binding.transactionsRv.isVisible = list.isNotEmpty()
+            binding.bottomRl.isVisible = list.isEmpty()
+            binding.transactionsRv.list = list
         }
 
         updateHeader(token) //todo Live data
@@ -377,6 +386,6 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     }
 
     override fun onMoreClick() {
-        navTo(AllWeb3TransactionsFragment.newInstance(), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+        navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
     }
 }

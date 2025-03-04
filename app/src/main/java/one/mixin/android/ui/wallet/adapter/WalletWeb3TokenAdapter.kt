@@ -95,7 +95,9 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
             val asset = data!![getPos(position)]
             binding.balance.text =
                 try {
-                    if (asset.balance.numberFormat().toFloat() == 0f) {
+                    if (asset.balance.isBlank()) {
+                        "0.00"
+                    } else if (asset.balance.numberFormat().toFloat() == 0f) {
                         "0.00"
                     } else {
                         asset.balance.numberFormat()

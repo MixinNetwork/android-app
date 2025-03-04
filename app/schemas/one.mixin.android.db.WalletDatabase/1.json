@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f10d8aa5132c652a2029404b01e6814b",
+    "identityHash": "0fd177a976a1213ba8daea7acb031c1c",
     "entities": [
       {
         "tableName": "web3_tokens",
@@ -86,7 +86,7 @@
       },
       {
         "tableName": "web3_transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `block_number` INTEGER NOT NULL, `sender` TEXT NOT NULL, `receiver` TEXT NOT NULL, `output_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `block_number` INTEGER NOT NULL, `sender` TEXT NOT NULL, `receiver` TEXT NOT NULL, `output_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -145,18 +145,6 @@
           {
             "fieldPath": "amount",
             "columnName": "amount",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "symbol",
-            "columnName": "symbol",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "iconUrl",
-            "columnName": "icon_url",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -301,12 +289,62 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "web3_chains",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `withdrawal_memo_possibility` TEXT NOT NULL, PRIMARY KEY(`chain_id`))",
+        "fields": [
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "symbol",
+            "columnName": "symbol",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "icon_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "threshold",
+            "columnName": "threshold",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "withdrawalMemoPossibility",
+            "columnName": "withdrawal_memo_possibility",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "chain_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f10d8aa5132c652a2029404b01e6814b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0fd177a976a1213ba8daea7acb031c1c')"
     ]
   }
 }

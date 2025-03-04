@@ -526,14 +526,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         // todo
         // return if (web3Token?.chainName.equals("solana", true) == true) {
         //     https://github.com/solana-labs/solana-web3.js/blob/afe5602674b2eb8f5e780097d98e1d60ec63606b/packages/addresses/src/address.ts#L36
-            // if (address.length < 32 || address.length > 44) {
-            //     return false
-            // }
-            // return try {
-            //     address.decodeBase58().size == 32
-            // } catch (e: Exception) {
-            //     false
-            // }
+        //     if (address.length < 32 || address.length > 44) {
+        //         return false
+        //     }
+        //     return try {
+        //         address.decodeBase58().size == 32
+        //     } catch (e: Exception) {
+        //         false
+        //     }
         // } else {
         //     WalletUtils.isValidAddress(address)
         // }

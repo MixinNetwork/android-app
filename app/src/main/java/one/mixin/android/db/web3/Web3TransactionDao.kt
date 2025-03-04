@@ -13,8 +13,8 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 @Dao
 interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
-    @Query("SELECT w.transaction_id, w.transaction_hash, w.output_index, w.block_number, w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, w.created_at, w.updated_at, t.symbol, t.icon_url FROM web3_transactions w LEFT JOIN web3_tokens t on t.asset_id = w.asset_id")
-    fun web3Transactions(): LiveData<List<Web3TransactionItem>>
+    @Query("SELECT w.transaction_id, w.transaction_hash, w.output_index, w.block_number, w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, w.created_at, w.updated_at, t.symbol, t.icon_url FROM web3_transactions w LEFT JOIN web3_tokens t on t.asset_id = w.asset_id WHERE t.asset_id = :assetId")
+    fun web3Transactions(assetId: String): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3TransactionItem>

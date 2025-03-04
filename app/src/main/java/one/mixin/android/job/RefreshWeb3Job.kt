@@ -10,6 +10,7 @@ import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.Web3Wallet
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
@@ -26,6 +27,7 @@ class RefreshWeb3Job : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
+        fetchChain()
         val wallets = web3WalletDao.getAllWallets()
         if (wallets.isEmpty()) {
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
@@ -136,5 +138,35 @@ class RefreshWeb3Job : BaseJob(
             },
             defaultErrorHandle = {}
         )
+    }
+
+    private suspend fun fetchChain() {
+        try {
+            val response = tokenService.getChains()
+            if (response.isSuccess) {
+                val chains = response.data
+                if (chains != null && chains.isNotEmpty()) {
+                    Timber.d("Fetched ${chains.size} chains")
+                    val web3Chains = chains.map { chain ->
+                        Web3Chain(
+                            chainId = chain.chainId,
+                            name = chain.name,
+                            symbol = chain.symbol,
+                            iconUrl = chain.iconUrl,
+                            threshold = chain.threshold,
+                            withdrawalMemoPossibility = chain.withdrawalMemoPossibility
+                        )
+                    }
+                    web3ChainDao.insertList(web3Chains)
+                    Timber.d("Successfully inserted ${web3Chains.size} chains into database")
+                } else {
+                    Timber.d("No chains found")
+                }
+            } else {
+                Timber.e("Failed to fetch chains: ${response.errorCode} - ${response.errorDescription}")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Exception occurred while fetching chains")
+        }
     }
 }
