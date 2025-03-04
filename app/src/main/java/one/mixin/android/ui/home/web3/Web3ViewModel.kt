@@ -80,6 +80,14 @@ internal constructor(
 
     fun web3Tokens() = web3Repository.web3Tokens()
 
+    fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()
+    
+    fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
+
+    suspend fun updateTokenHidden(tokenId: String, hidden: Boolean) = web3Repository.updateTokenHidden(tokenId, hidden)
+
+    suspend fun  web3TokenItemByChainId(chainId: String) = web3Repository.web3TokenItemByChainId(chainId)
+
     fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
     fun tokenExtraFlow(assetId: String) =
@@ -138,38 +146,6 @@ internal constructor(
         }
     }
 
-    suspend fun web3Account(chain: String, address: String): MixinResponse<Web3Account> {
-        val response = web3Service.web3Account(address)
-        if (response.isSuccess) {
-            updateTokens(chain, response.data!!.tokens)
-        }
-        return response
-    }
-
-    suspend fun web3Token(
-        chain: String,
-        chainId: String,
-        address: String,
-    ): Web3Token? {
-        return web3Token(chain, chainId + address) ?: web3Service.web3Tokens(
-            chainId,
-            addresses = address
-        )
-            .let {
-                if (it.isSuccess) {
-                    val token = it.data?.firstOrNull() ?: return null
-                    updateToken(token, chain)
-                    token
-                } else {
-                    null
-                }
-            }
-    }
-
-    fun web3Token(chain: String, tokenId: String): Web3Token? {
-        return if (chain == ChainType.ethereum.name) evmTokenMap[tokenId] else solanaTokenMap[tokenId]
-    }
-
     private fun updateTokens(chain: String, tokens: List<Web3Token>) {
         val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
         val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}" }.toSet()
@@ -188,17 +164,6 @@ internal constructor(
         }
     }
 
-    private fun updateToken(token: Web3Token?, chain: String) {
-        token?.let {
-            val tokenId = "${it.chainId}${it.assetKey}"
-            val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
-            tokenMap[tokenId] = it
-        }
-    }
-
-    suspend fun saveSession(participantSession: ParticipantSession) {
-        userRepository.saveSession(participantSession)
-    }
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     suspend fun findBotPublicKey(

@@ -38,6 +38,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
@@ -65,6 +66,7 @@ class WalletViewModel
         private val walletDatabase: WalletDatabase,
         private val userRepository: UserRepository,
         private val accountRepository: AccountRepository,
+        private val web3Repository: Web3Repository,
         private val tokenRepository: TokenRepository,
         private val assetRepository: AssetRepository,
         private val jobManager: MixinJobManager,
@@ -78,6 +80,8 @@ class WalletViewModel
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)
         }
+
+    suspend fun  web3TokenItemByChainId(chainId: String) = web3Repository.web3TokenItemByChainId(chainId)
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 

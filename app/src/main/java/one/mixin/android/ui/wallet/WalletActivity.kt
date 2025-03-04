@@ -81,6 +81,10 @@ class WalletActivity : BlazeBaseActivity() {
                 navGraph.setStartDestination(R.id.hidden_assets_fragment)
                 navController.setGraph(navGraph, null)
             }
+            Destination.Web3Hidden -> {
+                navGraph.setStartDestination(R.id.web3_hidden_assets_fragment)
+                navController.setGraph(navGraph, null)
+            }
             Destination.Deposit -> {
                 navGraph.setStartDestination(R.id.deposit_fragment)
                 val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
@@ -113,6 +117,7 @@ class WalletActivity : BlazeBaseActivity() {
         AllTransactions,
         AllWeb3Transactions,
         Hidden,
+        Web3Hidden,
         Deposit,
         Buy,
         Market,

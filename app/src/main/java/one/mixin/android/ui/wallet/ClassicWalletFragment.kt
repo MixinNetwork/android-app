@@ -8,6 +8,8 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -18,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
@@ -31,6 +34,7 @@ import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
@@ -157,29 +161,29 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 AssetItemCallback(
                     object : AssetItemCallback.ItemCallbackListener {
                         override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                            // val hiddenPos = viewHolder.absoluteAdapterPosition
-                            // val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
-                            // val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                            // lifecycleScope.launch {
-                            //     // walletViewModel.updateAssetHidden(asset.assetId, true)
-                            //     val anchorView = coinsRv
-                            //
-                            //     snackBar =
-                            //         Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
-                            //             .setAction(R.string.UNDO) {
-                            //                 assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                            //                 lifecycleScope.launch(Dispatchers.IO) {
-                            //                     walletViewModel.updateAssetHidden(asset.assetId, false)
-                            //                 }
-                            //             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                            //                 (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)!!)
-                            //                     .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                            //             }.apply {
-                            //                 snackBar?.config(anchorView.context)
-                            //             }
-                            //     snackBar?.show()
-                            //     distance = 0
-                            // }
+                            val hiddenPos = viewHolder.absoluteAdapterPosition
+                            val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
+                            val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
+                            lifecycleScope.launch {
+                                web3ViewModel.updateTokenHidden(asset.assetId, true)
+                                val anchorView = coinsRv
+
+                                snackBar =
+                                    Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
+                                        .setAction(R.string.UNDO) {
+                                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                            lifecycleScope.launch {
+                                                web3ViewModel.updateTokenHidden(asset.assetId, false)
+                                            }
+                                        }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                            (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)!!)
+                                                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                                        }.apply {
+                                            snackBar?.config(anchorView.context)
+                                        }
+                                snackBar?.show()
+                                distance = 0
+                            }
                         }
                     },
                 ),
@@ -204,7 +208,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
-        web3ViewModel.web3Tokens().observe(viewLifecycleOwner) {
+        web3ViewModel.web3TokensExcludeHidden().observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
                 setEmpty()
                 assets = it
@@ -398,7 +402,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 } else {
                     PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
                 }
-            navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, token.findChainToken(assets)), Web3TransactionDetailsFragment.TAG)
+            // Todo
+            navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, null), Web3TransactionDetailsFragment.TAG)
         }
     }
 }

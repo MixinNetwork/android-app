@@ -10,6 +10,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
+import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
@@ -247,6 +248,10 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideWeb3AddressDao(db: WalletDatabase) = db.web3AddressDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3TokensExtraDao(db: WalletDatabase) = db.web3TokensExtraDao()
 
     @Singleton
     @Provides

@@ -258,6 +258,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         builder.setCustomView(classicBottomBinding.root)
         val bottomSheet = builder.create()
+        classicBottomBinding.hide.setOnClickListener {
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden)
+            bottomSheet.dismiss()
+        }
         classicBottomBinding.transactionsTv.setOnClickListener {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions)
             bottomSheet.dismiss()

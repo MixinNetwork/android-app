@@ -16,6 +16,16 @@ class Web3TransactionPagedAdapter :
     SafePagedListAdapter<Web3TransactionItem, Web3TransactionHolder>(Web3TransactionItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
+    interface OnItemClickListener {
+        fun onItemClick(transaction: Web3TransactionItem)
+    }
+
+    private var itemClickListener: OnItemClickListener? = null
+
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        this.itemClickListener = listener
+    }
+
     override fun getHeaderId(pos: Int): Long {
         val snapshot = getItem(pos)
         return if (snapshot == null) {
@@ -41,9 +51,11 @@ class Web3TransactionPagedAdapter :
         holder: Web3TransactionHolder,
         position: Int,
     ) {
-        getItem(position)?.let {
-            // todo listener
-            holder.bind(it)
+        getItem(position)?.let { transaction ->
+            holder.bind(transaction)
+            holder.itemView.setOnClickListener {
+                itemClickListener?.onItemClick(transaction)
+            }
         }
     }
 

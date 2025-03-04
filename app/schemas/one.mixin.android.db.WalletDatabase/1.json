@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "0fd177a976a1213ba8daea7acb031c1c",
+    "identityHash": "e345257bc65d850608a6febdf47b6ae5",
     "entities": [
       {
         "tableName": "web3_tokens",
@@ -259,12 +259,12 @@
         "foreignKeys": []
       },
       {
-        "tableName": "tokens_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `hidden` INTEGER, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))",
+        "tableName": "web3_tokens_extra",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
-            "fieldPath": "coinId",
-            "columnName": "coin_id",
+            "fieldPath": "assetId",
+            "columnName": "asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -284,7 +284,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "coin_id"
+            "asset_id"
           ]
         },
         "indices": [],
@@ -344,7 +344,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0fd177a976a1213ba8daea7acb031c1c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e345257bc65d850608a6febdf47b6ae5')"
     ]
   }
 }

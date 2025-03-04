@@ -195,6 +195,12 @@
     </fragment>
 
     <fragment
+        android:id="@+id/web3_hidden_assets_fragment"
+        android:name="one.mixin.android.ui.wallet.Web3HiddenAssetsFragment"
+        tools:layout="@layout/fragment_hidden_assets">
+    </fragment>
+
+    <fragment
         android:id="@+id/deposit_fragment"
         android:name="one.mixin.android.ui.wallet.DepositFragment"
         tools:layout="@layout/fragment_deposit">

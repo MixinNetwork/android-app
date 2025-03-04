@@ -4,14 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-/**
- * 存储代币的额外信息，如是否隐藏
- */
-@Entity(tableName = "tokens_extra")
+@Entity(tableName = "web3_tokens_extra")
 data class Web3TokensExtra(
     @PrimaryKey
-    @ColumnInfo(name = "coin_id")
-    val coinId: String,
+    @ColumnInfo(name = "asset_id")
+    val assetId: String,
     
     @ColumnInfo(name = "hidden")
     val hidden: Boolean? = null,

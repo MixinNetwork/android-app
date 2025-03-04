@@ -37,10 +37,12 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
@@ -56,6 +58,7 @@ import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHA
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -72,14 +75,12 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             address: String,
             chain: String,
             web3Token: Web3TokenItem,
-            chainToken: Web3TokenItem?,
             tokens: List<Web3TokenItem>? = null
         ) =
             Web3TransactionDetailsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
                 putString(ARGS_CHAIN, chain)
                 putParcelable(ARGS_TOKEN, web3Token)
-                putParcelable(ARGS_CHAIN_TOKEN, chainToken)
                 putParcelableArrayList(ARGS_TOKENS, arrayListOf<Web3TokenItem>().apply {
                     add(web3Token)
                     tokens?.let {
@@ -117,58 +118,12 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)!!
     }
 
-    private val chainToken: Web3TokenItem? by lazy {
-        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
-    }
-
-    // private val adapter by lazy {
-    //     Web3TransactionAdapter(token).apply {
-    //         setOnClickAction { id ->
-    //             when (id) {
-    //                 R.id.send -> {
-    //                     navTo(
-    //                         TransferDestinationInputFragment.newInstance(
-    //                             address,
-    //                             token,
-    //                             chainToken
-    //                         ), TransferDestinationInputFragment.TAG
-    //                     )
-    //                 }
-    //
-    //                 R.id.receive -> {
-    //                     navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
-    //                 }
-    //
-    //                 R.id.swap -> {
-    //                     AnalyticsTracker.trackSwapStart("solana", "solana")
-    //                     navTo(SwapFragment.newInstance<Web3TokenItem>(web3tokens), SwapFragment.TAG)
-    //                 }
-    //
-    //                 R.id.stake_rl -> {
-    //                     navTo(
-    //                         StakingFragment.newInstance(
-    //                             ArrayList(
-    //                                 this.stakeAccounts ?: emptyList()
-    //                             ), token.balance
-    //                         ), StakingFragment.TAG
-    //                     )
-    //                 }
-    //             }
-    //         }
-    //         setOnClickListener { transaction ->
-    //             navTo(
-    //                 Web3TransactionFragment.newInstance(transaction, chain, token),
-    //                 Web3TransactionFragment.TAG
-    //             )
-    //         }
-    //     }
-    // }
-
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
         binding.titleView.apply {
             titleTv.setTextOnly(token.name)
             leftIb.setOnClickListener {
@@ -274,7 +229,10 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 }
 
                 sendReceiveView.send.setOnClickListener {
-                    navTo(TransferDestinationInputFragment.newInstance(address, token, chainToken), TransferDestinationInputFragment.TAG)
+                    lifecycleScope.launch {
+                        val chain = web3ViewModel.web3TokenItemByChainId(token.chainId)
+                        navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
+                    }
                 }
                 sendReceiveView.receive.setOnClickListener {
                     navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
@@ -286,6 +244,9 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 }
                 transactionsTitleLl.setOnClickListener {
                     navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+                }
+                marketView.setContent {
+                    Market(token.assetId)
                 }
             }
         }

@@ -27,15 +27,19 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.ui.wallet.TypeMenuData
+import one.mixin.android.ui.wallet.Web3TypeMenuAdapter
+import one.mixin.android.ui.wallet.Web3TypeMenuData
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.toSnapshot
+import one.mixin.android.web3.details.Web3TransactionFragment
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -53,7 +57,19 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     private val binding by viewBinding(FragmentAllTransactionsBinding::bind)
 
-    private val adapter = Web3TransactionPagedAdapter()
+    private val adapter = Web3TransactionPagedAdapter().apply {
+        setOnItemClickListener(object : Web3TransactionPagedAdapter.OnItemClickListener {
+            override fun onItemClick(transaction: Web3TransactionItem) {
+                lifecycleScope.launch {
+                    navTo(
+                        // Todo check chain
+                        Web3TransactionFragment.newInstance(transaction, tokenItem?.chainId?:"", tokenItem!!),
+                        Web3TransactionFragment.TAG
+                    )
+                }
+            }
+        })
+    }
 
     private val filterParams by lazy {
         Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
@@ -328,7 +344,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             Web3TypeMenuData(Web3TokenFilterType.ALL, null, Web3TokenFilterType.ALL.titleRes),
             Web3TypeMenuData(Web3TokenFilterType.SEND, R.drawable.ic_menu_type_withdrawal, Web3TokenFilterType.SEND.titleRes),
             Web3TypeMenuData(Web3TokenFilterType.RECEIVE, R.drawable.ic_menu_type_deoisit, Web3TokenFilterType.RECEIVE.titleRes),
-            Web3TypeMenuData(Web3TokenFilterType.Contract, R.drawable.ic_menu_type_deoisit, Web3TokenFilterType.Contract.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.Contract, R.drawable.ic_menu_type_contract, Web3TokenFilterType.Contract.titleRes),
         )
         Web3TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = when (filterParams.tokenFilterType) {

@@ -13,10 +13,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface Web3Service {
-    @GET("accounts/{account}")
-    suspend fun web3Account(
-        @Path("account") account: String,
-    ): MixinResponse<Web3Account>
 
     @GET("dapps")
     suspend fun dapps(): MixinResponse<List<ChainDapp>>
