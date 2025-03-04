@@ -9,8 +9,6 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.toast
-import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
@@ -71,7 +69,7 @@ class NewSchemeParser(
                 if (status == PaymentStatus.paid.name) return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
                 val token: TokenItem?
                 if (urlQueryParser.inscription == null && urlQueryParser.inscriptionCollection == null) {
-                    token = checkToken(asset!!) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
+                    token = checkAsset(asset!!) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
                     val tokensExtra = linkViewModel.findTokensExtra(asset)
                     if (tokensExtra == null) {
                         return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
@@ -138,10 +136,14 @@ class NewSchemeParser(
                     }
                 }
                 invoice.entries.forEach { entry ->
-                    val token = checkToken(entry.assetId)
+                    val token = checkAsset(entry.assetId)
                     if (token == null) return Result.failure(ParserError(FAILURE))
-                }
-                invoice.entries.forEach { entry ->
+                    val tokensExtra = linkViewModel.findTokensExtra(entry.assetId)
+                    if (tokensExtra == null) {
+                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                    } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(entry.amount)) {
+                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                    }
                     if (!checkUtxo(entry.assetId, entry.amountString())) {
                         return Result.success(SUCCESS)
                     }
@@ -150,7 +152,7 @@ class NewSchemeParser(
                 bottom.show(bottomSheet.parentFragmentManager, TransferInvoiceBottomSheetDialogFragment.TAG)
                 return Result.success(SUCCESS)
             } else {
-                val token = asset?.let { checkToken(it) ?: return Result.failure(ParserError(FAILURE)) }
+                val token = asset?.let { checkAsset(it) ?: return Result.failure(ParserError(FAILURE)) }
                 if (token == null) {
                     val bottom = AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                         .apply {
@@ -233,7 +235,7 @@ class NewSchemeParser(
         val receiver = linkViewModel.refreshUser(userId) ?: throw ParserError(FAILURE)
         val output = linkViewModel.findUnspentOutputByHash(inscriptionHash) ?: throw ParserError(INSCRIPTION_NOT_FOUND, message = bottomSheet.getString(R.string.collectible_not_found))
         val token = if (assetId != null) {
-            checkToken(assetId)
+            checkAsset(assetId)
         } else {
             checkTokenByCollectionHash(inscription.collectionHash, inscription.inscriptionHash)
         } ?: throw ParserError(FAILURE)
@@ -319,13 +321,13 @@ class NewSchemeParser(
             QrScanBottomSheetDialogFragment.newInstance(url)
                 .show(bottomSheet.parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
         } else {
-            val asset = checkToken(result.assetId)
+            val asset = checkAsset(result.assetId)
             if (asset == null) {
                 bottomSheet.showError(R.string.Asset_not_found)
                 bottomSheet.dismiss()
                 return
             }
-            val feeAsset = checkToken(result.feeAssetId!!)
+            val feeAsset = checkAsset(result.feeAssetId!!)
             if (feeAsset == null) {
                 bottomSheet.showError(R.string.Asset_not_found)
                 bottomSheet.dismiss()
@@ -393,7 +395,7 @@ class NewSchemeParser(
                 .showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
             return false
         } else if (consolidationAmount != null) {
-            val asset = checkToken(assetId) ?: return false
+            val asset = checkAsset(assetId) ?: return false
             UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
                 .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
             return false
@@ -407,7 +409,7 @@ class NewSchemeParser(
         bottomSheet.dismiss()
     }
 
-    private suspend fun checkToken(assetId: String): TokenItem? {
+    private suspend fun checkAsset(assetId: String): TokenItem? {
         var asset = linkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = linkViewModel.refreshAsset(assetId)
