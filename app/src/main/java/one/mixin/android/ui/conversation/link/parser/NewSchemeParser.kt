@@ -138,6 +138,10 @@ class NewSchemeParser(
                     }
                 }
                 invoice.entries.forEach { entry ->
+                    val token = checkToken(entry.assetId)
+                    if (token == null) return Result.failure(ParserError(FAILURE))
+                }
+                invoice.entries.forEach { entry ->
                     if (!checkUtxo(entry.assetId, entry.amountString())) {
                         return Result.success(SUCCESS)
                     }
