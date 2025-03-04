@@ -141,7 +141,7 @@ class NewSchemeParser(
                     val tokensExtra = linkViewModel.findTokensExtra(entry.assetId)
                     if (tokensExtra == null) {
                         return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
-                    } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(entry.amount)) {
+                    } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(entry.amountString())) {
                         return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
                     }
                     if (!checkUtxo(entry.assetId, entry.amountString())) {
