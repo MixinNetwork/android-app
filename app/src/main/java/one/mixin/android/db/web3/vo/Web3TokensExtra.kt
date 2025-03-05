@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "web3_tokens_extra")
+@Entity(tableName = "tokens_extra")
 data class Web3TokensExtra(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")

@@ -16,8 +16,8 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.api.response.Web3Address
-import one.mixin.android.api.response.Web3Wallet
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount

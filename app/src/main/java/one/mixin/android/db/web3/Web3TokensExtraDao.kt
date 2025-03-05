@@ -7,9 +7,9 @@ import one.mixin.android.db.web3.vo.Web3TokensExtra
 
 @Dao
 interface Web3TokensExtraDao : BaseDao<Web3TokensExtra> {
-    @Query("SELECT * FROM web3_tokens_extra WHERE asset_id = :assetId")
+    @Query("SELECT * FROM tokens_extra WHERE asset_id = :assetId")
     suspend fun findByAssetId(assetId: String): Web3TokensExtra?
 
-    @Query("UPDATE web3_tokens_extra SET hidden = :hidden, updated_at = :updatedAt WHERE asset_id = :assetId")
+    @Query("UPDATE tokens_extra SET hidden = :hidden, updated_at = :updatedAt WHERE asset_id = :assetId")
     suspend fun updateHidden(assetId: String, hidden: Boolean, updatedAt: String)
 }

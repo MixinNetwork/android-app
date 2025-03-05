@@ -17,7 +17,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Entity(
-    tableName = "web3_tokens",
+    tableName = "tokens",
 )
 @Parcelize
 data class Web3Token(
@@ -28,6 +28,9 @@ data class Web3Token(
     @ColumnInfo(name = "chain_id")
     @SerializedName("chain_id")
     val chainId: String,
+    @ColumnInfo(name = "wallet_id")
+    @SerializedName("wallet_id")
+    val walletId: String,
     @ColumnInfo(name = "name")
     @SerializedName("name")
     val name: String,
@@ -101,36 +104,6 @@ data class Web3Token(
 
     fun realAmount(amount: Long): BigDecimal {
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(precision)).setScale(9, RoundingMode.CEILING)
-    }
-}
-
-fun Web3Token.getChainSymbolFromName(): String {
-    return when {
-        chainId.equals("ethereum", true) -> "ETH"
-        chainId.equals("base", true) ->"ETH"
-        chainId.equals("blast", true) -> "ETH"
-        chainId.equals("arbitrum", true) -> "ETH"
-        chainId.equals("optimism", true) -> "ETH"
-        chainId.equals("polygon", true) -> "POL"
-        chainId.equals("binance-smart-chain", true) -> "BNB"
-        chainId.equals("avalanche", true) -> "AVAX"
-        chainId.equals("solana", true) -> "SOL"
-        else -> throw IllegalArgumentException("Not support: $chainId")
-    }
-}
-
-fun Web3Token.getWeb3ChainId(): Int {
-    return when {
-        chainId.equals("ethereum", true) -> Web3ChainId.EthChainId
-        chainId.equals("base", true) -> Web3ChainId.BaseChainId
-        chainId.equals("blast", true) -> Web3ChainId.BlastChainId
-        chainId.equals("arbitrum", true) -> Web3ChainId.ArbitrumChainId
-        chainId.equals("optimism", true) -> Web3ChainId.OptimismChainId
-        chainId.equals("polygon", true) -> Web3ChainId.PolygonChainId
-        chainId.equals("binance-smart-chain", true) -> Web3ChainId.BscChainId
-        chainId.equals("avalanche", true) -> Web3ChainId.AvalancheChainId
-        chainId.equals("solana", true) -> Web3ChainId.SolanaChainId
-        else -> Web3ChainId.MixinChainId
     }
 }
 

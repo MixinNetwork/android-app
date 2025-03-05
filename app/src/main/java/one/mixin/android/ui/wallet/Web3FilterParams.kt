@@ -84,8 +84,8 @@ class Web3FilterParams(
             "SELECT w.transaction_id, w.transaction_type, w.transaction_hash, w.output_index, w.block_number, " +
                 "w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, " +
                 "w.created_at, w.updated_at, w.transaction_type, w.status, t.symbol, t.icon_url " +
-                "FROM web3_transactions w " +
-                "LEFT JOIN web3_tokens t on t.asset_id = w.asset_id $whereSql $orderSql"
+                "FROM transactions w " +
+                "LEFT JOIN tokens t on t.asset_id = w.asset_id $whereSql $orderSql"
         )
     }
 }

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
-@Entity(tableName = "web3_transactions")
+@Entity(tableName = "transactions")
 @Parcelize
 data class Web3Transaction(
     @PrimaryKey

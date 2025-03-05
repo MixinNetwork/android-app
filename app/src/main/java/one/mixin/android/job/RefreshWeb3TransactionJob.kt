@@ -3,7 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.api.response.Web3Address
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber

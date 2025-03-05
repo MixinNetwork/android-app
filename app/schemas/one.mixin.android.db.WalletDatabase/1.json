@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "32505d124300e73b0310fc3552ab3449",
+    "identityHash": "1b6a67537b95be6e4989a95a1c117e9c",
     "entities": [
       {
-        "tableName": "web3_tokens",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `precision` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `change_usd` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
+        "tableName": "tokens",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `precision` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `change_usd` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -17,6 +17,12 @@
           {
             "fieldPath": "chainId",
             "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -85,7 +91,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "web3_transactions",
+        "tableName": "transactions",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `block_number` INTEGER NOT NULL, `sender` TEXT NOT NULL, `receiver` TEXT NOT NULL, `output_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`transaction_id`))",
         "fields": [
           {
@@ -183,7 +189,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "web3_wallets",
+        "tableName": "wallets",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
         "fields": [
           {
@@ -221,7 +227,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "web3_addresses",
+        "tableName": "addresses",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `tag` TEXT, `user_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
         "fields": [
           {
@@ -271,7 +277,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "web3_tokens_extra",
+        "tableName": "tokens_extra",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
@@ -303,7 +309,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "web3_chains",
+        "tableName": "chains",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `withdrawal_memo_possibility` TEXT NOT NULL, PRIMARY KEY(`chain_id`))",
         "fields": [
           {
@@ -356,7 +362,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '32505d124300e73b0310fc3552ab3449')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1b6a67537b95be6e4989a95a1c117e9c')"
     ]
   }
 }

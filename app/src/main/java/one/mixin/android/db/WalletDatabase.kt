@@ -7,8 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
-import one.mixin.android.api.response.Web3Address
-import one.mixin.android.api.response.Web3Wallet
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.converter.Web3TypeConverters
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
