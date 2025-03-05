@@ -93,7 +93,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 tailIcon.isVisible = true
             } else {
                 currentType = WalletDestination.Classic.name
-                classicWalletFragment.walletId = classicWalletId
+                classicWalletFragment.walletId = classicWalletId ?: WalletDestination.Classic.name
                 requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
                 titleTv.setText(R.string.Classic_Wallet)
                 tailIcon.isVisible = false
@@ -183,7 +183,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, walletId)
                 currentType = WalletDestination.Classic.name
                 classicWalletId = walletId
-                classicWalletFragment.walletId = walletId
+                classicWalletFragment.walletId = walletId ?: WalletDestination.Classic.name
                 requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Classic_Wallet)
                 binding.tailIcon.isVisible = false

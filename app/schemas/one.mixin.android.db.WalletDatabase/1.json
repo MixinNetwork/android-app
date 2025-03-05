@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "d135c92c4354ee300e3d5f1c5f82d7ee",
+    "identityHash": "8120d368f15bf1aa74059c9569754149",
     "entities": [
       {
         "tableName": "tokens",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `precision` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `change_usd` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `precision` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `change_usd` TEXT NOT NULL, PRIMARY KEY(`asset_id`, `wallet_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -15,14 +15,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "chainId",
-            "columnName": "chain_id",
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "walletId",
-            "columnName": "wallet_id",
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -84,7 +84,8 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "asset_id"
+            "asset_id",
+            "wallet_id"
           ]
         },
         "indices": [],
@@ -357,7 +358,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd135c92c4354ee300e3d5f1c5f82d7ee')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8120d368f15bf1aa74059c9569754149')"
     ]
   }
 }
