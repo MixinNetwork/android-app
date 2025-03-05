@@ -63,7 +63,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                             val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                             val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
                             lifecycleScope.launch {
-                                web3ViewModel.updateTokenHidden(asset.assetId, false)
+                                web3ViewModel.updateTokenHidden(asset.assetId, "", false)
                                 val anchorView = assetsRv
 
                                 snackbar =
@@ -71,7 +71,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                                         .setAction(R.string.UNDO) {
                                             assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                             lifecycleScope.launch {
-                                                web3ViewModel.updateTokenHidden(asset.assetId, true)
+                                                web3ViewModel.updateTokenHidden(asset.assetId, "", true)
                                             }
                                         }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                                             (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text))

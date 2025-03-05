@@ -30,12 +30,12 @@ constructor(
 
     fun hiddenAssetItems() = web3TokenDao.hiddenAssetItems()
     
-    suspend fun updateTokenHidden(tokenId: String, hidden: Boolean) {
-        val tokensExtra = web3TokensExtraDao.findByAssetId(tokenId)
+    suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {
+        val tokensExtra = web3TokensExtraDao.findByAssetId(tokenId,  walletId)
         if (tokensExtra != null) {
-            web3TokensExtraDao.updateHidden(tokenId, hidden, nowInUtc())
+            web3TokensExtraDao.updateHidden(tokenId, walletId, hidden)
         } else {
-            web3TokensExtraDao.insertSuspend(Web3TokensExtra(tokenId, hidden, nowInUtc()))
+            web3TokensExtraDao.insertSuspend(Web3TokensExtra(tokenId, walletId, hidden,))
         }
     }
 

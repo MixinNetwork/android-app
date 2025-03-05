@@ -52,7 +52,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var currentType: String = WalletDestination.Classic.name
+    private var currentType: String = WalletDestination.Privacy.name
+    private var classicWalletId: String? = ""
     private val walletViewModel by viewModels<WalletViewModel>()
 
     override fun onCreateView(
@@ -75,7 +76,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         super.onViewCreated(view, savedInstanceState)
         walletViewModel.init()
         val wallet = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
-
+        currentType = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Privacy.name).let {
+            if (it == WalletDestination.Privacy.name) {
+                WalletDestination.Privacy.name
+            }else{
+                classicWalletId = it
+                WalletDestination.Classic.name
+            }
+        }
         binding.apply {
             badge.isVisible = wallet == null
             if (wallet == WalletDestination.Privacy.name || wallet == null) { // defualt wallet
@@ -84,8 +92,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 titleTv.setText(R.string.Privacy_Wallet)
                 tailIcon.isVisible = true
             } else {
-                // Todo wallet id
                 currentType = WalletDestination.Classic.name
+                classicWalletFragment.walletId = classicWalletId
                 requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
                 titleTv.setText(R.string.Classic_Wallet)
                 tailIcon.isVisible = false
@@ -172,8 +180,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 binding.badge.isVisible = false
             }
             WalletDestination.Classic -> {
-                defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Classic.name)
+                defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, walletId)
                 currentType = WalletDestination.Classic.name
+                classicWalletId = walletId
+                classicWalletFragment.walletId = walletId
                 requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
                 binding.titleTv.setText(R.string.Classic_Wallet)
                 binding.tailIcon.isVisible = false

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "1b6a67537b95be6e4989a95a1c117e9c",
+    "identityHash": "d135c92c4354ee300e3d5f1c5f82d7ee",
     "entities": [
       {
         "tableName": "tokens",
@@ -278,7 +278,7 @@
       },
       {
         "tableName": "tokens_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, `updated_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`asset_id`, `wallet_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -287,22 +287,23 @@
             "notNull": true
           },
           {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "hidden",
             "columnName": "hidden",
             "affinity": "INTEGER",
             "notNull": false
-          },
-          {
-            "fieldPath": "updatedAt",
-            "columnName": "updated_at",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "asset_id"
+            "asset_id",
+            "wallet_id"
           ]
         },
         "indices": [],
@@ -310,7 +311,7 @@
       },
       {
         "tableName": "chains",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, `withdrawal_memo_possibility` TEXT NOT NULL, PRIMARY KEY(`chain_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`chain_id`))",
         "fields": [
           {
             "fieldPath": "chainId",
@@ -341,12 +342,6 @@
             "columnName": "threshold",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "withdrawalMemoPossibility",
-            "columnName": "withdrawal_memo_possibility",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
@@ -362,7 +357,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1b6a67537b95be6e4989a95a1c117e9c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd135c92c4354ee300e3d5f1c5f82d7ee')"
     ]
   }
 }

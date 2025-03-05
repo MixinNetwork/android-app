@@ -92,6 +92,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var snackBar: Snackbar? = null
     private var lastFiatCurrency :String? = null
 
+    private var walletId: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshWeb3Job())
@@ -165,7 +167,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                             val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
                             lifecycleScope.launch {
-                                web3ViewModel.updateTokenHidden(asset.assetId, true)
+                                web3ViewModel.updateTokenHidden(asset.assetId, walletId, true)
                                 val anchorView = coinsRv
 
                                 snackBar =
@@ -173,7 +175,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                         .setAction(R.string.UNDO) {
                                             assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                             lifecycleScope.launch {
-                                                web3ViewModel.updateTokenHidden(asset.assetId, false)
+                                                web3ViewModel.updateTokenHidden(asset.assetId, walletId, false)
                                             }
                                         }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                                             (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)!!)

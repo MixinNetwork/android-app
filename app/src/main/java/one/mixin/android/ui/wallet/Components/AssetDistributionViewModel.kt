@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
@@ -18,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AssetDistributionViewModel @Inject constructor(
-    private val tokenRepository: TokenRepository
+    private val tokenRepository: TokenRepository,
+    private val web3WalletDao: Web3WalletDao
 ) : ViewModel() {
 
     private val _totalBalance = MutableStateFlow(BigDecimal.ZERO)
@@ -33,6 +36,8 @@ class AssetDistributionViewModel @Inject constructor(
     private val tokenFlow = tokenRepository.assetFlow()
     
     private val web3TokenFlow = tokenRepository.web3TokensFlow()
+    
+    val wallets: Flow<List<Web3Wallet>> = web3WalletDao.getWallets()
     
     val top3TokenDistribution: Flow<List<AssetDistribution>> = tokenFlow
         .map { tokens ->

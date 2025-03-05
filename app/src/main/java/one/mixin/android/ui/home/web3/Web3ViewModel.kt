@@ -84,7 +84,8 @@ internal constructor(
     
     fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
 
-    suspend fun updateTokenHidden(tokenId: String, hidden: Boolean) = web3Repository.updateTokenHidden(tokenId, hidden)
+    suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
+        web3Repository.updateTokenHidden(tokenId, walletId, hidden)
 
     suspend fun  web3TokenItemByChainId(chainId: String) = web3Repository.web3TokenItemByChainId(chainId)
 

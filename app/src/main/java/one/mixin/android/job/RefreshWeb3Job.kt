@@ -154,7 +154,6 @@ class RefreshWeb3Job : BaseJob(
                             symbol = chain.symbol,
                             iconUrl = chain.iconUrl,
                             threshold = chain.threshold,
-                            withdrawalMemoPossibility = chain.withdrawalMemoPossibility
                         )
                     }
                     web3ChainDao.insertList(web3Chains)

@@ -29,6 +29,7 @@ fun AssetDashboardScreen(
 ) {
     val top3TokenDistribution by viewModel.top3TokenDistribution.collectAsState(initial = emptyList())
     val top3Web3TokenDistribution by viewModel.top3Web3TokenDistribution.collectAsState(initial = emptyList())
+    val wallets by viewModel.wallets.collectAsState(initial = emptyList())
 
     val tokenTotalBalance by viewModel.tokenTotalBalance.collectAsState()
     val web3TokenTotalBalance by viewModel.web3TokenTotalBalance.collectAsState()
@@ -54,17 +55,21 @@ fun AssetDashboardScreen(
             
             WalletCard(
                 balance = tokenTotalBalance,
-                assets= top3TokenDistribution,
+                assets = top3TokenDistribution,
                 destination = WalletDestination.Privacy,
-                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy, "privacy") }
+                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy, WalletDestination.Privacy.name) }
             )
+
             Spacer(modifier = Modifier.height(10.dp))
-            WalletCard(
-                balance = web3TokenTotalBalance,
-                assets = top3Web3TokenDistribution,
-                destination = WalletDestination.Classic,
-                onClick = { onWalletCardClick.invoke(WalletDestination.Classic, "classic") }
-            )
+
+            wallets.forEach { wallet ->
+                WalletCard(
+                    balance = web3TokenTotalBalance,
+                    assets = top3Web3TokenDistribution,
+                    destination = WalletDestination.Classic,
+                    onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
+                )
+            }
         }
     }
 }

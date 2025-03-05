@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.BaseDao
 
@@ -11,7 +12,7 @@ import one.mixin.android.db.BaseDao
 interface Web3WalletDao : BaseDao<Web3Wallet> {
     
     @Query("SELECT * FROM wallets")
-    fun getWallets(): LiveData<List<Web3Wallet>>
+    fun getWallets(): Flow<List<Web3Wallet>>
     
     @Query("SELECT * FROM wallets WHERE wallet_id = :walletId")
     suspend fun getWalletById(walletId: String): Web3Wallet?
