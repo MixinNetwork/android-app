@@ -115,6 +115,7 @@ import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
@@ -513,7 +514,6 @@ class MainActivity : BlazeBaseActivity() {
                 periodicWorkRequest
             )
             initWalletConnect()
-            Timber.e("${defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) == false}-${PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty()}-${PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty()}")
             if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) == false && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
@@ -521,6 +521,7 @@ class MainActivity : BlazeBaseActivity() {
                             if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
                                 LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                                     onDismissCallback = { success ->
+                                        jobManager.addJobInBackground(RefreshWeb3Job())
                                     }
                                 }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
                             }
@@ -529,6 +530,8 @@ class MainActivity : BlazeBaseActivity() {
                         }
                     }
                 }
+            } else {
+              jobManager.addJobInBackground(RefreshWeb3Job())
             }
         }
 

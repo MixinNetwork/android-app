@@ -32,10 +32,7 @@ class Web3FilterParams(
                 return "${formatter.format(start)} - ${formatter.format(end)}"
             }
         }
-        
-    val tokenTypeTitle: Int
-        get() = tokenFilterType.titleRes
-        
+
     fun formatDate(timestamp: Long): String {
         val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")
             .withZone(ZoneId.systemDefault())
@@ -49,6 +46,15 @@ class Web3FilterParams(
             if (it.isNotEmpty()) {
                 val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
                 filters.add("w.asset_id IN ($tokenIds)")
+            }
+        }
+
+        tokenFilterType.let {
+            when (it) {
+                Web3TokenFilterType.SEND -> filters.add("w.transaction_type = 'send'")
+                Web3TokenFilterType.RECEIVE -> filters.add("w.transaction_type = 'receive'")
+                Web3TokenFilterType.CONTRACT -> filters.add("w.transaction_type = 'contract'")
+                else ->  {}
             }
         }
 
@@ -69,15 +75,15 @@ class Web3FilterParams(
         val orderSql = when (order) {
             SortOrder.Recent -> "ORDER BY w.created_at DESC"
             SortOrder.Oldest -> "ORDER BY w.created_at ASC"
-            // SortOrder.Value -> "ORDER BY abs(amount * price_usd) DESC" // todo
+            SortOrder.Value -> "ORDER BY abs(w.amount * t.price_usd) DESC"
             SortOrder.Amount -> "ORDER BY w.amount DESC"
             else -> ""
         }
 
         return SimpleSQLiteQuery(
-            "SELECT w.transaction_id, w.transaction_hash, w.output_index, w.block_number, " +
+            "SELECT w.transaction_id, w.transaction_type, w.transaction_hash, w.output_index, w.block_number, " +
                 "w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, " +
-                "w.created_at, w.updated_at, t.symbol, t.icon_url " +
+                "w.created_at, w.updated_at, w.transaction_type, w.status, t.symbol, t.icon_url " +
                 "FROM web3_transactions w " +
                 "LEFT JOIN web3_tokens t on t.asset_id = w.asset_id $whereSql $orderSql"
         )

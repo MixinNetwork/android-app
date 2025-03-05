@@ -8,7 +8,9 @@ import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 
@@ -23,19 +25,19 @@ class Web3TransactionHolder(val binding: ItemWalletTransactionsBinding) : Recycl
             val amount = transaction.getFormattedAmount()
             val symbol = transaction.symbol
             
-            if (transaction.sender == transaction.receiver) {
+            if (transaction.transactionType == Web3TransactionType.Receive.value) {
                 value.textColorResource = R.color.wallet_green
-                value.text = amount
+                value.text = "+${amount.numberFormat8()}"
                 symbolTv.text = symbol
                 symbolIv.isVisible = false
-            } else if (transaction.sender.isEmpty()) {
+            } else if (transaction.transactionType == Web3TransactionType.Send.value) {
                 value.textColorResource = R.color.wallet_green
-                value.text = "+$amount"
+                value.text = "-${amount.numberFormat8()}"
                 symbolTv.text = symbol
                 symbolIv.isVisible = false
             } else {
-                value.textColorResource = R.color.wallet_pink
-                value.text = "-$amount"
+                value.setTextColor(root.context.colorFromAttribute(R.attr.text_primary))
+                value.text = amount.numberFormat8()
                 symbolTv.text = symbol
                 symbolIv.isVisible = false
             }

@@ -79,11 +79,13 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.apply {
             transactionIdTv.text = transaction.transactionHash
             transactionHashTv.text = transaction.transactionHash
-            val amountColor = requireContext().getColor(if (transaction.amount.toBigDecimal() > BigDecimal.ZERO) {
-                R.color.wallet_green
+            val amountColor = if (transaction.transactionType == Web3TransactionType.Send.value) {
+                requireContext().getColor(R.color.wallet_green)
+            } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
+                requireContext().getColor(R.color.wallet_pink)
             } else {
-                R.color.wallet_pink
-            })
+                requireContext().colorFromAttribute(R.attr.text_primary)
+            }
             val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
             valueTv.text = buildAmountSymbol(requireContext(), transaction.amount, transaction.symbol, amountColor, symbolColor)
             val amount = (BigDecimal(transaction.amount).abs() * token.priceFiat()).numberFormat2()

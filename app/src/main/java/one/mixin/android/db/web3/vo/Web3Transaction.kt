@@ -14,7 +14,11 @@ data class Web3Transaction(
     @ColumnInfo(name = "transaction_id")
     @SerializedName("transaction_id")
     val id: String,
-    
+
+    @ColumnInfo(name = "transaction_type")
+    @SerializedName("transaction_type")
+    val transactionType: String,
+
     @ColumnInfo(name = "transaction_hash")
     @SerializedName("transaction_hash")
     val transactionHash: String,
@@ -57,5 +61,9 @@ data class Web3Transaction(
     
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
-    val updatedAt: String
+    val updatedAt: String,
+    
+    @ColumnInfo(name = "status")
+    @SerializedName("status")
+    val status: String,
 ) : Parcelable

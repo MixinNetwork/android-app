@@ -9,10 +9,7 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
 class RefreshWeb3TransactionJob(
-) : BaseJob(
-    Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork(),
-) {
+) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().setGroupId(GROUP)) {
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshWeb3TransactionJob"

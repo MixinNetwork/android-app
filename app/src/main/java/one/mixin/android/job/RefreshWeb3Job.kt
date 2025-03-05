@@ -15,8 +15,7 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
 class RefreshWeb3Job : BaseJob(
-    Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).persist().requireNetwork(),
+    Params(PRIORITY_UI_HIGH).setSingleId(GROUP).persist().requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L
@@ -49,6 +48,7 @@ class RefreshWeb3Job : BaseJob(
                 fetchWalletAssets(wallet)
             }
         }
+        jobManager.addJobInBackground(RefreshWeb3TransactionJob())
     }
     
     private suspend fun createWallet(category: String, addresses: List<Web3AddressRequest>) {

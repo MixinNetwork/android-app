@@ -5,6 +5,7 @@ import android.os.Parcelable
 import android.text.SpannedString
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.R
 import one.mixin.android.extension.buildAmountSymbol
@@ -17,7 +18,10 @@ import java.math.BigDecimal
 data class Web3TransactionItem(
     @ColumnInfo(name = "transaction_id")
     val transactionId: String,
-    
+
+    @ColumnInfo(name = "transaction_type")
+    val transactionType: String,
+
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String,
     

@@ -64,7 +64,8 @@ class Web3TokenFilterBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             Web3TokenFilterType.ALL -> binding.allIv.visibility = View.VISIBLE
             Web3TokenFilterType.SEND -> binding.sendIv.visibility = View.VISIBLE
             Web3TokenFilterType.RECEIVE -> binding.receiveIv.visibility = View.VISIBLE
-            Web3TokenFilterType.Contract -> binding.receiveIv.visibility = View.VISIBLE
+            Web3TokenFilterType.CONTRACT -> binding.receiveIv.visibility = View.VISIBLE
+            else -> {}
         }
     }
 
