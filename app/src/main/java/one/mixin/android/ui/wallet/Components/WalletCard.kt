@@ -41,8 +41,8 @@ import java.math.BigDecimal
 fun WalletCard(
     balance: BigDecimal,
     assets: List<AssetDistribution>,
-    destination: WalletDestination,
-    onClick: () -> Unit
+    destination: WalletDestination?,
+    onClick: () -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -60,14 +60,14 @@ fun WalletCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    if (destination == WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
+                    if (destination == null) stringResource(R.string.Privacy_Wallet) else stringResource(
                         R.string.Classic_Wallet
                     ),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
                 )
-                if (destination == WalletDestination.Privacy) {
+                if (destination == null) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_wallet_privacy),
@@ -96,9 +96,9 @@ fun WalletCard(
             }
             Spacer(modifier = Modifier.height(8.dp))
             if (assets.isNotEmpty()) {
-                Distribution(assets)
+                Distribution(assets, destination = destination)
             } else {
-                if (destination == WalletDestination.Privacy) {
+                if (destination == null) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,

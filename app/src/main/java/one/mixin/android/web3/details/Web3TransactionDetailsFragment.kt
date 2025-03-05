@@ -54,6 +54,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHAIN
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
@@ -67,26 +68,15 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     companion object {
         const val TAG = "Web3TransactionDetailsFragment"
         const val ARGS_TOKEN = "args_token"
-        const val ARGS_TOKENS = "args_tokens"
-        const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
 
         fun newInstance(
             address: String,
-            chain: String,
             web3Token: Web3TokenItem,
-            tokens: List<Web3TokenItem>? = null
         ) =
             Web3TransactionDetailsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
-                putString(ARGS_CHAIN, chain)
                 putParcelable(ARGS_TOKEN, web3Token)
-                putParcelableArrayList(ARGS_TOKENS, arrayListOf<Web3TokenItem>().apply {
-                    add(web3Token)
-                    tokens?.let {
-                        addAll(tokens.filter { it != web3Token })
-                    }
-                })
             }
     }
 
@@ -104,14 +94,6 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
 
     private val address: String by lazy {
         requireNotNull(requireArguments().getString(ARGS_ADDRESS))
-    }
-
-    private val chain: String by lazy {
-        requireNotNull(requireArguments().getString(ARGS_CHAIN))
-    }
-
-    private val web3tokens by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, Web3TokenItem::class.java)!!
     }
 
     private val token: Web3TokenItem by lazy {
@@ -240,7 +222,11 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 sendReceiveView.swap.isVisible = token.isSolana()
                 sendReceiveView.swap.setOnClickListener {
                     AnalyticsTracker.trackSwapStart("solana", "solana")
-                    navTo(SwapFragment.newInstance<Web3TokenItem>(web3tokens), SwapFragment.TAG)
+                    lifecycleScope.launch {
+                        val tokens = web3ViewModel.findWeb3TokenItems()
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens), SwapFragment.TAG)
+                    }
+
                 }
                 transactionsTitleLl.setOnClickListener {
                     navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
@@ -337,7 +323,8 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
         navTo(
-            Web3TransactionFragment.newInstance(item, chain, token),
+            // Todo
+            Web3TransactionFragment.newInstance(item, ChainType.ethereum.name, token),
             Web3TransactionFragment.TAG
         )
     }

@@ -64,6 +64,7 @@ import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -121,14 +122,16 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.send.setOnClickListener {
                         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
                             setOnClickListener { token ->
-                                lifecycleScope.launch {
+                                this@ClassicWalletFragment.lifecycleScope.launch {
                                     val address =
+                                        // Todo
                                         if (token.chainId != "solana") {
                                             PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                                         } else {
                                             PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
                                         }
-                                    navTo(TransferDestinationInputFragment.newInstance(address, token, assets.find { it.chainId == token.chainId }), TransferDestinationInputFragment.TAG)
+                                    // Todo
+                                    this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, assets.find { it.chainId == token.chainId }), TransferDestinationInputFragment.TAG)
                                 }
                                 dismissNow()
                             }
@@ -405,7 +408,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
                 }
             // Todo
-            navTo(Web3TransactionDetailsFragment.newInstance(address, ChainType.ethereum.name, token, null), Web3TransactionDetailsFragment.TAG)
+            navTo(Web3TransactionDetailsFragment.newInstance(address, token), Web3TransactionDetailsFragment.TAG)
         }
     }
 }

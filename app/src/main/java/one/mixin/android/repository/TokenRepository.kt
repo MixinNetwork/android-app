@@ -1287,5 +1287,7 @@ class TokenRepository
 
     fun web3TokensFlow() = web3TokenDao.web3TokensFlow()
 
+    suspend fun findWeb3TokenItems(): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems()
+
     fun assetFlow() = tokenDao.assetFlow()
 }

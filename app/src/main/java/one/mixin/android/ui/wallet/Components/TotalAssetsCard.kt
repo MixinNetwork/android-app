@@ -54,6 +54,6 @@ fun TotalAssetsCard(
         Spacer(Modifier.height(17.dp))
         MultiColorProgressBar(combinedDistribution)
         Spacer(Modifier.height(12.dp))
-        Distribution(combinedDistribution)
+        Distribution(combinedDistribution, destination = null)
     }
 }

@@ -68,7 +68,6 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
     fun bind(token: Web3TokenItem) {
         binding.apply {
             avatar.bg.loadImage(token.iconUrl, holder = R.drawable.ic_avatar_place_holder)
-            // Todo
             avatar.badge.loadImage(token.chainIcon ?: "", holder = R.drawable.ic_avatar_place_holder)
 
             balance.text =

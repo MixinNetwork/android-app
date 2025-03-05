@@ -15,12 +15,9 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3ReceiveSelectionBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.exploreEvm
-import one.mixin.android.ui.home.exploreSolana
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
@@ -47,16 +44,18 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         binding.walletTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
         binding.walletRl.setOnClickListener {
             lifecycleScope.launch {
-                val address = getExploreAddress(requireContext())
+                // Todo
+                val address = "abc"
                 if (address.isEmpty()) {
                     return@launch
                 }
                 val chainIds =
-                    if (exploreSolana(requireContext())) {
-                        listOf(Constants.ChainId.SOLANA_CHAIN_ID)
-                    } else {
+                    // Todo
+                    // if (exploreSolana(requireContext())) {
+                    //     listOf(Constants.ChainId.SOLANA_CHAIN_ID)
+                    // } else {
                         Web3ChainIds
-                    }
+                    // }
                 val list = web3ViewModel.web3TokenItems(chainIds)
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
                     setOnClickListener { token ->
@@ -86,12 +85,3 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
     }
 }
 
-suspend fun getExploreAddress(context: Context): String {
-    return if (exploreEvm(context)) {
-        PropertyHelper.findValueByKey(Constants.Account.ChainAddress.EVM_ADDRESS, "")
-    } else if (exploreSolana(context)) {
-        PropertyHelper.findValueByKey(Constants.Account.ChainAddress.SOLANA_ADDRESS, "")
-    } else {
-        ""
-    }
-}

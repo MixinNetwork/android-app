@@ -87,7 +87,9 @@ internal constructor(
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
         web3Repository.updateTokenHidden(tokenId, walletId, hidden)
 
-    suspend fun  web3TokenItemByChainId(chainId: String) = web3Repository.web3TokenItemByChainId(chainId)
+    suspend fun  web3TokenItemByChainId(chainId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemByChainId(chainId)
+    }
 
     fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
@@ -190,6 +192,9 @@ internal constructor(
 
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
         tokenRepository.findTokenItems(ids)
+
+    suspend fun findWeb3TokenItems(): List<Web3TokenItem> =
+        tokenRepository.findWeb3TokenItems()
 
     suspend fun findTokensExtra(assetId: String) =
         withContext(Dispatchers.IO) {

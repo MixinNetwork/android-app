@@ -55,8 +55,6 @@ class Web3TokenHeader : ConstraintLayout {
     @SuppressLint("SetTextI18n")
     fun setToken(token: Web3TokenItem) {
         _binding.avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-        // Todo
-        // _binding.avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
         _binding.avatar.badge.loadImage(token.chainIcon ?: "", R.drawable.ic_avatar_place_holder)
         _binding.totalTv.text =
             try {

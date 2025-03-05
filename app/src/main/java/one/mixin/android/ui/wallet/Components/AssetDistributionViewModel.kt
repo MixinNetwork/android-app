@@ -75,11 +75,11 @@ class AssetDistributionViewModel @Inject constructor(
     
     val combinedAssetDistribution: Flow<List<AssetDistribution>> = tokenFlow.combine(web3TokenFlow) { tokens, web3Tokens ->
         val tokenValues = tokens.map { 
-            AssetValuePair(it.symbol, calculateTokenValue(it))
+            AssetValuePair(it.symbol, calculateTokenValue(it), it.iconUrl)
         }
         
         val web3TokenValues = web3Tokens.map { 
-            AssetValuePair(it.symbol, calculateWeb3TokenValue(it))
+            AssetValuePair(it.symbol, calculateWeb3TokenValue(it), it.iconUrl)
         }
         
         val allAssets = (tokenValues + web3TokenValues).sortedByDescending { it.value }
@@ -91,13 +91,13 @@ class AssetDistributionViewModel @Inject constructor(
             return@combine emptyList()
         }
         
-        val distributions = allAssets.map { (symbol, value) ->
+        val distributions = allAssets.map { (symbol, value, icon) ->
             val percentage = if (totalValue > BigDecimal.ZERO) {
                 value.divide(totalValue, 8, BigDecimal.ROUND_HALF_UP).toFloat()
             } else {
                 0f
             }
-            AssetDistribution(symbol, percentage)
+            AssetDistribution(symbol, percentage, icon)
         }
         
         if (distributions.size <= 3) {
@@ -105,7 +105,8 @@ class AssetDistributionViewModel @Inject constructor(
         } else {
             val top2 = distributions.take(2)
             val otherPercentage = 1f - top2.sumOf { it.percentage.toDouble() }.toFloat()
-            top2 + AssetDistribution("Other", otherPercentage)
+            // Todo
+            top2 + AssetDistribution("Other", otherPercentage, null)
         }
     }
     .stateIn(
@@ -114,7 +115,7 @@ class AssetDistributionViewModel @Inject constructor(
         initialValue = emptyList()
     )
     
-    private data class AssetValuePair(val symbol: String, val value: BigDecimal)
+    private data class AssetValuePair(val symbol: String, val value: BigDecimal, val icon: String?)
     
     private fun calculateTokenValue(token: TokenItem): BigDecimal {
         return try {
@@ -142,7 +143,12 @@ class AssetDistributionViewModel @Inject constructor(
                 is Web3Token -> token.symbol
                 else -> ""
             }
-            AssetValuePair(symbol, valueCalculator(token))
+            val icon = when (token) {
+                is TokenItem -> token.iconUrl
+                is Web3Token -> token.iconUrl
+                else -> ""
+            }
+            AssetValuePair(symbol, valueCalculator(token), icon)
         }.sortedByDescending { it.value }
         
         val totalValue = tokenValues.sumOf { it.value }
@@ -151,13 +157,13 @@ class AssetDistributionViewModel @Inject constructor(
             return emptyList()
         }
         
-        return tokenValues.map { (symbol, value) ->
+        return tokenValues.map { (symbol, value, icon) ->
             val percentage = if (totalValue > BigDecimal.ZERO) {
                 value.divide(totalValue, 4, BigDecimal.ROUND_HALF_UP).toFloat()
             } else {
                 0f
             }
-            AssetDistribution(symbol, percentage)
+            AssetDistribution(symbol, percentage, icon)
         }.take(3)
     }
 }

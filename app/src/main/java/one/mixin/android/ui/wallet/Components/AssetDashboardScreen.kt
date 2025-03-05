@@ -77,4 +77,5 @@ fun AssetDashboardScreen(
 data class AssetDistribution(
     val currency: String,
     val percentage: Float, // 0.0 - 1.0
+    val icon: String?,
 )

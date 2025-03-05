@@ -26,7 +26,6 @@ class RefreshWeb3Job : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
-        fetchChain()
         val wallets = web3WalletDao.getAllWallets()
         if (wallets.isEmpty()) {
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
@@ -44,13 +43,14 @@ class RefreshWeb3Job : BaseJob(
                 )
             )
         } else {
+            fetchChain()
             wallets.forEach { wallet ->
                 fetchWalletAssets(wallet)
             }
         }
         jobManager.addJobInBackground(RefreshWeb3TransactionJob())
     }
-    
+
     private suspend fun createWallet(category: String, addresses: List<Web3AddressRequest>) {
         val walletRequest = WalletRequest(
             name = category,
@@ -67,7 +67,7 @@ class RefreshWeb3Job : BaseJob(
                 if (wallet != null) {
                     web3WalletDao.insert(wallet)
                     Timber.d("Created $category wallet with ID: ${wallet.id}")
-
+                    fetchChain()
                     fetchWalletAddresses(wallet)
                     fetchWalletAssets(wallet)
                 } else {
@@ -111,7 +111,7 @@ class RefreshWeb3Job : BaseJob(
             defaultErrorHandle = {}
         )
     }
-    
+
     private suspend fun fetchWalletAssets(wallet: Web3Wallet) {
         requestRouteAPI(
             invokeNetwork = {
@@ -123,6 +123,7 @@ class RefreshWeb3Job : BaseJob(
                     Timber.d("Fetched ${assets.size} assets for wallet ${wallet.id}")
                     if (assets.isNotEmpty()) {
                         web3TokenDao.insertList(assets)
+                        fetchChain(assets.map { it.chainId }.distinct())
                         Timber.d("Inserted ${assets.size} tokens into database")
                     }
                 } else {
@@ -138,6 +139,35 @@ class RefreshWeb3Job : BaseJob(
             },
             defaultErrorHandle = {}
         )
+    }
+
+    private suspend fun fetchChain(chainIds: List<String>) {
+        chainIds.forEach { chainId ->
+            try {
+                val response = tokenService.getChainById(chainId)
+                if (response.isSuccess) {
+                    val chain = response.data
+                    if (chain != null) {
+                        web3ChainDao.insert(
+                            Web3Chain(
+                                chainId = chain.chainId,
+                                name = chain.name,
+                                symbol = chain.symbol,
+                                iconUrl = chain.iconUrl,
+                                threshold = chain.threshold,
+                            )
+                        )
+                        Timber.d("Successfully inserted ${chain?.name} chains into database")
+                    } else {
+                        Timber.d("No chains found")
+                    }
+                } else {
+                    Timber.e("Failed to fetch chains: ${response.errorCode} - ${response.errorDescription}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception occurred while fetching chains")
+            }
+        }
     }
 
     private suspend fun fetchChain() {
@@ -161,8 +191,6 @@ class RefreshWeb3Job : BaseJob(
                 } else {
                     Timber.d("No chains found")
                 }
-            } else {
-                Timber.e("Failed to fetch chains: ${response.errorCode} - ${response.errorDescription}")
             }
         } catch (e: Exception) {
             Timber.e(e, "Exception occurred while fetching chains")
