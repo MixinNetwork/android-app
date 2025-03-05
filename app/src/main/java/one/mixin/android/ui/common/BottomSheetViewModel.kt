@@ -809,8 +809,8 @@ class BottomSheetViewModel
                         // Refresh when there is an undetermined UTXO
                         jobManager.addJobInBackground(SyncOutputJob())
                     }
-                    if (anyNotConfirmed) return ""
-                    else return null
+                    return if (anyNotConfirmed) ""
+                    else null
                 }
             }
 

@@ -37,7 +37,7 @@ class TransferAssetChangeItem : LinearLayout {
             title.text = context.getString(titleRes).uppercase()
             assetContainer.removeAllViews()
             amounts.forEachWithIndex { index, amount ->
-                val token = tokens[index]
+                val token = tokens.getOrNull(index) ?: return
                 val item = AssetChangeItem(context)
                 item.setContent(amount, token)
                 assetContainer.addView(item, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
