@@ -7,6 +7,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
@@ -110,6 +111,15 @@ class WalletActivity : BlazeBaseActivity() {
                 val address = requireNotNull(intent.getStringExtra(ADDRESS)) { "required address can not be null" }
                 navController.setGraph(navGraph, Bundle().apply { putString(ADDRESS, address) })
             }
+            Destination.Web3Transactions -> {
+                navGraph.setStartDestination(R.id.web3_transactions_fragment)
+                val web3Token = requireNotNull(intent.getParcelableExtraCompat(WEB3_TOKEN, Web3TokenItem::class.java)) { "required web3 token can not be null" }
+                val address = requireNotNull(intent.getStringExtra(ADDRESS)) { "required address can not be null" }
+                navController.setGraph(navGraph, Bundle().apply {
+                    putParcelable("args_token", web3Token)
+                    putString("args_address", address)
+                })
+            }
         }
     }
 
@@ -127,6 +137,7 @@ class WalletActivity : BlazeBaseActivity() {
         Buy,
         Market,
         Address,
+        Web3Transactions,
     }
 
     companion object {
@@ -135,6 +146,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val BUY = "buy"
         const val ARGS_ROUTE_PROFILE = "args_route_profile"
         const val ADDRESS = "address"
+        const val WEB3_TOKEN = "web3_token"
 
         fun showWithToken(
             activity: Activity,
@@ -197,6 +209,21 @@ class WalletActivity : BlazeBaseActivity() {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
+                    putExtra(ADDRESS, address)
+                },
+            )
+        }
+
+        fun showWithWeb3Token(
+            activity: Activity,
+            web3Token: Web3TokenItem,
+            address: String,
+            destination: Destination,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, destination)
+                    putExtra(WEB3_TOKEN, web3Token)
                     putExtra(ADDRESS, address)
                 },
             )

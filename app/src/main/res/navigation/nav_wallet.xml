@@ -272,6 +272,13 @@
         android:name="one.mixin.android.ui.wallet.WalletSearchWeb3Fragment"
         tools:layout="@layout/fragment_wallet_search">
 
+        <action
+            android:id="@+id/action_wallet_search_web3_to_web3_transactions"
+            app:destination="@id/web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
     </fragment>
 
     <fragment
@@ -417,6 +424,28 @@
         <argument
             android:name="address"
             app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/web3_transactions_fragment"
+        android:name="one.mixin.android.web3.details.Web3TransactionsFragment"
+        tools:layout="@layout/fragment_web3_transactions">
+
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
+
+        <argument
+            android:name="args_address"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_web3_transactions_to_market_details"
+            app:destination="@id/market_fragment_details"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
     </fragment>
 
 </navigation>

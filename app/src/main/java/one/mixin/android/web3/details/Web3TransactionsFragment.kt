@@ -29,6 +29,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -39,6 +40,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
@@ -50,14 +52,18 @@ import one.mixin.android.ui.home.web3.stake.StakeFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -95,7 +101,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     }
 
     private val token: Web3TokenItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)!!
+        requireNotNull(requireArguments().getParcelable<Web3TokenItem>(ARGS_TOKEN) ?: requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java))
     }
 
     override fun onViewCreated(
@@ -180,6 +186,28 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 }
                 transactionsTitleLl.setOnClickListener {
                     navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+                }
+                marketRl.setOnClickListener {
+                    lifecycleScope.launch {
+                        var market = web3ViewModel.findMarketItemByAssetId(token.assetId)
+                        if (market == null) {
+                            jobManager.addJobInBackground(RefreshMarketJob(token.assetId))
+                            market = MarketItem(
+                                "", token.name, token.symbol, token.iconUrl, token.priceUsd,
+                                "", "", "", "", "", runCatching {
+                                    (BigDecimal(token.priceUsd) * BigDecimal(token.changeUsd)).toPlainString()
+                                }.getOrNull() ?: "0", "", token.changeUsd, "", "", "", "", "", "", "", "", "",
+                                "", "", "", "", listOf(token.assetId), "", "", null
+                            )
+                        }
+                        view.navigate(
+                            R.id.action_web3_transactions_to_market_details,
+                            Bundle().apply {
+                                putParcelable(ARGS_MARKET, market)
+                                putString(ARGS_ASSET_ID, token.assetId)
+                            },
+                        )
+                    }
                 }
                 marketView.setContent {
                     Market(token.assetId)

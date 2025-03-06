@@ -33,7 +33,7 @@ class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHold
 
                 val balance = runCatching { BigDecimal(token.balance) }.getOrDefault(BigDecimal.ZERO)
                 
-                balanceTv.text = balance.numberFormat8()
+                balanceTv.text = "${balance.numberFormat8()} ${token.symbol}"
                 if (token.priceUsd != "0") {
                     priceTv.text = "$${token.fiat().numberFormat2()}"
                 } else {

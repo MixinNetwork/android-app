@@ -79,6 +79,8 @@ internal constructor(
 ) : ViewModel() {
     suspend fun insertWeb3Tokens(list: List<Web3Token>) = web3Repository.insertWeb3Tokens(list)
 
+    suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
+
     fun web3Tokens() = web3Repository.web3Tokens()
 
     fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()

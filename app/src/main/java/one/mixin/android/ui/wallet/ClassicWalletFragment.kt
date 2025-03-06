@@ -419,10 +419,14 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             } else {
                 getSolanaAddressForWallet(walletId)
             }
-            if (address != null) {navTo(
-                Web3TransactionsFragment.newInstance(address, token),
-                Web3TransactionsFragment.TAG
-            )}
+            if (address != null) {
+                WalletActivity.showWithWeb3Token(
+                    requireActivity(),
+                    token,
+                    address,
+                    WalletActivity.Destination.Web3Transactions
+                )
+            }
         }
     }
     
