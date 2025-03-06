@@ -95,6 +95,7 @@ import java.math.RoundingMode
 fun SwapPage(
     from: SwapToken?,
     to: SwapToken?,
+    inMixin: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
@@ -181,6 +182,7 @@ fun SwapPage(
 
     PageScaffold(
         title = stringResource(id = R.string.Swap),
+        subtitle = stringResource(if (!inMixin) R.string.Classic_Wallet else R.string.Privacy_Wallet),
         verticalScrollable = true,
         pop = pop,
         actions = {
