@@ -26,6 +26,7 @@ class RefreshWeb3Job : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
+        fetchWallets()
         val wallets = web3WalletDao.getAllWallets()
         if (wallets.isEmpty()) {
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
@@ -103,6 +104,28 @@ class RefreshWeb3Job : BaseJob(
             },
             failureBlock = { response ->
                 Timber.e("Failed to fetch addresses for wallet ${wallet.id}: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            },
+            defaultErrorHandle = {}
+        )
+    }
+
+    private suspend fun fetchWallets() {
+        requestRouteAPI(
+            invokeNetwork = {
+                routeService.getWallets()
+            },
+            successBlock = { response ->
+                val wallets = response.data
+                wallets?.let {
+                    web3WalletDao.insertList(it)
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to fetch wallets ${response.errorCode} - ${response.errorDescription}")
                 false
             },
             requestSession = {
