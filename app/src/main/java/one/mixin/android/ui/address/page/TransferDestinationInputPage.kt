@@ -244,10 +244,7 @@ fun TransferDestinationInputPage(
                             if (account.isBlank().not()) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    stringResource(
-                                        R.string.Web3_Account,
-                                        token?.chainName ?: ""
-                                    ),
+                                    stringResource(R.string.Classic_Wallet),
                                     stringResource(
                                         R.string.Send_to_web3_wallet_description,
                                         token?.chainName ?: ""
@@ -271,7 +268,7 @@ fun TransferDestinationInputPage(
                             if (web3Token != null) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    R.string.Mixin_Wallet,
+                                    R.string.Privacy_Wallet,
                                     R.string.Send_to_Contact_description,
                                     onClick = {
                                         toWallet.invoke()

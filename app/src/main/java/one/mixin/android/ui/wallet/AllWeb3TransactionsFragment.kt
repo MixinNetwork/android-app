@@ -29,6 +29,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
@@ -145,7 +146,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             }
             loadFilter()
         }
-        refreshAllPendingDeposit()
+        jobManager.addJobInBackground(RefreshWeb3TransactionJob())
     }
 
     private fun loadFilter() {
@@ -172,35 +173,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         // Do noting
     }
 
-    private fun refreshAllPendingDeposit() =
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = { walletViewModel.allPendingDeposit() },
-                exceptionBlock = { e ->
-                    reportException(e)
-                    false
-                },
-                successBlock = {
-                    val pendingDeposits = it.data
-                    if (pendingDeposits.isNullOrEmpty()) {
-                        walletViewModel.clearAllPendingDeposits()
-                        return@handleMixinResponse
-                    }
-                    val destinationTags = walletViewModel.findDepositEntryDestinations()
-                    pendingDeposits
-                        .filter { pd ->
-                            destinationTags.any { dt ->
-                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
-                            }
-                        }
-                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
-                            lifecycleScope.launch {
-                                walletViewModel.insertPendingDeposit(snapshots)
-                            }
-                        }
-                },
-            )
-        }
 
     private fun bindLiveData() {
         bindLiveData(walletViewModel.allWeb3Transaction(initialLoadKey = initialLoadKey, filterParams))
