@@ -335,7 +335,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     ) {
         val list =
             r.asSequence().filter {
-                BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0
+                (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).compareTo(BigDecimal.ZERO) != 0
             }.map {
                 val p = it.fiat().calcPercent(totalUSD)
                 PercentView.PercentItem(it.symbol, p)
