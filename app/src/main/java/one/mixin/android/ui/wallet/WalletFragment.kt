@@ -193,6 +193,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         closeMenu()
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden) {
+            if (classicWalletFragment.isVisible) classicWalletFragment.update()
+        }
+    }
+
     private fun closeMenu() {
         val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
         val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2

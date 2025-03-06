@@ -42,6 +42,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
+import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -110,6 +111,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
+        refreshToken(token.walletId, token.assetId)
         binding.titleView.apply {
             titleTv.setTextOnly(token.name)
             leftIb.setOnClickListener {
@@ -357,6 +359,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 }
             }
         }
+    }
+
+    private fun refreshToken(walletId: String, assetId: String) {
+        jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId, assetId))
     }
 
     override fun <T> onNormalItemClick(item: T) {

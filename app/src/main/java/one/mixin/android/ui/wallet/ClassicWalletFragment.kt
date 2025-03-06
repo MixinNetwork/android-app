@@ -100,7 +100,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshWeb3Job())
-        jobManager.addJobInBackground(RefreshWeb3TransactionJob())
     }
 
     override fun onCreateView(
@@ -242,6 +241,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             .subscribe { _ ->
                 assetsAdapter.notifyDataSetChanged()
             }
+    }
+
+    fun update() {
+        jobManager.addJobInBackground(RefreshWeb3TransactionJob())
     }
 
     override fun onStop() {
