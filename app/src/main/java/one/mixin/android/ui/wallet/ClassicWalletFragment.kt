@@ -61,8 +61,8 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
-import one.mixin.android.web3.details.Web3TransactionDetailsFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
+import one.mixin.android.web3.details.Web3TransactionsFragment
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
@@ -95,27 +95,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var snackBar: Snackbar? = null
     private var lastFiatCurrency :String? = null
 
-    private var pendingWalletId: String? = null
     var walletId: String = ""
-        set(value) {
-            field = value
-            pendingWalletId = value
-            loadWalletAddressesIfReady()
-        }
-    private var walletAddresses: List<Web3Address> = emptyList()
-
-    private fun loadWalletAddressesIfReady() {
-        val walletIdToLoad = pendingWalletId ?: return
-        if (walletIdToLoad.isEmpty()) return
-        
-        if (isAdded) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                walletAddresses = web3ViewModel.getAddressesByWalletId(walletIdToLoad)
-                Timber.d("Loaded ${walletAddresses.size} addresses for wallet $walletIdToLoad")
-                pendingWalletId = null
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,7 +151,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
-                        navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = assets), SwapFragment.TAG)
                         sendReceiveView.badge.isVisible = false
                         defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
@@ -415,14 +395,15 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private fun showReceiveAssetList() {
         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
             setOnClickListener { token ->
-                lifecycleScope.launch {
+                this@ClassicWalletFragment.lifecycleScope.launch {
                     val address = if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
                         getEvmAddressForWallet(walletId)
                     } else {
                         getSolanaAddressForWallet(walletId)
                     }
+                    Timber.e("add $address ${token.chainId}")
                     if (address != null) {
-                        WalletActivity.showWithAddress(requireActivity(), address, WalletActivity.Destination.Address)
+                        WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address, WalletActivity.Destination.Address)
                     }
                 }
                 dismissNow()
@@ -439,28 +420,30 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 getSolanaAddressForWallet(walletId)
             }
             if (address != null) {navTo(
-                Web3TransactionDetailsFragment.newInstance(address, token),
-                Web3TransactionDetailsFragment.TAG
+                Web3TransactionsFragment.newInstance(address, token),
+                Web3TransactionsFragment.TAG
             )}
         }
     }
     
     private suspend fun getEvmAddressForWallet(walletId: String): String? {
-        if (walletId.isEmpty() || walletAddresses.isEmpty()) return null
+        if (walletId.isEmpty()) return null
         
-        val evmAddresses = walletAddresses.filter { it.isEvmAddress("0x") }
+        val addresses = web3ViewModel.getAddressesByWalletId(walletId)
+        if (addresses.isEmpty()) return null
+        
+        val evmAddresses = addresses.filter { it.isEvmAddress() }
         return evmAddresses.firstOrNull()?.destination
     }
     
     private suspend fun getSolanaAddressForWallet(walletId: String): String? {
-        if (walletId.isEmpty() || walletAddresses.isEmpty()) return null
+        if (walletId.isEmpty()) return null
         
-        val solanaAddresses = walletAddresses.filter { !it.isEvmAddress("0x") }
+        val addresses = web3ViewModel.getAddressesByWalletId(walletId)
+        if (addresses.isEmpty()) return null
+        
+        val solanaAddresses = addresses.filter { !it.isEvmAddress() }
         return solanaAddresses.firstOrNull()?.destination
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        loadWalletAddressesIfReady()
-    }
 }

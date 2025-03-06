@@ -5,11 +5,10 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
+import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary

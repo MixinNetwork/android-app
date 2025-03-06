@@ -13,21 +13,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
+import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.db.web3.vo.solLamportToAmount
-import one.mixin.android.databinding.FragmentWeb3TransactionDetailsBinding
-import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -39,7 +37,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPriceJob
-import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -49,25 +46,22 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
-import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.ChainType
-import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHAIN
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_transaction_details), OnSnapshotListener {
+class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transactions), OnSnapshotListener {
     companion object {
-        const val TAG = "Web3TransactionDetailsFragment"
+        const val TAG = "Web3TransactionsFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_ADDRESS = "args_address"
 
@@ -75,13 +69,13 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             address: String,
             web3Token: Web3TokenItem,
         ) =
-            Web3TransactionDetailsFragment().withArgs {
+            Web3TransactionsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
                 putParcelable(ARGS_TOKEN, web3Token)
             }
     }
 
-    private val binding by viewBinding(FragmentWeb3TransactionDetailsBinding::bind)
+    private val binding by viewBinding(FragmentWeb3TransactionsBinding::bind)
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private var _bottomBinding: ViewWalletWeb3TokenBottomBinding? = null
@@ -131,17 +125,16 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         if (token.isSolana()) {
                             context?.openUrl("https://solscan.io/token/" + token.assetKey)
                         } else {
-                            // TODO more evm
                             context?.openUrl("https://etherscan.io/token/" + token.assetKey)
                         }
                         bottomSheet.dismiss()
                     }
                     stakeSolTv.isVisible = token.isSolToken()
                     stakeSolTv.setOnClickListener {
-                        this@Web3TransactionDetailsFragment.navTo(
+                        this@Web3TransactionsFragment.navTo(
                             ValidatorsFragment.newInstance().apply {
                                 setOnSelect { v ->
-                                    this@Web3TransactionDetailsFragment.navTo(
+                                    this@Web3TransactionsFragment.navTo(
                                         StakeFragment.newInstance(
                                             v,
                                             token.balance
@@ -191,7 +184,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                         getStakeAccounts(address)
                     }
                 }
-                transactionsRv.listener = this@Web3TransactionDetailsFragment
+                transactionsRv.listener = this@Web3TransactionsFragment
                 bottomCard.post {
                     bottomCard.isVisible = true
                     val remainingHeight =
@@ -244,7 +237,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             binding.transactionsRv.list = list
         }
 
-        updateHeader(token) //todo Live data
+        updateHeader(token)
     }
 
 
@@ -314,7 +307,6 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 amountTv.text = "${stakeAccountSummary.amount} SOL"
                 countTv.text = "${stakeAccountSummary.count} account"
                 stakeRl.setOnClickListener {
-                    // onClickAction?.invoke(stakeRl.id)
                 }
             }
         }
@@ -329,7 +321,6 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     }
 
     override fun onUserClick(userId: String) {
-        // Do nothing
     }
 
     override fun onMoreClick() {

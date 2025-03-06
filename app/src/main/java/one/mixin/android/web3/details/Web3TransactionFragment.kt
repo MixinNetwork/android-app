@@ -5,19 +5,15 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.RxBus
+import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat2
@@ -26,11 +22,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.safe.SafeSnapshotType
-import one.mixin.android.web3.details.Web3TransactionDetailsFragment.Companion.ARGS_TOKEN
-import timber.log.Timber
+import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import java.math.BigDecimal
-import java.util.Locale
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {

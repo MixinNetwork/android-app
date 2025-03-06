@@ -23,8 +23,8 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.details.Web3TransactionDetailsFragment
 import one.mixin.android.web3.ChainType
+import one.mixin.android.web3.details.Web3TransactionsFragment
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -125,11 +125,11 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
     override fun <T> onNormalItemClick(item: T) {
         val token = item as Web3TokenItem
         lifecycleScope.launch {
-            // navTo(Web3TransactionDetailsFragment.newInstance(
+            // navTo(Web3TransactionsFragment.newInstance(
             //     address = "",
             //     chain = ChainType.ethereum.name,
             //     token = token,
-            // ), Web3TransactionDetailsFragment.TAG)
+            // ), Web3TransactionsFragment.TAG)
         }
     }
 }
