@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +32,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
@@ -52,6 +54,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -59,7 +62,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.details.Web3TransactionDetailsFragment
-import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -93,7 +95,27 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var snackBar: Snackbar? = null
     private var lastFiatCurrency :String? = null
 
+    private var pendingWalletId: String? = null
     var walletId: String = ""
+        set(value) {
+            field = value
+            pendingWalletId = value
+            loadWalletAddressesIfReady()
+        }
+    private var walletAddresses: List<Web3Address> = emptyList()
+
+    private fun loadWalletAddressesIfReady() {
+        val walletIdToLoad = pendingWalletId ?: return
+        if (walletIdToLoad.isEmpty()) return
+        
+        if (isAdded) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                walletAddresses = web3ViewModel.getAddressesByWalletId(walletIdToLoad)
+                Timber.d("Loaded ${walletAddresses.size} addresses for wallet $walletIdToLoad")
+                pendingWalletId = null
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,15 +145,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
                             setOnClickListener { token ->
                                 this@ClassicWalletFragment.lifecycleScope.launch {
-                                    val address =
-                                        // Todo
-                                        if (token.chainId != "solana") {
-                                            PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                                        } else {
-                                            PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-                                        }
-                                    // Todo
-                                    this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, assets.find { it.chainId == token.chainId }), TransferDestinationInputFragment.TAG)
+                                    val address = if (token.chainId != "solana") {
+                                        getEvmAddressForWallet(walletId)
+                                    } else {
+                                        getSolanaAddressForWallet(walletId)
+                                    }
+                                    if (address != null)  this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, assets.find { it.chainId == token.chainId }), TransferDestinationInputFragment.TAG)
                                 }
                                 dismissNow()
                             }
@@ -394,21 +413,54 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun showReceiveAssetList() {
-        navTo(Web3ReceiveSelectionFragment(), Web3ReceiveSelectionFragment.TAG)
+        Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
+            setOnClickListener { token ->
+                lifecycleScope.launch {
+                    val address = if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
+                        getEvmAddressForWallet(walletId)
+                    } else {
+                        getSolanaAddressForWallet(walletId)
+                    }
+                    if (address != null) {
+                        WalletActivity.showWithAddress(requireActivity(), address, WalletActivity.Destination.Address)
+                    }
+                }
+                dismissNow()
+            }
+        }.show(parentFragmentManager, Web3TokenListBottomSheetDialogFragment.TAG)
     }
 
     override fun <T> onNormalItemClick(item: T) {
         val token = item as Web3TokenItem
-        // Todo
         lifecycleScope.launch {
-            val address =
-                if (token.chainId != "solana") {
-                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                } else {
-                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-                }
-            // Todo
-            navTo(Web3TransactionDetailsFragment.newInstance(address, token), Web3TransactionDetailsFragment.TAG)
+            val address = if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
+                getEvmAddressForWallet(walletId)
+            } else {
+                getSolanaAddressForWallet(walletId)
+            }
+            if (address != null) {navTo(
+                Web3TransactionDetailsFragment.newInstance(address, token),
+                Web3TransactionDetailsFragment.TAG
+            )}
         }
+    }
+    
+    private suspend fun getEvmAddressForWallet(walletId: String): String? {
+        if (walletId.isEmpty() || walletAddresses.isEmpty()) return null
+        
+        val evmAddresses = walletAddresses.filter { it.isEvmAddress("0x") }
+        return evmAddresses.firstOrNull()?.destination
+    }
+    
+    private suspend fun getSolanaAddressForWallet(walletId: String): String? {
+        if (walletId.isEmpty() || walletAddresses.isEmpty()) return null
+        
+        val solanaAddresses = walletAddresses.filter { !it.isEvmAddress("0x") }
+        return solanaAddresses.firstOrNull()?.destination
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        loadWalletAddressesIfReady()
     }
 }

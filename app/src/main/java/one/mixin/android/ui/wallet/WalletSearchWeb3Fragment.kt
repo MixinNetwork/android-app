@@ -165,9 +165,8 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 val localTokens = withContext(Dispatchers.IO) {
                     viewModel.web3Tokens().value?.filter { token ->
                         token.name.contains(query, ignoreCase = true) ||
-                            token.symbol.contains(query, ignoreCase = true)
-                            // todo
-                            // || token.chainName.contains(query, ignoreCase = true)
+                            token.symbol.contains(query, ignoreCase = true) ||
+                                token.chainName?.contains(query, ignoreCase = true) == true
                     } ?: emptyList()
                 }
 

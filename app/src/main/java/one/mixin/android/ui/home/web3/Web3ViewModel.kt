@@ -18,6 +18,7 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.service.Web3Service
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
@@ -411,8 +412,13 @@ internal constructor(
         tag: String?,
         amount: String,
         assetId: String,
-    ) =
+    ) = withContext(Dispatchers.IO) {
         tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+    }
+
+    suspend fun getAddressesByWalletId(walletId: String): List<Web3Address> {
+        return web3Repository.getAddressesByWalletId(walletId)
+    }
 
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 

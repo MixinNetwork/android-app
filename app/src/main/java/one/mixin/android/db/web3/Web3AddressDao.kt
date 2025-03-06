@@ -10,4 +10,7 @@ interface Web3AddressDao : BaseDao<Web3Address> {
 
     @Query("SELECT destination FROM addresses")
     suspend fun getAddressIds(): List<String>
+    
+    @Query("SELECT * FROM addresses WHERE wallet_id = :walletId")
+    suspend fun getAddressesByWalletId(walletId: String): List<Web3Address>
 }

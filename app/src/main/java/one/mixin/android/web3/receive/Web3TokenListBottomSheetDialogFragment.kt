@@ -6,7 +6,6 @@ import android.text.Editable
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -37,7 +36,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private val tokens by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, Web3TokenItem::class.java)
     }
-
+    
     private val adapter by lazy {
         Web3TokenAdapter()
     }
@@ -70,7 +69,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
                 dismiss()
             }
             searchEt.listener =

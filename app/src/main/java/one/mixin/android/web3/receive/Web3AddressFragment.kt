@@ -1,4 +1,3 @@
-
 package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
@@ -29,12 +28,27 @@ import one.mixin.android.ui.common.BaseFragment
 class Web3AddressFragment : BaseFragment() {
     companion object {
         const val TAG = "Web3ReceiveFragment"
+        
+        fun newInstance(address: String): Web3AddressFragment {
+            val fragment = Web3AddressFragment()
+            val args = Bundle().apply {
+                putString("address", address)
+            }
+            fragment.arguments = args
+            return fragment
+        }
     }
 
     private var _binding: FragmentWeb3AddressBinding? = null
     private val binding get() = requireNotNull(_binding)
+    private lateinit var address: String
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        address = arguments?.getString("address") ?: ""
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +60,6 @@ class Web3AddressFragment : BaseFragment() {
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         lifecycleScope.launch {
-            val address = "" // Todo
             binding.copy.setOnClickListener {
                 context?.heavyClickVibrate()
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
@@ -55,8 +68,7 @@ class Web3AddressFragment : BaseFragment() {
             binding.address.text = address
             val qr = this@Web3AddressFragment.binding.qr
             val qrAvatar = this@Web3AddressFragment.binding.qrAvatar
-            // todo
-            val isSolana = false
+            val isSolana = !address.startsWith("0x")
             if (isSolana) {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_sol)
                 binding.avatar1.setImageResource(R.drawable.ic_web3_chain_sol)

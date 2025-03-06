@@ -105,6 +105,11 @@ class WalletActivity : BlazeBaseActivity() {
                     }
                 })
             }
+            Destination.Address -> {
+                navGraph.setStartDestination(R.id.web3_address_fragment)
+                val address = requireNotNull(intent.getStringExtra(ADDRESS)) { "required address can not be null" }
+                navController.setGraph(navGraph, Bundle().apply { putString(ADDRESS, address) })
+            }
         }
     }
 
@@ -121,6 +126,7 @@ class WalletActivity : BlazeBaseActivity() {
         Deposit,
         Buy,
         Market,
+        Address,
     }
 
     companion object {
@@ -128,6 +134,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val ASSET = "ASSET"
         const val BUY = "buy"
         const val ARGS_ROUTE_PROFILE = "args_route_profile"
+        const val ADDRESS = "address"
 
         fun showWithToken(
             activity: Activity,
@@ -178,6 +185,19 @@ class WalletActivity : BlazeBaseActivity() {
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ARGS_MARKET, marketItem)
+                },
+            )
+        }
+
+        fun showWithAddress(
+            activity: Activity,
+            address: String,
+            destination: Destination,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, destination)
+                    putExtra(ADDRESS, address)
                 },
             )
         }

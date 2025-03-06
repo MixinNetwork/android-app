@@ -116,30 +116,5 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private fun tokenClick(transaction: Web3TransactionItem) {
-        lifecycleScope.launch {
-            // transaction.event?.let { event ->
-                // Todo
-                // if (event.address == token.assetKey) {
-                //     requireActivity().onBackPressedDispatcher.onBackPressed()
-                //     return@launch
-                // }
-                // val dialog =
-                    // indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                    //     setCancelable(false)
-                    // }
-
-                // try {
-                //     web3ViewModel.web3Token(
-                //         chain, event.chainId, event.address
-                //     ) ?: return@launch
-                //     dialog.dismiss()
-                //     RxBus.publish(event)
-                // } catch (e: Exception) {
-                //     Timber.e(e)
-                //     dialog.dismiss()
-                //     return@launch
-                // }
-            // }
-        }
     }
 }

@@ -409,4 +409,14 @@
             app:argType="one.mixin.android.vo.User" />
     </fragment>
 
+    <fragment
+        android:id="@+id/web3_address_fragment"
+        android:name="one.mixin.android.web3.receive.Web3AddressFragment"
+        tools:layout="@layout/fragment_web3_address">
+
+        <argument
+            android:name="address"
+            app:argType="string" />
+    </fragment>
+
 </navigation>

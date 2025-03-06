@@ -66,7 +66,6 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.receive.Web3AddressFragment
-import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 import java.math.BigDecimal
@@ -246,7 +245,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         token?.iconUrl ?: web3Token!!.iconUrl
     }
     private val tokenChainIconUrl by lazy {
-        // todo web3Token!!.chainIconUrl
         token?.chainIconUrl ?: web3Token?.chainIcon ?: ""
     }
     private val tokenBalance by lazy {
@@ -959,9 +957,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     override fun onDismiss(success: Boolean) {
                         if (success) {
                             parentFragmentManager.apply {
-                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
-                                    beginTransaction().remove(it).commit()
-                                }
                                 findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
                                     beginTransaction().remove(it).commit()
                                 }

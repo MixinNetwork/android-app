@@ -37,4 +37,8 @@ data class Web3Address(
     @SerializedName("created_at")
     val createdAt: String,
 
-) : Parcelable
+) : Parcelable {
+    fun isEvmAddress(): Boolean {
+        return destination.startsWith("0x")
+    }
+}

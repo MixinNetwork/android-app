@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -217,7 +218,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
                 }
                 sendReceiveView.receive.setOnClickListener {
-                    navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                    navTo(Web3AddressFragment.newInstance(address), Web3AddressFragment.TAG)
                 }
                 sendReceiveView.swap.isVisible = token.isSolana()
                 sendReceiveView.swap.setOnClickListener {
@@ -313,8 +314,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                 amountTv.text = "${stakeAccountSummary.amount} SOL"
                 countTv.text = "${stakeAccountSummary.count} account"
                 stakeRl.setOnClickListener {
-                    // Todo
-                    // onClickAction?.invoke(stake.stakeRl.id)
+                    // onClickAction?.invoke(stakeRl.id)
                 }
             }
         }
@@ -323,8 +323,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
         navTo(
-            // Todo
-            Web3TransactionFragment.newInstance(item, ChainType.ethereum.name, token),
+            Web3TransactionFragment.newInstance(item, if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name, token),
             Web3TransactionFragment.TAG
         )
     }
