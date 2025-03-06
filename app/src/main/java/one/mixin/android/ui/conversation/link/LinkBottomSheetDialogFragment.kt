@@ -100,6 +100,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
@@ -694,8 +695,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         showError(R.string.Data_error)
                     } else {
                         WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                        dismiss()
                     }
-                    dismiss()
                 }
             }
 
@@ -1018,6 +1019,13 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val input = uri.getQueryParameter("input")
         val output = uri.getQueryParameter("output")
         val amount = uri.getQueryParameter("amount")
+        if (output != null && output.isUUID()) {
+            checkToken(output)
+        }
+        if (input != null && input.isUUID()) {
+            checkToken(input)
+        }
+        AnalyticsTracker.trackSwapStart("mixin", "url")
         SwapActivity.show(requireContext(), input, output, amount)
         dismiss()
     }

@@ -34,10 +34,10 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="2dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
                     android:background="?attr/bg_market_card">
 
                     <RelativeLayout
@@ -53,7 +53,7 @@
                             android:layout_height="wrap_content">
 
                             <TextView
-                                android:id="@+id/asset_name"
+                                android:id="@+id/asset_symbol"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="14sp"
@@ -66,14 +66,14 @@
                                 android:textColor="?attr/text_assist"
                                 android:textSize="12sp"
                                 android:layout_marginStart="4dp"
-                                android:layout_toEndOf="@id/asset_name"
+                                android:layout_toEndOf="@id/asset_symbol"
                                 android:paddingStart="4dp"
                                 android:paddingEnd="4dp"
                                 android:paddingTop="1dp"
                                 android:paddingBottom="1dp"
                                 android:textFontWeight="500"
-                                android:layout_alignTop="@id/asset_name"
-                                android:layout_alignBottom="@id/asset_name"
+                                android:layout_alignTop="@id/asset_symbol"
+                                android:layout_alignBottom="@id/asset_symbol"
                                 android:background="@drawable/bg_rank_round_6dp" />
 
                             <one.mixin.android.widget.BadgeCircleImageView
@@ -87,7 +87,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="22sp"
-                                android:layout_below="@id/asset_name"
+                                android:layout_below="@id/asset_symbol"
                                 android:textFontWeight="600"
                                 android:layout_marginTop="8dp"
                                 android:textColor="?attr/text_minor"
@@ -102,7 +102,8 @@
                                 android:textFontWeight="600"
                                 android:textSize="14sp"
                                 android:text="0.00%"
-                                android:textColor="?attr/text_assist" />
+                                android:textColor="?attr/bg_white"
+                                android:background="@drawable/bg_text_quote_gray"/>
                         </RelativeLayout>
 
                         <androidx.compose.ui.platform.ComposeView
@@ -145,7 +146,7 @@
                             <androidx.appcompat.widget.AppCompatRadioButton
                                 android:id="@+id/radio_ytd"
                                 style="@style/AppTheme.RadioButtonDateStyle"
-                                android:text="YTD" />
+                                android:text="1Y" />
 
                             <androidx.appcompat.widget.AppCompatRadioButton
                                 android:id="@+id/radio_all"
@@ -170,10 +171,10 @@
                     android:id="@+id/state_fl"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="2dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
                     android:background="?attr/bg_market_card">
 
                     <RelativeLayout
@@ -181,7 +182,7 @@
                         android:layout_height="wrap_content">
 
                         <TextView
-                            android:id="@+id/stats"
+                            android:id="@+id/asset_name"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="?attr/text_minor"
@@ -189,23 +190,6 @@
                             android:layout_marginBottom="14dp"
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="20dp" />
-
-                        <TextView
-                            android:id="@+id/rank"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="?attr/text_assist"
-                            android:textSize="12sp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_alignParentEnd="true"
-                            android:paddingStart="4dp"
-                            android:paddingEnd="4dp"
-                            android:paddingTop="1dp"
-                            android:paddingBottom="1dp"
-                            android:textFontWeight="500"
-                            android:layout_alignTop="@id/stats"
-                            android:layout_alignBottom="@id/stats"
-                            android:background="@drawable/bg_rank_round_6dp" />
 
                         <TextView
                             android:id="@+id/market_vol_u_title"
@@ -216,7 +200,7 @@
                             android:textSize="12sp"
                             android:layout_alignParentEnd="true"
                             android:layout_marginEnd="16dp"
-                            android:layout_below="@id/stats" />
+                            android:layout_below="@id/asset_name" />
 
                         <TextView
                             android:id="@+id/market_vol_u"
@@ -240,7 +224,7 @@
                             android:textColor="?attr/text_remarks"
                             android:textSize="12sp"
                             android:layout_marginStart="16dp"
-                            android:layout_below="@id/stats" />
+                            android:layout_below="@id/asset_name" />
 
                         <TextView
                             android:id="@+id/market_cap_stats"
@@ -314,10 +298,10 @@
                 android:id="@+id/balance_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
                 <RelativeLayout
@@ -420,10 +404,10 @@
                 android:id="@+id/third_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="2dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
                 <LinearLayout

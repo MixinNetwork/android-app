@@ -24,14 +24,11 @@ object Constants {
     }
 
     object HelpLink {
-        const val CENTER = "https://mixinmessenger.zendesk.com"
-        const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
-        const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
-        const val DEPOSIT_NOT_SUPPORT = "https://mixinmessenger.zendesk.com/hc/en-us/articles/9954148870676"
         const val TIP = "https://tip.id"
         const val INSCRIPTION = "https://mixin.one/inscriptions/"
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
+        const val CUSTOMER_SERVICE = "https://go.crisp.chat/chat/embed/?website_id=52662bba-be49-4b06-9edc-7baa9a78f714"
     }
 
     object Tip {
@@ -41,8 +38,12 @@ object Constants {
         const val TIP_PRIV = "tip_priv"
         const val ALIAS_TIP_PRIV = "alias_tip_priv"
 
+        const val MNEMONIC = "mnemonic"
+
         const val SPEND_SALT = "spend_salt"
         const val ALIAS_SPEND_SALT = "alias_spend_salt"
+
+        const val ENCRYPTED_MNEMONIC = "encrypted_mnemonic"
     }
 
     object Account {
@@ -80,6 +81,7 @@ object Constants {
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
+        const val PREF_SWAP_LAST_SELECTED_PAIR = "pref_swap_last_selected_pair"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
         const val PREF_MARKET_TYPE = "pref_market_type"
         const val PREF_MARKET_ORDER = "pref_market_order"
@@ -87,7 +89,19 @@ object Constants {
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
         const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
         const val PREF_GLOBAL_MARKET = "pref_global_market"
+        const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
+
+        const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
+        const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
+        const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+
+        const val PREF_TO_SWAP = "pref_to_swap"
+        const val PREF_FROM_SWAP = "pref_from_swap"
+        const val PREF_TO_WEB3_SWAP = "pref_to_web3_swap"
+        const val PREF_FROM_WEB3_SWAP = "pref_from_web3_swap"
+        const val PREF_WALLET_SEND = "pref_wallet_send"
+        const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -154,7 +168,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 62
+        const val CURRENT_VERSION = 64
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -353,7 +367,10 @@ object Constants {
 
     const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 
-    const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
+    val SAFE_PUBLIC_KEY = listOf(
+        "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d",
+        "2dc073588908a02284197ad78fc863e83c760dabcd5d9a508e09a799ebc1ecb8"
+    )
 
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""

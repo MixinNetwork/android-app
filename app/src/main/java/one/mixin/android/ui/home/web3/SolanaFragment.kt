@@ -48,6 +48,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.ChainType
@@ -57,7 +58,7 @@ import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.web3.send.InputAddressFragment
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SpacesItemDecoration
 
@@ -91,6 +92,7 @@ class SolanaFragment : Web3Fragment() {
                     }
 
                     R.id.swap -> {
+                        AnalyticsTracker.trackSwapStart("solana", "solana")
                         navTo(SwapFragment.newInstance(tokens), SwapFragment.TAG)
                     }
 
@@ -129,7 +131,7 @@ class SolanaFragment : Web3Fragment() {
         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
             setOnClickListener { token ->
                 address?.let { add ->
-                    navTo(InputAddressFragment.newInstance(add, token, token.findChainToken(tokens)), InputAddressFragment.TAG)
+                    navTo(TransferDestinationInputFragment.newInstance(add, token, token.findChainToken(tokens)), TransferDestinationInputFragment.TAG)
                 }
                 dismissNow()
             }

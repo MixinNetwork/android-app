@@ -21,11 +21,14 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentTipBinding
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putLong
@@ -42,8 +45,10 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
@@ -383,6 +388,21 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val oldPin = tipBundle.oldPin
             Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
 
+            when(tipBundle.tipType) {
+                TipType.Change -> {
+                    AnalyticsTracker.trackLoginVerifyPin("change_pin")
+                }
+                TipType.Upgrade -> {
+                    AnalyticsTracker.trackLoginVerifyPin("upgrade_pin")
+                }
+                TipType.Create -> {
+                    AnalyticsTracker.trackSignUpSetPin()
+                }
+                else -> {
+                    // do noting
+                }
+            }
+
             tip.addObserver(tipObserver)
             when {
                 tipCounter < 1 ->
@@ -493,6 +513,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
         }
 
+        if (activity?.isTaskRoot == true) {
+            MainActivity.show(requireContext())
+        }
         activity?.finish()
     }
 
@@ -530,23 +553,28 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     updateTipStep(RetryRegister(null, errorInfo))
                     return@runCatching false
                 }
-            val (salt, saltBase64) = tip.generateSaltAndEncryptedSaltBase64(pin, seed)
-            val spendSeed = tip.getSpendPriv(salt, seed)
-            val keyPair = newKeyPairFromSeed(spendSeed)
-            val pkHex = keyPair.publicKey.toHex()
-            val selfId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val spendSeed = tip.getSpendPriv(requireContext(), seed)
+            val saltBase64 = tip.getEncryptSalt(this.requireContext(), pin, seed, Session.isAnonymous())
+            val spendKeyPair = newKeyPairFromSeed(spendSeed)
+            val selfAccountId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val edKey = tip.getMnemonicEdKey(requireContext(), pin, seed)
             val registerResp =
                 viewModel.registerPublicKey(
                     registerRequest =
                         RegisterRequest(
-                            publicKey = pkHex,
-                            signature = Session.getRegisterSignature(selfId, spendSeed),
-                            pin = viewModel.getEncryptedTipBody(selfId, pkHex, pin),
+                            publicKey = spendKeyPair.publicKey.toHex(),
+                            signature = Session.getRegisterSignature(selfAccountId, spendSeed),
+                            pin = viewModel.getEncryptedTipBody(selfAccountId, spendKeyPair.publicKey.toHex(), pin),
                             salt = saltBase64,
+                            masterPublicHex = edKey.publicKey.hexString(),
+                            masterSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString()
                         ),
                 )
             return@runCatching if (registerResp.isSuccess) {
                 Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
+                if (Session.hasPhone()) { // Only clear Phone user
+                    removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
+                }
                 true
             } else {
                 tipBundle.oldPin = null

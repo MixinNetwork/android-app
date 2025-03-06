@@ -27,6 +27,14 @@ data class Membership(
     fun isProsperity(): Boolean {
         return plan == Plan.PROSPERITY && Instant.now().isBefore(Instant.parse(expiredAt))
     }
+
+    override fun toString(): String {
+        return if (Instant.now().isBefore(Instant.parse(expiredAt))) {
+            plan.value
+        } else {
+            Plan.None.value
+        }
+    }
 }
 
 @DrawableRes

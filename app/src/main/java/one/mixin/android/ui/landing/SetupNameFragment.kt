@@ -19,12 +19,12 @@ import one.mixin.android.crypto.PrivacyPreference
 import one.mixin.android.databinding.FragmentSetupNameBinding
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
-import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
@@ -64,6 +64,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                                 ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                                 return@subscribe
                             }
+                            AnalyticsTracker.trackSignUpFullName()
                             r.data?.let { data ->
                                 Session.storeAccount(data)
                                 mobileViewModel.insertUser(data.toUser())
@@ -92,10 +93,10 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
             nameEt.addTextChangedListener(mWatcher)
             nameCover.isClickable = true
 
-            nameEt.post {
+            nameEt.postDelayed({
                 nameEt.requestFocus()
                 nameEt.showKeyboard()
-            }
+            }, 200)
         }
     }
 

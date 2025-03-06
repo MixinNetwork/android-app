@@ -16,7 +16,6 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder

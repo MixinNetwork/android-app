@@ -57,13 +57,15 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.uber.autodispose.autoDispose
@@ -86,6 +88,7 @@ import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copy
@@ -99,6 +102,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
+import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
@@ -151,6 +155,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.isFollowSystem
+import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -195,6 +200,7 @@ class WebFragment : BaseFragment() {
         const val ARGS_INDEX = "args_index"
         const val ARGS_SHAREABLE = "args_shareable"
         const val ARGS_SAVE_NAME = "args_save_name"
+        const val ARGS_INJECTABLE = "args_injectable"
         const val themeColorScript =
             """
             (function() {
@@ -228,6 +234,10 @@ class WebFragment : BaseFragment() {
     }
     private val shareable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHAREABLE, true)
+    }
+
+    private val injectable: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_INJECTABLE, true)
     }
 
     private var currentUrl: String? = null
@@ -309,7 +319,7 @@ class WebFragment : BaseFragment() {
 
                         if (isDetached) return@launch
                         if (result !is SuccessResult) return@launch
-                        val bitmap = (result.drawable as BitmapDrawable).bitmap
+                        val bitmap = result.image.toBitmap()
                         processor.detect(
                             lifecycleScope,
                             bitmap,
@@ -392,6 +402,15 @@ class WebFragment : BaseFragment() {
         binding.webLl.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         binding.webControl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             topMargin = requireContext().dpToPx(6f)
+        }
+        if (!injectable) {
+            binding.titleVa.displayedChild = 1
+            binding.webControl.isVisible = false
+            binding.webClose.isVisible = true
+        } else {
+            binding.titleVa.displayedChild = 0
+            binding.webControl.isVisible = true
+            binding.webClose.isVisible = false
         }
         registerForContextMenu(webView)
 
@@ -493,6 +512,9 @@ class WebFragment : BaseFragment() {
                     requireActivity().finish()
                 }
             }
+        binding.webClose.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.useWideViewPort = true
@@ -513,8 +535,10 @@ class WebFragment : BaseFragment() {
                 },
                 conversationId,
                 MixinApplication.appContext,
+                this,
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
+                injectable,
                 lifecycleScope,
                 { url ->
                     currentUrl = url
@@ -868,7 +892,7 @@ class WebFragment : BaseFragment() {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleLl.isGone = immersive
+            binding.titleVa.isGone = immersive
 
             webAppInterface =
                 WebAppInterface(
@@ -1629,7 +1653,7 @@ class WebFragment : BaseFragment() {
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
-        binding.titleLl.setBackgroundColor(color)
+        binding.titleVa.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
 
@@ -1638,8 +1662,10 @@ class WebFragment : BaseFragment() {
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
         private val context: Context,
+        private val fragment: Fragment,
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
+        private val inject: Boolean = true,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
@@ -1660,7 +1686,7 @@ class WebFragment : BaseFragment() {
             view ?: return
             view.clearCache(true)
             Timber.e("onPageStarted ${JsSigner.currentChain.name}")
-            if (!redirect) {
+            if (!redirect && inject) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
                 view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
             }
@@ -1692,13 +1718,20 @@ class WebFragment : BaseFragment() {
             loadingError = true
         }
 
+        @SuppressLint("WebViewClientOnReceivedSslError")
         override fun onReceivedSslError(
             view: WebView?,
             handler: SslErrorHandler?,
             error: SslError?,
         ) {
-            handler?.proceed()
-            Timber.e("${error?.toString()}")
+            error?.let { e ->
+                reportException(Exception("$e ${view?.url}"))
+            }
+            fragment.alert(context.getString(R.string.ssl_cert_invalid))
+                .setNegativeButton(R.string.OK) { dialog, _ ->
+                    handler?.cancel()
+                    dialog.dismiss()
+                }.show()
         }
 
         override fun onPageCommitVisible(
@@ -1734,7 +1767,7 @@ class WebFragment : BaseFragment() {
                 return true
             }
 
-            if (url.isMixinUrl()) {
+            if (url.isMixinUrl() || url.isExternalTransferUrl()) {
                 if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
                     return true
                 }

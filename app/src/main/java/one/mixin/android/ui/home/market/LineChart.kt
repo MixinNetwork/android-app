@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -28,17 +27,15 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mapbox.maps.extension.style.expressions.dsl.generated.max
-import com.mapbox.maps.extension.style.expressions.dsl.generated.mod
 import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.vo.Fiats
-import timber.log.Timber
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -88,17 +85,20 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
         val color = if (dataPointsData.last() >= dataPointsData.first()) {
             if (quoteColorPref) {
-                MixinAppTheme.colors.walletRed
+                MixinAppTheme.colors.marketRed
             } else {
-                MixinAppTheme.colors.walletGreen
+                MixinAppTheme.colors.marketGreen
             }
         } else {
             if (quoteColorPref) {
-                MixinAppTheme.colors.walletGreen
+                MixinAppTheme.colors.marketGreen
             } else {
-                MixinAppTheme.colors.walletRed
+                MixinAppTheme.colors.marketRed
             }
         }
+        val circleColor = MixinAppTheme.colors.background
+        val lineWidth = Dp(1.5f)
+
         Box(modifier = Modifier.fillMaxSize()) {
             Canvas(modifier = Modifier
                 .fillMaxSize()
@@ -174,28 +174,28 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
 
                 drawPath(
                     path = gradientPath, brush = Brush.verticalGradient(
-                        colors = listOf(color.copy(alpha = 0.4f), Color.Transparent), endY = size.height
+                        colors = listOf(color.copy(alpha = 0.7f), Color.Transparent), endY = size.height
                     )
                 )
 
                 drawPath(
-                    path = pathBefore, color = color, style = Stroke(width = 4f)
+                    path = pathBefore, color = color, style = Stroke(width = lineWidth.toPx())
                 )
 
                 if (index != -1) {
                     drawPath(
-                        path = pathAfter, color = Color(0xFFD9D9D9), style = Stroke(width = 4f)
+                        path = pathAfter, color = Color(0xFFD9D9D9), style = Stroke(width = lineWidth.toPx())
                     )
                 }
 
                 if (index != -1) {
                     val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
                     drawLine(
-                        color = textPrimary, start = Offset(index * spacing, 0f), end = Offset(index * spacing, size.height), strokeWidth = 2f, pathEffect = dashPathEffect
+                        color = textPrimary, start = Offset(index * spacing, 0f), end = Offset(index * spacing, size.height), strokeWidth = lineWidth.toPx(), pathEffect = dashPathEffect
                     )
 
                     drawLine(
-                        color = textPrimary, start = Offset(0f, size.height * dataPoints[0]), end = Offset(size.width, size.height * dataPoints[0]), strokeWidth = 2f, pathEffect = dashPathEffect
+                        color = textPrimary, start = Offset(0f, size.height * dataPoints[0]), end = Offset(size.width, size.height * dataPoints[0]), strokeWidth = lineWidth.toPx(), pathEffect = dashPathEffect
                     )
 
                     val circleCenter = Offset(
@@ -203,7 +203,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     )
 
                     drawCircle(
-                        color = Color.White, radius = 10f, center = circleCenter
+                        color = circleColor, radius = 10f, center = circleCenter
                     )
 
                     drawCircle(
@@ -221,7 +221,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
 
                     if (index != minIndex) {
                         drawCircle(
-                            color = Color.White, radius = 10f, center = minCircleCenter
+                            color = circleColor, radius = 10f, center = minCircleCenter
                         )
                         drawCircle(
                             color = color, radius = 8f, center = minCircleCenter
@@ -229,7 +229,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     }
                     if (index != maxIndex) {
                         drawCircle(
-                            color = Color.White, radius = 10f, center = maxCircleCenter
+                            color = circleColor, radius = 10f, center = maxCircleCenter
                         )
                         drawCircle(
                             color = color, radius = 8f, center = maxCircleCenter
@@ -370,7 +370,7 @@ private fun formatTimestamp(unix: Long, type: String?): String {
     return when (type) {
         "1D" -> SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
         "1W", "1M" -> SimpleDateFormat("M/d, HH:mm", Locale.getDefault()).format(date)
-        "YTD", "ALL" -> SimpleDateFormat("M/d, yyyy", Locale.getDefault()).format(date)
+        "1Y", "ALL" -> SimpleDateFormat("M/d, yyyy", Locale.getDefault()).format(date)
         else -> "Invalid type"
     }
 }

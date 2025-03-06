@@ -16,6 +16,7 @@ import android.view.animation.BounceInterpolator
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -74,14 +75,12 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment.PopupType
 import one.mixin.android.ui.search.SearchFragment
-import one.mixin.android.util.BulletinBoard
-import one.mixin.android.util.EmergencyContactBulletin
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.NewVersionBulletin
-import one.mixin.android.util.NewWalletBulletin
-import one.mixin.android.util.NotificationBulletin
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -114,7 +113,6 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.BulletinView
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MaterialSearchView
@@ -141,10 +139,6 @@ class ConversationListFragment : LinkFragment() {
             registerAdapterDataObserver(messageAdapterDataObserver)
         }
     }
-
-    private lateinit var bulletinView: BulletinView
-
-    private val bulletinBoard = BulletinBoard()
 
     private val messageAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
@@ -209,16 +203,6 @@ class ConversationListFragment : LinkFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController(activity as MainActivity)
-        bulletinView =
-            BulletinView(requireContext()).apply {
-                layoutParams =
-                    RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                        bottomMargin = 8.dp
-                        marginStart = 16.dp
-                        marginEnd = 16.dp
-                    }
-            }
-        messageAdapter.headerView = bulletinView
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -368,6 +352,15 @@ class ConversationListFragment : LinkFragment() {
             }
 
         initSearch()
+        analytics()
+    }
+
+    private fun analytics() {
+        lifecycleScope.launch{
+            val totalUsd = conversationListViewModel.findTotalUSDBalance()
+            AnalyticsTracker.setAssetLevel(totalUsd)
+            AnalyticsTracker.setNotificationAuthStatus(requireContext())
+        }
     }
 
     private fun openSearch() {
@@ -580,6 +573,8 @@ class ConversationListFragment : LinkFragment() {
         if (isAdded) {
             messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
+        conversationLiveData?.removeObserver(observer)
+        dotLiveData?.removeObserver(dotObserver)
         super.onDestroyView()
         _binding = null
     }
@@ -743,27 +738,12 @@ class ConversationListFragment : LinkFragment() {
         super.onResume()
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            val account = Session.getAccount()
-            bulletinBoard.clear()
-            val shown =
-                bulletinBoard
-                    .addBulletin(NotificationBulletin(bulletinView, ::onClose))
-                    .addBulletin(NewWalletBulletin(bulletinView, requireActivity() as MainActivity, ::onClose))
-                    .addBulletin(EmergencyContactBulletin(bulletinView, totalUsd >= 100, ::onClose))
-                    .addBulletin(NewVersionBulletin(bulletinView, account, requireActivity() as MainActivity, ::onClose))
-                    .post()
-            messageAdapter.setShowHeader(shown, binding.messageRv)
+            ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
+                .let { type ->
+                    (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
+                    if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                }
         }
-    }
-
-    private fun onClose(type: BulletinView.Type) {
-        val shown =
-            if (type.ordinal < BulletinView.Type.values().size - 1) {
-                bulletinBoard.post()
-            } else {
-                false
-            }
-        messageAdapter.setShowHeader(shown, binding.messageRv)
     }
 
     private fun openCamera(scan: Boolean) {

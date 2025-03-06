@@ -9,13 +9,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
-import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
@@ -63,6 +61,8 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_58_59
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_59_60
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_60_61
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_61_62
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_62_63
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_63_64
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
@@ -120,6 +120,7 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
+import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -180,7 +181,8 @@ import kotlin.math.min
         (MarketCoin::class),
         (MarketFavored::class),
         (Alert::class),
-        (MarketCapRank::class)
+        (MarketCapRank::class),
+        (SwapOrder::class),
     ],
     version = CURRENT_VERSION,
 )
@@ -276,11 +278,17 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
+    abstract fun orderDao(): OrderDao
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
 
         private val lock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
+
+        fun destroy() {
+            INSTANCE = null
+        }
 
         @Suppress("UNUSED_ANONYMOUS_PARAMETER")
         @SuppressLint("RestrictedApi")
@@ -350,6 +358,8 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_59_60,
                                 MIGRATION_60_61,
                                 MIGRATION_61_62,
+                                MIGRATION_62_63,
+                                MIGRATION_63_64,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
@@ -425,12 +435,4 @@ abstract class MixinDatabase : RoomDatabase() {
                 }
             }
     }
-}
-
-fun runInTransaction(block: () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
-}
-
-suspend fun withTransaction(block: suspend () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
 }

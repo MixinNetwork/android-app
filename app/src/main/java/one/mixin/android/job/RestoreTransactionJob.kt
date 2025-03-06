@@ -8,7 +8,6 @@ import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
@@ -54,7 +53,7 @@ class RestoreTransactionJob : BaseJob(
                     val response = utxoService.getTransactionsById(transaction.requestId)
                     if (response.isSuccess) {
                         Timber.e("Restore Transaction(${transaction.requestId}): db begin")
-                        runInTransaction {
+                        appDatabase.runInTransaction {
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
                             rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                             Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")
@@ -81,7 +80,7 @@ class RestoreTransactionJob : BaseJob(
                             Timber.e("Restore Transaction(${transaction.requestId}): Post Transaction Success")
                             val transactionResponse = transactionRsp.data!!.first()
                             Timber.e("Restore Transaction(${transaction.requestId}): db begin")
-                            runInTransaction {
+                            appDatabase.runInTransaction {
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction ${transaction.requestId}")
                                 rawTransactionDao.updateRawTransaction(transaction.requestId, OutputState.signed.name)
                                 Timber.e("Restore Transaction(${transaction.requestId}): update raw transaction $feeTraceId")

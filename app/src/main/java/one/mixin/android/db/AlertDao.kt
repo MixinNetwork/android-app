@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
@@ -38,14 +39,14 @@ interface AlertDao : BaseDao<Alert> {
     fun alertGroup(coinId: String): Flow<AlertGroup?>
 
     @Query("SELECT * FROM market_alerts WHERE coin_id = :coinId ORDER BY created_at ASC")
-    fun alertsByCoinId(coinId:String):Flow<List<Alert>>
+    fun alertsByCoinId(coinId: String): Flow<List<Alert>>
 
     @Query("DELETE FROM market_alerts WHERE alert_id = :alertId")
     fun deleteAlertById(alertId: String)
 
     @Query("SELECT COUNT(*) FROM market_alerts")
     fun getTotalAlertCount(): Int
-      
+
     @Query("SELECT COUNT(*) FROM market_alerts WHERE coin_id = :coinId")
     fun getAlertCountByCoinId(coinId: String): Int
 
@@ -57,4 +58,10 @@ interface AlertDao : BaseDao<Alert> {
 
     @Query("DELETE FROM market_alerts")
     fun deleteAll()
+
+    @Transaction
+    fun deleteAndInsertList(list: List<Alert>) {
+        deleteAll()
+        insertList(list)
+    }
 }

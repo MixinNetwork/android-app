@@ -29,6 +29,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.VersionedTransaction
@@ -129,6 +130,7 @@ class TransactionStateFragment : BaseFragment() {
                         )
                         if (txState?.state?.isFinalTxState() == true) {
                             if (txState?.state?.isTxSuccess() == true) {
+                                AnalyticsTracker.trackSwapSend()
                                 RxBus.publish(SolanaRefreshEvent())
                             }
                             refreshTxJob?.cancel()

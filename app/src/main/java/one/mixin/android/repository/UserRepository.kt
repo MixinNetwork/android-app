@@ -24,12 +24,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdate
-import one.mixin.android.db.insertUpdateList
-import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
-import one.mixin.android.db.updateRelationship
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.putString
@@ -82,7 +77,9 @@ class UserRepository
         ): List<SearchBot> =
             DataProvider.fuzzySearchBots(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
-        suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
+        suspend fun searchSuspend(query: String): MixinResponse<User> {
+            return userService.searchSuspend(query)
+        }
 
         suspend fun fuzzySearchGroupUser(
             conversationId: String,
@@ -221,6 +218,8 @@ class UserRepository
 
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 
+        suspend fun findFriendsAndMyBot() = userDao.findFriendsAndMyBot(Session.getAccountId()!!)
+
         fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 
         suspend fun findBotsByIds(appIds: Set<String>) = userDao.findMultiUsersByIds(appIds)
@@ -265,7 +264,7 @@ class UserRepository
 
         suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
 
-        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleByIdSuspend(circleId)
+        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
 
         suspend fun findConversationItemByCircleId(circleId: String) =
             circleDao.findConversationItemByCircleId(circleId)
@@ -278,11 +277,7 @@ class UserRepository
 
         suspend fun sortCircleConversations(list: List<CircleOrder>?) =
             withContext(Dispatchers.IO) {
-                runInTransaction {
-                    list?.forEach {
-                        circleDao.updateOrderAt(it)
-                    }
-                }
+                circleDao.updateAll(list)
             }
 
         suspend fun deleteCircleConversation(
@@ -290,9 +285,6 @@ class UserRepository
             circleId: String,
         ) =
             circleConversationDao.deleteByIdsSuspend(conversationId, circleId)
-
-        suspend fun deleteByCircleId(circleId: String) =
-            circleConversationDao.deleteByCircleIdSuspend(circleId)
 
         suspend fun insertCircleConversation(circleConversation: CircleConversation) =
             circleConversationDao.insertSuspend(circleConversation)

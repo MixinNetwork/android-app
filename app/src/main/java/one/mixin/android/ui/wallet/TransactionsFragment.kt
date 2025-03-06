@@ -34,13 +34,14 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
+import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -50,7 +51,9 @@ import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
@@ -76,7 +79,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
 
     @Inject
     lateinit var tip: Tip
@@ -124,7 +126,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
         }
         binding.apply {
-            sendReceiveView.enableSwap()
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
                     val assets = walletViewModel.allAssetItems()
@@ -133,6 +134,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     } else {
                         USDT_ASSET_ID
                     }
+                    AnalyticsTracker.trackSwapStart("mixin", "market")
                     navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }
@@ -200,7 +202,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                             "", "", "", "", "", runCatching {
                                 (BigDecimal(asset.priceUsd) * BigDecimal(asset.changeUsd)).toPlainString()
                             }.getOrNull() ?: "0", "", asset.changeUsd, "", "", "", "", "", "", "", "", "",
-                            "", "", "", "", listOf(asset.assetId), "", null
+                            "", "", "", "", listOf(asset.assetId), "", "", null
                         )
                     }
                     view.navigate(
@@ -264,7 +266,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     override fun onDestroyView() {
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 
@@ -277,6 +278,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             handleMixinResponse(
                 invokeNetwork = {
                     walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
+                },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
                 },
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {
@@ -368,13 +373,26 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                sendBottomSheet.show(asset)
+                navTo(TransferDestinationInputFragment.newInstance(asset), TransferDestinationInputFragment.TAG)
             }
             sendReceiveView.receive.setOnClickListener {
-                sendReceiveView.navigate(
-                    R.id.action_transactions_to_deposit,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
-                )
+                if (!Session.saltExported() && Session.isAnonymous()) {
+                    BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                        .apply {
+                            laterCallback = {
+                                sendReceiveView.navigate(
+                                    R.id.action_transactions_to_deposit,
+                                    Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                                )
+                            }
+                        }
+                        .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                } else {
+                    sendReceiveView.navigate(
+                        R.id.action_transactions_to_deposit,
+                        Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                    )
+                }
             }
             marketView.setContent {
                 Market(asset.assetId)

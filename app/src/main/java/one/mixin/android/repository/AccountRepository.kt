@@ -23,6 +23,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
@@ -40,9 +41,6 @@ import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertUpdate
-import one.mixin.android.db.insertUpdateList
-import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
@@ -83,6 +81,9 @@ class AccountRepository
         suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
             accountService.verification(request)
 
+        suspend fun verification(request: AccountRequest): MixinResponse<VerificationResponse> =
+            accountService.verification(request)
+
         suspend fun create(
             id: String,
             request: AccountRequest,
@@ -104,7 +105,7 @@ class AccountRepository
         fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
             accountService.update(request)
 
-        fun updateSession(request: SessionRequest) = accountService.updateSession(request)
+        suspend fun insertUserSuspend(user: User) = userDao.insertSuspend(user)
 
         fun deviceCheck() = accountService.deviceCheck()
 
@@ -157,11 +158,9 @@ class AccountRepository
 
         fun search(query: String): Observable<MixinResponse<User>> = userService.search(query)
 
-        suspend fun logout(sessionId: String) = accountService.logout(LogoutRequest(sessionId))
+        suspend fun logout(sessionId: String, pinBase64: String) = accountService.logout(LogoutRequest(sessionId, pinBase64))
 
         fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
-
-        suspend fun updatePinSuspend(request: PinRequest) = accountService.updatePinSuspend(request)
 
         suspend fun verifyPin(code: String): MixinResponse<Account> =
             withContext(Dispatchers.IO) {
@@ -185,6 +184,17 @@ class AccountRepository
                     ),
                 )
             }
+
+        suspend fun deactivate(
+            request: DeactivateRequest
+        ): MixinResponse<Account> =
+            withContext(Dispatchers.IO) {
+                accountService.deactivate(request)
+            }
+
+        suspend fun saltExport(
+            exportRequest: ExportRequest
+        ): MixinResponse<Account> = accountService.saltExport(exportRequest)
 
         suspend fun authorize(
             authorizationId: String,
@@ -238,9 +248,7 @@ class AccountRepository
         fun observeSystemAlbumById(albumId: String) = stickerAlbumDao.observeSystemAlbumById(albumId)
 
         suspend fun updateAlbumOrders(stickerAlbumOrders: List<StickerAlbumOrder>) {
-            withTransaction {
-                stickerAlbumOrders.forEach { o -> stickerAlbumDao.updateOrderedAt(o) }
-            }
+            stickerAlbumDao.updateOrderedAt(stickerAlbumOrders)
         }
 
         suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = stickerAlbumDao.updateAdded(stickerAlbumAdded)

@@ -15,7 +15,7 @@ import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.api.response.web3.QuoteResponse
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.StakeResponse
@@ -31,6 +31,7 @@ import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.route.RoutePaymentRequest
+import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
@@ -119,7 +120,7 @@ interface RouteService {
         @Query("amount") amount: String,
         @Query("slippage") slippage: String,
         @Query("source") source: String,
-    ): MixinResponse<QuoteResponse>
+    ): MixinResponse<QuoteResult>
 
     @POST("web3/swap")
     suspend fun web3Swap(
@@ -149,6 +150,7 @@ interface RouteService {
     @GET("web3/tokens/search/{query}")
     suspend fun searchTokens(
         @Path("query") query: String,
+        @Query("source") source: String?
     ): MixinResponse<List<SwapToken>>
 
     @POST("web3/stake")
@@ -175,6 +177,12 @@ interface RouteService {
     suspend fun searchStakeValidators(
         @Path("query") query: String,
     ): MixinResponse<List<Validator>>
+
+    @GET("web3/swap/orders")
+    suspend fun orders(
+        @Query("offset") offset: String?,
+        @Query("limit") limit: Int
+    ) : MixinResponse<List<SwapOrder>>
 
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(

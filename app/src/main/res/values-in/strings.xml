@@ -115,7 +115,6 @@
     <plurals name="chat_delete_message" tools:ignore="UnusedQuantity">
         <item quantity="other">Hapus %1$d pesan?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s menambahkan %2$s</string>
     <string name="chat_group_call_decline">%1$s telah menolak panggilan grup</string>
     <string name="chat_group_call_invite">%1$s telah mengundang Anda ke panggilan grup</string>
@@ -125,7 +124,6 @@
     <string name="chat_group_remove">%1$s menghapus %2$s</string>
     <string name="chat_list_empty_info">Anda dapat mengobrol dengan kontak yang memasang Mixin di telepon mereka</string>
     <string name="chat_not_support">Jenis pesan ini tidak didukung, harap tingkatkan Mixin ke versi terbaru. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_recall_delete_alert">Pesan yang Anda pilih akan dihapus untuk semua orang pada versi Mixin terbaru dalam obrolan ini.</string>
     <string name="chat_waiting">Menunggu %1$s untuk online dan membuat sesi terenkripsi. %2$s.</string>
     <string name="CHATS">OBROLAN</string>
@@ -337,12 +335,10 @@
     <string name="Label">Label</string>
     <string name="Landing_back">Landing back</string>
     <string name="landing_enter_mobile_tip">Kami tidak akan pernah menampilkan nomor ponsel Anda secara publik.</string>
-    <string name="landing_introduction">Ketuk \"Setuju &amp; Lanjutkan\" untuk menerima %1$s dan %2$s</string>
     <string name="landing_invitation_dialog_content">Kami akan mengirim kode 4 digit ke nomor telepon Anda %1$s, harap masukkan kode tersebut pada layar berikutnya.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Masukkan kode 4 digit yang dikirim kepada Anda di %1$s</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">Bahasa</string>
     <string name="Large_Amount_Confirmation">Konfirmasi Jumlah Besar</string>
     <string name="Large_Amount_Confirmation_with_symbol">Konfirmasi Jumlah Besar(%1$s)</string>
@@ -573,7 +569,6 @@
     <string name="setting_desktop_confirm">Konfirmasikan masuk ke Mixin Messenger Desktop</string>
     <string name="setting_desktop_logout_failed">Gagal keluar dari desktop.</string>
     <string name="setting_emergency_change_mobile">Ingin mengubah nomor ponsel Anda sekarang?</string>
-    <string name="setting_emergency_content">Kontak darurat ditujukan untuk membantu Anda masuk ke akun Anda jika Anda lupa akun dan tidak dapat mengambil kembali nomor ponsel Anda.</string>
     <string name="setting_emergency_create_success">Berhasil membuat kontak darurat</string>
     <string name="setting_emergency_desc">Saat nomor ponsel Anda hilang, hubungi kontak darurat Anda melalui telepon atau cara lain untuk mendapatkan ID Mixin dan kode verifikasi. Baca Kontak Darurat kami untuk **mempelajari selengkapnya**.</string>
     <string name="setting_emergency_pin_tip">Kontak darurat Anda dilindungi dengan PIN</string>
@@ -601,7 +596,7 @@
     <string name="Sign_in">Masuk</string>
     <string name="Sign_in_desktop_app">Masuk aplikasi desktop</string>
     <string name="Sign_with_emergency_contact">Masuk dengan kontak darurat</string>
-    <string name="Sign_with_phone_number">Masuk dengan nomor telepon</string>
+    <string name="Sign_with_mobile_number">Masuk dengan nomor telepon</string>
     <string name="Skip">LEWATI</string>
     <string name="Slide_to_cancel">Geser untuk Membatalkan</string>
     <string name="Sort">Urutkan</string>

@@ -2,7 +2,7 @@ package one.mixin.android.ui.tip.wc.sessionproposal
 
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import com.walletconnect.web3.wallet.client.Wallet
+import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.db.property.PropertyHelper

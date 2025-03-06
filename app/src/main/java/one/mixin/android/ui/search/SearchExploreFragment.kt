@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.View
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +39,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.SearchBot
@@ -79,6 +81,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
     private val binding by viewBinding(FragmentSearchExploreBinding::bind)
 
+    @ExperimentalLayoutApi
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -130,6 +133,14 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
             object : SearchFragment.OnSearchClickListener {
                 override fun onUserClick(user: User) {
                     // do noting
+                }
+
+                override fun onUserClick(user: MaoUser) {
+                    // do noting
+                }
+
+                override fun onMaoAppClick(userId: String) {
+                    // do nothing
                 }
 
                 override fun onBotClick(bot: SearchBot) {

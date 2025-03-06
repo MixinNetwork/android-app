@@ -14,36 +14,73 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/title_ll"
+        <ViewAnimator
+            android:id="@+id/title_va"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:background="?attr/bg_white"
-            tools:ignore="UseCompoundDrawables,UselessParent">
+            android:layout_height="wrap_content"
+            android:background="?attr/bg_white">
 
-            <ImageView
-                android:id="@+id/icon_iv"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="20dp"
-                android:visibility="gone"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/title_tv"
+            <LinearLayout
+                android:id="@+id/title_ll"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="100dp"
-                android:ellipsize="end"
-                android:maxHeight="50dp"
-                android:maxLines="1"
-                android:textSize="18sp"
-                android:textColor="?attr/text_primary" />
-        </LinearLayout>
+                android:layout_height="44dp"
+                android:orientation="horizontal"
+                tools:ignore="UseCompoundDrawables,UselessParent">
+
+                <ImageView
+                    android:id="@+id/icon_iv"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="20dp"
+                    android:visibility="gone"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/title_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="100dp"
+                    android:ellipsize="end"
+                    android:maxHeight="50dp"
+                    android:maxLines="1"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:orientation="vertical"
+                tools:ignore="UseCompoundDrawables,UselessParent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="20dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="?attr/text_primary"
+                    android:textFontWeight="500"
+                    android:text="@string/mixin_support"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="20dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/ask_me_anything"
+                    android:textColor="?attr/text_assist"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+        </ViewAnimator>
     </LinearLayout>
 
     <FrameLayout
@@ -79,4 +116,16 @@
         android:layout_alignParentEnd="true"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="6dp" />
+
+    <ImageView
+        android:id="@+id/web_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/mixin_ripple"
+        android:src="@drawable/ic_circle_close"
+        android:visibility="gone"
+        tools:ignore="ContentDescription" />
 </RelativeLayout>

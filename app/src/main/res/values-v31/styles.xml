@@ -54,7 +54,6 @@
         <item name="bg_menu_border">@color/bgMenuBorder</item>
         <item name="flag_night">false</item>
         <item name="bg_gray_light">@color/bgGrayLight</item>
-        <item name="bg_confirmation">@color/bgConfirmation</item>
         <item name="bg_block">@color/bgBlock</item>
         <item name="bg_post">@color/bgPost</item>
         <item name="bg_clip">@color/bgClip</item>
@@ -73,6 +72,9 @@
         <item name="bg_tip_warning">@color/bgTipWarning</item>
         <item name="bg_tip_warning_border">@color/bgTipWarningBorder</item>
 
+        <item name="ic_wallet_receive">#0FB321</item>
+        <item name="ic_wallet_send">#3D75E3</item>
+        <item name="ic_wallet_swap">#8A6BFF</item>
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>
         <item name="music_buffered">@color/musicBuffered</item>
@@ -86,8 +88,9 @@
         <item name="bg_market_gradient_end">@color/marketGradientEnd</item>
         <item name="icon_chain">@color/iconChain</item>
         <item name="bg_market_card">@drawable/bg_market_card</item>
+        <item name="ic_logo">@drawable/ic_logo_mixin</item>
+        <item name="badge_red">@color/badgeRed</item>
 
-        <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>

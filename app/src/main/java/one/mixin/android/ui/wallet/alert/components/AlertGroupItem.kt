@@ -37,7 +37,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.AlertViewModel
-import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import java.math.BigDecimal
@@ -48,85 +47,88 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByCoinId(alertGroup.coinId).collectAsState(initial = emptyList())
     val rotationState by animateFloatAsState(targetValue = if (expand) 0f else -180f, label = "")
-    val context = LocalContext.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp)
-            .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard)
-    ) {
-        Column(
+    LocalContext.current
+    Column {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 23.dp)
-                .padding(top = 19.dp, bottom = 22.dp)
+                .padding(horizontal = 6.dp)
+                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
         ) {
-            ConstraintLayout(modifier = Modifier
-                .fillMaxWidth()
-                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand }) {
-                val (starIcon, endIcon, title, subtitle) = createRefs()
-                CoilImage(
-                    alertGroup.iconUrl,
-                    modifier = Modifier
-                        .constrainAs(starIcon) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                        }
-                        .size(42.dp)
-                        .clip(CircleShape),
-                    placeholder = R.drawable.ic_avatar_place_holder,
-                )
-
-                Text(modifier = Modifier.constrainAs(title) {
-                    top.linkTo(starIcon.top)
-                    start.linkTo(starIcon.end, 10.dp)
-                }, text = alertGroup.name?:"", fontSize = 16.sp, lineHeight = 16.sp, color = MixinAppTheme.colors.textPrimary)
-
-                Text(
-                    modifier = Modifier.constrainAs(subtitle) {
-                        start.linkTo(starIcon.end, 10.dp)
-                        bottom.linkTo(starIcon.bottom)
-                    }, text = stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd ?: "0").priceFormat()} USD"),
-                    fontSize = 13.sp,
-                    lineHeight = 13.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Icon(
-                    modifier = Modifier
-                        .graphicsLayer(rotationZ = rotationState)
-                        .constrainAs(endIcon) {
-                            top.linkTo(starIcon.top)
-                            end.linkTo(parent.end)
-                            bottom.linkTo(starIcon.bottom)
-                        }
-                        .wrapContentSize()
-                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand },
-                    painter = painterResource(id = R.drawable.ic_alert_arrow_down),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                )
-            }
-
-            AnimatedVisibility(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                visible = expand,
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 16.dp, bottom = 16.dp)
             ) {
-                Column(
+                ConstraintLayout(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand }) {
+                    val (starIcon, endIcon, title, subtitle) = createRefs()
+                    CoilImage(
+                        alertGroup.iconUrl,
+                        modifier = Modifier
+                            .constrainAs(starIcon) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                            }
+                            .size(42.dp)
+                            .clip(CircleShape),
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                    )
+
+                    Text(modifier = Modifier.constrainAs(title) {
+                        top.linkTo(starIcon.top)
+                        start.linkTo(starIcon.end, 10.dp)
+                    }, text = alertGroup.name ?: "", fontSize = 16.sp, lineHeight = 16.sp, color = MixinAppTheme.colors.textPrimary)
+
+                    Text(
+                        modifier = Modifier.constrainAs(subtitle) {
+                            start.linkTo(starIcon.end, 10.dp)
+                            bottom.linkTo(starIcon.bottom)
+                        }, text = stringResource(R.string.Current_price, "${BigDecimal(alertGroup.priceUsd ?: "0").priceFormat()} USD"),
+                        fontSize = 13.sp,
+                        lineHeight = 13.sp,
+                        color = MixinAppTheme.colors.textAssist
+                    )
+                    Icon(
+                        modifier = Modifier
+                            .graphicsLayer(rotationZ = rotationState)
+                            .constrainAs(endIcon) {
+                                top.linkTo(starIcon.top)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(starIcon.bottom)
+                            }
+                            .wrapContentSize()
+                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand },
+                        painter = painterResource(id = R.drawable.ic_alert_arrow_down),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                    )
+                }
+
+                AnimatedVisibility(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    visible = expand,
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    alerts.forEachIndexed { index, alert ->
-                        if (index != 0) {
-                            Spacer(modifier = Modifier.height(10.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        alerts.forEachIndexed { index, alert ->
+                            if (index != 0) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+                            AlertItem(alert, onEdit)
                         }
-                        AlertItem(alert, onEdit)
                     }
                 }
             }
         }
+        Spacer(modifier = Modifier.height(6.dp))
     }
 }
 

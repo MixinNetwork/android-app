@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
@@ -25,28 +26,19 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.RouteConfig.GOOGLE_PAY
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
+import one.mixin.android.Constants.Account
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.MixinResponseException
-import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewWalletBottomBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
-import one.mixin.android.event.AppAuthEvent
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
-import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -55,38 +47,34 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.supportsS
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment
-import one.mixin.android.ui.setting.getCurrencyData
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
-import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
-import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
-import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
-import one.mixin.android.ui.wallet.fiatmoney.getDefaultCurrency
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.ForwardAction
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -113,8 +101,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
     private var _bottomBinding: ViewWalletBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding)
 
-    private val sendBottomSheet = SendBottomSheet(this, -1, -1)
-
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
@@ -138,162 +124,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         return binding.root
     }
 
-    private fun toBuy() {
-        val sendReceiveView = _headBinding?.sendReceiveView ?: return
-        lifecycleScope.launch {
-            sendReceiveView.buy.displayedChild = 1
-            sendReceiveView.buy.isEnabled = false
-            flow {
-                emit(ROUTE_BOT_USER_ID)
-            }.map { botId ->
-                val key =
-                    walletViewModel.findBotPublicKey(
-                        generateConversationId(
-                            botId,
-                            Session.getAccountId()!!,
-                        ),
-                        botId,
-                    )
-                if (!key.isNullOrEmpty()) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
-                } else {
-                    val sessionResponse =
-                        walletViewModel.fetchSessionsSuspend(listOf(botId))
-                    if (sessionResponse.isSuccess) {
-                        val sessionData = requireNotNull(sessionResponse.data)[0]
-                        walletViewModel.saveSession(
-                            ParticipantSession(
-                                generateConversationId(
-                                    sessionData.userId,
-                                    Session.getAccountId()!!,
-                                ),
-                                sessionData.userId,
-                                sessionData.sessionId,
-                                publicKey = sessionData.publicKey,
-                            ),
-                        )
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    } else {
-                        throw MixinResponseException(
-                            sessionResponse.errorCode,
-                            sessionResponse.errorDescription,
-                        )
-                    }
-                }
-                botId
-            }.map { _ ->
-                val profileResponse =
-                    walletViewModel.profile()
-                if (profileResponse.isSuccess) {
-                    val supportCurrencies =
-                        getCurrencyData(requireContext().resources).filter {
-                            profileResponse.data!!.currencies.contains(it.name)
-                        }
-                    val supportAssetIds = profileResponse.data!!.assetIds
-                    val kycState = profileResponse.data!!.kycState
-                    val hideGooglePay =
-                        profileResponse.data!!.supportPayments.contains(GOOGLE_PAY)
-                            .not()
-                    RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
-                } else if (profileResponse.errorCode == ErrorHandler.OLD_VERSION) {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Update_Mixin)
-                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                        .setNegativeButton(R.string.Later) { dialog, _ ->
-                            dialog.dismiss()
-                        }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
-                            dialog.dismiss()
-                        }.create().show()
-                    throw MixinResponseException(
-                        profileResponse.errorCode,
-                        profileResponse.errorDescription,
-                    )
-                } else {
-                    throw MixinResponseException(
-                        profileResponse.errorCode,
-                        profileResponse.errorDescription,
-                    )
-                }
-            }.map { routeProfile ->
-                walletViewModel.syncNoExistAsset(routeProfile.supportAssetIds)
-                routeProfile
-            }.map { routeProfile ->
-                val assetId =
-                    requireContext().defaultSharedPreferences.getString(
-                        CalculateFragment.CURRENT_ASSET_ID,
-                        Constants.AssetId.USDT_ASSET_ID,
-                    ) ?: routeProfile.supportAssetIds.first()
-                val currency = getDefaultCurrency(requireContext(), routeProfile.supportCurrencies)
-                val tickerResponse =
-                    walletViewModel.ticker(
-                        RouteTickerRequest(
-                            currency,
-                            assetId,
-                        ),
-                    )
-                if (tickerResponse.isSuccess) {
-                    val state =
-                        FiatMoneyViewModel.CalculateState(
-                            minimum =
-                                tickerResponse.data!!.minimum.toIntOrNull()
-                                    ?: 0,
-                            maximum =
-                                tickerResponse.data!!.maximum.toIntOrNull()
-                                    ?: 0,
-                            assetPrice =
-                                tickerResponse.data!!.assetPrice.toFloatOrNull()
-                                    ?: 0f,
-                            feePercent =
-                                tickerResponse.data!!.feePercent.toFloatOrNull()
-                                    ?: 0f,
-                        )
-                    Pair(state, routeProfile)
-                } else {
-                    throw MixinResponseException(
-                        tickerResponse.errorCode,
-                        tickerResponse.errorDescription,
-                    )
-                }
-            }.catch { e ->
-                if (e is MixinResponseException) {
-                    if (e.errorCode == ErrorHandler.OLD_VERSION) {
-                        // do nothing
-                    } else if (e.errorCode == ErrorHandler.AUTHENTICATION) {
-                        walletViewModel.deleteSessionByUserId(
-                            generateConversationId(
-                                ROUTE_BOT_USER_ID,
-                                Session.getAccountId()!!,
-                            ),
-                            ROUTE_BOT_USER_ID,
-                        )
-                        toast(getString(R.string.Try_Again))
-                        sendReceiveView.buy.displayedChild = 0
-                        sendReceiveView.buy.isEnabled = true
-                        return@catch
-                    }
-                    sendReceiveView.buy.displayedChild = 0
-                    sendReceiveView.buy.isEnabled = true
-                    ErrorHandler.handleMixinError(e.errorCode, e.errorDescription)
-                } else {
-                    ErrorHandler.handleError(e)
-                }
-                sendReceiveView.buy.displayedChild = 0
-                sendReceiveView.buy.isEnabled = true
-            }.collectLatest { pair ->
-                WalletActivity.showBuy(requireActivity(), pair.first, pair.second)
-                sendReceiveView.buy.displayedChild = 0
-                sendReceiveView.buy.isEnabled = true
-            }
-        }
-    }
-
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        jobManager.addJobInBackground(RefreshOrdersJob())
         binding.apply {
             moreIb.setOnClickListener { showBottom() }
             scanIb.setOnClickListener {
@@ -314,18 +151,34 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
-                                sendBottomSheet.show(it)
+                                navTo(TransferDestinationInputFragment.newInstance(it),
+                                    TransferDestinationInputFragment.TAG)
                             }.setOnDepositClick {
                                 showReceiveAssetList()
                             }
                             .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
-                        showReceiveAssetList()
+                        if (!Session.saltExported() && Session.isAnonymous()) {
+                            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                                .apply {
+                                    laterCallback = {
+                                        showReceiveAssetList()
+                                    }
+                                }
+                                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                        } else {
+                            showReceiveAssetList()
+                        }
                     }
-                    sendReceiveView.enableSwap()
                     sendReceiveView.swap.setOnClickListener {
+                        AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
+                        defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
+                        if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 0) {
+                            sendReceiveView.badge.isVisible = false
+                            RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                        }
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root
@@ -403,19 +256,27 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 }
             }
         }
-        walletViewModel.assetsWithBalance().observe(viewLifecycleOwner) {
-            if (it.isNotEmpty()) {
-                _headBinding?.migrate?.isVisible = true
-                _headBinding?.migrate?.setOnClickListener {
-                    lifecycleScope.launch click@{
-                        val bot = walletViewModel.findBondBotUrl() ?: return@click
-                        WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
+        walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
+            migrateEnable = it
+        }
+
+        walletViewModel.getPendingDisplays().observe(viewLifecycleOwner) {
+            _headBinding?.apply {
+                pendingView.isVisible = it.isNotEmpty()
+                pendingView.updateTokens(it)
+                pendingView.setOnClickListener { v ->
+                    if (it.size == 0) {
+                        lifecycleScope.launch {
+                            val token = walletViewModel.simpleAssetItem(it[0].assetId) ?: return@launch
+                            WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
+                        }
+                    } else {
+                        WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
                     }
                 }
-            } else {
-                _headBinding?.migrate?.isVisible = false
             }
         }
+
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
@@ -423,7 +284,60 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
                 assetsAdapter.notifyDataSetChanged()
             }
         checkPin()
+
+        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+        _headBinding?.sendReceiveView?.badge?.isVisible = swap
+
+        RxBus.listen(BadgeEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                lifecycleScope.launch{
+                    when (e.badge) {
+                        Account.PREF_HAS_USED_SWAP -> {
+                            _headBinding?.sendReceiveView?.badge?.isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+                        }
+                    }
+                }
+            }
     }
+
+    override fun onResume() {
+        super.onResume()
+        refreshAllPendingDeposit()
+    }
+
+    private fun refreshAllPendingDeposit() =
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { walletViewModel.allPendingDeposit() },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
+                successBlock = {
+                    val pendingDeposits = it.data
+                    if (pendingDeposits.isNullOrEmpty()) {
+                        walletViewModel.clearAllPendingDeposits()
+                        return@handleMixinResponse
+                    }
+                    val destinationTags = walletViewModel.findDepositEntryDestinations()
+                    pendingDeposits
+                        .filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }
+                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            lifecycleScope.launch {
+                                walletViewModel.insertPendingDeposit(snapshots)
+                            }
+                        }
+                },
+            )
+        }
+
+
+    private var migrateEnable = false
 
     private var lastFiatCurrency :String? = null
 
@@ -446,7 +360,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _binding = null
         _headBinding = null
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 
@@ -622,12 +535,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet), HeaderAdapter.OnI
         _bottomBinding = ViewWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
+        bottomBinding.migrate.isVisible = migrateEnable
         bottomBinding.hide.setOnClickListener {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.Hidden)
             bottomSheet.dismiss()
         }
         bottomBinding.transactionsTv.setOnClickListener {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
+            bottomSheet.dismiss()
+        }
+        bottomBinding.migrate.setOnClickListener {
+            lifecycleScope.launch click@{
+                val bot = walletViewModel.findBondBotUrl() ?: return@click
+                WebActivity.show(requireContext(), url = bot.homeUri, generateConversationId(bot.appId, Session.getAccountId()!!), app = bot)
+            }
             bottomSheet.dismiss()
         }
 

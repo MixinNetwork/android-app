@@ -9,6 +9,7 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
+import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -46,8 +47,8 @@ class TransferBiometricItem(
     override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
-fun buildEmptyTransferBiometricItem(user: User) =
-    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), null, "", null, PaymentStatus.pending.name, null, null, null)
+fun buildEmptyTransferBiometricItem(user: User, token: TokenItem? = null) =
+    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), token, "", null, PaymentStatus.pending.name, null, null, null)
 
 fun buildTransferBiometricItem(
     user: User,
@@ -61,14 +62,14 @@ fun buildTransferBiometricItem(
     TransferBiometricItem(listOf(user), 1.toByte(), traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, null, returnTo, reference)
 
 @Parcelize
-class AddressTransferBiometricItem(
-    val address: String,
+open class AddressTransferBiometricItem(
+    open val address: String,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
     override var memo: String?,
     override var state: String,
-    val returnTo: String?,
+    open val returnTo: String?,
     override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
@@ -92,6 +93,40 @@ fun buildAddressBiometricItem(
     reference: String?,
 ) =
     AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, reference)
+
+@Parcelize
+class InvoiceBiometricItem(
+    override val address: String,
+    override val traceId: String,
+    override var asset: TokenItem?,
+    override var amount: String,
+    override var memo: String?,
+    override var state: String,
+    override val returnTo: String?,
+    override var reference: String?,
+    val invoice: String,
+) : AddressTransferBiometricItem(address, traceId, asset, amount, memo, state, returnTo, reference)
+
+fun buildInvoiceBiometricItem(
+    invoice: MixinInvoice,
+    traceId: String,
+    token: TokenItem?,
+    amount: String,
+    memo: String?,
+    returnTo: String?,
+    from: Int,
+    reference: String?,
+) = InvoiceBiometricItem(
+    address = invoice.recipient.toString(),
+    traceId = traceId,
+    asset = token,
+    memo = memo,
+    amount = amount,
+    returnTo = returnTo,
+    reference = reference,
+    state = PaymentStatus.pending.name,
+    invoice = invoice.toString(),
+)
 
 @Parcelize
 class WithdrawBiometricItem(
@@ -129,7 +164,7 @@ open class SafeMultisigsBiometricItem(
     val views: String?,
     val index: Int,
     val safe: SafeAccount?,
-    val signers: List<String>?,
+    var signers: List<String>?,
     open val senders: Array<String>,
     open val receivers: Array<String>,
     open val receiverThreshold: Int,

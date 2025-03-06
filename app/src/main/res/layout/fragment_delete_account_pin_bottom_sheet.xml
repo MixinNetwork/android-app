@@ -16,9 +16,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="40dp"
         android:textColor="@color/text_color_error_tip"
         android:text="@string/Enter_PIN_to_delete_account"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:textSize="16sp" />
 
     <one.mixin.android.ui.oldwallet.biometric.BiometricLayout
@@ -32,8 +34,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="16dp"
-        android:gravity="center_horizontal" />
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="40dp"
+        android:textColor="?attr/text_primary"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"/>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/keyboard"

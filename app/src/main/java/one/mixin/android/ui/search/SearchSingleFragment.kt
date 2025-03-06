@@ -38,6 +38,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.SearchBot
@@ -120,6 +121,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 TypeMarket -> requireContext().getString(R.string.ASSETS)
                 TypeDapp -> requireContext().getString(R.string.DAPPS)
                 TypeBot -> requireContext().getString(R.string.BOTS)
+                else -> ""
             }
         headerBinding.titleTv.text = text
         adapter.headerView = header
@@ -178,6 +180,14 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 
+                override fun onUserClick(user: MaoUser) {
+                    // do nothing
+                }
+
+                override fun onMaoAppClick(userId: String) {
+                    // do nothing
+                }
+
                 override fun onChatLongClick(
                     chatMinimal: ChatMinimal,
                     anchor: View,
@@ -233,6 +243,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                     TypeMarket -> searchViewModel.fuzzySearch<Market>(cancellationSignal, s, -1)
                     TypeDapp -> searchViewModel.fuzzySearch<Dapp>(cancellationSignal, s, -1)
                     TypeBot -> searchViewModel.fuzzySearch<SearchBot>(cancellationSignal, s, -1)
+                    else -> throw IllegalArgumentException("Unknown type: $type")
                 }
 
             binding.pb.isInvisible = true

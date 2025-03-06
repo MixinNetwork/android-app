@@ -54,11 +54,16 @@ class TransferContentReceiveItem : LinearLayout {
         signers: List<String>? = null
     ) {
         _binding.apply {
-            if (threshold != null && users.size > 1) {
-                title.text = "${context.resources.getQuantityString(titleRes, users.size).uppercase()} ($threshold/${users.size})"
+            if (threshold == 1 && users.size == 1) {
+                title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
+            } else if (threshold != null && users.size > 1) {
+                title.text = "${
+                    context.resources.getQuantityString(titleRes, users.size).uppercase()
+                } ($threshold/${users.size})"
             } else {
                 title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
             }
+            userContainer.removeAllViews()
             users.forEach { user ->
                 val item = TransferReceiverItem(context)
                 item.setContent(user, signers)

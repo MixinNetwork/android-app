@@ -168,7 +168,6 @@
         <item quantity="one">%1$dのメッセージを削除しますか？</item>
         <item quantity="other">%1$dのメッセージを削除しますか？</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$sが%2$sを追加しました</string>
     <string name="chat_group_call_decline">%1$sグループ通話が終了しました</string>
     <string name="chat_group_call_end">グループ通話が終了しました </string>
@@ -182,7 +181,6 @@
     <string name="chat_import_fail_content">メッセージのインポートに失敗しました。ファイルとして送信しますか？</string>
     <string name="chat_list_empty_info">Mixinアプリをダウンロードしている友人とチャットできます</string>
     <string name="chat_not_support">サポートしていない形式です、Mixinを最新版にアップデートしてください%1$s</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_on_mixin_content">さあ、Mixinでチャットをしましょう！Mixinは安全かつとても簡単に使えます。ビットコインやイーサリアムのような複数の通貨に対応しています。https://mixin.one/messenger からMixinをダウンロードし、%1$sを検索して友達になりましょう。</string>
     <string name="chat_pin_message">%1$sは%2$sをピン留めしました</string>
     <string name="Chat_pinned">ピン留め済みのチャット</string>
@@ -277,6 +275,8 @@
     <string name="default_time">00:00</string>
     <string name="Delete">削除</string>
     <string name="delete_account_hint">アカウント情報とプロフィール画像を削除します</string>
+    <string name="delete_account_hint_2">ローカルメッセージとiCloudにバックアップされた内容は自動的に削除されません</string>
+    <string name="delete_account_hint_3">トランザクション履歴を削除することはできません</string>
     <string name="Delete_address">アドレスを削除</string>
     <string name="Delete_emergency_contact">緊急連絡先を削除</string>
     <string name="Delete_for_everyone">全員のチャットから削除</string>
@@ -313,7 +313,6 @@
     <string name="Disabled">無効ずみ</string>
     <string name="disappearing_message">表示されないメッセージ</string>
     <string name="disappearing_message_hint">有効にすると、このチャットで送受信された新しいメッセージは、見た後に消えます。詳しくは、こちらをお読みください。</string>
-    <string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
     <string name="disappearing_option_1">30秒</string>
     <string name="disappearing_option_2">10分間</string>
     <string name="disappearing_option_3">2時間</string>
@@ -489,14 +488,11 @@
     <string name="Joined_in">%1$sからMixinを利用しています</string>
     <string name="Label">ラベル</string>
     <string name="Landing_back">ログイン</string>
-    <string name="landing_delete_content">あなたのアカウントは(%1$s) 後に消去されます。ログインを継続する場合、あなたのアカウント消去はキャンセルされます。</string>
     <string name="landing_enter_mobile_tip">Mixin社はあなたの電話番号を決して公表しません</string>
-    <string name="landing_introduction">\"同意して続ける\"をタップして%1$sと%2$sを確認</string>
     <string name="landing_invitation_dialog_content">4桁のコードを電話番号%1$sに送信します、次の画面でコードを入力してください</string>
     <string name="landing_privacy_policy_url">プライバシーポリシー: https://mixin.one/pages/privacy </string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">%1$sに送信された4桁のコードを入力してください</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">言語</string>
     <string name="Large_Amount_Confirmation">送金時に通知を行う金額の設定</string>
     <string name="Large_Amount_Confirmation_with_symbol">送金時に通知を行う金額の設定（%1$s）</string>
@@ -806,16 +802,13 @@
     <string name="setting_data_mobile">モバイル回線使用時</string>
     <string name="setting_data_title">メディア自動ダウンロード設定</string>
     <string name="setting_data_wifi">Wi-Fiに接続時</string>
-    <string name="setting_delete_account_content_2">ローカルメッセージとiCloudにバックアップされた内容は自動的に削除されません</string>
     <string name="setting_delete_account_pin_content">%1$sと紐付けられたプロフィールとアカウント情報が削除されます。詳細はこちらをご覧ください。</string>
     <string name="setting_delete_account_send">%1$sへ4桁のコードを送信します</string>
     <string name="setting_delete_account_tip">警告：Mixinウォレット内に他のウォレットや取引所に送金可能な仮想通貨が残っています。アカウントを削除すると、仮想通貨を永遠に引き出すことができませんが、よろしいでしょうか？</string>
-    <string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
     <string name="setting_desktop_confirm">デスクトップ版Mixinへのログインを確認</string>
     <string name="setting_desktop_logout_failed">デスクトップ版からのログアウトに失敗しました</string>
     <string name="setting_duplicate_transfer_desc">6時間以内に同じ人に同額の送金を実行する際、確認を行う。</string>
     <string name="setting_emergency_change_mobile">新しい電話番号の登録をしますか？</string>
-    <string name="setting_emergency_content">緊急連絡先は、紛失等の理由でデバイスへのアクセスが出来なくなった場合、ログインする方法となります。</string>
     <string name="setting_emergency_create_success">緊急連絡先を作成しました</string>
     <string name="setting_emergency_desc">登録した電話番号が使用できなくなった場合は、緊急連絡先として登録した友だちに連絡し、Mixin IDと認証コードを取得してください。詳しくは、こちらを確認してください。</string>
     <string name="setting_emergency_pin_tip">あなたの緊急連絡先はPINコードにより保護されています。</string>
@@ -852,7 +845,7 @@
     <string name="Sign_in">ログイン</string>
     <string name="Sign_in_desktop_app">デスクトップにログイン</string>
     <string name="Sign_with_emergency_contact">緊急連絡先でログイン</string>
-    <string name="Sign_with_phone_number">電話番号でログイン</string>
+    <string name="Sign_with_mobile_number">電話番号でログイン</string>
     <string name="Silence_Notification">サイレント通知</string>
     <string name="Size">サイズ</string>
     <string name="Skip">スキップ</string>
@@ -907,7 +900,6 @@
     <string name="Transaction_Id">トランザクションID</string>
     <string name="Transaction_Type">トランザクションタイプ</string>
     <string name="Transactions">もらった・あげたコイン💰</string>
-    <string name="Transactions_CANNOT_be_deleted">トランザクション履歴を削除することはできません</string>
     <string name="Transcript">メッセージ履歴</string>
     <string name="Transfer">送金</string>
     <string name="Transfer_Amount">送金数量</string>

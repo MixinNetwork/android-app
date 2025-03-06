@@ -27,6 +27,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -124,6 +125,10 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
     val b = attributes.getBoolean(0, false)
     attributes.recycle()
     return b
+}
+
+fun Context.isScreenWideColorGamut(): Boolean {
+    return runCatching { resources.configuration.isScreenWideColorGamut }.getOrDefault(false)
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater
@@ -269,6 +274,43 @@ fun Context.vibrate(
     }
 }
 
+
+fun Context.startVibration(
+    effect: VibrationEffect? = null,
+    pattern: LongArray = longArrayOf(0, 1000), 
+) {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(pattern, -1)
+    }
+}
+
+fun Context.stopVibration() {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    vibrator.cancel()
+}
+
 fun Context.tickVibrate() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         vibrate(VibrationEffect.createPredefined(EFFECT_TICK))
@@ -372,12 +414,20 @@ fun Context.appCompatActionBarHeight(): Int {
     theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
     return resources.getDimensionPixelSize(tv.resourceId)
 }
-
-@Suppress("DEPRECATION")
 fun Context.networkConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val activeNetwork = connectivityManager.activeNetworkInfo ?: return false
-    return activeNetwork.isConnectedOrConnecting
+    return isInternetConnectivityValidated(connectivityManager)
+}
+
+private fun isInternetConnectivityValidated(connectivityManager: ConnectivityManager): Boolean {
+    val activeNetwork = connectivityManager.activeNetwork ?: return false
+    return try {
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+    } catch (e: SecurityException) {
+        // Workaround for https://issuetracker.google.com/issues/175055271.
+        true
+    }
 }
 
 fun Context.realSize(): Point {

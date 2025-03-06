@@ -4,11 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
+import timber.log.Timber
 
 @Dao
 interface OutputDao : BaseDao<Output> {
@@ -115,7 +117,6 @@ interface OutputDao : BaseDao<Output> {
     )
     fun collections(orderBy: String): LiveData<List<SafeCollection>>
 
-
     @Query(
         """
         SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, COUNT(CASE WHEN o.state = 'unspent' THEN o.inscription_hash END) AS inscription_count
@@ -163,4 +164,17 @@ interface OutputDao : BaseDao<Output> {
     """,
     )
     suspend fun findUnspentInscriptionHash(): List<String>
+
+    @Transaction
+    fun insertUnspentOutputs(outputs: List<Output>) {
+        val signed = findSignedOutput(outputs.map { it.outputId })
+        if (signed.isEmpty()) {
+            insertList(outputs)
+        } else {
+            Timber.d("Insert filter ${signed.joinToString(", ")}")
+            // Exclude signed data
+            val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
+            insertList(unsignedData)
+        }
+    }
 }

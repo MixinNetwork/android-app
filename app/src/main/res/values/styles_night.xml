@@ -35,7 +35,6 @@
         <item name="bg_menu">@color/bgMenuNight</item>
         <item name="bg_menu_border">@color/bgMenuBorderNight</item>
         <item name="bg_gray_light">@color/bgGrayLightNight</item>
-        <item name="bg_confirmation">@color/bgConfirmationNight</item>
         <item name="bg_block">@color/bgBlockNight</item>
         <item name="bg_post">@color/bgPostNight</item>
         <item name="bg_clip">@color/bgClipNight</item>
@@ -61,16 +60,18 @@
         <item name="bg_market_gradient_end">@color/marketGradientEndNight</item>
         <item name="icon_chain">@color/iconChainNight</item>
         <item name="bg_market_card">@drawable/bg_market_card_night</item>
+        <item name="ic_logo">@drawable/ic_logo_mixin_night</item>
+        <item name="badge_red">@color/badgeRedNight</item>
 
+        <item name="ic_wallet_receive">#82D28B</item>
+        <item name="ic_wallet_send">#75B6FF</item>
+        <item name="ic_wallet_swap">#B085FF</item>
         <item name="music_played">@color/musicPlayedNight</item>
         <item name="music_unplayed">@color/musicUnPlayedNight</item>
         <item name="music_buffered">@color/musicBufferedNight</item>
         <item name="music_text">@color/musicTextNight</item>
         <item name="music_floating_bg">@color/musicFloatingBgNight</item>
         <item name="music_play_pause_bg">@color/musicPlayPauseBgNight</item>
-
-        <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
-        <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
 
         <item name="flag_night">true</item>
         <item name="code_border">@color/codeBorderNight</item>

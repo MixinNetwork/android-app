@@ -8,6 +8,7 @@ import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -37,8 +38,10 @@ import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
@@ -47,18 +50,30 @@ import one.mixin.android.vo.safe.TokenItem
 class DepositFragment : BaseFragment() {
     companion object {
         const val TAG = "DepositFragment"
+        val usdcAssets =
+            mapOf(
+                "9b180ab6-6abe-3dc0-a13f-04169eb34bfa" to "ERC-20",
+                "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
+                "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
+                "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon",
+                "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
+            )
+
+        val usdtAssets =
+            mapOf(
+                "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
+                "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
+                "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
+                "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
+                "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
+            )
+
+        fun newInstance(token: TokenItem) = DepositFragment().withArgs {
+            putParcelable(ARGS_ASSET, token)
+        }
     }
 
     private val notSupportDepositAssets = arrayOf(OMNI_USDT_ASSET_ID, BYTOM_CLASSIC_ASSET_ID, MGD_ASSET_ID)
-
-    private val usdtAssets =
-        mapOf(
-            "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
-            "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
-            "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
-            "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
-            "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
-        )
 
     private var _binding: FragmentDepositBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -82,7 +97,7 @@ class DepositFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val asset = requireNotNull(requireArguments().getParcelableCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
+        val asset = requireNotNull(requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
         initView(asset)
     }
 
@@ -96,7 +111,7 @@ class DepositFragment : BaseFragment() {
         binding.apply {
             title.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-                rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
+                rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit), asset.symbol)
             if (notSupport) {
@@ -104,13 +119,17 @@ class DepositFragment : BaseFragment() {
                 sv.isVisible = false
                 val symbol = if (asset.assetId == OMNI_USDT_ASSET_ID) "OMNI-USDT" else asset.symbol
                 val info = getString(R.string.not_supported_deposit, symbol, symbol)
-                val url = Constants.HelpLink.DEPOSIT_NOT_SUPPORT
+                val url = getString(R.string.not_supported_deposit_url)
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
                 if (usdtAssets.contains(asset.assetId)) {
                     networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
                     initUsdtChips(asset)
+                } else if (usdcAssets.contains(asset.assetId)){
+                    networkTitle.isVisible = true
+                    networkChipGroup.isVisible = true
+                    initUsdcChips(asset)
                 } else {
                     networkTitle.isVisible = false
                     networkChipGroup.isVisible = false
@@ -150,14 +169,24 @@ class DepositFragment : BaseFragment() {
     private val localMap = mutableMapOf<String, DepositEntry>()
 
     private fun initUsdtChips(asset: TokenItem) {
+        initChips(asset, usdtAssets)
+    }
+
+    private fun initUsdcChips(asset: TokenItem) {
+        initChips(asset, usdcAssets)
+    }
+
+    private fun initChips(asset: TokenItem, uAssets: Map<String, String>) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
-            usdtAssets.entries.forEach { entry ->
+            uAssets.entries.forEach { entry ->
                 val chip =
                     Chip(requireContext()).apply {
+                        val c = this
                         text = entry.value
                         isClickable = true
+                        c.tag = entry.key
                         val same = entry.key == asset.assetId
                         if (same) {
                             isChecked = true
@@ -177,7 +206,7 @@ class DepositFragment : BaseFragment() {
                                     if (newAsset == null) {
                                         toast(R.string.Not_found)
                                     } else {
-                                        initUsdtChips(newAsset)
+                                        initChips(newAsset, uAssets)
                                         val localDepositEntry = localMap[newAsset.assetId]
                                         if (localDepositEntry == null) {
                                             refreshDeposit(newAsset)
@@ -240,7 +269,7 @@ class DepositFragment : BaseFragment() {
     private fun refreshDeposit(asset: TokenItem) {
         showLoading()
         lifecycleScope.launch {
-            val (depositEntry, different, code) = walletViewModel.findAndSyncDepositEntry(asset.chainId)
+            val (depositEntry, different, code) = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry == null) {
                 if (code == ADDRESS_GENERATING) {
                     binding.apply {
@@ -308,14 +337,14 @@ class DepositFragment : BaseFragment() {
         val signature = depositEntry.signature.hexStringToByteArray()
 
         if (destination.isBlank() || signature.isNullOrEmpty()) return
-        val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
+        val pubs = Constants.SAFE_PUBLIC_KEY.map { it.hexStringToByteArray() }
         val message =
             if (tag.isNullOrBlank()) {
                 destination
             } else {
                 "$destination:$tag"
             }.toByteArray().sha3Sum256()
-        val verify = verifyCurve25519Signature(message, signature, pub)
+        val verify = pubs.any { pub -> verifyCurve25519Signature(message, signature, pub) }
         if (verify) {
             val noTag = tag.isNullOrBlank()
             binding.apply {
@@ -370,6 +399,20 @@ class DepositFragment : BaseFragment() {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
                 notSupportTv.setText(R.string.verification_failed)
+            }
+        }
+        binding.networkChipGroup.children.forEach { clip ->
+            (clip as? Chip)?.apply {
+                val same = clip.tag == asset.assetId
+                if (same) {
+                    isChecked = true
+                    setTextColor(Color.WHITE)
+                    chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
+                } else {
+                    setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+                    chipBackgroundColor =
+                        ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                }
             }
         }
     }

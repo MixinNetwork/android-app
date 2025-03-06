@@ -73,4 +73,4 @@ class SettingViewModel
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
         suspend fun findAllAssetIdSuspend() = tokenRepository.findAllAssetIdSuspend()
-    }
+}

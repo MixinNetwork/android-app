@@ -3,8 +3,10 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
-import android.os.Build.*
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.text.InputFilter
+import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -20,6 +22,7 @@ import one.mixin.android.databinding.ViewNameTextBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.highLightMao
 import one.mixin.android.extension.spToPx
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
@@ -28,6 +31,7 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.QuoteMessageItem
@@ -36,6 +40,7 @@ import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
+import one.mixin.android.vo.isBotIdentityNumber
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.lottie.RLottieDrawable
@@ -129,6 +134,13 @@ class NameTextView : LinearLayoutCompat {
         this.textView.setCompoundDrawables(null, null, null, null)
     }
 
+    fun setTextOnly(text: SpannableString?) {
+        this.textView.text = text
+        iconView.isVisible = false
+        iconView.stopAnimation()
+        this.textView.setCompoundDrawables(null, null, null, null)
+    }
+
     fun setTextOnly(@StringRes text: Int) {
         textView.setText(text)
         iconView.isVisible = false
@@ -137,6 +149,30 @@ class NameTextView : LinearLayoutCompat {
     }
 
     fun setName(user: User) {
+        this.textView.text = user.fullName
+        if (user.isProsperity()) {
+            iconView.isVisible = true
+            iconView.setImageDrawable(
+                RLottieDrawable(
+                    R.raw.prosperity,
+                    "prosperity",
+                    badgeSize,
+                    badgeSize,
+                ).apply {
+                    setAllowDecodeSingleFrame(true)
+                    setAutoRepeat(1)
+                    setAutoRepeatCount(Int.MAX_VALUE)
+                    start()
+                },
+            )
+        } else {
+            iconView.isVisible = false
+            iconView.stopAnimation()
+        }
+        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
+    }
+
+    fun setName(user: MaoUser) {
         this.textView.text = user.fullName
         if (user.isProsperity()) {
             iconView.isVisible = true
@@ -636,6 +672,23 @@ class NameTextView : LinearLayoutCompat {
         }
     }
 
+    private fun getBadge(user: MaoUser): Drawable? {
+        val resources = if (user.isMembership()) {
+            user.membership.membershipIcon()
+        } else if (user.isVerified == true) {
+            R.drawable.ic_user_verified
+        } else if (user.isBot()) {
+            R.drawable.ic_bot
+        } else {
+            null
+        }
+        return resources?.let { res ->
+            AppCompatResources.getDrawable(context, res).also { icon ->
+                icon?.setBounds(0, 0, badgeSize, badgeSize)
+            }
+        }
+    }
+
     private fun getBadge(user: SearchBot): Drawable? {
         val resources = if (user.isMembership()) {
             user.membership.membershipIcon()
@@ -658,7 +711,7 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (user.appId != null) {
+        } else if (user.appId != null && user.identityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -688,7 +741,7 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (!user.appId.isNullOrEmpty()) {
+        } else if (!user.appId.isNullOrEmpty() && user.identityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -735,7 +788,7 @@ class NameTextView : LinearLayoutCompat {
             item.sharedMembership.membershipIcon()
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
-        } else if (item.sharedUserAppId != null) {
+        } else if (item.sharedUserAppId != null && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -763,7 +816,7 @@ class NameTextView : LinearLayoutCompat {
     private fun getMessageBadge(item: MessageItem): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.appId != null) {
+        } else if (item.appId != null && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -780,7 +833,7 @@ class NameTextView : LinearLayoutCompat {
             user.membership.membershipIcon()
         } else if (user.isVerified == true) {
             R.drawable.ic_user_verified
-        } else if (!user.appId.isNullOrEmpty()) {
+        } else if (!user.appId.isNullOrEmpty() && user.identityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -797,7 +850,7 @@ class NameTextView : LinearLayoutCompat {
             item.membership.membershipIcon()
         } else if (item.isVerified) {
             R.drawable.ic_user_verified
-        } else if (!item.appId.isNullOrEmpty()) {
+        } else if (!item.appId.isNullOrEmpty() && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -814,7 +867,7 @@ class NameTextView : LinearLayoutCompat {
             item.sharedMembership.membershipIcon()
         } else if (item.sharedUserIsVerified == true) {
             R.drawable.ic_user_verified
-        } else if (item.sharedUserAppId != null) {
+        } else if (item.sharedUserAppId != null && item.sharedUserIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null
@@ -829,7 +882,7 @@ class NameTextView : LinearLayoutCompat {
     private fun getMessageBadge(item: ChatHistoryMessageItem): Drawable? {
         val resources = if (item.isMembership()) {
             item.membership.membershipIcon()
-        } else if (item.appId != null) {
+        } else if (item.appId != null && item.userIdentityNumber.isBotIdentityNumber()) {
             R.drawable.ic_bot
         } else {
             null

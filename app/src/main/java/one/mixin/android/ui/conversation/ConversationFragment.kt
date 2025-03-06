@@ -37,6 +37,8 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -118,9 +120,13 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isAuto
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
+import one.mixin.android.extension.isGif
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
+import one.mixin.android.extension.isVideo
+import one.mixin.android.extension.isWebp
 import one.mixin.android.extension.lateOneHours
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
@@ -131,6 +137,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
@@ -196,6 +203,10 @@ import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
@@ -1041,6 +1052,8 @@ class ConversationFragment() :
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Triple<String, Boolean, Int>>
     private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
     private lateinit var getShareMediaResult: ActivityResultLauncher<Pair<String, Boolean>>
+    private lateinit var pickFileLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
     lateinit var getEditorResult: ActivityResultLauncher<Pair<Uri, String?>>
 
     override fun onAttach(context: Context) {
@@ -1053,6 +1066,22 @@ class ConversationFragment() :
         getMediaResult = registerForActivityResult(MediaPagerActivity.MediaContract(), resultRegistry, ::callbackChatHistory)
         getShareMediaResult = registerForActivityResult(SharedMediaActivity.SharedMediaContract(), resultRegistry, ::callbackChatHistory)
         getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEditor)
+        pickFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                handleFile(uri)
+            }
+        }
+        pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            uri?.let {
+                if (it.isVideo(requireContext())) {
+                    showPreview(it, isVideo = true) { videoUri, start, end -> sendVideoMessage(videoUri, start, end) }
+                } else if (it.isGif(requireContext()) || it.isWebp(requireContext())) {
+                    showPreview(uri, getString(R.string.Send), false) { uri, _, _ -> sendImageMessage(uri) }
+                } else {
+                    getEditorResult.launch(Pair(uri, getString(R.string.Send)))
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -2015,18 +2044,15 @@ class ConversationFragment() :
     }
 
     private fun bindData() {
-        chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
+        chatViewModel.countUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
-        ) { mentionMessages ->
-            binding.flagLayout.mentionCount = mentionMessages.size
+        ) { count ->
+            binding.flagLayout.mentionCount = count
             binding.flagLayout.mentionFlagLayout.setOnClickListener {
                 lifecycleScope.launch {
-                    if (mentionMessages.isEmpty()) {
-                        return@launch
-                    }
-                    val messageId = mentionMessages.first().messageId
-                    scrollToMessage(messageId) {
-                        chatRoomHelper.markMentionRead(messageId, conversationId)
+                    val message = chatViewModel.getFirstUnreadMentionMessageByConversationId(conversationId) ?: return@launch
+                    scrollToMessage(message.messageId) {
+                        chatRoomHelper.markMentionRead(message.messageId, conversationId)
                     }
                 }
             }
@@ -2043,21 +2069,26 @@ class ConversationFragment() :
 
     private fun bindPinMessage() {
         binding.pinMessageLayout.conversationId = conversationId
-        chatViewModel.getLastPinMessages(conversationId)
-            .observe(viewLifecycleOwner) { messageItem ->
-                if (messageItem != null) {
-                    binding.pinMessageLayout.bind(messageItem) { messageId ->
-                        scrollToMessage(messageId)
+        chatViewModel.getLastPinMessageId(conversationId)
+            .observe(viewLifecycleOwner) { messageId ->
+                lifecycleScope.launch {
+                    if (messageId != null) {
+                        val pinMessageItem = chatViewModel.getPinMessageById(conversationId, messageId)
+                        binding.pinMessageLayout.isVisible = pinMessageItem != null
+                        pinMessageItem ?: return@launch
+                        binding.pinMessageLayout.bind(pinMessageItem) { messageId ->
+                            scrollToMessage(messageId)
+                        }
+                    } else {
+                        binding.pinMessageLayout.isVisible = false
                     }
-                    binding.pinMessageLayout.pin.setOnClickListener {
+                }
+                binding.pinMessageLayout.pin.setOnClickListener {
+                    lifecycleScope.launch {
+                        val pinCount = chatViewModel.countPinMessages(conversationId)
                         getChatHistoryResult.launch(Triple(conversationId, isGroup, pinCount))
                     }
                 }
-            }
-        chatViewModel.countPinMessages(conversationId)
-            .observe(viewLifecycleOwner) { count ->
-                pinCount = count
-                binding.pinMessageLayout.isVisible = count > 0
             }
     }
 
@@ -2074,7 +2105,6 @@ class ConversationFragment() :
         }
     }
 
-    private var pinCount: Int = 0
     private var appList: List<AppItem>? = null
 
     private inline fun createConversation(crossinline action: () -> Unit) {
@@ -2500,7 +2530,7 @@ class ConversationFragment() :
             return true
         } else {
             val msg = action.getSendText()
-            if (!msg.isNullOrEmpty()){
+            if (!msg.isNullOrEmpty()) {
                 sendTextMessage(msg)
                 return true
             }
@@ -2523,66 +2553,9 @@ class ConversationFragment() :
     }
 
     private fun clickGallery() {
-        val galleryAlbumFragment = parentFragmentManager.findFragmentByTag(GalleryAlbumFragment.TAG)
-        if (galleryAlbumFragment == null) {
-            initGalleryLayout()
+        if (isAdded) {
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
         }
-    }
-
-    private fun initGalleryLayout() {
-        val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
-        galleryAlbumFragment.callback =
-            object : GalleryCallback {
-                override fun onItemClick(
-                    pos: Int,
-                    item: Item,
-                    send: Boolean,
-                ) {
-                    val uri = item.uri
-                    if (item.isVideo) {
-                        if (send) {
-                            sendVideoMessage(uri, 0f, 1f)
-                        } else {
-                            showPreview(uri, getString(R.string.Send), true) { uri, start, end -> sendVideoMessage(uri, start, end) }
-                        }
-                    } else if (item.isGif || item.isWebp) {
-                        if (send) {
-                            sendImageMessage(uri)
-                        } else {
-                            showPreview(uri, getString(R.string.Send), false) { uri, _, _ -> sendImageMessage(uri) }
-                        }
-                    } else {
-                        if (send) {
-                            sendImageMessage(uri)
-                        } else {
-                            getEditorResult.launch(Pair(uri, getString(R.string.Send)))
-                        }
-                    }
-                    releaseChatControl(FLING_DOWN)
-                }
-
-                override fun onCameraClick() {
-                    openCamera()
-                }
-            }
-        galleryAlbumFragment.rvCallback =
-            object : DraggableRecyclerView.Callback {
-                override fun onScroll(dis: Float) {
-                    val currentContainer = binding.chatControl.getDraggableContainer()
-                    if (currentContainer != null) {
-                        dragChatControl(dis)
-                    }
-                }
-
-                override fun onRelease(fling: Int) {
-                    releaseChatControl(fling)
-                }
-            }
-        activity?.replaceFragment(
-            galleryAlbumFragment,
-            R.id.gallery_container,
-            GalleryAlbumFragment.TAG,
-        )
     }
 
     private fun initMenuLayout(isSelfCreatedBot: Boolean = false) {
@@ -2602,39 +2575,43 @@ class ConversationFragment() :
                             openCamera()
                         }
                         MenuType.File -> {
-                            RxPermissions(requireActivity())
-                                .request(
-                                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        mutableListOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO)
-                                    } else {
-                                        mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                                    }.apply {
-                                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                                            add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                        }
-                                    }.toTypedArray(),
-                                )
-                                .autoDispose(stopScope)
-                                .subscribe(
-                                    { granted ->
-                                        if (granted) {
-                                            selectDocument()
-                                        } else {
-                                            context?.openPermissionSetting()
-                                        }
-                                    },
-                                    {
-                                    },
-                                )
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                pickFileLauncher.launch(arrayOf("*/*"))
+                            } else {
+                                RxPermissions(requireActivity())
+                                    .request(
+                                        *mutableListOf(Manifest.permission.READ_EXTERNAL_STORAGE).apply {
+                                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                                                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                            }
+                                        }.toTypedArray(),
+                                    )
+                                    .autoDispose(stopScope)
+                                    .subscribe(
+                                        { granted ->
+                                            if (granted) {
+                                                selectDocument()
+                                            } else {
+                                                context?.openPermissionSetting()
+                                            }
+                                        },
+                                        {
+                                        },
+                                    )
+                            }
                         }
                         MenuType.Transfer -> {
                             binding.chatControl.reset()
                             if (Session.getAccount()?.hasPin == true) {
-                                recipient?.let {
-                                    TransferFragment.newInstance(buildEmptyTransferBiometricItem(it))
-                                        .showNow(parentFragmentManager, TransferFragment.TAG)
-                                    // FIXME sync
-                                    // jobManager.addJobInBackground(SyncOutputJob())
+                                recipient?.let { recipient ->
+                                    AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                                        .setOnAssetClick { asset ->
+                                            activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, asset.assetId)
+                                            navTo(
+                                                InputFragment.newInstance(asset, recipient),
+                                                InputFragment.TAG
+                                            )
+                                        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                                 }
                             } else {
                                 TipActivity.show(requireActivity(), TipType.Create, true)
@@ -2820,38 +2797,42 @@ class ConversationFragment() :
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            val attachment = context?.getAttachment(uri)
-            if (attachment != null) {
-                alertDialogBuilder()
-                    .setMessage(
-                        if (isGroup) {
-                            requireContext().getString(
-                                R.string.send_file_group,
-                                attachment.filename,
-                                groupName,
-                            )
-                        } else {
-                            requireContext().getString(
-                                R.string.send_file_group,
-                                attachment.filename,
-                                recipient?.fullName,
-                            )
-                        },
-                    )
-                    .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.Send) { dialog, _ ->
-                        sendAttachmentMessage(attachment)
-                        dialog.dismiss()
-                    }.show()
-            } else {
-                toast(R.string.File_does_not_exist)
-            }
+            handleFile(uri)
         } else if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
             val intent = data ?: return
             val location = LocationActivity.getResult(intent) ?: return
             sendLocation(location)
         } else {
             super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    private fun handleFile(uri: Uri) {
+        val attachment = context?.getAttachment(uri)
+        if (attachment != null) {
+            alertDialogBuilder()
+                .setMessage(
+                    if (isGroup) {
+                        requireContext().getString(
+                            R.string.send_file_group,
+                            attachment.filename,
+                            groupName,
+                        )
+                    } else {
+                        requireContext().getString(
+                            R.string.send_file_group,
+                            attachment.filename,
+                            recipient?.fullName,
+                        )
+                    },
+                )
+                .setNegativeButton(R.string.Cancel) { dialog, _ -> dialog.dismiss() }
+                .setPositiveButton(R.string.Send) { dialog, _ ->
+                    sendAttachmentMessage(attachment)
+                    dialog.dismiss()
+                }.show()
+        } else {
+            toast(R.string.File_does_not_exist)
         }
     }
 

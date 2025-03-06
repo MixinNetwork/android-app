@@ -170,7 +170,6 @@
         <item quantity="many">Удалить %1$d сообщения?</item>
         <item quantity="other">Удалить %1$d сообщения?</item>
     </plurals>
-    <string name="chat_delete_url">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
     <string name="chat_group_add">%1$s добавил %2$s</string>
     <string name="chat_group_call_decline">%1$s отклонил групповой вызов</string>
     <string name="chat_group_call_end">Групповой вызов завершен</string>
@@ -184,7 +183,6 @@
     <string name="chat_import_fail_content">Не удалось импортировать сообщение! Вы хотите отправить его в виде файла?</string>
     <string name="chat_list_empty_info">Вы можете общаться с контактами, на телефоне которых установлен Mixin.</string>
     <string name="chat_not_support">Этот тип сообщений не поддерживается, пожалуйста, обновите Mixin до последней версии. %1$s.</string>
-    <string name="chat_not_support_url">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
     <string name="chat_on_mixin_content">Давайте общаться в Mixin Messenger! Простой, безопасный и простой в использовании. Он также поддерживает биткойн, эфириум и другие криптовалюты. Загрузите https://mixin.one/messenger и выполните поиск \@%1$s, чтобы добавить меня в друзья.</string>
     <string name="chat_pin_message">%1$s закрепил %2$s</string>
     <string name="Chat_pinned">Чат закреплен</string>
@@ -282,6 +280,8 @@
     <string name="default_time">00:00</string>
     <string name="Delete">Удалить</string>
     <string name="delete_account_hint">Удалить информацию об учетной записи и фото профиля</string>
+    <string name="delete_account_hint_2">Локальные сообщения и резервные копии не будут удаляться автоматически</string>
+    <string name="delete_account_hint_3">Транзакции НЕ МОГУТ быть удалены</string>
     <string name="Delete_address">Удалить адрес</string>
     <string name="Delete_emergency_contact">Удалить экстренный контакт</string>
     <string name="Delete_for_everyone">Удалить для всех</string>
@@ -320,7 +320,6 @@
     <string name="Disabled">Отключенный</string>
     <string name="disappearing_message">Исчезающие сообщения</string>
     <string name="disappearing_message_hint">Если эта функция включена, отправленные и полученные новые сообщения в этом чате исчезнут после того, как они будут просмотрены. Прочтите документ, чтобы **узнать больше**</string>
-    <string name="disappearing_message_url">https://mixinmessenger.zendesk.com/hc/articles/5127869180564</string>
     <string name="disappearing_option_1">30 секунд</string>
     <string name="disappearing_option_2">10 минут</string>
     <string name="disappearing_option_3">2 часа</string>
@@ -501,14 +500,11 @@
     <string name="Joined_in">Присоединился к %1$s</string>
     <string name="Label">Этикетка</string>
     <string name="Landing_back">Приземление назад</string>
-    <string name="landing_delete_content">Ваш аккаунт будет удален %1$s. Если вы продолжите входить в систему, запрос на удаление вашего аккаунта будет отменен.</string>
     <string name="landing_enter_mobile_tip">Мы никогда не будем публично показывать ваш номер мобильного телефона.</string>
-    <string name="landing_introduction">Нажмите «Принять и продолжить», чтобы принять %1$s и %2$s.</string>
     <string name="landing_invitation_dialog_content">Мы отправим 4-значный код на ваш номер телефона %1$s. Введите код на следующем экране.</string>
     <string name="landing_privacy_policy_url">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url">https://mixin.one/pages/terms</string>
     <string name="landing_validation_title">Введите 4-значный код, отправленный вам на %1$s.</string>
-    <string name="landing_verification_tip_url">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="Language">Язык</string>
     <string name="Large_Amount_Confirmation">Подтверждение крупной суммы</string>
     <string name="Large_Amount_Confirmation_with_symbol">Подтверждение крупной суммы(%1$s)</string>
@@ -827,16 +823,13 @@
     <string name="setting_data_mobile">При использовании мобильных данных</string>
     <string name="setting_data_title">Автоматическая загрузка мультимедиа</string>
     <string name="setting_data_wifi">При подключении по Wi-Fi</string>
-    <string name="setting_delete_account_content_2">Локальные сообщения и резервные копии не будут удаляться автоматически</string>
     <string name="setting_delete_account_pin_content">Если вы продолжите, ваш профиль и данные аккаунта будут удалены %1$s. прочтите наш документ, чтобы **Узнать больше**.</string>
     <string name="setting_delete_account_send">Мы отправим 4-значный код на %1$s.</string>
     <string name="setting_delete_account_tip">В вашем кошельке Mixin все еще есть активы, которые можно вывести на другие кошельки или биржи. После удаления учетной записи эти активы будут закрыты вместе с кошельком и их нельзя будет восстановить.</string>
-    <string name="setting_delete_account_url">https://mixinmessenger.zendesk.com/hc/articles/4414170627988</string>
     <string name="setting_desktop_confirm">Подтвердите вход в Mixin Messenger Desktop</string>
     <string name="setting_desktop_logout_failed">Выход из рабочего стола не удался.</string>
     <string name="setting_duplicate_transfer_desc">Отображение диалогового окна подтверждения при переводе одной и той же суммы одному и тому же человеку в течение 6 часов.</string>
     <string name="setting_emergency_change_mobile">Вы хотите изменить свой номер мобильного телефона сейчас?</string>
-    <string name="setting_emergency_content">Экстренный контакт предназначен для того, чтобы помочь вам войти в свою учетную запись, если вы потерялись и не можете восстановить свой номер мобильного телефона.</string>
     <string name="setting_emergency_create_success">Создать экстренный контакт успешно</string>
     <string name="setting_emergency_desc">Если вы потеряли свой номер мобильного телефона, свяжитесь со своим экстренным контактом по телефону или другим способом, чтобы получить Mixin ID и код подтверждения. Прочтите нашу контактную информацию для экстренных случаев, чтобы **узнать больше**.</string>
     <string name="setting_emergency_pin_tip">Ваш экстренный контакт защищен PIN-кодом</string>
@@ -875,7 +868,7 @@
     <string name="Sign_in">Войти</string>
     <string name="Sign_in_desktop_app">Войти в настольное приложение</string>
     <string name="Sign_with_emergency_contact">Войти через контакт для экстренных случаев</string>
-    <string name="Sign_with_phone_number">Войти через номер телефона</string>
+    <string name="Sign_with_mobile_number">Войти через номер телефона</string>
     <string name="Silence_Notification">Беззвучное уведомление</string>
     <string name="Size">Размер</string>
     <string name="Skip">Пропустить</string>
@@ -932,7 +925,6 @@
     <string name="Transaction_Id">ID транзакции</string>
     <string name="Transaction_Type">Тип операции</string>
     <string name="Transactions">Транзакции</string>
-    <string name="Transactions_CANNOT_be_deleted">Транзакции НЕ МОГУТ быть удалены</string>
     <string name="Transcript">Стенограмма</string>
     <string name="Transfer">Передача</string>
     <string name="Transfer_Amount">Сумма перевода</string>

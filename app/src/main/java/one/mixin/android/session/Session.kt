@@ -8,6 +8,8 @@ import io.jsonwebtoken.EdDSAPrivateKey
 import io.jsonwebtoken.EdDSAPublicKey
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
+import io.sentry.Sentry
+import io.sentry.protocol.User
 import jwt.Jwt
 import okhttp3.Request
 import okio.ByteString.Companion.encode
@@ -36,11 +38,14 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.extension.startsWithIgnoreCase
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
+import one.mixin.android.util.xinDialCode
 import one.mixin.android.vo.Account
 import one.mixin.eddsa.Ed25519Sign
+import org.threeten.bp.Instant
 import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
@@ -65,6 +70,12 @@ object Session {
         self = account
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.copy(salt = null)))
+
+        val user = User().apply {
+            id = account.userId
+            username = account.identityNumber
+        }
+        Sentry.setUser(user)
 
         val salt = account.salt
         if (salt.isNullOrEmpty()) {
@@ -96,10 +107,31 @@ object Session {
             }
         }
 
+    fun hasPhone(): Boolean {
+        val account = getAccount()
+        val phone = account?.phone
+        return !phone.isNullOrBlank() && !phone.startsWithIgnoreCase(xinDialCode)
+    }
+
+    fun isAnonymous(): Boolean {
+        return !hasPhone()
+    }
+
+    fun saltExported(): Boolean {
+        val account = getAccount()
+        val exportedSaltAt = account?.saltExportedAt ?: return false
+        val baseInstant = Instant.parse("0001-01-01T00:00:00Z")
+        return Instant.parse(exportedSaltAt).isAfter(baseInstant)
+    }
+
     fun clearAccount() {
         self = null
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
+        
+        Sentry.configureScope { scope ->
+            scope.user = null
+        }
     }
 
     fun storeEd25519Seed(token: String) {

@@ -46,7 +46,6 @@
     <color name="bgFlag">#FFFFFF</color>
     <color name="bgTranslucence">#EEFFFFFF</color>
     <color name="bgRank">#E5E8EE</color>
-    <color name="bgConfirmation">@color/bgGrayLight</color>
     <color name="bgChooseNetworkYellow">#4DFFF7AD</color>
     <color name="bgChooseNetwork">#F6F7FA</color>
 
@@ -121,6 +120,7 @@
     <color name="wallet_yellow">#ffb952</color>
     <color name="wallet_yellow_dark">#ffa02e</color>
     <color name="wallet_pink">#F67070</color>
+    <color name="wallet_red">#E57874</color>
     <color name="wallet_green">#50BD5C</color>
     <color name="wallet_blue_secondary">#397ee4</color>
     <color name="wallet_blue_light">#f2faff</color>
@@ -131,9 +131,13 @@
     <color name="call_light_green">#5DBC7A</color>
     <color name="warning_yellow_bg">#FEF7B6</color>
 
+    <color name="mao_user">#F7A500</color>
+
     <color name="border_primary">#E5E8EE</color>
 
     <color name="call_voice">#50BD5C</color>
+
+    <color name="badgeRed">#DB454F</color>
 
     <array name="name_colors">
         <item>#8C8DFF</item>

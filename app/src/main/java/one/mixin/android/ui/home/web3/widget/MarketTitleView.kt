@@ -16,18 +16,17 @@ import one.mixin.android.extension.dp
 class MarketTitleView : RelativeLayout {
 
     private val _binding: ViewMarketTitleBinding
+    private var isSevenDays: Boolean = true
+    private var currentSort: MarketSort? = null
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         _binding = ViewMarketTitleBinding.inflate(LayoutInflater.from(context), this)
-        _binding.percentage.text = context.getString(R.string.change_percent_period_day, 7)
         setupListeners()
         loadSortPreference()
+        updatePercentageText()
     }
-
-    var currentSort: MarketSort? = null
-        private set
 
     fun updatePadding(horizontalPadding: Int) {
         _binding.priceOrder.updateLayoutParams<MarginLayoutParams> {
@@ -49,7 +48,11 @@ class MarketTitleView : RelativeLayout {
             onTitleClicked(MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING)
         }
         _binding.percentageOrder.setOnClickListener {
-            onTitleClicked(MarketSort.PERCENTAGE_ASCENDING, MarketSort.PERCENTAGE_DESCENDING)
+            if (isSevenDays) {
+                onTitleClicked(MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING)
+            } else {
+                onTitleClicked(MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING)
+            }
         }
     }
 
@@ -78,9 +81,14 @@ class MarketTitleView : RelativeLayout {
                 _binding.priceIcon.rotation = if (sort == MarketSort.PRICE_ASCENDING) 0f else 180f
             }
 
-            MarketSort.PERCENTAGE_ASCENDING, MarketSort.PERCENTAGE_DESCENDING -> {
+            MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING, MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING -> {
                 _binding.percentageIcon.isVisible = true
-                _binding.percentageIcon.rotation = if (sort == MarketSort.PERCENTAGE_ASCENDING) 0f else 180f
+                _binding.percentageIcon.rotation = if (sort == MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING) 0f else 180f
+            }
+
+            MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING -> {
+                _binding.percentageIcon.isVisible = true
+                _binding.percentageIcon.rotation = if (sort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) 0f else 180f
             }
         }
     }
@@ -110,6 +118,30 @@ class MarketTitleView : RelativeLayout {
 
     fun setText(@StringRes str: Int) {
         _binding.rankTitle.setText(str)
+    }
+
+    private fun updatePercentageText() {
+        _binding.percentage.text = if (isSevenDays) {
+            context.getString(R.string.change_percent_period_day, 7)
+        } else {
+            context.getString(R.string.change_percent_period_hour, 24)
+        }
+    }
+
+    fun updateSortType(topPercentage: Int) {
+        isSevenDays = topPercentage == 0
+        updatePercentageText()
+        val newSort = when {
+            isSevenDays && (currentSort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING || currentSort == MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING) -> MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING
+            isSevenDays && (currentSort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING || currentSort == MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING) -> MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING
+            !isSevenDays && (currentSort == MarketSort.SEVEN_DAYS_PERCENTAGE_ASCENDING || currentSort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) -> MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING
+            !isSevenDays && (currentSort == MarketSort.SEVEN_DAYS_PERCENTAGE_DESCENDING || currentSort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING) -> MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING
+            else -> currentSort
+        }
+        if (newSort != currentSort) {
+            currentSort = newSort
+            callback(currentSort!!)
+        }
     }
 
     private val sharedPreferences by lazy { context.defaultSharedPreferences }

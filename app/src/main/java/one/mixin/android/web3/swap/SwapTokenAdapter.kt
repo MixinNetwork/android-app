@@ -9,9 +9,10 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
 import one.mixin.android.extension.loadImage
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainNetwork
 
-class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = tokens.isEmpty()
 
     var tokens: List<SwapToken> = ArrayList(0)
@@ -22,6 +23,9 @@ class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 notifyDataSetChanged()
             }
         }
+
+    var all: Boolean = true
+    var isSearch: Boolean =false
 
     var address: String? = null
         @SuppressLint("NotifyDataSetChanged")
@@ -35,6 +39,10 @@ class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
         this.onClickListener = onClickListener
+    }
+
+    fun onClick(token: SwapToken) {
+        onClickListener?.invoke(token, false)
     }
 
     override fun onCreateViewHolder(
@@ -52,7 +60,18 @@ class SwapTokenAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        (holder as Web3Holder).bind(tokens[position], onClickListener)
+        (holder as Web3Holder).bind(tokens[position], selectUnique) { token, isAlert ->
+            AnalyticsTracker.trackSwapCoinSwitch(
+                if (isSearch) {
+                    AnalyticsTracker.SwapCoinSwitchMethod.SEARCH_ITEM_CLICK
+                } else if (all) {
+                    AnalyticsTracker.SwapCoinSwitchMethod.ALL_ITEM_CLICK
+                } else {
+                    AnalyticsTracker.SwapCoinSwitchMethod.CHAIN_ITEM_CLICK
+                }
+            )
+            onClickListener?.invoke(token, isAlert)
+        }
     }
 }
 
@@ -60,6 +79,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
     @SuppressLint("SetTextI18n")
     fun bind(
         token: SwapToken,
+        selectUnique: String? = null,
         onClickListener: ((SwapToken, Boolean) -> Unit)?,
     ) {
         binding.apply {
@@ -77,11 +97,13 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             }
             if (!token.inMixin()) {
                 alert.isVisible = true
+                select.isVisible = false
                 alert.setOnClickListener {
                     onClickListener?.invoke(token, true)
                 }
             } else {
                 alert.isVisible = false
+                select.isVisible = token.getUnique() == selectUnique
                 alert.setOnClickListener(null)
             }
         }

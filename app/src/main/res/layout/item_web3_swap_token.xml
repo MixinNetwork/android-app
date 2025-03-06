@@ -58,10 +58,12 @@
         android:id="@+id/network_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@id/name_tv"
         android:layout_marginEnd="@dimen/margin20"
+        android:layout_alignTop="@id/name_tv"
+        android:layout_alignBottom="@id/name_tv"
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
+        android:layout_marginStart="4dp"
         android:singleLine="true"
         android:ellipsize="end"
         android:layout_toEndOf="@+id/name_tv"
@@ -96,5 +98,16 @@
         android:layout_height="match_parent"
         android:padding="4dp"
         android:background="@drawable/mixin_ripple"/>
+
+    <ImageView
+        android:id="@+id/select"
+        android:src="@drawable/ic_check_blue_24dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:padding="4dp"
+        android:background="@drawable/mixin_ripple"
+        android:visibility="gone" />
 
 </RelativeLayout>

@@ -31,6 +31,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.Timeout
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
@@ -115,9 +116,11 @@ import org.chromium.net.CronetEngine
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.inject.Singleton
 import kotlin.math.abs
 
@@ -176,7 +179,11 @@ object AppModule {
             reportException(e)
             null
         } catch (e: Exception) {
-            reportException(e)
+            if (e is TimeoutException || e is Timeout) {
+                Timber.e(e)
+            } else {
+                reportException(e)
+            }
             null
         }
     }

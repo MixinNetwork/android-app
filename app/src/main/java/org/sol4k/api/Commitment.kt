@@ -15,6 +15,6 @@ enum class Commitment {
     PROCESSED;
 
     override fun toString(): String {
-        return this.name.toLowerCase()
+        return this.name.lowercase()
     }
 }

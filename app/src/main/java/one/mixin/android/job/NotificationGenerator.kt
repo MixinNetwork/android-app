@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
@@ -19,9 +18,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.LocusIdCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.transform.CircleCropTransformation
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.transformations
+import coil3.toBitmap
+import coil3.transform.CircleCropTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -475,7 +476,7 @@ object NotificationGenerator : Injector() {
             } else {
                 NotificationCompat.PRIORITY_HIGH
             }
-
+        notificationBuilder.setVibrate(longArrayOf(0, 500, 1000))
         var person: Person? = null
         supportsR({
             val name = conversation.getConversationName()
@@ -619,9 +620,8 @@ object NotificationGenerator : Injector() {
                 .size(width, height)
                 .transformations(CircleCropTransformation())
                 .target(
-                    onSuccess = { drawable ->
-                        val bitmap = (drawable as? BitmapDrawable)?.bitmap
-                        onComplete(bitmap)
+                    onSuccess = { image ->
+                        onComplete(image.toBitmap(width,height))
                     },
                     onError = {
                         onComplete(null)

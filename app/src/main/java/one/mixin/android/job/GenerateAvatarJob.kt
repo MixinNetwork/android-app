@@ -14,10 +14,11 @@ import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import androidx.collection.ArrayMap
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.toBitmap
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.toBitmap
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.R
@@ -368,7 +369,7 @@ class GenerateAvatarJob(
                         .build()
 
                 val result = applicationContext.imageLoader.execute(request)
-                val bitmap = (result as? SuccessResult)?.drawable?.toBitmap()
+                val bitmap = (result as? SuccessResult)?.image?.toBitmap()
                 if (bitmap != null) {
                     bitmaps.add(bitmap)
                 } else {

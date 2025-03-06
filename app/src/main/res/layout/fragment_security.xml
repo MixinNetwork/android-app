@@ -40,26 +40,21 @@
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/setting_divider"
-                android:background="?attr/bg_window" />
-
             <RelativeLayout
-                android:id="@+id/emergency_rl"
+                android:id="@+id/recovery_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
                 android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
-                    android:id="@+id/emergency_tv"
+                    android:id="@+id/recovery_tv"
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/Emergency_Contact"
+                    android:text="@string/Recovery_Kit"
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 

@@ -36,10 +36,11 @@ import one.mixin.android.ui.home.web3.stake.StakeFragment
 import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment.Companion.ARGS_CHAIN
 import one.mixin.android.web3.receive.Web3AddressFragment
-import one.mixin.android.web3.send.InputAddressFragment
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 
@@ -107,7 +108,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
             setOnClickAction { id ->
                 when (id) {
                     R.id.send -> {
-                        navTo(InputAddressFragment.newInstance(address, token, chainToken), InputAddressFragment.TAG)
+                        navTo(TransferDestinationInputFragment.newInstance(address, token, chainToken), TransferDestinationInputFragment.TAG)
                     }
 
                     R.id.receive -> {
@@ -115,6 +116,7 @@ class Web3TransactionDetailsFragment : BaseFragment(R.layout.fragment_web3_trans
                     }
 
                     R.id.swap -> {
+                        AnalyticsTracker.trackSwapStart("solana", "solana")
                         navTo(SwapFragment.newInstance<Web3Token>(web3tokens), SwapFragment.TAG)
                     }
 

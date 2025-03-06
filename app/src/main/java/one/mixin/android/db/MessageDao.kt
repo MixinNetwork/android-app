@@ -133,6 +133,14 @@ interface MessageDao : BaseDao<Message> {
         messageId: String,
     ): Int
 
+    @Query(
+        """
+        SELECT count(1) FROM messages 
+        WHERE conversation_id = :conversationId
+        AND category IN ($IMAGES, $VIDEOS, $LIVES) 
+        """)
+    suspend fun countIndexMediaMessages(conversationId: String): Int
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
@@ -154,16 +162,23 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
         AND category IN ($IMAGES, $VIDEOS)
-        AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
+        AND (created_at > (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)))
         """,
     )
     suspend fun indexMediaMessagesExcludeLive(
         conversationId: String,
         messageId: String,
     ): Int
+
+    @Query(
+        """
+        SELECT count(1) FROM messages 
+        WHERE conversation_id = :conversationId
+        AND category IN ($IMAGES, $VIDEOS) 
+        """)
+    suspend fun countIndexMediaMessagesExcludeLive(conversationId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
@@ -267,7 +282,9 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
-        m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName, u.membership AS membership, u.app_id AS app_id, u.is_verified AS isVerified  
+        m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName, u.membership AS membership,
+        u.identity_number AS userIdentityNumber,
+        u.app_id AS app_id, u.is_verified AS isVerified  
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE  m.id IN (:ids)
         ORDER BY m.created_at DESC
@@ -590,7 +607,6 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """
         SELECT count(1) FROM messages
-        INDEXED BY index_messages_conversation_id_category 
         WHERE conversation_id = :conversationId 
         AND category IN ($DATA) 
         AND media_mime_type LIKE 'audio%'

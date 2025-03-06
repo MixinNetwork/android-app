@@ -32,7 +32,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
     }
 
     @SuppressLint("CheckResult", "SetTextI18n")
-    fun bind(item: MarketItem, onClick: (MarketItem) -> Unit, onFavorite: (String, String, Boolean?) -> Unit) {
+    fun bind(item: MarketItem, dayType: Boolean, onClick: (MarketItem) -> Unit, onFavorite: (String, String, Boolean?) -> Unit) {
         binding.apply {
             val isColorReversed = binding.root.context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
             root.setOnClickListener { onClick.invoke(item) }
@@ -45,7 +45,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             icon.loadImage(item.iconUrl, R.drawable.ic_avatar_place_holder)
             assetSymbol.text = item.symbol
             assetValue.text = item.totalVolume
-            val percentage = BigDecimal(item.priceChangePercentage7D)
+            val percentage = BigDecimal(if (dayType) item.priceChangePercentage7D else item.priceChangePercentage24H)
             marketPercentage.text = "${percentage.numberFormat2()}%"
             val isRising = percentage >= BigDecimal.ZERO
             marketPercentage.setQuoteText("${percentage.numberFormat2()}%", isRising)
@@ -62,7 +62,7 @@ class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(bin
             } else {
                 ""
             }
-            sparkline.loadSvgWithTint(item.sparklineIn7d, isRising, isColorReversed)
+            sparkline.loadSvgWithTint(if (dayType) item.sparklineIn7d else item.sparklineIn24, isRising, isColorReversed)
         }
     }
 }

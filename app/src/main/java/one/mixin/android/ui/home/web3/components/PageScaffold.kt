@@ -9,8 +9,10 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -19,7 +21,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 fun PageScaffold(
     title: String,
     verticalScrollable: Boolean = true,
-    pop: () -> Unit,
+    pop: (() -> Unit)?,
     actions: @Composable RowScope.() -> Unit = {},
     body: @Composable ColumnScope.() -> Unit,
 ) {
@@ -32,12 +34,14 @@ fun PageScaffold(
                 },
                 actions = actions,
                 navigationIcon = {
-                    IconButton(onClick = { pop() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_back),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.icon,
-                        )
+                    pop?.let { pop ->
+                        IconButton(onClick = { pop() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_back),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.icon,
+                            )
+                        }
                     }
                 },
             )

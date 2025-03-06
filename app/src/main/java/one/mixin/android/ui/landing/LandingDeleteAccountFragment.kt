@@ -19,20 +19,28 @@ class LandingDeleteAccountFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "LandingDeleteAccountFragment"
 
-        private val ARGS_TIME = "ARGS_TIME"
+        private const val ARGS_REQUEST_TIME = "ARGS_REQUEST_TIME"
+        private const val ARGS_EFFECTIVE_TIME = "ARGS_EFFECTIVE_TIME"
 
-        fun newInstance(time: String?) =
+        fun newInstance(requestTime: String?, effectiveTime: String?) =
             LandingDeleteAccountFragment().withArgs {
-                time?.let {
-                    putLong(ARGS_TIME, it.createAtToLong())
+                requestTime?.let {
+                    putLong(ARGS_REQUEST_TIME, it.createAtToLong())
+                }
+                effectiveTime?.let {
+                    putLong(ARGS_EFFECTIVE_TIME, it.createAtToLong())
                 }
             }
     }
 
     private val binding by viewBinding(FragmentLandingDeleteAccountBinding::inflate)
 
-    private val time: Long by lazy {
-        requireArguments().getLong(ARGS_TIME, System.currentTimeMillis())
+    private val requestTime: Long by lazy {
+        requireArguments().getLong(ARGS_REQUEST_TIME, System.currentTimeMillis())
+    }
+
+    private val effectiveTime: Long by lazy {
+        requireArguments().getLong(ARGS_EFFECTIVE_TIME, System.currentTimeMillis())
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")
@@ -50,7 +58,8 @@ class LandingDeleteAccountFragment : MixinBottomSheetDialogFragment() {
             content.text =
                 getString(
                     R.string.landing_delete_content,
-                    localDateString(time),
+                    localDateString(requestTime),
+                    localDateString(effectiveTime),
                 )
             continueTv.setOnClickListener {
                 dismiss()

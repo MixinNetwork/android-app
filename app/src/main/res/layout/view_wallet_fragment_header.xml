@@ -11,26 +11,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <FrameLayout
-            android:id="@+id/migrate"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:background="@color/colorBlue"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginStart="3dp"
-                android:gravity="center"
-                android:text="@string/asset_migration_hint"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
-
-        </FrameLayout>
-
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -110,17 +90,30 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="16dp"
             android:orientation="horizontal"
             android:visibility="gone" />
 
         <one.mixin.android.widget.SendReceiveView
             android:id="@+id/send_receive_view"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginStart="@dimen/margin20"
-            android:layout_marginEnd="@dimen/margin20"
-            android:layout_marginBottom="@dimen/margin16" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
+
+        <one.mixin.android.widget.PendingView
+            android:id="@+id/pending_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"/>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="4dp"/>
+
     </one.mixin.android.widget.surprise.SurpriseLinearLayout>
 
     <View

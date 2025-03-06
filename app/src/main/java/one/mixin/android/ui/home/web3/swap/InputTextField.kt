@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.swap
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -15,9 +16,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,20 +28,26 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.request.ImageRequest
+import coil3.request.transformations
+import kotlinx.coroutines.delay
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -50,88 +59,79 @@ fun InputContent(
     readOnly: Boolean = false,
 ) {
     if (readOnly) {
-        val v =
-            try {
-                if (text.isBlank() || token == null) BigDecimal.ZERO else BigDecimal(text).multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING)
-            } catch (e: Exception) {
-                BigDecimal.ZERO
-            }
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Left(token, selectClick)
-
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = text,
-                            style =
-                                TextStyle(
-                                    fontSize = 20.sp,
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontWeight = FontWeight.Black,
-                                    textAlign = TextAlign.End,
-                                ),
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
+                                fontWeight = FontWeight.Black,
+                                textAlign = TextAlign.Start,
+                            ),
                         )
                     }
                 }
+
+                Right(token, selectClick)
             }
-            if (v != BigDecimal.ZERO) {
-                Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "$${v.toPlainString()}",
-                        style =
-                            TextStyle(
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Light,
-                                color = MixinAppTheme.colors.textAssist,
-                            ),
-                    )
-                }
-            } else {
-                Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
-            }
+            Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
     } else {
         val focusRequester = remember { FocusRequester() }
-        val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+        val keyboardController = LocalSoftwareKeyboardController.current
         val interactionSource = remember { MutableInteractionSource() }
-        Column(modifier = Modifier.fillMaxWidth()) {
-            val valueText by mutableStateOf(
-                if (token != null) {
-                    val v =
-                        try {
-                            if (text.isBlank()) BigDecimal.ZERO else BigDecimal(text)
-                        } catch (e: Exception) {
-                            BigDecimal.ZERO
-                        }
-                    mutableStateOf(v.multiply(BigDecimal(token.price ?: "0")).setScale(2, RoundingMode.CEILING))
-                } else {
-                    mutableStateOf(BigDecimal.ZERO)
-                },
+        var textFieldValue by remember {
+            mutableStateOf(
+                TextFieldValue(
+                    text = text,
+                    selection = TextRange(text.length)
+                )
             )
+        }
+
+        LaunchedEffect(text) {
+            if (textFieldValue.text != text) {
+                textFieldValue = TextFieldValue(
+                    text = text,
+                    selection = TextRange(text.length)
+                )
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            if (text.isBlank()) {
+                delay(100)
+                focusRequester.requestFocus()
+            }
+        }
+
+        Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Left(token, selectClick)
-                BasicTextField(
-                    value = text,
-                    onValueChange = {
-                        val v =
-                            try {
-                                if (it.isBlank()) BigDecimal.ZERO else BigDecimal(it)
+                Box(
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                ) {
+                    BasicTextField(
+                        value = textFieldValue,
+                        onValueChange = {
+                            textFieldValue = it
+                            val v = try {
+                                if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
                             } catch (e: Exception) {
                                 return@BasicTextField
                             }
-                        valueText.value = v.multiply(BigDecimal(token?.price ?: "0")).setScale(2, RoundingMode.CEILING)
-                        onInputChanged?.invoke(it)
-                    },
-                    maxLines = 1,
-                    modifier =
-                        Modifier
+                            onInputChanged?.invoke(it.text)
+                        },
+                        maxLines = 1,
+                        modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
                             .onFocusChanged {
@@ -139,71 +139,83 @@ fun InputContent(
                                     keyboardController?.show()
                                 }
                             },
-                    interactionSource = interactionSource,
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    textStyle =
-                        TextStyle(
-                            fontSize = 20.sp,
+                        textStyle = TextStyle(
+                            fontSize = 24.sp,
                             color = MixinAppTheme.colors.textPrimary,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.End,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Start,
                         ),
-                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                ) { innerTextField ->
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                            innerTextField()
-                        }
+                        cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        interactionSource = interactionSource,
+                    )
+
+                    if (text.isEmpty()) {
+                        Text(
+                            text = "0",
+                            color = MixinAppTheme.colors.textRemarks,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        )
                     }
                 }
+                Right(token, selectClick)
             }
-            Box(modifier = Modifier.width(8.dp))
-            if (valueText.value != BigDecimal.ZERO) {
-                Box(contentAlignment = Alignment.CenterEnd, modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "$${valueText.value.toPlainString().numberFormat8()}",
-                        style =
-                            TextStyle(
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Light,
-                                color = MixinAppTheme.colors.textAssist,
-                            ),
-                    )
-                }
-            } else {
-                Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
-            }
+            Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
         }
     }
 }
 
 @Composable
-private fun Left(
+private fun Right(
     token: SwapToken?,
     selectClick: () -> Unit,
 ) {
     Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
-        CoilImage(
-            model = token?.icon ?: "",
-            placeholder = R.drawable.ic_avatar_place_holder,
-            modifier = Modifier.size(32.dp).clip(CircleShape),
-        )
-        Box(modifier = Modifier.width(10.dp))
+        if (token?.collectionHash != null) {
+            CoilImage(
+                model = ImageRequest.Builder(LocalContext.current).data(token.icon).transformations(CoilRoundedHexagonTransformation()).build(),
+                placeholder = R.drawable.ic_inscription_icon,
+                modifier = Modifier
+                    .size(30.dp),
+            )
+        } else {
+            Box {
+                CoilImage(
+                    model = token?.icon ?: "",
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                )
+
+                CoilImage(
+                    model = token?.chain?.icon ?: "",
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .size(13.dp)
+                        .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                        .clip(CircleShape),
+                )
+            }
+        }
+        Box(modifier = Modifier.width(8.dp))
         Text(
             text = token?.symbol ?: "",
             style =
                 TextStyle(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary,
                 ),
         )
-        Box(modifier = Modifier.width(4.dp))
+        Box(modifier = Modifier.width(8.dp))
         Icon(
             painter = painterResource(id = R.drawable.ic_web3_drop_down),
             contentDescription = null,
-            tint = MixinAppTheme.colors.icon,
+            tint = MixinAppTheme.colors.iconGray,
         )
-        Box(modifier = Modifier.width(10.dp))
     }
 }

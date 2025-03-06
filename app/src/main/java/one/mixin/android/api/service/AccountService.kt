@@ -19,6 +19,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AddressResponse
 import one.mixin.android.api.response.DeviceCheckResponse
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.SchemeResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
@@ -44,6 +45,11 @@ interface AccountService {
     @POST("verifications")
     suspend fun verification(
         @Body request: VerificationRequest,
+    ): MixinResponse<VerificationResponse>
+
+    @POST("verifications")
+    suspend fun verification(
+        @Body request: AccountRequest,
     ): MixinResponse<VerificationResponse>
 
     @POST("verifications/{id}")
@@ -88,6 +94,9 @@ interface AccountService {
         @Body request: DeactivateRequest,
     ): MixinResponse<Account>
 
+    @POST("me/salt_export")
+    suspend fun saltExport(@Body exportRequest: ExportRequest): MixinResponse<Account>
+
     @POST("logout")
     suspend fun logout(
         @Body request: LogoutRequest,
@@ -114,9 +123,9 @@ interface AccountService {
     ): MixinResponse<Account>
 
     @POST("session")
-    fun updateSession(
+    suspend fun updateSession(
         @Body request: SessionRequest,
-    ): Observable<MixinResponse<Account>>
+    ): MixinResponse<Account>
 
     @GET("stickers/albums")
     suspend fun getStickerAlbums(): MixinResponse<List<StickerAlbum>>

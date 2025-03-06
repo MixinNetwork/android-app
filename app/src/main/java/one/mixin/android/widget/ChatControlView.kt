@@ -27,9 +27,6 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.view.VelocityTracker
 import android.view.View
-import android.view.View.OnClickListener
-import android.view.View.OnKeyListener
-import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -94,7 +91,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         EXPANDED_KEYBOARD, // + ☺ i
         EXPANDED_MENU, // x ☺ i
         EXPANDED_STICKER, // + k i
-        EXPANDED_GALLERY, // + ☺ i[√]
         COLLAPSED, // + ☺ i
     }
 
@@ -157,14 +153,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     menuContainer.isVisible = false
                     stickerContainer.isVisible = true
                     galleryContainer.isVisible = false
-                }
-                STATUS.EXPANDED_GALLERY -> {
-                    menuStatus = MenuStatus.COLLAPSED
-                    stickerStatus = StickerStatus.STICKER
-                    binding.chatImgIv.setImageResource(R.drawable.ic_chat_img_checked)
-                    menuContainer.isVisible = false
-                    stickerContainer.isVisible = false
-                    galleryContainer.isVisible = true
                 }
                 STATUS.COLLAPSED -> {
                     menuStatus = MenuStatus.COLLAPSED
@@ -374,9 +362,6 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                     controlState = STATUS.COLLAPSED
                     inputLayout.closeInputArea(binding.chatEt)
                 } else if (controlState == STATUS.EXPANDED_STICKER && !stickerContainer.isVisible) {
-                    controlState = STATUS.COLLAPSED
-                    inputLayout.closeInputArea(binding.chatEt)
-                } else if (controlState == STATUS.EXPANDED_GALLERY && !galleryContainer.isVisible) {
                     controlState = STATUS.COLLAPSED
                     inputLayout.closeInputArea(binding.chatEt)
                 }
@@ -758,35 +743,11 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     @SuppressLint("CheckResult")
     private val onChatImgClickListener =
         OnClickListener {
-            RxPermissions(activity!! as FragmentActivity)
-                .request(
-                    *if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
-                    } else {
-                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    },
-                )
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            clickGallery()
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    },
-                    {},
-                )
+            clickGallery()
         }
 
     private fun clickGallery() {
-        if (controlState == STATUS.EXPANDED_GALLERY) {
-            controlState = STATUS.COLLAPSED
-            inputLayout.closeInputArea(binding.chatEt)
-        } else {
-            controlState = STATUS.EXPANDED_GALLERY
-            inputLayout.openInputArea(binding.chatEt)
-            callback.onGalleryClick()
-        }
+        callback.onGalleryClick()
         remainFocusable()
     }
 

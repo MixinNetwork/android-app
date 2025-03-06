@@ -18,7 +18,6 @@ import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.maxTotalAlerts
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
-import one.mixin.android.ui.wallet.alert.vo.AlertStatus
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import javax.inject.Inject
 
@@ -99,7 +98,7 @@ class AlertViewModel
         }
     }
 
-    private fun addAlertBot(){
+    private fun addAlertBot() {
         viewModelScope.launch(Dispatchers.IO) {
             val bot = userRepository.getUserById(MIXIN_ALERT_USER_ID)
             if (bot == null || bot.relationship != "FRIEND") {

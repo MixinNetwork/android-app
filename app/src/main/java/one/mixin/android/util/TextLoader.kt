@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import android.content.Context
 import android.widget.TextView
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -11,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +21,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import one.mixin.android.MixinApplication
 import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
 import one.mixin.android.ui.home.inscription.component.AutoSizeText
@@ -78,7 +79,7 @@ fun TextView.load(url: String?) {
 }
 
 @Composable
-fun TextLoaderComposable(url: String?) {
+fun TextLoaderComposable(url: String?, fontSize: TextUnit = 24.sp) {
     url ?: return
     val context = LocalContext.current
     val textLoader = remember { TextLoader(context) }
@@ -89,6 +90,23 @@ fun TextLoaderComposable(url: String?) {
     }
 
     AutoSizeText(
-        text = text ?: "", maxLines = 12, color = Color(0xFF, 0xA7, 0x24, 0xFF), fontSize = 24.sp, constraint = AutoSizeConstraint.Height(min = 12.sp), overflow = TextOverflow.Ellipsis
+        text = text ?: "", maxLines = 12, color = Color(0xFF, 0xA7, 0x24, 0xFF), fontSize = fontSize, constraint = AutoSizeConstraint.Height(min = fontSize / 2), overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+fun SmallTextLoaderComposable(url: String?, fontSize: TextUnit) {
+    url ?: return
+    val context = LocalContext.current
+    val textLoader = remember { TextLoader(context) }
+    var text by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(url) {
+        text = textLoader.getData(url)
+    }
+
+    Text(
+        text = text ?: "",
+        color = Color(0xFF, 0xA7, 0x24, 0xFF), fontSize = fontSize, lineHeight = fontSize, overflow = TextOverflow.Ellipsis,
     )
 }

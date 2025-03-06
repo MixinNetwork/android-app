@@ -18,9 +18,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
-import com.google.protobuf.Mixin
 import one.mixin.android.Constants
-import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
@@ -117,6 +115,34 @@ fun TextView.highLight(
         )
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }
+    setText(spannable)
+}
+
+
+fun TextView.highLightMao(
+    @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null),
+    @ColorInt maoColor: Int = resources.getColor(R.color.mao_user, null),
+) {
+    val text = this.text.toString()
+    if (!text.isMao()) return
+    val spannable = SpannableString(text)
+    val maoStartIndex = text.length - 4
+    val maoEndIndex = text.length 
+
+    spannable.setSpan(
+        ForegroundColorSpan(color),
+        0,
+        maoStartIndex,
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
+
+    spannable.setSpan(
+        ForegroundColorSpan(maoColor),
+        maoStartIndex,
+        maoEndIndex,
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
+
     setText(spannable)
 }
 
@@ -272,4 +298,19 @@ fun TextView.setQuoteText(text: String?, isRising: Boolean?) {
 
     this.text = text
     setTextColor(color)
+}
+
+fun TextView.setQuoteTextWithBackgroud(text: String?, isRising: Boolean? = null) {
+    val quoteColorPref = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+
+    setTextColor(context.colorAttr(R.attr.bg_white))
+    this.text = text
+
+    val color = when (isRising) {
+        true -> if (quoteColorPref) R.drawable.bg_text_quote_red else R.drawable.bg_text_quote_green
+        false -> if (quoteColorPref) R.drawable.bg_text_quote_green else R.drawable.bg_text_quote_red
+        else -> R.drawable.bg_text_quote_gray
+    }
+    setBackgroundResource(color)
 }

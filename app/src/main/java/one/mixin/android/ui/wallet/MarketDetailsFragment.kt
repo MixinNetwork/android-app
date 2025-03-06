@@ -29,6 +29,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.setQuoteText
+import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -88,11 +89,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 rightExtraIb.setOnClickListener {
                     walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
-                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    marketItem.isFavored = marketItem.isFavored != true
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
-                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol)
+                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol, marketItem.coinId)
                     else toast(R.string.Please_wait_a_bit)
                 }
             }
@@ -116,12 +117,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } ?: emptyList()
                     }
                     if (nowTokens.isEmpty()) {
-                        toast(R.string.Data_error)
+                        toast(getString(R.string.swap_not_supported, marketItem.name))
                         return@launch
                     }
                     val assets = walletViewModel.allAssetItems()
                     if (nowTokens.size == 1) {
-                        val output = if (nowTokens.first().assetId == USDT_ASSET_ID) {
+                        val input = if (nowTokens.first().assetId == USDT_ASSET_ID) {
                             XIN_ASSET_ID
                         } else {
                             USDT_ASSET_ID
@@ -129,8 +130,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                         view.navigate(R.id.action_market_details_to_swap,
                             Bundle().apply {
-                                putString(ARGS_INPUT, nowTokens.first().assetId)
-                                putString(ARGS_OUTPUT, output)
+                                putString(ARGS_INPUT, input)
+                                putString(ARGS_OUTPUT, nowTokens.first().assetId)
                                 putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
                             })
                     } else {
@@ -211,10 +212,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
 
             if (marketItem.coinId.isBlank()) {
-                rank.isVisible = false
                 assetRank.isVisible = false
                 titleView.rightExtraIb.isVisible = false
             }
+            assetSymbol.text = marketItem.symbol
             assetName.text = marketItem.name
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
@@ -230,7 +231,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             radio1w.text = getString(R.string.weeks_count_short, 1)
             radio1m.text = getString(R.string.months_count_short, 1)
             radioYtd.text = getString(R.string.ytd)
-            radioAll.text = getString(R.string.All)
+            radioAll.text = getString(R.string.All).uppercase()
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
                 typeState.value =
@@ -249,7 +250,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         }
 
                         R.id.radio_ytd -> {
-                            "YTD"
+                            "1Y"
                         }
 
                         else -> {
@@ -267,22 +268,25 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     marketItem.assetIds!!.first()
                 }, { percentageChange ->
                     if (percentageChange == null) {
-                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                        priceRise.text = getString(R.string.N_A)
+                        priceRise.setQuoteTextWithBackgroud(getString(R.string.N_A))
+                    } else if (typeState.value == "1D") {
+                        val rise = BigDecimal(marketItem.priceChangePercentage24H)
+                        currentRise = "${rise.numberFormat2()}%"
+                        priceRise.setQuoteTextWithBackgroud(currentRise, rise >= BigDecimal.ZERO)
                     } else {
                         currentRise = String.format("%.2f%%", percentageChange)
-                        priceRise.setQuoteText(currentRise, percentageChange >= 0f)
+                        priceRise.setQuoteTextWithBackgroud(currentRise, percentageChange >= 0f)
                     }
                 }, { price, percentageChange ->
                     if (price == null) {
                         priceValue.text = currentPrice
-                        priceRise.setQuoteText(currentRise, currentRise?.startsWith("-") == false)
+                        priceRise.setQuoteTextWithBackgroud(currentRise, currentRise?.startsWith("-") == false)
                     } else {
                         priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
-                            priceRise.text = ""
+                            priceRise.setQuoteTextWithBackgroud(getString(R.string.N_A))
                         } else {
-                            priceRise.setQuoteText(String.format("%.2f%%", percentageChange), percentageChange >= 0f)
+                            priceRise.setQuoteTextWithBackgroud(String.format("%.2f%%", percentageChange), percentageChange >= 0f)
                         }
                     }
                 }, { loading -> isLoading = loading })
@@ -297,11 +301,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             if (info != null) {
                 loadBalance(info)
                 binding.apply {
-                    rank.isVisible = true
                     assetRank.isVisible = true
                     titleView.rightExtraIb.isVisible = true
+                    assetSymbol.text = info.symbol
                     assetName.text = info.name
-                    rank.text = "#${info.marketCapRank}"
                     assetRank.text = "#${info.marketCapRank}"
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
@@ -413,7 +416,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } else {
                             "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                         }
-                    } catch (ignored: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE
@@ -427,7 +430,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         balanceChange.text = "0.00%"
                         riseTitle.isVisible = false
                     }
-                    priceRise.setQuoteText(currentRise, !marketItem.priceChangePercentage24H.startsWith("-"))
+                    priceRise.setQuoteTextWithBackgroud(currentRise, !marketItem.priceChangePercentage24H.startsWith("-"))
                     balanceRl.setOnClickListener {
                         lifecycleScope.launch {
                             if (ids.size > tokens.size) {

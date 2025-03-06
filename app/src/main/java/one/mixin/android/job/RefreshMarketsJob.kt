@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCapRank
@@ -41,12 +40,9 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                     marketFavoredDao.insertList(marketExtraList)
                 }
                 if (category == "all") {
-                    runInTransaction {
-                        marketCapRankDao.deleteAll()
-                        marketCapRankDao.insertList(list.map {
-                            MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
-                        })
-                    }
+                    marketCapRankDao.insertAll(list.map {
+                        MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
+                    })
                 }
                 marketDao.upsertList(list)
                 val ids = list.flatMap { market ->

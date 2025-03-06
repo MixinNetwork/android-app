@@ -19,13 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -98,9 +96,10 @@ fun AboutPage() {
                     .padding(it)
                     .verticalScroll(rememberScrollState()),
         ) {
-            val navController = LocalSettingNav.current
             val context = LocalContext.current
-            val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
+            val attrs = context.obtainStyledAttributes(intArrayOf(R.attr.ic_logo))
+            val logoResId = attrs.getResourceId(0, R.drawable.ic_logo_mixin) // 默认值为 ic_logo_mixin
+            attrs.recycle() // 记得回收
             Image(
                 modifier =
                     Modifier
@@ -114,7 +113,7 @@ fun AboutPage() {
                             }
                         }
                         .align(Alignment.CenterHorizontally),
-                painter = painterResource(id = R.drawable.ic_logo),
+                painter = painterResource(id = logoResId),
                 contentDescription = null,
             )
             AboutTile(
@@ -132,7 +131,7 @@ fun AboutPage() {
             AboutTile(
                 text = stringResource(id = R.string.Help_center),
                 onClick = {
-                    context.openUrl(Constants.HelpLink.CENTER)
+                    context.openUrl(context.getString(R.string.help_link))
                 },
             )
             AboutTile(

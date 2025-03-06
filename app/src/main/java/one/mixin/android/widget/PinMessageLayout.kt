@@ -23,10 +23,8 @@ import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.session.Session
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.PinMessageItem
-import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.explain
 
 class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
@@ -103,12 +101,6 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
             message: PinMessageItem,
             clickAction: (String) -> Unit,
         ) {
-            val pinMessage =
-                try {
-                    GsonHelper.customGson.fromJson(message.content, PinMessageMinimal::class.java)
-                } catch (e: Exception) {
-                    null
-                }
             pinClose.setOnClickListener {
                 if (pinContent.isVisible) {
                     collapse()
@@ -117,9 +109,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                     .putBoolean("Pin_$conversationId", false)
             }
             pinContent.setOnClickListener {
-                pinMessage?.let { msg ->
-                    clickAction.invoke(msg.messageId)
-                }
+                clickAction.invoke(message.messageId)
             }
             if (message.mentions != null) {
                 pinContentTv.renderMessage(
@@ -130,9 +120,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                         } else {
                             message.userFullName
                         },
-                        pinMessage?.let { msg ->
-                            " \"${msg.content}\""
-                        } ?: getText(R.string.a_message),
+                        message.content ?: getText(R.string.a_message),
                     ),
                     MentionRenderCache.singleton.getMentionRenderContext(
                         message.mentions,
@@ -147,7 +135,7 @@ class PinMessageLayout constructor(context: Context, attrs: AttributeSet) :
                         } else {
                             message.userFullName
                         },
-                        pinMessage.explain(binding.root.context),
+                        message.explain(binding.root.context),
                     )
             }
         }

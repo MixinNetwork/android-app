@@ -463,6 +463,7 @@ interface TransactionInterface {
         if (snapshot.isDataIncomplete()) {
             lifecycleScope.launch {
                 walletViewModel.refreshSnapshot(snapshot.snapshotId)?.let {
+                    it.label = snapshot.label // Saving temporary variables
                     updateUI(fragment, contentBinding, asset, it)
                 }
             }

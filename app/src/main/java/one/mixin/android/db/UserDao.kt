@@ -4,8 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
+import one.mixin.android.vo.App
 import one.mixin.android.vo.CallUser
 import one.mixin.android.vo.ForwardUser
 import one.mixin.android.vo.MentionUser
@@ -14,6 +16,54 @@ import one.mixin.android.vo.UserItem
 
 @Dao
 interface UserDao : BaseDao<User> {
+
+    @Transaction
+    fun updateRelationship(
+        user: User,
+        relationship: String,
+    ) {
+        val u = findUser(user.userId)
+        if (u == null) {
+            insert(user)
+        } else {
+            user.relationship = relationship
+            update(user)
+        }
+    }
+
+    @Transaction
+    fun insertUpdateList(
+        users: List<User>,
+        appDao: AppDao,
+    ) {
+        val apps = arrayListOf<App>()
+        for (u in users) {
+            if (u.app != null) {
+                u.appId = u.app!!.appId
+                apps.add(u.app!!)
+            }
+        }
+        appDao.insertList(apps)
+        insertList(users)
+    }
+
+    @Transaction
+    fun insertUpdate(
+        user: User,
+        appDao: AppDao,
+    ) {
+        if (user.app != null) {
+            user.appId = user.app!!.appId
+            appDao.insert(user.app!!)
+        }
+        val u = findUser(user.userId)
+        if (u == null) {
+            insert(user)
+        } else {
+            update(user)
+        }
+    }
+
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name, identity_number ASC")
     fun findFriends(): LiveData<List<User>>
 
@@ -25,6 +75,13 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL ORDER BY full_name, identity_number ASC")
     suspend fun findFriendsNotBot(): List<User>
+
+    @Query("""
+    SELECT * FROM users u 
+    WHERE (u.relationship = 'FRIEND' AND app_id IS NULL) OR user_id IN (SELECT app_id FROM apps WHERE creator_id = :selfId) 
+    ORDER BY full_name, identity_number ASC
+    """)
+    suspend fun findFriendsAndMyBot(selfId: String): List<User>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUserById(id: String): LiveData<User>

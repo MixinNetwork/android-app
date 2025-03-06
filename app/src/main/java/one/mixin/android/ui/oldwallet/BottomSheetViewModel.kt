@@ -16,6 +16,7 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.DeactivateRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
@@ -30,7 +31,6 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
-import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.vo.Account
@@ -52,7 +52,6 @@ class BottomSheetViewModel
         private val jobManager: MixinJobManager,
         private val userRepository: UserRepository,
         private val assetRepository: AssetRepository,
-        private val tokenRepository: TokenRepository,
         private val conversationRepo: ConversationRepository,
         private val pinCipher: PinCipher,
     ) : ViewModel() {
@@ -93,6 +92,7 @@ class BottomSheetViewModel
 
         suspend fun syncAddr(
             assetId: String,
+            chainId: String,
             destination: String?,
             label: String?,
             tag: String?,
@@ -101,6 +101,7 @@ class BottomSheetViewModel
             assetRepository.syncAddr(
                 AddressRequest(
                     assetId,
+                    chainId,
                     destination,
                     tag,
                     label,
@@ -227,9 +228,22 @@ class BottomSheetViewModel
             verificationId: String,
         ): MixinResponse<Account> = accountRepository.deactivate(pin, verificationId)
 
-        suspend fun logout(sessionId: String) =
+        suspend fun getDeactivateTipBody(
+            userId: String,
+            pin: String,
+        ): String = pinCipher.encryptPin(pin, TipBody.forDeactivate(userId))
+
+        suspend fun getLogoutTipBody(
+            sessionId: String,
+            pin: String,
+        ): String = pinCipher.encryptPin(pin, TipBody.forLogout(sessionId))
+
+        suspend fun deactivate(request: DeactivateRequest) = accountRepository.deactivate(request)
+
+        suspend fun logout(sessionId: String, pin: String) =
             withContext(Dispatchers.IO) {
-                accountRepository.logout(sessionId)
+                val pinBase64 = getLogoutTipBody(sessionId, pin)
+                accountRepository.logout(sessionId, pinBase64)
             }
 
         suspend fun findAddressById(

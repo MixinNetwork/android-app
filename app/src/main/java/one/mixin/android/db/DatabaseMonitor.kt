@@ -1,7 +1,6 @@
 package one.mixin.android.db
 
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.monitor.MonitorPrinter
@@ -28,12 +27,12 @@ object DatabaseMonitor {
         sqlQuery: String,
         args: List<Any?>,
     ) {
-        if (!BuildConfig.DEBUG || !enable) return
+        if (!enable) return
         MonitorPrinter.print(sqlQuery, args)
     }
 
     fun log(log: String) {
-        if (!BuildConfig.DEBUG || !enable) return
+        if (!enable) return
         Timber.wtf(log)
     }
 }
