@@ -122,6 +122,9 @@ class RefreshWeb3Job : BaseJob(
                 val wallets = response.data
                 wallets?.let {
                     web3WalletDao.insertList(it)
+                    wallets.forEach { wallet ->
+                        fetchWalletAddresses(wallet)
+                    }
                 }
             },
             failureBlock = { response ->
