@@ -642,7 +642,7 @@ class BottomSheetViewModel
                         ""
                     }
                 }
-                val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
+                val tx = Kernel.buildTx(asset, amount, recipient.threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
                 verifiedTransactions.add(VerifiedTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference))
             }
             val verifyTransaction = tokenRepository.transactionRequest(verifiedTransactions.map { TransactionRequest(it.raw, it.trace) })
