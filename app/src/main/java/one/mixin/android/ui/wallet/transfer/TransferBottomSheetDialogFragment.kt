@@ -149,7 +149,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (t is SafeMultisigsBiometricItem) {
             val item = t as SafeMultisigsBiometricItem
             if (item.safe != null) {
-                binding.bottom.setText(if (item.action == "sign") R.string.Approve else R.string.Reject)
+                binding.bottom.setText(if (item.action == SignatureAction.sign.name) R.string.Approve else R.string.Reject)
             }
         }
 
@@ -316,7 +316,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (multisigsBiometricItem.safe != null) {
                         if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
                             TransferType.safeSigned
-                        } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                        } else if (multisigsBiometricItem.action == SignatureAction.revoke.name) {
                             TransferType.reject
                         } else {
                             TransferType.approve
@@ -324,7 +324,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     } else {
                         if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
                             TransferType.signed
-                        } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                        } else if (multisigsBiometricItem.action == SignatureAction.revoke.name) {
                             TransferType.unMulSign
                         } else {
                             TransferType.mutlSign
