@@ -422,6 +422,8 @@ internal constructor(
         return web3Repository.getAddressesByWalletId(walletId)
     }
 
+    suspend fun getClassicWalletId(): String? = web3Repository.getClassicWalletId()
+
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
     companion object {

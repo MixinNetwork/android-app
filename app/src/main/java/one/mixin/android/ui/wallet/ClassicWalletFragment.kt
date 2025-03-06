@@ -125,9 +125,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             setOnClickListener { token ->
                                 this@ClassicWalletFragment.lifecycleScope.launch {
                                     val address = if (token.chainId != "solana") {
-                                        getEvmAddressForWallet(walletId)
+                                        getEvmAddressForWallet()
                                     } else {
-                                        getSolanaAddressForWallet(walletId)
+                                        getSolanaAddressForWallet()
                                     }
                                     if (address != null)  this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, assets.find { it.chainId == token.chainId }), TransferDestinationInputFragment.TAG)
                                 }
@@ -400,9 +400,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             setOnClickListener { token ->
                 this@ClassicWalletFragment.lifecycleScope.launch {
                     val address = if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
-                        getEvmAddressForWallet(walletId)
+                        getEvmAddressForWallet()
                     } else {
-                        getSolanaAddressForWallet(walletId)
+                        getSolanaAddressForWallet()
                     }
                     if (address != null) {
                         WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address, WalletActivity.Destination.Address)
@@ -417,9 +417,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         val token = item as Web3TokenItem
         lifecycleScope.launch {
             val address = if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
-                getEvmAddressForWallet(walletId)
+                getEvmAddressForWallet()
             } else {
-                getSolanaAddressForWallet(walletId)
+                getSolanaAddressForWallet()
             }
             if (address != null) {
                 WalletActivity.showWithWeb3Token(
@@ -432,7 +432,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
     }
     
-    private suspend fun getEvmAddressForWallet(walletId: String): String? {
+    private suspend fun getEvmAddressForWallet(): String? {
+        if (walletId.isEmpty()) {
+            walletId = web3ViewModel.getClassicWalletId() ?: ""
+        }
         if (walletId.isEmpty()) return null
         
         val addresses = web3ViewModel.getAddressesByWalletId(walletId)
@@ -442,9 +445,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         return evmAddresses.firstOrNull()?.destination
     }
     
-    private suspend fun getSolanaAddressForWallet(walletId: String): String? {
+    private suspend fun getSolanaAddressForWallet(): String? {
+        if (walletId.isEmpty()) {
+            walletId = web3ViewModel.getClassicWalletId() ?: ""
+        }
         if (walletId.isEmpty()) return null
-        
+
         val addresses = web3ViewModel.getAddressesByWalletId(walletId)
         if (addresses.isEmpty()) return null
         

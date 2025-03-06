@@ -35,12 +35,12 @@ class RefreshWeb3Job : BaseJob(
                 WALLET_CATEGORY_CLASSIC, listOf(
                     Web3AddressRequest(
                         destination = erc20Address,
-                        chainId = Constants.ChainId.ETHEREUM_CHAIN_ID
+                        chainId = Constants.ChainId.Polygon
                     ),
-                    Web3AddressRequest(
-                        destination = solAddress,
-                        chainId = Constants.ChainId.SOLANA_CHAIN_ID
-                    )
+                    // Web3AddressRequest(
+                    //     destination = solAddress,
+                    //     chainId = Constants.ChainId.SOLANA_CHAIN_ID
+                    // )
                 )
             )
         } else {

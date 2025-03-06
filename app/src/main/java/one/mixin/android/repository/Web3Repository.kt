@@ -8,6 +8,7 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.extension.nowInUtc
@@ -21,7 +22,8 @@ constructor(
     val web3TokenDao: Web3TokenDao,
     val web3TransactionDao: Web3TransactionDao,
     val web3TokensExtraDao: Web3TokensExtraDao,
-    val web3AddressDao: Web3AddressDao
+    val web3AddressDao: Web3AddressDao,
+    val web3WalletDao: Web3WalletDao
 ) {
     suspend fun insertWeb3Tokens(list: List<Web3Token>) = web3TokenDao.insertListSuspend(list)
 
@@ -47,4 +49,6 @@ constructor(
     suspend fun getAddressesByWalletId(walletId: String): List<Web3Address> {
         return web3AddressDao.getAddressesByWalletId(walletId)
     }
+
+    suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()
 }
