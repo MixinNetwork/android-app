@@ -93,6 +93,7 @@ object Constants {
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
+        const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
 
         const val PREF_TO_SWAP = "pref_to_swap"
