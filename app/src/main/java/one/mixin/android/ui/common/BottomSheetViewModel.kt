@@ -1398,7 +1398,8 @@ class BottomSheetViewModel
             t: SafeMultisigsBiometricItem,
             pin: String,
         ): MixinResponse<TransactionResponse> {
-            val tipPriv = tip.getOrRecoverTipPriv(MixinApplication.appContext, pin).getOrThrow()
+            val context = MixinApplication.appContext
+            val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
             return when (t.action) {
                 SignatureAction.sign.name -> {
                     val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
