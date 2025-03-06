@@ -18,16 +18,16 @@ import java.math.RoundingMode
 
 @Entity(
     tableName = "tokens",
-    primaryKeys = ["asset_id", "wallet_id"]
+    primaryKeys = ["wallet_id", "asset_id"]
 )
 @Parcelize
 data class Web3Token(
-    @ColumnInfo(name = "asset_id")
-    @SerializedName("asset_id")
-    val assetId: String,
     @ColumnInfo(name = "wallet_id")
     @SerializedName("wallet_id")
     val walletId: String,
+    @ColumnInfo(name = "asset_id")
+    @SerializedName("asset_id")
+    val assetId: String,
     @ColumnInfo(name = "chain_id")
     @SerializedName("chain_id")
     val chainId: String,

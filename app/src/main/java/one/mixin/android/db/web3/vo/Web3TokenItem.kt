@@ -2,6 +2,10 @@ package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -36,8 +40,11 @@ import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.RoundingMode
 
+
 @Parcelize
 data class Web3TokenItem(
+    @ColumnInfo(name = "wallet_id")
+    val walletId: String,
     @ColumnInfo(name = "asset_id")
     val assetId: String,
     @ColumnInfo(name = "chain_id")
@@ -66,6 +73,8 @@ data class Web3TokenItem(
     val chainName: String?,
     @ColumnInfo(name = "chain_symbol")
     val chainSymbol: String?,
+    @ColumnInfo(name = "hidden")
+    val hidden: Boolean?
 ) : Parcelable, Swappable {
     
     fun getChainDisplayName(): String {

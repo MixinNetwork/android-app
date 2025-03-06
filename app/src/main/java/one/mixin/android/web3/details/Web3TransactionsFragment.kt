@@ -1,5 +1,6 @@
 package one.mixin.android.web3.details
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Bundle
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -25,6 +27,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
@@ -107,54 +110,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
             rightIb.setOnClickListener {
-                val builder = BottomSheet.Builder(requireActivity())
-                _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(
-                    View.inflate(
-                        ContextThemeWrapper(
-                            requireActivity(),
-                            R.style.Custom
-                        ), R.layout.view_wallet_web3_token_bottom, null
-                    )
-                )
-                builder.setCustomView(bottomBinding.root)
-                val bottomSheet = builder.create()
-                bottomBinding.apply {
-                    title.text = token.name
-                    addressTv.text = token.assetKey
-                    explorer.setOnClickListener {
-                        if (token.isSolana()) {
-                            context?.openUrl("https://solscan.io/token/" + token.assetKey)
-                        } else {
-                            context?.openUrl("https://etherscan.io/token/" + token.assetKey)
-                        }
-                        bottomSheet.dismiss()
-                    }
-                    stakeSolTv.isVisible = token.isSolToken()
-                    stakeSolTv.setOnClickListener {
-                        this@Web3TransactionsFragment.navTo(
-                            ValidatorsFragment.newInstance().apply {
-                                setOnSelect { v ->
-                                    this@Web3TransactionsFragment.navTo(
-                                        StakeFragment.newInstance(
-                                            v,
-                                            token.balance
-                                        ), StakeFragment.TAG
-                                    )
-                                }
-                            }, ValidatorsFragment.TAG
-                        )
-                        bottomSheet.dismiss()
-                    }
-                    copy.setOnClickListener {
-                        context?.getClipboardManager()
-                            ?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
-                        toast(R.string.copied_to_clipboard)
-                        bottomSheet.dismiss()
-                    }
-                    cancel.setOnClickListener { bottomSheet.dismiss() }
-                }
-
-                bottomSheet.show()
+                showBottom()
             }
 
             binding.apply {
@@ -238,6 +194,69 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         }
 
         updateHeader(token)
+    }
+
+
+    @SuppressLint("InflateParams")
+    private fun showBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        _bottomBinding = ViewWalletWeb3TokenBottomBinding.bind(
+            View.inflate(
+                ContextThemeWrapper(
+                    requireActivity(),
+                    R.style.Custom
+                ), R.layout.view_wallet_web3_token_bottom, null
+            )
+        )
+        builder.setCustomView(bottomBinding.root)
+        val bottomSheet = builder.create()
+        bottomBinding.apply {
+            title.text = token.name
+            addressTv.text = token.assetKey
+            explorer.setOnClickListener {
+                if (token.isSolana()) {
+                    context?.openUrl("https://solscan.io/token/" + token.assetKey)
+                } else {
+                    context?.openUrl("https://etherscan.io/token/" + token.assetKey)
+                }
+                bottomSheet.dismiss()
+            }
+            stakeSolTv.isVisible = token.isSolToken()
+            stakeSolTv.setOnClickListener {
+                this@Web3TransactionsFragment.navTo(
+                    ValidatorsFragment.newInstance().apply {
+                        setOnSelect { v ->
+                            this@Web3TransactionsFragment.navTo(
+                                StakeFragment.newInstance(
+                                    v,
+                                    token.balance
+                                ), StakeFragment.TAG
+                            )
+                        }
+                    }, ValidatorsFragment.TAG
+                )
+                bottomSheet.dismiss()
+            }
+            copy.setOnClickListener {
+                context?.getClipboardManager()
+                    ?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
+                toast(R.string.copied_to_clipboard)
+                bottomSheet.dismiss()
+            }
+            
+            hide.setText(if (token.hidden == true) R.string.Show else R.string.Hide)
+            hide.setOnClickListener {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    web3ViewModel.updateTokenHidden(token.assetId, token.walletId, token.hidden != true)
+                }
+                bottomSheet.dismiss()
+                mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)
+            }
+            
+            cancel.setOnClickListener { bottomSheet.dismiss() }
+        }
+
+        bottomSheet.show()
     }
 
 

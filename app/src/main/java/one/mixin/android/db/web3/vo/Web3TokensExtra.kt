@@ -16,5 +16,4 @@ data class Web3TokensExtra(
 
     @ColumnInfo(name = "hidden")
     val hidden: Boolean? = null,
-
-    )
+)
