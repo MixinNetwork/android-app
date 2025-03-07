@@ -27,7 +27,7 @@ constructor(
 ) {
     suspend fun insertWeb3Tokens(list: List<Web3Token>) = web3TokenDao.insertListSuspend(list)
 
-    suspend fun web3TokenItemByChainId(chainId: String) = web3TokenDao.web3TokenItemByChainId(chainId)
+    suspend fun web3TokenItemById(assetId: String) = web3TokenDao.web3TokenItemById(assetId)
 
     fun web3Tokens() = web3TokenDao.web3TokenItems()
     

@@ -258,8 +258,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                val chain = chainToken ?: web3ViewModel.web3TokenItemByChainId(token.chainId)
-                                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = token, chainToken = chain, toWallet = true), InputFragment.TAG)
+                                                chainToken ?: web3ViewModel.web3TokenItemById(token.chainId)?.let { chain ->
+                                                    navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = token, chainToken = chain, toWallet = true), InputFragment.TAG)
+                                                }
                                             }
                                         }
                                         dialog.dismiss()
@@ -284,7 +285,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                 if (fromAddress.isBlank()) {
                                                     toast(R.string.Alert_Not_Support)
                                                 } else {
-                                                    val chain = chainToken ?: web3ViewModel.web3TokenItemByChainId(token.chainId)
+                                                    val chain = chainToken ?: web3ViewModel.web3TokenItemById(token.chainId) ?:return@launch
                                                     navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = address, web3Token = token, chainToken= chain), InputFragment.TAG)
                                                 }
                                             }
@@ -311,16 +312,19 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                val chain = chainToken ?: web3ViewModel.web3TokenItemByChainId(web3Token!!.chainId)
-                                                navTo(
-                                                    InputFragment.newInstance(
-                                                        fromAddress = fromAddress,
-                                                        toAddress = address.destination,
-                                                        web3Token = web3Token!!,
-                                                        chainToken = chain,
-                                                        label = address.label
-                                                    ), InputFragment.TAG
-                                                )
+                                                chainToken ?: web3ViewModel.web3TokenItemById(
+                                                    web3Token!!.chainId
+                                                )?.let { chain ->
+                                                    navTo(
+                                                        InputFragment.newInstance(
+                                                            fromAddress = fromAddress,
+                                                            toAddress = address.destination,
+                                                            web3Token = web3Token!!,
+                                                            chainToken = chain,
+                                                            label = address.label
+                                                        ), InputFragment.TAG
+                                                    )
+                                                }
                                             }
                                             dialog.dismiss()
                                         }

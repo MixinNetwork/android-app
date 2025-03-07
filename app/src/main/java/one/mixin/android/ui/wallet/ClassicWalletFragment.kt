@@ -120,7 +120,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                     } else {
                                         getSolanaAddressForWallet()
                                     }
-                                    val chain = web3ViewModel.web3TokenItemByChainId(token.chainId)
+                                    val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
                                     Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
                                     if (address != null) this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
                                 }

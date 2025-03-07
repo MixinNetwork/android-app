@@ -81,7 +81,7 @@ class WalletViewModel
             userRepository.upsert(user)
         }
 
-    suspend fun  web3TokenItemByChainId(chainId: String) = web3Repository.web3TokenItemByChainId(chainId)
+    suspend fun  web3TokenItemById(chainId: String) = web3Repository.web3TokenItemById(chainId)
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 

@@ -9,6 +9,7 @@ import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
@@ -32,10 +33,12 @@ import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment
 import timber.log.Timber
+import kotlin.getValue
 
 @AndroidEntryPoint
 class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3TransactionItem>>(R.layout.fragment_all_transactions) {
@@ -56,23 +59,25 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         setOnItemClickListener(object : Web3TransactionPagedAdapter.OnItemClickListener {
             override fun onItemClick(transaction: Web3TransactionItem) {
                 lifecycleScope.launch {
+                    val token =
+                        web3ViewModel.web3TokenItemById(transaction.assetId) ?: return@launch
                     navTo(
-                        // Todo check chain
-                        Web3TransactionFragment.newInstance(transaction, tokenItem?.chainId?:"", tokenItem!!),
+                        Web3TransactionFragment.newInstance(transaction, transaction.chainId, token),
                         Web3TransactionFragment.TAG
                     )
                 }
             }
         })
     }
+    private val tokenItem by lazy {
+        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
+    }
 
     private val filterParams by lazy {
         Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
     }
 
-    private val tokenItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
-    }
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     override fun onViewCreated(
         view: View,

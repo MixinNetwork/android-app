@@ -170,7 +170,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
                 sendReceiveView.send.setOnClickListener {
                     lifecycleScope.launch {
-                        val chain = web3ViewModel.web3TokenItemByChainId(token.chainId)
+                        val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
                         navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
                     }
                 }

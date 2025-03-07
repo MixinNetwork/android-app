@@ -90,8 +90,8 @@ internal constructor(
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
         web3Repository.updateTokenHidden(tokenId, walletId, hidden)
 
-    suspend fun  web3TokenItemByChainId(chainId: String) = withContext(Dispatchers.IO) {
-        web3Repository.web3TokenItemByChainId(chainId)
+    suspend fun  web3TokenItemById(chainId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(chainId)
     }
 
     fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
