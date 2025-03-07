@@ -19,11 +19,10 @@ class Web3TransactionHolder(val binding: ItemWalletTransactionsBinding) : Recycl
         binding.apply {
             name.text = transaction.transactionHash
 
-            avatar.loadUrl(url = transaction.iconUrl, holder = R.drawable.ic_avatar_place_holder)
-
             val amount = transaction.getFormattedAmount()
             val symbol = transaction.symbol
-            
+            avatar.loadUrl(transaction)
+
             if (transaction.transactionType == Web3TransactionType.Receive.value) {
                 value.textColorResource = R.color.wallet_green
                 value.text = "+${amount.numberFormat8()}"
@@ -35,7 +34,7 @@ class Web3TransactionHolder(val binding: ItemWalletTransactionsBinding) : Recycl
                 symbolTv.text = symbol
                 symbolIv.isVisible = false
             } else {
-                value.setTextColor(root.context.colorFromAttribute(R.attr.text_primary))
+                avatar.loadUrl(url = transaction.iconUrl, holder = R.drawable.ic_avatar_place_holder)
                 value.text = amount.numberFormat8()
                 symbolTv.text = symbol
                 symbolIv.isVisible = false
