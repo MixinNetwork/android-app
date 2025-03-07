@@ -282,7 +282,7 @@ suspend fun Web3TokenItem.buildTransaction(
         // (chainId.equals("optimism", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
             if ((chainId == Constants.ChainId.ETHEREUM_CHAIN_ID && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Polygon && assetKey == "0x0000000000000000000000000000000000001010") ||
+                (chainId == Constants.ChainId.Polygon && (assetKey == "0x0000000000000000000000000000000000000000" || assetKey == "0x0000000000000000000000000000000000001010")) ||
                 (chainId == Constants.ChainId.BinanceSmartChain && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000")
             ) {
@@ -294,9 +294,7 @@ suspend fun Web3TokenItem.buildTransaction(
                         "transfer",
                         listOf(
                             Address(toAddress),
-                            Uint(
-                                BigDecimal(v).multiply(BigDecimal.TEN.pow(precision)).toBigInteger(),
-                            ),
+                            Uint(BigDecimal(v).multiply(BigDecimal.TEN.pow(precision)).toBigInteger(),),
                         ),
                         emptyList(),
                     )

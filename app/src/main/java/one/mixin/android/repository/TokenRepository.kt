@@ -131,6 +131,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.ui.wallet.Web3FilterParams
@@ -167,6 +168,7 @@ class TokenRepository
         private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
         private val web3TranTransactionDao: Web3TransactionDao,
+        private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -1290,4 +1292,6 @@ class TokenRepository
     suspend fun findWeb3TokenItems(): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems()
 
     fun assetFlow() = tokenDao.assetFlow()
+
+    fun getWallets() = web3WalletDao.getWallets()
 }

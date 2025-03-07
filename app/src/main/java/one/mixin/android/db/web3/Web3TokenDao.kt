@@ -28,7 +28,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.hidden = 1")
     fun hiddenAssetItems(): LiveData<List<Web3TokenItem>>
 
-    @Query("SELECT * FROM tokens WHERE amount * price_usd > 0 ORDER BY amount * price_usd DESC LIMIT 3")
+    @Query("SELECT * FROM tokens WHERE amount * price_usd > 0 ORDER BY amount * price_usd")
     fun web3TokensFlow(): Flow<List<Web3Token>>
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.chain_id = :chainId")

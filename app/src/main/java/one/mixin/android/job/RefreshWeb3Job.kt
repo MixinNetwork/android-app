@@ -37,10 +37,10 @@ class RefreshWeb3Job : BaseJob(
                         destination = erc20Address,
                         chainId = Constants.ChainId.Polygon
                     ),
-                    // Web3AddressRequest(
-                    //     destination = solAddress,
-                    //     chainId = Constants.ChainId.SOLANA_CHAIN_ID
-                    // )
+                    Web3AddressRequest(
+                        destination = solAddress,
+                        chainId = Constants.ChainId.SOLANA_CHAIN_ID
+                    )
                 )
             )
         } else {
