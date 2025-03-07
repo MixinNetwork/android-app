@@ -34,6 +34,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
@@ -122,6 +123,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             }
 
             binding.apply {
+                value.text = try {
+                    if (token.priceFiat().toFloat() == 0f) {
+                        getString(R.string.NA)
+                    } else {
+                        "${Fiats.getSymbol()}${token.priceFiat().priceFormat()}"
+                    }
+                } catch (ignored: NumberFormatException) {
+                    "${Fiats.getSymbol()}${token.priceFiat().priceFormat()}"
+                }
                 web3ViewModel.marketById(token.assetId).observe(viewLifecycleOwner) { market ->
                     if (market != null) {
                         val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)

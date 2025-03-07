@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Wallet
@@ -123,7 +125,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val othersPercentage = 1f - top2Distributions.sumOf { it.percentage.toDouble() }.toFloat()
                 val othersIcons = others.flatMap { it.icons }
                 
-                top2Distributions + AssetDistribution("其他", othersPercentage, othersIcons, others.size)
+                top2Distributions + AssetDistribution(MixinApplication.appContext.getString(R.string.Other), othersPercentage, othersIcons, others.size)
             }
             allAssets.size == 5 -> {
                 val top2 = allAssets.take(2)
@@ -137,7 +139,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val othersPercentage = 1f - top2Distributions.sumOf { it.percentage.toDouble() }.toFloat()
                 val othersIcons = others.flatMap { it.icons }
                 
-                top2Distributions + AssetDistribution("其他", othersPercentage, othersIcons, others.size)
+                top2Distributions + AssetDistribution(MixinApplication.appContext.getString(R.string.Other), othersPercentage, othersIcons, others.size)
             }
             else -> {
                 val top2 = allAssets.take(2)
@@ -151,7 +153,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val othersPercentage = 1f - top2Distributions.sumOf { it.percentage.toDouble() }.toFloat()
                 val othersIcons = others.take(3).flatMap { it.icons }
                 
-                top2Distributions + AssetDistribution("其他", othersPercentage, othersIcons, others.size)
+                top2Distributions + AssetDistribution(MixinApplication.appContext.getString(R.string.Other), othersPercentage, othersIcons, others.size)
             }
         }
     }
@@ -237,7 +239,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val othersPercentage = 1f - top2Distributions.sumOf { it.percentage.toDouble() }.toFloat()
                 val othersIcons = others.flatMap { it.icons }
                 
-                top2Distributions + AssetDistribution("其他", othersPercentage, othersIcons, others.size)
+                top2Distributions + AssetDistribution(MixinApplication.appContext.getString(R.string.Other), othersPercentage, othersIcons, others.size)
             }
             tokenValues.size == 5 -> {
                 val top2 = tokenValues.take(2)
@@ -251,7 +253,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val othersPercentage = 1f - top2Distributions.sumOf { it.percentage.toDouble() }.toFloat()
                 val othersIcons = others.flatMap { it.icons }
                 
-                top2Distributions + AssetDistribution("其他", othersPercentage, othersIcons, others.size)
+                top2Distributions + AssetDistribution(MixinApplication.appContext.getString(R.string.Other), othersPercentage, othersIcons, others.size)
             }
             else -> {
                 val top2 = tokenValues.take(2)
@@ -265,7 +267,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val othersPercentage = 1f - top2Distributions.sumOf { it.percentage.toDouble() }.toFloat()
                 val othersIcons = others.take(3).flatMap { it.icons }
                 
-                top2Distributions + AssetDistribution("其他", othersPercentage, othersIcons, others.size)
+                top2Distributions + AssetDistribution(MixinApplication.appContext.getString(R.string.Other), othersPercentage, othersIcons, others.size)
             }
         }
     }

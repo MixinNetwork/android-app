@@ -46,7 +46,6 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                     LegendAssetItem(
                         percentage = 0f,
                         icons = emptyList(),
-                        currency = "",
                         count = 0,
                         modifier = Modifier.weight(1f)
                     )
@@ -57,14 +56,13 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                     LegendItem(
                         percentage = 1f,
                         color = MixinAppTheme.colors.walletBlue,
-                        currency = topThree[0].symbol,
+                        currency = "",
                         modifier = Modifier.weight(1f)
                     )
                 else
                     LegendAssetItem(
                         percentage = 1f,
                         icons = topThree[0].icons,
-                        currency = topThree[0].symbol,
                         count = topThree[0].count,
                         modifier = Modifier.weight(1f)
                     )
@@ -106,7 +104,6 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                         0 -> LegendAssetItem(
                             percentage = asset.percentage,
                             icons = asset.icons,
-                            currency = asset.symbol,
                             count = asset.count,
                             modifier = Modifier.weight(1f)
                         )
@@ -114,7 +111,6 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                         1 -> LegendAssetItem(
                             percentage = asset.percentage,
                             icons = asset.icons,
-                            currency = asset.symbol,
                             count = asset.count,
                             modifier = Modifier.weight(1f)
                         )
@@ -125,7 +121,6 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                             LegendAssetItem(
                                 percentage = remainingPercentage,
                                 icons = asset.icons,
-                                currency = asset.symbol,
                                 count = asset.count,
                                 modifier = Modifier.weight(1f)
                             )
@@ -153,7 +148,7 @@ private fun LegendItem(modifier: Modifier, percentage: Float, color: Color, curr
         )
         Spacer(Modifier.width(4.dp))
         Text(
-            text = "${(percentage * 100).toInt()}%",
+            text = "${(percentage * 100).toInt()}% $currency",
             color = MixinAppTheme.colors.textRemarks,
             fontSize = 12.sp,
             lineHeight = 14.sp
@@ -166,7 +161,6 @@ private fun LegendAssetItem(
     modifier: Modifier, 
     percentage: Float, 
     icons: List<String>, 
-    currency: String,
     count: Int
 ) {
     Row(
@@ -199,7 +193,7 @@ private fun LegendAssetItem(
                         count == 3 -> icons.take(3)
                         else -> icons.take(2)
                     }
-                    
+
                     displayIcons.forEachIndexed { index, icon ->
                         CoilImage(
                             model = icon,
@@ -207,7 +201,7 @@ private fun LegendAssetItem(
                                 .size(18.dp)
                                 .clip(CircleShape)
                                 .zIndex(displayIcons.size - index.toFloat())
-                                .offset(x = (index * -6).dp),
+                                .offset(x = (index * 6).dp),
                             placeholder = R.drawable.ic_avatar_place_holder,
                         )
                     }
@@ -218,7 +212,7 @@ private fun LegendAssetItem(
                                 .size(18.dp)
                                 .clip(CircleShape)
                                 .zIndex(0f)
-                                .offset(x = (displayIcons.size * -6).dp),
+                                .offset(x = (displayIcons.size * 6).dp),
                             color = MixinAppTheme.colors.backgroundWindow
                         ) {
                             Box(
