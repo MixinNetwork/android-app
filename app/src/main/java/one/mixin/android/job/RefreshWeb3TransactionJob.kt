@@ -14,7 +14,7 @@ class RefreshWeb3TransactionJob(
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshWeb3TransactionJob"
 
-        private const val DEFAULT_LIMIT = 100
+        private const val DEFAULT_LIMIT = 30
     }
 
     override fun onRun(): Unit =
@@ -51,6 +51,11 @@ class RefreshWeb3TransactionJob(
                 } else {
                     web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $addressId")
+                }
+                if ((result?.size ?: 0) >= DEFAULT_LIMIT) {
+                    result?.lastOrNull()?.createdAt.let {
+                        fetchTransactions(addressId, it, limit)
+                    }
                 }
             },
             failureBlock = { response ->
