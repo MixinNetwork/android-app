@@ -41,6 +41,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3Job
+import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
@@ -238,6 +239,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     fun update() {
         jobManager.addJobInBackground(RefreshWeb3TransactionJob())
+        if (walletId.isEmpty().not()) {
+            jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId, assetId = null))
+        }
     }
 
     override fun onStop() {

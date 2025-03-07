@@ -170,28 +170,32 @@ class RefreshWeb3Job : BaseJob(
     private suspend fun fetchChain(chainIds: List<String>) {
         chainIds.forEach { chainId ->
             try {
-                val response = tokenService.getChainById(chainId)
-                if (response.isSuccess) {
-                    val chain = response.data
-                    if (chain != null) {
-                        web3ChainDao.insert(
-                            Web3Chain(
-                                chainId = chain.chainId,
-                                name = chain.name,
-                                symbol = chain.symbol,
-                                iconUrl = chain.iconUrl,
-                                threshold = chain.threshold,
+                if (web3ChainDao.chainExists(chainId) == null) {
+                    val response = tokenService.getChainById(chainId)
+                    if (response.isSuccess) {
+                        val chain = response.data
+                        if (chain != null) {
+                            web3ChainDao.insert(
+                                Web3Chain(
+                                    chainId = chain.chainId,
+                                    name = chain.name,
+                                    symbol = chain.symbol,
+                                    iconUrl = chain.iconUrl,
+                                    threshold = chain.threshold,
+                                )
                             )
-                        )
-                        Timber.d("Successfully inserted ${chain?.name} chains into database")
+                            Timber.d("Successfully inserted ${chain.name} chain into database")
+                        } else {
+                            Timber.d("No chain found for chainId: $chainId")
+                        }
                     } else {
-                        Timber.d("No chains found")
+                        Timber.e("Failed to fetch chain $chainId: ${response.errorCode} - ${response.errorDescription}")
                     }
                 } else {
-                    Timber.e("Failed to fetch chains: ${response.errorCode} - ${response.errorDescription}")
+                    Timber.d("Chain $chainId already exists in local database, skipping fetch")
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Exception occurred while fetching chains")
+                Timber.e(e, "Exception occurred while fetching chain $chainId")
             }
         }
     }

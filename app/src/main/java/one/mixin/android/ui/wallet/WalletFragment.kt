@@ -201,11 +201,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         closeMenu()
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden) {
-            if (classicWalletFragment.isVisible) classicWalletFragment.update()
-        }
+    override fun onResume() {
+        super.onResume()
+        if (classicWalletFragment.isVisible) classicWalletFragment.update()
     }
 
     private fun closeMenu() {
