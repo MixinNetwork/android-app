@@ -322,6 +322,7 @@
     <string name="Delete_Synced_Contact">删除已同步的通讯录</string>
     <string name="Delete_withdraw_Address">删除 %1$s 地址</string>
     <string name="Deposit">充值</string>
+    <string name="Pending">确认中</string>
     <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址和 Memo（备注）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
     <string name="deposit_attention">首次充值建议小额尝试！</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
