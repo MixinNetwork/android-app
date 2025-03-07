@@ -280,6 +280,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 titleView.rightIb.setOnClickListener {
                     requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
+                binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, getString(R.string.Token))
                 when (transferType) {
                     TransferType.USER -> {
                         titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), user)
