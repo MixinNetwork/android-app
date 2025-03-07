@@ -57,6 +57,7 @@ import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -119,7 +120,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                     } else {
                                         getSolanaAddressForWallet()
                                     }
-                                    if (address != null)  this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, assets.find { it.chainId == token.chainId }), TransferDestinationInputFragment.TAG)
+                                    val chain = web3ViewModel.web3TokenItemByChainId(token.chainId)
+                                    Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
+                                    if (address != null) this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
                                 }
                                 dismissNow()
                             }

@@ -108,12 +108,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             fromAddress: String,
             toAddress: String,
             web3Token: Web3TokenItem,
-            chainToken: Web3TokenItem?,
+            chainToken: Web3TokenItem,
             label: String? = null,
             toWallet: Boolean = false
         ) =
             InputFragment().apply {
                 withArgs {
+                    Timber.e("chain ${chainToken.name} ${web3Token.chainId} ${chainToken.chainId} $fromAddress $toAddress")
                     putString(ARGS_FROM_ADDRESS, fromAddress)
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putParcelable(ARGS_WEB3_TOKEN, web3Token)

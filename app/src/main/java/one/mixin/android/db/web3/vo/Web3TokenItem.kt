@@ -200,7 +200,7 @@ suspend fun Web3TokenItem.buildTransaction(
     toAddress: String,
     v: String,
 ): JsSignMessage {
-    if (chainId.equals("solana", true)) {
+    if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
         JsSigner.useSolana()
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
