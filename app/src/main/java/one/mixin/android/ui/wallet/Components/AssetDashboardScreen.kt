@@ -27,8 +27,8 @@ fun AssetDashboardScreen(
     onWalletCardClick: (destination: WalletDestination, walletId: String?) -> Unit,
     viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
-    val top3TokenDistribution by viewModel.top3TokenDistribution.collectAsState(initial = emptyList())
-    val top3Web3TokenDistribution by viewModel.top3Web3TokenDistribution.collectAsState(initial = emptyList())
+    val tokenDistribution by viewModel.tokenDistribution.collectAsState(initial = emptyList())
+    val web3TokenDistribution by viewModel.web3TokenDistribution.collectAsState(initial = emptyList())
     val wallets by viewModel.wallets.collectAsState(initial = emptyList())
 
     val tokenTotalBalance by viewModel.tokenTotalBalance.collectAsState()
@@ -55,7 +55,7 @@ fun AssetDashboardScreen(
             
             WalletCard(
                 balance = tokenTotalBalance,
-                assets = top3TokenDistribution,
+                assets = tokenDistribution,
                 destination = WalletDestination.Privacy,
                 onClick = { onWalletCardClick.invoke(WalletDestination.Privacy, WalletDestination.Privacy.name) }
             )
@@ -65,7 +65,7 @@ fun AssetDashboardScreen(
             wallets.forEach { wallet ->
                 WalletCard(
                     balance = web3TokenTotalBalance,
-                    assets = top3Web3TokenDistribution,
+                    assets = web3TokenDistribution,
                     destination = WalletDestination.Classic,
                     onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
                 )
@@ -73,4 +73,3 @@ fun AssetDashboardScreen(
         }
     }
 }
-

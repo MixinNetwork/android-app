@@ -1,6 +1,8 @@
 package one.mixin.android.ui.wallet.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,7 +58,7 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                     LegendItem(
                         percentage = 1f,
                         color = MixinAppTheme.colors.walletBlue,
-                        currency = "",
+                        currency = topThree[0].symbol,
                         modifier = Modifier.weight(1f)
                     )
                 else
@@ -86,12 +88,10 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                         )
 
                         2 -> {
-                            val remainingPercentage =
-                                1f - topThree[0].percentage - topThree[1].percentage
                             LegendItem(
-                                percentage = remainingPercentage,
+                                percentage = asset.percentage,
                                 color = MixinAppTheme.colors.walletYellow,
-                                currency = if (distributions.size > 3) "其他" else asset.symbol,
+                                currency = asset.symbol,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -116,10 +116,8 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                         )
 
                         2 -> {
-                            val remainingPercentage =
-                                1f - topThree[0].percentage - topThree[1].percentage
                             LegendAssetItem(
-                                percentage = remainingPercentage,
+                                percentage = asset.percentage,
                                 icons = asset.icons,
                                 count = asset.count,
                                 modifier = Modifier.weight(1f)
@@ -186,12 +184,15 @@ private fun LegendAssetItem(
                 )
             }
             else -> {
-                Box(modifier = Modifier.wrapContentSize()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
                     val displayIcons = when {
                         count <= 1 -> icons.take(1)
-                        count == 2 -> icons.take(2)
-                        count == 3 -> icons.take(3)
-                        else -> icons.take(2)
+                        count == 2 -> icons.take(min(2, icons.size))
+                        count == 3 -> icons.take(min(3, icons.size))
+                        else -> icons.take(min(3, icons.size))
                     }
 
                     displayIcons.forEachIndexed { index, icon ->
@@ -199,20 +200,22 @@ private fun LegendAssetItem(
                             model = icon,
                             modifier = Modifier
                                 .size(18.dp)
-                                .clip(CircleShape)
+                                .offset(x = if (index == 0) 0.dp else (-6 * index).dp)
                                 .zIndex(displayIcons.size - index.toFloat())
-                                .offset(x = (index * 6).dp),
+                                .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                                .clip(CircleShape),
                             placeholder = R.drawable.ic_avatar_place_holder,
                         )
                     }
                     
-                    if (count > 3) {
+                    if (count > displayIcons.size) {
                         Surface(
                             modifier = Modifier
                                 .size(18.dp)
-                                .clip(CircleShape)
+                                .offset(x = if (displayIcons.size == 0) 0.dp else (-6 * displayIcons.size).dp)
                                 .zIndex(0f)
-                                .offset(x = (displayIcons.size * 6).dp),
+                                .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                                .clip(CircleShape),
                             color = MixinAppTheme.colors.backgroundWindow
                         ) {
                             Box(
