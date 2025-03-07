@@ -35,6 +35,7 @@ import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.extension.appendQueryParamsFromOtherUri
@@ -292,8 +293,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (!requestId.isUUID()) {
                     showError(R.string.Invalid_payment_link)
                 }
-                val action = uri.getQueryParameter("action") ?: "sign"
-                if (!action.equals("sign", true) && !action.equals("unlock", true)) {
+                var action = uri.getQueryParameter("action") ?: SignatureAction.sign.name
+                if (action.equals(SignatureAction.unlock.name, true)) {
+                    action = SignatureAction.revoke.name // compatible unlock
+                } else if (!action.equals(SignatureAction.sign.name, true) && !action.equals(SignatureAction.revoke.name, true)) {
                     showError()
                     return@launch
                 }
@@ -314,8 +317,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     multisigs.signers?.let { signers ->
                         when {
                             signers.size >= multisigs.sendersThreshold -> state = PaymentStatus.paid.name
-                            action == "sign" && Session.getAccountId() in signers -> state = SignatureState.signed.name
-                            action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
+                            action == SignatureAction.sign.name && Session.getAccountId() in signers -> state = SignatureState.signed.name
+                            action == SignatureAction.revoke.name && signers.isEmpty() -> state = SignatureState.unlocked.name
                         }
                     }
                     val multisigsBiometricItem =
@@ -358,8 +361,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 multisigs.signers?.let { signers ->
                     when {
                         signers.size >= multisigs.sendersThreshold -> state = PaymentStatus.paid.name
-                        action == "sign" && Session.getAccountId() in signers -> state = SignatureState.signed.name
-                        action == "unlock" && signers.isEmpty() -> state = SignatureState.unlocked.name
+                        action == SignatureAction.sign.name && Session.getAccountId() in signers -> state = SignatureState.signed.name
+                        action == SignatureAction.revoke.name && signers.isEmpty() -> state = SignatureState.unlocked.name
                     }
                 }
                 val sendersHash = multisigs.sendersHash

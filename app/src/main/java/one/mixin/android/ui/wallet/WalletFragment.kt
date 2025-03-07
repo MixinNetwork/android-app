@@ -88,13 +88,21 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             badge.isVisible = wallet == null
             if (wallet == WalletDestination.Privacy.name || wallet == null) { // defualt wallet
                 currentType = WalletDestination.Privacy.name
-                requireActivity().replaceFragment(privacyWalletFragment, R.id.wallet_container, PrivacyWalletFragment.TAG)
+                requireActivity().replaceFragment(
+                    privacyWalletFragment,
+                    R.id.wallet_container,
+                    PrivacyWalletFragment.TAG
+                )
                 titleTv.setText(R.string.Privacy_Wallet)
                 tailIcon.isVisible = true
             } else {
                 currentType = WalletDestination.Classic.name
                 classicWalletFragment.walletId = classicWalletId ?: ""
-                requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
+                requireActivity().replaceFragment(
+                    classicWalletFragment,
+                    R.id.wallet_container,
+                    ClassicWalletFragment.TAG
+                )
                 titleTv.setText(R.string.Classic_Wallet)
                 tailIcon.isVisible = false
             }

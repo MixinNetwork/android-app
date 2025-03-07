@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,18 +20,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
-import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
@@ -54,19 +48,15 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
-import one.mixin.android.web3.details.Web3TransactionsFragment
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject

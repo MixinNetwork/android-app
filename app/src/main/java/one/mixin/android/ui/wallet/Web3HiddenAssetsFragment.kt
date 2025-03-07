@@ -16,15 +16,12 @@ import one.mixin.android.databinding.FragmentHiddenAssetsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.ChainType
-import one.mixin.android.web3.details.Web3TransactionsFragment
 import kotlin.math.abs
 
 @AndroidEntryPoint

@@ -9,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBottomSheetFilterBinding
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
-import one.mixin.android.widget.BottomSheet
 
 class Web3TokenFilterBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 

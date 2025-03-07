@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import androidx.sqlite.db.SimpleSQLiteQuery
-import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant

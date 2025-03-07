@@ -28,15 +28,12 @@ import one.mixin.android.databinding.FragmentWalletSearchBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
-import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.details.Web3TransactionsFragment
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint

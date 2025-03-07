@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemSelectableTokenBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.MultiSelectWeb3TokenListBottomSheetDialogFragment
 import one.mixin.android.vo.Web3TokenDiffCallback

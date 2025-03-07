@@ -43,7 +43,6 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
@@ -145,9 +144,10 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
-                        sendReceiveView.badge.isVisible = false
-                        defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
-                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                        if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 0) {
+                            sendReceiveView.badge.isVisible = false
+                            RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                        }
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root
@@ -251,8 +251,20 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
         checkPin()
 
-        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
+        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
         _headBinding?.sendReceiveView?.badge?.isVisible = swap
+
+        RxBus.listen(BadgeEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                lifecycleScope.launch{
+                    when (e.badge) {
+                        Account.PREF_HAS_USED_SWAP -> {
+                            _headBinding?.sendReceiveView?.badge?.isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+                        }
+                    }
+                }
+            }
     }
 
     override fun onResume() {

@@ -21,7 +21,6 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -34,12 +33,7 @@ import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
-import one.mixin.android.ui.wallet.TypeMenuData
-import one.mixin.android.ui.wallet.Web3TypeMenuAdapter
-import one.mixin.android.ui.wallet.Web3TypeMenuData
-import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.web3.details.Web3TransactionFragment
 import timber.log.Timber
 

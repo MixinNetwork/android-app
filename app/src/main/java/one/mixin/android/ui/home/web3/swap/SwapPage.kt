@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -96,6 +97,7 @@ fun SwapPage(
     from: SwapToken?,
     to: SwapToken?,
     inMixin: Boolean,
+    orderBadge: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
@@ -187,14 +189,25 @@ fun SwapPage(
         pop = pop,
         actions = {
             if (source != "") {
-                IconButton(onClick = {
-                    onOrderList()
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_order),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.icon,
-                    )
+                Box {
+                    IconButton(onClick = {
+                        onOrderList()
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_order),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
+                    if (orderBadge) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .offset(x = (-12).dp, y = (12).dp)
+                                .background(color = MixinAppTheme.colors.badgeRed, shape = CircleShape)
+                                .align(Alignment.TopEnd)
+                        )
+                    }
                 }
             }
             IconButton(onClick = {
