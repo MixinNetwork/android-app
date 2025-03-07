@@ -111,6 +111,8 @@ fun TokenInfoHeader(
         Text(
             text = "Bal: ${token?.balance ?: web3Token?.balance} ${token?.symbol ?: web3Token?.symbol}",
             fontSize = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             color = MixinAppTheme.colors.textAssist
         )
     }
