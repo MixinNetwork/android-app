@@ -1397,7 +1397,7 @@
     <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
     <string name="FREE">FREE</string>
     <string name="Send_crypto_to_contact">Send crypto to my Mixin contact using the mixin Network.</string>
-    <string name="Send_to_web3_wallet_description">Send to my %1$s account using a crypto network. </string>
+    <string name="Send_to_web3_wallet_description">Send to my other wallet using a crypto network. </string>
     <string name="send_to_address_description">Send to a known crypto address using a crypto network.</string>
     <string name="Send_to_Contact_description">Send to my Mixin wallet using a crypto network.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
