@@ -28,7 +28,8 @@ class RefreshWeb3TransactionJob(
 
                 Timber.d("Syncing transactions for ${addresses.size} addresses")
                 addresses.forEach { address ->
-                    fetchTransactions(address, null, DEFAULT_LIMIT)
+                    val offset = web3TransactionDao.getLatestTransaction(address)?.createdAt
+                    fetchTransactions(address, offset, DEFAULT_LIMIT)
                 }
 
                 Timber.d("Completed syncing transactions for all addresses")

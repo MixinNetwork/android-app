@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -60,6 +61,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -247,7 +249,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         }
                                     lifecycleScope.launch {
                                         dialog.show()
-                                        web3Token?.let { token->
+                                        web3Token?.let { token ->
                                             val deposit = web3ViewModel.findAndSyncDepositEntry(token) ?: return@launch
                                             val fromAddress = if (token.isSolana()) {
                                                 PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
@@ -258,7 +260,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                chainToken ?: web3ViewModel.web3TokenItemById(token.chainId)?.let { chain ->
+                                                Timber.e("${token.chainId} ${chainToken?.chainId}")
+                                                (chainToken ?: web3ViewModel.web3TokenItemById(token.chainId))?.let { chain ->
+                                                    Timber.e("${token.chainId} ${chainToken?.chainId} ${chain.name}")
                                                     navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = token, chainToken = chain, toWallet = true), InputFragment.TAG)
                                                 }
                                             }
@@ -312,9 +316,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                chainToken ?: web3ViewModel.web3TokenItemById(
+                                                (chainToken ?: web3ViewModel.web3TokenItemById(
                                                     web3Token!!.chainId
-                                                )?.let { chain ->
+                                                ))?.let { chain ->
                                                     navTo(
                                                         InputFragment.newInstance(
                                                             fromAddress = fromAddress,
@@ -328,7 +332,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             }
                                             dialog.dismiss()
                                         }
-                                    } else {
+                                    } else if (token != null){
                                         navTo(
                                             InputFragment.newInstance(buildWithdrawalBiometricItem(address, token!!)),
                                             InputFragment.TAG
@@ -336,7 +340,16 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     }
                                 },
                                 onDeleteAddress = { address ->
-                                    showDeleteBottomSheet(address, token!!)
+                                    if (token == null && web3Token != null) {
+                                        lifecycleScope.launch {
+                                            val t = web3ViewModel.syncAsset(web3Token!!.assetId) ?: return@launch
+                                            showDeleteBottomSheet(address, t)
+                                        }
+                                    } else if (token != null) {
+                                        showDeleteBottomSheet(address, token!!)
+                                    } else {
+                                        toast(R.string.Data_error)
+                                    }
                                 }
                             )
                         }
@@ -413,34 +426,16 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedLabel,
                                 onScan = { startQrScan(ScanType.LABEL) },
                                 onComplete = { label ->
-                                    val bottomSheet =
-                                        TransferBottomSheetDialogFragment.newInstance(
-                                            AddressManageBiometricItem(
-                                                asset = token,
-                                                label = label,
-                                                addressId = null,
-                                                destination = address,
-                                                tag = memo ?: "",
-                                                type = TransferBottomSheetDialogFragment.ADD,
-                                            ),
-                                        )
-
-                                    bottomSheet.showNow(
-                                        parentFragmentManager,
-                                        TransferBottomSheetDialogFragment.TAG
-                                    )
-                                    scannedMemo = ""
-                                    scannedLabel = ""
-                                    scannedAddress = ""
-                                    bottomSheet.setCallback(
-                                        object : TransferBottomSheetDialogFragment.Callback() {
-                                            override fun onDismiss(success: Boolean) {
-                                                if (success) {
-                                                    navController.popBackStack(TransferDestination.Initial.name, inclusive = false)
-                                                }
-                                            }
-                                        },
-                                    )
+                                    if (token == null && web3Token != null) {
+                                        lifecycleScope.launch {
+                                            val t = web3ViewModel.syncAsset(web3Token!!.assetId) ?: return@launch
+                                            handleLabelComplete(t, address, memo, label, navController)
+                                        }
+                                    } else if (token != null) {
+                                        handleLabelComplete(token!!, address, memo, label, navController)
+                                    } else {
+                                        toast(R.string.Data_error)
+                                    }
                                 },
                                 pop = { navController.popBackStack() }
                             )
@@ -501,6 +496,44 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     context?.openPermissionSetting()
                 }
             }
+    }
+
+    private fun handleLabelComplete(
+        asset: TokenItem,
+        address: String,
+        memo: String?,
+        label: String,
+        navController: NavHostController,
+    ) {
+        val bottomSheet = TransferBottomSheetDialogFragment.newInstance(
+            AddressManageBiometricItem(
+                asset = asset,
+                label = label,
+                addressId = null,
+                destination = address,
+                tag = memo ?: "",
+                type = TransferBottomSheetDialogFragment.ADD,
+            ),
+        )
+        bottomSheet.showNow(
+            parentFragmentManager,
+            TransferBottomSheetDialogFragment.TAG
+        )
+        scannedMemo = ""
+        scannedLabel = ""
+        scannedAddress = ""
+        bottomSheet.setCallback(
+            object : TransferBottomSheetDialogFragment.Callback() {
+                override fun onDismiss(success: Boolean) {
+                    if (success) {
+                        navController.popBackStack(
+                            TransferDestination.Initial.name,
+                            inclusive = false
+                        )
+                    }
+                }
+            },
+        )
     }
 
     private fun showDeleteBottomSheet(
