@@ -75,9 +75,6 @@ class Web3AddressFragment : BaseFragment() {
                 binding.avatar2.isVisible = false
                 binding.avatar3.isVisible = false
                 binding.avatar4.isVisible = false
-                binding.avatar5.isVisible = false
-                binding.avatar6.isVisible = false
-                binding.avatar7.isVisible = false
                 binding.bottomHintTv.setText(R.string.web3_deposit_description_solana)
             } else {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
@@ -85,9 +82,6 @@ class Web3AddressFragment : BaseFragment() {
                 binding.avatar2.isVisible = true
                 binding.avatar3.isVisible = true
                 binding.avatar4.isVisible = true
-                binding.avatar5.isVisible = true
-                binding.avatar6.isVisible = true
-                binding.avatar7.isVisible = true
                 binding.bottomHintTv.setText(R.string.web3_deposit_description_evm)
             }
             qr.post {

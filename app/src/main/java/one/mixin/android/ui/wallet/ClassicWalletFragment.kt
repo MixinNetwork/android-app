@@ -402,7 +402,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         getSolanaAddressForWallet()
                     }
                     if (address != null) {
-                        WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address, WalletActivity.Destination.Address)
+                        this@ClassicWalletFragment.navTo(Web3ReceiveSelectionFragment.newInstance(address, token.chainId), Web3ReceiveSelectionFragment.TAG)
                     }
                 }
                 dismissNow()

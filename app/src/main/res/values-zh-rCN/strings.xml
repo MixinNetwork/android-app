@@ -1859,4 +1859,8 @@
     <string name="Address_Book">地址簿</string>
     <string name="insufficient_fee_description">需要 %1$s 以支付 %2$s 网络费用</string>
     <string name="Send_To_Title">转给</string>
+    <string name="My_Wallet">我的钱包</string>
+    <string name="My_Wallet_desc">使用加密货币网络从我的其他钱包提现</string>
+    <string name="Exchanges_or_Wallets">交易所或钱包</string>
+    <string name="Exchanges_or_Wallets_desc">使用加密货币网络从其他交易所或链上钱包提现</string>
 </resources>
