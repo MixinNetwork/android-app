@@ -163,7 +163,7 @@ fun ByteArray.toMixAddress(): MixAddress? {
     if (version != MixAddressVersion) return null
     val threshold = this[1]
     val total = this[2].toInt()
-    if (threshold.toInt() == 0 || threshold > total || total > 64) return null
+    if (threshold.toInt() == 0 || total > 64) return null
     val mixAddress = MixAddress(version, threshold)
     val mb = this.sliceArray(3..<this.size)
     when (mb.size) {

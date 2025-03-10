@@ -256,22 +256,14 @@ interface RouteService {
         @Body request: Web3AddressRequest
     ): MixinResponse<List<Web3Address>>
 
-    @GET("addresses")
-    suspend fun getAddresses(): MixinResponse<List<Web3Address>>
-
-    @GET("addresses/{id}")
-    suspend fun getAddress(
-        @Path("id") id: String
-    ): MixinResponse<Web3Address>
-
     @GET("wallets/{id}/addresses")
     suspend fun getWalletAddresses(
         @Path("id") walletId: String
     ): MixinResponse<List<Web3Address>>
 
-    @GET("addresses/{id}/transactions")
+    @GET("transactions")
     suspend fun getAllTransactions(
-        @Path("id") id: String,
+        @Query("address") address: String,
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = 30
     ): MixinResponse<List<Web3Transaction>>
@@ -279,5 +271,11 @@ interface RouteService {
     @GET("transactions/{id}")
     suspend fun getTransaction(
         @Path("id") id: String
+    ): MixinResponse<Web3Transaction>
+
+    @GET("assets/{id}")
+    suspend fun getAssetByAddress(
+        @Path("id") id: String,
+        address: String,
     ): MixinResponse<Web3Transaction>
 }

@@ -21,7 +21,7 @@ class RefreshWeb3TransactionJob(
     override fun onRun(): Unit =
         runBlocking {
             try {
-                val addresses = web3AddressDao.getAddressIds()
+                val addresses = web3AddressDao.getAddress()
                 if (addresses.isEmpty()) {
                     Timber.d("No addresses found to sync transactions")
                     return@runBlocking
@@ -29,8 +29,8 @@ class RefreshWeb3TransactionJob(
 
                 Timber.d("Syncing transactions for ${addresses.size} addresses")
                 addresses.forEach { address ->
-                    val offset = getLastCreatedAt(address)
-                    fetchTransactions(address, offset, DEFAULT_LIMIT)
+                    val offset = getLastCreatedAt(address.destination)
+                    fetchTransactions(address.destination, offset, DEFAULT_LIMIT)
                 }
 
                 Timber.d("Completed syncing transactions for all addresses")
@@ -39,30 +39,30 @@ class RefreshWeb3TransactionJob(
             }
         }
 
-    private suspend fun fetchTransactions(addressId: String, offset: String?, limit: Int): List<Web3Transaction>? {
+    private suspend fun fetchTransactions(destination: String, offset: String?, limit: Int): List<Web3Transaction>? {
         var result: List<Web3Transaction>? = null
 
         requestRouteAPI(
             invokeNetwork = {
-                routeService.getAllTransactions(addressId, offset, limit)
+                routeService.getAllTransactions(destination, offset, limit)
             },
             successBlock = { response ->
                 result = response.data
                 if (result.isNullOrEmpty()) {
-                    Timber.d("No transactions returned from API for address $addressId")
+                    Timber.d("No transactions returned from API for address $destination")
                 } else {
                     web3TransactionDao.insertList(result!!)
-                    Timber.d("Fetched ${result?.size} transactions from API for address $addressId")
+                    Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }
                 if ((result?.size ?: 0) >= DEFAULT_LIMIT) {
                     result?.lastOrNull()?.createdAt?.let {
-                        saveLastCreatedAt(addressId, it)
-                        fetchTransactions(addressId, it, limit)
+                        saveLastCreatedAt(destination, it)
+                        fetchTransactions(destination, it, limit)
                     }
                 }
             },
             failureBlock = { response ->
-                Timber.e("Failed to fetch transactions for address $addressId: ${response.errorCode} - ${response.errorDescription}")
+                Timber.e("Failed to fetch transactions for address $destination: ${response.errorCode} - ${response.errorDescription}")
                 false
             },
             requestSession = {
@@ -74,11 +74,11 @@ class RefreshWeb3TransactionJob(
         return result
     }
 
-    private suspend fun saveLastCreatedAt(addressId: String, timestamp: String) {
-        Web3PropertyHelper.updateKeyValue(addressId, timestamp)
+    private suspend fun saveLastCreatedAt(destination: String, timestamp: String) {
+        Web3PropertyHelper.updateKeyValue(destination, timestamp)
     }
 
-    private suspend fun getLastCreatedAt(addressId: String): String? {
-        return Web3PropertyHelper.findValueByKey(addressId, null)
+    private suspend fun getLastCreatedAt(destination: String): String? {
+        return Web3PropertyHelper.findValueByKey(destination, null)
     }
 }
