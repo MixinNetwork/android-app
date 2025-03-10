@@ -20,6 +20,9 @@ def versionMinor = 3
 def versionPatch = 2
 def versionBuild = 0
 
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
+
 android {
     compileSdk 35
     ndkVersion "27.0.12077973"
@@ -146,6 +149,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (project.hasProperty("RELEASE_STORE_FILE")) {
                 signingConfig signingConfigs.release
+                firebaseCrashlytics {
+                    mappingFileUploadEnabled = true
+                }
+            } else {
+                firebaseCrashlytics {
+                    mappingFileUploadEnabled = false
+                }
             }
         }
         debug {
@@ -492,9 +502,6 @@ configurations.all {
     exclude group: 'org.jetbrains', module: 'annotations-java5'
 }
 
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
-
 task allTests(dependsOn: ['testStagingUnitTest', 'connectedStagingAndroidTest']) {
     description = "Run unit tests and instrumentation tests"
 }
@@ -527,6 +534,9 @@ import io.sentry.android.gradle.extensions.InstrumentationFeature
 sentry {
     org = "mcwm"
     projectName = "android"
+
+    autoUploadProguardMapping = false
+    autoUploadNativeSymbols = false
 
     tracingInstrumentation {
         enabled = true
