@@ -334,6 +334,7 @@
     <string name="Delete_Synced_Contact">Delete Synced Contacts</string>
     <string name="Delete_withdraw_Address">Delete %1$s Address</string>
     <string name="Deposit">Deposit</string>
+    <string name="Pending">Pending</string>
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
     <plurals name="deposit_confirmation">
