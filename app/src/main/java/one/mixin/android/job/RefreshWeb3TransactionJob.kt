@@ -3,8 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
@@ -76,10 +75,10 @@ class RefreshWeb3TransactionJob(
     }
 
     private suspend fun saveLastCreatedAt(addressId: String, timestamp: String) {
-        PropertyHelper.updateKeyValue(addressId, timestamp)
+        Web3PropertyHelper.updateKeyValue(addressId, timestamp)
     }
 
     private suspend fun getLastCreatedAt(addressId: String): String? {
-        return PropertyHelper.findValueByKey(addressId, null)
+        return Web3PropertyHelper.findValueByKey(addressId, null)
     }
 }

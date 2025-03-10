@@ -6,11 +6,11 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.request.web3.WalletRequest
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 

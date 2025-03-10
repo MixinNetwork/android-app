@@ -21,7 +21,7 @@ import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.util.database.dbDir
-import one.mixin.android.vo.Chain
+import one.mixin.android.vo.Property
 import java.io.File
 
 @Database(
@@ -32,6 +32,7 @@ import java.io.File
         Web3Address::class,
         Web3TokensExtra::class,
         Web3Chain::class,
+        Property::class
     ],
     version = 1,
 )
@@ -52,7 +53,7 @@ abstract class WalletDatabase : RoomDatabase() {
                         Room.databaseBuilder(
                             context,
                             WalletDatabase::class.java,
-                            File(dir, Constants.DataBase.WEB3_DB_NAME).absolutePath,
+                            File(dir, Constants.DataBase.WALLET_DB_NAME).absolutePath,
                         ).addCallback(
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {
@@ -75,6 +76,7 @@ abstract class WalletDatabase : RoomDatabase() {
     abstract fun web3AddressDao(): Web3AddressDao
     abstract fun web3TokensExtraDao(): Web3TokensExtraDao
     abstract fun web3ChainDao(): Web3ChainDao
+    abstract fun web3PropertyDao(): Web3PropertyDao
 
     override fun close() {
         super.close()

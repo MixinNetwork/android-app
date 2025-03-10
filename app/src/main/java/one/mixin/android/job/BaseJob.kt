@@ -14,7 +14,6 @@ import one.mixin.android.api.LocalJobException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.WebSocketException
-import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService

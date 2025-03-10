@@ -257,4 +257,7 @@ internal object BaseDbModule {
     @Provides
     fun provideWeb3ChainDao(db: WalletDatabase) = db.web3ChainDao()
 
+    @Singleton
+    fun provideWeb3PropertyDao(db: WalletDatabase) = db.web3PropertyDao()
+
 }
