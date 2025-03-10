@@ -217,8 +217,12 @@ class TransferContent : LinearLayout {
             }
 
             networkFee.isVisible = true
-            networkFee.setContent(R.string.Fee, "0", "")
-
+            if (invoice.entries.any { it.isStorage() }) {
+                val entry = invoice.entries.firstOrNull { it.isStorage() }
+                networkFee.setContent(R.string.Fee, entry?.amountString() ?: "0", "XIN")
+            } else {
+                networkFee.setContent(R.string.Fee, "0", "")
+            }
             assetContainer.isVisible = true
             assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens)
         }
