@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "69d4923113a46f7447c751579c04b26b",
+    "identityHash": "4fc229fbb9d8f0394a1729a18b694013",
     "entities": [
       {
         "tableName": "tokens",
@@ -93,7 +93,7 @@
       },
       {
         "tableName": "transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `block_number` INTEGER NOT NULL, `sender` TEXT NOT NULL, `receiver` TEXT NOT NULL, `output_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`transaction_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `block_number` INTEGER NOT NULL, `sender` TEXT NOT NULL, `receiver` TEXT NOT NULL, `output_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `transaction_at` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`transaction_id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -174,6 +174,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "transactionAt",
+            "columnName": "transaction_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "status",
             "columnName": "status",
             "affinity": "TEXT",
@@ -229,7 +235,7 @@
       },
       {
         "tableName": "addresses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `tag` TEXT, `user_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
         "fields": [
           {
             "fieldPath": "addressId",
@@ -244,20 +250,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "destination",
-            "columnName": "destination",
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "tag",
-            "columnName": "tag",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "userId",
-            "columnName": "user_id",
+            "fieldPath": "destination",
+            "columnName": "destination",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -390,7 +390,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '69d4923113a46f7447c751579c04b26b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4fc229fbb9d8f0394a1729a18b694013')"
     ]
   }
 }

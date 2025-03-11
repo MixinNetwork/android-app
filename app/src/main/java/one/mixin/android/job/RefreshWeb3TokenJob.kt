@@ -8,8 +8,9 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
 class RefreshWeb3TokenJob(
-    private val walletId: String,
-    private val assetId: String?
+    private val walletId: String?,
+    private val assetId: String? = null,
+    private val address:String? = null
 ) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().setGroupId(GROUP)) {
     companion object {
         private const val serialVersionUID = 1L
@@ -19,10 +20,10 @@ class RefreshWeb3TokenJob(
     override fun onRun(): Unit =
         runBlocking {
             try {
-                if (assetId == null) {
+                if (walletId != null) {
                     fetchWalletAssets(walletId)
-                } else {
-                    // todo
+                } else if (assetId != null && address!=null){
+                    fetchAsset(assetId, address)
                 }
             } catch (e: Exception) {
                 Timber.e(e)
@@ -57,6 +58,34 @@ class RefreshWeb3TokenJob(
             defaultErrorHandle = {}
         )
     }
+
+    private suspend fun fetchAsset(assetId: String, address: String) {
+        requestRouteAPI(
+            invokeNetwork = {
+                routeService.getAssetByAddress(assetId, address)
+            },
+            successBlock = { response ->
+                val asset = response.data
+                if (asset != null) {
+                    Timber.d("Fetched ${asset.symbol} assets for address ${address}")
+                    web3TokenDao.insert(asset)
+                    fetchChain(listOf(asset.chainId))
+                    Timber.d("Inserted ${asset.symbol} into database")
+                } else {
+                    Timber.d("No asset found for wallet $assetId ${address}")
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to fetch asset for address ${address} ${assetId}: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            },
+            defaultErrorHandle = {}
+        )
+    }
+
 
     private suspend fun fetchChain(chainIds: List<String>) {
         chainIds.forEach { chainId ->

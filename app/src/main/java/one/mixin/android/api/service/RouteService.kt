@@ -276,6 +276,6 @@ interface RouteService {
     @GET("assets/{id}")
     suspend fun getAssetByAddress(
         @Path("id") id: String,
-        address: String,
-    ): MixinResponse<Web3Transaction>
+        @Query("address") address: String,
+    ): MixinResponse<Web3Token>
 }

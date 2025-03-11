@@ -240,7 +240,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     fun update() {
         jobManager.addJobInBackground(RefreshWeb3TransactionJob())
         if (walletId.isEmpty().not()) {
-            jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId, assetId = null))
+            jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId))
         }
     }
 

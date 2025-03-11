@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 
 @Entity(
     tableName = "addresses",
@@ -21,17 +22,13 @@ data class Web3Address(
     @SerializedName("wallet_id")
     val walletId: String,
 
+    @ColumnInfo(name = "chain_id")
+    @SerializedName("chain_id")
+    val chainId: String,
+
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,
-
-    @ColumnInfo(name = "tag")
-    @SerializedName("tag")
-    val tag: String?,
-
-    @ColumnInfo(name = "user_id")
-    @SerializedName("user_id")
-    val userId: String,
 
     @ColumnInfo(name = "created_at")
     @SerializedName("created_at")
@@ -39,6 +36,6 @@ data class Web3Address(
 
 ) : Parcelable {
     fun isEvmAddress(): Boolean {
-        return destination.startsWith("0x")
+        return chainId != Constants.ChainId.SOLANA_CHAIN_ID
     }
 }

@@ -372,7 +372,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     }
 
     private fun refreshToken(walletId: String, assetId: String) {
-        jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId, assetId))
+        jobManager.addJobInBackground(RefreshWeb3TokenJob(null, assetId, address))
     }
 
     override fun <T> onNormalItemClick(item: T) {
