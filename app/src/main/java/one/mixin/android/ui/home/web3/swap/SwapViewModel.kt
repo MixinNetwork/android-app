@@ -89,20 +89,20 @@ class SwapViewModel
                     Result.success(requireNotNull(response.data))
                 } else if (response.errorCode == INVALID_QUOTE_AMOUNT) {
                     val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
-                    val errorMessage = when {
+                    return when {
                         extra != null -> {
                             val min = extra.get("min")?.asString
                             val max = extra.get("max")?.asString
                             when {
-                                !min.isNullOrBlank() && !max.isNullOrBlank() -> context.getString(R.string.single_transaction_should_be_between, min, symbol, max, symbol)
-                                !min.isNullOrBlank() -> context.getString(R.string.single_transaction_should_be_greater_than, min, symbol)
-                                !max.isNullOrBlank() -> context.getString(R.string.single_transaction_should_be_less_than, max, symbol)
-                                else -> context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                                !min.isNullOrBlank() && !max.isNullOrBlank() -> Result.failure(AmountException(context.getString(R.string.single_transaction_should_be_between, min, symbol, max, symbol), max, min))
+                                !min.isNullOrBlank() -> Result.failure(AmountException(context.getString(R.string.single_transaction_should_be_greater_than, min, symbol), null, min))
+                                !max.isNullOrBlank() -> Result.failure(AmountException(context.getString(R.string.single_transaction_should_be_less_than, max, symbol), max, null))
+                                else -> Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
                             }
                         }
-                        else -> context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+
+                        else -> Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
                     }
-                    return Result.failure(Throwable(errorMessage))
                 } else {
                     Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
                 }

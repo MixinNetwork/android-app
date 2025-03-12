@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -95,6 +96,7 @@ import java.math.RoundingMode
 fun SwapPage(
     from: SwapToken?,
     to: SwapToken?,
+    orderBadge: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
@@ -114,6 +116,7 @@ fun SwapPage(
 
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
+    var quoteMin by remember { mutableStateOf<String?>(null) }
 
     var inputText by remember { mutableStateOf(initialAmount ?: "") }
     LaunchedEffect(lastOrderTime) {
@@ -147,6 +150,7 @@ fun SwapPage(
                         if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
                             isLoading = true
                             errorInfo = null
+                            quoteMin = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
                             viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
                                 .onSuccess { value ->
@@ -157,6 +161,9 @@ fun SwapPage(
                                 .onFailure { exception ->
                                     AnalyticsTracker.trackSwapQuote("failure")
                                     if (exception is CancellationException) return@onFailure
+                                    if (exception is AmountException) {
+                                        quoteMin = exception.min
+                                    }
                                     errorInfo = exception.message
                                     quoteResult = null
                                     isLoading = false
@@ -164,6 +171,7 @@ fun SwapPage(
                         } else {
                             errorInfo = null
                             quoteResult = null
+                            quoteMin = null
                             isLoading = false
                         }
                     }
@@ -179,14 +187,25 @@ fun SwapPage(
         pop = pop,
         actions = {
             if (source != "") {
-                IconButton(onClick = {
-                    onOrderList()
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_order),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.icon,
-                    )
+                Box {
+                    IconButton(onClick = {
+                        onOrderList()
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_order),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
+                    if (orderBadge) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .offset(x = (-12).dp, y = (12).dp)
+                                .background(color = MixinAppTheme.colors.badgeRed, shape = CircleShape)
+                                .align(Alignment.TopEnd)
+                        )
+                    }
                 }
             }
             IconButton(onClick = {
@@ -322,6 +341,12 @@ fun SwapPage(
                                     ) {
                                         Text(
                                             text = errorInfo ?: "",
+                                            modifier = Modifier
+                                                .clickable {
+                                                    if (quoteMin != null && runCatching { BigDecimal(quoteMin) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO) {
+                                                        inputText = quoteMin!!
+                                                    }
+                                            },
                                             style = TextStyle(
                                                 fontSize = 14.sp,
                                                 color = MixinAppTheme.colors.tipError,

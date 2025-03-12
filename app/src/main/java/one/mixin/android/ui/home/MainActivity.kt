@@ -47,6 +47,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -326,7 +327,7 @@ class MainActivity : BlazeBaseActivity() {
                     when (e.badge) {
                         Account.PREF_HAS_USED_SWAP -> {
                             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
-                                isVisible = false
+                                isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
                                 backgroundColor = Color.RED
                             }
                         }
@@ -932,7 +933,8 @@ class MainActivity : BlazeBaseActivity() {
                 }
         }
         lifecycleScope.launch {
-            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
+            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+
             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
                 isVisible = swap
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)

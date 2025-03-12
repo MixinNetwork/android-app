@@ -35,6 +35,7 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.getTransactionResult
+import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
@@ -640,7 +641,7 @@ class BottomSheetViewModel
                         ""
                     }
                 }
-                val tx = Kernel.buildTx(asset, amount, 1, receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
+                val tx = Kernel.buildTx(asset, amount, recipient.threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
                 verifiedTransactions.add(VerifiedTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference))
             }
             val verifyTransaction = tokenRepository.transactionRequest(verifiedTransactions.map { TransactionRequest(it.raw, it.trace) })
@@ -807,8 +808,8 @@ class BottomSheetViewModel
                         // Refresh when there is an undetermined UTXO
                         jobManager.addJobInBackground(SyncOutputJob())
                     }
-                    if (anyNotConfirmed) return ""
-                    else return null
+                    return if (anyNotConfirmed) ""
+                    else null
                 }
             }
 
@@ -1399,14 +1400,18 @@ class BottomSheetViewModel
         ): MixinResponse<TransactionResponse> {
             val context = MixinApplication.appContext
             val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
-            return if (t.action == "sign") {
-                val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
-                val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
-                tokenRepository.signTransactionMultisigs(t.traceId, TransactionRequest(sign.raw, t.traceId))
-            } else if (t.action == "unlock") {
-                tokenRepository.unlockTransactionMultisigs(t.traceId)
-            } else {
-                throw Exception("no support action" + t.action)
+            return when (t.action) {
+                SignatureAction.sign.name -> {
+                    val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
+                    val sign = Kernel.signTransaction(t.raw, t.views, spendKey.toHex(), t.index.toLong(), false)
+                    tokenRepository.signTransactionMultisigs(t.traceId, TransactionRequest(sign.raw, t.traceId))
+                }
+                SignatureAction.revoke.name -> {
+                    tokenRepository.unlockTransactionMultisigs(t.traceId)
+                }
+                else -> {
+                    throw Exception("no support action" + t.action)
+                }
             }
         }
 

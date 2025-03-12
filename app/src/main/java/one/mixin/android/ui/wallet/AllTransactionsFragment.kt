@@ -418,10 +418,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     1 -> SnapshotType.deposit
                     2 -> SnapshotType.withdrawal
                     3 -> SnapshotType.snapshot
+                    4 -> SnapshotType.pending
                     else -> SnapshotType.all
                 }
                 if (filterParams.recipients?.isNotEmpty() == true) {
-                    if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal) {
+                    if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal || filterParams.type == SnapshotType.pending) {
                         filterParams.recipients = filterParams.recipients?.filterIsInstance<AddressItem>()
                     } else if (filterParams.type == SnapshotType.snapshot) {
                         filterParams.recipients = filterParams.recipients?.filterIsInstance<UserItem>()
@@ -449,6 +450,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             TypeMenuData(SnapshotType.deposit, R.drawable.ic_menu_type_deoisit, R.string.Deposit),
             TypeMenuData(SnapshotType.withdrawal, R.drawable.ic_menu_type_withdrawal, R.string.Withdrawal),
             TypeMenuData(SnapshotType.snapshot, R.drawable.ic_menu_type_transfer, R.string.Transfer),
+            TypeMenuData(SnapshotType.pending, R.drawable.ic_menu_type_pending, R.string.Pending),
         )
         TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = filterParams.type.value

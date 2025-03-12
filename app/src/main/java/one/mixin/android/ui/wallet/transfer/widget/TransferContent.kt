@@ -213,7 +213,7 @@ class TransferContent : LinearLayout {
             } else {
                 address.isVisible = false
                 receive.isVisible = true
-                receive.setContent(R.plurals.Receiver_title, receivers, receivers.size, userClick)
+                receive.setContent(R.plurals.Receiver_title, receivers, invoice.recipient.threshold.toInt(), userClick)
             }
 
             networkFee.isVisible = true
