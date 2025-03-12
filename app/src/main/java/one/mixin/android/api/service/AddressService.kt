@@ -26,9 +26,4 @@ interface AddressService {
     suspend fun address(
         @Path("id") id: String,
     ): MixinResponse<Address>
-
-    @GET("assets/{id}/addresses")
-    fun addresses(
-        @Path("id") id: String,
-    ): Call<MixinResponse<List<Address>>>
 }

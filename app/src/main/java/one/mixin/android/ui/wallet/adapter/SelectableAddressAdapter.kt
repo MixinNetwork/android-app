@@ -40,7 +40,7 @@ class SelectableAddressAdapter(private val selectedUsers: MutableList<Recipient>
             binding.label.text = address.label
             binding.addressTv.text = address.displayAddress()
             binding.avatar.bg.loadImage(address.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.avatar.badge.loadImage(address.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            binding.avatar.badge.loadImage(address.iconUrl, R.drawable.ic_avatar_place_holder)
             binding.cb.isChecked = selectedRecipients.contains(address)
             binding.cb.isClickable = false
             itemView.setOnClickListener {
