@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
@@ -66,6 +67,7 @@ import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.ui.address.TransferDestinationInputFragment
+import org.sol4k.Constants
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
@@ -254,7 +256,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 try {
                     tipGas = withContext(Dispatchers.IO) {
-                        buildTipGas(chain.chainId, chain, transaction)
+                        if (transaction.data != null) {
+                            val r = viewModel.estimateFee(
+                                EstimateFeeRequest(
+                                    assetId,
+                                    transaction.data
+                                )
+                            )
+                            if (r.isSuccess.not()) return@withContext null
+                            buildTipGas(chain.chainId, chain, transaction, r.data!!)
+                        } else {
+                            buildTipGas(chain.chainId, chain, transaction)
+                        }
                     } ?: return@onEach
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {

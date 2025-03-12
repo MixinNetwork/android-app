@@ -2,6 +2,7 @@ package one.mixin.android.tip.wc.internal
 
 import androidx.annotation.WorkerThread
 import one.mixin.android.Constants.DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS
+import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.tip.wc.WalletConnectV2
 import org.web3j.exceptions.MessageDecodingException
 import org.web3j.protocol.core.methods.response.EthEstimateGas
@@ -76,6 +77,15 @@ fun buildTipGas(assetId: String, chain: Chain, tx: WCEthereumTransaction): TipGa
     } ?: return null
     Timber.d("baseGas $baseGas, gasLimit $gasLimit, maxPriorityFeePerGas $maxPriorityFeePerGas")
     return TipGas(assetId, baseGas, gasLimit, maxPriorityFeePerGas, tx)
+}
+
+
+@WorkerThread
+fun buildTipGas(assetId: String, chain: Chain, tx: WCEthereumTransaction, respose: EstimateFeeResponse): TipGas? {
+    val baseGas = WalletConnectV2.ethBlock(chain)?.run {
+        this.block.baseFeePerGas
+    } ?: return null
+    return TipGas(assetId, baseGas, respose.gasLimit!!.toBigInteger(), respose.maxPriorityFeePerGas!!.toBigInteger(), tx)
 }
 
 private fun convertToGasLimit(

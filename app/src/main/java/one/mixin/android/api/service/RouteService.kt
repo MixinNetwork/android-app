@@ -7,6 +7,8 @@ import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.request.web3.StakeRequest
@@ -221,4 +223,10 @@ interface RouteService {
 
     @POST("prices/alerts/{id}")
     suspend fun updateAlert(@Path("id") alertId: String, @Body request: AlertUpdateRequest): MixinResponse<Alert>
+
+    @POST("web3/estimate-fee")
+    suspend fun estimateFee(
+        @Body request: EstimateFeeRequest,
+    ): MixinResponse<EstimateFeeResponse>
+
 }
