@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
@@ -11,6 +12,7 @@ import android.widget.TextView.OnEditorActionListener
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.TextViewCompat
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewSearchBinding
 import one.mixin.android.extension.dp
@@ -58,6 +60,9 @@ class SearchView : FrameLayout {
             hint = resources.getString(R.string.Search)
             addTextChangedListener(watcher)
             setOnEditorActionListener(onEditorActionListener)
+            TextViewCompat.setAutoSizeTextTypeWithDefaults(this, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, 10, 24, 1, TypedValue.COMPLEX_UNIT_SP)
         }
         binding.rightClear.setOnClickListener {
             if (!binding.searchEt.text.isNullOrEmpty()) {
