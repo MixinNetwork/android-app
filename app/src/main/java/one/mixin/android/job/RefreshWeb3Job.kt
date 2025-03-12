@@ -26,13 +26,13 @@ class RefreshWeb3Job : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
-        fetchWallets()
+        // fetchWallets()
         val wallets = web3WalletDao.getAllWallets()
         if (wallets.isEmpty()) {
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             createWallet(
-                WALLET_CATEGORY_CLASSIC, listOf(
+                "ClassicWallet", WALLET_CATEGORY_CLASSIC, listOf(
                     Web3AddressRequest(
                         destination = erc20Address,
                         chainId = Constants.ChainId.Polygon
@@ -52,9 +52,9 @@ class RefreshWeb3Job : BaseJob(
         jobManager.addJobInBackground(RefreshWeb3TransactionJob())
     }
 
-    private suspend fun createWallet(category: String, addresses: List<Web3AddressRequest>) {
+    private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>) {
         val walletRequest = WalletRequest(
-            name = category,
+            name = name,
             category = category,
             addresses = addresses
         )
@@ -66,11 +66,15 @@ class RefreshWeb3Job : BaseJob(
             successBlock = { response ->
                 val wallet = response.data
                 if (wallet != null) {
-                    web3WalletDao.insert(wallet)
-                    Timber.d("Created $category wallet with ID: ${wallet.id}")
+                    val w = Web3Wallet(wallet.id, wallet.category, wallet.name, wallet.createdAt, wallet.updatedAt)
+                    web3WalletDao.insert(w)
+                    Timber.d("Created ${wallet.category} wallet with ID: ${wallet.id}")
+                    wallet.addresses?.let {
+                        web3AddressDao.insertList(it)
+                        Timber.d("Inserted wallet with ID: ${wallet.id}, ${addresses.size} addresses")
+                    }
                     fetchChain()
-                    fetchWalletAddresses(wallet)
-                    fetchWalletAssets(wallet)
+                    fetchWalletAssets(w)
                 } else {
                     Timber.e("Failed to create $category wallet: response data is null")
                 }

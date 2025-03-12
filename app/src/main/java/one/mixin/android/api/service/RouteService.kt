@@ -27,6 +27,7 @@ import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
+import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.ui.wallet.alert.vo.Alert
@@ -231,7 +232,7 @@ interface RouteService {
     @POST("wallets")
     suspend fun createWallet(
         @Body request: WalletRequest
-    ): MixinResponse<Web3Wallet>
+    ): MixinResponse<Web3WalletResponse>
 
     @GET("wallets")
     suspend fun getWallets(): MixinResponse<List<Web3Wallet>>

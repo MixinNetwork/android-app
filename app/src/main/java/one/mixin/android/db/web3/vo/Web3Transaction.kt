@@ -3,11 +3,15 @@ package one.mixin.android.db.web3.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
-@Entity(tableName = "transactions")
+@Entity(
+    tableName = "transactions",
+    indices = [Index(value = arrayOf("transaction_at")), Index(value = arrayOf("transaction_type", "asset_id"))]
+)
 @Parcelize
 data class Web3Transaction(
     @PrimaryKey

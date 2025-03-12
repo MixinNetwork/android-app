@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "4fc229fbb9d8f0394a1729a18b694013",
+    "identityHash": "b253f5f796fc8cb7659867a3f076cdc5",
     "entities": [
       {
         "tableName": "tokens",
@@ -192,16 +192,42 @@
             "transaction_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_transactions_transaction_at",
+            "unique": false,
+            "columnNames": [
+              "transaction_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_transaction_at` ON `${TABLE_NAME}` (`transaction_at`)"
+          },
+          {
+            "name": "index_transactions_transaction_type_asset_id",
+            "unique": false,
+            "columnNames": [
+              "transaction_type",
+              "asset_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_asset_id` ON `${TABLE_NAME}` (`transaction_type`, `asset_id`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
         "tableName": "wallets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -390,7 +416,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4fc229fbb9d8f0394a1729a18b694013')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b253f5f796fc8cb7659867a3f076cdc5')"
     ]
   }
 }

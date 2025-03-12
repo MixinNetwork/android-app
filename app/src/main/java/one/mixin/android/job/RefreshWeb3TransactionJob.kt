@@ -28,7 +28,7 @@ class RefreshWeb3TransactionJob(
                 }
 
                 Timber.d("Syncing transactions for ${addresses.size} addresses")
-                addresses.forEach { address ->
+                addresses.distinctBy { it.destination }.forEach { address ->
                     val offset = getLastCreatedAt(address.destination)
                     fetchTransactions(address.destination, offset, DEFAULT_LIMIT)
                 }
