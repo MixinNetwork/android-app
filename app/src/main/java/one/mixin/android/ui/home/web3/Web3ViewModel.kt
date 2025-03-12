@@ -418,8 +418,8 @@ internal constructor(
         tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
     }
 
-    suspend fun getAddressesByWalletId(walletId: String): List<Web3Address> {
-        return web3Repository.getAddressesByWalletId(walletId)
+    suspend fun getAddressesByChainId(chainId: String): Web3Address? {
+        return web3Repository.getAddressesByChainId(chainId)
     }
 
     suspend fun getClassicWalletId(): String? = web3Repository.getClassicWalletId()

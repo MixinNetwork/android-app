@@ -14,8 +14,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("SELECT * FROM wallets")
     fun getWallets(): Flow<List<Web3Wallet>>
 
-    // Todo
-    @Query("SELECT wallet_id FROM wallets WHERE name = 'classic'")
+    @Query("SELECT wallet_id FROM wallets WHERE category = 'classic'")
     suspend fun getClassicWalletId(): String?
 
     @Query("SELECT * FROM wallets WHERE wallet_id = :walletId")

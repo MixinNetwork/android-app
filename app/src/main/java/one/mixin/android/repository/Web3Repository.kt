@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import one.mixin.android.db.web3.vo.Web3Token
@@ -11,9 +10,6 @@ import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3TokensExtra
-import one.mixin.android.extension.nowInUtc
-import one.mixin.android.vo.assetIdToAsset
-import one.mixin.android.vo.safe.TokensExtra
 
 @Singleton
 class Web3Repository
@@ -46,8 +42,8 @@ constructor(
 
     fun web3Transactions(assetId: String) = web3TransactionDao.web3Transactions(assetId)
     
-    suspend fun getAddressesByWalletId(walletId: String): List<Web3Address> {
-        return web3AddressDao.getAddressesByWalletId(walletId)
+    suspend fun getAddressesByChainId(walletId: String): Web3Address? {
+        return web3AddressDao.getAddressesByChainId(walletId)
     }
 
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()

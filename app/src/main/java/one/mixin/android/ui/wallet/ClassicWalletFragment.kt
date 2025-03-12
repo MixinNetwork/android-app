@@ -39,6 +39,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RefreshWeb3TokenJob
@@ -116,11 +117,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
                             setOnClickListener { token ->
                                 this@ClassicWalletFragment.lifecycleScope.launch {
-                                    val address = if (token.chainId != "solana") {
-                                        getEvmAddressForWallet()
-                                    } else {
-                                        getSolanaAddressForWallet()
-                                    }
+                                    val address = getAddressesByChainId(token.chainId)
                                     val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
                                     Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
                                     if (address != null) this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
@@ -396,11 +393,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
             setOnClickListener { token ->
                 this@ClassicWalletFragment.lifecycleScope.launch {
-                    val address = if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
-                        getEvmAddressForWallet()
-                    } else {
-                        getSolanaAddressForWallet()
-                    }
+                    val address = getAddressesByChainId(token.chainId)
                     if (address != null) {
                         this@ClassicWalletFragment.navTo(Web3ReceiveSelectionFragment.newInstance(address, token.chainId), Web3ReceiveSelectionFragment.TAG)
                     }
@@ -413,11 +406,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     override fun <T> onNormalItemClick(item: T) {
         val token = item as Web3TokenItem
         lifecycleScope.launch {
-            val address = if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
-                getEvmAddressForWallet()
-            } else {
-                getSolanaAddressForWallet()
-            }
+            val address = getAddressesByChainId(token.chainId)
             if (address != null) {
                 WalletActivity.showWithWeb3Token(
                     requireActivity(),
@@ -425,34 +414,22 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     address,
                     WalletActivity.Destination.Web3Transactions
                 )
+            } else{
+                toast(R.string.Data_error)
             }
         }
     }
+
     
-    private suspend fun getEvmAddressForWallet(): String? {
-        if (walletId.isEmpty()) {
-            walletId = web3ViewModel.getClassicWalletId() ?: ""
-        }
-        if (walletId.isEmpty()) return null
-        
-        val addresses = web3ViewModel.getAddressesByWalletId(walletId)
-        if (addresses.isEmpty()) return null
-        
-        val evmAddresses = addresses.filter { it.isEvmAddress() }
-        return evmAddresses.firstOrNull()?.destination
-    }
-    
-    private suspend fun getSolanaAddressForWallet(): String? {
+    private suspend fun getAddressesByChainId(chainId: String): String? {
         if (walletId.isEmpty()) {
             walletId = web3ViewModel.getClassicWalletId() ?: ""
         }
         if (walletId.isEmpty()) return null
 
-        val addresses = web3ViewModel.getAddressesByWalletId(walletId)
-        if (addresses.isEmpty()) return null
-        
-        val solanaAddresses = addresses.filter { !it.isEvmAddress() }
-        return solanaAddresses.firstOrNull()?.destination
+        val address = web3ViewModel.getAddressesByChainId(chainId)
+
+        return address?.destination
     }
 
 }
