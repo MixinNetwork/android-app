@@ -30,7 +30,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.getChainFromName
 import one.mixin.android.api.response.web3.ParsedTx
@@ -369,22 +368,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
-        val level = when(solanaTxSource) {
-            SolanaTxSource.InnerTransfer, SolanaTxSource.InnerStake -> {
-                PriorityLevel.Medium
-            }
-            SolanaTxSource.InnerSwap -> {
-                PriorityLevel.High
-            }
-            else -> {
-                if (tx.calcPriorityFee() != BigDecimal.ZERO) {
-                    return tx
-                }
-                PriorityLevel.High
-            }
-        }
-        val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode(), level)
-        if (priorityFeeResp != null && priorityFeeResp.unitPrice > 0) {
+        val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
+        if (priorityFeeResp != null && priorityFeeResp.unitPrice != null && priorityFeeResp.unitLimit != null) {
             tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)
         }
         return tx

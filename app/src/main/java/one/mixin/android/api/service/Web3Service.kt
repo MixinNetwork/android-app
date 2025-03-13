@@ -1,11 +1,9 @@
 package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.web3.PriorityFeeRequest
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.Web3Transaction
-import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.vo.ChainDapp
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -37,8 +35,4 @@ interface Web3Service {
         @Query("addresses") addresses: String?,
     ): MixinResponse<List<Web3Token>>
 
-    @POST("estimate-priority-fees")
-    suspend fun getPriorityFee(
-        @Body priorityFeeRequest: PriorityFeeRequest,
-    ): MixinResponse<PriorityFeeResponse>
 }

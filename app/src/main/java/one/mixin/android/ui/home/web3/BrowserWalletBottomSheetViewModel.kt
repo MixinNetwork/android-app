@@ -3,16 +3,15 @@ package one.mixin.android.ui.home.web3
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
-import one.mixin.android.api.request.web3.PriorityFeeRequest
-import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
@@ -54,9 +53,9 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun getPriorityFee(tx: String, priorityLevel: PriorityLevel): PriorityFeeResponse? {
+        suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(
-                invokeNetwork = { web3Service.getPriorityFee(PriorityFeeRequest(tx, priorityLevel)) },
+                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
                 successBlock = {
                     it.data
                 },
