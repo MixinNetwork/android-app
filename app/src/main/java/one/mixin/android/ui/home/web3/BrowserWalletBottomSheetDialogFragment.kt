@@ -255,18 +255,14 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 try {
                     tipGas = withContext(Dispatchers.IO) {
-                        if (transaction.data != null) {
-                            val r = viewModel.estimateFee(
-                                EstimateFeeRequest(
-                                    assetId,
-                                    transaction.data
-                                )
+                        val r = viewModel.estimateFee(
+                            EstimateFeeRequest(
+                                assetId,
+                                transaction.data
                             )
-                            if (r.isSuccess.not()) return@withContext null
-                            buildTipGas(chain.chainId, chain, transaction, r.data!!)
-                        } else {
-                            buildTipGas(chain.chainId, chain, transaction)
-                        }
+                        )
+                        if (r.isSuccess.not()) return@withContext null
+                        buildTipGas(chain.chainId, chain, transaction, r.data!!)
                     } ?: return@onEach
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {

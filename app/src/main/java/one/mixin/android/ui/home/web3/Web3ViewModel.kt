@@ -14,6 +14,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
@@ -29,11 +30,13 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.buildTipGas
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState
@@ -74,6 +77,7 @@ internal constructor(
     private val tokenRepository: TokenRepository,
     private val web3Service: Web3Service,
     private val jobManager: MixinJobManager,
+    private val web3Repository: Web3Repository
 ) : ViewModel() {
     fun tokenExtraFlow(assetId: String) =
         tokenRepository.tokenExtraFlow(assetId)
@@ -318,10 +322,17 @@ internal constructor(
                 return BigDecimal.ZERO
             }
         } else {
-            val tipGas = withContext(Dispatchers.IO) {
-                buildTipGas(token.chainId, chain, requireNotNull(transaction.wcEthereumTransaction))
-            } ?: return null
-            return tipGas.displayValue(null)
+            val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
+                EstimateFeeRequest(
+                    token.chainId,
+                    transaction.data
+                )
+            )}
+            if (r.isSuccess.not()) return BigDecimal.ZERO
+            return withContext(Dispatchers.IO) {
+                val tipGas = buildTipGas(chain.chainId, chain, transaction.wcEthereumTransaction!!, r.data!!)
+                tipGas?.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
+            }
         }
     }
 

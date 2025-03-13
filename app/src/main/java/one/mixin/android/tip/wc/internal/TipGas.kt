@@ -59,28 +59,6 @@ data class TipGas(
     }
 }
 
-@WorkerThread
-fun buildTipGas(assetId: String, chain: Chain, tx: WCEthereumTransaction): TipGas? {
-    val baseGas = WalletConnectV2.ethBlock(chain)?.run {
-        this.block.baseFeePerGas
-    } ?: return null
-    val gasLimit = WalletConnectV2.ethEstimateGas(chain, tx.toTransaction())?.run {
-        val defaultLimit = if (chain.chainReference == Chain.Ethereum.chainReference) BigInteger.valueOf(4712380L) else null
-        convertToGasLimit(this, defaultLimit)
-    } ?: return null
-    val maxPriorityFeePerGas =  WalletConnectV2.ethMaxPriorityFeePerGas(chain)?.run {
-        try {
-            this.maxPriorityFeePerGas
-        } catch (e: MessageDecodingException) {
-            result?.run { Numeric.decodeQuantity(this) }
-        }
-    } ?: return null
-    Timber.d("baseGas $baseGas, gasLimit $gasLimit, maxPriorityFeePerGas $maxPriorityFeePerGas")
-    return TipGas(assetId, baseGas, gasLimit, maxPriorityFeePerGas, tx)
-}
-
-
-@WorkerThread
 fun buildTipGas(assetId: String, chain: Chain, tx: WCEthereumTransaction, respose: EstimateFeeResponse): TipGas? {
     val baseGas = WalletConnectV2.ethBlock(chain)?.run {
         this.block.baseFeePerGas
