@@ -3,8 +3,8 @@ package one.mixin.android.api.response.web3
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.api.response.solanaNativeTokenAssetKey
-import one.mixin.android.api.response.wrappedSolTokenAssetKey
+import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
+import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
 import java.math.RoundingMode

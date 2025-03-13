@@ -27,6 +27,8 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.WalletDatabase
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -36,6 +38,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
@@ -60,17 +63,25 @@ import javax.inject.Inject
 class WalletViewModel
     @Inject
     internal constructor(
+        private val walletDatabase: WalletDatabase,
         private val userRepository: UserRepository,
         private val accountRepository: AccountRepository,
+        private val web3Repository: Web3Repository,
         private val tokenRepository: TokenRepository,
         private val assetRepository: AssetRepository,
         private val jobManager: MixinJobManager,
         private val pinCipher: PinCipher,
     ) : ViewModel() {
+    fun init() {
+        // walletDatabase.query("SELECT * FROM web3_token" , null)
+    }
+
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)
         }
+
+    suspend fun  web3TokenItemById(chainId: String) = web3Repository.web3TokenItemById(chainId)
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
@@ -132,6 +143,19 @@ class WalletViewModel
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
             tokenRepository.allSnapshots(filterParams),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build(),
+        ).setInitialLoadKey(initialLoadKey).build()
+
+    fun allWeb3Transaction(
+        initialLoadKey: Int? = 0,
+        filterParams: Web3FilterParams,
+    ): LiveData<PagedList<Web3TransactionItem>> =
+        LivePagedListBuilder(
+            tokenRepository.allWeb3Transaction(filterParams),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)

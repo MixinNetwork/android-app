@@ -1,5 +1,4 @@
-
-package one.mixin.android.web3.receive
+package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -15,12 +14,9 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Web3ChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3ReceiveSelectionBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.exploreEvm
-import one.mixin.android.ui.home.exploreSolana
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
@@ -28,12 +24,24 @@ import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
 @AndroidEntryPoint
 class Web3ReceiveSelectionFragment : BaseFragment() {
     companion object {
-        const val TAG = "Wbe3ReceiveSelectionFragment"
+        const val TAG = "Web3ReceiveSelectionFragment"
+        private const val ARGS_ADDRESS = "args_address"
+        private const val ARGS_CHAIN_ID = "args_chain_id"
+
+        fun newInstance(address: String, chainId: String) = Web3ReceiveSelectionFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARGS_ADDRESS, address)
+                putString(ARGS_CHAIN_ID, chainId)
+            }
+        }
     }
 
     private var _binding: FragmentWeb3ReceiveSelectionBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val web3ViewModel by viewModels<Web3ViewModel>()
+    
+    private val address by lazy { requireArguments().getString(ARGS_ADDRESS, "") }
+    private val chainId by lazy { requireArguments().getString(ARGS_CHAIN_ID, "") }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,19 +52,16 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
         binding.root.setOnClickListener { }
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-        binding.walletTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber)
         binding.walletRl.setOnClickListener {
             lifecycleScope.launch {
-                val address = getExploreAddress(requireContext())
                 if (address.isEmpty()) {
                     return@launch
                 }
-                val chainIds =
-                    if (exploreSolana(requireContext())) {
-                        listOf(Constants.ChainId.SOLANA_CHAIN_ID)
-                    } else {
-                        Web3ChainIds
-                    }
+                val chainIds = if (chainId.isNotEmpty()) {
+                    listOf(chainId)
+                } else {
+                    Web3ChainIds
+                }
                 val list = web3ViewModel.web3TokenItems(chainIds)
                 TokenListBottomSheetDialogFragment.newInstance(ArrayList(list)).apply {
                     setOnClickListener { token ->
@@ -67,7 +72,7 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
             }
         }
         binding.addressRl.setOnClickListener {
-            navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+            WalletActivity.showWithAddress(this.requireActivity(), address, WalletActivity.Destination.Address)
         }
         return binding.root
     }
@@ -83,15 +88,5 @@ class Web3ReceiveSelectionFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-}
-
-suspend fun getExploreAddress(context: Context): String {
-    return if (exploreEvm(context)) {
-        PropertyHelper.findValueByKey(Constants.Account.ChainAddress.EVM_ADDRESS, "")
-    } else if (exploreSolana(context)) {
-        PropertyHelper.findValueByKey(Constants.Account.ChainAddress.SOLANA_ADDRESS, "")
-    } else {
-        ""
     }
 }

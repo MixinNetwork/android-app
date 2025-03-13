@@ -75,6 +75,11 @@ import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.db.web3.Web3ChainDao
+import one.mixin.android.db.web3.Web3TokenDao
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
@@ -342,6 +347,26 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var orderDao: OrderDao
+
+    @Inject
+    @Transient
+    lateinit var web3TokenDao: Web3TokenDao
+
+    @Inject
+    @Transient
+    lateinit var web3TransactionDao: Web3TransactionDao
+
+    @Inject
+    @Transient
+    lateinit var web3AddressDao: Web3AddressDao
+
+    @Inject
+    @Transient
+    lateinit var web3WalletDao: Web3WalletDao
+
+    @Inject
+    @Transient
+    lateinit var web3ChainDao: Web3ChainDao
 
     @Inject
     @Transient

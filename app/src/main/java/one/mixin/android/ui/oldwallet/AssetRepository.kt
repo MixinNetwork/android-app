@@ -25,6 +25,8 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TraceDao
+import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -53,6 +55,7 @@ class AssetRepository
         private val addressService: AddressService,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
+        private val web3WalletDao: Web3WalletDao,
     ) {
         fun assets() = assetService.assets()
 

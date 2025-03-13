@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
-import android.text.TextUtils
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,25 +38,24 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.isDigitsOnly
 import kotlinx.coroutines.android.awaitFrame
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.safe.TokenItem
-import androidx.core.text.isDigitsOnly
 
 @Composable
 fun MemoInputPage(
     token: TokenItem?,
-    web3Token: Web3Token?,
+    web3Token: Web3TokenItem?,
     address: String,
     contentText: String = "",
     onNext: (String?) -> Unit,

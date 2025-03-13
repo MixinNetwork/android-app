@@ -30,9 +30,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.getChainFromName
+
 import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
@@ -45,6 +46,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
@@ -55,18 +57,16 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
-import one.mixin.android.ui.address.TransferDestinationInputFragment
-import org.sol4k.Constants
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
@@ -95,8 +95,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             url: String?,
             title: String?,
             amount: String? = null,
-            token: Web3Token? = null,
-            chainToken: Web3Token? = null,
+            token: Web3TokenItem? = null,
+            chainToken: Web3TokenItem? = null,
             toAddress: String? = null,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
@@ -127,7 +127,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val title: String? by lazy { requireArguments().getString(ARGS_TITLE) }
     private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
     private val chainToken by lazy {
-        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
     }
     private val currentChain by lazy {
         token?.getChainFromName() ?: JsSigner.currentChain
@@ -136,7 +136,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     var step by mutableStateOf(Step.Input)
         private set
     private var amount: String? by mutableStateOf(null)
-    private var token: Web3Token? by mutableStateOf(null)
+    private var token: Web3TokenItem? by mutableStateOf(null)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
@@ -152,7 +152,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3Token::class.java)
+            token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
             amount = requireArguments().getString(ARGS_AMOUNT)
             setContent {
                 BrowserPage(
@@ -362,7 +362,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
         onDismissAction?.invoke()
     }
-
     private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
         if (priorityFeeResp != null && priorityFeeResp.unitPrice != null && priorityFeeResp.unitLimit != null) {
@@ -372,8 +371,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun checkGas(
-        web3Token: Web3Token?,
-        chainToken: Web3Token?,
+        web3Token: Web3TokenItem?,
+        chainToken: Web3TokenItem?,
         tipGas: TipGas?,
         value: String?,
         maxFeePerGas: String?
@@ -383,7 +382,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 true
             } else if (tipGas != null) {
                 val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
-                if (web3Token.fungibleId == chainToken.fungibleId && web3Token.chainId == chainToken.chainId) {
+                if (web3Token.assetId == chainToken.assetId && web3Token.chainId == chainToken.chainId) {
                     Convert.fromWei(Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
                 } else {
                     maxGas > BigDecimal(chainToken.balance)
@@ -485,8 +484,8 @@ fun showBrowserBottomSheetDialogFragment(
     fragmentActivity: FragmentActivity,
     signMessage: JsSignMessage,
     amount: String? = null,
-    token: Web3Token? = null,
-    chainToken: Web3Token? = null,
+    token: Web3TokenItem? = null,
+    chainToken: Web3TokenItem? = null,
     toAddress: String? = null,
     currentUrl: String? = null,
     currentTitle: String? = null,

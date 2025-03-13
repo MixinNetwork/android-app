@@ -10,7 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.moveTo
+import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.io.File
 
@@ -128,4 +131,62 @@ suspend fun clearJobsAndRawTransaction(context: Context) {
                 db?.execSQL("PRAGMA foreign_keys = TRUE")
             }
         }
+}
+
+fun dbDir(context: Context, identityNumber: String? = null): File {
+    val baseDir = File(context.filesDir.parent, "databases")
+    val dir = File(baseDir, identityNumber ?: Session.getAccount()?.identityNumber ?: "temp")
+    if (!dir.exists()) {
+        dir.mkdirs()
+    }
+    return dir
+}
+
+fun legacyDatabaseExists(context: Context): Boolean {
+    val dbFile = legacyDatabaseFile(context)
+    return dbFile.exists() && dbFile.length() > 0
+}
+
+fun legacyDatabaseFile(context: Context): File {
+    return context.getDatabasePath(Constants.DataBase.DB_NAME)
+}
+
+fun databaseFile(context: Context): File {
+    return File(dbDir(context), Constants.DataBase.DB_NAME)
+}
+
+fun moveLegacyDatabaseFile(context: Context, account: Account) {
+    val dbFile = legacyDatabaseFile(context)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
+        return
+    }
+    var c: Cursor? = null
+    var db: SQLiteDatabase? = null
+    try {
+        db =
+            SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY,
+            )
+        c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
+        var userId: String? = null
+        if (c.moveToFirst()) {
+            userId = c.getString(0)
+        }
+        if (account.userId == userId){
+            val dir = dbDir(context)
+            if (!dir.exists()) dir.mkdirs()
+            c?.close()
+            c = null
+            db?.close()
+            db = null
+            dbFile.moveTo(databaseFile(context))
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
+    } finally {
+        c?.close()
+        db?.close()
+    }
 }

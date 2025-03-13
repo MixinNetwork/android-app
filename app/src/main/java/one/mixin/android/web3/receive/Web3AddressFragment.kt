@@ -1,4 +1,3 @@
-
 package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
@@ -24,18 +23,32 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.exploreSolana
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {
     companion object {
-        const val TAG = "Wbe3ReceiveFragment"
+        const val TAG = "Web3ReceiveFragment"
+        
+        fun newInstance(address: String): Web3AddressFragment {
+            val fragment = Web3AddressFragment()
+            val args = Bundle().apply {
+                putString("address", address)
+            }
+            fragment.arguments = args
+            return fragment
+        }
     }
 
     private var _binding: FragmentWeb3AddressBinding? = null
     private val binding get() = requireNotNull(_binding)
+    private lateinit var address: String
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        address = arguments?.getString("address") ?: ""
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,7 +60,6 @@ class Web3AddressFragment : BaseFragment() {
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         lifecycleScope.launch {
-            val address = getExploreAddress(requireContext())
             binding.copy.setOnClickListener {
                 context?.heavyClickVibrate()
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
@@ -56,16 +68,13 @@ class Web3AddressFragment : BaseFragment() {
             binding.address.text = address
             val qr = this@Web3AddressFragment.binding.qr
             val qrAvatar = this@Web3AddressFragment.binding.qrAvatar
-            val isSolana = exploreSolana(requireContext())
+            val isSolana = !address.startsWith("0x")
             if (isSolana) {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_sol)
                 binding.avatar1.setImageResource(R.drawable.ic_web3_chain_sol)
                 binding.avatar2.isVisible = false
                 binding.avatar3.isVisible = false
                 binding.avatar4.isVisible = false
-                binding.avatar5.isVisible = false
-                binding.avatar6.isVisible = false
-                binding.avatar7.isVisible = false
                 binding.bottomHintTv.setText(R.string.web3_deposit_description_solana)
             } else {
                 qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
@@ -73,9 +82,6 @@ class Web3AddressFragment : BaseFragment() {
                 binding.avatar2.isVisible = true
                 binding.avatar3.isVisible = true
                 binding.avatar4.isVisible = true
-                binding.avatar5.isVisible = true
-                binding.avatar6.isVisible = true
-                binding.avatar7.isVisible = true
                 binding.bottomHintTv.setText(R.string.web3_deposit_description_evm)
             }
             qr.post {

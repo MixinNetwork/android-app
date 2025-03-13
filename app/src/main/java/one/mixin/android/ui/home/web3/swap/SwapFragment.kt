@@ -34,14 +34,14 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
-import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
+import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
@@ -116,7 +116,7 @@ class SwapFragment : BaseFragment() {
         ): SwapFragment =
             SwapFragment().withArgs {
                 when (T::class) {
-                    Web3Token::class -> {
+                    Web3TokenItem::class -> {
                         putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply {
                             if (tokens != null) {
                                 addAll(tokens)
@@ -142,8 +142,8 @@ class SwapFragment : BaseFragment() {
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var tokenItems: List<TokenItem>? = null
-    private val web3tokens: List<Web3Token>? by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3Token::class.java)
+    private val web3tokens: List<Web3TokenItem>? by lazy {
+        requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3TokenItem::class.java)
     }
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
@@ -221,6 +221,7 @@ class SwapFragment : BaseFragment() {
                             SwapPage(
                                 from = fromToken,
                                 to = toToken,
+                                inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
@@ -798,7 +799,7 @@ class SwapFragment : BaseFragment() {
             tokens.forEachIndexed { _, token ->
                 web3Tokens.forEach { t ->
                     if (t.assetKey.equals(token.address, true)) {
-                        token.price = t.price
+                        token.price = t.priceUsd
                     }
                 }
             }

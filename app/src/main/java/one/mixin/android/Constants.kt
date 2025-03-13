@@ -95,6 +95,7 @@ object Constants {
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+        const val PREF_HAS_USED_WALLET = "pref_has_used_wallet"
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
@@ -172,6 +173,7 @@ object Constants {
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
+        const val WALLET_DB_NAME = "wallet.db"
     }
 
     object Storage {

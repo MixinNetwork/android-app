@@ -49,7 +49,7 @@
 
         <TextView
             android:id="@+id/wallet_title_tv"
-            android:text="@string/From_mixin_wallet"
+            android:text="@string/My_Wallet"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:layout_width="wrap_content"
@@ -64,7 +64,7 @@
 
         <TextView
             android:id="@+id/wallet_tv"
-            android:text="@string/Mixin_ID"
+            android:text="@string/My_Wallet_desc"
             android:textColor="?attr/text_subtitle"
             android:textSize="13sp"
             android:layout_width="wrap_content"
@@ -110,7 +110,7 @@
 
         <TextView
             android:id="@+id/wallet_address_tv"
-            android:text="@string/From_address"
+            android:text="@string/Exchanges_or_Wallets"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:layout_width="wrap_content"
@@ -124,7 +124,7 @@
 
         <TextView
             android:id="@+id/address_tv"
-            android:text="@string/From_address_desc"
+            android:text="@string/Exchanges_or_Wallets_desc"
             android:textColor="?attr/text_subtitle"
             android:textSize="13sp"
             android:layout_width="wrap_content"
@@ -138,3 +138,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
+

@@ -51,9 +51,9 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
@@ -67,8 +67,8 @@ import one.mixin.android.vo.safe.TokenItem
 @Composable
 fun TransferDestinationInputPage(
     token: TokenItem?,
-    web3Token: Web3Token?,
-    web3Chain: Web3Token?,
+    web3Token: Web3TokenItem?,
+    web3Chain: Web3TokenItem?,
     addressShown: Boolean,
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
@@ -244,17 +244,11 @@ fun TransferDestinationInputPage(
                             if (account.isBlank().not()) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    stringResource(
-                                        R.string.Web3_Account,
-                                        token?.chainName ?: ""
-                                    ),
-                                    stringResource(
-                                        R.string.Send_to_web3_wallet_description,
-                                        token?.chainName ?: ""
-                                    ),
+                                    stringResource(R.string.Classic_Wallet),
+                                    stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toAccount.invoke(account)
-                                    })
+                                   })
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (token != null) {
@@ -271,8 +265,8 @@ fun TransferDestinationInputPage(
                             if (web3Token != null) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    R.string.Mixin_Wallet,
-                                    R.string.Send_to_Contact_description,
+                                    R.string.Privacy_Wallet,
+                                    stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toWallet.invoke()
                                     }

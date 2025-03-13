@@ -73,7 +73,6 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
@@ -108,7 +107,6 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
@@ -131,7 +129,12 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.flow
+import one.mixin.android.db.web3.Web3TokenDao
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.ui.wallet.Web3FilterParams
 
 @Singleton
 class TokenRepository
@@ -163,6 +166,9 @@ class TokenRepository
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
         private val orderDao: OrderDao,
+        private val web3TokenDao: Web3TokenDao,
+        private val web3TranTransactionDao: Web3TransactionDao,
+        private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -467,6 +473,8 @@ class TokenRepository
 
         suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
+        fun web3TokenItems(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems()
+
         suspend fun fuzzySearchToken(
             query: String,
             cancellationSignal: CancellationSignal,
@@ -497,6 +505,11 @@ class TokenRepository
                 }
                 it
             }
+        }
+
+
+        fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
+            return web3TranTransactionDao.allTransactions(filterParams.buildQuery())
         }
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
@@ -1274,4 +1287,11 @@ class TokenRepository
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
+    fun web3TokensFlow() = web3TokenDao.web3TokensFlow()
+
+    suspend fun findWeb3TokenItems(): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems()
+
+    fun assetFlow() = tokenDao.assetFlow()
+
+    fun getWallets() = web3WalletDao.getWallets()
 }
