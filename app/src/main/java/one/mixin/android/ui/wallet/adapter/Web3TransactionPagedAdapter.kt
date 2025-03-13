@@ -31,7 +31,7 @@ class Web3TransactionPagedAdapter :
         return if (snapshot == null) {
             -1
         } else {
-            abs(snapshot.createdAt.hashForDate())
+            abs(snapshot.transactionAt.hashForDate())
         }
     }
 
@@ -43,7 +43,7 @@ class Web3TransactionPagedAdapter :
         pos: Int,
     ) {
         getItem(pos)?.let {
-            vh.bind(it.createdAt)
+            vh.bind(it.transactionAt)
         }
     }
 

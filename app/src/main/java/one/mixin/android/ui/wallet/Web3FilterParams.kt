@@ -58,11 +58,11 @@ class Web3FilterParams(
         }
 
         startTime?.let {
-            filters.add("w.created_at >= '${Instant.ofEpochMilli(it)}'")
+            filters.add("w.transaction_at >= '${Instant.ofEpochMilli(it)}'")
         }
 
         endTime?.let {
-            filters.add("w.created_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
+            filters.add("w.transaction_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
         
         val whereSql = if (filters.isEmpty()) {
@@ -72,8 +72,8 @@ class Web3FilterParams(
         }
 
         val orderSql = when (order) {
-            SortOrder.Recent -> "ORDER BY w.created_at DESC"
-            SortOrder.Oldest -> "ORDER BY w.created_at ASC"
+            SortOrder.Recent -> "ORDER BY w.transaction_at DESC"
+            SortOrder.Oldest -> "ORDER BY w.transaction_at ASC"
             SortOrder.Value -> "ORDER BY abs(w.amount * t.price_usd) DESC"
             SortOrder.Amount -> "ORDER BY w.amount DESC"
             else -> ""
@@ -82,7 +82,7 @@ class Web3FilterParams(
         return SimpleSQLiteQuery(
             "SELECT w.transaction_id, w.transaction_type, w.transaction_hash, w.output_index, w.block_number, " +
                 "w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, " +
-                "w.created_at, w.updated_at, w.transaction_type, w.status, t.symbol, t.icon_url " +
+                "w.transaction_at, w.updated_at, w.transaction_type, w.status, t.symbol, t.icon_url " +
                 "FROM transactions w " +
                 "LEFT JOIN tokens t on t.asset_id = w.asset_id $whereSql $orderSql"
         )

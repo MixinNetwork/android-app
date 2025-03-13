@@ -44,7 +44,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
                 val headerView = LayoutInflater.from(context)
                     .inflate(R.layout.item_transaction_header, this, false)
                 val headerHolder = SnapshotHeaderViewHolder(headerView, true)
-                headerHolder.bind(item.createdAt)
+                headerHolder.bind(item.transactionAt)
                 addView(headerView)
             }
 
@@ -74,6 +74,6 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
     }
 
     fun getHeaderId(snapshot: Web3TransactionItem): Long {
-        return abs(snapshot.createdAt.hashForDate())
+        return abs(snapshot.transactionAt.hashForDate())
     }
 }

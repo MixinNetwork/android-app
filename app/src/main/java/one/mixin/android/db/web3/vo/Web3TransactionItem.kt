@@ -1,16 +1,9 @@
 package one.mixin.android.db.web3.vo
 
-import android.content.Context
 import android.os.Parcelable
-import android.text.SpannedString
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
-import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.R
-import one.mixin.android.extension.buildAmountSymbol
-import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import java.math.BigDecimal
 
@@ -49,8 +42,8 @@ data class Web3TransactionItem(
     @ColumnInfo(name = "amount")
     val amount: String,
     
-    @ColumnInfo(name = "created_at")
-    val createdAt: String,
+    @ColumnInfo(name = "transaction_at")
+    val transactionAt: String,
     
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,

@@ -102,7 +102,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 avatar.badge.isVisible = true
                 avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
             }
-            dateTv.text = transaction.createdAt.fullDate()
+            dateTv.text = transaction.transactionAt.fullDate()
             feeLl.isVisible = false
             statusLl.isVisible = false
         }
