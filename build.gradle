@@ -8,7 +8,7 @@ buildscript {
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.6'
         ext.coilVersion = '3.1.0'
-        ext.collectionx = '1.4.5'
+        ext.collectionx = '1.5.0'
         ext.roomVersion = '2.6.1'
         ext.navigationVersion = '2.8.8'
         ext.workManagerVersion = '2.10.0'
