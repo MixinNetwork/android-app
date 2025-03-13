@@ -118,6 +118,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             setOnClickListener { token ->
                                 this@ClassicWalletFragment.lifecycleScope.launch {
                                     val address = getAddressesByChainId(token.chainId)
+                                    if (address == null) {
+                                        toast(R.string.Data_error)
+                                        return@launch
+                                    }
                                     val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
                                     Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
                                     if (address != null) this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
@@ -141,7 +145,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = assets), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = assets.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }), SwapFragment.TAG)
                         sendReceiveView.badge.isVisible = false
                         defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
@@ -396,6 +400,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     val address = getAddressesByChainId(token.chainId)
                     if (address != null) {
                         this@ClassicWalletFragment.navTo(Web3ReceiveSelectionFragment.newInstance(address, token.chainId), Web3ReceiveSelectionFragment.TAG)
+                    } else {
+                        toast(R.string.Data_error)
                     }
                 }
                 dismissNow()
