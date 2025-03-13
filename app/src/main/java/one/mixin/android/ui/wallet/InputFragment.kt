@@ -408,6 +408,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         transferType == TransferType.ADDRESS  || (transferType == TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem)-> {
                             val toAddress = requireNotNull(toAddress)
                             val assetId = requireNotNull(token?.assetId)
+                            val chainId = requireNotNull(token?.chainId)
                             val amount =
                                 if (isReverse) {
                                     binding.minorTv.text.toString().split(" ")[1].replace(",", "")
@@ -461,7 +462,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     binding.insufficientFeeBalance.isVisible = false
                                 }
                                 val address = (assetBiometricItem as? WithdrawBiometricItem)?.address
-                                    ?: Address(addressId ?: "", "address", assetId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
+                                    ?: Address(addressId ?: "", "address", assetId, chainId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
                                 val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val withdrawBiometricItem = WithdrawBiometricItem(

@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
@@ -39,8 +40,8 @@ class SelectableAddressAdapter(private val selectedUsers: MutableList<Recipient>
         ) {
             binding.label.text = address.label
             binding.addressTv.text = address.displayAddress()
-            binding.avatar.bg.loadImage(address.iconUrl, R.drawable.ic_avatar_place_holder)
-            binding.avatar.badge.loadImage(address.iconUrl, R.drawable.ic_avatar_place_holder)
+            binding.avatar.bg.loadImage(address.chainUrl, R.drawable.ic_avatar_place_holder)
+            binding.avatar.badge.isVisible = false
             binding.cb.isChecked = selectedRecipients.contains(address)
             binding.cb.isClickable = false
             itemView.setOnClickListener {

@@ -18,6 +18,9 @@ data class Address(
     val addressId: String,
     @ColumnInfo(name = "type")
     val type: String,
+    @ColumnInfo(name = "asset_id")
+    @SerializedName("asset_id")
+    val assetId: String,
     @ColumnInfo(name = "chain_id")
     @SerializedName("chain_id")
     val chainId: String,
