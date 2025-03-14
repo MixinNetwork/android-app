@@ -346,7 +346,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (r.isSuccess.not()){
                             tipGas = null
                         } else {
-                            tipGas = buildTipGas(chain.chainId, chain, tx, r.data!!)
+                            tipGas = buildTipGas(chain.chainId, r.data!!)
                         }
                         if (tipGas != null) {
                             (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
