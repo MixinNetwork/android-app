@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 65,
-    "identityHash": "12bb9e80787930ae449a534ededbcf57",
+    "identityHash": "ea59ef6c056664f70f7cb67941e1c68d",
     "entities": [
       {
         "tableName": "users",
@@ -1396,7 +1396,18 @@
             "address_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_addresses_chain_id_updated_at",
+            "unique": false,
+            "columnNames": [
+              "chain_id",
+              "updated_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_addresses_chain_id_updated_at` ON `${TABLE_NAME}` (`chain_id`, `updated_at`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -3536,7 +3547,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '12bb9e80787930ae449a534ededbcf57')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ea59ef6c056664f70f7cb67941e1c68d')"
     ]
   }
 }
