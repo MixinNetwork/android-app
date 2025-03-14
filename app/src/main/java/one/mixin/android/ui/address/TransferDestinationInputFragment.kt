@@ -40,6 +40,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
@@ -171,6 +172,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(SyncOutputJob())
+        (token?.chainId ?: web3Token?.chainId)?.let {
+            jobManager.addJobInBackground(RefreshAddressJob(it))
+        }
         binding.apply {
             compose.setContent {
                 MixinAppTheme {

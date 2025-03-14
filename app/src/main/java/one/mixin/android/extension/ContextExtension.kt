@@ -1190,7 +1190,7 @@ fun PackageManager.getPackageInfoCompat(
     }
 
 fun Context.openMarket() {
-    if (isPlayStoreInstalled()) {
+    if (BuildConfig.IS_GOOGLE_PLAY && isPlayStoreInstalled()) {
         try {
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
