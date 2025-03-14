@@ -225,12 +225,12 @@ class AssetRepository
 
         suspend fun findAddressById(
             addressId: String,
-            assetId: String,
-        ) = addressDao.findAddressById(addressId, assetId)
+            chainId: String,
+        ) = addressDao.findAddressById(addressId, chainId)
 
         suspend fun refreshAndGetAddress(
             addressId: String,
-            assetId: String,
+            chainId: String,
         ): Pair<Address?, Boolean> {
             var result: Address? = null
             var notExists = false
@@ -241,7 +241,7 @@ class AssetRepository
                 successBlock = { response ->
                     response.data?.let {
                         addressDao.insert(it)
-                        result = addressDao.findAddressById(addressId, assetId)
+                        result = addressDao.findAddressById(addressId, chainId)
                     }
                 },
                 failureBlock = {

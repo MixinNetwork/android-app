@@ -14,11 +14,5 @@ class AddressViewModel
         private val tokenRepository: TokenRepository,
         private val jobManager: MixinJobManager,
     ) : ViewModel() {
-        fun addresses(id: String) = tokenRepository.addresses(id)
-
-        fun addressesFlow(id: String) = tokenRepository.addressesFlow(id)
-
-        fun refreshAddressesByAssetId(assetId: String) {
-            jobManager.addJobInBackground(RefreshAddressJob(assetId))
-        }
+        fun addressesFlow(chainId: String) = tokenRepository.addressesFlow(chainId)
     }

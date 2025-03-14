@@ -437,7 +437,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (e is ParserError && e.symbol != null) {
                             showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                         } else if (e is ParserError && e.message != null) {
-                            showError(e.message!!)
+                            showError(e.message)
                         } else {
                             showError(getString(R.string.Invalid_payment_link))
                         }
@@ -710,14 +710,18 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val addressId = uri.getQueryParameter("address")
                 if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
                     lifecycleScope.launch(errorHandler) {
-                        val pair = oldLinkViewModel.findAddressById(addressId, assetId)
+                        val asset = checkToken(assetId)
+                        if (asset == null) {
+                            showError()
+                            return@launch
+                        }
+                        val pair = oldLinkViewModel.findAddressById(addressId, asset.chainId)
                         val address = pair.first
                         if (pair.second) {
                             showError(R.string.error_address_exists)
                         } else if (address == null) {
                             showError(R.string.error_address_not_sync)
                         } else {
-                            val asset = checkToken(assetId)
                             if (asset != null) {
                                 TransferBottomSheetDialogFragment.newInstance(
                                     AddressManageBiometricItem(

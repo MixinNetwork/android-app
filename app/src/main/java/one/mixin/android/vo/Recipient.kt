@@ -20,7 +20,7 @@ data class AddressItem(
     val iconUrl: String,
     @ColumnInfo(name = "chain_icon_url")
     @SerializedName("chain_icon_url")
-    val chainIconUrl: String,
+    val chainUrl: String,
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,

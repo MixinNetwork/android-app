@@ -85,7 +85,8 @@ fun TransferDestinationInputPage(
     val localLocalSoftwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
-    val addresses by viewModel.addressesFlow(token?.assetId ?: web3Token?.assetId ?: "")
+
+    val addresses by viewModel.addressesFlow(token?.chainId ?: web3Token?.chainId ?: "")
         .collectAsState(initial = emptyList())
 
     var account by remember { mutableStateOf("") }
