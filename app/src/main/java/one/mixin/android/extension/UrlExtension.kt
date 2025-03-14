@@ -172,7 +172,7 @@ User-agent: ${WebView(context).settings.userAgentString}
         checkUserOrApp(context, supportFragmentManager, scope)
     } else if (isConversationScheme()) {
         checkConversation(context, scope) {
-            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
+            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl() || isLightningUrl()) {
                 LinkBottomSheetDialogFragment.newInstance(this)
                     .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             } else {
@@ -285,7 +285,9 @@ fun String.isValidStartParam(): Boolean {
     return this.length <= 64
 }
 
-fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
+fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:", ignoreCase = true) }
+
+fun String.isLightningUrl() = startsWith("lnbc", true)  || startsWith("lnurl", true) || startsWith("lightning:", true)
 
 private fun String.isUserScheme() =
     startsWith(Constants.Scheme.USERS, true) ||
