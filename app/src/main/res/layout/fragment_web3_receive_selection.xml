@@ -17,124 +17,130 @@
         android:id="@+id/wallet_rl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="10dp"
-        android:background="@drawable/ripple_round_window">
+        android:background="?attr/bg_market_card">
 
         <ImageView
             android:id="@+id/avatar"
-            android:src="@drawable/ic_web3_deposit_wallet"
-            android:layout_centerVertical="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_marginStart="20dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_web3_deposit_wallet"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:src="@drawable/ic_web3_arrow"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="10dp"
+            android:id="@+id/imageView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/ic_web3_arrow"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/wallet_title_tv"
-            android:text="@string/My_Wallet"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="2dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="6dp"
+            android:text="@string/My_Wallet"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@id/wallet_tv"
             app:layout_constraintStart_toEndOf="@id/avatar"
-             />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/wallet_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="12dp"
             android:text="@string/My_Wallet_desc"
             android:textColor="?attr/text_subtitle"
             android:textSize="13sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginBottom="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/wallet_title_tv"
-            app:layout_constraintStart_toEndOf="@id/avatar" />
+            app:layout_constraintEnd_toStartOf="@+id/imageView2"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintTop_toBottomOf="@id/wallet_title_tv" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/address_rl"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="10dp"
-        android:background="@drawable/ripple_round_window">
+        android:background="?attr/bg_market_card">
 
         <ImageView
             android:id="@+id/avatar_address"
-            android:src="@drawable/ic_web3_deposit_address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_web3_deposit_address"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:src="@drawable/ic_web3_arrow"
-            android:layout_marginEnd="10dp"
+            android:id="@+id/imageView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_web3_arrow"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/wallet_address_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="2dp"
             android:text="@string/Exchanges_or_Wallets"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="2dp"
-            android:layout_marginStart="12dp"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/address_tv"
-            app:layout_constraintStart_toEndOf="@id/avatar_address"/>
+            app:layout_constraintStart_toEndOf="@id/avatar_address"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/address_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="12dp"
             android:text="@string/Exchanges_or_Wallets_desc"
             android:textColor="?attr/text_subtitle"
             android:textSize="13sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginEnd="6dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/wallet_address_tv"
-            app:layout_constraintStart_toEndOf="@id/avatar_address"/>
+            app:layout_constraintEnd_toStartOf="@+id/imageView3"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@id/avatar_address"
+            app:layout_constraintTop_toBottomOf="@id/wallet_address_tv" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
