@@ -73,14 +73,18 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             transactionIdTv.text = transaction.transactionHash
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.transactionType == Web3TransactionType.Send.value) {
-                requireContext().getColor(R.color.wallet_green)
-            } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
                 requireContext().getColor(R.color.wallet_pink)
+            } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
+                requireContext().getColor(R.color.wallet_green)
             } else {
                 requireContext().colorFromAttribute(R.attr.text_primary)
             }
             val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
-            valueTv.text = buildAmountSymbol(requireContext(), transaction.amount, transaction.symbol, amountColor, symbolColor)
+            valueTv.text = buildAmountSymbol(requireContext(),
+                if (transaction.transactionType == Web3TransactionType.Send.value) "-${transaction.amount}"
+                else if (transaction.transactionType == Web3TransactionType.Receive.value) "+${transaction.amount}"
+                else transaction.amount
+                , transaction.symbol, amountColor, symbolColor)
             val amount = (BigDecimal(transaction.amount).abs() * token.priceFiat()).numberFormat2()
             val pricePerUnit =
                 "(${Fiats.getSymbol()}${token.priceFiat().priceFormat2()}/${token.symbol})"

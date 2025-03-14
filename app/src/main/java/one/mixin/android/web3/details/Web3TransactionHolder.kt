@@ -29,7 +29,7 @@ class Web3TransactionHolder(val binding: ItemWalletTransactionsBinding) : Recycl
                 symbolTv.text = symbol
                 symbolIv.isVisible = false
             } else if (transaction.transactionType == Web3TransactionType.Send.value) {
-                value.textColorResource = R.color.wallet_green
+                value.textColorResource = R.color.wallet_pink
                 value.text = "-${amount.numberFormat8()}"
                 symbolTv.text = symbol
                 symbolIv.isVisible = false

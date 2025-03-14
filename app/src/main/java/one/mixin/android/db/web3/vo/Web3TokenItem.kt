@@ -169,9 +169,6 @@ fun Web3TokenItem.getChainFromName(): Chain {
     return when {
         chainId == Constants.ChainId.ETHEREUM_CHAIN_ID -> Chain.Ethereum
         chainId == Constants.ChainId.Base -> Chain.Base
-        // chainId.equals("blast", true) -> Chain.Blast
-        // chainId.equals("arbitrum", true) -> Chain.Arbitrum
-        // chainId.equals("optimism", true) -> Chain.Optimism
         chainId == Constants.ChainId.Polygon-> Chain.Polygon
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
         chainId == Constants.ChainId.Avalanche -> Chain.Avalanche

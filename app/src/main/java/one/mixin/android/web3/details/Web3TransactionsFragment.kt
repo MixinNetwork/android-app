@@ -339,6 +339,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     private suspend fun getStakeAccounts(address: String) {
         val stakeAccounts = web3ViewModel.getStakeAccounts(address)
+        if (!isAdded) return
         if (stakeAccounts.isNullOrEmpty()) {
             updateStake(StakeAccountSummary(0, "0"))
             return
