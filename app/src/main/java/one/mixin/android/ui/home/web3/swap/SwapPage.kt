@@ -204,7 +204,10 @@ fun SwapPage(
                             modifier = Modifier
                                 .size(8.dp)
                                 .offset(x = (-12).dp, y = (12).dp)
-                                .background(color = MixinAppTheme.colors.badgeRed, shape = CircleShape)
+                                .background(
+                                    color = MixinAppTheme.colors.badgeRed,
+                                    shape = CircleShape
+                                )
                                 .align(Alignment.TopEnd)
                         )
                     }
@@ -463,7 +466,7 @@ fun InputArea(
     onMax: (() -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
-    val balance = viewModel.tokenExtraFlow(token?.assetId ?: "").map { it?.balance ?: token?.balance } // Use externally provided data if no local data is available.
+    val balance = viewModel.tokenExtraFlow(if (token?.isWeb3 == true) "" else token?.assetId ?: "").map { it?.balance ?: token?.balance } // Use externally provided data if no local data is available.
         .collectAsStateWithLifecycle(token?.balance).value
     Column(
         modifier =

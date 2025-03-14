@@ -156,7 +156,7 @@ val classicChain = listOf(
     R.drawable.ic_chain_polygon,
     R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_base,
-    R.drawable.ic_chain_arbitrum_eth,
-    R.drawable.ic_chain_blast,
+    // R.drawable.ic_chain_arbitrum_eth,
+    // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
 )

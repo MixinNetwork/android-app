@@ -114,7 +114,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                     sendReceiveView.send.setOnClickListener {
-                        Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
+                        Web3TokenListBottomSheetDialogFragment.newInstance().apply {
                             setOnClickListener { token ->
                                 this@ClassicWalletFragment.lifecycleScope.launch {
                                     val address = getAddressesByChainId(token.chainId)
@@ -145,7 +145,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = assets.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = assets.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }, inMixin = false), SwapFragment.TAG)
                         sendReceiveView.badge.isVisible = false
                         defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
@@ -394,7 +394,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun showReceiveAssetList() {
-        Web3TokenListBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
+        Web3TokenListBottomSheetDialogFragment.newInstance().apply {
             setOnClickListener { token ->
                 this@ClassicWalletFragment.lifecycleScope.launch {
                     val address = getAddressesByChainId(token.chainId)

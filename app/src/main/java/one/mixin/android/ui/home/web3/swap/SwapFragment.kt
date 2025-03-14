@@ -100,6 +100,7 @@ class SwapFragment : BaseFragment() {
         const val ARGS_INPUT = "args_input"
         const val ARGS_OUTPUT = "args_output"
         const val ARGS_AMOUNT = "args_amount"
+        const val ARGS_IN_MIXIN = "args_in_mixin"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -113,6 +114,7 @@ class SwapFragment : BaseFragment() {
             input: String? = null,
             output: String? = null,
             amount: String? = null,
+            inMixin: Boolean = true,
         ): SwapFragment =
             SwapFragment().withArgs {
                 when (T::class) {
@@ -131,6 +133,7 @@ class SwapFragment : BaseFragment() {
                 input?.let { putString(ARGS_INPUT, it) }
                 output?.let { putString(ARGS_OUTPUT, it) }
                 amount?.let { putString(ARGS_AMOUNT, it) }
+                putBoolean(ARGS_IN_MIXIN, inMixin)
             }
     }
 
@@ -811,7 +814,7 @@ class SwapFragment : BaseFragment() {
         initialAmount = arguments?.getString(ARGS_AMOUNT)
     }
 
-    private fun inMixin(): Boolean = web3tokens == null
+    private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
     private fun getSource(): String = if (inMixin()) "mixin" else ""
 
     private fun navigateUp(navController: NavHostController) {

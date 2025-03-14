@@ -23,6 +23,7 @@ data class SwapToken(
     var balance: String? = null,
     var collectionHash: String? = null,
     var changeUsd: String? = null,
+    val isWeb3: Boolean = false
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =

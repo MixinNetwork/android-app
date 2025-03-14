@@ -114,6 +114,7 @@ data class Web3TokenItem(
             ),
             balance = balance,
             price = priceUsd,
+            isWeb3 =  true
         )
     }
     
