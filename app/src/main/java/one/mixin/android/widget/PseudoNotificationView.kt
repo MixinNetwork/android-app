@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewPseudoNotificationBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 
 class PseudoNotificationView : RelativeLayout {
@@ -42,7 +43,7 @@ class PseudoNotificationView : RelativeLayout {
         contentSet.add(s)
         currContent = s
         binding.contentTv.text =
-            if (s.isMixinUrl() || s.isExternalTransferUrl()) {
+            if (s.isMixinUrl() || s.isExternalTransferUrl() || s.isLightningUrl()) {
                 context.getString(R.string.detect_qr_tip)
             } else {
                 s

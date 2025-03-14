@@ -47,6 +47,7 @@ import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
@@ -914,7 +915,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showError(R.string.Not_recognized)
             }
         } else {
-            val isExternalTransferUrl = url.isExternalTransferUrl()
+            val isExternalTransferUrl = url.isExternalTransferUrl() || url.isLightningUrl()
             if (isExternalTransferUrl) {
                 if (checkHasPin()) return
 
@@ -1146,7 +1147,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showOldTransferBottom(user, amount, asset, trace, response.status, memo, returnTo)
                 return@handleMixinResponse true
             },
-        ) ?: false
+        ) == true
     }
 
     private suspend fun showOldTransferBottom(

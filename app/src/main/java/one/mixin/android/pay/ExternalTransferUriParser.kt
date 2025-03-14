@@ -3,12 +3,15 @@ package one.mixin.android.pay
 import android.net.Uri
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressResponse
+import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.api.response.WithdrawalResponse
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toUri
 import one.mixin.android.pay.erc831.isEthereumURLString
 import one.mixin.android.vo.AssetPrecision
 import org.sol4k.Base58
+import timber.log.Timber
 import java.math.BigDecimal
 
 suspend fun parseExternalTransferUri(
@@ -18,13 +21,18 @@ suspend fun parseExternalTransferUri(
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
     balanceCheck: suspend (String, BigDecimal, String?, BigDecimal?) -> Unit,
+    parseLighting: suspend (String) -> PaymentResponse?
 ): ExternalTransfer? {
     if (url.isEthereumURLString()) {
         return parseEthereum(url, validateAddress, getFee, findAssetIdByAssetKey, getAssetPrecisionById, balanceCheck)
     }
 
+    if (url.isLightningUrl()) {
+        return parseLightning(url, validateAddress, getFee, balanceCheck, parseLighting)
+    }
+
     val uri = url.addSlashesIfNeeded().toUri()
-    val scheme = uri.scheme
+    val scheme = uri.scheme?.lowercase()
     val chainId = externalTransferAssetIdMap[scheme] ?: return null
 
     val splAssetId = if (chainId == Constants.ChainId.Solana) {

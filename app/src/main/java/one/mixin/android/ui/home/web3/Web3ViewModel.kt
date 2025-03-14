@@ -14,6 +14,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.Web3Token
@@ -75,8 +76,8 @@ internal constructor(
     private val web3Service: Web3Service,
     private val jobManager: MixinJobManager,
 ) : ViewModel() {
-    fun tokenExtraFlow(assetId: String) =
-        tokenRepository.tokenExtraFlow(assetId)
+
+    suspend fun paySuspend(transferRequest: TransferRequest) = assetRepository.paySuspend(transferRequest)
 
     fun disconnect(
         version: WalletConnect.Version,
