@@ -33,6 +33,7 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
@@ -75,6 +76,7 @@ import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
 import timber.log.Timber
+import java.math.BigDecimal
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -334,10 +336,21 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 if (version == WalletConnect.Version.V2) {
                     try {
-                        tipGas = withContext(Dispatchers.IO) {
-                            buildTipGas(chain.chainId, chain, tx)
-                        } ?: return@onEach
-                        (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                        val r =
+                            viewModel.estimateFee(
+                                EstimateFeeRequest(
+                                    assetId,
+                                    tx.data
+                                )
+                            )
+                        if (r.isSuccess.not()){
+                            tipGas = null
+                        } else {
+                            tipGas = buildTipGas(chain.chainId, chain, tx, r.data!!)
+                        }
+                        if (tipGas != null) {
+                            (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                        }
                     } catch (e: Exception) {
                         Timber.e(e)
                     }

@@ -29,7 +29,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.api.request.web3.PriorityLevel
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
@@ -254,7 +255,14 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 try {
                     tipGas = withContext(Dispatchers.IO) {
-                        buildTipGas(chain.chainId, chain, transaction)
+                        val r = viewModel.estimateFee(
+                            EstimateFeeRequest(
+                                assetId,
+                                transaction.data
+                            )
+                        )
+                        if (r.isSuccess.not()) return@withContext null
+                        buildTipGas(chain.chainId, chain, transaction, r.data!!)
                     } ?: return@onEach
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
@@ -355,22 +363,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         onDismissAction?.invoke()
     }
     private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
-        val level = when(solanaTxSource) {
-            SolanaTxSource.InnerTransfer, SolanaTxSource.InnerStake -> {
-                PriorityLevel.Medium
-            }
-            SolanaTxSource.InnerSwap -> {
-                PriorityLevel.High
-            }
-            else -> {
-                if (tx.calcPriorityFee() != BigDecimal.ZERO) {
-                    return tx
-                }
-                PriorityLevel.High
-            }
-        }
-        val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode(), level)
-        if (priorityFeeResp != null && priorityFeeResp.unitPrice > 0) {
+        val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
+        if (priorityFeeResp != null && priorityFeeResp.unitPrice != null && priorityFeeResp.unitLimit != null) {
             tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)
         }
         return tx

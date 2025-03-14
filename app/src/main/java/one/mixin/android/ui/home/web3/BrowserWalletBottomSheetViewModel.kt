@@ -3,18 +3,19 @@ package one.mixin.android.ui.home.web3
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
-import one.mixin.android.api.request.web3.PriorityFeeRequest
-import one.mixin.android.api.request.web3.PriorityLevel
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.api.response.web3.PriorityFeeResponse
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.web3.ChainType
@@ -27,6 +28,7 @@ class BrowserWalletBottomSheetViewModel
     internal constructor(
         private val assetRepo: TokenRepository,
         private val userRepo: UserRepository,
+        private val web3Repository: Web3Repository,
         private val web3Service: Web3Service,
         private val tip: Tip,
     ) : ViewModel() {
@@ -51,9 +53,9 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun getPriorityFee(tx: String, priorityLevel: PriorityLevel): PriorityFeeResponse? {
+        suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(
-                invokeNetwork = { web3Service.getPriorityFee(PriorityFeeRequest(tx, priorityLevel)) },
+                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
                 successBlock = {
                     it.data
                 },
@@ -89,4 +91,6 @@ class BrowserWalletBottomSheetViewModel
                 throw RpcException(err.code, err.description, err.toString())
             }
         }
+
+        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
     }
