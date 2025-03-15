@@ -35,6 +35,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -49,6 +50,7 @@ import one.mixin.android.ui.address.page.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
@@ -278,29 +280,39 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
-                                    val memoEnabled =
-                                        token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
-                                    if (memoEnabled) {
-                                        navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
-                                    } else if (web3Token != null) {
-                                        lifecycleScope.launch {
-                                            web3Token?.let { token ->
-                                                val fromAddress = if (token.isSolana()) {
-                                                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-                                                } else {
-                                                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                                                }
-                                                if (fromAddress.isBlank()) {
-                                                    toast(R.string.Alert_Not_Support)
-                                                } else {
-                                                    val chain = chainToken ?: web3ViewModel.web3TokenItemById(token.chainId) ?:return@launch
-                                                    navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = address, web3Token = token, chainToken= chain), InputFragment.TAG)
+                                    if (address.isLightningUrl()) {
+                                        LinkBottomSheetDialogFragment.newInstance(address).show(
+                                            parentFragmentManager,
+                                            LinkBottomSheetDialogFragment.TAG
+                                        )
+                                    } else {
+                                        val memoEnabled =
+                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+                                        if (memoEnabled) {
+                                            navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
+                                        } else if (web3Token != null) {
+                                            lifecycleScope.launch {
+                                                web3Token?.let { token ->
+                                                    val fromAddress = if (token.isSolana()) {
+                                                        PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                                                    } else {
+                                                        PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                                                    }
+                                                    if (fromAddress.isBlank()) {
+                                                        toast(R.string.Alert_Not_Support)
+                                                    } else {
+                                                        val chain = chainToken ?: web3ViewModel.web3TokenItemById(token.chainId) ?:return@launch
+                                                        navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = address, web3Token = token, chainToken= chain), InputFragment.TAG)
+                                                    }
                                                 }
                                             }
+                                        } else {
+                                            requireView().hideKeyboard()
+                                            navTo(
+                                                InputFragment.newInstance(token!!, address),
+                                                InputFragment.TAG
+                                            )
                                         }
-                                    } else {
-                                        requireView().hideKeyboard()
-                                        navTo(InputFragment.newInstance(token!!, address), InputFragment.TAG)
                                     }
                                 },
                                 onAddressClick = { address ->

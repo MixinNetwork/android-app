@@ -16,9 +16,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.api.response.Web3Account
 import one.mixin.android.api.response.web3.StakeAccount
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -36,7 +34,6 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.buildTipGas
-import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState
@@ -46,7 +43,6 @@ import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.Output

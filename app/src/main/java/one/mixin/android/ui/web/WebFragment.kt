@@ -15,7 +15,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.net.http.SslError
@@ -103,6 +102,7 @@ import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
@@ -1767,7 +1767,7 @@ class WebFragment : BaseFragment() {
                 return true
             }
 
-            if (url.isMixinUrl() || url.isExternalTransferUrl()) {
+            if (url.isMixinUrl() || url.isExternalTransferUrl() || url.isLightningUrl()) {
                 if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
                     return true
                 }
