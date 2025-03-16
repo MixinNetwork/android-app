@@ -8,7 +8,6 @@ data class ParsedTx(
     val balanceChanges: List<BalanceChange>? = null,
     @SerializedName("instructions")
     val instructions: List<ParsedInstruction>,
-    var tokens: Map<String, Web3Token>? = null,
 ) {
     fun noBalanceChange(): Boolean = instructions.isNotEmpty() && balanceChanges.isNullOrEmpty()
 }

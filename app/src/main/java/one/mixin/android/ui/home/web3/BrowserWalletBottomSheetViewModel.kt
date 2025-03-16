@@ -44,15 +44,6 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
-        suspend fun solanaWeb3Tokens(address: List<String>): List<Web3Token> {
-            val resp = web3Service.web3Tokens(chain = ChainType.solana.name, addresses = address.joinToString(","))
-            return if (resp.isSuccess) {
-                resp.data ?: emptyList()
-            } else {
-                emptyList()
-            }
-        }
-
         suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(
                 invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },

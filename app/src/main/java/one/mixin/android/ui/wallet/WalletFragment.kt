@@ -74,7 +74,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        walletViewModel.init()
         val wallet = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
         currentType = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Privacy.name).let {
             if (it == WalletDestination.Privacy.name) {

@@ -72,9 +72,8 @@ class WalletViewModel
         private val jobManager: MixinJobManager,
         private val pinCipher: PinCipher,
     ) : ViewModel() {
-    fun init() {
-        // walletDatabase.query("SELECT * FROM web3_token" , null)
-    }
+
+    fun web3TokenItemByAddress(address: String) = web3Repository.web3TokenItemByAddress(address)
 
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {

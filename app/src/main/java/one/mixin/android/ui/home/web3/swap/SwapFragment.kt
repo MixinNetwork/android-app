@@ -794,18 +794,6 @@ class SwapFragment : BaseFragment() {
                     }
                 }
             }
-        } else {
-            val web3Tokens = swapViewModel.web3Tokens(chain = ChainType.solana.name, address = tokens.map { it.address })
-            if (web3Tokens.isEmpty()) {
-                return tokens
-            }
-            tokens.forEachIndexed { _, token ->
-                web3Tokens.forEach { t ->
-                    if (t.assetKey.equals(token.address, true)) {
-                        token.price = t.priceUsd
-                    }
-                }
-            }
         }
         return tokens
     }

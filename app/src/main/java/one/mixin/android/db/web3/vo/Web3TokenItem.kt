@@ -274,12 +274,12 @@ suspend fun Web3TokenItem.buildTransaction(
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
     } else {
         JsSigner.useEvm()
-        // (chainId.equals("base", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         // (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         // (chainId.equals("arbitrum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         // (chainId.equals("optimism", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
-            if ((chainId == Constants.ChainId.ETHEREUM_CHAIN_ID && assetKey == "0x0000000000000000000000000000000000000000") ||
+            if ((chainId == Constants.ChainId.Base && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainId == Constants.ChainId.ETHEREUM_CHAIN_ID && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.Polygon && (assetKey == "0x0000000000000000000000000000000000000000" || assetKey == "0x0000000000000000000000000000000000001010")) ||
                 (chainId == Constants.ChainId.BinanceSmartChain && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000")

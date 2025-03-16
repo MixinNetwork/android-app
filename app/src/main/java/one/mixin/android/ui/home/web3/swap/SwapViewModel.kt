@@ -107,15 +107,6 @@ class SwapViewModel
 
     suspend fun searchTokens(query: String, inMixin: Boolean) = assetRepository.searchTokens(query, inMixin)
 
-    suspend fun web3Tokens(chain: String, address: List<String>? = null): List<Web3Token> {
-        return handleMixinResponse(
-            invokeNetwork = { web3Service.web3Tokens(chain = chain, addresses = address?.joinToString(",")) },
-            successBlock = {
-                return@handleMixinResponse it.data
-            },
-        ) ?: emptyList()
-    }
-
     suspend fun syncAndFindTokens(assetIds: List<String>): List<TokenItem> =
         tokenRepository.syncAndFindTokens(assetIds)
 

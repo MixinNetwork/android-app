@@ -27,10 +27,12 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.BalanceChange
 import one.mixin.android.api.response.web3.Item
@@ -58,14 +61,19 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.ui.conversation.holder.TimeBubble
+import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.SolanaTxSource
+import timber.log.Timber
 import java.math.BigDecimal
 
 private val gradientColors = listOf(Cyan, Color(0xFF0066FF), Color(0xFF800080))
@@ -230,17 +238,12 @@ fun SolanaParsedTxPreview(
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
             }
-        } else if (parsedTx.balanceChanges != null && parsedTx.tokens == null) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
-                color = MixinAppTheme.colors.accent,
-            )
         } else {
             val viewDetails = remember {
                 mutableStateOf(false)
             }
             val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-            if (parsedTx.balanceChanges == null) {
+            if (parsedTx.balanceChanges.isNullOrEmpty()) {
                 Row(
                     modifier =
                     Modifier
@@ -267,8 +270,7 @@ fun SolanaParsedTxPreview(
                 }
             } else {
                 parsedTx.balanceChanges.forEach { bc ->
-                    val token = parsedTx.tokens?.get(bc.address) ?: return
-                    BalanceChangeItem(token, bc)
+                    BalanceChangeItem(bc)
                     Box(modifier = Modifier.height(10.dp))
                 }
             }
@@ -371,7 +373,11 @@ fun Warning(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
                 .background(MixinAppTheme.colors.tipWarning)
-                .border(1.dp, MixinAppTheme.colors.tipWarningBorder, shape = RoundedCornerShape(8.dp))
+                .border(
+                    1.dp,
+                    MixinAppTheme.colors.tipWarningBorder,
+                    shape = RoundedCornerShape(8.dp)
+                )
                 .padding(20.dp),
         ) {
             Image(
@@ -408,32 +414,33 @@ fun Warning(
 
 @Composable
 private fun BalanceChangeItem(
-    token: Web3Token,
     balanceChange: BalanceChange,
 ) {
+    val viewModel = hiltViewModel<WalletViewModel>()
+    val token by viewModel.web3TokenItemByAddress(if (balanceChange.address == wrappedSolTokenAssetKey) solanaNativeTokenAssetKey else balanceChange.address)
+        .collectAsState(initial = null)
+    Timber.e("${balanceChange.address} ${if (balanceChange.address == wrappedSolTokenAssetKey) solanaNativeTokenAssetKey else balanceChange.address} ${balanceChange.amount} ${token?.name}")
     Row(
-        modifier =
-            Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CoilImage(
-            model = token.iconUrl,
-            modifier =
-            Modifier
+            model = token?.iconUrl,
+            modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape),
             placeholder = R.drawable.ic_avatar_place_holder,
         )
         Box(modifier = Modifier.width(12.dp))
         Text(
-            text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else token.name,
+            text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else token?.name ?: balanceChange.address.formatPublicKey(),
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.W600
         )
         Box(modifier = Modifier.weight(1f))
         Text(
-            text = "${token.toStringAmount(balanceChange.amount)} ${token.symbol}",
+            text = "${token?.toStringAmount(balanceChange.amount) ?: balanceChange.amount.toString()} ${token?.symbol ?: ""}",
             color = if (balanceChange.amount >= 0) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
             fontSize = 14.sp,
         )
