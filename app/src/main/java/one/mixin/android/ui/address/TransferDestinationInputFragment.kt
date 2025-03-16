@@ -256,7 +256,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     lifecycleScope.launch {
                                         dialog.show()
                                         web3Token?.let { token ->
-                                            val deposit = web3ViewModel.findAndSyncDepositEntry(token) ?: return@launch
+                                            val deposit = web3ViewModel.findAndSyncDepositEntry(token)
+                                            if (deposit == null) {
+                                                dialog.dismiss()
+                                                return@launch
+                                            }
                                             val fromAddress = if (token.isSolana()) {
                                                 PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
                                             } else {
