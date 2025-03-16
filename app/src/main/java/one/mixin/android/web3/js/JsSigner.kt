@@ -177,21 +177,6 @@ object JsSigner {
         }
     }
 
-    fun sendTransaction(
-        signedTransactionData: String,
-        chain: Chain?,
-    ): String? {
-        val tx = getWeb3j(chain ?: currentChain).ethSendRawTransaction(signedTransactionData).send()
-        if (tx.hasError()) {
-            val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            throw WalletConnectException(tx.error.code, tx.error.message)
-        }
-        val transactionHash = tx.transactionHash
-        Timber.d("$TAG sendTransaction $transactionHash")
-        return transactionHash
-    }
-
     fun ethSignTransaction(
         priv: ByteArray,
         transaction: WCEthereumTransaction,
