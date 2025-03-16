@@ -743,7 +743,7 @@ class SwapFragment : BaseFragment() {
             },
         )?.let {
             if (!inMixin()) {
-                val remote = it.map { token ->
+                val remote = it.map { it.copy(isWeb3 = true) }.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
                         web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                     } ?: return@map token
@@ -754,7 +754,7 @@ class SwapFragment : BaseFragment() {
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
-                toToken = swapTokens.firstOrNull { s -> s.address != fromToken?.address }
+                toToken = swapTokens.firstOrNull { s -> s.getUnique() != fromToken?.getUnique() }
             } else {
                 val remote = it.map { token ->
                     val t = tokenItems?.firstOrNull { tokenItem ->

@@ -328,7 +328,7 @@ fun SwapPage(
                                                     }
                                                 )
                                             }
-                                            if (!from.inMixin()) {
+                                            if (from.isWeb3) {
                                                 SlippageInfo(
                                                     slippageBps,
                                                     rate != BigDecimal.ZERO,

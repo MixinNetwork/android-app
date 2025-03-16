@@ -23,7 +23,7 @@ data class SwapToken(
     var balance: String? = null,
     var collectionHash: String? = null,
     var changeUsd: String? = null,
-    val isWeb3: Boolean = false
+    var isWeb3: Boolean = false
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -51,18 +51,13 @@ data class SwapToken(
         }
     }
 
-    fun isSolToken(): Boolean = address.equals(solanaNativeTokenAssetKey, true) || address.equals(wrappedSolTokenAssetKey, true)
-
     fun getUnique(): String {
-        return assetId.ifEmpty {
-            assetKey
-        }
+        return if (isWeb3 || assetId.isEmpty()) assetKey
+        else assetId
     }
 
-    val assetKey: String
+    private val assetKey: String
         get() = if (address == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else address
-
-    fun inMixin(): Boolean = assetId != ""
 
     override fun equals(other: Any?): Boolean {
         if (other !is SwapToken) return false

@@ -95,7 +95,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             if (chainNetwork != null) {
                 binding.networkTv.text = chainNetwork
             }
-            if (!token.inMixin()) {
+            if (token.isWeb3) {
                 alert.isVisible = true
                 select.isVisible = false
                 alert.setOnClickListener {
