@@ -37,12 +37,7 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.protocol.core.methods.response.EthBlock
-import org.web3j.protocol.core.methods.response.EthEstimateGas
-import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
@@ -220,21 +215,6 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG pair $uri, error: $error")
             RxBus.publish(WCErrorEvent(WCError(WalletConnectException(0, error.throwable.toString() + "\nurl: $uri"))))
         }
-    }
-
-    fun ethEstimateGas(
-        chain: Chain,
-        transaction: Transaction,
-    ): EthEstimateGas? {
-        return getWeb3j(chain).ethEstimateGas(transaction).send()
-    }
-
-    fun ethBlock(chain: Chain): EthBlock? {
-        return getWeb3j(chain).ethGetBlockByNumber(DefaultBlockParameterName.PENDING, false).send()
-    }
-
-    fun ethMaxPriorityFeePerGas(chain: Chain): EthMaxPriorityFeePerGas? {
-        return getWeb3j(chain).ethMaxPriorityFeePerGas().send()
     }
 
     private fun <T> flattenCollections(collection: List<List<T>?>): List<T> {
@@ -540,22 +520,6 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun sendTransaction(
-        chain: Chain,
-        sessionRequest: Wallet.Model.SessionRequest,
-        signedTransactionData: String,
-    ) {
-        val tx = getWeb3j(chain).ethSendRawTransaction(signedTransactionData).send()
-        if (tx.hasError()) {
-            val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            rejectRequest(msg, sessionRequest)
-            throw WalletConnectException(tx.error.code, tx.error.message)
-        }
-        val transactionHash = tx.transactionHash
-        Timber.d("$TAG sendTransaction $transactionHash")
-        approveRequestInternal(transactionHash, sessionRequest)
-    }
 
     private fun ethSignMessage(
         priv: ByteArray,
@@ -614,28 +578,6 @@ object WalletConnectV2 : WalletConnect() {
             approveRequestInternal(hexMessage, sessionRequest)
         }
         return hexMessage
-    }
-
-    @Suppress("unused")
-    private fun ethSendTransaction(
-        web3j: Web3j,
-        priv: ByteArray,
-        chain: Chain,
-        sessionRequest: Wallet.Model.SessionRequest,
-        signData: WCSignData.V2SignData<WCEthereumTransaction>,
-    ) {
-        val hexMessage = ethSignTransaction(priv, chain, sessionRequest, signData, false)
-        val result = web3j.ethSendRawTransaction(hexMessage).send()
-        if (result.hasError()) {
-            val msg = "error code: ${result.error.code}, message: ${result.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            rejectRequest(msg, sessionRequest)
-            throw WalletConnectException(result.error.code, result.error.message)
-        } else {
-            val transactionHash = result.transactionHash
-            Timber.d("$TAG sendTransaction $transactionHash")
-            approveRequestInternal(transactionHash, sessionRequest)
-        }
     }
 
     fun approveSolanaTransaction(
