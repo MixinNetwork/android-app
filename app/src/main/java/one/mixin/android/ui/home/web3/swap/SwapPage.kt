@@ -225,7 +225,7 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = viewModel.tokenExtraFlow(from.assetId ?: "").map { it?.balance ?: from.balance } // Use externally provided data if no local data is available.
+            val fromBalance = viewModel.tokenExtraFlow(if (from.isWeb3 == true) "" else from.assetId).map { it?.balance ?: from.balance } // Use externally provided data if no local data is available.
                 .collectAsStateWithLifecycle(from.balance).value
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
