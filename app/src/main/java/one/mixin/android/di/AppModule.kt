@@ -110,6 +110,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.route.serializer.SafeBoxSerializer
+import one.mixin.android.web3.Rpc
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
@@ -648,6 +649,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTransferStatus() = TransferStatusLiveData()
+
+    @Provides
+    @Singleton
+    fun providesRpc(routerService: RouteService) = Rpc(routerService)
 
     @DefaultDispatcher
     @Provides

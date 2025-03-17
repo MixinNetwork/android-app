@@ -72,11 +72,13 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.math.BigDecimal
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -134,6 +136,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var sessionRequest: Wallet.Model.SessionRequest? by mutableStateOf(null)
     private var account: String by mutableStateOf("")
     private var signedTransactionData: Any? = null
+
+    @Inject
+    lateinit var rpc: Rpc
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -409,7 +414,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
 
-    private fun approveWithPriv(priv: ByteArray): String? {
+    private suspend fun approveWithPriv(priv: ByteArray): String? {
         when (version) {
             WalletConnect.Version.V2 -> {
                 when (requestType) {
@@ -419,7 +424,10 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     RequestType.SessionRequest -> {
                         val signData = this.signData ?: return "SignData is null"
-                        signedTransactionData = WalletConnectV2.approveRequest(priv, chain, topic, signData)
+                        signedTransactionData = WalletConnectV2.approveRequest(priv, chain, topic, signData) {
+                            val latestBlockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
+                            return@approveRequest latestBlockhash
+                        }
                     }
                 }
             }

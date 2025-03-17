@@ -28,7 +28,6 @@ import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
-import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Keypair
 import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
@@ -371,11 +370,12 @@ object WalletConnectV2 : WalletConnect() {
         return signData
     }
 
-    fun approveRequest(
+    suspend fun approveRequest(
         priv: ByteArray,
         chain: Chain,
         topic: String,
         signData: WCSignData.V2SignData<*>,
+        getBlockhash: suspend () -> String,
     ): Any? {
         val sessionRequest = getSessionRequest(topic)
         if (sessionRequest == null) {
@@ -402,8 +402,7 @@ object WalletConnectV2 : WalletConnect() {
             val holder = Keypair.fromSecretKey(priv)
             // use latest blockhash should not break other signatures
             if (signMessage.signatures.size <= 1) {
-                val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
-                signMessage.message.recentBlockhash = blockhash
+                signMessage.message.recentBlockhash = getBlockhash()
             }
             signMessage.sign(holder)
             return signMessage

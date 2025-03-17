@@ -65,6 +65,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -259,6 +260,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var rpc: Rpc
 
     override fun onResume() {
         super.onResume()
@@ -498,7 +502,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 },
                             ) {
                                 val transaction =
-                                    token.buildTransaction(fromAddress, toAddress, amount)
+                                    token.buildTransaction(rpc, fromAddress, toAddress, amount)
                                 showBrowserBottomSheetDialogFragment(
                                     requireActivity(),
                                     transaction,
@@ -980,7 +984,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val fromAddress = fromAddress ?: return
         val transaction =
             try {
-                t.buildTransaction(fromAddress, toAddress, tokenBalance)
+                t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
             } catch (e: Exception) {
                 Timber.Forest.w(e)
                 if (dialog.isShowing) {

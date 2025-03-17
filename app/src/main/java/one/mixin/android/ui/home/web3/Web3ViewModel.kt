@@ -51,8 +51,8 @@ import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.ChainType
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
 import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
@@ -72,7 +72,8 @@ internal constructor(
     private val assetRepository: AssetRepository,
     private val tokenRepository: TokenRepository,
     private val jobManager: MixinJobManager,
-    private val web3Repository: Web3Repository
+    private val web3Repository: Web3Repository,
+    private val rpc: Rpc,
 ) : ViewModel() {
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
@@ -268,9 +269,8 @@ internal constructor(
     private suspend fun getSolMinimumBalanceForRentExemption(address: PublicKey): BigDecimal =
         withContext(Dispatchers.IO) {
             try {
-                val conn = getSolanaRpc()
-                val accountInfo = conn.getAccountInfo(address) ?: return@withContext BigDecimal.ZERO
-                val mb = conn.getMinimumBalanceForRentExemption(accountInfo.space)
+                val accountInfo = rpc.getAccountInfo(address) ?: return@withContext BigDecimal.ZERO
+                val mb = rpc.getMinimumBalanceForRentExemption(accountInfo.space) ?: return@withContext BigDecimal.ZERO
                 return@withContext lamportToSol(BigDecimal(mb))
             } catch (e: Exception) {
                 return@withContext BigDecimal.ZERO
@@ -311,7 +311,7 @@ internal constructor(
 
     suspend fun isBlockhashValid(blockhash: String): Boolean =
         withContext(Dispatchers.IO) {
-            return@withContext getSolanaRpc().isBlockhashValid(blockhash, Commitment.PROCESSED)
+            return@withContext rpc.isBlockhashValid(blockhash) ?: false
         }
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) =

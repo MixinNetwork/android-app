@@ -17,13 +17,11 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
-import org.sol4k.Connection
 import org.sol4k.Constants
 import org.sol4k.Keypair
 import org.sol4k.RpcUrl
@@ -40,7 +38,6 @@ import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
-import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.Response
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
@@ -177,21 +174,17 @@ object JsSigner {
         }
     }
 
-    fun ethSignTransaction(
+    suspend fun ethSignTransaction(
         priv: ByteArray,
         transaction: WCEthereumTransaction,
         tipGas: TipGas,
         chain: Chain?,
+        getNonce: suspend (String) -> BigInteger,
     ): String {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val transactionCount =
-            getWeb3j(chain ?: currentChain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
-        if (transactionCount.hasError()) {
-            throwError(transactionCount.error)
-        }
-        val nonce = transactionCount.transactionCount
+        val nonce = getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
 
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
@@ -272,24 +265,18 @@ object JsSigner {
         return sig.toHex()
     }
 
-    fun signSolanaTransaction(
+    suspend fun signSolanaTransaction(
         priv: ByteArray,
-        tx: org.sol4k.VersionedTransaction,
-    ): org.sol4k.VersionedTransaction {
+        tx: VersionedTransaction,
+        getBlockhash: suspend () -> String,
+    ): VersionedTransaction {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
         if (tx.signatures.size <= 1) {
-            val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
-            tx.message.recentBlockhash = blockhash
+            tx.message.recentBlockhash = getBlockhash()
         }
         tx.sign(holder)
         return tx
-    }
-
-    fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
-        val hash = getSolanaRpc().sendTransaction(tx.serialize())
-        Timber.d("sendTransaction $hash")
-        return hash
     }
 
     fun solanaSignIn(
@@ -322,9 +309,6 @@ object JsSigner {
         currentChain = Chain.Ethereum
     }
 }
-
-fun getSolanaRpc(): Connection =
-    Connection(MixinApplication.appContext.defaultSharedPreferences.getString(Chain.Solana.chainId, null) ?: RpcUrl.MAINNNET.value)
 
 fun VersionedTransaction.throwIfAnyMaliciousInstruction() {
     val accounts = message.accounts

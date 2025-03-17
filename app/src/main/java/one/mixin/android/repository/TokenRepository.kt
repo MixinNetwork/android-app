@@ -34,6 +34,7 @@ import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
@@ -995,6 +996,8 @@ class TokenRepository
         suspend fun parseWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.parseWeb3Tx(parseTxRequest)
 
         suspend fun postRawTx(rawTxRequest: PostTxRequest) = routeService.postWeb3Tx(rawTxRequest)
+
+        suspend fun rpc(chainId: String, request: RpcRequest) = routeService.rpc(chainId, request)
 
         suspend fun refreshInscription(inscriptionHash: String): String? {
             val inscriptionItem = syncInscription(inscriptionHash) ?: return null

@@ -12,6 +12,7 @@ import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.request.web3.WalletRequest
@@ -235,6 +236,12 @@ interface RouteService {
     suspend fun estimateFee(
         @Body request: EstimateFeeRequest,
     ): MixinResponse<EstimateFeeResponse>
+
+    @POST("web3/rpc")
+    suspend fun rpc(
+        @Query("chain_id") chainId: String,
+        @Body request: RpcRequest,
+    ): MixinResponse<String>
 
     @POST("wallets")
     suspend fun createWallet(

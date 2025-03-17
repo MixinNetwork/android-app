@@ -62,6 +62,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -75,6 +76,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -144,6 +146,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var solanaTx: VersionedTransaction? by mutableStateOf(null)
     private var parsedTx: ParsedTx? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
+
+    @Inject
+    lateinit var rpc: Rpc
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -316,14 +321,20 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName())
+                    val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
+                        val nonce = rpc.nonceAt(currentChain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
+                        return@ethSignTransaction nonce
+                    }
                     step = Step.Sending
                     val hash = Hash.sha3(hex)
                     viewModel.postRawTx(hex, currentChain.getWeb3ChainId())
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" })
+                    val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
+                        val blockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
+                        return@signSolanaTransaction blockhash
+                    }
                     step = Step.Sending
                     val sig = tx.signatures.first()
                     val rawTx = tx.serialize().base64Encode()

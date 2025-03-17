@@ -17,11 +17,11 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.vo.Fiats
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
-import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.PublicKey
@@ -194,6 +194,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
 
 
 suspend fun Web3TokenItem.buildTransaction(
+    rpc: Rpc,
     fromAddress: String,
     toAddress: String,
     v: String,
@@ -203,14 +204,13 @@ suspend fun Web3TokenItem.buildTransaction(
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        val conn = getSolanaRpc()
         if (isSolToken()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
             val tokenMintAddress = PublicKey(assetKey)
             val tokenMintAccount = withContext(Dispatchers.IO) {
-                conn.getAccountInfo(tokenMintAddress)
+                rpc.getAccountInfo(tokenMintAddress)
             }
             if (tokenMintAccount == null) {
                 throw Web3Exception(Web3Exception.ErrorCode.InvalidWeb3Token, "rpc getAccountInfo $assetKey is null")
@@ -226,7 +226,7 @@ suspend fun Web3TokenItem.buildTransaction(
             val (receiveAssociatedAccount) = PublicKey.findProgramDerivedAddress(receiver, tokenMintAddress, tokenProgramId)
             val receiveAssociatedAccountInfo =
                 withContext(Dispatchers.IO) {
-                    conn.getAccountInfo(receiveAssociatedAccount)
+                    rpc.getAccountInfo(receiveAssociatedAccount)
                 }
             if (receiveAssociatedAccountInfo == null) {
                 instructions.add(
@@ -241,7 +241,7 @@ suspend fun Web3TokenItem.buildTransaction(
             }
             val tokenAmount =
                 withContext(Dispatchers.IO) {
-                    conn.getTokenSupply(assetKey)
+                    rpc.getTokenSupply(assetKey)
                 }
             if (tokenAmount == null) {
                 throw Web3Exception(Web3Exception.ErrorCode.InvalidWeb3Token, "rpc getTokenSupply Web3Token $assetKey is null")

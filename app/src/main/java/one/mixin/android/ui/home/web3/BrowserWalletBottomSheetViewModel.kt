@@ -11,6 +11,7 @@ import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.Web3Service
@@ -22,6 +23,8 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.web3.ChainType
 import org.sol4k.exception.RpcException
+import org.web3j.utils.Numeric
+import java.math.BigInteger
 import javax.inject.Inject
 
 @HiltViewModel
