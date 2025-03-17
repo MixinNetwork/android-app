@@ -118,6 +118,7 @@ fun SwapPage(
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var quoteMin by remember { mutableStateOf<String?>(null) }
+    var quoteMax by remember { mutableStateOf<String?>(null) }
 
     var inputText by remember { mutableStateOf(initialAmount ?: "") }
     LaunchedEffect(lastOrderTime) {
@@ -152,6 +153,7 @@ fun SwapPage(
                             isLoading = true
                             errorInfo = null
                             quoteMin = null
+                            quoteMax = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
                             viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
                                 .onSuccess { value ->
@@ -164,6 +166,7 @@ fun SwapPage(
                                     if (exception is CancellationException) return@onFailure
                                     if (exception is AmountException) {
                                         quoteMin = exception.min
+                                        quoteMax = exception.max
                                     }
                                     errorInfo = exception.message
                                     quoteResult = null
@@ -173,6 +176,7 @@ fun SwapPage(
                             errorInfo = null
                             quoteResult = null
                             quoteMin = null
+                            quoteMax = null
                             isLoading = false
                         }
                     }
@@ -348,8 +352,12 @@ fun SwapPage(
                                             text = errorInfo ?: "",
                                             modifier = Modifier
                                                 .clickable {
-                                                    if (quoteMin != null && runCatching { BigDecimal(quoteMin) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO) {
-                                                        inputText = quoteMin!!
+                                                    if (quoteMax != null || quoteMin != null) {
+                                                        if (quoteMax != null && runCatching { BigDecimal(inputText) }.getOrDefault(BigDecimal.ZERO) > runCatching { BigDecimal(quoteMax!!) }.getOrDefault(BigDecimal.ZERO)) {
+                                                            inputText = quoteMax!!
+                                                        } else if (quoteMin != null) {
+                                                            inputText = quoteMin!!
+                                                        }
                                                     }
                                             },
                                             style = TextStyle(
