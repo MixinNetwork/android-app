@@ -73,8 +73,6 @@ class WalletViewModel
         private val pinCipher: PinCipher,
     ) : ViewModel() {
 
-    fun web3TokenItemByAddress(address: String) = web3Repository.web3TokenItemByAddress(address)
-
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)

@@ -37,17 +37,25 @@ data class SwapToken(
 
     fun toStringAmount(amount: String): String {
         return if (address.isNotEmpty()) {
-            realAmount(amount).stripTrailingZeros().toPlainString()
+            realAmount(BigDecimal(amount)).stripTrailingZeros().toPlainString()
         } else {
             amount
         }
     }
 
-    fun realAmount(amount: String): BigDecimal {
+    fun toStringAmount(amount: Long): String {
         return if (address.isNotEmpty()) {
-            BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
+            realAmount(amount.toBigDecimal()).stripTrailingZeros().toPlainString()
         } else {
-            BigDecimal(amount)
+            amount.toBigDecimal().toPlainString()
+        }
+    }
+
+    fun realAmount(amount: BigDecimal): BigDecimal {
+        return if (address.isNotEmpty()) {
+            amount.divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
+        } else {
+            amount
         }
     }
 

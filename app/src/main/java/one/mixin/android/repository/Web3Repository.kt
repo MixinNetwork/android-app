@@ -40,7 +40,7 @@ constructor(
 
     suspend fun insertWeb3Tokens(list: List<Web3Token>) = web3TokenDao.insertListSuspend(list)
 
-    fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
+    suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     suspend fun web3TokenItemById(assetId: String) = web3TokenDao.web3TokenItemById(assetId)
 

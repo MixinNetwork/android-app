@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.firstOrNull
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
@@ -11,6 +12,7 @@ import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.service.Web3Service
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.repository.TokenRepository
@@ -29,7 +31,6 @@ class BrowserWalletBottomSheetViewModel
         private val assetRepo: TokenRepository,
         private val userRepo: UserRepository,
         private val web3Repository: Web3Repository,
-        private val web3Service: Web3Service,
         private val tip: Tip,
     ) : ViewModel() {
         suspend fun getWeb3Priv(
@@ -43,6 +44,21 @@ class BrowserWalletBottomSheetViewModel
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
+
+        suspend fun solanaWeb3Tokens(addresses: List<String>): List<SwapToken> {
+            val result = mutableListOf<SwapToken>()
+            addresses.forEach { address ->
+                val t = web3Repository.web3TokenItemByAddress(address)
+                if (t != null) {
+                    result.add(t.toSwapToken())
+                }
+                val resp = assetRepo.getSwapToken(address)
+                if (resp.isSuccess) {
+                    result.add(resp.data!!)
+                }
+            }
+            return result
+        }
 
         suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(

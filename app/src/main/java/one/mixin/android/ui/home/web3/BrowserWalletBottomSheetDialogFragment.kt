@@ -288,6 +288,16 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (parsedTx == null) {
                             parsedTx = viewModel.parseWeb3Tx(tx.serialize().base64Encode())
                         }
+                        val ptx = parsedTx
+                        if (ptx != null && ptx.tokens == null) {
+                            ptx.balanceChanges?.map { it.address }?.let { bc ->
+                                val tokens = viewModel.solanaWeb3Tokens(bc)
+                                if (tokens.isNotEmpty()) {
+                                    ptx.tokens = tokens.associateBy { it.address }
+                                    parsedTx = ptx
+                                }
+                            }
+                        }
                         tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
