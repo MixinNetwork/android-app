@@ -14,7 +14,6 @@ import one.mixin.android.api.request.web3.PostTxRequest
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository

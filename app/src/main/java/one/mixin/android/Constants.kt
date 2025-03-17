@@ -87,7 +87,6 @@ object Constants {
         const val PREF_MARKET_ORDER = "pref_market_order"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
-        const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
         const val PREF_GLOBAL_MARKET = "pref_global_market"
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"

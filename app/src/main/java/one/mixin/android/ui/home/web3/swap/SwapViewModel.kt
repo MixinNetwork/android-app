@@ -17,7 +17,6 @@ import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
@@ -38,7 +37,6 @@ class SwapViewModel
         private val jobManager: MixinJobManager,
         private val tokenRepository: TokenRepository,
         private val userRepository: UserRepository,
-        private val web3Service: Web3Service,
     ) : ViewModel() {
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)

@@ -37,6 +37,7 @@ import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.ChainDapp
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
@@ -293,4 +294,7 @@ interface RouteService {
         @Path("id") id: String,
         @Query("address") address: String,
     ): MixinResponse<Web3Token>
+
+    @GET("dapps")
+    suspend fun dapps(): MixinResponse<List<ChainDapp>>
 }

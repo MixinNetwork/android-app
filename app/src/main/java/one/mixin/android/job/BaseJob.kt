@@ -27,7 +27,6 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
@@ -395,10 +394,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var tipService: TipService
-
-    @Inject
-    @Transient
-    lateinit var web3Service: Web3Service
 
     @ApplicationScope
     @Transient

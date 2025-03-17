@@ -24,7 +24,7 @@ class RefreshDappJob : BaseJob(
     override fun onRun(): Unit =
         runBlocking {
             userRepo.getBotPublicKey(WEB3_BOT_USER_ID, false)
-            val response = web3Service.dapps()
+            val response = routeService.dapps()
             if (response.isSuccess && response.data != null) {
                 val gson = GsonHelper.customGson
                 val chainDapp = response.data!!

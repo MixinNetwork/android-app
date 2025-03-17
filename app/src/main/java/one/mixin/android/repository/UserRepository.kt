@@ -7,7 +7,6 @@ import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.MixinApplication
@@ -360,7 +359,7 @@ class UserRepository
 
         @Suppress("KotlinConstantConditions")
         suspend fun getBotPublicKey(botId: String, force: Boolean) {
-            if (botId != ROUTE_BOT_USER_ID && botId != WEB3_BOT_USER_ID) return
+            if (botId != ROUTE_BOT_USER_ID) return
 
             val key =
                 findBotPublicKey(
@@ -373,8 +372,6 @@ class UserRepository
             if (key != null && !force) {
                 if (botId == ROUTE_BOT_USER_ID) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
-                } else if (botId == WEB3_BOT_USER_ID) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
                 }
             } else {
                 val sessionResponse = fetchSessionsSuspend(listOf(botId))
@@ -393,8 +390,6 @@ class UserRepository
                     )
                     if (botId == ROUTE_BOT_USER_ID) {
                         MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    } else if (botId == WEB3_BOT_USER_ID) {
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
                     }
                 } else {
                     throw MixinResponseException(

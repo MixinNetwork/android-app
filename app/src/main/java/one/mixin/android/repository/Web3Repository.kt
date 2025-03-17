@@ -4,7 +4,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.service.RouteService
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
@@ -29,7 +28,6 @@ class Web3Repository
 @Inject
 constructor(
     val routeService: RouteService,
-    val webService: Web3Service,
     val web3TokenDao: Web3TokenDao,
     val web3TransactionDao: Web3TransactionDao,
     val web3TokensExtraDao: Web3TokensExtraDao,
