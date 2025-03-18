@@ -79,7 +79,7 @@ buildscript {
 
         ext.junitVersion = '4.13.2'
         ext.testCoreVersion = '1.6.1'
-        ext.mockitoVersion = '5.16.0'
+        ext.mockitoVersion = '5.16.1'
         ext.androidxJunitVersion = '1.2.1'
         ext.leakcanaryVerison = '2.14'
         ext.mockitoVersion = '1.10.19'
