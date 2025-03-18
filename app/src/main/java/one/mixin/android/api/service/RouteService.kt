@@ -295,6 +295,6 @@ interface RouteService {
         @Query("address") address: String,
     ): MixinResponse<Web3Token>
 
-    @GET("dapps")
+    @GET("web3/dapps")
     suspend fun dapps(): MixinResponse<List<ChainDapp>>
 }
