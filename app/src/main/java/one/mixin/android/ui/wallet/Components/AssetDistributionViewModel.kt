@@ -13,9 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.web3.Web3TokenDao
-import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.vo.safe.TokenItem

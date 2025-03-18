@@ -1358,7 +1358,8 @@ class BottomSheetViewModel
                 tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
             }
 
-        suspend fun queryAsset(query: String): List<TokenItem> = tokenRepository.queryAsset(query)
+        suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> =
+            tokenRepository.queryAsset(query, web3)
 
         suspend fun findOrSyncAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {

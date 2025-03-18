@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,15 +9,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Web3ChainIds
-import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3ReceiveSelectionBinding
 import one.mixin.android.extension.navTo
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.web3.send.TokenListBottomSheetDialogFragment
 
 @AndroidEntryPoint

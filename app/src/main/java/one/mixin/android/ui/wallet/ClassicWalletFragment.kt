@@ -56,6 +56,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
+import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
@@ -394,7 +395,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun showReceiveAssetList() {
-        Web3TokenListBottomSheetDialogFragment.newInstance().apply {
+        Web3TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).apply {
             setOnClickListener { token ->
                 this@ClassicWalletFragment.lifecycleScope.launch {
                     val address = getAddressesByChainId(token.chainId)

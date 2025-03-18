@@ -531,7 +531,7 @@ class TokenRepository
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
 
-        suspend fun queryAsset(query: String): List<TokenItem> {
+        suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> {
             val response =
                 try {
                     queryAssets(query)
@@ -556,7 +556,7 @@ class TokenRepository
                 val onlyRemoteItems = arrayListOf<TokenItem>()
                 val needUpdatePrice = arrayListOf<PriceAndChange>()
                 tokenItemList.forEach {
-                    val exists = findAssetItemById(it.assetId)
+                    val exists = if (web3) null else findAssetItemById(it.assetId)
                     if (exists != null) {
                         needUpdatePrice.add(it.toPriceAndChange())
                         localExistsIds.add(exists.assetId)
