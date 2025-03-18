@@ -116,6 +116,12 @@ fun BrowserPage(
                             color = MixinAppTheme.colors.accent,
                         )
                     }
+                    WalletConnectBottomSheetDialogFragment.Step.Sending -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(70.dp),
+                            color = MixinAppTheme.colors.accent,
+                        )
+                    }
 
                     WalletConnectBottomSheetDialogFragment.Step.Error -> {
                         Icon(
@@ -279,16 +285,7 @@ fun BrowserPage(
             Box(modifier = Modifier.fillMaxWidth()) {
                 if ((tipGas == null && data == null) || step == WalletConnectBottomSheetDialogFragment.Step.Loading || step == WalletConnectBottomSheetDialogFragment.Step.Sending) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-                        Box(modifier = Modifier.height(20.dp))
-                        CircularProgressIndicator(
-                            modifier =
-                            Modifier
-                                .size(40.dp)
-                                .alpha(if (step == WalletConnectBottomSheetDialogFragment.Step.Sending) 0f else 1f)
-                                .align(Alignment.CenterHorizontally),
-                            color = MixinAppTheme.colors.accent,
-                        )
-                        Box(modifier = Modifier.height(20.dp))
+                        Box(modifier = Modifier.height(80.dp))
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                     Row(
