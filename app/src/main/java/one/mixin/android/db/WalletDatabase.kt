@@ -53,7 +53,7 @@ abstract class WalletDatabase : RoomDatabase() {
                         Room.databaseBuilder(
                             context,
                             WalletDatabase::class.java,
-                            File(dir, Constants.DataBase.WALLET_DB_NAME).absolutePath,
+                            File(dir, Constants.DataBase.WEB3_DB_NAME).absolutePath,
                         ).addCallback(
                             object : Callback() {
                                 override fun onOpen(db: SupportSQLiteDatabase) {
