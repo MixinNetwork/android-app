@@ -546,13 +546,12 @@ class MixinDatabaseMigrations private constructor() {
             }
 
         val MIGRATION_63_64: Migration =
-            object : Migration(65, 64) {
+            object : Migration(63, 64) {
                 override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("DROP TABLE IF EXISTS `addresses`")
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `addresses` (`address_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `label` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `tag` TEXT, `dust` TEXT, PRIMARY KEY(`address_id`))")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `swap_orders` (`order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT NOT NULL, `pay_trace_id` TEXT NOT NULL, `receive_trace_id` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, PRIMARY KEY(`order_id`))")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_swap_orders_state_created_at` ON `swap_orders` (`state`, `created_at`)")
                 }
             }
-
 
         val MIGRATION_64_65: Migration =
             object : Migration(64, 65) {
