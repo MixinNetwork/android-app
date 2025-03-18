@@ -35,6 +35,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
@@ -285,7 +286,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
-                                    if (address.isLightningUrl()) {
+                                    if (address.isExternalTransferUrl() || address.isLightningUrl()) {
                                         LinkBottomSheetDialogFragment.newInstance(address).show(
                                             parentFragmentManager,
                                             LinkBottomSheetDialogFragment.TAG
