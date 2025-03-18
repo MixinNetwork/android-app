@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -283,6 +284,7 @@ fun BrowserPage(
                             modifier =
                             Modifier
                                 .size(40.dp)
+                                .alpha(if (step == WalletConnectBottomSheetDialogFragment.Step.Sending) 0f else 1f)
                                 .align(Alignment.CenterHorizontally),
                             color = MixinAppTheme.colors.accent,
                         )
