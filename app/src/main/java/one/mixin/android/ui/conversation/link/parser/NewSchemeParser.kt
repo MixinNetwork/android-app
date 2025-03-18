@@ -335,12 +335,6 @@ class NewSchemeParser(
                 bottomSheet.dismiss()
                 return
             }
-            val feeAsset = checkAsset(result.feeAssetId!!)
-            if (feeAsset == null) {
-                bottomSheet.showError(R.string.Asset_not_found)
-                bottomSheet.dismiss()
-                return
-            }
 
             val traceId = UUID.randomUUID().toString()
             val status = getPaymentStatus(traceId)
@@ -351,9 +345,22 @@ class NewSchemeParser(
             }
             val amount = result.amount
             val destination = result.destination
+            if (amount == null) {
+                bottomSheet.navTo(InputFragment.newInstance(asset, destination, null), InputFragment.TAG)
+                bottomSheet.dismiss()
+                return
+            }
+
+            val feeAsset = checkAsset(result.feeAssetId!!)
+            if (feeAsset == null) {
+                bottomSheet.showError(R.string.Asset_not_found)
+                bottomSheet.dismiss()
+                return
+            }
 
             val address = Address("", "address", asset.assetId, asset.chainId, destination, "ExternalAddress", nowInUtc(), null, null)
             val fee = NetworkFee(feeAsset, result.fee!!.toPlainString())
+
             val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
             checkRawTransaction(withdrawBiometricItem)
         }

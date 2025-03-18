@@ -55,14 +55,18 @@ suspend fun parseExternalTransferUri(
     if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
-    val feeResponse = getFee(assetId, destination) ?: return null
-    val fee = feeResponse.firstOrNull() ?: return null
 
     var amount = uri.getQueryParameter("amount")
     if (amount == null) {
         amount = uri.getQueryParameter("tx_amount")
     }
-    if (amount.isNullOrEmpty()) return null
+    
+    if (amount.isNullOrEmpty() || amount == "0") {
+        return ExternalTransfer(addressResponse.destination, null, assetId, null, null, uri.getQueryParameter("memo")?.run {
+            Uri.decode(this)
+        })
+    }
+    
     if (amount.amountWithE()) return null
 
     amount = amount.stripAmountZero()
@@ -70,6 +74,10 @@ suspend fun parseExternalTransferUri(
     if (amount != amountBD.toPlainString()) {
         return null
     }
+    
+    val feeResponse = getFee(assetId, destination) ?: return null
+    val fee = feeResponse.firstOrNull() ?: return null
+    
     if (fee.assetId == assetId) {
         val totalAmount = amountBD + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
         balanceCheck(assetId, totalAmount, null, null)
