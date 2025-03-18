@@ -3,27 +3,20 @@ package one.mixin.android.ui.home.web3
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.firstOrNull
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransaction
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
-import one.mixin.android.api.request.web3.PostTxRequest
-import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
-import one.mixin.android.web3.ChainType
 import org.sol4k.exception.RpcException
-import org.web3j.utils.Numeric
-import java.math.BigInteger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -64,7 +57,7 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(
-                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
+                invokeNetwork = { web3Repository.estimateFee(Web3RawTransaction(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
                 successBlock = {
                     it.data
                 },
@@ -92,8 +85,8 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: Int) {
-            val resp = assetRepo.postRawTx(PostTxRequest(rawTx, web3ChainId))
+        suspend fun postRawTx(rawTx: String, web3ChainId: String) {
+            val resp = assetRepo.postRawTx(Web3RawTransaction(web3ChainId, rawTx))
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException
@@ -101,5 +94,5 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+        suspend fun estimateFee(request: Web3RawTransaction) = web3Repository.estimateFee(request)
     }

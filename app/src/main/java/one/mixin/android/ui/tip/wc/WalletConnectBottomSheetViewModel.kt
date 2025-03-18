@@ -6,8 +6,7 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.Web3RawTransaction
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
@@ -29,7 +28,7 @@ class WalletConnectBottomSheetViewModel
         private val tip: Tip,
     ) : ViewModel() {
 
-        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+        suspend fun estimateFee(request: Web3RawTransaction) = web3Repository.estimateFee(request)
 
         suspend fun getV2SessionProposal(topic: String): Wallet.Model.SessionProposal? {
             return withContext(Dispatchers.IO) {
@@ -78,7 +77,7 @@ class WalletConnectBottomSheetViewModel
                 signedTransactionData
             }
             try {
-                assetRepo.postRawTx(PostTxRequest(rawTx, chain.getWeb3ChainId()))
+                assetRepo.postRawTx(Web3RawTransaction(chain.getWeb3ChainId(), rawTx))
             } catch (e: Exception) {
                 WalletConnectV2.rejectRequest(e.message, sessionRequest)
                 throw e

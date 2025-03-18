@@ -14,7 +14,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransaction
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.db.web3.vo.Web3Address
@@ -55,7 +55,6 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import org.sol4k.PublicKey
 import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
 import org.sol4k.lamportToSol
 import timber.log.Timber
 import java.math.BigDecimal
@@ -294,7 +293,7 @@ internal constructor(
             }
         } else {
             val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
-                EstimateFeeRequest(
+                Web3RawTransaction(
                     token.chainId,
                     transaction.data
                 )

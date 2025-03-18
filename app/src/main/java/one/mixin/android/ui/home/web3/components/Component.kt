@@ -463,8 +463,9 @@ private fun Instruction(
         modifier =
         Modifier
             .fillMaxWidth()
-            .background(MixinAppTheme.colors.backgroundGrayLight)
+            .clip(RoundedCornerShape(8.dp))
             .border(1.dp, MixinAppTheme.colors.backgroundDark, shape = RoundedCornerShape(8.dp))
+            .background(MixinAppTheme.colors.backgroundGrayLight)
             .padding(16.dp, 12.dp),
     ) {
         if (instruction.info != null) {

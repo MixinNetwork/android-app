@@ -1,7 +1,8 @@
 package one.mixin.android.api.request.web3
 
 import com.google.gson.annotations.SerializedName
-data class EstimateFeeRequest(
+
+data class Web3RawTransaction(
     @SerializedName("chain_id")
     val chainId: String,
     @SerializedName("raw_transaction")

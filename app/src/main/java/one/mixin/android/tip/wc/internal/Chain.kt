@@ -45,22 +45,22 @@ sealed class Chain(
             return MixinApplication.appContext.defaultSharedPreferences.getString(chainId, null) ?: rpcServers.first()
         }
 
-    fun getWeb3ChainId(): Int =
+    fun getWeb3ChainId(): String =
+        // Optimism -> Constants.ChainId.
+        // Arbitrum ->  Constants.ChainId.
+        // Blast ->  Constants.ChainId.
         when (this) {
-            Ethereum -> Web3ChainId.EthChainId
-            Optimism -> Web3ChainId.OptimismChainId
-            BinanceSmartChain -> Web3ChainId.BscChainId
-            Polygon -> Web3ChainId.PolygonChainId
-            Base -> Web3ChainId.BaseChainId
-            Arbitrum -> Web3ChainId.ArbitrumChainId
-            Avalanche -> Web3ChainId.AvalancheChainId
-            Blast -> Web3ChainId.BlastChainId
-            else -> Web3ChainId.SolanaChainId
+            Ethereum -> Constants.ChainId.ETHEREUM_CHAIN_ID
+            BinanceSmartChain -> Constants.ChainId.BinanceSmartChain
+            Polygon ->  Constants.ChainId.Polygon
+            Base ->  Constants.ChainId.Base
+            Avalanche ->  Constants.ChainId.Avalanche
+            else ->  Constants.ChainId.Solana
         }
 }
-
-internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Blast, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.Blast, Chain.Arbitrum, Chain.Optimism, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
+// Chain.Blast, Chain.Arbitrum, Chain.Optimism
+internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
 
 internal fun String.getChain(): Chain? {
     return when (this) {

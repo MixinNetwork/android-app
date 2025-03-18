@@ -33,7 +33,7 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransaction
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
@@ -77,7 +77,6 @@ import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -343,7 +342,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     try {
                         val r =
                             viewModel.estimateFee(
-                                EstimateFeeRequest(
+                                Web3RawTransaction(
                                     assetId,
                                     tx.data
                                 )

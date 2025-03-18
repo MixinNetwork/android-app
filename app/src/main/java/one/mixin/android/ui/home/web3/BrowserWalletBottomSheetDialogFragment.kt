@@ -28,8 +28,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransaction
 
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -261,7 +262,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 try {
                     tipGas = withContext(Dispatchers.IO) {
                         val r = viewModel.estimateFee(
-                            EstimateFeeRequest(
+                            Web3RawTransaction(
                                 assetId,
                                 transaction.data
                             )
@@ -338,7 +339,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val sig = tx.signatures.first()
                     val rawTx = tx.serialize().base64Encode()
-                    viewModel.postRawTx(rawTx, Web3ChainId.SolanaChainId)
+                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana)
                     onTxhash?.invoke(sig, rawTx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
