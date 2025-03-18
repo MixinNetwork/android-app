@@ -59,6 +59,7 @@ import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
@@ -83,6 +84,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val ARGS_FROM_ADDRESS = "args_from_address"
 
         const val ARGS_TO_WALLET = "args_to_wallet"
+        const val ARGS_TO_ACCOUNT = "args_to_account"
 
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
         const val ARGS_TO_ADDRESS_ID = "args_to_address_id"
@@ -129,10 +131,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             tokenItem: TokenItem,
             toAddress: String,
             tag: String? = null,
+            toAccount: Boolean? = null,
             isReceive: Boolean = false
         ) =
             InputFragment().apply {
                 withArgs {
+                    if (toAccount != null) {
+                        putBoolean(ARGS_TO_ACCOUNT, toAccount)
+                    }
                     putParcelable(ARGS_TOKEN, tokenItem)
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
@@ -233,6 +239,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         requireArguments().getBoolean(ARGS_TO_WALLET, false)
     }
 
+    private val toAccount by lazy {
+        requireArguments().getBoolean(ARGS_TO_ACCOUNT, false)
+    }
+
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
     }
@@ -291,13 +301,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                     TransferType.ADDRESS -> {
                         if (addressLabel.isNullOrBlank()) {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null,"$toAddress${addressTag?.let { ":$it" }?:""}".formatPublicKey(16))
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Classic_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toAccount)
                         } else {
                             titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
                         }
                     }
                     TransferType.WEB3 -> {
-                        titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel ?: if (toWallet)getString(R.string.Mixin_Wallet) else null, toAddress?:"", toWallet)
+                        titleView.setLabel(
+                            getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
+                            addressLabel ?: if (toWallet) getString(R.string.Mixin_Wallet) else null,
+                            toAddress ?: "",
+                            toWallet
+                        )
                     }
                     TransferType.BIOMETRIC_ITEM -> {
                         assetBiometricItem?.let { item ->

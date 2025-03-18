@@ -232,7 +232,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         validateAndNavigateToInput(
                                             assetId = t.assetId,
                                             destination = address,
-                                            asset = t
+                                            asset = t,
+                                            toAccount = true
                                         )
                                     }
                                 },
@@ -543,6 +544,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         web3Token: Web3TokenItem? = null,
         chainToken: Web3TokenItem? = null,
         asset: TokenItem? = null,
+        toAccount: Boolean? = null,
     ) {
         requireView().hideKeyboard()
         val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
@@ -560,7 +562,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 navTo(InputFragment.newInstance(asset, destination, tag), InputFragment.TAG)
                             }
                             asset != null && destination.isNotEmpty() -> {
-                                navTo(InputFragment.newInstance(asset, destination), InputFragment.TAG)
+                                navTo(InputFragment.newInstance(asset, destination, toAccount = toAccount), InputFragment.TAG)
                             }
                             fromAddress != null && destination.isNotEmpty() && web3Token != null && chainToken != null -> {
                                 navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = destination, web3Token = web3Token, chainToken = chainToken), InputFragment.TAG)
