@@ -227,10 +227,13 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedTransferDest,
                                 toAccount = { address ->
                                     requireView().hideKeyboard()
-                                    navTo(
-                                        InputFragment.newInstance(token!!, address),
-                                        InputFragment.TAG
-                                    )
+                                    token?.let { t ->
+                                        validateAndNavigateToInput(
+                                            assetId = t.assetId,
+                                            destination = address,
+                                            asset = t
+                                        )
+                                    }
                                 },
                                 toContact = {
                                     requireView().hideKeyboard()
@@ -270,9 +273,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             if (fromAddress.isBlank()) {
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
-                                                Timber.e("${token.chainId} ${chainToken?.chainId}")
                                                 (chainToken ?: web3ViewModel.web3TokenItemById(token.chainId))?.let { chain ->
-                                                    Timber.e("${token.chainId} ${chainToken?.chainId} ${chain.name}")
                                                     navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = token, chainToken = chain, toWallet = true), InputFragment.TAG)
                                                 }
                                             }
@@ -306,16 +307,24 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                         toast(R.string.Alert_Not_Support)
                                                     } else {
                                                         val chain = chainToken ?: web3ViewModel.web3TokenItemById(token.chainId) ?:return@launch
-                                                        navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = address, web3Token = token, chainToken= chain), InputFragment.TAG)
+                                                        validateAndNavigateToInput(
+                                                            assetId = token.assetId,
+                                                            destination = address,
+                                                            fromAddress = fromAddress,
+                                                            web3Token = token,
+                                                            chainToken = chain
+                                                        )
                                                     }
                                                 }
                                             }
                                         } else {
-                                            requireView().hideKeyboard()
-                                            navTo(
-                                                InputFragment.newInstance(token!!, address),
-                                                InputFragment.TAG
-                                            )
+                                            token?.let { t ->
+                                                validateAndNavigateToInput(
+                                                    assetId = t.assetId,
+                                                    destination = address,
+                                                    asset = t
+                                                )
+                                            }
                                         }
                                     }
                                 },
@@ -401,7 +410,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedMemo,
                                 onNext = { memo ->
                                     requireView().hideKeyboard()
-                                    navTo(InputFragment.newInstance(token!!, address, memo), InputFragment.TAG)
+                                    token?.let { t ->
+                                        validateAndNavigateToInput(
+                                            assetId = t.assetId,
+                                            destination = address,
+                                            tag = memo,
+                                            asset = t
+                                        )
+                                    }
                                 },
                                 onScan = { startQrScan(ScanType.MEMO) },
                                 pop = { navController.popBackStack() }
@@ -516,6 +532,49 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     context?.openPermissionSetting()
                 }
             }
+    }
+
+    private fun validateAndNavigateToInput(
+        assetId: String,
+        destination: String,
+        tag: String? = null,
+        fromAddress: String? = null,
+        web3Token: Web3TokenItem? = null,
+        chainToken: Web3TokenItem? = null,
+        asset: TokenItem? = null,
+    ) {
+        requireView().hideKeyboard()
+        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            setCancelable(false)
+        }
+        
+        lifecycleScope.launch {
+            dialog.show()
+            try {
+                if (assetId.isNotEmpty() && destination.isNotEmpty()) {
+                    val response = viewModel.validateExternalAddress(assetId, destination, tag)
+                    if (response.isSuccess) {
+                        when {
+                            asset != null && destination.isNotEmpty() && tag != null -> {
+                                navTo(InputFragment.newInstance(asset, destination, tag), InputFragment.TAG)
+                            }
+                            asset != null && destination.isNotEmpty() -> {
+                                navTo(InputFragment.newInstance(asset, destination), InputFragment.TAG)
+                            }
+                            fromAddress != null && destination.isNotEmpty() && web3Token != null && chainToken != null -> {
+                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = destination, web3Token = web3Token, chainToken = chainToken), InputFragment.TAG)
+                            }
+                        }
+                    } else {
+                        toast(response.errorDescription)
+                    }
+                }
+            } catch (e: Exception) {
+                toast(e.message?:getString(R.string.Data_error))
+            } finally {
+                dialog.dismiss()
+            }
+        }
     }
 
     private fun handleLabelComplete(
