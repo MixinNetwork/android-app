@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b253f5f796fc8cb7659867a3f076cdc5",
+    "identityHash": "42a7a9284ad1f39fbfd5e04585e2029c",
     "entities": [
       {
         "tableName": "tokens",
@@ -305,17 +305,17 @@
       },
       {
         "tableName": "tokens_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`asset_id`, `wallet_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`wallet_id`, `asset_id`))",
         "fields": [
           {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "walletId",
-            "columnName": "wallet_id",
+            "fieldPath": "assetId",
+            "columnName": "asset_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -329,8 +329,8 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "asset_id",
-            "wallet_id"
+            "wallet_id",
+            "asset_id"
           ]
         },
         "indices": [],
@@ -416,7 +416,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b253f5f796fc8cb7659867a3f076cdc5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '42a7a9284ad1f39fbfd5e04585e2029c')"
     ]
   }
 }
