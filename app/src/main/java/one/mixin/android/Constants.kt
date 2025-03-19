@@ -215,7 +215,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain)
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"

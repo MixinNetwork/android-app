@@ -34,6 +34,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -209,19 +210,19 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 val filteredTokens = remoteTokens.filter {
                     it.chainId in Constants.Web3ChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID
                 }
-
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
+                    val t = viewModel.web3TokenItemById(tokenItem.assetId)
                     Web3TokenItem(
-                        walletId = "",
+                        walletId = t?.walletId ?: "",
                         assetId = tokenItem.assetId,
                         chainId = tokenItem.chainId,
                         name = tokenItem.name,
                         assetKey = tokenItem.assetKey ?: "",
                         symbol = tokenItem.symbol,
                         iconUrl = tokenItem.iconUrl,
-                        precision = 0,
+                        precision = t?.precision ?: 0,
                         kernelAssetId = "",
-                        balance = "0",
+                        balance = t?.balance ?: "0",
                         priceUsd = tokenItem.priceUsd,
                         changeUsd = tokenItem.changeUsd,
                         chainIcon = tokenItem.chainIconUrl,
