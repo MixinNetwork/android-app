@@ -4,6 +4,8 @@ import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,17 +21,23 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
+import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.supportsS
+import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.PrivacyWalletFragment
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
@@ -172,6 +180,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         walletViewModel.hasAssetsWithValue().observe(viewLifecycleOwner) {
             migrateEnable = it
         }
+        checkPin()
     }
 
     private var migrateEnable = false
@@ -296,4 +305,35 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         _privacyBottomBinding = null
         _classicBottomBinding = null
     }
+
+    private fun checkPin() {
+        val cur = System.currentTimeMillis()
+        val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
+        var interval = getPrefPinInterval(requireContext(), 0)
+        val account = Session.getAccount()
+        if (account != null && account.hasPin && last == 0L) {
+            interval = Constants.INTERVAL_24_HOURS
+            putPrefPinInterval(requireContext(), Constants.INTERVAL_24_HOURS)
+        }
+        if (cur - last > interval) {
+            val pinCheckDialog =
+                PinCheckDialogFragment.newInstance().apply {
+                    supportsS({
+                        setDialogCallback { showed ->
+                            if (this@WalletFragment.viewDestroyed()) return@setDialogCallback
+
+                            binding.root.setRenderEffect(
+                                if (showed) {
+                                    RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
+                                } else {
+                                    null
+                                },
+                            )
+                        }
+                    })
+                }
+            pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
+        }
+    }
+
 }

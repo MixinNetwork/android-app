@@ -249,7 +249,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             .subscribe { _ ->
                 assetsAdapter.notifyDataSetChanged()
             }
-        checkPin()
 
         val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
         _headBinding?.sendReceiveView?.badge?.isVisible = swap
@@ -449,36 +448,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
 
             _headBinding?.pieItemContainer?.visibility = VISIBLE
-        }
-    }
-
-    private fun checkPin() {
-        val cur = System.currentTimeMillis()
-        val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
-        var interval = getPrefPinInterval(requireContext(), 0)
-        val account = Session.getAccount()
-        if (account != null && account.hasPin && last == 0L) {
-            interval = Constants.INTERVAL_24_HOURS
-            putPrefPinInterval(requireContext(), Constants.INTERVAL_24_HOURS)
-        }
-        if (cur - last > interval) {
-            val pinCheckDialog =
-                PinCheckDialogFragment.newInstance().apply {
-                    supportsS({
-                        setDialogCallback { showed ->
-                            if (this@PrivacyWalletFragment.viewDestroyed()) return@setDialogCallback
-
-                            binding.root.setRenderEffect(
-                                if (showed) {
-                                    RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR)
-                                } else {
-                                    null
-                                },
-                            )
-                        }
-                    })
-                }
-            pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
         }
     }
 
