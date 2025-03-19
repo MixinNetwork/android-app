@@ -204,13 +204,39 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         setContent {
                             RecentTokens(true, key) { tokenItem ->
                                 requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
-                                val web3Token = defaultAssets.find { it.assetId == tokenItem.assetId }
-                                web3Token?.let {
-                                    if (asyncOnAsset != null) {
-                                        asyncClick(it)
-                                    } else {
-                                        this@Web3TokenListBottomSheetDialogFragment.onAsset?.invoke(it)
-                                        dismiss()
+                                this@Web3TokenListBottomSheetDialogFragment.lifecycleScope.launch {
+                                    var web3Token = defaultAssets.find { it.assetId == tokenItem.assetId }
+                                    if (web3Token == null) {
+                                        web3Token = bottomViewModel.findOrSyncAsset(tokenItem.assetId)?.let { tokenItem ->
+                                            Web3TokenItem(
+                                                walletId = "",
+                                                assetId = tokenItem.assetId,
+                                                chainId = tokenItem.chainId,
+                                                name = tokenItem.name,
+                                                assetKey = tokenItem.assetKey ?: "",
+                                                symbol = tokenItem.symbol,
+                                                iconUrl = tokenItem.iconUrl,
+                                                precision = 0,
+                                                kernelAssetId = "",
+                                                balance = "0",
+                                                priceUsd = tokenItem.priceUsd,
+                                                changeUsd = tokenItem.changeUsd,
+                                                chainIcon = tokenItem.chainIconUrl,
+                                                chainName = tokenItem.chainName,
+                                                chainSymbol = tokenItem.chainSymbol,
+                                                hidden = false
+                                            )
+                                        }
+                                    }
+                                    web3Token?.let {
+                                        if (asyncOnAsset != null) {
+                                            asyncClick(it)
+                                        } else {
+                                            this@Web3TokenListBottomSheetDialogFragment.onAsset?.invoke(
+                                                it
+                                            )
+                                            dismiss()
+                                        }
                                     }
                                 }
                             }
