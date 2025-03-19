@@ -192,7 +192,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     AnalyticsTracker.trackSwapStart("solana", "solana")
                     lifecycleScope.launch {
                         val tokens = web3ViewModel.findWeb3TokenItems()
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens, inMixin = false), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }, input = token.getUnique(), inMixin = false), SwapFragment.TAG)
                     }
 
                 }

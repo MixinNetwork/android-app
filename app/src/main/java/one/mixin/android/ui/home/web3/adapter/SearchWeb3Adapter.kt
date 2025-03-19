@@ -35,7 +35,7 @@ class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHold
                 
                 balanceTv.text = "${balance.numberFormat8()} ${token.symbol}"
                 if (token.priceUsd != "0") {
-                    priceTv.text = "$${token.fiat().numberFormat2()}"
+                    priceTv.text = "$${token.priceUsd.numberFormat2()}"
                 } else {
                     priceTv.text = ""
                 }

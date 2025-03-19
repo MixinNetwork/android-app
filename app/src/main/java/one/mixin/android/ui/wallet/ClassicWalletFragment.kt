@@ -340,7 +340,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 PercentView.PercentItem(it.symbol, p)
             }.toMutableList()
         if (list.isNotEmpty()) {
-            _headBinding?.pieItemContainer?.removeAllViews()
+            val items = mutableListOf<View>()
             list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
             mainThread {
                 _headBinding?.percentView?.setPercents(list)
@@ -348,7 +348,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             when {
                 list.size == 1 -> {
                     val p = list[0]
-                    addItem(PercentView.PercentItem(p.name, 1f), 0)
+                    items.add(addItem(PercentView.PercentItem(p.name, 1f), 0))
                 }
                 list.size == 2 -> {
                     addItem(list[0], 0)
@@ -358,16 +358,18 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 }
                 list[1].percent < 0.01f && list[1].percent > 0f -> {
                     addItem(list[0], 0)
-                    addItem(PercentView.PercentItem(getString(R.string.OTHER), 0.01f), 1)
+                    items.add(addItem(PercentView.PercentItem(getString(R.string.OTHER), 0.01f), 1))
                 }
+
                 list.size == 3 -> {
                     addItem(list[0], 0)
                     addItem(list[1], 1)
                     val p2 = list[2]
                     val p2Percent = 1 - list[0].percent - list[1].percent
                     val newP2 = PercentView.PercentItem(p2.name, p2Percent)
-                    addItem(newP2, 2)
+                    items.add(addItem(newP2, 2))
                 }
+
                 else -> {
                     var pre = 0
                     for (i in 0 until 2) {
@@ -377,21 +379,27 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                     val other = (100 - pre) / 100f
                     val item = PercentItemView(requireContext())
-                    item.setPercentItem(PercentView.PercentItem(getString(R.string.OTHER), other), 2)
-                    _headBinding?.pieItemContainer?.addView(item)
+                    item.setPercentItem(
+                        PercentView.PercentItem(getString(R.string.OTHER), other),
+                        2
+                    )
+                    items.add(item)
                 }
             }
-
+            _headBinding?.pieItemContainer?.removeAllViews()
+            items.forEach {
+                _headBinding?.pieItemContainer?.addView(it)
+            }
             _headBinding?.pieItemContainer?.visibility = VISIBLE
         }
     }
     private fun addItem(
         p: PercentView.PercentItem,
         index: Int,
-    ) {
+    ): View {
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
-        _headBinding?.pieItemContainer?.addView(item)
+        return item
     }
 
     private fun showReceiveAssetList() {
