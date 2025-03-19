@@ -50,7 +50,7 @@ import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentTokens(key: String, callback: (SwapToken) -> Unit) {
+fun RecentSwapTokens(key: String, callback: (SwapToken) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
     val recentToken by viewModel.recentSwapTokens.collectAsState()

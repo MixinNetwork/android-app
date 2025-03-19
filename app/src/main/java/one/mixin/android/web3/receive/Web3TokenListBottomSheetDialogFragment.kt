@@ -2,7 +2,10 @@ package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -14,17 +17,22 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.addToList
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
 
@@ -39,6 +47,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
         const val TYPE_FROM_SEND = 0
         const val TYPE_FROM_RECEIVE = 1
+
+        const val WEB3_ASSET_PREFERENCE = "WEB3_TRANSFER_ASSET"
 
         fun newInstance(type: Int = TYPE_FROM_SEND): Web3TokenListBottomSheetDialogFragment {
             return Web3TokenListBottomSheetDialogFragment().apply {
@@ -56,6 +66,57 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var currentQuery: String = ""
     private var defaultAssets = emptyList<Web3TokenItem>()
     private var type: Int = TYPE_FROM_SEND
+    private var currentChain: String? = null
+
+    private val key by lazy {
+        when (type) {
+            TYPE_FROM_SEND -> Constants.Account.PREF_WALLET_SEND
+            TYPE_FROM_RECEIVE -> Constants.Account.PREF_WALLET_RECEIVE
+            else -> Constants.Account.PREF_WALLET_SEND
+        }
+    }
+
+    private fun initRadio() {
+        binding.apply {
+            radio.isVisible = true
+            radioAll.isChecked = true
+            radioAll.isVisible = true
+            radioEth.isVisible = true
+            radioTron.isVisible = false
+            radioBase.isVisible = true
+            radioBsc.isVisible = true
+            radioPolygon.isVisible = true
+            radioSolana.isVisible = true
+            radioGroup.setOnCheckedChangeListener { _, id ->
+                currentChain = when (id) {
+                    R.id.radio_eth -> {
+                        ChainId.ETHEREUM_CHAIN_ID
+                    }
+
+                    R.id.radio_solana -> {
+                        ChainId.SOLANA_CHAIN_ID
+                    }
+
+                    R.id.radio_base -> {
+                        ChainId.Base
+                    }
+
+                    R.id.radio_bsc -> {
+                        ChainId.BinanceSmartChain
+                    }
+
+                    R.id.radio_polygon -> {
+                        ChainId.Polygon
+                    }
+
+                    else -> {
+                        null
+                    }
+                }
+                filter(searchEt.et.text?.toString() ?: "")
+            }
+        }
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -72,7 +133,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         binding.apply {
-            radio.isVisible = false
+            initRadio()
             closeIb.setOnClickListener {
                 searchEt.hideKeyboard()
                 dismiss()
@@ -83,6 +144,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 if (asyncOnAsset != null) {
                     asyncClick(tokenItem)
                 } else {
+                    requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
                     onAsset?.invoke(tokenItem)
                 }
                 dismiss()
@@ -99,7 +161,9 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         {
                             if (it.isNullOrBlank()) {
                                 binding.rvVa.displayedChild = POS_RV
-                                adapter.tokens = ArrayList(defaultAssets)
+                                adapter.tokens = ArrayList(defaultAssets.filter { item ->
+                                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+                                })
                             } else {
                                 if (it.toString() != currentQuery) {
                                     currentQuery = it.toString()
@@ -114,12 +178,60 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         bottomViewModel.web3TokenItems().observe(this) { items ->
             defaultAssets = items
             if (binding.searchEt.et.text.isNullOrBlank()) {
-                adapter.tokens = ArrayList(defaultAssets)
+                adapter.tokens = ArrayList(defaultAssets.filter { item ->
+                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+                })
             }
             if (defaultAssets.isEmpty()) {
                 binding.rvVa.displayedChild = POS_EMPTY_SEND
             } else {
                 binding.rvVa.displayedChild = POS_RV
+            }
+        }
+    }
+
+    private val composeId by lazy {
+        View.generateViewId()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        binding.apply {
+            root.findViewById<ComposeView>(composeId).let {
+                if (it == null) {
+                    val composeView = ComposeView(requireContext()).apply {
+                        id = composeId
+                        setContent {
+                            RecentTokens(true, key) { tokenItem ->
+                                requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
+                                val web3Token = defaultAssets.find { it.assetId == tokenItem.assetId }
+                                web3Token?.let {
+                                    if (asyncOnAsset != null) {
+                                        asyncClick(it)
+                                    } else {
+                                        this@Web3TokenListBottomSheetDialogFragment.onAsset?.invoke(it)
+                                        dismiss()
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    root.addView(
+                        composeView,
+                        RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.MATCH_PARENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT
+                        ).apply {
+                            addRule(RelativeLayout.BELOW, searchView.id)
+                        })
+
+                    radio.updateLayoutParams<RelativeLayout.LayoutParams> {
+                        addRule(RelativeLayout.BELOW, composeView.id)
+                    }
+                    root.requestLayout()
+                    root.invalidate()
+                }
             }
         }
     }
@@ -133,6 +245,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 it.getChainDisplayName().containsIgnoreCase(s)
             }.sortedByDescending { 
                 it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) 
+            }.filter { item ->
+                ((currentChain != null && item.chainId == currentChain) || currentChain == null)
             }
         adapter.tokens = ArrayList(assetList)
         if (adapter.itemCount == 0) {
@@ -187,6 +301,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     it.symbol.containsIgnoreCase(query) ||
                     (it.chainName?.containsIgnoreCase(query) == true) ||
                     it.getChainDisplayName().containsIgnoreCase(query)
+                }.filter { item ->
+                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                 }
 
                 adapter.tokens = ArrayList(result)

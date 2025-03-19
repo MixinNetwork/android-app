@@ -265,7 +265,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     val composeView = ComposeView(requireContext()).apply {
                         id = View.generateViewId()
                         setContent {
-                            RecentTokens (key) {
+                            RecentTokens (false, key) {
                                 defaultSharedPreferences.addToList(key, it.assetId)
                                 if (asyncOnAsset != null) {
                                     asyncClick(it)

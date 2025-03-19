@@ -50,10 +50,15 @@ import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentTokens(key: String, callback: (TokenItem) -> Unit) {
+fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
-    val recentToken by viewModel.recentTokenItems.collectAsState()
+    val source by viewModel.recentTokenItems.collectAsState(initial = emptyList())
+    val recentToken = if (web3) {
+        source.filter { it.chainId in listOf(Constants.ChainId.Solana, Constants.ChainId.ETHEREUM_CHAIN_ID, Constants.ChainId.Base, Constants.ChainId.Polygon, Constants.ChainId.Avalanche, Constants.ChainId.BinanceSmartChain) }
+    } else {
+        source
+    }
     LaunchedEffect(Unit) {
         viewModel.getRecentTokenItems(context.defaultSharedPreferences, key)
     }
