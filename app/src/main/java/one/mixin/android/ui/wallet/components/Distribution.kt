@@ -97,6 +97,7 @@ fun Distribution(distributions: List<AssetDistribution>, destination: WalletDest
                     }
                 }
             }
+
             else -> {
                 topThree.forEachIndexed { index, asset ->
                     when (index) {
@@ -152,6 +153,7 @@ private fun LegendItem(modifier: Modifier, percentage: Float, color: Color, curr
         )
     }
 }
+
 @Composable
 private fun LegendAssetItem(
     modifier: Modifier,
@@ -161,7 +163,7 @@ private fun LegendAssetItem(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = modifier.fillMaxWidth(0.84f)
     ) {
         when {
             icons.isEmpty() -> {
@@ -172,6 +174,7 @@ private fun LegendAssetItem(
                         .background(MixinAppTheme.colors.backgroundWindow)
                 )
             }
+
             count == 1 -> {
                 CoilImage(
                     model = icons[0],
@@ -181,6 +184,7 @@ private fun LegendAssetItem(
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
             }
+
             else -> {
                 Box(
                     modifier = Modifier.width(
@@ -203,9 +207,10 @@ private fun LegendAssetItem(
                         CoilImage(
                             model = icon,
                             modifier = Modifier
+                                .fillMaxWidth(0.28f)
                                 .size(18.dp)
                                 .offset(x = if (index == 0) 0.dp else (12 * index).dp)
-                                .zIndex(displayIcons.size - index.toFloat())
+                                .zIndex(index.toFloat())
                                 .border(1.dp, MixinAppTheme.colors.background, CircleShape)
                                 .clip(CircleShape),
                             placeholder = R.drawable.ic_avatar_place_holder,
@@ -215,9 +220,10 @@ private fun LegendAssetItem(
                     if (count > displayIcons.size) {
                         Surface(
                             modifier = Modifier
+                                .fillMaxWidth(0.44f)
                                 .size(18.dp)
                                 .offset(x = if (displayIcons.isEmpty()) 0.dp else (12 * displayIcons.size).dp)
-                                .zIndex(0f)
+                                .zIndex(4f)
                                 .clip(CircleShape),
                             color = MixinAppTheme.colors.backgroundWindow
                         ) {
@@ -229,11 +235,11 @@ private fun LegendAssetItem(
                                     text = if (count - displayIcons.size >= 99) {
                                         "+99"
                                     } else {
-                                        "${count - displayIcons.size}"
+                                        "+${count - displayIcons.size}"
                                     },
                                     color = MixinAppTheme.colors.textPrimary,
-                                    fontSize = 6.sp,
-                                    lineHeight = 6.sp,
+                                    fontSize = 8.sp,
+                                    lineHeight = 8.sp,
                                     textAlign = TextAlign.Center
                                 )
                             }

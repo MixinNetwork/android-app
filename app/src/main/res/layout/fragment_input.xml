@@ -160,7 +160,7 @@
                     <LinearLayout
                         android:id="@+id/info_linear_layout"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="16sp"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:gravity="center_vertical"
@@ -179,8 +179,8 @@
                             android:id="@+id/content_text_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/text_assist"
                             android:includeFontPadding="false"
+                            android:textColor="?attr/text_assist"
                             tools:text="Content" />
 
                         <ProgressBar
@@ -240,7 +240,6 @@
                         android:layout_toEndOf="@id/avatar"
                         android:textColor="?attr/text_assist"
                         tools:text="1.2345678 ETH" />
-
 
                 </RelativeLayout>
             </RelativeLayout>

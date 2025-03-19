@@ -1907,8 +1907,7 @@
     <string name="Privacy_Wallet">Privacy Wallet</string>
     <string name="Classic_Wallet">Classic Wallet</string>
     <string name="Other">Other</string>
-    <string name="My_Wallet">My Wallet</string>
-    <string name="My_Wallet_desc">Withdraw from my other wallet using a crypto network</string>
+    <string name="My_Wallet_desc">Receive from my other wallet using a crypto network.</string>
     <string name="Exchanges_or_Wallets">Exchanges or Wallets</string>
-    <string name="Exchanges_or_Wallets_desc">Withdraw from other exchanges or on-chain wallets using a crypto network</string>
+    <string name="Exchanges_or_Wallets_desc">Receive from other exchange or on-chain wallet using a crypto network.</string>
 </resources>
