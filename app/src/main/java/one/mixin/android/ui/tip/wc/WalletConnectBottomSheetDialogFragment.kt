@@ -423,10 +423,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     RequestType.SessionRequest -> {
                         val signData = this.signData ?: return "SignData is null"
-                        signedTransactionData = WalletConnectV2.approveRequest(priv, chain, topic, signData) {
+                        signedTransactionData = WalletConnectV2.approveRequest(priv, chain, topic, signData, {
                             val latestBlockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
                             return@approveRequest latestBlockhash
-                        }
+                        }, { address ->
+                            val nonce = rpc.nonceAt(chain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
+                            return@approveRequest nonce
+                        })
                     }
                 }
             }

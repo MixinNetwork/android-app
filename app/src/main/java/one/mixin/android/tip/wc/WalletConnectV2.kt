@@ -376,6 +376,7 @@ object WalletConnectV2 : WalletConnect() {
         topic: String,
         signData: WCSignData.V2SignData<*>,
         getBlockhash: suspend () -> String,
+        getNonce: suspend (String) -> BigInteger
     ): Any? {
         val sessionRequest = getSessionRequest(topic)
         if (sessionRequest == null) {
@@ -392,10 +393,10 @@ object WalletConnectV2 : WalletConnect() {
             signData as WCSignData.V2SignData<WCEthereumTransaction>
             when (signData.sessionRequest.request.method) {
                 Method.ETHSignTransaction.name -> {
-                    return ethSignTransaction(priv, chain, sessionRequest, signData, true)
+                    return ethSignTransaction(priv, chain, sessionRequest, signData, true, getNonce)
                 }
                 Method.ETHSendTransaction.name -> {
-                    return ethSignTransaction(priv, chain, sessionRequest, signData, false)
+                    return ethSignTransaction(priv, chain, sessionRequest, signData, false, getNonce)
                 }
             }
         } else if (signMessage is VersionedTransaction) {
@@ -528,24 +529,20 @@ object WalletConnectV2 : WalletConnect() {
         approveRequestInternal(signMessage(priv, signData.signMessage), sessionRequest)
     }
 
-    private fun ethSignTransaction(
+    private suspend fun ethSignTransaction(
         priv: ByteArray,
         chain: Chain,
         sessionRequest: Wallet.Model.SessionRequest,
         signData: WCSignData.V2SignData<WCEthereumTransaction>,
         approve: Boolean,
+        getNonce: suspend (String) -> BigInteger,
     ): String {
         val transaction = signData.signMessage
         val value = transaction.value ?: "0x0"
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val transactionCount =
-            getWeb3j(chain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
-        if (transactionCount.hasError()) {
-            throwError(transactionCount.error)
-        }
-        val nonce = transactionCount.transactionCount
+        val nonce = getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
         val tipGas = signData.tipGas
         if (tipGas == null) {
