@@ -207,7 +207,6 @@ private fun LegendAssetItem(
                         CoilImage(
                             model = icon,
                             modifier = Modifier
-                                .fillMaxWidth(0.28f)
                                 .size(18.dp)
                                 .offset(x = if (index == 0) 0.dp else (12 * index).dp)
                                 .zIndex(index.toFloat())
@@ -220,7 +219,6 @@ private fun LegendAssetItem(
                     if (count > displayIcons.size) {
                         Surface(
                             modifier = Modifier
-                                .fillMaxWidth(0.44f)
                                 .size(18.dp)
                                 .offset(x = if (displayIcons.isEmpty()) 0.dp else (12 * displayIcons.size).dp)
                                 .zIndex(4f)
