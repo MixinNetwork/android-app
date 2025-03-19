@@ -40,8 +40,14 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,6 +60,8 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
@@ -194,7 +202,30 @@ fun TransferDestinationInputPage(
                                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
                             ),
                             minLines = 3,
-                            maxLines = 3
+                            maxLines = 3,
+                            visualTransformation = if (text.isExternalTransferUrl() || text.isLightningUrl()) {
+                                VisualTransformation { input ->
+                                    val inputText = input.text
+                                    if (inputText.length <= 12) return@VisualTransformation TransformedText(input, OffsetMapping.Identity)
+                                    
+                                    val annotatedString = buildAnnotatedString {
+                                        append(inputText)
+                                        addStyle(
+                                            style = SpanStyle(fontWeight = FontWeight.ExtraBold),
+                                            start = 0,
+                                            end = 6.coerceAtMost(inputText.length)
+                                        )
+                                        addStyle(
+                                            style = SpanStyle(fontWeight = FontWeight.ExtraBold),
+                                            start = (inputText.length - 6).coerceAtLeast(0),
+                                            end = inputText.length
+                                        )
+                                    }
+                                    TransformedText(annotatedString, OffsetMapping.Identity)
+                                }
+                            } else {
+                                VisualTransformation.None
+                            }
                         )
 
                         if (text.isNotBlank()) {
