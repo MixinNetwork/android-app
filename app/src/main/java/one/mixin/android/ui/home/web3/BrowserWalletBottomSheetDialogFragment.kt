@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 
 import one.mixin.android.api.response.web3.ParsedTx
@@ -261,7 +262,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 try {
                     tipGas = withContext(Dispatchers.IO) {
                         val r = viewModel.estimateFee(
-                            Web3RawTransactionRequest(
+                            EstimateFeeRequest(
                                 assetId,
                                 transaction.data
                             )
@@ -321,13 +322,14 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val hex = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
+                    val pair = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
                         val nonce = rpc.nonceAt(currentChain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethSignTransaction nonce
                     }
                     step = Step.Sending
+                    val hex = pair.first
                     val hash = Hash.sha3(hex)
-                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId())
+                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -338,7 +340,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val sig = tx.signatures.first()
                     val rawTx = tx.serialize().base64Encode()
-                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana)
+                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58())
                     onTxhash?.invoke(sig, rawTx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {

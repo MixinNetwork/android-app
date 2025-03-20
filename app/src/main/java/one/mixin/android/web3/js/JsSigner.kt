@@ -180,7 +180,7 @@ object JsSigner {
         tipGas: TipGas,
         chain: Chain?,
         getNonce: suspend (String) -> BigInteger,
-    ): String {
+    ): Pair<String, String> {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
@@ -214,7 +214,7 @@ object JsSigner {
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
-        return hexMessage
+        return Pair(hexMessage, credential.address)
     }
 
     fun signMessage(

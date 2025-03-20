@@ -33,6 +33,7 @@ import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
@@ -342,7 +343,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     try {
                         val r =
                             viewModel.estimateFee(
-                                Web3RawTransactionRequest(
+                                EstimateFeeRequest(
                                     assetId,
                                     tx.data
                                 )
@@ -385,7 +386,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        viewModel.sendTransaction(signedTransactionData, chain, sessionRequest)
+                                        viewModel.sendTransaction(signedTransactionData, chain, sessionRequest, account)
                                     }
                                 if (sendError == null) {
                                     processCompleted = true

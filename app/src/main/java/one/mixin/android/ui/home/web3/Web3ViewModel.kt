@@ -14,6 +14,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
@@ -292,7 +293,7 @@ internal constructor(
             }
         } else {
             val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
-                Web3RawTransactionRequest(
+                EstimateFeeRequest(
                     token.chainId,
                     transaction.data
                 )

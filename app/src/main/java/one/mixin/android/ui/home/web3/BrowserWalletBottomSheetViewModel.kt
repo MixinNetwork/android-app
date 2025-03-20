@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
@@ -57,7 +58,7 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(
-                invokeNetwork = { web3Repository.estimateFee(Web3RawTransactionRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
+                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
                 successBlock = {
                     it.data
                 },
@@ -85,8 +86,8 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String) {
-            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx))
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String) {
+            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account))
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException
@@ -94,5 +95,5 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun estimateFee(request: Web3RawTransactionRequest) = web3Repository.estimateFee(request)
+        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
     }
