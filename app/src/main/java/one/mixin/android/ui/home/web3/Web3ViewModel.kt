@@ -19,6 +19,7 @@ import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
@@ -439,5 +440,9 @@ internal constructor(
 
     suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
-    suspend fun deletePending(hash: String) = tokenRepository.deletePending(hash)
+    suspend fun deletePending(hash: String, chainId: String) =
+        withContext(Dispatchers.IO) { tokenRepository.deletePending(hash, chainId) }
+
+    suspend fun insertRawTranscation(raw: Web3RawTransaction) =
+        withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
 }

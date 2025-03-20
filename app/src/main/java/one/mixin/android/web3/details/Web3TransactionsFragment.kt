@@ -375,11 +375,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess) {
-                            // Todo
-                            web3ViewModel.deletePending(transition.hash)
-                        } else {
-                            // Todo
+                        if (r.isSuccess && r.data?.state == "Success") {
+                            web3ViewModel.deletePending(transition.hash, transition.chainId)
+                            web3ViewModel.insertRawTranscation(r.data!!)
                         }
                     }
                     delay(5_000)

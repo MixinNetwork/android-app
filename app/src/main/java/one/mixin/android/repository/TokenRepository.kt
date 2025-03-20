@@ -1004,8 +1004,8 @@ class TokenRepository
             if (r.isSuccess) {
                 val raw = r.data!!
                 web3RawTransactionDao.insertSuspend(raw)
-                web3TransactionDao.deletePending(raw.hash)
-                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
+                web3TransactionDao.deletePending(raw.hash, raw.chainId)
+                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "Pending"))
             }
             return r
         }
@@ -1287,6 +1287,8 @@ class TokenRepository
 
     suspend fun getPendingTransactions(chainId: String) = web3RawTransactionDao.getPendingTransactions(chainId)
 
-    suspend fun deletePending(hash: String) = web3TransactionDao.deletePending(hash)
+    suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
+
+    suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
 }

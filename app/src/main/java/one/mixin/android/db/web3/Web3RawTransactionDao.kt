@@ -8,10 +8,10 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 @Dao
 interface Web3RawTransactionDao : BaseDao<Web3RawTransaction> {
     
-    @Query("SELECT * FROM raw_transactions WHERE state = 'pending'")
+    @Query("SELECT * FROM raw_transactions WHERE state = 'Pending'")
     suspend fun getPendingTransactions(): List<Web3RawTransaction>
 
-    @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND chain_id = :chainId")
+    @Query("SELECT * FROM raw_transactions WHERE state = 'Pending' AND chain_id = :chainId")
     suspend fun getPendingTransactions(chainId: String): List<Web3RawTransaction>
 
 }
