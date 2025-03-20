@@ -79,7 +79,7 @@ class TransactionStateFragment : BaseFragment() {
                     darkTheme = context.isNightMode(),
                 ) {
                     TransactionStatePage(
-                        tx = txState ?: Tx(TxState.NotFound.name),
+                        tx = txState ?: Tx(TxState.Pending.name),
                         symbol = symbol,
                         viewTx = {
                             WebActivity.show(context, "https://solscan.io/tx/${tx.signatures[0]}", null)
@@ -128,29 +128,6 @@ class TransactionStateFragment : BaseFragment() {
                                 RxBus.publish(SolanaRefreshEvent())
                             }
                             refreshTxJob?.cancel()
-                        } else {
-                            val isBlockhashValid =
-                                withContext(Dispatchers.IO) {
-                                    rpc.isBlockhashValid(blockhash) ?: false
-                                }
-                            if (!isBlockhashValid) {
-                                Timber.e("$TAG blockhash $blockhash invalid")
-                                val ts =
-                                    handleMixinResponse(
-                                        invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
-                                        successBlock = { it.data },
-                                    )
-                                refreshTxJob?.cancel()
-                                txState =
-                                    if (ts?.state?.isFinalTxState() == true) {
-                                        if (ts.state.isTxSuccess()) {
-                                            RxBus.publish(SolanaRefreshEvent())
-                                        }
-                                        ts
-                                    } else {
-                                        Tx(TxState.Failed.name)
-                                    }
-                            }
                         }
                     } catch (e: Exception) {
                         Timber.e(e)
