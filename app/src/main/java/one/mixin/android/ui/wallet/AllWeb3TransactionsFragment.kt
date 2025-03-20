@@ -183,10 +183,13 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess) {
-                            bindLiveData()
+                            // Todo update transaction
+                            web3ViewModel.deletePending(transition.hash)
+                        } else {
+                            // Todo
                         }
-                        delay(1_000)
                     }
+                    delay(5_000)
                 }
             }
         } catch (e: Exception) {

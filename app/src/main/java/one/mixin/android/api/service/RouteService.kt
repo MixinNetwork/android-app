@@ -9,7 +9,7 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
-import one.mixin.android.api.request.web3.Web3RawTransaction
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
@@ -29,6 +29,7 @@ import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
@@ -144,8 +145,8 @@ interface RouteService {
 
     @POST("web3/transactions")
     suspend fun postWeb3Tx(
-        @Body rawTx: Web3RawTransaction,
-    ): MixinResponse<Unit>
+        @Body rawTx: Web3RawTransactionRequest,
+    ): MixinResponse<Web3RawTransaction>
 
     @POST("web3/transactions/parse")
     suspend fun parseWeb3Tx(
@@ -234,7 +235,7 @@ interface RouteService {
 
     @POST("web3/estimate-fee")
     suspend fun estimateFee(
-        @Body request: Web3RawTransaction,
+        @Body request: Web3RawTransactionRequest,
     ): MixinResponse<EstimateFeeResponse>
 
     @POST("web3/rpc")
@@ -298,5 +299,5 @@ interface RouteService {
     suspend fun dapps(): MixinResponse<List<ChainDapp>>
 
     @GET("web3/transactions/{hash}")
-    suspend fun transaction(@Path("hash") hash: String, @Query("chain_id") chainId: String): MixinResponse<String>
+    suspend fun transaction(@Path("hash") hash: String, @Query("chain_id") chainId: String): MixinResponse<Web3RawTransaction>
 }

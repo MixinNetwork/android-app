@@ -1,6 +1,6 @@
 package one.mixin.android.repository
 
-import one.mixin.android.api.request.web3.Web3RawTransaction
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.Web3TokenDao
@@ -24,7 +24,7 @@ constructor(
     val web3AddressDao: Web3AddressDao,
     val web3WalletDao: Web3WalletDao
 ) {
-    suspend fun estimateFee(request: Web3RawTransaction) = routeService.estimateFee(request)
+    suspend fun estimateFee(request: Web3RawTransactionRequest) = routeService.estimateFee(request)
 
     suspend fun insertWeb3Tokens(list: List<Web3Token>) = web3TokenDao.insertListSuspend(list)
 

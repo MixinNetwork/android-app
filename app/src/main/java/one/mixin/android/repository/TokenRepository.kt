@@ -34,7 +34,7 @@ import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.RpcRequest
-import one.mixin.android.api.request.web3.Web3RawTransaction
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
@@ -134,7 +134,9 @@ import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.ui.wallet.Web3FilterParams
 
@@ -169,7 +171,7 @@ class TokenRepository
         private val alertDao: AlertDao,
         private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
-        private val web3TranTransactionDao: Web3TransactionDao,
+        private val web3TransactionDao: Web3TransactionDao,
         private val web3RawTransactionDao: Web3RawTransactionDao,
         private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
@@ -512,7 +514,7 @@ class TokenRepository
 
 
         fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
-            return web3TranTransactionDao.allTransactions(filterParams.buildQuery())
+            return web3TransactionDao.allTransactions(filterParams.buildQuery())
         }
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
@@ -997,7 +999,16 @@ class TokenRepository
 
         suspend fun parseWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.parseWeb3Tx(parseTxRequest)
 
-        suspend fun postRawTx(rawTxRequest: Web3RawTransaction) = routeService.postWeb3Tx(rawTxRequest)
+        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest): MixinResponse<Web3RawTransaction> {
+            val r = routeService.postWeb3Tx(rawTxRequest)
+            if (r.isSuccess) {
+                val raw = r.data!!
+                web3RawTransactionDao.insertSuspend(raw)
+                web3TransactionDao.deletePending(raw.hash)
+                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
+            }
+            return r
+        }
 
         suspend fun rpc(chainId: String, request: RpcRequest) = routeService.rpc(chainId, request)
 
@@ -1276,6 +1287,6 @@ class TokenRepository
 
     suspend fun getPendingTransactions(chainId: String) = web3RawTransactionDao.getPendingTransactions(chainId)
 
-    suspend fun deletePending(hash: String) = web3TranTransactionDao.deletePending(hash)
+    suspend fun deletePending(hash: String) = web3TransactionDao.deletePending(hash)
 
 }

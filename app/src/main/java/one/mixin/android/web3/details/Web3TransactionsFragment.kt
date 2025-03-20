@@ -377,11 +377,12 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess) {
                             // Todo
-                        }else {
+                            web3ViewModel.deletePending(transition.hash)
+                        } else {
                             // Todo
                         }
-                        delay(1_000)
                     }
+                    delay(5_000)
                 }
             }
         } catch (e: Exception) {

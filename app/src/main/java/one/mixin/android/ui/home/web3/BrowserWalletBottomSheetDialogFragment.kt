@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.request.web3.Web3RawTransaction
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -64,7 +64,6 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
-import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
@@ -262,7 +261,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 try {
                     tipGas = withContext(Dispatchers.IO) {
                         val r = viewModel.estimateFee(
-                            Web3RawTransaction(
+                            Web3RawTransactionRequest(
                                 assetId,
                                 transaction.data
                             )
