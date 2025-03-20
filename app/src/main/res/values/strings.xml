@@ -423,6 +423,7 @@
     <string name="error_expired_authorization_code">ERROR 20121: Expired authorization code</string>
     <string name="error_full_group">ERROR 20116: The group chat is full.</string>
     <string name="error_insufficient_balance">ERROR 20117: Insufficient balance</string>
+    <string name="error_legacy_pin">ERROR 20118: To enhance the security of the Mixin network, Mixin API has temporarily suspended the upgrading from D3M-PIN to TIP. Please refer to the documentation for details and register for processing.</string>
     <string name="error_insufficient_transaction_fee_with_amount">ERROR 20124: Insufficient transaction fee. Please make sure your wallet has %1$s as fee</string>
     <string name="error_invalid_address">ERROR 30102: Invalid address format. Please enter the correct %1$s %2$s address!</string>
     <string name="error_invalid_address_plain">ERROR 30102: Invalid address format.</string>
@@ -1902,4 +1903,5 @@
     <string name="Address_Book">Address Book</string>
     <string name="insufficient_fee_description">You need %1$s on the %2$s network to cover the network fee</string>
     <string name="Send_To_Title">Send To</string>
+    <string name="View_Document">View Document</string>
 </resources>
