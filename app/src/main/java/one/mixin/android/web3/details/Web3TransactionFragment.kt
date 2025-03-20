@@ -83,8 +83,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             valueTv.text = buildAmountSymbol(requireContext(),
                 if (transaction.transactionType == Web3TransactionType.Send.value) "-${transaction.amount}"
                 else if (transaction.transactionType == Web3TransactionType.Receive.value) "+${transaction.amount}"
-                else transaction.amount
-                , transaction.symbol, amountColor, symbolColor)
+                else transaction.amount, transaction.symbol ?: "", amountColor, symbolColor
+            )
             val amount = (BigDecimal(transaction.amount).abs() * token.priceFiat()).numberFormat2()
             val pricePerUnit =
                 "(${Fiats.getSymbol()}${token.priceFiat().priceFormat2()}/${token.symbol})"

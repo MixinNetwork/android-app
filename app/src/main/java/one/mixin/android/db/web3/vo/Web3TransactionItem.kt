@@ -49,7 +49,7 @@ data class Web3TransactionItem(
     val updatedAt: String,
 
     @ColumnInfo(name = "symbol")
-    val symbol: String = "",
+    val symbol: String?,
 
     @ColumnInfo(name = "icon_url")
     val iconUrl: String? = null,

@@ -42,4 +42,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.asset_key = :address")
     suspend fun web3TokenItemByAddress(address: String): Web3TokenItem?
+
+    @Query("SELECT * FROM tokens WHERE asset_id = :assetId")
+    fun findTokenById(assetId: String): Web3Token?
 }

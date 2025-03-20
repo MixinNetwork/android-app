@@ -38,7 +38,7 @@ class RefreshWeb3TokenJob(
             successBlock = { response ->
                 val assets = response.data
                 if (assets != null && assets.isNotEmpty()) {
-                    Timber.d("Fetched ${assets.size} assets for wallet ${walletId}")
+                    Timber.d("Fetched ${assets.size} assets for wallet $walletId")
                     if (assets.isNotEmpty()) {
                         web3TokenDao.insertList(assets)
                         fetchChain(assets.map { it.chainId }.distinct())
