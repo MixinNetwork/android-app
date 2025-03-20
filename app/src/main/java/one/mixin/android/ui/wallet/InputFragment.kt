@@ -59,7 +59,6 @@ import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
@@ -301,7 +300,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                     TransferType.ADDRESS -> {
                         if (addressLabel.isNullOrBlank()) {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Classic_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toAccount)
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Common_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toAccount)
                         } else {
                             titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
                         }

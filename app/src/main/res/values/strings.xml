@@ -1905,7 +1905,7 @@
     <string name="Send_To_Title">Send To</string>
     <string name="For_your_security">For your security, enter your pin</string>
     <string name="Privacy_Wallet">Privacy Wallet</string>
-    <string name="Classic_Wallet">Classic Wallet</string>
+    <string name="Common_Wallet">Common Wallet</string>
     <string name="Other">Other</string>
     <string name="My_Wallet_desc">Receive from my other wallet using a crypto network.</string>
     <string name="Exchanges_or_Wallets">Exchanges or Wallets</string>

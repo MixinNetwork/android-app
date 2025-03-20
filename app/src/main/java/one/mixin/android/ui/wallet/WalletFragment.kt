@@ -29,7 +29,6 @@ import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.remove
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
@@ -37,7 +36,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.wallet.PrivacyWalletFragment
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
@@ -110,7 +108,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     R.id.wallet_container,
                     ClassicWalletFragment.TAG
                 )
-                titleTv.setText(R.string.Classic_Wallet)
+                titleTv.setText(R.string.Common_Wallet)
                 tailIcon.isVisible = false
             }
             moreIb.setOnClickListener {
@@ -201,7 +199,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 classicWalletId = walletId
                 classicWalletFragment.walletId = walletId ?: ""
                 requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
-                binding.titleTv.setText(R.string.Classic_Wallet)
+                binding.titleTv.setText(R.string.Common_Wallet)
                 binding.tailIcon.isVisible = false
                 binding.badge.isVisible = false
             }

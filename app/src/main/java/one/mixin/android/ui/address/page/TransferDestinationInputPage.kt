@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
-import one.mixin.android.util.getChainNetwork
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -276,7 +275,7 @@ fun TransferDestinationInputPage(
                             if (account.isBlank().not()) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    stringResource(R.string.Classic_Wallet),
+                                    stringResource(R.string.Common_Wallet),
                                     stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toAccount.invoke(account)

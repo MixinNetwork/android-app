@@ -296,4 +296,7 @@ interface RouteService {
 
     @GET("web3/dapps")
     suspend fun dapps(): MixinResponse<List<ChainDapp>>
+
+    @GET("web3/transactions/{hash}")
+    suspend fun transaction(@Path("hash") hash: String, @Query("chain_id") chainId: String): MixinResponse<String>
 }

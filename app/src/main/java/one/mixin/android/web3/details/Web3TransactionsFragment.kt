@@ -12,6 +12,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -105,6 +107,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     private val token: Web3TokenItem by lazy {
         requireNotNull(requireArguments().getParcelable<Web3TokenItem>(ARGS_TOKEN) ?: requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java))
     }
+
+    private var refreshJob: Job? = null
 
     override fun onViewCreated(
         view: View,
@@ -338,6 +342,52 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 },
             )
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startRefreshData()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        cancelRefreshData()
+    }
+
+    private fun startRefreshData() {
+        cancelRefreshData()
+        refreshJob = lifecycleScope.launch {
+            refreshTransactionData()
+        }
+    }
+
+    private fun cancelRefreshData() {
+        refreshJob?.cancel()
+        refreshJob = null
+    }
+
+    private suspend fun refreshTransactionData() {
+        try {
+            while (true) {
+                val pendingRawTransaction = web3ViewModel.getPendingTransactions(token.chainId)
+                if (pendingRawTransaction.isEmpty()) {
+                    delay(10_000)
+                } else {
+                    pendingRawTransaction.forEach { transition ->
+                        val r = web3ViewModel.transaction(transition.hash, transition.chainId)
+                        if (r.isSuccess) {
+                            // Todo
+                        }else {
+                            // Todo
+                        }
+                        delay(1_000)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+
     }
 
     private suspend fun getStakeAccounts(address: String) {

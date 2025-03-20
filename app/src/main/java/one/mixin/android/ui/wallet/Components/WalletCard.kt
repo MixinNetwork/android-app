@@ -61,7 +61,7 @@ fun WalletCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     if (destination == WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
-                        R.string.Classic_Wallet
+                        R.string.Common_Wallet
                     ),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W500,

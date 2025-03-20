@@ -20,6 +20,8 @@ import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
@@ -77,6 +79,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
+
+    private var refreshJob: Job? = null
 
     override fun onViewCreated(
         view: View,
@@ -145,6 +149,49 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             loadFilter()
         }
         jobManager.addJobInBackground(RefreshWeb3TransactionJob())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startRefreshData()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        cancelRefreshData()
+    }
+
+    private fun startRefreshData() {
+        cancelRefreshData()
+        refreshJob = lifecycleScope.launch {
+            refreshTransactionData()
+        }
+    }
+
+    private fun cancelRefreshData() {
+        refreshJob?.cancel()
+        refreshJob = null
+    }
+
+    private suspend fun refreshTransactionData() {
+        try {
+            while (true) {
+                val pendingRawTransaction = web3ViewModel.getPendingTransactions()
+                if (pendingRawTransaction.isEmpty()) {
+                    delay(10_000)
+                } else {
+                    pendingRawTransaction.forEach { transition ->
+                        val r = web3ViewModel.transaction(transition.hash, transition.chainId)
+                        if (r.isSuccess) {
+                            bindLiveData()
+                        }
+                        delay(1_000)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
     }
 
     private fun loadFilter() {

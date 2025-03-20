@@ -25,4 +25,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     @Query("SELECT COUNT(*) FROM transactions")
     suspend fun getTransactionCount(): Int
 
+    @Query("DELETE FROM transactions WHERE status = 'pending' AND transaction_hash = :hash")
+    fun deletePending(hash : String)
+
 }

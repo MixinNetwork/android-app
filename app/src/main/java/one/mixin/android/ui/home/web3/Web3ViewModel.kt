@@ -76,7 +76,6 @@ internal constructor(
 ) : ViewModel() {
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-
     fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()
     
     fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
@@ -432,4 +431,12 @@ internal constructor(
     }
 
     fun marketById(assetId: String) = tokenRepository.marketById(assetId)
+
+    suspend fun getPendingTransactions() = tokenRepository.getPendingTransactions()
+
+    suspend fun getPendingTransactions(chainId: String) = tokenRepository.getPendingTransactions(chainId)
+
+    suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
+
+    suspend fun deletePending(hash: String) = tokenRepository.deletePending(hash)
 }

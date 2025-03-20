@@ -70,6 +70,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -169,6 +170,7 @@ class TokenRepository
         private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
         private val web3TranTransactionDao: Web3TransactionDao,
+        private val web3RawTransactionDao: Web3RawTransactionDao,
         private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
@@ -1267,4 +1269,13 @@ class TokenRepository
     fun getWallets() = web3WalletDao.getWallets()
 
     suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
+
+    suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
+
+    suspend fun getPendingTransactions() = web3RawTransactionDao.getPendingTransactions()
+
+    suspend fun getPendingTransactions(chainId: String) = web3RawTransactionDao.getPendingTransactions(chainId)
+
+    suspend fun deletePending(hash: String) = web3TranTransactionDao.deletePending(hash)
+
 }
