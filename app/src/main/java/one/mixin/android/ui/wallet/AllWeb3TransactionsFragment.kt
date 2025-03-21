@@ -25,6 +25,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.dpToPx
@@ -32,6 +33,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.RefreshWeb3TransactionJob
+import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
@@ -148,7 +150,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             }
             loadFilter()
         }
-        jobManager.addJobInBackground(RefreshWeb3TransactionJob())
+        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
     }
 
     override fun onResume() {
@@ -182,9 +184,10 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && r.data?.state == "Success") {
+                        if (r.isSuccess && r.data?.state ==  TransactionType.TxSuccess.value) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
+                            jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
                         }
                     }
                     delay(5_000)

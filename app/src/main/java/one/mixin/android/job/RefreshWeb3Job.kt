@@ -49,7 +49,7 @@ class RefreshWeb3Job : BaseJob(
                 fetchWalletAssets(wallet)
             }
         }
-        jobManager.addJobInBackground(RefreshWeb3TransactionJob())
+        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
     }
 
     private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>) {

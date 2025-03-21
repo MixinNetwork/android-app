@@ -1,6 +1,6 @@
 package one.mixin.android.db.web3.vo
 
-enum class TransactionType(value: String) {
+enum class TransactionType(val value: String) {
     TxPending("pending"),
     TxNotFound("notfound"),
     TxFailed("failed"),

@@ -19,6 +19,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isSolToken
@@ -46,6 +47,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.job.RefreshWeb3TokenJob
+import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -375,9 +377,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && r.data?.state == "Success") {
+                        if (r.isSuccess && r.data?.state == TransactionType.TxSuccess.value) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
+                            jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
                         }
                     }
                     delay(5_000)
