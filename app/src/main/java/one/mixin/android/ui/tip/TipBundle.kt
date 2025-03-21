@@ -38,6 +38,8 @@ sealed class TipStep : Parcelable
 
 @Parcelize internal data class RetryRegister(val tipPriv: ByteArray?, val reason: String) : TipStep()
 
+@Parcelize internal data class LegacyPIN(val message: String) : TipStep()
+
 @Parcelize
 data class TipBundle(
     val tipType: TipType,
