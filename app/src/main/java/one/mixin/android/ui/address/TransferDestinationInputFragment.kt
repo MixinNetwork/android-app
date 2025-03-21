@@ -500,6 +500,13 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         if (data == null) return
 
         data.getStringExtra(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT)?.let { result ->
+            if (result.isLightningUrl() || result.isExternalTransferUrl()) {
+                LinkBottomSheetDialogFragment.newInstance(result).show(
+                    parentFragmentManager,
+                    LinkBottomSheetDialogFragment.TAG
+                )
+                return@let
+            }
             when (currentScanType) {
                 ScanType.ADDRESS -> {
                     scannedAddress = if (isIcapAddress(result)) {
