@@ -47,7 +47,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
-import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -250,7 +249,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             refreshSolana()
             return
         }
-        val assetId = walletConnectChainIdMap[chain.symbol]
+        val assetId = chain.getWeb3ChainId()
         val transaction = signMessage.wcEthereumTransaction ?: return
         if (assetId == null) {
             Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")

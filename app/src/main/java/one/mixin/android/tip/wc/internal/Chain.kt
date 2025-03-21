@@ -128,19 +128,6 @@ internal fun getChainByChainId(chainId: String?): Chain? {
     }
 }
 
-val walletConnectChainIdMap =
-    mapOf(
-        Chain.Ethereum.symbol to ETHEREUM_CHAIN_ID,
-        Chain.Base.symbol to ETHEREUM_CHAIN_ID,
-        Chain.Blast.symbol to ETHEREUM_CHAIN_ID,
-        Chain.Arbitrum.symbol to ETHEREUM_CHAIN_ID,
-        Chain.Optimism.symbol to ETHEREUM_CHAIN_ID,
-        Chain.Polygon.symbol to Constants.ChainId.Polygon,
-        Chain.BinanceSmartChain.symbol to Constants.ChainId.BinanceSmartChain,
-        Chain.Solana.symbol to Constants.ChainId.Solana,
-        Chain.Avalanche.symbol to Constants.ChainId.Avalanche,
-    )
-
 fun getSupportedNamespaces(
     chain: Chain,
     address: String,
