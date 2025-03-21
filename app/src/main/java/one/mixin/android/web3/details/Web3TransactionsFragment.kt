@@ -377,7 +377,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && r.data?.state == TransactionType.TxSuccess.value) {
+                        if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
                             jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
