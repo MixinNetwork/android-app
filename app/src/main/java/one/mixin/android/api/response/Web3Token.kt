@@ -104,7 +104,6 @@ class Web3Token(
             chain =
             SwapChain(
                 chainId = "",
-                decimals = 0,
                 name = chainName,
                 symbol = symbol,
                 icon = chainIconUrl,

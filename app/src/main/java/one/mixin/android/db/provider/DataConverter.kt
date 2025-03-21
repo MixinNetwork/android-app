@@ -762,11 +762,10 @@ fun callableTokenItem(
             val cursorIndexOfChainIconUrl = 12
             val cursorIndexOfChainSymbol = 13
             val cursorIndexOfChainName = 14
-            val cursorIndexOfChainPriceUsd = 15
-            val cursorIndexOfAssetKey = 16
-            val cursorIndexOfDust = 17
-            val cursorIndexOfWithdrawalMemoPossibility = 18
-            val cursorIndexOfCollectionHash = 19
+            val cursorIndexOfAssetKey = 15
+            val cursorIndexOfDust = 16
+            val cursorIndexOfWithdrawalMemoPossibility = 17
+            val cursorIndexOfCollectionHash = 18
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -839,12 +838,6 @@ fun callableTokenItem(
                         cursor.getInt(cursorIndexOfHidden)
                     }
                 tmpHidden = if (tmp == null) null else tmp != 0
-                val tmpChainPriceUsd: String? =
-                    if (cursor.isNull(cursorIndexOfChainPriceUsd)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfChainPriceUsd)
-                    }
                 val tmpConfirmations: Int = cursor.getInt(cursorIndexOfConfirmations)
                 val tmpChainIconUrl: String? =
                     if (cursor.isNull(cursorIndexOfChainIconUrl)) {
@@ -906,7 +899,6 @@ fun callableTokenItem(
                         tmpChainIconUrl,
                         tmpChainSymbol,
                         tmpChainName,
-                        tmpChainPriceUsd,
                         tmpAssetKey,
                         tmpDust,
                         tmpDepositWithdrawalMemoPossibility,

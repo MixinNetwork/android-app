@@ -111,7 +111,6 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         chainIconUrl,
         null,
         null,
-        null,
         assetKey,
         dust,
         null,
