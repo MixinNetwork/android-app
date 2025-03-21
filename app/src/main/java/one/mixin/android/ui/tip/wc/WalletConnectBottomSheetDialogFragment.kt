@@ -345,7 +345,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             viewModel.estimateFee(
                                 EstimateFeeRequest(
                                     assetId,
-                                    tx.data
+                                    tx.data,
+                                    tx.from,
+                                    tx.to,
                                 )
                             )
                         if (r.isSuccess.not()){

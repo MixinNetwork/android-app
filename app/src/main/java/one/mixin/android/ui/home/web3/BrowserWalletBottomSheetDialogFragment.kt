@@ -264,7 +264,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val r = viewModel.estimateFee(
                             EstimateFeeRequest(
                                 assetId,
-                                transaction.data
+                                transaction.data,
+                                transaction.from,
+                                transaction.to,
                             )
                         )
                         if (r.isSuccess.not()) return@withContext null

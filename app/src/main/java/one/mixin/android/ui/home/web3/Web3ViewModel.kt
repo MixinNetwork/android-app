@@ -296,7 +296,8 @@ internal constructor(
             val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
                 EstimateFeeRequest(
                     token.chainId,
-                    transaction.data
+                    transaction.data,
+
                 )
             )}
             if (r.isSuccess.not()) return BigDecimal.ZERO
