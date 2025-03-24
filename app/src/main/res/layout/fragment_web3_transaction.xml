@@ -86,27 +86,6 @@
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:id="@+id/transaction_id_ll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/transaction_id_title_tv"
-                        style="@style/TransactionTitleTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/Transaction_Id" />
-
-                    <TextView
-                        android:id="@+id/transaction_id_tv"
-                        style="@style/TransactionDescTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textIsSelectable="true" />
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/transaction_hash_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

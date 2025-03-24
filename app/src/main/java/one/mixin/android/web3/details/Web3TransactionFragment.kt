@@ -70,7 +70,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         binding.root.isClickable = true
         binding.apply {
-            transactionIdTv.text = transaction.transactionHash
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.transactionType == Web3TransactionType.Send.value) {
                 requireContext().getColor(R.color.wallet_pink)
