@@ -179,8 +179,9 @@ class TransferContent : LinearLayout {
         userClick: (User) -> Unit,
     ) {
         _binding.apply {
-            val amounts = invoice.entries.map { it.amountString() }
-            val assetIds = invoice.entries.map { it.assetId }
+            val storageIndex = invoice.entries.indexOfFirst { it.isStorage() }
+            val amounts = invoice.entries.filterIndexed { index, _ -> index != storageIndex }.map { it.amountString() }
+            val assetIds = invoice.entries.filterIndexed { index, _ -> index != storageIndex }.map { it.assetId }
             amount.isVisible = true
 
             sender.isVisible = true
@@ -217,10 +218,14 @@ class TransferContent : LinearLayout {
             }
 
             networkFee.isVisible = true
-            networkFee.setContent(R.string.Fee, "0", "")
-
+            if (storageIndex >= 0) {
+                val entry = invoice.entries[storageIndex]
+                networkFee.setContent(R.string.Fee, entry.amountString()?.toBigDecimal()?.stripTrailingZeros()?.toPlainString() ?: "0", "XIN")
+            } else {
+                networkFee.setContent(R.string.Fee, "0", "")
+            }
             assetContainer.isVisible = true
-            assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens)
+            assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens.filterIndexed { index, _ -> index != storageIndex })
         }
     }
 
