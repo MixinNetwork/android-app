@@ -56,9 +56,10 @@ class RefreshWeb3TransactionsJob(
                     Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }
                 syncAsset(destination, result?.map { it.assetId }?.distinct())
-                if ((result?.size ?: 0) >= DEFAULT_LIMIT) {
-                    result?.lastOrNull()?.createdAt?.let {
-                        saveLastCreatedAt(destination, it)
+
+                result?.lastOrNull()?.createdAt?.let {
+                    saveLastCreatedAt(destination, it)
+                    if ((result?.size ?: 0) >= DEFAULT_LIMIT) {
                         fetchTransactions(destination, it, limit)
                     }
                 }
