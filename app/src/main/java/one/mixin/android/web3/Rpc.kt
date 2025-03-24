@@ -43,6 +43,9 @@ class Rpc(
                     )))
                 },
             successBlock = {
+                if (it.data == null || it.data == "null") {
+                    return@handleMixinResponse null
+                }
                 val value = jsonParser.decodeFromString<GetAccountInfoValue>(it.data!!)
                 val data = Base64.getDecoder().decode(value.data[0])
                 AccountInfo(
@@ -64,6 +67,9 @@ class Rpc(
                     RpcRequest("getTokenSupply", listOf(tokenPubkey)))
             },
             successBlock = {
+                if (it.data == null || it.data == "null") {
+                    return@handleMixinResponse null
+                }
                 jsonParser.decodeFromString<TokenAmount>(it.data!!)
             }
         )
@@ -76,6 +82,9 @@ class Rpc(
                     RpcRequest("getMinimumBalanceForRentExemption", listOf(space)))
             },
             successBlock = {
+                if (it.data == null || it.data == "null") {
+                    return@handleMixinResponse null
+                }
                 it.data!!.toLong()
             }
         )
@@ -88,6 +97,9 @@ class Rpc(
                     RpcRequest("getLatestBlockhash", listOf()))
             },
             successBlock = {
+                if (it.data == null || it.data == "null") {
+                    return@handleMixinResponse null
+                }
                 val blockhashValue = jsonParser.decodeFromString<BlockhashValue>(it.data!!)
                 blockhashValue.blockhash
             }
