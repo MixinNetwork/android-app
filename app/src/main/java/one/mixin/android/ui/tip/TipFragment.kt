@@ -31,6 +31,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
@@ -48,6 +49,7 @@ import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
@@ -268,6 +270,18 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.text = tipStep.reason
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
+                is LegacyPIN -> {
+                    setTitle(forRecover)
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 0
+                    innerTv.text = getString(R.string.View_Document)
+                    innerTv.setOnClickListener {
+                        context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    }
+                    bottomHintTv.text = tipStep.message
+                    bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
+                }
             }
         }
     }
@@ -281,7 +295,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 is TryConnecting, is RetryConnect, is ReadyStart -> {
                     forRecover || !tipBundle.forChange()
                 }
-                is RetryProcess, is Processing, is RetryRegister -> {
+                is RetryProcess, is Processing, is RetryRegister, is LegacyPIN -> {
                     true
                 }
             }
@@ -576,6 +590,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                 }
                 true
+            } else if (registerResp.errorCode == ErrorHandler.INVALID_PIN_FORMAT) {
+                tipBundle.oldPin = null
+                updateTipStep(LegacyPIN(getString(R.string.error_legacy_pin)))
+                false
             } else {
                 tipBundle.oldPin = null
                 val error = requireNotNull(registerResp.error) { "error can not be null" }

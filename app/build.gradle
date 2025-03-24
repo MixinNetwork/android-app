@@ -12,12 +12,12 @@ plugins {
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
 
-    id 'io.sentry.android.gradle' version '5.2.0'
+    id 'io.sentry.android.gradle' version '5.3.0'
 }
 
 def versionMajor = 2
 def versionMinor = 3
-def versionPatch = 2
+def versionPatch = 4
 def versionBuild = 0
 
 apply plugin: 'com.google.gms.google-services'
@@ -115,7 +115,17 @@ android {
         }
     }
 
+    flavorDimensions += "channel"
     productFlavors {
+        googlePlay {
+            dimension "channel"
+            buildConfigField "boolean", "IS_GOOGLE_PLAY", "true"
+        }
+
+        otherChannel {
+            dimension "channel"
+            buildConfigField "boolean", "IS_GOOGLE_PLAY", "false"
+        }
     }
 
     signingConfigs {

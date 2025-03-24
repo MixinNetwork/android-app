@@ -24,10 +24,13 @@ import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.TransferRequest
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.isSolana
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -36,11 +39,14 @@ import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
@@ -48,7 +54,9 @@ import one.mixin.android.ui.address.page.MemoInputPage
 import one.mixin.android.ui.address.page.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
@@ -64,6 +72,8 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import org.web3j.crypto.WalletUtils
+import timber.log.Timber
+import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -173,6 +183,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(SyncOutputJob())
+        (token?.chainId ?: web3Token?.chainId)?.let {
+            jobManager.addJobInBackground(RefreshAddressJob(it))
+        }
         binding.apply {
             compose.setContent {
                 MixinAppTheme {
@@ -272,29 +285,53 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
-                                    val memoEnabled =
-                                        token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
-                                    if (memoEnabled) {
-                                        navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
-                                    } else if (web3Token != null) {
-                                        lifecycleScope.launch {
-                                            web3Token?.let {
-                                                val deposit = web3ViewModel.findAndSyncDepositEntry(it) ?: return@launch
-                                                val fromAddress = if (it.isSolana()) {
-                                                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-                                                } else {
-                                                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                                                }
-                                                if (fromAddress.isBlank()) {
-                                                    toast(R.string.Alert_Not_Support)
-                                                } else {
-                                                    navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = address, web3Token = it, chainToken= chainToken), InputFragment.TAG)
+                                    if (address.isLightningUrl()) {
+                                        LinkBottomSheetDialogFragment.newInstance(address).show(
+                                            parentFragmentManager,
+                                            LinkBottomSheetDialogFragment.TAG
+                                        )
+                                    } else {
+                                        val memoEnabled =
+                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+                                        if (memoEnabled) {
+                                            navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
+                                        } else if (web3Token != null) {
+                                            lifecycleScope.launch {
+                                                web3Token?.let {
+                                                    web3ViewModel.findAndSyncDepositEntry(it)
+                                                        ?: return@launch
+                                                    val fromAddress = if (it.isSolana()) {
+                                                        PropertyHelper.findValueByKey(
+                                                            SOLANA_ADDRESS,
+                                                            ""
+                                                        )
+                                                    } else {
+                                                        PropertyHelper.findValueByKey(
+                                                            EVM_ADDRESS,
+                                                            ""
+                                                        )
+                                                    }
+                                                    if (fromAddress.isBlank()) {
+                                                        toast(R.string.Alert_Not_Support)
+                                                    } else {
+                                                        navTo(
+                                                            InputFragment.newInstance(
+                                                                fromAddress = fromAddress,
+                                                                toAddress = address,
+                                                                web3Token = it,
+                                                                chainToken = chainToken
+                                                            ), InputFragment.TAG
+                                                        )
+                                                    }
                                                 }
                                             }
+                                        } else {
+                                            requireView().hideKeyboard()
+                                            navTo(
+                                                InputFragment.newInstance(token!!, address),
+                                                InputFragment.TAG
+                                            )
                                         }
-                                    } else {
-                                        requireView().hideKeyboard()
-                                        navTo(InputFragment.newInstance(token!!, address), InputFragment.TAG)
                                     }
                                 },
                                 onAddressClick = { address ->

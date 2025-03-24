@@ -168,7 +168,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 64
+        const val CURRENT_VERSION = 65
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -223,6 +223,8 @@ object Constants {
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
         const val SOLANA_CHAIN_ID = "64692c23-8971-4cf4-84a7-4dd1271dd887"
+
+        const val LIGHTNING_NETWORK_CHAIN_ID = "59c09123-95cc-3ffd-a659-0f9169074cee"
 
         const val MixinVirtualMachine = "a0ffd769-5850-4b48-9651-d2ae44a3e64d"
         const val Base = "3fb612c5-6844-3979-ae4a-5a84e79da870"

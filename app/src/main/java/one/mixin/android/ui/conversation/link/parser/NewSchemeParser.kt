@@ -1,7 +1,9 @@
 package one.mixin.android.ui.conversation.link.parser
 import androidx.core.net.toUri
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
@@ -310,6 +312,12 @@ class NewSchemeParser(
                 } else if (BigDecimal(tokensExtra.balance ?: "0") < amount) {
                     errorMsg = bottomSheet.getString(R.string.insufficient_balance)
                 }
+            }, { url ->
+                linkViewModel.paySuspend(
+                    TransferRequest(
+                        assetId = Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, rawPaymentUrl = url
+                    )
+                ).data
             })
 
         errorMsg?.let {
@@ -327,12 +335,6 @@ class NewSchemeParser(
                 bottomSheet.dismiss()
                 return
             }
-            val feeAsset = checkAsset(result.feeAssetId!!)
-            if (feeAsset == null) {
-                bottomSheet.showError(R.string.Asset_not_found)
-                bottomSheet.dismiss()
-                return
-            }
 
             val traceId = UUID.randomUUID().toString()
             val status = getPaymentStatus(traceId)
@@ -343,9 +345,22 @@ class NewSchemeParser(
             }
             val amount = result.amount
             val destination = result.destination
+            if (amount == null) {
+                bottomSheet.navTo(InputFragment.newInstance(asset, destination, null), InputFragment.TAG)
+                bottomSheet.dismiss()
+                return
+            }
 
-            val address = Address("", "address", asset.assetId, destination, "ExternalAddress", nowInUtc(), null, null)
+            val feeAsset = checkAsset(result.feeAssetId!!)
+            if (feeAsset == null) {
+                bottomSheet.showError(R.string.Asset_not_found)
+                bottomSheet.dismiss()
+                return
+            }
+
+            val address = Address("", "address", asset.assetId, asset.chainId, destination, "ExternalAddress", nowInUtc(), null, null)
             val fee = NetworkFee(feeAsset, result.fee!!.toPlainString())
+
             val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
             checkRawTransaction(withdrawBiometricItem)
         }

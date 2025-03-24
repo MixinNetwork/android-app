@@ -89,21 +89,26 @@ internal suspend fun parseEthereum(
         }
     }
 
-    val am = amount?.toPlainString()?.stripAmountZero() ?: return null
     val addressResponse = validateAddress(assetId, destination) ?: return null
     if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
+    
+    val amountStr = amount?.toPlainString()?.stripAmountZero()
+    if (amountStr.isNullOrEmpty() || amountStr == "0") {
+        return ExternalTransfer(addressResponse.destination, null, assetId, null, null)
+    }
+    
     val feeResponse = getFee(assetId, destination) ?: return null
     val fee = feeResponse.firstOrNull() ?: return null
     if (fee.assetId == assetId) {
-        val totalAmount = am.toBigDecimal() + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        val totalAmount = amountStr.toBigDecimal() + (fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
         balanceCheck(assetId, totalAmount, null, null)
     } else {
-        balanceCheck(assetId, am.toBigDecimal(), fee.assetId, fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        balanceCheck(assetId, amountStr.toBigDecimal(), fee.assetId, fee.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
 
-    return ExternalTransfer(addressResponse.destination, am, assetId, fee.amount?.toBigDecimalOrNull(), fee.assetId)
+    return ExternalTransfer(addressResponse.destination, amountStr, assetId, fee.amount?.toBigDecimalOrNull(), fee.assetId)
 }
 
 fun String?.uint256ToBigDecimal(): BigDecimal? {
