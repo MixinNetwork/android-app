@@ -48,6 +48,7 @@ import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.address.component.SearchTextField
 import one.mixin.android.ui.wallet.Components.DropdownMenuNoPaddingVeitical
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.displayAddress
 
 @Composable
 fun AddressSearchBottomSheet(
@@ -285,7 +286,7 @@ private fun AddressListItem(
             }
             Spacer(modifier = Modifier.height(4.dp))
             HighlightedText(
-                text = address.destination,
+                text = address.displayAddress(),
                 highlight = query,
                 style = TextStyle(
                     fontSize = 14.sp,

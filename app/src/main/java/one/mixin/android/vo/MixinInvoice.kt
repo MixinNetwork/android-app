@@ -1,18 +1,27 @@
 package one.mixin.android.vo
 
+import androidx.compose.ui.unit.Constraints
+import com.google.android.gms.common.internal.service.Common
+import one.mixin.android.Constants
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hexString
 import one.mixin.android.util.UUIDUtils
+import timber.log.Timber
 import java.math.BigInteger
 import java.nio.ByteBuffer
+import java.util.UUID
+import kotlin.text.toBigInteger
 
 const val MixinInvoicePrefix = "MIN"
 
 const val MIXIN_INVOICE_VERSION: Byte = 0
 const val REFERENCES_COUNT_LIMIT = 2
 const val EXTRA_SIZE_STORAGE_CAPACITY = 512
+const val EXTRA_SIZE_GENERAL_LIMIT = 256
+const val EXTRA_SIZE_STORAGE_STEP = 128
+const val EXTRA_STORAGE_PRICE_STEP = "100000"
 
 data class MixinInvoice(
     val version: Byte = MIXIN_INVOICE_VERSION,
@@ -47,6 +56,23 @@ data class MixinInvoice(
         }
 
         entries.add(entry)
+    }
+
+    fun addStorageEntry(traceId: String, extra: ByteArray) {
+        require(extra.size <= EXTRA_SIZE_STORAGE_CAPACITY) {
+            "Extra data exceeds ${extra.size} bytes"
+        }
+        val cost = estimateStorageCost(extra)
+        entries.add(
+            InvoiceEntry(
+                traceId = traceId,
+                assetId = Constants.AssetId.XIN_ASSET_ID,
+                amount = cost,
+                extra = extra.copyOf(),
+                indexReferences = listOf(),
+                hashReferences = emptyList(),
+            )
+        )
     }
 
     fun toByteArray(): ByteArray {
@@ -317,6 +343,13 @@ data class InvoiceEntry(
             return indexRefs + hashRefs
         }
 
+    fun isStorage(): Boolean {
+        return assetId.toString() == Constants.AssetId.XIN_ASSET_ID &&
+            extra.isNotEmpty() &&
+            extra.size >= EXTRA_SIZE_GENERAL_LIMIT &&
+            amount.compareTo(estimateStorageCost(extra)) == 0
+    }
+
     override fun hashCode(): Int {
         var result = traceId.hashCode()
         result = 31 * result + assetId.hashCode()
@@ -346,4 +379,14 @@ data class InvoiceEntry(
 sealed class Reference {
     data class IndexValue(val value: Int) : Reference()
     data class HashValue(val value: String) : Reference()
+}
+
+fun estimateStorageCost(extra: ByteArray): BigInteger {
+    require(extra.size <= EXTRA_SIZE_STORAGE_CAPACITY) {
+        "Extra data exceeds limit: ${extra.size} > $EXTRA_SIZE_STORAGE_CAPACITY"
+    }
+
+    val step = EXTRA_STORAGE_PRICE_STEP.toBigInteger()
+    val steps = (extra.size / EXTRA_SIZE_STORAGE_STEP).toBigInteger() + BigInteger.ONE
+    return step.multiply(steps)
 }

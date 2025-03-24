@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import one.mixin.android.Constants
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import org.junit.Assert.assertEquals
@@ -74,6 +75,78 @@ class MixinInvoiceTest {
         assertEquals(0.toByte(), e2.indexReferences[0])
         assertEquals(1, e2.hashReferences.size)
         assertEquals(ref2.toHex(), e2.hashReferences[0].toHex())
+    }
+
+    @Test
+    fun testStorageRecipient() {
+        val recipient = MixinInvoice(
+            version = MIXIN_INVOICE_VERSION,
+            recipient = MixAddress.newStorageRecipient()!!,
+            entries = mutableListOf()
+        )
+        
+        assertNotNull(recipient)
+        assertEquals(64, recipient.recipient.threshold.toInt())
+    }
+    
+    @Test
+    fun testEstimateStorageCost() {
+        val invoice = MixinInvoice(
+            version = MIXIN_INVOICE_VERSION,
+            recipient = MixAddress.newStorageRecipient()!!,
+            entries = mutableListOf()
+        )
+        
+        val emptyData = ByteArray(0)
+        val cost1 = invoice.estimateStorageCost(emptyData)
+        assertEquals("0.001", cost1.toString())
+        
+        val smallData = ByteArray(64)
+        val cost2 = invoice.estimateStorageCost(smallData)
+        assertEquals("0.001", cost2.toString())
+        
+        val mediumData = ByteArray(129)
+        val cost3 = invoice.estimateStorageCost(mediumData)
+        assertEquals("0.002", cost3.toString())
+        
+        val largeData = ByteArray(300)
+        val cost4 = invoice.estimateStorageCost(largeData)
+        assertEquals("0.003", cost4.toString())
+    }
+    
+    @Test
+    fun testAddStorageEntry() {
+        val invoice = MixinInvoice(
+            version = MIXIN_INVOICE_VERSION,
+            recipient = MixAddress.newStorageRecipient()!!,
+            entries = mutableListOf()
+        )
+        
+        val traceId = UUID.randomUUID().toString()
+        val data = "test storage invoice".toByteArray()
+        invoice.addStorageEntry(traceId, data)
+        
+        assertEquals(1, invoice.entries.size)
+        val entry = invoice.entries[0]
+        assertEquals(traceId, entry.traceId)
+        assertEquals(Constants.AssetId.XIN_ASSET_ID, entry.assetId)
+        assertEquals("test storage invoice", String(entry.extra))
+        
+        val cost = invoice.estimateStorageCost(data)
+        assertEquals(cost.toInt(), entry.amount.toInt())
+    }
+    
+    @Test(expected = IllegalArgumentException::class)
+    fun testAddStorageEntryWithTooLargeData() {
+        val invoice = MixinInvoice(
+            version = MIXIN_INVOICE_VERSION,
+            recipient = MixAddress.newStorageRecipient()!!,
+            entries = mutableListOf()
+        )
+        
+        val traceId = UUID.randomUUID().toString()
+        val data = ByteArray(EXTRA_SIZE_STORAGE_CAPACITY + 1)
+        invoice.addStorageEntry(traceId, data)
     }
 }
 
