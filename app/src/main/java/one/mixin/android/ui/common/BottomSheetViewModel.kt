@@ -410,7 +410,7 @@ class BottomSheetViewModel
             val changeKeys = data.first().keys.joinToString(",")
             val changeMask = data.first().mask
 
-            val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo, reference ?: "")
+            val tx = Kernel.buildTxToKernelAddress(asset, amount, 1, kernelAddress, input, changeKeys, changeMask, memo, reference ?: "")
             Timber.e("Kernel Address Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx.raw, trace)))
             if (transactionResponse.error != null) {
@@ -651,9 +651,9 @@ class BottomSheetViewModel
                     }
                 }
                 val tx = if (index == storageIndex) {
-                    Kernel.buildTxToKernelAddress(asset, amount,  MixAddress.newStorageRecipient().xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference )
+                    Kernel.buildTxToKernelAddress(asset, amount, 64, MixAddress.newStorageRecipient().xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference )
                 } else if (recipient.xinMembers.isNotEmpty()){
-                    Kernel.buildTxToKernelAddress(asset, amount, recipient.xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference )
+                    Kernel.buildTxToKernelAddress(asset, amount, 1, recipient.xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference )
                 } else {
                     Kernel.buildTx(asset, amount, recipient.threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
                 }
