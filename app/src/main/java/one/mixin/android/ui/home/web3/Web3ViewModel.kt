@@ -444,6 +444,9 @@ internal constructor(
     suspend fun deletePending(hash: String, chainId: String) =
         withContext(Dispatchers.IO) { tokenRepository.deletePending(hash, chainId) }
 
+    suspend fun updateWeb3RawTransaction(hash: String, type: String) =
+        withContext(Dispatchers.IO) { tokenRepository.updateWeb3RawTransaction(hash, type) }
+
     suspend fun insertRawTranscation(raw: Web3RawTransaction) =
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
 }

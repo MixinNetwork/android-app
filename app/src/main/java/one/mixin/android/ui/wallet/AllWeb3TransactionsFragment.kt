@@ -188,6 +188,9 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
                             jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
+                        } else if (r.errorCode == 404) {
+                            web3ViewModel.deletePending(transition.hash, transition.chainId)
+                            web3ViewModel.updateWeb3RawTransaction(transition.hash, TransactionType.TxNotFound.value)
                         }
                     }
                     delay(5_000)

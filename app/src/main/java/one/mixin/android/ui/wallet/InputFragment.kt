@@ -46,6 +46,7 @@ import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RE
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
+import one.mixin.android.ui.common.Web3WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -515,6 +516,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
+                                val list =
+                                    web3ViewModel.getPendingTransactions(web3Token?.chainId ?: "")
+                                if (list.isNotEmpty()) {
+                                    Web3WaitingBottomSheetDialogFragment.newInstance(web3Token?.chainId ?: "").showNow(
+                                        parentFragmentManager, Web3WaitingBottomSheetDialogFragment.TAG)
+                                    return@launch
+                                }
                                 val transaction =
                                     token.buildTransaction(rpc, fromAddress, toAddress, amount)
                                 showBrowserBottomSheetDialogFragment(

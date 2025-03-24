@@ -28,4 +28,6 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     @Query("DELETE FROM transactions WHERE status = 'pending' AND transaction_hash = :hash AND chain_id = :chainId")
     fun deletePending(hash : String, chainId: String)
 
+    @Query("UPDATE transactions SET status = :type WHERE transaction_hash = :hash")
+    fun updateRawTransaction(type: String, hash: String)
 }

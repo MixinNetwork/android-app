@@ -1289,6 +1289,8 @@ class TokenRepository
 
     suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
 
+    suspend fun updateWeb3RawTransaction(hash: String, type: String) = web3TransactionDao.updateRawTransaction(hash, type)
+
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
 }
