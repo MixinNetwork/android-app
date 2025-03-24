@@ -9,7 +9,7 @@ import one.mixin.android.vo.AddressItem
 
 @Dao
 interface AddressDao : BaseDao<Address> {
-    @Query("SELECT * FROM addresses WHERE chain_id = :id ORDER BY updated_at DESC")
+    @Query("SELECT  * FROM addresses WHERE chain_id = :id ORDER BY updated_at DESC")
     fun addresses(id: String): LiveData<List<Address>>
 
     @Query("SELECT * FROM addresses WHERE chain_id = :id ORDER BY updated_at DESC")

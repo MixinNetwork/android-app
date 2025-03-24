@@ -2,6 +2,7 @@ package one.mixin.android.ui.address
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.map
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.repository.TokenRepository
@@ -14,5 +15,7 @@ class AddressViewModel
         private val tokenRepository: TokenRepository,
         private val jobManager: MixinJobManager,
     ) : ViewModel() {
-        fun addressesFlow(chainId: String) = tokenRepository.addressesFlow(chainId)
+        fun addressesFlow(chainId: String) = tokenRepository.addressesFlow(chainId).map {
+            list -> list.distinctBy { it.destination }
+        }
     }
