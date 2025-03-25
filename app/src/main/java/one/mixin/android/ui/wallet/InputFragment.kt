@@ -394,7 +394,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             noteDialog()
                         }
                         binding.titleTextView.setText(R.string.Note_Optional)
-                        binding.contentTextView.setText(R.string.add_a_note)
+                        if (assetBiometricItem?.memo != null) {
+                            binding.contentTextView.text = assetBiometricItem?.memo
+                        } else {
+                            binding.contentTextView.setText(R.string.add_a_note)
+                        }
                         binding.iconImageView.isVisible = true
                         binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
                         currentNote = assetBiometricItem?.memo
