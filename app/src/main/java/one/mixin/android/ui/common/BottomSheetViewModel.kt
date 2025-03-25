@@ -9,6 +9,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -68,6 +69,7 @@ import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.reportException
 import one.mixin.android.util.uniqueObjectId
@@ -591,7 +593,236 @@ class BottomSheetViewModel
             return transactionRsp
         }
 
+        private suspend fun requestTransactionWithRetry(
+            raw: String,
+            trace: String,
+            maxRetries: Int = 100
+        ): MixinResponse<List<TransactionResponse>> {
+            var retryCount = 1
+            while (retryCount < maxRetries) {
+                val response = tokenRepository.transactionRequest(
+                    listOf(TransactionRequest(raw, trace))
+                )
+
+                if (response.errorCode != ErrorHandler.INVALID_UTXO) {
+                    return response
+                }
+
+                Timber.e("Kernel Transaction($trace): INVALID_UTXO, delay and retry ${retryCount + 1}/$maxRetries")
+                delay(5000)
+                retryCount++
+            }
+
+            return tokenRepository.transactionRequest(
+                listOf(TransactionRequest(raw, trace))
+            )
+        }
+
+        suspend fun invoiceDuplicateTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
+            val context = MixinApplication.appContext
+            val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
+            tip.getSpendPrivFromEncryptedSalt(
+                tip.getMnemonicFromEncryptedPreferences(context),
+                tip.getEncryptedSalt(context),
+                pin,
+                tipPriv
+            )
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(
+                tip.getMnemonicFromEncryptedPreferences(context),
+                tip.getEncryptedSalt(context),
+                pin,
+                tipPriv
+            )
+            val recipient = invoice.recipient
+            val senderIds = listOf(Session.getAccountId()!!)
+            val storageIndex = invoice.entries.indexOfFirst { it.isStorage() }
+            val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
+
+            Timber.e("Kernel Duplicate Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
+            for (index in invoice.entries.indices) {
+                val entry = invoice.entries[index]
+                val amount = entry.amountString()
+                val assetId = entry.assetId
+                val asset = assetIdToAsset(assetId)
+                val trace = entry.traceId
+
+                val data = if (storageIndex == index) {
+                    val ghostKeyResponse = tokenRepository.ghostKey(
+                        buildKernelTransferGhostKeyRequest(
+                            senderIds.first(),
+                            trace
+                        )
+                    )
+                    if (ghostKeyResponse.error != null) {
+                        Timber.e("Kernel Duplicate Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        return ghostKeyResponse
+                    }
+                    ghostKeyResponse.data!!
+                } else if (recipient.uuidMembers.isNotEmpty()) {
+                    val ghostKeyResponse = tokenRepository.ghostKey(
+                        buildGhostKeyRequest(
+                            recipient.uuidMembers,
+                            senderIds,
+                            trace
+                        )
+                    )
+                    if (ghostKeyResponse.error != null) {
+                        Timber.e("Kernel Duplicate Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        return ghostKeyResponse
+                    }
+                    ghostKeyResponse.data!!
+                } else if (recipient.xinMembers.isNotEmpty()) {
+                    val ghostKeyResponse = tokenRepository.ghostKey(
+                        buildKernelTransferGhostKeyRequest(
+                            senderIds.first(),
+                            trace
+                        )
+                    )
+                    if (ghostKeyResponse.error != null) {
+                        Timber.e("Kernel Duplicate Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        return ghostKeyResponse
+                    }
+                    ghostKeyResponse.data!!
+                } else {
+                    throw IllegalArgumentException("Transfer has no recipient")
+                }
+
+                Timber.e("Kernel Duplicate Invoice Transaction UtxoWrapper: $amount $assetId $asset")
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val input = utxoWrapper.input
+                val receiverKeys = data.first().keys.joinToString(",")
+                val receiverMask = data.first().mask
+
+                val changeKeys = data.last().keys.joinToString(",")
+                val changeMask = data.last().mask
+                val reference = entry.references.joinToString(",") { reference ->
+                    when (reference) {
+                        is Reference.IndexValue -> {
+                            verifiedTransactions.getOrNull(reference.value)?.hash
+                                ?: throw IllegalArgumentException("Reference not found")
+                        }
+
+                        is Reference.HashValue -> {
+                            reference.value
+                        }
+                    }
+                }
+
+                val tx = if (index == storageIndex) {
+                    Kernel.buildTxToKernelAddress(asset, amount, 64, MixAddress.newStorageRecipient().xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference)
+                } else if (recipient.xinMembers.isNotEmpty()) {
+                    Kernel.buildTxToKernelAddress(asset, amount, 1, recipient.xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference)
+                } else {
+                    Kernel.buildTx(asset, amount, recipient.threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
+                }
+
+                val verifiedTransactionData = VerifiedTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference)
+                verifiedTransactions.add(verifiedTransactionData)
+                val verifyTransaction = requestTransactionWithRetry(verifiedTransactionData.raw, verifiedTransactionData.trace)
+
+                if (verifyTransaction.error != null) {
+                    Timber.e("Kernel Duplicate Invoice Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
+                    return verifyTransaction
+                } else if ((verifyTransaction.data?.size ?: 0) != 1) {
+                    Timber.e("Kernel Duplicate Invoice Transaction($trace): Parameter exception")
+                    throw IllegalArgumentException("Parameter exception")
+                } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+                    Timber.e("Kernel Duplicate Invoice Transaction($trace): Transfer is already paid")
+                    throw IllegalArgumentException("Transfer is already paid")
+                }
+
+                val views = verifyTransaction.data!!.first().views!!.joinToString(",")
+                val keys = verifiedTransactionData.utxoWrapper.formatKeys
+                val sign = Kernel.signTx(verifiedTransactionData.raw, keys, views, spendKey.toHex(), false)
+                val signResult = SignResult(sign.raw, sign.change)
+                val signedTransaction = SignedTransaction(
+                    verifiedTransactionData.trace, signResult, verifiedTransactionData.utxoWrapper.ids,
+                    verifiedTransactionData.asset, verifiedTransactionData.assetId, sign.hash, verifiedTransactionData.changeMask,
+                    verifiedTransactionData.keys, verifiedTransactionData.utxoWrapper.lastOutput, verifiedTransactionData.amount,
+                    String(verifiedTransactionData.extra), verifiedTransactionData.reference
+                )
+
+                withContext(SINGLE_DB_THREAD) {
+                    appDatabase.runInTransaction {
+                        if (signedTransaction.signResult.change != null) {
+                            val changeOutput = changeToOutput(signedTransaction.signResult.change, signedTransaction.asset, signedTransaction.changeMask, signedTransaction.keys, signedTransaction.lastOutput)
+                            Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db insert change")
+                            tokenRepository.insertOutput(changeOutput)
+                        }
+                        val transactionHash = signedTransaction.transactionHash
+                        val opponentId =
+                            recipient.uuidMembers.firstOrNull() ?: recipient.xinMembers.firstOrNull()?.string() ?: ""
+                        Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db insert snapshot, memo${signedTransaction.memo}")
+                        tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, signedTransaction.trace, signedTransaction.assetId, signedTransaction.amount, signedTransaction.memo, SafeSnapshotType.snapshot, reference = signedTransaction.reference)
+                        Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db insert raw transaction")
+                        tokenRepository.insetRawTransaction(
+                            RawTransaction(
+                                signedTransaction.trace, signedTransaction.signResult.raw,
+                                if (recipient.uuidMembers.isEmpty()) {
+                                    ""
+                                } else {
+                                    recipient.uuidMembers.joinToString(",")
+                                }, RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), null
+                            )
+                        )
+                        Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db mark utxo ${signedTransaction.utxoWrapperIds.joinToString(", ")}")
+                        tokenRepository.updateUtxoToSigned(signedTransaction.utxoWrapperIds)
+                        Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db end")
+                    }
+                }
+
+                val signedResponse = tokenRepository.transactions(
+                    listOf(
+                        TransactionRequest(
+                            signedTransaction.signResult.raw,
+                            signedTransaction.trace
+                        )
+                    )
+                )
+                if (signedResponse.isSuccess) {
+                    withContext(SINGLE_DB_THREAD) {
+                        appDatabase.runInTransaction {
+                            Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db begin")
+                            signedResponse.data?.forEach {
+                                tokenRepository.updateRawTransaction(
+                                    it.requestId,
+                                    OutputState.signed.name
+                                )
+                            }
+                            Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db end")
+                        }
+                    }
+
+                    if (recipient.uuidMembers.size == 1) {
+                        val receiverId = recipient.uuidMembers.first()
+                        val user = tokenRepository.findUser(receiverId)
+                        if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
+                            val conversationId =
+                                generateConversationId(signedResponse.data!!.first().userId, receiverId)
+                            initConversation(
+                                conversationId,
+                                signedResponse.data!!.first().userId,
+                                receiverId
+                            )
+                            signedResponse.data?.forEach { t ->
+                                Timber.e("Kernel Duplicate Invoice Transaction(${t.requestId}): innerTransaction insertSnapshotMessage $conversationId")
+                                tokenRepository.insertSnapshotMessage(t, conversationId, null)
+                            }
+                        }
+                    }
+                    if (index == invoice.entries.size - 1) {
+                        return signedResponse
+                    }
+                } else {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): transaction failed ${signedResponse.errorDescription}")
+                    return signedResponse
+                }
+            }
+            throw IllegalStateException()
+        }
+
         suspend fun invoiceTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
+            if (invoice.isDuplicateInvoiceEntries()) return invoiceDuplicateTransaction(pin, invoice)
             val context = MixinApplication.appContext
             val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
             tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
@@ -1155,9 +1386,7 @@ class BottomSheetViewModel
                 val users =
                     if (queryUsers.isNotEmpty()) {
                         handleMixinResponse(
-                            invokeNetwork = {
-                                userRepository.fetchUser(queryUsers)
-                            },
+                            invokeNetwork = { userRepository.fetchUser(queryUsers) },
                             successBlock = {
                                 val userList = it.data
                                 if (userList != null) {
@@ -1462,4 +1691,4 @@ class BottomSheetViewModel
         }
 
         suspend fun transactionsFetch(traceIds: List<String>) = tokenRepository.transactionsFetch(traceIds)
-}
+    }

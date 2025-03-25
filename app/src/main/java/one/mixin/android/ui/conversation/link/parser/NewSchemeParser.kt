@@ -41,6 +41,9 @@ import one.mixin.android.vo.toUser
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 class NewSchemeParser(
     private val bottomSheet: LinkBottomSheetDialogFragment,
@@ -137,19 +140,38 @@ class NewSchemeParser(
                         Result.failure(ParserError(FAILURE))
                     }
                 }
-                invoice.entries.forEach { entry ->
-                    val token = checkAsset(entry.assetId)
-                    if (token == null) return Result.failure(ParserError(FAILURE))
-                    val tokensExtra = linkViewModel.findTokensExtra(entry.assetId)
-                    if (tokensExtra == null) {
-                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
-                    } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(entry.amountString())) {
-                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
-                    }
-                    if (!checkUtxo(entry.assetId, entry.amountString())) {
-                        return Result.success(SUCCESS)
+                var result: Result<Int>? = null
+                coroutineScope {
+                    val assetMap = invoice.groupByAssetId()
+                    for ((assetId, amount) in assetMap) {
+                        if (result != null) continue
+                        
+                        val token = checkAsset(assetId)
+                        if (token == null) {
+                            result = Result.failure(ParserError(FAILURE))
+                            continue
+                        }
+                        
+                        val tokensExtra = linkViewModel.findTokensExtra(assetId)
+                        if (tokensExtra == null) {
+                            result = Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                            continue
+                        } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
+                            result = Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                            continue
+                        }
+                        
+                        if (!checkUtxo(assetId, amount)) {
+                            result = Result.success(SUCCESS)
+                            continue
+                        }
                     }
                 }
+                
+                if (result != null) {
+                    return result
+                }
+                
                 val bottom = TransferInvoiceBottomSheetDialogFragment.newInstance(invoice.toString())
                 bottom.show(bottomSheet.parentFragmentManager, TransferInvoiceBottomSheetDialogFragment.TAG)
                 return Result.success(SUCCESS)
