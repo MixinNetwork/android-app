@@ -635,7 +635,6 @@ class BottomSheetViewModel
             )
             val recipient = invoice.recipient
             val senderIds = listOf(Session.getAccountId()!!)
-            val storageIndex = invoice.entries.indexOfFirst { it.isStorage() }
             val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
 
             Timber.e("Kernel Duplicate Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
@@ -646,7 +645,7 @@ class BottomSheetViewModel
                 val asset = assetIdToAsset(assetId)
                 val trace = entry.traceId
 
-                val data = if (storageIndex == index) {
+                val data = if (entry.isStorage()) {
                     val ghostKeyResponse = tokenRepository.ghostKey(
                         buildKernelTransferGhostKeyRequest(
                             senderIds.first(),
@@ -708,7 +707,7 @@ class BottomSheetViewModel
                     }
                 }
 
-                val tx = if (index == storageIndex) {
+                val tx = if (entry.isStorage()) {
                     Kernel.buildTxToKernelAddress(asset, amount, 64, MixAddress.newStorageRecipient().xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference)
                 } else if (recipient.xinMembers.isNotEmpty()) {
                     Kernel.buildTxToKernelAddress(asset, amount, 1, recipient.xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference)

@@ -12,6 +12,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 class TransferAssetChangeItem : LinearLayout {
     private val _binding: ItemTransferAssetChangeBinding
@@ -59,7 +60,7 @@ class TransferAssetChangeItem : LinearLayout {
         fun setContent(amount: String, token: TokenItem) {
             binding.apply {
                 avatar.loadUrl(token.iconUrl)
-                this.amount.text = "- $amount ${token.symbol}"
+                this.amount.text = "- ${(amount.toBigDecimalOrNull() ?: BigDecimal.ZERO).stripTrailingZeros().toPlainString()} ${token.symbol}"
                 network.text = getChainName(token.chainId, token.chainName, token.assetKey) ?: ""
             }
         }
