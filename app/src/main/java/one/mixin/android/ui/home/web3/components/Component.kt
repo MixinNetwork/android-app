@@ -206,7 +206,7 @@ fun SolanaParsedTxPreview(
                 modifier = Modifier.size(32.dp),
                 color = MixinAppTheme.colors.accent,
             )
-        } else if (parsedTx.instructions.isEmpty()) {
+        } else if (parsedTx.instructions?.isEmpty() == true) {
             Row(
                 modifier =
                 Modifier
@@ -301,7 +301,7 @@ fun SolanaParsedTxPreview(
                 }
                 if (viewDetails.value) {
                     Box(modifier = Modifier.height(10.dp))
-                    Instructions(parsedTx.instructions)
+                    Instructions(parsedTx.instructions ?: emptyList())
                 }
             }
         }
@@ -435,7 +435,7 @@ private fun BalanceChangeItem(
         Box(modifier = Modifier.weight(1f))
         Text(
             text = "${token.toStringAmount(balanceChange.amount)} ${token.symbol}",
-            color = if (balanceChange.amount >= 0) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            color = if ((balanceChange.amount.toLongOrNull() ?: 0) >= 0) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
             fontSize = 14.sp,
         )
     }

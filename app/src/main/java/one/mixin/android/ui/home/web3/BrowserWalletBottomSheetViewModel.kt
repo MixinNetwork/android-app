@@ -65,10 +65,10 @@ class BrowserWalletBottomSheetViewModel
             )
         }
 
-        suspend fun parseWeb3Tx(tx: String): ParsedTx? {
+        suspend fun simulateWeb3Tx(tx: String, chainId: String): ParsedTx? {
             var meet401 = false
             val parsedTx = handleMixinResponse(
-                invokeNetwork = { assetRepo.parseWeb3Tx(ParseTxRequest(tx)) },
+                invokeNetwork = { assetRepo.simulateWeb3Tx(ParseTxRequest(tx, chainId)) },
                 successBlock = { it.data },
                 failureBlock = {
                     if (it.errorCode == 401) {
@@ -80,7 +80,7 @@ class BrowserWalletBottomSheetViewModel
             )
             if (parsedTx == null && meet401) {
                 userRepo.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                return parseWeb3Tx(tx)
+                return simulateWeb3Tx(tx, chainId)
             } else {
                 return parsedTx
             }

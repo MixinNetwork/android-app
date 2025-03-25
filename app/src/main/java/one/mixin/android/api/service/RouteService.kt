@@ -149,8 +149,8 @@ interface RouteService {
         @Body rawTx: Web3RawTransactionRequest,
     ): MixinResponse<Web3RawTransaction>
 
-    @POST("web3/transactions/parse")
-    suspend fun parseWeb3Tx(
+    @POST("web3/transactions/simulate")
+    suspend fun simulateWeb3Tx(
         @Body parseTxRequest: ParseTxRequest,
     ): MixinResponse<ParsedTx>
 

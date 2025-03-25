@@ -995,7 +995,7 @@ class TokenRepository
             }
         }
 
-        suspend fun parseWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.parseWeb3Tx(parseTxRequest)
+        suspend fun simulateWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
 
         suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest): MixinResponse<Web3RawTransaction> {
             val r = routeService.postWeb3Tx(rawTxRequest)

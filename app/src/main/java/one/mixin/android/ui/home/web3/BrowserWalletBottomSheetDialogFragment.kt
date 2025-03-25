@@ -31,7 +31,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -293,7 +292,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 solanaTx = txWithPriorityFee
                             }
                         if (parsedTx == null) {
-                            parsedTx = viewModel.parseWeb3Tx(tx.serialize().base64Encode())
+                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana)
                         }
                         val ptx = parsedTx
                         if (ptx != null && ptx.tokens == null) {
