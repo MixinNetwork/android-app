@@ -71,7 +71,6 @@ data class Web3Token(
             chain =
             SwapChain(
                 chainId = chainId,
-                decimals = precision,
                 name = "",
                 symbol = symbol,
                 icon = "",

@@ -30,7 +30,6 @@ data class TokenItem(
     var chainIconUrl: String?,
     var chainSymbol: String?,
     var chainName: String?,
-    var chainPriceUsd: String?,
     val assetKey: String?,
     val dust: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
@@ -51,13 +50,6 @@ data class TokenItem(
             BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
         }
 
-    fun chainPriceFiat(): BigDecimal =
-        if (chainPriceUsd == null || chainPriceUsd == "0") {
-            BigDecimal.ZERO
-        } else {
-            BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
-        }
-
     fun btc(): BigDecimal =
         if (priceBtc == "0") {
             BigDecimal.ZERO
@@ -74,7 +66,7 @@ data class TokenItem(
 
     override fun toSwapToken(): SwapToken {
         return SwapToken(
-            address = "",
+            address = assetKey ?: "",
             assetId = assetId,
             decimals = 0,
             name = name,
@@ -83,7 +75,6 @@ data class TokenItem(
             chain =
             SwapChain(
                 chainId = chainId,
-                decimals = 0,
                 name = chainName ?: "",
                 symbol = chainSymbol ?: "",
                 icon = chainIconUrl ?: "",

@@ -106,7 +106,6 @@ data class Web3TokenItem(
             icon = iconUrl,
             chain = SwapChain(
                 chainId = chainId,
-                decimals = precision,
                 name = getChainDisplayName(),
                 symbol = chainSymbol ?: "",
                 icon = chainIcon ?: "",

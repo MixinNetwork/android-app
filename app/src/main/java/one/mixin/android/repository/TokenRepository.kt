@@ -209,7 +209,6 @@ class TokenRepository
                 assetItem.chainIconUrl = chain?.chainIconUrl
                 assetItem.chainSymbol = chain?.chainSymbol
                 assetItem.chainName = chain?.chainName
-                assetItem.chainPriceUsd = chain?.chainPriceUsd
             }
             return assetItem
         }
@@ -228,7 +227,6 @@ class TokenRepository
                 assetItem.chainIconUrl = chain?.chainIconUrl
                 assetItem.chainSymbol = chain?.chainSymbol
                 assetItem.chainName = chain?.chainName
-                assetItem.chainPriceUsd = chain?.chainPriceUsd
             }
             return assetItem
         }

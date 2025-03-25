@@ -85,6 +85,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
+import one.mixin.android.vo.MixAddress
 import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.Reference
@@ -411,7 +412,7 @@ class BottomSheetViewModel
             val changeKeys = data.first().keys.joinToString(",")
             val changeMask = data.first().mask
 
-            val tx = Kernel.buildTxToKernelAddress(asset, amount, kernelAddress, input, changeKeys, changeMask, memo, reference ?: "")
+            val tx = Kernel.buildTxToKernelAddress(asset, amount, 1, kernelAddress, input, changeKeys, changeMask, memo, reference ?: "")
             Timber.e("Kernel Address Transaction($trace): request transaction ${utxoWrapper.ids.joinToString(", ")}")
             val transactionResponse = tokenRepository.transactionRequest(listOf(TransactionRequest(tx.raw, trace)))
             if (transactionResponse.error != null) {
@@ -598,16 +599,24 @@ class BottomSheetViewModel
             tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val recipient = invoice.recipient
+            val storageIndex = invoice.entries.indexOfFirst { it.isStorage() }
             val senderIds = listOf(Session.getAccountId()!!)
             val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
             val signedTransactions = mutableListOf<SignedTransaction>()
             Timber.e("Kernel Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
-            invoice.entries.forEach { entry ->
+            invoice.entries.forEachIndexed { index, entry ->
                 val amount = entry.amountString()
                 val assetId = entry.assetId
                 val asset = assetIdToAsset(assetId)
                 val trace = entry.traceId
-                val data = if (recipient.uuidMembers.isNotEmpty()) {
+                val data = if (storageIndex == index) {
+                    val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderIds.first(), trace))
+                    if (ghostKeyResponse.error != null) {
+                        Timber.e("Kernel Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
+                        return ghostKeyResponse
+                    }
+                    ghostKeyResponse.data!!
+                } else if (recipient.uuidMembers.isNotEmpty()) {
                     val ghostKeyResponse = tokenRepository.ghostKey(buildGhostKeyRequest(recipient.uuidMembers, senderIds, trace))
                     if (ghostKeyResponse.error != null) {
                         Timber.e("Kernel Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
@@ -643,7 +652,13 @@ class BottomSheetViewModel
                         ""
                     }
                 }
-                val tx = Kernel.buildTx(asset, amount, recipient.threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
+                val tx = if (index == storageIndex) {
+                    Kernel.buildTxToKernelAddress(asset, amount, 64, MixAddress.newStorageRecipient().xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference )
+                } else if (recipient.xinMembers.isNotEmpty()){
+                    Kernel.buildTxToKernelAddress(asset, amount, 1, recipient.xinMembers.first().string(), input, changeKeys, changeMask, String(entry.extra), reference )
+                } else {
+                    Kernel.buildTx(asset, amount, recipient.threshold.toInt(), receiverKeys, receiverMask, input, changeKeys, changeMask, String(entry.extra), reference)
+                }
                 verifiedTransactions.add(VerifiedTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference))
             }
             val verifyTransaction = tokenRepository.transactionRequest(verifiedTransactions.map { TransactionRequest(it.raw, it.trace) })
@@ -676,7 +691,7 @@ class BottomSheetViewModel
                             tokenRepository.insertOutput(changeOutput)
                         }
                         val transactionHash = t.transactionHash
-                        val opponentId = invoice.recipient.uuidMembers.firstOrNull() ?: ""
+                        val opponentId = invoice.recipient.uuidMembers.firstOrNull() ?: invoice.recipient.xinMembers.firstOrNull()?.string() ?: ""
                         Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert snapshot, memo${t.memo}")
                         tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, t.trace, t.assetId, t.amount, t.memo, SafeSnapshotType.snapshot, reference = t.reference)
                         Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert raw transaction")
