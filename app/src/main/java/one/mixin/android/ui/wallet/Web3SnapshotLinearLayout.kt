@@ -66,7 +66,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
         }
         if (list.size > 20) {
             val itemView = LayoutInflater.from(context)
-                .inflate(R.layout.item_wallet_transactions, this, false)
+                .inflate(R.layout.item_wallet_transactions_more, this, false)
             itemView.setOnClickListener {
                 listener?.onMoreClick()
             }

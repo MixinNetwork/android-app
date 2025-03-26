@@ -10,6 +10,7 @@
 
 
     <FrameLayout
+        android:id="@+id/avatar_fl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -32,12 +33,13 @@
             android:layout_marginTop="-1dp"/>
 
     </FrameLayout>
+
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@id/avatar"
+        android:layout_toEndOf="@id/avatar_fl"
         android:layout_toStartOf="@id/value"
         android:breakStrategy="simple"
         android:hyphenationFrequency="none"
