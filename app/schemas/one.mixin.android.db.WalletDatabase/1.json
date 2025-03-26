@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "53a0572362de98c05b2595e016e71d8b",
+    "identityHash": "23271b33f34df3b11f6bae0972dcb815",
     "entities": [
       {
         "tableName": "tokens",
@@ -439,7 +439,17 @@
             "hash"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_raw_transactions_chain_id",
+            "unique": false,
+            "columnNames": [
+              "chain_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_raw_transactions_chain_id` ON `${TABLE_NAME}` (`chain_id`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -478,7 +488,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '53a0572362de98c05b2595e016e71d8b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '23271b33f34df3b11f6bae0972dcb815')"
     ]
   }
 }

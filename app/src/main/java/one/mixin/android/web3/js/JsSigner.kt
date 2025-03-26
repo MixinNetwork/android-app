@@ -10,7 +10,6 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
@@ -24,12 +23,10 @@ import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Constants
 import org.sol4k.Keypair
-import org.sol4k.RpcUrl
 import org.sol4k.SignInAccount
 import org.sol4k.SignInInput
 import org.sol4k.SignInOutput
 import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
 import org.sol4k.exception.MaliciousInstructionException
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair

@@ -2,11 +2,13 @@ package one.mixin.android.db.web3.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 @Entity(
     tableName = "raw_transactions",
+    indices = [Index(value = arrayOf("chain_id"))],
 )
 data class Web3RawTransaction(
     @PrimaryKey

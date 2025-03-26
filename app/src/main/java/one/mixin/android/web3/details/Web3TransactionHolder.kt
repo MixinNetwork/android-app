@@ -1,19 +1,21 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
+import one.mixin.android.databinding.ItemWeb3TransactionsBinding
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
+import one.mixin.android.widget.BadgeAvatarView
 
-class Web3TransactionHolder(val binding: ItemWalletTransactionsBinding) : RecyclerView.ViewHolder(binding.root) {
+class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : RecyclerView.ViewHolder(binding.root) {
+
     @SuppressLint("SetTextI18s")
     fun bind(transaction: Web3TransactionItem) {
         binding.apply {
@@ -22,22 +24,36 @@ class Web3TransactionHolder(val binding: ItemWalletTransactionsBinding) : Recycl
             val amount = transaction.getFormattedAmount()
             val symbol = transaction.symbol
             avatar.loadUrl(transaction)
+            when (transaction.status) {
+                TransactionType.TxSuccess.value -> {
+                    badge.setImageResource(R.drawable.ic_web3_status_success)
+                }
 
-            if (transaction.transactionType == Web3TransactionType.Receive.value) {
-                value.textColorResource = R.color.wallet_green
-                value.text = "+${amount.numberFormat8()}"
-                symbolTv.text = symbol
-                symbolIv.isVisible = false
-            } else if (transaction.transactionType == Web3TransactionType.Send.value) {
-                value.textColorResource = R.color.wallet_pink
-                value.text = "-${amount.numberFormat8()}"
-                symbolTv.text = symbol
-                symbolIv.isVisible = false
-            } else {
-                avatar.loadUrl(url = transaction.iconUrl, holder = R.drawable.ic_avatar_place_holder)
-                value.text = amount.numberFormat8()
-                symbolTv.text = symbol
-                symbolIv.isVisible = false
+                TransactionType.TxPending.value -> {
+                    badge.setImageResource(R.drawable.ic_web3_status_pending)
+                }
+
+                else -> {
+                    badge.setImageResource(R.drawable.ic_web3_status_failed)
+                }
+            }
+            when (transaction.transactionType) {
+                Web3TransactionType.Receive.value -> {
+                    value.textColorResource = R.color.wallet_green
+                    value.text = "+${amount.numberFormat8()}"
+                    symbolTv.text = symbol
+                }
+                Web3TransactionType.Send.value -> {
+                    value.textColorResource = R.color.wallet_pink
+                    value.text = "-${amount.numberFormat8()}"
+                    symbolTv.text = symbol
+                }
+                else -> {
+                    avatar.loadUrl(url = transaction.iconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    value.setTextColor(root.context.colorAttr(R.attr.text_primary))
+                    value.text = amount.numberFormat8()
+                    symbolTv.text = symbol
+                }
             }
         }
     }

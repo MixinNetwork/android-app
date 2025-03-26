@@ -82,7 +82,7 @@ class Web3FilterParams(
         return SimpleSQLiteQuery(
             "SELECT w.transaction_id, w.transaction_type, w.transaction_hash, w.output_index, w.block_number, " +
                 "w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, " +
-                "w.transaction_at, w.updated_at, w.transaction_type, w.status, t.symbol, t.icon_url " +
+                "w.transaction_at, w.updated_at, w.transaction_type, w.status, t.symbol, t.icon_url, w.status " +
                 "FROM transactions w " +
                 "LEFT JOIN tokens t on t.asset_id = w.asset_id $whereSql $orderSql"
         )

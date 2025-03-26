@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.buildAmountSymbol
@@ -71,27 +72,46 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.root.isClickable = true
         binding.apply {
             transactionHashTv.text = transaction.transactionHash
-            val amountColor = if (transaction.transactionType == Web3TransactionType.Send.value) {
-                requireContext().getColor(R.color.wallet_pink)
-            } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
-                requireContext().getColor(R.color.wallet_green)
-            } else {
-                requireContext().colorFromAttribute(R.attr.text_primary)
-            }
+            val amountColor =
+                if (transaction.status == TransactionType.TxFailed.value || transaction.status == TransactionType.TxNotFound.value) {
+                    requireContext().colorFromAttribute(R.attr.text_assist)
+                } else if (transaction.transactionType == Web3TransactionType.Send.value) {
+                    requireContext().getColor(R.color.wallet_pink)
+                } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
+                    requireContext().getColor(R.color.wallet_green)
+                } else {
+                    requireContext().colorFromAttribute(R.attr.text_primary)
+                }
             val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
             valueTv.text = buildAmountSymbol(requireContext(),
-                if (transaction.transactionType == Web3TransactionType.Send.value) "-${transaction.amount}"
-                else if (transaction.transactionType == Web3TransactionType.Receive.value) "+${transaction.amount}"
-                else transaction.amount, transaction.symbol ?: "", amountColor, symbolColor
+                when (transaction.transactionType) {
+                    Web3TransactionType.Send.value -> "-${transaction.amount}"
+                    Web3TransactionType.Receive.value -> "+${transaction.amount}"
+                    else -> transaction.amount
+                }, transaction.symbol ?: "", amountColor, symbolColor
             )
-            val amount = (BigDecimal(transaction.amount).abs() * token.priceFiat()).numberFormat2()
-            val pricePerUnit =
-                "(${Fiats.getSymbol()}${token.priceFiat().priceFormat2()}/${token.symbol})"
-            valueAsTv.text =
-                getString(
-                    R.string.value_now,
-                    "${Fiats.getSymbol()}$amount $pricePerUnit",
-                )
+            when(transaction.status) {
+                TransactionType.TxSuccess.value -> {
+                    status.text = getString(R.string.Completed)
+                    status.setTextColor(requireContext().getColor(R.color.wallet_green))
+                    status.setBackgroundResource(R.drawable.bg_status_success)
+                }
+                TransactionType.TxPending.value -> {
+                    status.text = getString(R.string.Pending)
+                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    status.setBackgroundResource(R.drawable.bg_status_default)
+                }
+                TransactionType.TxFailed.value -> {
+                    status.text = getString(R.string.Failed)
+                    status.setTextColor(requireContext().getColor(R.color.wallet_pink))
+                    status.setBackgroundResource(R.drawable.bg_status_failed)
+                }
+                else -> {
+                    status.text = getString(R.string.Not_found)
+                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    status.setBackgroundResource(R.drawable.bg_status_default)
+                }
+            }
             fromTv.text = transaction.sender
             toTv.text = transaction.receiver
             avatar.bg.loadImage(transaction.iconUrl, R.drawable.ic_avatar_place_holder)

@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
+import one.mixin.android.databinding.ItemWeb3TransactionsBinding
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
@@ -48,7 +49,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
                 addView(headerView)
             }
 
-            val itemBinding = ItemWalletTransactionsBinding.inflate(LayoutInflater.from(context), this, false)
+            val itemBinding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(context), this, false)
             val holder = Web3TransactionHolder(itemBinding)
             holder.bind(item)
             holder.itemView.setOnClickListener {

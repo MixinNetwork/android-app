@@ -53,6 +53,9 @@ data class Web3TransactionItem(
 
     @ColumnInfo(name = "icon_url")
     val iconUrl: String? = null,
+
+    @ColumnInfo(name = "status")
+    val status: String? = null,
 ) : Parcelable {
 
     companion object {

@@ -20,12 +20,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
-import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
