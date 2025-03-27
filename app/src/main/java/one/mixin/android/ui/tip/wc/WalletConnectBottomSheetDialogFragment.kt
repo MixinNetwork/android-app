@@ -68,6 +68,7 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
@@ -350,6 +351,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 )
                             )
                         if (r.isSuccess.not()){
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                             tipGas = null
                         } else {
                             tipGas = buildTipGas(chain.chainId, r.data!!)

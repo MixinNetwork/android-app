@@ -58,6 +58,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.InputFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
@@ -267,7 +268,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 transaction.to,
                             )
                         )
-                        if (r.isSuccess.not()) return@withContext null
+                        if (r.isSuccess.not()) {
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                            return@withContext null
+                        }
                         buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
