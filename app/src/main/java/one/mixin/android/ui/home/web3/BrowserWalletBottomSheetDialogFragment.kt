@@ -269,6 +269,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             )
                         )
                         if (r.isSuccess.not()) {
+                            step = Step.Error
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                             return@withContext null
                         }

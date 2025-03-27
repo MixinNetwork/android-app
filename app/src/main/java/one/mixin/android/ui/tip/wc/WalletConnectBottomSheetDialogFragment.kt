@@ -351,6 +351,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 )
                             )
                         if (r.isSuccess.not()){
+                            step = Step.Error
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                             tipGas = null
                         } else {
