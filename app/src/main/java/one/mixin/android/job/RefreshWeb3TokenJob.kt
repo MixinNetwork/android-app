@@ -39,13 +39,17 @@ class RefreshWeb3TokenJob(
                 val assets = response.data
                 if (assets != null && assets.isNotEmpty()) {
                     Timber.d("Fetched ${assets.size} assets for wallet $walletId")
-                    if (assets.isNotEmpty()) {
-                        web3TokenDao.insertList(assets)
-                        fetchChain(assets.map { it.chainId }.distinct())
-                        Timber.d("Inserted ${assets.size} tokens into database")
-                    }
+                    val assetIds = assets.map { it.assetId }
+                    web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
+                    Timber.d("Updated missing assets to zero balance for wallet ${walletId}")
+                    
+                    web3TokenDao.insertList(assets)
+                    fetchChain(assets.map { it.chainId }.distinct())
+                    Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
                     Timber.d("No assets found for wallet ${walletId}")
+                    web3TokenDao.updateAllBalancesToZero(walletId)
+                    Timber.d("Updated all assets to zero balance for wallet ${walletId}")
                 }
             },
             failureBlock = { response ->

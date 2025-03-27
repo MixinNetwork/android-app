@@ -151,13 +151,17 @@ class RefreshWeb3Job : BaseJob(
                 val assets = response.data
                 if (assets != null && assets.isNotEmpty()) {
                     Timber.d("Fetched ${assets.size} assets for wallet ${wallet.id}")
-                    if (assets.isNotEmpty()) {
-                        web3TokenDao.insertList(assets)
-                        fetchChain(assets.map { it.chainId }.distinct())
-                        Timber.d("Inserted ${assets.size} tokens into database")
-                    }
+                    val assetIds = assets.map { it.assetId }
+                    web3TokenDao.updateBalanceToZeroForMissingAssets(wallet.id, assetIds)
+                    Timber.d("Updated missing assets to zero balance for wallet ${wallet.id}")
+                    
+                    web3TokenDao.insertList(assets)
+                    fetchChain(assets.map { it.chainId }.distinct())
+                    Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
                     Timber.d("No assets found for wallet ${wallet.id}")
+                    web3TokenDao.updateAllBalancesToZero(wallet.id)
+                    Timber.d("Updated all assets to zero balance for wallet ${wallet.id}")
                 }
             },
             failureBlock = { response ->
