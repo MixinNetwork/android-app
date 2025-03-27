@@ -8,6 +8,7 @@ import one.mixin.android.vo.MixAddressPrefix
 import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.MixinInvoicePrefix
 import one.mixin.android.vo.toMixAddress
+import timber.log.Timber
 import java.io.UnsupportedEncodingException
 import java.math.BigDecimal
 import java.net.URLDecoder
@@ -48,7 +49,9 @@ class UrlQueryParser(val uri: Uri, from: Int) {
 
     val mixInvoice by lazy {
         if (payType == PayType.Invoice) {
-            runCatching { MixinInvoice.fromString(lastPath) }.getOrNull() ?: throw ParserError(FAILURE)
+            runCatching { MixinInvoice.fromString(lastPath) }.onFailure {
+                Timber.e(it)
+            }.getOrNull() ?: throw ParserError(FAILURE)
         } else {
             throw ParserError(FAILURE)
         }
