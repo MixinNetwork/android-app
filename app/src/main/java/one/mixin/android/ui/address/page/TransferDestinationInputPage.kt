@@ -173,7 +173,7 @@ fun TransferDestinationInputPage(
                                 text = it
                             },
                             modifier = Modifier
-                                .height(96.dp),
+                                .height(120.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 backgroundColor = Color.Transparent,
                                 textColor = MixinAppTheme.colors.textPrimary,

@@ -1541,9 +1541,9 @@
     <string name="hint_memo">Enter the address Memo, if you don\'t directly click next</string>
     <string name="hint_tag">Enter the address Tag, if you don\'t directly click next</string>
     <string name="Accounts">Accounts</string>
-    <string name="to_mixin_wallet">To my Mixin Wallet</string>
+    <string name="to_mixin_wallet">To my Privacy Wallet</string>
     <string name="insufficient_gas">You do not have enough %1$s in your account to pay for network fees</string>
-    <string name="From_mixin_wallet">From Mixin Wallet</string>
+    <string name="From_mixin_wallet">From Privacy Wallet</string>
     <string name="From_address">From address</string>
     <string name="From_address_desc">From another wallet or exchange</string>
     <string name="NO_COLLECTIBLES">NO COLLECTIBLES</string>
@@ -1889,7 +1889,7 @@
     <string name="sell_token">Sell %1$s</string>
     <string name="buy_token">Buy %1$s</string>
     <string name="NO_ORDERS">NO ORDERS</string>
-    <string name="Mixin_Wallet">Mixin Wallet</string>
+    <string name="Mixin_Wallet">Privacy Wallet</string>
     <string name="Preview">Preview</string>
     <string name="Network_Fee">Network Fee</string>
     <string name="Note_Optional">Note(Optional)</string>

@@ -340,7 +340,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 PercentView.PercentItem(it.symbol, p)
             }.toMutableList()
         if (list.isNotEmpty()) {
-            val items = mutableListOf<View>()
+            _headBinding?.pieItemContainer?.removeAllViews()
             list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
             mainThread {
                 _headBinding?.percentView?.setPercents(list)
@@ -348,7 +348,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             when {
                 list.size == 1 -> {
                     val p = list[0]
-                    items.add(addItem(PercentView.PercentItem(p.name, 1f), 0))
+                    addItem(PercentView.PercentItem(p.name, 1f), 0)
                 }
                 list.size == 2 -> {
                     addItem(list[0], 0)
@@ -358,7 +358,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 }
                 list[1].percent < 0.01f && list[1].percent > 0f -> {
                     addItem(list[0], 0)
-                    items.add(addItem(PercentView.PercentItem(getString(R.string.OTHER), 0.01f), 1))
+                    addItem(PercentView.PercentItem(getString(R.string.OTHER), 0.01f), 1)
                 }
 
                 list.size == 3 -> {
@@ -367,7 +367,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     val p2 = list[2]
                     val p2Percent = 1 - list[0].percent - list[1].percent
                     val newP2 = PercentView.PercentItem(p2.name, p2Percent)
-                    items.add(addItem(newP2, 2))
+                    addItem(newP2, 2)
                 }
 
                 else -> {
@@ -379,16 +379,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                     val other = (100 - pre) / 100f
                     val item = PercentItemView(requireContext())
-                    item.setPercentItem(
-                        PercentView.PercentItem(getString(R.string.OTHER), other),
-                        2
-                    )
-                    items.add(item)
+                    item.setPercentItem(PercentView.PercentItem(getString(R.string.OTHER), other), 2)
+                    _headBinding?.pieItemContainer?.addView(item)
                 }
-            }
-            _headBinding?.pieItemContainer?.removeAllViews()
-            items.forEach {
-                _headBinding?.pieItemContainer?.addView(it)
             }
             _headBinding?.pieItemContainer?.visibility = VISIBLE
         }
@@ -396,10 +389,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private fun addItem(
         p: PercentView.PercentItem,
         index: Int,
-    ): View {
+    ) {
         val item = PercentItemView(requireContext())
         item.setPercentItem(p, index)
-        return item
+        _headBinding?.pieItemContainer?.addView(item)
     }
 
     private fun showReceiveAssetList() {
@@ -407,11 +400,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             setOnClickListener { token ->
                 this@ClassicWalletFragment.lifecycleScope.launch {
                     val address = getAddressesByChainId(token.chainId)
-                    if (address != null) {
-                        this@ClassicWalletFragment.navTo(Web3ReceiveSelectionFragment.newInstance(address, token.chainId), Web3ReceiveSelectionFragment.TAG)
-                    } else {
+                    if (address.isNullOrEmpty()) {
                         toast(R.string.Data_error)
+                        return@launch
                     }
+                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address, WalletActivity.Destination.Address)
                 }
                 dismissNow()
             }

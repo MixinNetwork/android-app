@@ -109,7 +109,7 @@ fun MemoInputPage(
                         value = memo,
                         onValueChange = { memo = it },
                         modifier = Modifier
-                            .height(96.dp)
+                            .height(120.dp)
                             .focusRequester(focusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,

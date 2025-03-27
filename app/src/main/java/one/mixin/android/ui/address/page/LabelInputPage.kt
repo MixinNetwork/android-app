@@ -108,7 +108,7 @@ fun LabelInputPage(
                         value = label,
                         onValueChange = { label = it },
                         modifier = Modifier
-                            .height(96.dp)
+                            .height(120.dp)
                             .focusRequester(focusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,

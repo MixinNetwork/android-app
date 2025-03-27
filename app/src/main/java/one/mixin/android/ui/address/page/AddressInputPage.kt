@@ -102,7 +102,7 @@ fun AddressInputPage(
                         value = address,
                         onValueChange = { address = it },
                         modifier = Modifier
-                            .height(96.dp)
+                            .height(120.dp)
                             .focusRequester(focusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             backgroundColor = Color.Transparent,
