@@ -825,11 +825,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             updateUserStatus(user.relationship)
             binding.opLl.isVisible = true
-            if (user.isBot()) {
+            if (user.isBot() && user.appId != null) {
                 binding.openFl.visibility = VISIBLE
                 binding.transferFl.visibility = GONE
                 binding.shareFl.isVisible = false
-                bottomViewModel.findAppById(user.appId!!)?.let { app ->
+                bottomViewModel.findAppById(user.appId ?: "")?.let { app ->
                     binding.openFl.clicks()
                         .observeOn(AndroidSchedulers.mainThread())
                         .throttleFirst(1, TimeUnit.SECONDS)
