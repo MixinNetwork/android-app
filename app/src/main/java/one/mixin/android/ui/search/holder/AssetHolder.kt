@@ -34,10 +34,13 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         if (chainNetwork != null) {
             binding.networkTv.text = chainNetwork
         }
-        if (asset.priceUsd == "0") {
-            binding.priceTv.setText(R.string.NA)
+        if (asset.priceUsd != "0") {
+            binding.naTv.visibility = View.VISIBLE
+            binding.priceTv.visibility = View.GONE
             binding.changeTv.visibility = View.GONE
         } else {
+            binding.naTv.visibility = View.GONE
+            binding.priceTv.visibility = View.VISIBLE
             binding.changeTv.visibility = View.VISIBLE
             binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             if (asset.changeUsd.isNotEmpty()) {

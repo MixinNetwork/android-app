@@ -164,7 +164,7 @@ fun BrowserPage(
                                     when (step) {
                                         WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_message_request
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
-                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else R.string.web3_signing_failed
+                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else if (tipGas == null) R.string.Data_error else R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                         else -> R.string.web3_message_request
                                     }
@@ -172,7 +172,7 @@ fun BrowserPage(
                                     when (step) {
                                         WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing_confirmation
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
-                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else R.string.web3_signing_failed
+                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else if (tipGas == null) R.string.Data_error else R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                         else -> R.string.web3_signing_confirmation
                                     }

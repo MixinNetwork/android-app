@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -108,10 +109,13 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
             binding.symbolTv.text = asset.symbol
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
-                binding.priceTv.setText(R.string.NA)
-                binding.changeTv.visibility = GONE
+                binding.naTv.visibility = View.VISIBLE
+                binding.priceTv.visibility = View.GONE
+                binding.changeTv.visibility = View.GONE
             } else {
-                binding.changeTv.visibility = VISIBLE
+                binding.naTv.visibility = View.GONE
+                binding.priceTv.visibility = View.VISIBLE
+                binding.changeTv.visibility = View.VISIBLE
                 binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)

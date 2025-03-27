@@ -112,5 +112,19 @@
             android:maxLines="1"
             android:textSize="12sp"
             android:textColor="?attr/text_assist"/>
+
+        <TextView
+            android:id="@+id/na_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:maxLines="1"
+            android:textSize="12sp"
+            android:text="@string/N_A"
+            android:visibility="gone"
+            android:textColor="?attr/text_assist"/>
+
     </one.mixin.android.widget.ConfirmationBgView>
 </FrameLayout>

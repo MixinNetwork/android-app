@@ -72,7 +72,10 @@ class WalletActivity : BlazeBaseActivity() {
             }
             Destination.AllTransactions -> {
                 navGraph.setStartDestination(R.id.all_transactions_fragment)
-                navController.setGraph(navGraph, null)
+                val pendingType = intent.getBooleanExtra(PENDING_TYPE, false)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putBoolean(PENDING_TYPE, pendingType)
+                })
             }
             Destination.AllWeb3Transactions -> {
                 navGraph.setStartDestination(R.id.all_web3_transactions_fragment)
@@ -147,6 +150,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val ARGS_ROUTE_PROFILE = "args_route_profile"
         const val ADDRESS = "address"
         const val WEB3_TOKEN = "web3_token"
+        const val PENDING_TYPE = "pending_type"
 
         fun showWithToken(
             activity: Activity,
@@ -180,10 +184,12 @@ class WalletActivity : BlazeBaseActivity() {
         fun show(
             activity: Activity,
             destination: Destination,
+            pendingType: Boolean = false
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
+                    putExtra(PENDING_TYPE, pendingType)
                 },
             )
         }

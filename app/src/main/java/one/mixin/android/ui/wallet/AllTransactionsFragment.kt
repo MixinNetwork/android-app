@@ -56,11 +56,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         const val TAG = "AllTransactionsFragment"
         const val ARGS_USER = "args_user"
         const val ARGS_TOKEN = "args_token"
+        const val PENDING_TYPE = "pending_type"
 
-        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null): AllTransactionsFragment {
+        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null, pendingType: Boolean = false): AllTransactionsFragment {
             return AllTransactionsFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putParcelable(ARGS_TOKEN, tokenItem)
+                putBoolean(PENDING_TYPE, pendingType)
             }
         }
     }
@@ -77,8 +79,17 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
     }
 
+    private val pendingType by lazy {
+        requireArguments().getBoolean(PENDING_TYPE, false)
+    }
+
     private val filterParams by lazy {
-        FilterParams(recipients = userItem?.let { listOf(it) }, tokenItems = tokenItem?.let { listOf(it) })
+        val type = if (pendingType) SnapshotType.pending else SnapshotType.all
+        FilterParams(
+            type = type,
+            recipients = userItem?.let { listOf(it) }, 
+            tokenItems = tokenItem?.let { listOf(it) }
+        )
     }
 
     override fun onViewCreated(

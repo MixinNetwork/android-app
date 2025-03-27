@@ -231,13 +231,13 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 pendingView.isVisible = it.isNotEmpty()
                 pendingView.updateTokens(it)
                 pendingView.setOnClickListener { v ->
-                    if (it.size == 0) {
+                    if (it.size == 1) {
                         lifecycleScope.launch {
                             val token = walletViewModel.simpleAssetItem(it[0].assetId) ?: return@launch
                             WalletActivity.showWithToken(requireActivity(), token, WalletActivity.Destination.Transactions)
                         }
                     } else {
-                        WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions)
+                        WalletActivity.show(requireActivity(), WalletActivity.Destination.AllTransactions, true)
                     }
                 }
             }
