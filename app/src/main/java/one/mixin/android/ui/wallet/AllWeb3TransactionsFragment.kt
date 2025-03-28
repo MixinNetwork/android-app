@@ -345,7 +345,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 filterParams.tokenFilterType = when (position) {
                     0 -> Web3TokenFilterType.ALL
                     1 -> Web3TokenFilterType.SEND
-                    else -> Web3TokenFilterType.RECEIVE
+                    2 -> Web3TokenFilterType.RECEIVE
+                    else -> Web3TokenFilterType.CONTRACT
                 }
                 loadFilter()
                 dismiss()
