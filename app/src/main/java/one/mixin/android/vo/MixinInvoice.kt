@@ -335,7 +335,7 @@ data class InvoiceEntry(
     fun isStorage(): Boolean {
         return assetId.toString() == Constants.AssetId.XIN_ASSET_ID &&
             extra.isNotEmpty() &&
-            extra.size >= EXTRA_SIZE_GENERAL_LIMIT &&
+            extra.size > EXTRA_SIZE_GENERAL_LIMIT &&
             amount.compareTo(estimateStorageCost(extra)) == 0
     }
 
