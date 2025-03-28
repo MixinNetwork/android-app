@@ -137,7 +137,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 typeAdapter.checkPosition = when (filterParams.tokenFilterType) {
                     Web3TokenFilterType.ALL -> 0
                     Web3TokenFilterType.SEND -> 1
-                    else -> 2
+                    Web3TokenFilterType.RECEIVE -> 2
+                    Web3TokenFilterType.CONTRACT -> 3
                 }
                 typeMenu.show()
             }
@@ -342,12 +343,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             anchorView = binding.filterType
             setAdapter(typeAdapter)
             setOnItemClickListener { _, _, position, _ ->
-                filterParams.tokenFilterType = when (position) {
-                    0 -> Web3TokenFilterType.ALL
-                    1 -> Web3TokenFilterType.SEND
-                    2 -> Web3TokenFilterType.RECEIVE
-                    else -> Web3TokenFilterType.CONTRACT
-                }
+                filterParams.tokenFilterType = Web3TokenFilterType.fromInt(position)
                 loadFilter()
                 dismiss()
             }
@@ -376,7 +372,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 Web3TokenFilterType.ALL -> 0
                 Web3TokenFilterType.SEND -> 1
                 Web3TokenFilterType.RECEIVE -> 2
-                else -> 3
+                Web3TokenFilterType.CONTRACT -> 3
             }
         }
     }

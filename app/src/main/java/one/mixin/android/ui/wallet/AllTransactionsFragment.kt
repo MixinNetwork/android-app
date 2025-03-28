@@ -391,7 +391,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 }
                 loadFilter()
                 dismiss()
-                dismiss()
             }
             width = requireContext().dpToPx(250f)
             height = ListPopupWindow.WRAP_CONTENT

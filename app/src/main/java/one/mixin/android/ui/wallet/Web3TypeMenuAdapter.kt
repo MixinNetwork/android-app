@@ -23,7 +23,11 @@ class Web3TypeMenuAdapter(private val context: Context, private val items: List<
         val binding = MenuSortBinding.bind(convertView ?: LayoutInflater.from(context).inflate(R.layout.menu_sort, parent, false))
         val item = getItem(position)
 
-        binding.iv.isInvisible = checkPosition != position
+        if (item.menu == Web3TokenFilterType.CONTRACT) {
+            binding.iv.isInvisible = checkPosition != position
+        } else {
+            binding.iv.isInvisible = checkPosition != position
+        }
 
         if (item.iconResId == null) {
             binding.icon.isInvisible = true
