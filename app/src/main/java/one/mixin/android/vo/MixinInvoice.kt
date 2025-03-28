@@ -17,11 +17,11 @@ import kotlin.text.toBigInteger
 const val MixinInvoicePrefix = "MIN"
 
 const val MIXIN_INVOICE_VERSION: Byte = 0
-const val REFERENCES_COUNT_LIMIT = 2
-const val EXTRA_SIZE_STORAGE_CAPACITY = 512
+const val REFERENCES_COUNT_LIMIT = 16
+const val EXTRA_SIZE_STORAGE_CAPACITY = 1024 * 1024 * 4
 const val EXTRA_SIZE_GENERAL_LIMIT = 256
-const val EXTRA_SIZE_STORAGE_STEP = 128
-const val EXTRA_STORAGE_PRICE_STEP = "100000"
+const val EXTRA_SIZE_STORAGE_STEP = 1024
+const val EXTRA_STORAGE_PRICE_STEP = "10000"
 
 data class MixinInvoice(
     val version: Byte = MIXIN_INVOICE_VERSION,
@@ -36,6 +36,9 @@ data class MixinInvoice(
         indexReferences: ByteArray = byteArrayOf(),
         hashReferences: List<ByteArray> = emptyList(),
     ) {
+        if (extra.size >= EXTRA_SIZE_GENERAL_LIMIT) {
+            throw IllegalArgumentException("extra size too large: ${extra.size}")
+        }
         val entry = InvoiceEntry(
             traceId = traceId,
             assetId = assetId,
@@ -335,7 +338,7 @@ data class InvoiceEntry(
     fun isStorage(): Boolean {
         return assetId.toString() == Constants.AssetId.XIN_ASSET_ID &&
             extra.isNotEmpty() &&
-            extra.size >= EXTRA_SIZE_GENERAL_LIMIT &&
+            extra.size > EXTRA_SIZE_GENERAL_LIMIT &&
             amount.compareTo(estimateStorageCost(extra)) == 0
     }
 
