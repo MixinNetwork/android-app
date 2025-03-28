@@ -1003,7 +1003,7 @@ class TokenRepository
                 val raw = r.data!!
                 web3RawTransactionDao.insertSuspend(raw)
                 web3TransactionDao.deletePending(raw.hash, raw.chainId)
-                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
+                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
             }
             return r
         }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "23271b33f34df3b11f6bae0972dcb815",
+    "identityHash": "493f3ae1a6dbe7ef005eb2662fe82a88",
     "entities": [
       {
         "tableName": "tokens",
@@ -93,7 +93,7 @@
       },
       {
         "tableName": "transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `block_number` INTEGER NOT NULL, `sender` TEXT NOT NULL, `receiver` TEXT NOT NULL, `output_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `transaction_at` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`transaction_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_id` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `sender` TEXT NOT NULL, `receiver` TEXT NOT NULL, `output_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `transaction_at` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`transaction_id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -111,12 +111,6 @@
             "fieldPath": "transactionHash",
             "columnName": "transaction_hash",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "outputIndex",
-            "columnName": "output_index",
-            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -488,7 +482,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '23271b33f34df3b11f6bae0972dcb815')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '493f3ae1a6dbe7ef005eb2662fe82a88')"
     ]
   }
 }

@@ -27,10 +27,6 @@ data class Web3Transaction(
     @SerializedName("transaction_hash")
     val transactionHash: String,
 
-    @ColumnInfo(name = "output_index")
-    @SerializedName("output_index")
-    val outputIndex: Int,
-
     @ColumnInfo(name = "block_number")
     @SerializedName("block_number")
     val blockNumber: Long,

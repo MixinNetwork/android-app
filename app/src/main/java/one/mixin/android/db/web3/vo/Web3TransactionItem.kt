@@ -18,9 +18,6 @@ data class Web3TransactionItem(
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String,
     
-    @ColumnInfo(name = "output_index")
-    val outputIndex: Int,
-    
     @ColumnInfo(name = "block_number")
     val blockNumber: Long,
     
