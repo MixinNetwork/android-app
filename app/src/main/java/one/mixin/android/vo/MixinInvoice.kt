@@ -36,6 +36,9 @@ data class MixinInvoice(
         indexReferences: ByteArray = byteArrayOf(),
         hashReferences: List<ByteArray> = emptyList(),
     ) {
+        if (extra.size >= EXTRA_SIZE_GENERAL_LIMIT) {
+            throw IllegalArgumentException("extra size too large: ${extra.size}")
+        }
         val entry = InvoiceEntry(
             traceId = traceId,
             assetId = assetId,
