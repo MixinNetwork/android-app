@@ -1867,4 +1867,8 @@
     <string name="Exchanges_or_Wallets">交易所或钱包</string>
     <string name="Exchanges_or_Wallets_desc">使用加密网络从其他交易所或链上钱包接收。</string>
     <string name="View_Document">查看文档</string>
+    <string name="For_your_security">为了您的安全，请输入您的密码</string>
+    <string name="Privacy_Wallet">隐私钱包</string>
+    <string name="Other">其他</string>
+    <string name="Total_assets">所有资产</string>
 </resources>
