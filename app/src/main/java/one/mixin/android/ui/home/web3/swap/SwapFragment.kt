@@ -34,14 +34,14 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.solanaNativeTokenAssetKey
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
-import one.mixin.android.api.response.wrappedSolTokenAssetKey
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
+import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
@@ -100,6 +100,7 @@ class SwapFragment : BaseFragment() {
         const val ARGS_INPUT = "args_input"
         const val ARGS_OUTPUT = "args_output"
         const val ARGS_AMOUNT = "args_amount"
+        const val ARGS_IN_MIXIN = "args_in_mixin"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -113,10 +114,11 @@ class SwapFragment : BaseFragment() {
             input: String? = null,
             output: String? = null,
             amount: String? = null,
+            inMixin: Boolean = true,
         ): SwapFragment =
             SwapFragment().withArgs {
                 when (T::class) {
-                    Web3Token::class -> {
+                    Web3TokenItem::class -> {
                         putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply {
                             if (tokens != null) {
                                 addAll(tokens)
@@ -131,6 +133,7 @@ class SwapFragment : BaseFragment() {
                 input?.let { putString(ARGS_INPUT, it) }
                 output?.let { putString(ARGS_OUTPUT, it) }
                 amount?.let { putString(ARGS_AMOUNT, it) }
+                putBoolean(ARGS_IN_MIXIN, inMixin)
             }
     }
 
@@ -142,8 +145,8 @@ class SwapFragment : BaseFragment() {
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var tokenItems: List<TokenItem>? = null
-    private val web3tokens: List<Web3Token>? by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3Token::class.java)
+    private val web3tokens: List<Web3TokenItem>? by lazy {
+        requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3TokenItem::class.java)
     }
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
@@ -221,6 +224,7 @@ class SwapFragment : BaseFragment() {
                             SwapPage(
                                 from = fromToken,
                                 to = toToken,
+                                inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
@@ -739,7 +743,7 @@ class SwapFragment : BaseFragment() {
             },
         )?.let {
             if (!inMixin()) {
-                val remote = it.map { token ->
+                val remote = it.map { it.copy(isWeb3 = true) }.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
                         web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                     } ?: return@map token
@@ -750,7 +754,7 @@ class SwapFragment : BaseFragment() {
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
-                toToken = swapTokens.firstOrNull { s -> s.address != fromToken?.address }
+                toToken = swapTokens.firstOrNull { s -> s.getUnique() != fromToken?.getUnique() }
             } else {
                 val remote = it.map { token ->
                     val t = tokenItems?.firstOrNull { tokenItem ->
@@ -790,18 +794,6 @@ class SwapFragment : BaseFragment() {
                     }
                 }
             }
-        } else {
-            val web3Tokens = swapViewModel.web3Tokens(chain = ChainType.solana.name, address = tokens.map { it.address })
-            if (web3Tokens.isEmpty()) {
-                return tokens
-            }
-            tokens.forEachIndexed { _, token ->
-                web3Tokens.forEach { t ->
-                    if (t.assetKey.equals(token.address, true)) {
-                        token.price = t.price
-                    }
-                }
-            }
         }
         return tokens
     }
@@ -810,7 +802,7 @@ class SwapFragment : BaseFragment() {
         initialAmount = arguments?.getString(ARGS_AMOUNT)
     }
 
-    private fun inMixin(): Boolean = web3tokens == null
+    private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
     private fun getSource(): String = if (inMixin()) "mixin" else ""
 
     private fun navigateUp(navController: NavHostController) {

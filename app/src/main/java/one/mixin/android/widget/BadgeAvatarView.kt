@@ -38,11 +38,14 @@ class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(cont
             binding.badge.layout(0, 5 * i, 2 * i, 7 * i)
         } else if (pos == END_BOTTOM) {
             binding.badge.layout(6 * i, 6 * i, 8 * i, 8 * i)
+        } else if (pos == END_TOP) {
+            binding.badge.layout(6 * i, 0, 8 * i, 2 * i)
         }
     }
 
     companion object {
         const val START_BOTTOM = 0
         const val END_BOTTOM = 1
+        const val END_TOP = 2
     }
 }

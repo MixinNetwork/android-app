@@ -553,7 +553,6 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
-
         val MIGRATION_64_65: Migration =
             object : Migration(64, 65) {
                 override fun migrate(db: SupportSQLiteDatabase) {

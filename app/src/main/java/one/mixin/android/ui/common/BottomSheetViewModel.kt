@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -62,6 +63,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
+import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
@@ -1600,7 +1602,8 @@ class BottomSheetViewModel
                 tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
             }
 
-        suspend fun queryAsset(query: String): List<TokenItem> = tokenRepository.queryAsset(query)
+        suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> =
+            tokenRepository.queryAsset(query, web3)
 
         suspend fun findOrSyncAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
@@ -1691,4 +1694,16 @@ class BottomSheetViewModel
         }
 
         suspend fun transactionsFetch(traceIds: List<String>) = tokenRepository.transactionsFetch(traceIds)
-    }
+
+        suspend fun getTipAddress(
+            context: Context,
+            pin: String,
+            chainId: String,
+        ): String {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            return privateKeyToAddress(spendKey, chainId)
+        }
+
+        fun web3TokenItems() = tokenRepository.web3TokenItems()
+}

@@ -1,24 +1,32 @@
 package one.mixin.android.api.response.web3
 
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.api.response.Web3Token
+import one.mixin.android.db.web3.vo.Web3Token
 
 data class ParsedTx(
     @SerializedName("balance_changes")
     val balanceChanges: List<BalanceChange>? = null,
     @SerializedName("instructions")
-    val instructions: List<ParsedInstruction>,
-
-    var tokens: Map<String, Web3Token>? = null,
+    val instructions: List<ParsedInstruction>? = null,
+    @SerializedName("approves")
+    val approves: List<Approve>? = null,
+    var tokens: Map<String, SwapToken>? = null,
 ) {
-    fun noBalanceChange(): Boolean = instructions.isNotEmpty() && balanceChanges.isNullOrEmpty()
+    fun noBalanceChange(): Boolean = instructions?.isNotEmpty() == true && balanceChanges.isNullOrEmpty()
 }
 
 data class BalanceChange(
     @SerializedName("address")
     val address: String,
     @SerializedName("amount")
-    val amount: Long
+    val amount: String,
+)
+
+data class Approve(
+    @SerializedName("spender")
+    val spender: String,
+    @SerializedName("amount")
+    val amount: String,
 )
 
 data class ParsedInstruction(
@@ -32,7 +40,6 @@ data class ParsedInstruction(
     val items: List<Item>? = null,
     @SerializedName("token_changes")
     val tokenChanges: List<TokenChange>? = null,
-
     val info: String? = null,
 )
 

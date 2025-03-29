@@ -1,72 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/container"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:background="?attr/bg_white">
-
-        <TextView
-            android:id="@+id/title_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
-            android:text="@string/Wallet"
-            android:textColor="?attr/text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            tools:ignore="RelativeOverlap" />
-
-        <ImageButton
-            android:id="@+id/search_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/scan_ib"
-            android:layout_marginEnd="14dp"
-            android:background="@drawable/mixin_ripple"
-            android:padding="8dp"
-            app:srcCompat="@drawable/ic_search_home"
-            tools:ignore="ContentDescription" />
-
-        <ImageButton
-            android:id="@+id/scan_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/more_ib"
-            android:layout_marginEnd="14dp"
-            android:background="@drawable/mixin_ripple"
-            android:padding="8dp"
-            app:srcCompat="@drawable/ic_bot_category_scan"
-            tools:ignore="ContentDescription" />
-
-        <ImageButton
-            android:id="@+id/more_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="12dp"
-            android:background="@drawable/mixin_ripple"
-            android:padding="8dp"
-            app:srcCompat="@drawable/ic_home_more"
-            tools:ignore="ContentDescription" />
-    </RelativeLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/coins_rv"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        app:layoutManager="LinearLayoutManager" />
+        android:orientation="vertical">
 
-</LinearLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="?attr/bg_white">
+
+            <RelativeLayout
+                android:id="@+id/title_rl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="12dp"
+                android:padding="4dp"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <ImageView
+                    android:id="@+id/head_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic_wallet_menu" />
+
+                <View
+                    android:id="@+id/badge"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_alignTop="@id/head_icon"
+                    android:layout_alignEnd="@id/head_icon"
+                    android:background="@drawable/bg_red_dot"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/title_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@+id/head_icon"
+                    android:text="@string/Wallet"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:includeFontPadding="false"
+                    tools:ignore="RelativeOverlap" />
+
+                <ImageView
+                    android:id="@+id/tail_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@id/title_tv"
+                    android:src="@drawable/ic_wallet_privacy" />
+
+            </RelativeLayout>
+
+            <ImageButton
+                android:id="@+id/search_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="14dp"
+                android:layout_toStartOf="@id/scan_ib"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_search_home"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/scan_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="14dp"
+                android:layout_toStartOf="@id/more_ib"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_bot_category_scan"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/more_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_home_more"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/wallet_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/bg_white"
+        android:visibility="gone" />
+</FrameLayout>

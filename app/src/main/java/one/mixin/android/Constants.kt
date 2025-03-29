@@ -87,7 +87,6 @@ object Constants {
         const val PREF_MARKET_ORDER = "pref_market_order"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
-        const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
         const val PREF_GLOBAL_MARKET = "pref_global_market"
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
@@ -95,6 +94,7 @@ object Constants {
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+        const val PREF_HAS_USED_WALLET = "pref_has_used_wallet"
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
@@ -172,6 +172,7 @@ object Constants {
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
+        const val WEB3_DB_NAME = "web3.db"
     }
 
     object Storage {
@@ -214,7 +215,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain)
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"

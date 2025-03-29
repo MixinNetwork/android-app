@@ -96,6 +96,7 @@ import java.math.RoundingMode
 fun SwapPage(
     from: SwapToken?,
     to: SwapToken?,
+    inMixin: Boolean,
     orderBadge: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
@@ -187,6 +188,7 @@ fun SwapPage(
 
     PageScaffold(
         title = stringResource(id = R.string.Swap),
+        subtitle = stringResource(if (!inMixin) R.string.Common_Wallet else R.string.Privacy_Wallet),
         verticalScrollable = true,
         pop = pop,
         actions = {
@@ -206,7 +208,10 @@ fun SwapPage(
                             modifier = Modifier
                                 .size(8.dp)
                                 .offset(x = (-12).dp, y = (12).dp)
-                                .background(color = MixinAppTheme.colors.badgeRed, shape = CircleShape)
+                                .background(
+                                    color = MixinAppTheme.colors.badgeRed,
+                                    shape = CircleShape
+                                )
                                 .align(Alignment.TopEnd)
                         )
                     }
@@ -224,7 +229,7 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = viewModel.tokenExtraFlow(from.assetId ?: "").map { it?.balance ?: from.balance } // Use externally provided data if no local data is available.
+            val fromBalance = viewModel.tokenExtraFlow(if (from.isWeb3 == true) "" else from.assetId).map { it?.balance ?: from.balance } // Use externally provided data if no local data is available.
                 .collectAsStateWithLifecycle(from.balance).value
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
@@ -327,7 +332,7 @@ fun SwapPage(
                                                     }
                                                 )
                                             }
-                                            if (!from.inMixin()) {
+                                            if (from.isWeb3) {
                                                 SlippageInfo(
                                                     slippageBps,
                                                     rate != BigDecimal.ZERO,
@@ -469,7 +474,7 @@ fun InputArea(
     onMax: (() -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
-    val balance = viewModel.tokenExtraFlow(token?.assetId ?: "").map { it?.balance ?: token?.balance } // Use externally provided data if no local data is available.
+    val balance = viewModel.tokenExtraFlow(if (token?.isWeb3 == true) "" else token?.assetId ?: "").map { it?.balance ?: token?.balance } // Use externally provided data if no local data is available.
         .collectAsStateWithLifecycle(token?.balance).value
     Column(
         modifier =

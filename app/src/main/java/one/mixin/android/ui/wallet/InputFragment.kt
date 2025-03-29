@@ -14,10 +14,10 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.buildTransaction
-import one.mixin.android.api.response.getChainSymbolFromName
 import one.mixin.android.databinding.FragmentInputBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.buildTransaction
+import one.mixin.android.db.web3.vo.getChainSymbolFromName
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -46,6 +46,7 @@ import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RE
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
+import one.mixin.android.ui.common.Web3WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -65,8 +66,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.receive.Web3AddressFragment
-import one.mixin.android.web3.receive.Web3ReceiveSelectionFragment
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 import java.math.BigDecimal
@@ -83,6 +84,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val ARGS_FROM_ADDRESS = "args_from_address"
 
         const val ARGS_TO_WALLET = "args_to_wallet"
+        const val ARGS_TO_ACCOUNT = "args_to_account"
 
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
         const val ARGS_TO_ADDRESS_ID = "args_to_address_id"
@@ -108,13 +110,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         fun newInstance(
             fromAddress: String,
             toAddress: String,
-            web3Token: Web3Token,
-            chainToken: Web3Token?,
+            web3Token: Web3TokenItem,
+            chainToken: Web3TokenItem,
             label: String? = null,
             toWallet: Boolean = false
         ) =
             InputFragment().apply {
                 withArgs {
+                    Timber.e("chain ${chainToken.name} ${web3Token.chainId} ${chainToken.chainId} $fromAddress $toAddress")
                     putString(ARGS_FROM_ADDRESS, fromAddress)
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putParcelable(ARGS_WEB3_TOKEN, web3Token)
@@ -128,10 +131,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             tokenItem: TokenItem,
             toAddress: String,
             tag: String? = null,
+            toAccount: Boolean? = null,
             isReceive: Boolean = false
         ) =
             InputFragment().apply {
                 withArgs {
+                    if (toAccount != null) {
+                        putBoolean(ARGS_TO_ACCOUNT, toAccount)
+                    }
                     putParcelable(ARGS_TOKEN, tokenItem)
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
@@ -198,10 +205,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         arguments?.getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
     private val web3Token by lazy {
-        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
     }
     private val chainToken by lazy {
-        requireArguments().getParcelableCompat(ARGS_WEB3_CHAIN_TOKEN, Web3Token::class.java)
+        requireArguments().getParcelableCompat(ARGS_WEB3_CHAIN_TOKEN, Web3TokenItem::class.java)
     }
 
     private val token by lazy {
@@ -232,12 +239,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         requireArguments().getBoolean(ARGS_TO_WALLET, false)
     }
 
+    private val toAccount by lazy {
+        requireArguments().getBoolean(ARGS_TO_ACCOUNT, false)
+    }
+
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
     }
 
     private val tokenPrice: BigDecimal by lazy {
-        ((token?.priceUsd ?: web3Token?.price)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
+        ((token?.priceUsd ?: web3Token?.priceUsd)?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(Fiats.getRate().toBigDecimal())
     }
     private val tokenSymbol by lazy {
         token?.symbol ?: web3Token!!.symbol
@@ -246,7 +257,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         token?.iconUrl ?: web3Token!!.iconUrl
     }
     private val tokenChainIconUrl by lazy {
-        token?.chainIconUrl ?: web3Token!!.chainIconUrl
+        token?.chainIconUrl ?: web3Token?.chainIcon ?: ""
     }
     private val tokenBalance by lazy {
         token?.balance ?: web3Token!!.balance
@@ -259,6 +270,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var rpc: Rpc
 
     override fun onResume() {
         super.onResume()
@@ -280,19 +294,25 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 titleView.rightIb.setOnClickListener {
                     requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
+                binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, getString(R.string.Token))
                 when (transferType) {
                     TransferType.USER -> {
                         titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), user)
                     }
                     TransferType.ADDRESS -> {
                         if (addressLabel.isNullOrBlank()) {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null,"$toAddress${addressTag?.let { ":$it" }?:""}".formatPublicKey(16))
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Common_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toAccount)
                         } else {
                             titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
                         }
                     }
                     TransferType.WEB3 -> {
-                        titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel ?: if (toWallet)getString(R.string.Mixin_Wallet) else null, toAddress?:"", toWallet)
+                        titleView.setLabel(
+                            getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
+                            addressLabel ?: if (toWallet) getString(R.string.Mixin_Wallet) else null,
+                            toAddress ?: "",
+                            toWallet
+                        )
                     }
                     TransferType.BIOMETRIC_ITEM -> {
                         assetBiometricItem?.let { item ->
@@ -500,8 +520,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
+                                val list =
+                                    web3ViewModel.getPendingTransactions(web3Token?.chainId ?: "")
+                                if (list.isNotEmpty()) {
+                                    Web3WaitingBottomSheetDialogFragment.newInstance(web3Token?.chainId ?: "").showNow(
+                                        parentFragmentManager, Web3WaitingBottomSheetDialogFragment.TAG)
+                                    return@launch
+                                }
                                 val transaction =
-                                    token.buildTransaction(fromAddress, toAddress, amount)
+                                    token.buildTransaction(rpc, fromAddress, toAddress, amount)
                                 showBrowserBottomSheetDialogFragment(
                                     requireActivity(),
                                     transaction,
@@ -755,7 +782,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun valueClick(percentageOfBalance: BigDecimal) {
         val baseValue = when {
-            web3Token != null && web3Token?.fungibleId == chainToken?.fungibleId -> {
+            web3Token != null && web3Token?.assetId == chainToken?.assetId -> {
                 if (gas == null) {
                     if (!dialog.isShowing) {
                         lifecycleScope.launch {
@@ -963,9 +990,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     override fun onDismiss(success: Boolean) {
                         if (success) {
                             parentFragmentManager.apply {
-                                findFragmentByTag(Web3ReceiveSelectionFragment.TAG)?.let {
-                                    beginTransaction().remove(it).commit()
-                                }
                                 findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
                                     beginTransaction().remove(it).commit()
                                 }
@@ -979,14 +1003,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         }
 
-    private suspend fun refreshGas(t: Web3Token) {
+    private suspend fun refreshGas(t: Web3TokenItem) {
         val toAddress = toAddress?: return
         binding.loadingProgressBar.isVisible = true
         binding.contentTextView.isVisible = false
         val fromAddress = fromAddress ?: return
         val transaction =
             try {
-                t.buildTransaction(fromAddress, toAddress, tokenBalance)
+                t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
             } catch (e: Exception) {
                 Timber.Forest.w(e)
                 if (dialog.isShowing) {

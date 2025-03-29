@@ -1147,6 +1147,7 @@
     <string name="Waiting">Waiting</string>
     <string name="Waiting_for_this_message">Waiting for this message.</string>
     <string name="Wallet">Wallet</string>
+    <string name="Wallets">Wallets</string>
     <string name="wallet_add_asset_already_hidden">Assets %1$s have been hidden by you, want to show them immediately on the wallet homepage?</string>
     <string name="wallet_address_add_tip">Mixin does not support withdrawal to the</string>
     <string name="wallet_already_hidden">%1$s has been hidden</string>
@@ -1217,7 +1218,7 @@
     <string name="Complete">Complete</string>
     <string name="cannot_exit_in_backup">Cannot exit in backup</string>
     <string name="Chat">Chat</string>
-    <string name="Chat_bottom">Chat</string>
+    <string name="Chat_bottom">Chats</string>
     <string name="Restore_Your_Chat_History">Restore Your Chat History</string>
     <string name="Restore_from_Another_Phone">Restore from Another Phone</string>
     <string name="Restore_from_Another_Phone_tip">Transfer your message history from your old device.</string>
@@ -1398,7 +1399,7 @@
     <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
     <string name="FREE">FREE</string>
     <string name="Send_crypto_to_contact">Send crypto to my Mixin contact using the mixin Network.</string>
-    <string name="Send_to_web3_wallet_description">Send to my %1$s account using a crypto network. </string>
+    <string name="Send_to_web3_wallet_description">Send to my other wallet using a crypto network. </string>
     <string name="send_to_address_description">Send to a known crypto address using a crypto network.</string>
     <string name="Send_to_Contact_description">Send to my Mixin wallet using a crypto network.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
@@ -1528,7 +1529,7 @@
     <string name="copy_address">Copy Address</string>
     <string name="copy_contract_address">Copy Contract Address</string>
     <string name="coming_soon">Coming soon</string>
-    <string name="web3_deposit_description_evm">Use this address for receiving tokens on Ethereum, Polygon, BSC, Base, Arbitrum, Optimism, Blast networks, </string>
+    <string name="web3_deposit_description_evm">Use this address for receiving tokens on Ethereum, Polygon, BSC, Base networks, </string>
     <string name="web3_deposit_description_solana">Use this address for receiving tokens on Solana.</string>
     <string name="No_asset">No Tokens</string>
     <string name="Ethereum_Account">Ethereum Account</string>
@@ -1540,9 +1541,9 @@
     <string name="hint_memo">Enter the address Memo, if you don\'t directly click next</string>
     <string name="hint_tag">Enter the address Tag, if you don\'t directly click next</string>
     <string name="Accounts">Accounts</string>
-    <string name="to_mixin_wallet">To my Mixin Wallet</string>
+    <string name="to_mixin_wallet">To my Privacy Wallet</string>
     <string name="insufficient_gas">You do not have enough %1$s in your account to pay for network fees</string>
-    <string name="From_mixin_wallet">From Mixin Wallet</string>
+    <string name="From_mixin_wallet">From Privacy Wallet</string>
     <string name="From_address">From address</string>
     <string name="From_address_desc">From another wallet or exchange</string>
     <string name="NO_COLLECTIBLES">NO COLLECTIBLES</string>
@@ -1560,6 +1561,7 @@
     <string name="Confirming_Transaction">Confirming Transaction</string>
     <string name="Transaction_Success">Transaction Success</string>
     <string name="Transaction_Failed">Transaction Failed</string>
+    <string name="Transaction_Not_Found">Transaction Not Found</string>
     <string name="Slippage">Slippage</string>
     <string name="slippage_auto">Auto</string>
     <string name="slippage_auto_desc">Recommends the right slippage for different currencies to help you trade successfully</string>
@@ -1887,7 +1889,7 @@
     <string name="sell_token">Sell %1$s</string>
     <string name="buy_token">Buy %1$s</string>
     <string name="NO_ORDERS">NO ORDERS</string>
-    <string name="Mixin_Wallet">Mixin Wallet</string>
+    <string name="Mixin_Wallet">Privacy Wallet</string>
     <string name="Preview">Preview</string>
     <string name="Network_Fee">Network Fee</string>
     <string name="Note_Optional">Note(Optional)</string>
@@ -1903,5 +1905,12 @@
     <string name="Address_Book">Address Book</string>
     <string name="insufficient_fee_description">You need %1$s on the %2$s network to cover the network fee</string>
     <string name="Send_To_Title">Send To</string>
+    <string name="For_your_security">For your security, enter your pin</string>
+    <string name="Privacy_Wallet">Privacy Wallet</string>
+    <string name="Common_Wallet">Common Wallet</string>
+    <string name="Other">Other</string>
+    <string name="My_Wallet_desc">Receive from my other wallet using a crypto network.</string>
+    <string name="Exchanges_or_Wallets">Exchanges or Wallets</string>
+    <string name="Exchanges_or_Wallets_desc">Receive from other exchange or on-chain wallet using a crypto network.</string>
     <string name="View_Document">View Document</string>
 </resources>

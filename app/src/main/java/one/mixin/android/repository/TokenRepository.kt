@@ -33,7 +33,8 @@ import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.ParseTxRequest
-import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.RpcRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
@@ -69,11 +70,11 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.within6Hours
 import one.mixin.android.job.MixinJobManager
@@ -108,7 +109,6 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
@@ -131,7 +131,14 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.flow
+import one.mixin.android.db.web3.Web3TokenDao
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3RawTransaction
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.ui.wallet.Web3FilterParams
 
 @Singleton
 class TokenRepository
@@ -163,6 +170,10 @@ class TokenRepository
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
         private val orderDao: OrderDao,
+        private val web3TokenDao: Web3TokenDao,
+        private val web3TransactionDao: Web3TransactionDao,
+        private val web3RawTransactionDao: Web3RawTransactionDao,
+        private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
     ) {
@@ -465,6 +476,8 @@ class TokenRepository
 
         suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
+        fun web3TokenItems(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems()
+
         suspend fun fuzzySearchToken(
             query: String,
             cancellationSignal: CancellationSignal,
@@ -497,6 +510,11 @@ class TokenRepository
             }
         }
 
+
+        fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
+            return web3TransactionDao.allTransactions(filterParams.buildQuery())
+        }
+
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
@@ -515,7 +533,7 @@ class TokenRepository
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
 
-        suspend fun queryAsset(query: String): List<TokenItem> {
+        suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> {
             val response =
                 try {
                     queryAssets(query)
@@ -540,7 +558,7 @@ class TokenRepository
                 val onlyRemoteItems = arrayListOf<TokenItem>()
                 val needUpdatePrice = arrayListOf<PriceAndChange>()
                 tokenItemList.forEach {
-                    val exists = findAssetItemById(it.assetId)
+                    val exists = if (web3) null else findAssetItemById(it.assetId)
                     if (exists != null) {
                         needUpdatePrice.add(it.toPriceAndChange())
                         localExistsIds.add(exists.assetId)
@@ -977,9 +995,20 @@ class TokenRepository
             }
         }
 
-        suspend fun parseWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.parseWeb3Tx(parseTxRequest)
+        suspend fun simulateWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
 
-        suspend fun postRawTx(rawTxRequest: PostTxRequest) = routeService.postWeb3Tx(rawTxRequest)
+        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest): MixinResponse<Web3RawTransaction> {
+            val r = routeService.postWeb3Tx(rawTxRequest)
+            if (r.isSuccess) {
+                val raw = r.data!!
+                web3RawTransactionDao.insertSuspend(raw)
+                web3TransactionDao.deletePending(raw.hash, raw.chainId)
+                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
+            }
+            return r
+        }
+
+        suspend fun rpc(chainId: String, request: RpcRequest) = routeService.rpc(chainId, request)
 
         suspend fun refreshInscription(inscriptionHash: String): String? {
             val inscriptionItem = syncInscription(inscriptionHash) ?: return null
@@ -1239,5 +1268,27 @@ class TokenRepository
     fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
+
+    fun web3TokensFlow() = web3TokenDao.web3TokensFlow()
+
+    suspend fun findWeb3TokenItems(): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems()
+
+    fun assetFlow() = tokenDao.assetFlow()
+
+    fun getWallets() = web3WalletDao.getWallets()
+
+    suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
+
+    suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
+
+    suspend fun getPendingTransactions() = web3RawTransactionDao.getPendingTransactions()
+
+    suspend fun getPendingTransactions(chainId: String) = web3RawTransactionDao.getPendingTransactions(chainId)
+
+    suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
+
+    suspend fun updateWeb3RawTransaction(hash: String, type: String) = web3TransactionDao.updateRawTransaction(hash, type)
+
+    suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
 }

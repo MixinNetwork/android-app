@@ -63,7 +63,7 @@
                         android:textSize="14sp" />
 
                     <TextView
-                        android:id="@+id/value_as_tv"
+                        android:id="@+id/status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/value_tv"
@@ -84,27 +84,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
-                <LinearLayout
-                    android:id="@+id/transaction_id_ll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/transaction_id_title_tv"
-                        style="@style/TransactionTitleTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/Transaction_Id" />
-
-                    <TextView
-                        android:id="@+id/transaction_id_tv"
-                        style="@style/TransactionDescTextStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textIsSelectable="true" />
-                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/transaction_hash_layout"
@@ -213,6 +192,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/fee_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -252,6 +232,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/status_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">

@@ -14,22 +14,23 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.api.request.TransferRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.api.response.Web3Account
-import one.mixin.android.api.response.Web3Token
-import one.mixin.android.api.response.copy
-import one.mixin.android.api.response.getChainFromName
-import one.mixin.android.api.response.getChainIdFromName
-import one.mixin.android.api.response.isSolToken
 import one.mixin.android.api.response.web3.StakeAccount
-import one.mixin.android.api.service.Web3Service
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3RawTransaction
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -44,7 +45,6 @@ import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.User
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.Output
@@ -53,11 +53,10 @@ import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.ChainType
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.PublicKey
 import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
 import org.sol4k.lamportToSol
 import timber.log.Timber
 import java.math.BigDecimal
@@ -73,11 +72,35 @@ internal constructor(
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
     private val tokenRepository: TokenRepository,
-    private val web3Service: Web3Service,
     private val jobManager: MixinJobManager,
+    private val web3Repository: Web3Repository,
+    private val rpc: Rpc,
 ) : ViewModel() {
+    suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    suspend fun paySuspend(transferRequest: TransferRequest) = assetRepository.paySuspend(transferRequest)
+    fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()
+    
+    fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
+
+    suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
+        web3Repository.updateTokenHidden(tokenId, walletId, hidden)
+
+    suspend fun  web3TokenItemById(chainId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(chainId)
+    }
+
+    fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
+
+    fun tokenExtraFlow(assetId: String) =
+        tokenRepository.tokenExtraFlow(assetId)
+
+    suspend fun findOrSyncAsset(
+        assetId: String,
+    ): TokenItem? {
+        return withContext(Dispatchers.IO) {
+            tokenRepository.findOrSyncAsset(assetId)
+        }
+    }
 
     fun disconnect(
         version: WalletConnect.Version,
@@ -124,38 +147,6 @@ internal constructor(
         }
     }
 
-    suspend fun web3Account(chain: String, address: String): MixinResponse<Web3Account> {
-        val response = web3Service.web3Account(address)
-        if (response.isSuccess) {
-            updateTokens(chain, response.data!!.tokens)
-        }
-        return response
-    }
-
-    suspend fun web3Token(
-        chain: String,
-        chainId: String,
-        address: String,
-    ): Web3Token? {
-        return web3Token(chain, chainId + address) ?: web3Service.web3Tokens(
-            chainId,
-            addresses = address
-        )
-            .let {
-                if (it.isSuccess) {
-                    val token = it.data?.firstOrNull() ?: return null
-                    updateToken(token, chain)
-                    token
-                } else {
-                    null
-                }
-            }
-    }
-
-    fun web3Token(chain: String, tokenId: String): Web3Token? {
-        return if (chain == ChainType.ethereum.name) evmTokenMap[tokenId] else solanaTokenMap[tokenId]
-    }
-
     private fun updateTokens(chain: String, tokens: List<Web3Token>) {
         val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
         val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}" }.toSet()
@@ -174,25 +165,6 @@ internal constructor(
         }
     }
 
-    private fun updateToken(token: Web3Token?, chain: String) {
-        token?.let {
-            val tokenId = "${it.chainId}${it.assetKey}"
-            val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
-            tokenMap[tokenId] = it
-        }
-    }
-
-    suspend fun web3Transaction(
-        address: String,
-        chainId: String,
-        fungibleId: String,
-        assetKey: String,
-    ) = web3Service.transactions(address, chainId, fungibleId, assetKey)
-
-    suspend fun saveSession(participantSession: ParticipantSession) {
-        userRepository.saveSession(participantSession)
-    }
-
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     suspend fun findBotPublicKey(
@@ -201,12 +173,12 @@ internal constructor(
     ) = userRepository.findBotPublicKey(conversationId, botId)
 
     suspend fun findAddres(token: Web3Token): String? {
-        return tokenRepository.findDepositEntry(token.getChainIdFromName())?.destination
+        return tokenRepository.findDepositEntry(token.chainId)?.destination
     }
 
-    suspend fun findAndSyncDepositEntry(token: Web3Token) =
+    suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndSyncDepositEntry(token.getChainIdFromName(), null).first
+            tokenRepository.findAndSyncDepositEntry(token.chainId, token.assetId).first
         }
 
     suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)
@@ -218,6 +190,9 @@ internal constructor(
 
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
         tokenRepository.findTokenItems(ids)
+
+    suspend fun findWeb3TokenItems(): List<Web3TokenItem> =
+        tokenRepository.findWeb3TokenItems()
 
     suspend fun findTokensExtra(assetId: String) =
         withContext(Dispatchers.IO) {
@@ -294,9 +269,8 @@ internal constructor(
     private suspend fun getSolMinimumBalanceForRentExemption(address: PublicKey): BigDecimal =
         withContext(Dispatchers.IO) {
             try {
-                val conn = getSolanaRpc()
-                val accountInfo = conn.getAccountInfo(address) ?: return@withContext BigDecimal.ZERO
-                val mb = conn.getMinimumBalanceForRentExemption(accountInfo.space)
+                val accountInfo = rpc.getAccountInfo(address) ?: return@withContext BigDecimal.ZERO
+                val mb = rpc.getMinimumBalanceForRentExemption(accountInfo.space) ?: return@withContext BigDecimal.ZERO
                 return@withContext lamportToSol(BigDecimal(mb))
             } catch (e: Exception) {
                 return@withContext BigDecimal.ZERO
@@ -304,7 +278,7 @@ internal constructor(
         }
 
     suspend fun calcFee(
-        token: Web3Token,
+        token: Web3TokenItem,
         transaction: JsSignMessage,
         fromAddress: String,
     ): BigDecimal? {
@@ -319,10 +293,18 @@ internal constructor(
                 return BigDecimal.ZERO
             }
         } else {
-            val tipGas = withContext(Dispatchers.IO) {
-                buildTipGas(token.chainId, chain, requireNotNull(transaction.wcEthereumTransaction))
-            } ?: return null
-            return tipGas.displayValue(null)
+            val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
+                EstimateFeeRequest(
+                    token.chainId,
+                    transaction.data,
+
+                )
+            )}
+            if (r.isSuccess.not()) return BigDecimal.ZERO
+            return withContext(Dispatchers.IO) {
+                val tipGas = buildTipGas(chain.chainId, r.data!!)
+                tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
+            }
         }
     }
 
@@ -330,7 +312,7 @@ internal constructor(
 
     suspend fun isBlockhashValid(blockhash: String): Boolean =
         withContext(Dispatchers.IO) {
-            return@withContext getSolanaRpc().isBlockhashValid(blockhash, Commitment.PROCESSED)
+            return@withContext rpc.isBlockhashValid(blockhash) ?: false
         }
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) =
@@ -434,8 +416,15 @@ internal constructor(
         tag: String?,
         amount: String,
         assetId: String,
-    ) =
+    ) = withContext(Dispatchers.IO) {
         tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+    }
+
+    suspend fun getAddressesByChainId(chainId: String): Web3Address? {
+        return web3Repository.getAddressesByChainId(chainId)
+    }
+
+    suspend fun getClassicWalletId(): String? = web3Repository.getClassicWalletId()
 
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
@@ -443,4 +432,21 @@ internal constructor(
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()
     }
+
+    fun marketById(assetId: String) = tokenRepository.marketById(assetId)
+
+    suspend fun getPendingTransactions() = tokenRepository.getPendingTransactions()
+
+    suspend fun getPendingTransactions(chainId: String) = tokenRepository.getPendingTransactions(chainId)
+
+    suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
+
+    suspend fun deletePending(hash: String, chainId: String) =
+        withContext(Dispatchers.IO) { tokenRepository.deletePending(hash, chainId) }
+
+    suspend fun updateWeb3RawTransaction(hash: String, type: String) =
+        withContext(Dispatchers.IO) { tokenRepository.updateWeb3RawTransaction(hash, type) }
+
+    suspend fun insertRawTranscation(raw: Web3RawTransaction) =
+        withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
 }

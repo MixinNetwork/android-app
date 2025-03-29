@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.ConfirmationBgView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bg"
+    android:layout_width="match_parent"
+    android:layout_height="62dp"
+    android:background="?attr/bg_white"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clipToPadding="false">
+
+
+    <FrameLayout
+        android:id="@+id/avatar_fl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
+        android:clipToPadding="false"
+        android:clipChildren="false">
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/avatar"
+            android:layout_width="42dp"
+            android:layout_height="42dp" />
+
+        <ImageView
+            android:id="@+id/badge"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="-1dp"
+            android:layout_marginTop="-1dp"/>
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/avatar_fl"
+        android:layout_toStartOf="@id/value"
+        android:breakStrategy="simple"
+        android:hyphenationFrequency="none"
+        android:ellipsize="end"
+        android:maxWidth="200dp"
+        android:maxLines="2"
+        android:textColor="?attr/text_primary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/symbol_tv"
+        android:layout_marginEnd="6dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/mixin_font"
+        android:maxWidth="200dp"
+        android:singleLine="true"
+        android:textColor="@color/wallet_pink"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/symbol_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="20dp"
+        android:maxWidth="200dp"
+        android:translationY="-1dp"
+        android:textSize="12sp"
+        android:textColor="?attr/text_primary"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_alignBaseline="@id/value" />
+
+</one.mixin.android.widget.ConfirmationBgView>

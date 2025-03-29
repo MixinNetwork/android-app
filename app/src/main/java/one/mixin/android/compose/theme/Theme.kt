@@ -69,6 +69,9 @@ class AppColors(
     val bgGradientStart: Color,
     val bgGradientEnd: Color,
     val borderColor: Color,
+    val walletBlue: Color,
+    val walletYellow: Color,
+    val walletPurple: Color,
     val badgeRed: Color,
 )
 
@@ -108,6 +111,9 @@ private val LightColorPalette =
         bgGradientStart = Color(0xFFFFFFFF),
         bgGradientEnd = Color(0xFFE7EFFF),
         borderColor = Color(0xFFE5E8EE),
+        walletBlue = Color(0xFF1A73E8),
+        walletYellow = Color(0xFFFFC107),
+        walletPurple = Color(0xFF9C27B0),
         badgeRed = Color(0xFFDB454F),
     )
 
@@ -134,6 +140,9 @@ private val DarkColorPalette =
         bgGradientStart = Color(0xFF2C3136),
         bgGradientEnd = Color(0xFF1C2029),
         borderColor = Color(0xFF6E7073),
+        walletBlue = Color(0xFF64B5F6),
+        walletYellow = Color(0xFFFFEE58),
+        walletPurple = Color(0xFFBA68C8),
         badgeRed = Color(0xFFF67070),
     )
 

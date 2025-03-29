@@ -31,10 +31,10 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.tickerFlow
-import one.mixin.android.web3.js.getSolanaRpc
+import one.mixin.android.web3.Rpc
 import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
 import timber.log.Timber
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -65,6 +65,9 @@ class TransactionStateFragment : BaseFragment() {
 
     private var txState: Tx? by mutableStateOf(null)
 
+    @Inject
+    lateinit var rpc: Rpc
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -76,7 +79,7 @@ class TransactionStateFragment : BaseFragment() {
                     darkTheme = context.isNightMode(),
                 ) {
                     TransactionStatePage(
-                        tx = txState ?: Tx(TxState.NotFound.name),
+                        tx = txState ?: Tx(TxState.Pending.name),
                         symbol = symbol,
                         viewTx = {
                             WebActivity.show(context, "https://solscan.io/tx/${tx.signatures[0]}", null)
@@ -96,7 +99,6 @@ class TransactionStateFragment : BaseFragment() {
     }
 
     private var refreshTxJob: Job? = null
-    private val conn = getSolanaRpc()
 
     private fun refreshTx() {
         val txhash = tx.signatures[0]
@@ -107,14 +109,6 @@ class TransactionStateFragment : BaseFragment() {
             tickerFlow(2.seconds)
                 .onEach {
                     try {
-                        withContext(Dispatchers.IO) {
-                            try {
-                                val hash = conn.sendTransaction(tx.serialize())
-                                Timber.d("sendTransaction $hash")
-                            } catch (ignored: Exception) {
-                                Timber.d("loop sendTransaction ${ignored.stackTraceToString()}")
-                            }
-                        }
                         handleMixinResponse(
                             invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
                             successBlock = {
@@ -134,29 +128,6 @@ class TransactionStateFragment : BaseFragment() {
                                 RxBus.publish(SolanaRefreshEvent())
                             }
                             refreshTxJob?.cancel()
-                        } else {
-                            val isBlockhashValid =
-                                withContext(Dispatchers.IO) {
-                                    conn.isBlockhashValid(blockhash, Commitment.CONFIRMED)
-                                }
-                            if (!isBlockhashValid) {
-                                Timber.e("$TAG blockhash $blockhash invalid")
-                                val ts =
-                                    handleMixinResponse(
-                                        invokeNetwork = { web3ViewModel.getWeb3Tx(txhash) },
-                                        successBlock = { it.data },
-                                    )
-                                refreshTxJob?.cancel()
-                                txState =
-                                    if (ts?.state?.isFinalTxState() == true) {
-                                        if (ts.state.isTxSuccess()) {
-                                            RxBus.publish(SolanaRefreshEvent())
-                                        }
-                                        ts
-                                    } else {
-                                        Tx(TxState.Failed.name)
-                                    }
-                            }
                         }
                     } catch (e: Exception) {
                         Timber.e(e)

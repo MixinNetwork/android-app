@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -18,7 +18,7 @@ import java.math.BigDecimal
 class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = tokens.isEmpty()
 
-    var tokens: ArrayList<Web3Token> = ArrayList(0)
+    var tokens: ArrayList<Web3TokenItem> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field != value) {
@@ -35,9 +35,9 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 notifyDataSetChanged()
             }
         }
-    private var onClickListener: ((Web3Token) -> Unit)? = null
+    private var onClickListener: ((Web3TokenItem) -> Unit)? = null
 
-    fun setOnClickListener(onClickListener: (Web3Token) -> Unit) {
+    fun setOnClickListener(onClickListener: (Web3TokenItem) -> Unit) {
         this.onClickListener = onClickListener
     }
 
@@ -65,10 +65,10 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(token: Web3Token) {
+    fun bind(token: Web3TokenItem) {
         binding.apply {
             avatar.bg.loadImage(token.iconUrl, holder = R.drawable.ic_avatar_place_holder)
-            avatar.badge.loadImage(token.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
+            avatar.badge.loadImage(token.chainIcon ?: "", holder = R.drawable.ic_avatar_place_holder)
 
             balance.text =
                 try {
@@ -81,19 +81,19 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
                     token.balance.numberFormat()
                 }
             symbolTv.text = token.symbol
-            balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
+            balanceAs.text = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}"
             val changePercent =
-                if (token.changePercent.isBlank()) {
+                if (token.changeUsd.isBlank()) {
                     BigDecimal.ZERO
                 } else {
-                    BigDecimal(token.changePercent)
+                    BigDecimal(token.changeUsd)
                 }
             changeTv.setQuoteText("${changePercent.numberFormat2()}%", changePercent >= BigDecimal.ZERO)
-            if (token.price == "0") {
+            if (token.priceUsd == "0") {
                 priceTv.setText(R.string.NA)
                 changeTv.visibility = View.GONE
             } else {
-                priceTv.text = "${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).numberFormat2()}"
+                priceTv.text = "${Fiats.getSymbol()}${token.priceFiat().numberFormat2()}"
                 changeTv.visibility = View.VISIBLE
             }
         }

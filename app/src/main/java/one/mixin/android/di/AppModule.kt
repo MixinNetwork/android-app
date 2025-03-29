@@ -40,7 +40,6 @@ import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.Constants.RouteConfig.WEB3_URL
@@ -70,7 +69,6 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
@@ -110,6 +108,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.route.serializer.SafeBoxSerializer
+import one.mixin.android.web3.Rpc
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
@@ -532,48 +531,6 @@ object AppModule {
         return retrofit.create(RouteService::class.java)
     }
 
-    @Singleton
-    @Provides
-    fun provideWeb3Service(
-        resolver: ContentResolver,
-        httpLoggingInterceptor: HttpLoggingInterceptor?,
-        @ApplicationContext appContext: Context,
-    ): Web3Service {
-        val builder = OkHttpClient.Builder()
-        builder.connectTimeout(15, TimeUnit.SECONDS)
-        builder.writeTimeout(15, TimeUnit.SECONDS)
-        builder.readTimeout(15, TimeUnit.SECONDS)
-        builder.dns(DNS)
-        val client =
-            builder.apply {
-                addInterceptor { chain ->
-                    val requestId = UUID.randomUUID().toString()
-                    val sourceRequest = chain.request()
-                    val b = sourceRequest.newBuilder()
-                    b.addHeader("User-Agent", API_UA)
-                        .addHeader("Accept-Language", Locale.getDefault().language)
-                        .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
-                        .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getBotSignature(appContext.defaultSharedPreferences.getString(PREF_WEB3_BOT_PK, null), sourceRequest)
-                    b.addHeader(mwAccessTimestamp, ts.toString())
-                    b.addHeader(mwAccessSign, signature)
-                    val request = b.build()
-                    return@addInterceptor chain.proceed(request)
-                }
-                httpLoggingInterceptor?.let { interceptor ->
-                    addNetworkInterceptor(interceptor)
-                }
-            }.build()
-        val retrofit =
-            Retrofit.Builder()
-                .baseUrl(WEB3_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(CoroutineCallAdapterFactory())
-                .client(client)
-                .build()
-        return retrofit.create(Web3Service::class.java)
-    }
-
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
@@ -648,6 +605,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTransferStatus() = TransferStatusLiveData()
+
+    @Provides
+    @Singleton
+    fun providesRpc(routerService: RouteService) = Rpc(routerService)
 
     @DefaultDispatcher
     @Provides

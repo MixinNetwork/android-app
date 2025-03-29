@@ -50,9 +50,7 @@ import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
-import one.mixin.android.ui.home.web3.EthereumFragment
 import one.mixin.android.ui.home.web3.MarketFragment
-import one.mixin.android.ui.home.web3.SolanaFragment
 import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -128,35 +126,13 @@ class ExploreFragment : BaseFragment() {
                     exploreVa.displayedChild = 0
                     radioFavorite.isChecked = true
                     radioMarket.isChecked = false
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = false
                 }
 
                 1 -> {
                     exploreVa.displayedChild = 1
                     radioFavorite.isChecked = false
                     radioMarket.isChecked = true
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = false
                     navigate(marketFragment, MarketFragment.TAG)
-                }
-
-                2 -> {
-                    exploreVa.displayedChild = 1
-                    radioFavorite.isChecked = false
-                    radioMarket.isChecked = false
-                    radioEth.isChecked = true
-                    radioSolana.isChecked = false
-                    navigate(ethereumFragment, EthereumFragment.TAG)
-                }
-
-                3 -> {
-                    exploreVa.displayedChild = 1
-                    radioFavorite.isChecked = false
-                    radioMarket.isChecked = false
-                    radioEth.isChecked = false
-                    radioSolana.isChecked = true
-                    navigate(solanaFragment, SolanaFragment.TAG)
                 }
             }
 
@@ -178,17 +154,6 @@ class ExploreFragment : BaseFragment() {
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_MARKET))
                     }
 
-                    R.id.radio_eth -> {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 2)
-                        exploreVa.displayedChild = 1
-                        navigate(ethereumFragment, EthereumFragment.TAG)
-                    }
-
-                    R.id.radio_solana -> {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 3)
-                        exploreVa.displayedChild = 1
-                        navigate(solanaFragment, SolanaFragment.TAG)
-                    }
                 }
             }
 
@@ -217,7 +182,7 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    private val containerFragmentTags = listOf(MarketFragment.TAG, EthereumFragment.TAG, SolanaFragment.TAG)
+    private val containerFragmentTags = listOf(MarketFragment.TAG)
     private fun navigate(
         destinationFragment: Fragment,
         tag: String,
@@ -238,16 +203,8 @@ class ExploreFragment : BaseFragment() {
         tx.commitAllowingStateLoss()
     }
 
-    private val ethereumFragment by lazy {
-        EthereumFragment()
-    }
-
     private val marketFragment by lazy {
         MarketFragment()
-    }
-
-    private val solanaFragment by lazy {
-        SolanaFragment()
     }
 
     private fun loadData() {
@@ -260,8 +217,6 @@ class ExploreFragment : BaseFragment() {
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (!hidden) {
-            if (ethereumFragment.isVisible) ethereumFragment.updateUI()
-            if (solanaFragment.isVisible) solanaFragment.updateUI()
             if (marketFragment.isVisible) marketFragment.updateUI()
         }
     }
@@ -513,7 +468,3 @@ class ExploreFragment : BaseFragment() {
         }
     }
 }
-
-fun exploreEvm(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 2
-
-fun exploreSolana(context: Context): Boolean = context.defaultSharedPreferences.getInt(Constants.Account.PREF_EXPLORE_SELECT, 0) == 3

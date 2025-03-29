@@ -10,28 +10,23 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
-import org.sol4k.Connection
 import org.sol4k.Constants
 import org.sol4k.Keypair
-import org.sol4k.RpcUrl
 import org.sol4k.SignInAccount
 import org.sol4k.SignInInput
 import org.sol4k.SignInOutput
 import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
 import org.sol4k.exception.MaliciousInstructionException
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
@@ -40,7 +35,6 @@ import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
-import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.Response
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
@@ -177,40 +171,21 @@ object JsSigner {
         }
     }
 
-    fun sendTransaction(
-        signedTransactionData: String,
-        chain: Chain?,
-    ): String? {
-        val tx = getWeb3j(chain ?: currentChain).ethSendRawTransaction(signedTransactionData).send()
-        if (tx.hasError()) {
-            val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            throw WalletConnectException(tx.error.code, tx.error.message)
-        }
-        val transactionHash = tx.transactionHash
-        Timber.d("$TAG sendTransaction $transactionHash")
-        return transactionHash
-    }
-
-    fun ethSignTransaction(
+    suspend fun ethSignTransaction(
         priv: ByteArray,
         transaction: WCEthereumTransaction,
         tipGas: TipGas,
         chain: Chain?,
-    ): String {
+        getNonce: suspend (String) -> BigInteger,
+    ): Pair<String, String> {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val transactionCount =
-            getWeb3j(chain ?: currentChain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
-        if (transactionCount.hasError()) {
-            throwError(transactionCount.error)
-        }
-        val nonce = transactionCount.transactionCount
+        val nonce = getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
 
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
-        val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
+        val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
         Timber.e(
             "$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${
@@ -233,11 +208,10 @@ object JsSigner {
                 maxPriorityFeePerGas,
                 maxFeePerGas,
             )
-
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
-        return hexMessage
+        return Pair(hexMessage, credential.address)
     }
 
     fun signMessage(
@@ -287,24 +261,18 @@ object JsSigner {
         return sig.toHex()
     }
 
-    fun signSolanaTransaction(
+    suspend fun signSolanaTransaction(
         priv: ByteArray,
-        tx: org.sol4k.VersionedTransaction,
-    ): org.sol4k.VersionedTransaction {
+        tx: VersionedTransaction,
+        getBlockhash: suspend () -> String,
+    ): VersionedTransaction {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
         if (tx.signatures.size <= 1) {
-            val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
-            tx.message.recentBlockhash = blockhash
+            tx.message.recentBlockhash = getBlockhash()
         }
         tx.sign(holder)
         return tx
-    }
-
-    fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
-        val hash = getSolanaRpc().sendTransaction(tx.serialize())
-        Timber.d("sendTransaction $hash")
-        return hash
     }
 
     fun solanaSignIn(
@@ -337,9 +305,6 @@ object JsSigner {
         currentChain = Chain.Ethereum
     }
 }
-
-fun getSolanaRpc(): Connection =
-    Connection(MixinApplication.appContext.defaultSharedPreferences.getString(Chain.Solana.chainId, null) ?: RpcUrl.MAINNNET.value)
 
 fun VersionedTransaction.throwIfAnyMaliciousInstruction() {
     val accounts = message.accounts

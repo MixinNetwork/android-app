@@ -21,11 +21,13 @@ import one.mixin.android.widget.SearchView
 class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val ARGS_TOKENS = "args_tokens"
+        const val ARGS_ADDRESS = "args_address"
         const val TAG = "TokenListBottomSheetDialogFragment"
 
-        fun newInstance(tokens: ArrayList<TokenItem>) =
+        fun newInstance(tokens: ArrayList<TokenItem>, address: String = "") =
             TokenListBottomSheetDialogFragment().withArgs {
                 putParcelableArrayList(ARGS_TOKENS, tokens)
+                putString(ARGS_ADDRESS, address)
             }
     }
 
@@ -33,6 +35,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val tokens by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, TokenItem::class.java)
+    }
+    
+    private val address by lazy {
+        requireArguments().getString(ARGS_ADDRESS, "")
     }
 
     private val adapter by lazy {

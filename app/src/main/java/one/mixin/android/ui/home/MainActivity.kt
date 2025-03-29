@@ -22,7 +22,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -46,6 +45,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -85,8 +85,8 @@ import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
-import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isPlayStoreInstalled
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
@@ -115,6 +115,7 @@ import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
@@ -350,7 +351,7 @@ class MainActivity : BlazeBaseActivity() {
                             val type = e.chainType ?: TYPE_ETH
                             if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
                                 WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                            } else if (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
+                            } else if (type == TYPE_ETH && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
                                 WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                             } else {
                                 WalletConnectActivity.show(this@MainActivity, e)
@@ -513,6 +514,25 @@ class MainActivity : BlazeBaseActivity() {
                 periodicWorkRequest
             )
             initWalletConnect()
+            if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) == false && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
+                lifecycleScope.launch {
+                    withContext(Dispatchers.Main) {
+                        try {
+                            if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
+                                LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                                    onDismissCallback = { success ->
+                                        jobManager.addJobInBackground(RefreshWeb3Job())
+                                    }
+                                }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                            }
+                        } catch (e: Exception) {
+                            Timber.w(e)
+                        }
+                    }
+                }
+            } else {
+              jobManager.addJobInBackground(RefreshWeb3Job())
+            }
         }
 
     private fun handleTipEvent(
@@ -1064,10 +1084,16 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
+        val walletFragmentInstance = 
+            supportFragmentManager.findFragmentByTag(WalletFragment.TAG) as? BaseFragment
+        
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
+            walletFragmentInstance != null && walletFragmentInstance.isVisible && walletFragmentInstance.onBackPressed() -> {
+                // do nothing
+            }
             conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
                 conversationListFragment.closeSearch()
             }

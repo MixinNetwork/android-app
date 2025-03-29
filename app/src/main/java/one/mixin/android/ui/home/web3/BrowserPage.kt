@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -40,9 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
@@ -71,7 +72,7 @@ fun BrowserPage(
     account: String,
     chain: Chain,
     amount: String?,
-    token: Web3Token?,
+    token: Web3TokenItem?,
     toAddress: String?,
     type: Int,
     step: WalletConnectBottomSheetDialogFragment.Step,
@@ -110,6 +111,12 @@ fun BrowserPage(
                 Box(modifier = Modifier.height(50.dp))
                 when (step) {
                     WalletConnectBottomSheetDialogFragment.Step.Loading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(70.dp),
+                            color = MixinAppTheme.colors.accent,
+                        )
+                    }
+                    WalletConnectBottomSheetDialogFragment.Step.Sending -> {
                         CircularProgressIndicator(
                             modifier = Modifier.size(70.dp),
                             color = MixinAppTheme.colors.accent,
@@ -157,7 +164,7 @@ fun BrowserPage(
                                     when (step) {
                                         WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_message_request
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
-                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else R.string.web3_signing_failed
+                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else if (tipGas == null) R.string.Data_error else R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                         else -> R.string.web3_message_request
                                     }
@@ -165,7 +172,7 @@ fun BrowserPage(
                                     when (step) {
                                         WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing_confirmation
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
-                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else R.string.web3_signing_failed
+                                        WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else if (tipGas == null) R.string.Data_error else R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
                                         else -> R.string.web3_signing_confirmation
                                     }
@@ -276,17 +283,9 @@ fun BrowserPage(
                 Box(modifier = Modifier.height(20.dp))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
-                if ((tipGas == null && data == null) || step == WalletConnectBottomSheetDialogFragment.Step.Loading || step == WalletConnectBottomSheetDialogFragment.Step.Sending) {
+                if ((tipGas == null && data == null && step != WalletConnectBottomSheetDialogFragment.Step.Error) || step == WalletConnectBottomSheetDialogFragment.Step.Loading || step == WalletConnectBottomSheetDialogFragment.Step.Sending) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
-                        Box(modifier = Modifier.height(20.dp))
-                        CircularProgressIndicator(
-                            modifier =
-                            Modifier
-                                .size(40.dp)
-                                .align(Alignment.CenterHorizontally),
-                            color = MixinAppTheme.colors.accent,
-                        )
-                        Box(modifier = Modifier.height(20.dp))
+                        Box(modifier = Modifier.height(80.dp))
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                     Row(

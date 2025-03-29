@@ -114,27 +114,6 @@
                 android:layout_marginStart="36dp"
                 android:src="@drawable/ic_web3_chain_base_eth" />
 
-            <one.mixin.android.widget.CircleImageView
-                android:id="@+id/avatar_5"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="48dp"
-                android:src="@drawable/ic_web3_chain_arbitrum_eth" />
-
-            <one.mixin.android.widget.CircleImageView
-                android:id="@+id/avatar_6"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="60dp"
-                android:src="@drawable/ic_web3_chain_optimism_eth" />
-
-            <one.mixin.android.widget.CircleImageView
-                android:id="@+id/avatar_7"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="60dp"
-                android:src="@drawable/ic_web3_chain_blast" />
-
         </FrameLayout>
 
     </LinearLayout>

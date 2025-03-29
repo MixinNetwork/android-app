@@ -24,31 +24,26 @@ class RefreshDappJob : BaseJob(
     override fun onRun(): Unit =
         runBlocking {
             userRepo.getBotPublicKey(WEB3_BOT_USER_ID, false)
-            val response = web3Service.dapps()
+            val response = routeService.dapps()
             if (response.isSuccess && response.data != null) {
                 val gson = GsonHelper.customGson
                 val chainDapp = response.data!!
                 chainDapp.forEach {
-                    val rpc = it.rpcUrls.firstOrNull() ?: it.rpc
                     when (it.chainId) {
                         Chain.Ethereum.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Ethereum.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Ethereum.chainId, rpc)
                         }
 
                         Chain.BinanceSmartChain.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.BinanceSmartChain.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.BinanceSmartChain.chainId, rpc)
                         }
 
                         Chain.Polygon.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Polygon.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Polygon.chainId, rpc)
                         }
 
                         Chain.Solana.assetId -> {
                             MixinApplication.appContext.defaultSharedPreferences.putString("dapp_${Chain.Solana.chainId}", gson.toJson(it.dapps))
-                            MixinApplication.appContext.defaultSharedPreferences.putString(Chain.Solana.chainId, rpc)
                         }
                     }
                 }

@@ -7,8 +7,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
+import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
@@ -22,6 +24,10 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideFtsDb(app: Application) = FtsDatabase.getDatabase(app)
+
+    @Singleton
+    @Provides
+    fun provideWalletDatabase(app: Application) = WalletDatabase.getDatabase(app)
 
     @Singleton
     @Provides
@@ -226,5 +232,37 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideOrderDao(db: MixinDatabase) = db.orderDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3TokenDao(db: WalletDatabase) = db.web3TokenDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3TransactionDao(db: WalletDatabase) = db.web3TransactionDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3WalletDao(db: WalletDatabase) = db.web3WalletDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3AddressDao(db: WalletDatabase) = db.web3AddressDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3TokensExtraDao(db: WalletDatabase) = db.web3TokensExtraDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3ChainDao(db: WalletDatabase) = db.web3ChainDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3PropertyDao(db: WalletDatabase) = db.web3PropertyDao()
+
+    @Singleton
+    @Provides
+    fun provideWeb3RawTransactionDao(db: WalletDatabase) = db.web3RawTransactionDao()
 
 }

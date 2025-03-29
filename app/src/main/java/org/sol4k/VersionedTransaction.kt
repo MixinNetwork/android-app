@@ -43,14 +43,14 @@ class VersionedTransaction(
         return b.readByteArray()
     }
 
-    fun setPriorityFee(unitPrice: Long, unitLimit: Int): Boolean {
+    fun setPriorityFee(unitPrice: String, unitLimit: String): Boolean {
         val voidSig = Base58.encode(ByteArray(SIGNATURE_LENGTH))
         if (signatures.any { s ->
             s != voidSig
         }) {
             return false
         }
-        message.setPriorityFee(unitPrice, unitLimit)
+        message.setPriorityFee(unitPrice.toLong(), unitLimit.toInt())
         // TODO check tx exceed max size?
         return true
     }

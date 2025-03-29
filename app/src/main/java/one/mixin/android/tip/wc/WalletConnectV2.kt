@@ -14,6 +14,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -28,7 +29,6 @@ import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
-import one.mixin.android.web3.js.getSolanaRpc
 import org.sol4k.Keypair
 import org.sol4k.VersionedTransaction
 import org.sol4k.api.Commitment
@@ -37,12 +37,7 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.protocol.core.methods.response.EthBlock
-import org.web3j.protocol.core.methods.response.EthEstimateGas
-import org.web3j.protocol.core.methods.response.EthMaxPriorityFeePerGas
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
@@ -222,21 +217,6 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun ethEstimateGas(
-        chain: Chain,
-        transaction: Transaction,
-    ): EthEstimateGas? {
-        return getWeb3j(chain).ethEstimateGas(transaction).send()
-    }
-
-    fun ethBlock(chain: Chain): EthBlock? {
-        return getWeb3j(chain).ethGetBlockByNumber(DefaultBlockParameterName.PENDING, false).send()
-    }
-
-    fun ethMaxPriorityFeePerGas(chain: Chain): EthMaxPriorityFeePerGas? {
-        return getWeb3j(chain).ethMaxPriorityFeePerGas().send()
-    }
-
     private fun <T> flattenCollections(collection: List<List<T>?>): List<T> {
         val result = mutableListOf<T>()
         for (innerCollection in collection) {
@@ -391,11 +371,13 @@ object WalletConnectV2 : WalletConnect() {
         return signData
     }
 
-    fun approveRequest(
+    suspend fun approveRequest(
         priv: ByteArray,
         chain: Chain,
         topic: String,
         signData: WCSignData.V2SignData<*>,
+        getBlockhash: suspend () -> String,
+        getNonce: suspend (String) -> BigInteger
     ): Any? {
         val sessionRequest = getSessionRequest(topic)
         if (sessionRequest == null) {
@@ -412,18 +394,17 @@ object WalletConnectV2 : WalletConnect() {
             signData as WCSignData.V2SignData<WCEthereumTransaction>
             when (signData.sessionRequest.request.method) {
                 Method.ETHSignTransaction.name -> {
-                    return ethSignTransaction(priv, chain, sessionRequest, signData, true)
+                    return ethSignTransaction(priv, chain, sessionRequest, signData, true, getNonce)
                 }
                 Method.ETHSendTransaction.name -> {
-                    return ethSignTransaction(priv, chain, sessionRequest, signData, false)
+                    return ethSignTransaction(priv, chain, sessionRequest, signData, false, getNonce)
                 }
             }
         } else if (signMessage is VersionedTransaction) {
             val holder = Keypair.fromSecretKey(priv)
             // use latest blockhash should not break other signatures
             if (signMessage.signatures.size <= 1) {
-                val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
-                signMessage.message.recentBlockhash = blockhash
+                signMessage.message.recentBlockhash = getBlockhash()
             }
             signMessage.sign(holder)
             return signMessage
@@ -540,22 +521,6 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun sendTransaction(
-        chain: Chain,
-        sessionRequest: Wallet.Model.SessionRequest,
-        signedTransactionData: String,
-    ) {
-        val tx = getWeb3j(chain).ethSendRawTransaction(signedTransactionData).send()
-        if (tx.hasError()) {
-            val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            rejectRequest(msg, sessionRequest)
-            throw WalletConnectException(tx.error.code, tx.error.message)
-        }
-        val transactionHash = tx.transactionHash
-        Timber.d("$TAG sendTransaction $transactionHash")
-        approveRequestInternal(transactionHash, sessionRequest)
-    }
 
     private fun ethSignMessage(
         priv: ByteArray,
@@ -565,24 +530,20 @@ object WalletConnectV2 : WalletConnect() {
         approveRequestInternal(signMessage(priv, signData.signMessage), sessionRequest)
     }
 
-    private fun ethSignTransaction(
+    private suspend fun ethSignTransaction(
         priv: ByteArray,
         chain: Chain,
         sessionRequest: Wallet.Model.SessionRequest,
         signData: WCSignData.V2SignData<WCEthereumTransaction>,
         approve: Boolean,
+        getNonce: suspend (String) -> BigInteger,
     ): String {
         val transaction = signData.signMessage
         val value = transaction.value ?: "0x0"
 
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val transactionCount =
-            getWeb3j(chain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
-        if (transactionCount.hasError()) {
-            throwError(transactionCount.error)
-        }
-        val nonce = transactionCount.transactionCount
+        val nonce = getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
         val tipGas = signData.tipGas
         if (tipGas == null) {
@@ -591,7 +552,7 @@ object WalletConnectV2 : WalletConnect() {
         }
 
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
-        val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
+        val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
         Timber.e("$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${transaction.maxPriorityFeePerGas?.let { Numeric.decodeQuantity(it) }} ")
         Timber.e("$TAG nonce: $nonce, value $v wei, gasLimit: $gasLimit maxFeePerGas: $maxFeePerGas maxPriorityFeePerGas: $maxPriorityFeePerGas")
@@ -606,7 +567,6 @@ object WalletConnectV2 : WalletConnect() {
                 maxPriorityFeePerGas,
                 maxFeePerGas,
             )
-
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, chain.chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
@@ -614,28 +574,6 @@ object WalletConnectV2 : WalletConnect() {
             approveRequestInternal(hexMessage, sessionRequest)
         }
         return hexMessage
-    }
-
-    @Suppress("unused")
-    private fun ethSendTransaction(
-        web3j: Web3j,
-        priv: ByteArray,
-        chain: Chain,
-        sessionRequest: Wallet.Model.SessionRequest,
-        signData: WCSignData.V2SignData<WCEthereumTransaction>,
-    ) {
-        val hexMessage = ethSignTransaction(priv, chain, sessionRequest, signData, false)
-        val result = web3j.ethSendRawTransaction(hexMessage).send()
-        if (result.hasError()) {
-            val msg = "error code: ${result.error.code}, message: ${result.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            rejectRequest(msg, sessionRequest)
-            throw WalletConnectException(result.error.code, result.error.message)
-        } else {
-            val transactionHash = result.transactionHash
-            Timber.d("$TAG sendTransaction $transactionHash")
-            approveRequestInternal(transactionHash, sessionRequest)
-        }
     }
 
     fun approveSolanaTransaction(

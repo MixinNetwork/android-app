@@ -14,11 +14,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.web3.StakeAction
 import one.mixin.android.api.request.web3.StakeRequest
-import one.mixin.android.api.response.solLamportToAmount
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.isActiveState
+import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs

@@ -1,17 +1,10 @@
 package one.mixin.android.ui.home.web3.swap
 
 import android.content.Context
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -21,11 +14,10 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.api.service.Web3Service
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
@@ -45,7 +37,6 @@ class SwapViewModel
         private val jobManager: MixinJobManager,
         private val tokenRepository: TokenRepository,
         private val userRepository: UserRepository,
-        private val web3Service: Web3Service,
     ) : ViewModel() {
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
@@ -113,15 +104,6 @@ class SwapViewModel
     }
 
     suspend fun searchTokens(query: String, inMixin: Boolean) = assetRepository.searchTokens(query, inMixin)
-
-    suspend fun web3Tokens(chain: String, address: List<String>? = null): List<Web3Token> {
-        return handleMixinResponse(
-            invokeNetwork = { web3Service.web3Tokens(chain = chain, addresses = address?.joinToString(",")) },
-            successBlock = {
-                return@handleMixinResponse it.data
-            },
-        ) ?: emptyList()
-    }
 
     suspend fun syncAndFindTokens(assetIds: List<String>): List<TokenItem> =
         tokenRepository.syncAndFindTokens(assetIds)

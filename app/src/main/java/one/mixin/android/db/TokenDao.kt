@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PriceAndChange
@@ -33,6 +34,9 @@ interface TokenDao : BaseDao<Token> {
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE ae.hidden IS NULL OR NOT ae.hidden $POSTFIX_ASSET_ITEM"
     }
+
+    @Query("$PREFIX_ASSET_ITEM")
+    fun assetFlow(): Flow<List<TokenItem>>
 
     @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
     fun assets(): LiveData<List<Token>>

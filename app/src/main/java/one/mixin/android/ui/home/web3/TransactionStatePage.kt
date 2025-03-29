@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.isFinalTxState
+import one.mixin.android.api.response.web3.isNotFound
 import one.mixin.android.api.response.web3.isTxFailed
 import one.mixin.android.api.response.web3.isTxSuccess
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -160,6 +161,8 @@ private fun StateInfo(
                             R.string.Transaction_Success
                         } else if (tx.state.isTxFailed()) {
                             R.string.Transaction_Failed
+                        } else if (tx.state.isNotFound()) {
+                            R.string.Transaction_Not_Found
                         } else {
                             R.string.Confirming_Transaction
                         },

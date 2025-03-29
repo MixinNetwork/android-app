@@ -38,8 +38,14 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,9 +55,11 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
@@ -64,8 +72,8 @@ import one.mixin.android.vo.safe.TokenItem
 @Composable
 fun TransferDestinationInputPage(
     token: TokenItem?,
-    web3Token: Web3Token?,
-    web3Chain: Web3Token?,
+    web3Token: Web3TokenItem?,
+    web3Chain: Web3TokenItem?,
     addressShown: Boolean,
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
@@ -165,7 +173,7 @@ fun TransferDestinationInputPage(
                                 text = it
                             },
                             modifier = Modifier
-                                .height(96.dp),
+                                .height(120.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 backgroundColor = Color.Transparent,
                                 textColor = MixinAppTheme.colors.textPrimary,
@@ -191,7 +199,30 @@ fun TransferDestinationInputPage(
                                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
                             ),
                             minLines = 3,
-                            maxLines = 3
+                            maxLines = 3,
+                            visualTransformation = if (text.isExternalTransferUrl() || text.isLightningUrl()) {
+                                VisualTransformation { input ->
+                                    val inputText = input.text
+                                    if (inputText.length <= 12) return@VisualTransformation TransformedText(input, OffsetMapping.Identity)
+                                    
+                                    val annotatedString = buildAnnotatedString {
+                                        append(inputText)
+                                        addStyle(
+                                            style = SpanStyle(fontWeight = FontWeight.ExtraBold),
+                                            start = 0,
+                                            end = 6.coerceAtMost(inputText.length)
+                                        )
+                                        addStyle(
+                                            style = SpanStyle(fontWeight = FontWeight.ExtraBold),
+                                            start = (inputText.length - 6).coerceAtLeast(0),
+                                            end = inputText.length
+                                        )
+                                    }
+                                    TransformedText(annotatedString, OffsetMapping.Identity)
+                                }
+                            } else {
+                                VisualTransformation.None
+                            }
                         )
 
                         if (text.isNotBlank()) {
@@ -242,17 +273,11 @@ fun TransferDestinationInputPage(
                             if (account.isBlank().not()) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    stringResource(
-                                        R.string.Web3_Account,
-                                        token?.chainName ?: ""
-                                    ),
-                                    stringResource(
-                                        R.string.Send_to_web3_wallet_description,
-                                        token?.chainName ?: ""
-                                    ),
+                                    stringResource(R.string.Common_Wallet),
+                                    stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toAccount.invoke(account)
-                                    })
+                                   })
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (token != null) {
@@ -269,8 +294,8 @@ fun TransferDestinationInputPage(
                             if (web3Token != null) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    R.string.Mixin_Wallet,
-                                    R.string.Send_to_Contact_description,
+                                    R.string.Privacy_Wallet,
+                                    stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toWallet.invoke()
                                     }

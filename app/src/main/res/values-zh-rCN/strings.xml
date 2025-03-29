@@ -1123,6 +1123,7 @@
     <string name="Voice_call">语音通话</string>
     <string name="Waiting">等待中</string>
     <string name="Wallet">钱包</string>
+    <string name="Wallets">钱包</string>
     <string name="wallet_add_asset_already_hidden">资产 %1$s 已被你隐藏，要在钱包首页立刻显示？</string>
     <string name="wallet_address_add_tip">Mixin 不支持提现到</string>
     <string name="wallet_already_hidden">已隐藏 %1$s</string>
@@ -1370,7 +1371,7 @@
     <string name="Send_crypto_to_contact">使用 Mixin 网络向 Mixin 联系人发送加密货币。</string>
     <string name="send_to_address_description">通过区块链网络转给已知地址</string>
     <string name="Send_to_Contact_description">通过 Mixin 网络转给我的 Mixin 联系人</string>
-    <string name="Send_to_web3_wallet_description">通过区块链网络转给我的 %1$s 账户</string>
+    <string name="Send_to_web3_wallet_description">通过区块链网络转给我的其他钱包</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
     <string name="Contact_Support">联系客服</string>
@@ -1491,7 +1492,7 @@
     <string name="copy_address">复制地址</string>
     <string name="copy_contract_address">复制合约地址</string>
     <string name="coming_soon">即将推出</string>
-    <string name="web3_deposit_description_evm">使用此地址在 Ethereum、Polygon、BSC、Base、Arbitrum、Optimism、Blast 网络上接收代币</string>
+    <string name="web3_deposit_description_evm">使用此地址在 Ethereum、Polygon、BSC、Base 网络上接收代币</string>
     <string name="web3_deposit_description_solana">使用此地址在 Solana 网络上接收代币</string>
     <string name="No_asset">没有资产</string>
     <string name="Ethereum_Account">Ethereum 账户</string>
@@ -1521,6 +1522,7 @@
     <string name="Confirming_Transaction">正在确认交易</string>
     <string name="Transaction_Success">交易成功</string>
     <string name="Transaction_Failed">交易失败</string>
+    <string name="Transaction_Not_Found">交易不存在</string>
     <string name="Slippage">滑点</string>
     <string name="slippage_auto">自动</string>
     <string name="slippage_auto_desc">根据不同币种推荐合适的滑点，帮助你交易成功</string>
@@ -1860,5 +1862,9 @@
     <string name="Address_Book">地址簿</string>
     <string name="insufficient_fee_description">需要 %1$s 以支付 %2$s 网络费用</string>
     <string name="Send_To_Title">转给</string>
+    <string name="Common_Wallet">普通钱包</string>
+    <string name="My_Wallet_desc">使用加密网络从我的另一个钱包接收。</string>
+    <string name="Exchanges_or_Wallets">交易所或钱包</string>
+    <string name="Exchanges_or_Wallets_desc">使用加密网络从其他交易所或链上钱包接收。</string>
     <string name="View_Document">查看文档</string>
 </resources>

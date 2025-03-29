@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.MixinTopAppBar
@@ -20,6 +21,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun PageScaffold(
     title: String,
+    subtitle: String? = null,
     verticalScrollable: Boolean = true,
     pop: (() -> Unit)?,
     actions: @Composable RowScope.() -> Unit = {},
@@ -30,7 +32,23 @@ fun PageScaffold(
         topBar = {
             MixinTopAppBar(
                 title = {
-                    Text(title)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = title,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (subtitle != null) {
+                            Text(
+                                text = subtitle,
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 },
                 actions = actions,
                 navigationIcon = {

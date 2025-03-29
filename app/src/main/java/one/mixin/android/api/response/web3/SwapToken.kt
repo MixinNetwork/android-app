@@ -3,8 +3,8 @@ package one.mixin.android.api.response.web3
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.api.response.solanaNativeTokenAssetKey
-import one.mixin.android.api.response.wrappedSolTokenAssetKey
+import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
+import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -23,6 +23,7 @@ data class SwapToken(
     var balance: String? = null,
     var collectionHash: String? = null,
     var changeUsd: String? = null,
+    var isWeb3: Boolean = false
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -36,30 +37,35 @@ data class SwapToken(
 
     fun toStringAmount(amount: String): String {
         return if (address.isNotEmpty()) {
-            realAmount(amount).stripTrailingZeros().toPlainString()
+            realAmount(BigDecimal(amount)).stripTrailingZeros().toPlainString()
         } else {
             amount
         }
     }
 
-    fun realAmount(amount: String): BigDecimal {
+    fun toStringAmount(amount: Long): String {
         return if (address.isNotEmpty()) {
-            BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
+            realAmount(amount.toBigDecimal()).stripTrailingZeros().toPlainString()
         } else {
-            BigDecimal(amount)
+            amount.toBigDecimal().toPlainString()
+        }
+    }
+
+    fun realAmount(amount: BigDecimal): BigDecimal {
+        return if (address.isNotEmpty()) {
+            amount.divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
+        } else {
+            amount
         }
     }
 
     fun getUnique(): String {
-        return assetId.ifEmpty {
-            assetKey
-        }
+        return if (isWeb3 || assetId.isEmpty()) assetKey
+        else assetId
     }
 
-    val assetKey: String
+    private val assetKey: String
         get() = if (address == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else address
-
-    fun inMixin(): Boolean = assetId != ""
 
     override fun equals(other: Any?): Boolean {
         if (other !is SwapToken) return false
