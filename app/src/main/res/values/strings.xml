@@ -1913,4 +1913,5 @@
     <string name="Exchanges_or_Wallets">Exchanges or Wallets</string>
     <string name="Exchanges_or_Wallets_desc">Receive from other exchange or on-chain wallet using a crypto network.</string>
     <string name="View_Document">View Document</string>
+    <string name="Total_assets">Total assets</string>
 </resources>

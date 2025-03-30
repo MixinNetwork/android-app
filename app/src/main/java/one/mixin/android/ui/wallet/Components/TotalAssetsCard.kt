@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +39,7 @@ fun TotalAssetsCard(
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
-        Text("Total assets", color = MixinAppTheme.colors.textPrimary)
+        Text(stringResource(R.string.Total_assets), color = MixinAppTheme.colors.textPrimary)
         Spacer(modifier = Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
