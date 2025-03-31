@@ -17,8 +17,10 @@ import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
+import kotlin.collections.map
 
 @HiltViewModel
 class AssetDistributionViewModel @Inject constructor(
@@ -28,64 +30,88 @@ class AssetDistributionViewModel @Inject constructor(
 
     private val _totalBalance = MutableStateFlow(BigDecimal.ZERO)
     val totalBalance: StateFlow<BigDecimal> = _totalBalance
-    
+
     private val _tokenTotalBalance = MutableStateFlow(BigDecimal.ZERO)
     val tokenTotalBalance: StateFlow<BigDecimal> = _tokenTotalBalance
-    
+
     private val _web3TokenTotalBalance = MutableStateFlow(BigDecimal.ZERO)
     val web3TokenTotalBalance: StateFlow<BigDecimal> = _web3TokenTotalBalance
 
     private val tokenFlow = tokenRepository.assetFlow()
-    
+
     private val web3TokenFlow = web3TokenDao.web3TokensFlow()
-    
+
     val wallets: Flow<List<Web3Wallet>> = tokenRepository.getWallets()
-    
+
     val tokenDistribution: Flow<List<AssetDistribution>> = tokenFlow
         .map { tokens ->
             val tokensWithValue = tokens
                 .filter { calculateTokenValue(it) > BigDecimal.ZERO }
                 .sortedByDescending { calculateTokenValue(it) }
-            
+
             val totalTokenValue = tokensWithValue.sumOf { calculateTokenValue(it) }
             _tokenTotalBalance.value = totalTokenValue
-            
+
             if (totalTokenValue == BigDecimal.ZERO || tokensWithValue.isEmpty()) {
                 return@map emptyList()
             }
-            
+
             when {
-                tokensWithValue.size <= 2 -> {
+                tokensWithValue.size == 1 -> {
                     tokensWithValue.map { token ->
-                        val value = calculateTokenValue(token)
-                        val percentage = value.divide(totalTokenValue, 8, BigDecimal.ROUND_HALF_UP).toFloat()
                         AssetDistribution(
                             symbol = token.symbol,
-                            percentage = percentage,
-                            icons = listOf(token.iconUrl ?: ""),
+                            percentage = 1f,
+                            icons = listOf(token.iconUrl),
                             count = 1
                         )
                     }
                 }
+
+                tokensWithValue.size == 2 -> {
+                    val token1 = tokensWithValue[0]
+                    val token2 = tokensWithValue[1]
+                    val value1 = calculateTokenValue(token1)
+
+                    // Calculate p1 with rounding down
+                    val p1 = value1.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    // Calculate p2 as the remainder
+                    val p2 = (1f - p1).coerceIn(0f, 1f) // Coerce to handle potential float inaccuracies near 0 or 1
+
+                    listOf(
+                        AssetDistribution(
+                            symbol = token1.symbol,
+                            percentage = p1,
+                            icons = listOf(token1.iconUrl),
+                            count = 1
+                        ),
+                        AssetDistribution(
+                            symbol = token2.symbol,
+                            percentage = p2,
+                            icons = listOf(token2.iconUrl),
+                            count = 1
+                        )
+                    )
+                }
+
                 else -> {
                     val top2 = tokensWithValue.take(2)
                     val others = tokensWithValue.drop(2)
-                    
+
                     val top2Distributions = top2.map { token ->
                         val value = calculateTokenValue(token)
-                        val percentage = value.divide(totalTokenValue, 8, BigDecimal.ROUND_HALF_UP).toFloat()
+                        val percentage = value.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
                         AssetDistribution(
                             symbol = token.symbol,
                             percentage = percentage,
-                            icons = listOf(token.iconUrl ?: ""),
+                            icons = listOf(token.iconUrl),
                             count = 1
                         )
                     }
-                    
-                    val othersValue = others.sumOf { calculateTokenValue(it) }
-                    val othersPercentage = othersValue.divide(totalTokenValue, 8, BigDecimal.ROUND_HALF_UP).toFloat()
+
+                    val othersPercentage = 1f - top2Distributions[0].percentage - top2Distributions[1].percentage
                     val othersIcons = others.take(3).map { it.iconUrl ?: "" }
-                    
+
                     top2Distributions + AssetDistribution(
                         symbol = MixinApplication.appContext.getString(R.string.Other),
                         percentage = othersPercentage,
@@ -101,52 +127,77 @@ class AssetDistributionViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-    
+
     val web3TokenDistribution: Flow<List<AssetDistribution>> = web3TokenFlow
         .map { tokens ->
             val tokensWithValue = tokens
                 .filter { calculateWeb3TokenValue(it) > BigDecimal.ZERO }
                 .sortedByDescending { calculateWeb3TokenValue(it) }
-            
+
             val totalWeb3Value = tokensWithValue.sumOf { calculateWeb3TokenValue(it) }
             _web3TokenTotalBalance.value = totalWeb3Value
-            
+
             if (totalWeb3Value == BigDecimal.ZERO || tokensWithValue.isEmpty()) {
                 return@map emptyList()
             }
-            
+
             when {
-                tokensWithValue.size <= 2 -> {
+                tokensWithValue.size == 1 -> {
                     tokensWithValue.map { token ->
-                        val value = calculateWeb3TokenValue(token)
-                        val percentage = value.divide(totalWeb3Value, 8, BigDecimal.ROUND_HALF_UP).toFloat()
                         AssetDistribution(
                             symbol = token.symbol,
-                            percentage = percentage,
-                            icons = listOf(token.iconUrl ?: ""),
+                            percentage = 1f,
+                            icons = listOf(token.iconUrl),
                             count = 1
                         )
                     }
                 }
+
+                tokensWithValue.size == 2 -> {
+                    val token1 = tokensWithValue[0]
+                    val token2 = tokensWithValue[1]
+                    val value1 = calculateWeb3TokenValue(token1)
+
+                    // Calculate p1 with rounding down
+                    val p1 = value1.divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    // Calculate p2 as the remainder
+                    val p2 = (1f - p1).coerceIn(0f, 1f) // Coerce to handle potential float inaccuracies near 0 or 1
+
+                    listOf(
+                        AssetDistribution(
+                            symbol = token1.symbol,
+                            percentage = p1,
+                            icons = listOf(token1.iconUrl),
+                            count = 1
+                        ),
+                        AssetDistribution(
+                            symbol = token2.symbol,
+                            percentage = p2,
+                            icons = listOf(token2.iconUrl),
+                            count = 1
+                        )
+                    )
+                }
+
                 else -> {
                     val top2 = tokensWithValue.take(2)
                     val others = tokensWithValue.drop(2)
-                    
+
                     val top2Distributions = top2.map { token ->
                         val value = calculateWeb3TokenValue(token)
-                        val percentage = value.divide(totalWeb3Value, 8, BigDecimal.ROUND_HALF_UP).toFloat()
+                        val percentage =
+                            value.divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
                         AssetDistribution(
                             symbol = token.symbol,
                             percentage = percentage,
-                            icons = listOf(token.iconUrl ?: ""),
+                            icons = listOf(token.iconUrl),
                             count = 1
                         )
                     }
-                    
-                    val othersValue = others.sumOf { calculateWeb3TokenValue(it) }
-                    val othersPercentage = othersValue.divide(totalWeb3Value, 8, BigDecimal.ROUND_HALF_UP).toFloat()
-                    val othersIcons = others.take(3).map { it.iconUrl ?: "" }
-                    
+
+                    val othersPercentage = 1f - top2Distributions[0].percentage - top2Distributions[1].percentage
+                    val othersIcons = others.take(3).map { it.iconUrl }
+
                     top2Distributions + AssetDistribution(
                         symbol = MixinApplication.appContext.getString(R.string.Other),
                         percentage = othersPercentage,
@@ -162,7 +213,7 @@ class AssetDistributionViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-    
+
     val combinedAssetDistribution: Flow<List<AssetDistribution>> = tokenFlow.combine(web3TokenFlow) { tokens, web3Tokens ->
         val tokenValues = tokens
             .filter { calculateTokenValue(it) > BigDecimal.ZERO }
@@ -179,36 +230,63 @@ class AssetDistributionViewModel @Inject constructor(
         val allAssets = (tokenValues + web3TokenValues)
             .sortedByDescending { it.value }
         
+
         val totalValue = allAssets.sumOf { it.value }
         _totalBalance.value = totalValue
-        
+
         if (totalValue == BigDecimal.ZERO || allAssets.isEmpty()) {
             return@combine emptyList()
         }
-        
+
         when {
-            allAssets.size <= 2 -> {
+            allAssets.size == 1 -> {
                 allAssets.map { (symbol, value, icons) ->
-                    val percentage = value.divide(totalValue, 8, BigDecimal.ROUND_HALF_UP).toFloat()
-                    AssetDistribution(symbol, percentage, icons)
+                    AssetDistribution(symbol, 1f, icons)
                 }
             }
+
+            allAssets.size == 2 -> {
+                val asset1 = allAssets[0]
+                val asset2 = allAssets[1]
+                val value1 = asset1.value
+
+                // Calculate p1 with rounding down
+                val p1 = value1.divide(totalValue, 2, BigDecimal.ROUND_DOWN).toFloat()
+                // Calculate p2 as the remainder
+                val p2 = (1f - p1).coerceIn(0f, 1f) // Coerce to handle potential float inaccuracies near 0 or 1
+
+                listOf(
+                    AssetDistribution(
+                        symbol = asset1.symbol,
+                        percentage = p1,
+                        icons = asset1.icons,
+                        count = 1
+                    ),
+                    AssetDistribution(
+                        symbol = asset2.symbol,
+                        percentage = p2,
+                        icons = asset2.icons,
+                        count = 1
+                    )
+                )
+            }
+
             else -> {
                 val top2 = allAssets.take(2)
                 val others = allAssets.drop(2)
-                
+
                 val top2Distributions = top2.map { (symbol, value, icons) ->
-                    val percentage = value.divide(totalValue, 8, BigDecimal.ROUND_HALF_UP).toFloat()
+                    val percentage = value.divide(totalValue, 2, BigDecimal.ROUND_DOWN).toFloat()
                     AssetDistribution(symbol, percentage, icons)
                 }
-                
+
                 val othersValue = others.sumOf { it.value }
-                val othersPercentage = othersValue.divide(totalValue, 8, BigDecimal.ROUND_HALF_UP).toFloat()
+                val othersPercentage = 1f - top2Distributions[0].percentage - top2Distributions[1].percentage
                 val othersIcons = others.take(3).flatMap { it.icons }
-                
+
                 top2Distributions + AssetDistribution(
-                    MixinApplication.appContext.getString(R.string.Other), 
-                    othersPercentage, 
+                    MixinApplication.appContext.getString(R.string.Other),
+                    othersPercentage,
                     othersIcons,
                     others.size,
                     isOthers = true
@@ -223,7 +301,7 @@ class AssetDistributionViewModel @Inject constructor(
     )
 
     private data class AssetValuePair(val symbol: String, val value: BigDecimal, val icons: List<String>)
-    
+
     private fun calculateTokenValue(token: TokenItem): BigDecimal {
         return try {
             BigDecimal(token.balance).multiply(BigDecimal(token.priceUsd))
@@ -231,7 +309,7 @@ class AssetDistributionViewModel @Inject constructor(
             BigDecimal.ZERO
         }
     }
-    
+
     private fun calculateWeb3TokenValue(token: Web3Token): BigDecimal {
         return try {
             BigDecimal(token.balance).multiply(BigDecimal(token.priceUsd))
