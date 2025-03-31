@@ -69,16 +69,29 @@ class AssetDistributionViewModel @Inject constructor(
                 }
 
                 tokensWithValue.size == 2 -> {
-                    tokensWithValue.map { token ->
-                        val value = calculateTokenValue(token)
-                        val percentage = value.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    val token1 = tokensWithValue[0]
+                    val token2 = tokensWithValue[1]
+                    val value1 = calculateTokenValue(token1)
+
+                    // Calculate p1 with rounding down
+                    val p1 = value1.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    // Calculate p2 as the remainder
+                    val p2 = (1f - p1).coerceIn(0f, 1f) // Coerce to handle potential float inaccuracies near 0 or 1
+
+                    listOf(
                         AssetDistribution(
-                            symbol = token.symbol,
-                            percentage = percentage,
-                            icons = listOf(token.iconUrl),
+                            symbol = token1.symbol,
+                            percentage = p1,
+                            icons = listOf(token1.iconUrl),
+                            count = 1
+                        ),
+                        AssetDistribution(
+                            symbol = token2.symbol,
+                            percentage = p2,
+                            icons = listOf(token2.iconUrl),
                             count = 1
                         )
-                    }
+                    )
                 }
 
                 else -> {
@@ -141,16 +154,29 @@ class AssetDistributionViewModel @Inject constructor(
                 }
 
                 tokensWithValue.size == 2 -> {
-                    tokensWithValue.map { token ->
-                        val value = calculateWeb3TokenValue(token)
-                        val percentage = value.divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    val token1 = tokensWithValue[0]
+                    val token2 = tokensWithValue[1]
+                    val value1 = calculateWeb3TokenValue(token1)
+
+                    // Calculate p1 with rounding down
+                    val p1 = value1.divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    // Calculate p2 as the remainder
+                    val p2 = (1f - p1).coerceIn(0f, 1f) // Coerce to handle potential float inaccuracies near 0 or 1
+
+                    listOf(
                         AssetDistribution(
-                            symbol = token.symbol,
-                            percentage = percentage,
-                            icons = listOf(token.iconUrl),
+                            symbol = token1.symbol,
+                            percentage = p1,
+                            icons = listOf(token1.iconUrl),
+                            count = 1
+                        ),
+                        AssetDistribution(
+                            symbol = token2.symbol,
+                            percentage = p2,
+                            icons = listOf(token2.iconUrl),
                             count = 1
                         )
-                    }
+                    )
                 }
 
                 else -> {
@@ -220,10 +246,29 @@ class AssetDistributionViewModel @Inject constructor(
             }
 
             allAssets.size == 2 -> {
-                allAssets.map { (symbol, value, icons) ->
-                    val percentage = value.divide(totalValue, 2, BigDecimal.ROUND_DOWN).toFloat()
-                    AssetDistribution(symbol, percentage, icons)
-                }
+                val asset1 = allAssets[0]
+                val asset2 = allAssets[1]
+                val value1 = asset1.value
+
+                // Calculate p1 with rounding down
+                val p1 = value1.divide(totalValue, 2, BigDecimal.ROUND_DOWN).toFloat()
+                // Calculate p2 as the remainder
+                val p2 = (1f - p1).coerceIn(0f, 1f) // Coerce to handle potential float inaccuracies near 0 or 1
+
+                listOf(
+                    AssetDistribution(
+                        symbol = asset1.symbol,
+                        percentage = p1,
+                        icons = asset1.icons,
+                        count = 1
+                    ),
+                    AssetDistribution(
+                        symbol = asset2.symbol,
+                        percentage = p2,
+                        icons = asset2.icons,
+                        count = 1
+                    )
+                )
             }
 
             else -> {
