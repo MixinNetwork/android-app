@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -103,24 +104,36 @@ fun SwapOrderListPage(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    items(
-                        count = orders.itemCount,
-                        key = orders.itemKey { it.orderId }
-                    ) { index ->
-                        val order = orders[index] ?: return@items
-
-                        val previousOrder = if (index > 0) orders[index - 1] else null
-                        val showDateHeader = previousOrder == null ||
-                                previousOrder.createdAt?.hashForDate() != order.createdAt.hashForDate()
-
-                        if (showDateHeader) {
-                            DateHeader(date = order.createdAt.dayTime())
+                    val groupedOrders = mutableMapOf<Long, MutableList<Int>>()
+                    for (i in 0 until orders.itemCount) {
+                        val order = orders[i] ?: continue
+                        val dateHash = order.createdAt.hashForDate()
+                        if (!groupedOrders.containsKey(dateHash)) {
+                            groupedOrders[dateHash] = mutableListOf()
                         }
-
-                        OrderItem(
-                            order = order,
-                            onClick = { onOrderClick(order.orderId) }
-                        )
+                        groupedOrders[dateHash]?.add(i)
+                    }
+                    
+                    val sortedDates = groupedOrders.keys.sortedByDescending { it }
+                    
+                    sortedDates.forEach { dateHash ->
+                        val indices = groupedOrders[dateHash] ?: return@forEach
+                        
+                        stickyHeader(key = "header_$dateHash") {
+                            val firstOrder = orders[indices.first()] ?: return@stickyHeader
+                            DateHeader(date = firstOrder.createdAt.dayTime())
+                        }
+                        
+                        items(
+                            count = indices.size,
+                            key = { idx -> orders[indices[idx]]?.orderId ?: "unknown" }
+                        ) { idx ->
+                            val order = orders[indices[idx]] ?: return@items
+                            OrderItem(
+                                order = order,
+                                onClick = { onOrderClick(order.orderId) }
+                            )
+                        }
                     }
                 }
             }
