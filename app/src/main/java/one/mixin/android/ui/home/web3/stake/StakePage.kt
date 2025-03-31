@@ -67,98 +67,103 @@ fun StakePage(
     onStake: () -> Unit,
     pop: () -> Unit,
 ) {
-    PageScaffold(
-        title = stringResource(id = R.string.Start_Staking),
-        verticalScrollable = true,
-        pop = pop,
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    MixinAppTheme {
+        PageScaffold(
+            title = stringResource(id = R.string.Start_Staking),
+            verticalScrollable = true,
+            pop = pop,
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .align(Alignment.CenterHorizontally),
-                text = stringResource(id = R.string.stake_choose_amount),
-                style =
-                TextStyle(
-                    fontWeight = FontWeight.W400,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 16.sp,
-                ),
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            Input(amountText, onInputChanged, onMax)
-            Spacer(modifier = Modifier.height(20.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = stringResource(id = R.string.Validator),
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .align(Alignment.CenterHorizontally),
+                    text = stringResource(id = R.string.stake_choose_amount),
                     style =
-                    TextStyle(
-                        fontWeight = FontWeight.W400,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 16.sp,
-                    ),
+                        TextStyle(
+                            fontWeight = FontWeight.W400,
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 16.sp,
+                        ),
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    modifier = Modifier.clickable { onChooseValidator.invoke() },
-                    text = stringResource(id = R.string.Choose),
-                    style =
-                    TextStyle(
-                        fontWeight = FontWeight.W400,
-                        color = MixinAppTheme.colors.accent,
-                        fontSize = 16.sp,
-                    ),
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            ValidatorInfo(validator = validator)
-            Spacer(modifier = Modifier.weight(1f))
-            val checkBalance = checkBalance(amountText, balance)
-            val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
-            val focusManager = LocalFocusManager.current
-            if (amountText.isNotEmpty()) {
-                Button(
+                Spacer(modifier = Modifier.height(20.dp))
+                Input(amountText, onInputChanged, onMax)
+                Spacer(modifier = Modifier.height(20.dp))
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading,
-                    onClick = {
-                        keyboardController?.hide()
-                        focusManager.clearFocus()
-                        onStake.invoke()
-                    },
-                    colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
-                    ),
-                    shape = RoundedCornerShape(32.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
+                    horizontalArrangement = Arrangement.Start,
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = Color.White,
-                        )
-                    } else {
-                        Text(
-                            text = if (checkBalance == false) "SOL ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Confirm),
-                            color = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
-                        )
-                    }
+                    Text(
+                        text = stringResource(id = R.string.Validator),
+                        style =
+                            TextStyle(
+                                fontWeight = FontWeight.W400,
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                            ),
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        modifier = Modifier.clickable { onChooseValidator.invoke() },
+                        text = stringResource(id = R.string.Choose),
+                        style =
+                            TextStyle(
+                                fontWeight = FontWeight.W400,
+                                color = MixinAppTheme.colors.accent,
+                                fontSize = 16.sp,
+                            ),
+                    )
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                ValidatorInfo(validator = validator)
+                Spacer(modifier = Modifier.weight(1f))
+                val checkBalance = checkBalance(amountText, balance)
+                val keyboardController =
+                    androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+                val focusManager = LocalFocusManager.current
+                if (amountText.isNotEmpty()) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
+                        onClick = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                            onStake.invoke()
+                        },
+                        colors =
+                            ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
+                            ),
+                        shape = RoundedCornerShape(32.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
+                        elevation =
+                            ButtonDefaults.elevation(
+                                pressedElevation = 0.dp,
+                                defaultElevation = 0.dp,
+                                hoveredElevation = 0.dp,
+                                focusedElevation = 0.dp,
+                            ),
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = Color.White,
+                            )
+                        } else {
+                            Text(
+                                text = if (checkBalance == false) "SOL ${stringResource(R.string.insufficient_balance)}" else stringResource(
+                                    R.string.Confirm
+                                ),
+                                color = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
             }
         }
     }
