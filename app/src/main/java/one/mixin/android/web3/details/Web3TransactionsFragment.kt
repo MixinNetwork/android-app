@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.TransactionType
@@ -54,6 +55,7 @@ import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
+import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
@@ -406,8 +408,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         }
 
         val stakeAccountSummary = StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString())
-        updateStake(stakeAccountSummary)
+        this.stakeAccounts = stakeAccounts
     }
+
+    var stakeAccounts: List<StakeAccount>? = null
 
     private fun updateStake(stakeAccountSummary: StakeAccountSummary?) {
         binding.stake.apply {
@@ -420,6 +424,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 amountTv.text = "${stakeAccountSummary.amount} SOL"
                 countTv.text = "${stakeAccountSummary.count} account"
                 stakeRl.setOnClickListener {
+                    navTo(StakingFragment.newInstance(ArrayList(stakeAccounts ?: emptyList()), token.balance), StakingFragment.TAG)
                 }
             }
         }
