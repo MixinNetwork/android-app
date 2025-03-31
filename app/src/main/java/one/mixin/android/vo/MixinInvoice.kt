@@ -285,6 +285,12 @@ data class MixinInvoice(
                     indexReferences = indexReferences,
                     hashReferences = hashReferences
                 )
+                
+                val existingEntryIndex = entries.indexOfFirst { it.traceId == entry.traceId }
+                if (existingEntryIndex >= 0) {
+                    throw IllegalArgumentException("Duplicate traceId found in invoice: ${entry.traceId}")
+                }
+                
                 entries.add(entry)
             }
 
