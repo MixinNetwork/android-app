@@ -235,7 +235,7 @@ fun PinKeyBoard(
                                         horizontalArrangement = Arrangement.spacedBy(24.dp),
                                     ) {
                                         items(6) { index ->
-                                            val hasContent = (if (index > 3) index - 1 else index) < pinCode.length
+                                            val hasContent = index < pinCode.length
                                             AnimatedContent(
                                                 targetState = hasContent,
                                                 transitionSpec = {
