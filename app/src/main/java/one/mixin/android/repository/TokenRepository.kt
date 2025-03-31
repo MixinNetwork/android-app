@@ -997,13 +997,13 @@ class TokenRepository
 
         suspend fun simulateWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
 
-        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest): MixinResponse<Web3RawTransaction> {
+        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest, assetId: String? = null): MixinResponse<Web3RawTransaction> {
             val r = routeService.postWeb3Tx(rawTxRequest)
             if (r.isSuccess) {
                 val raw = r.data!!
                 web3RawTransactionDao.insertSuspend(raw)
                 web3TransactionDao.deletePending(raw.hash, raw.chainId)
-                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
+                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, raw.account, "", "", raw.chainId, assetId?:"", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
             }
             return r
         }

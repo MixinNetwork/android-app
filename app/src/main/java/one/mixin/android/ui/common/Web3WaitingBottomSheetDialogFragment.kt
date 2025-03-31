@@ -11,7 +11,6 @@ import one.mixin.android.databinding.FragmentWaitingBottomSheetBinding
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
@@ -72,10 +71,6 @@ class Web3WaitingBottomSheetDialogFragment() : MixinBottomSheetDialogFragment() 
                         if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
-                            jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
-                        } else if (r.errorCode == 404){
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
-                            web3ViewModel.updateWeb3RawTransaction(transition.hash, TransactionType.TxNotFound.value)
                         }
                     }
                     delay(5_000)
