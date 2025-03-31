@@ -30,4 +30,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @Query("UPDATE transactions SET status = :type WHERE transaction_hash = :hash")
     fun updateRawTransaction(type: String, hash: String)
+    
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAllTransactions()
 }

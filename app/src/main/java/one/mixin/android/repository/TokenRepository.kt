@@ -69,6 +69,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.extension.hexString
@@ -139,6 +140,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.db.web3.Web3AddressDao
 
 @Singleton
 class TokenRepository
@@ -176,6 +178,7 @@ class TokenRepository
         private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
+        private val web3AddressDao: Web3AddressDao,
     ) {
         fun assets() = tokenService.assets()
 
@@ -513,6 +516,14 @@ class TokenRepository
 
         fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
             return web3TransactionDao.allTransactions(filterParams.buildQuery())
+        }
+
+        suspend fun deleteAllWeb3Transactions() {
+            val addresses = web3AddressDao.getAddress()
+            web3TransactionDao.deleteAllTransactions()
+            addresses.forEach { address ->
+                Web3PropertyHelper.deleteKeyValue(address.destination)
+            }
         }
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)

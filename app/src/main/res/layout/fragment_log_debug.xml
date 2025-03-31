@@ -118,4 +118,16 @@
         android:foreground="?android:attr/selectableItemBackground"
         android:textSize="16sp" />
 
+    <TextView
+        android:id="@+id/delete_web3_transactions"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:text="@string/Delete_Web3_Transactions"
+        android:textColor="@color/colorRed"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:textSize="16sp" />
+
 </LinearLayout>

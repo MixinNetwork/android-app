@@ -1872,4 +1872,8 @@
     <string name="Privacy_Wallet">隐私钱包</string>
     <string name="Other">其他</string>
     <string name="Total_assets">所有资产</string>
+    <string name="Delete_Web3_Transactions">删除 Web3 交易数据</string>
+    <string name="Delete_Web3_Transactions_Confirmation">确定要删除所有 Web3 交易数据吗？此操作不可恢复。删除后系统将重新同步数据。</string>
+    <string name="Web3_Transactions_Deleted">Web3 交易数据已删除，将重新同步数据</string>
+    <string name="Delete_Failed">删除失败: %1$s</string>
 </resources>
