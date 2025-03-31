@@ -40,6 +40,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -59,7 +62,7 @@ fun SwapOrderListPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
-    val orders by viewModel.swapOrders().collectAsState(emptyList())
+    val orders = viewModel.swapOrders.collectAsLazyPagingItems()
 
     MixinAppTheme {
         PageScaffold(
@@ -77,7 +80,7 @@ fun SwapOrderListPage(
                 }
             }
         ) {
-            if (orders.isEmpty()) {
+            if (orders.itemCount == 0) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,19 +103,24 @@ fun SwapOrderListPage(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    val groupedOrders = orders.groupBy { it.createdAt.hashForDate() }
-                    groupedOrders.forEach { (_, ordersInGroup) ->
-                        stickyHeader {
-                            DateHeader(
-                                date = ordersInGroup.firstOrNull()?.createdAt?.dayTime() ?: ""
-                            )
+                    items(
+                        count = orders.itemCount,
+                        key = orders.itemKey { it.orderId }
+                    ) { index ->
+                        val order = orders[index] ?: return@items
+
+                        val previousOrder = if (index > 0) orders[index - 1] else null
+                        val showDateHeader = previousOrder == null ||
+                                previousOrder.createdAt?.hashForDate() != order.createdAt.hashForDate()
+
+                        if (showDateHeader) {
+                            DateHeader(date = order.createdAt.dayTime())
                         }
-                        items(ordersInGroup) { order ->
-                            OrderItem(
-                                order = order,
-                                onClick = { onOrderClick(order.orderId) }
-                            )
-                        }
+
+                        OrderItem(
+                            order = order,
+                            onClick = { onOrderClick(order.orderId) }
+                        )
                     }
                 }
             }
@@ -226,4 +234,3 @@ private fun OrderItem(
         }
     }
 }
-
