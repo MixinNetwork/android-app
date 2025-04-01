@@ -1872,4 +1872,8 @@
     <string name="Privacy_Wallet">隐私钱包</string>
     <string name="Other">其他</string>
     <string name="Total_assets">所有资产</string>
+    <string name="Whats_Privacy_Wallet">什么是隐私钱包？</string>
+    <string name="Privacy_Wallet_Description">一个多链钱包，提供私密、免费和即时交易，满足您大部分需求。</string>
+    <string name="Whats_Common_Wallet">什么是普通钱包？</string>
+    <string name="Common_Wallet_Description">一个普通的多链钱包，可以访问去中心化应用和 DeFi 协议。</string>
 </resources>
