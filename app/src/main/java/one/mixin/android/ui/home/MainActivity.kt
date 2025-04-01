@@ -113,7 +113,9 @@ import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
+import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
@@ -938,6 +940,12 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
+                if (it.itemId == R.id.nav_wallet && bottomNav.selectedItemId == R.id.nav_wallet) {
+                    jobManager.addJobInBackground(RefreshTokensJob())
+                    jobManager.addJobInBackground(RefreshSnapshotsJob())
+                    jobManager.addJobInBackground(SyncOutputJob())
+                }
+                
                 lifecycleScope.launch {
                     channel.send(it.itemId)
                 }
