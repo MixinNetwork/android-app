@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.Components
+package one.mixin.android.ui.wallet.components
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
