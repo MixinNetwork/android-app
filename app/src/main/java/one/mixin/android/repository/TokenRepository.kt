@@ -740,7 +740,7 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        fun swapOrders(): Flow<List<SwapOrderItem>> = orderDao.orders()
+        fun swapOrders(): PagingSource<Int, SwapOrderItem> = orderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)

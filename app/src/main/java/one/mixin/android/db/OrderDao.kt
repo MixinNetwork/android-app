@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +20,7 @@ interface OrderDao : BaseDao<SwapOrder> {
         ORDER BY o.created_at DESC
 """
     )
-    fun orders(): Flow<List<SwapOrderItem>>
+    fun orders(): PagingSource<Int, SwapOrderItem>
 
     @Query(
         """
