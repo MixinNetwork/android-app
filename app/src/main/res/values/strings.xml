@@ -1918,4 +1918,8 @@
     <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
     <string name="Web3_Transactions_Deleted">Web3 transaction data has been deleted and will be re-synchronized</string>
     <string name="Delete_Failed">Delete failed: %1$s</string>
+    <string name="Whats_Privacy_Wallet">What\'s the Privacy Wallet?</string>
+    <string name="Privacy_Wallet_Description">A multi-chain wallet with private, free, and instant transactions to meet most of your needs.</string>
+    <string name="Whats_Common_Wallet">What\'s the Common Wallet?</string>
+    <string name="Common_Wallet_Description">A common multi-chain wallet that accesses decentralized applications and DeFi protocols.</string>
 </resources>

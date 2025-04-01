@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -40,6 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -59,7 +63,7 @@ fun SwapOrderListPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
-    val orders by viewModel.swapOrders().collectAsState(emptyList())
+    val orders = viewModel.swapOrders.collectAsLazyPagingItems()
 
     MixinAppTheme {
         PageScaffold(
@@ -77,7 +81,7 @@ fun SwapOrderListPage(
                 }
             }
         ) {
-            if (orders.isEmpty()) {
+            if (orders.itemCount == 0) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,14 +104,31 @@ fun SwapOrderListPage(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    val groupedOrders = orders.groupBy { it.createdAt.hashForDate() }
-                    groupedOrders.forEach { (_, ordersInGroup) ->
-                        stickyHeader {
-                            DateHeader(
-                                date = ordersInGroup.firstOrNull()?.createdAt?.dayTime() ?: ""
-                            )
+                    val groupedOrders = mutableMapOf<Long, MutableList<Int>>()
+                    for (i in 0 until orders.itemCount) {
+                        val order = orders[i] ?: continue
+                        val dateHash = order.createdAt.hashForDate()
+                        if (!groupedOrders.containsKey(dateHash)) {
+                            groupedOrders[dateHash] = mutableListOf()
                         }
-                        items(ordersInGroup) { order ->
+                        groupedOrders[dateHash]?.add(i)
+                    }
+                    
+                    val sortedDates = groupedOrders.keys.sortedByDescending { it }
+                    
+                    sortedDates.forEach { dateHash ->
+                        val indices = groupedOrders[dateHash] ?: return@forEach
+                        
+                        stickyHeader(key = "header_$dateHash") {
+                            val firstOrder = orders[indices.first()] ?: return@stickyHeader
+                            DateHeader(date = firstOrder.createdAt.dayTime())
+                        }
+                        
+                        items(
+                            count = indices.size,
+                            key = { idx -> orders[indices[idx]]?.orderId ?: "unknown" }
+                        ) { idx ->
+                            val order = orders[indices[idx]] ?: return@items
                             OrderItem(
                                 order = order,
                                 onClick = { onOrderClick(order.orderId) }
@@ -226,4 +247,3 @@ private fun OrderItem(
         }
     }
 }
-

@@ -2472,8 +2472,8 @@ class ConversationFragment() :
     private fun renderBot(user: User) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
-
-            app = chatViewModel.findAppById(user.appId!!)
+            val appId = user.appId ?: return@launch
+            app = chatViewModel.findAppById(appId)
             binding.chatControl.hintEncrypt(encryptCategory())
             if (app != null && app!!.creatorId == Session.getAccountId()) {
                 val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
