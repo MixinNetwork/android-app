@@ -1914,6 +1914,10 @@
     <string name="Exchanges_or_Wallets_desc">Receive from other exchange or on-chain wallet using a crypto network.</string>
     <string name="View_Document">View Document</string>
     <string name="Total_assets">Total assets</string>
+    <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
+    <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
+    <string name="Web3_Transactions_Deleted">Web3 transaction data has been deleted and will be re-synchronized</string>
+    <string name="Delete_Failed">Delete failed: %1$s</string>
     <string name="Whats_Privacy_Wallet">What\'s the Privacy Wallet?</string>
     <string name="Privacy_Wallet_Description">A multi-chain wallet with private, free, and instant transactions to meet most of your needs.</string>
     <string name="Whats_Common_Wallet">What\'s the Common Wallet?</string>

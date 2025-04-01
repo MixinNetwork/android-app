@@ -32,7 +32,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
@@ -188,10 +187,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                         if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
-                            jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
-                        } else if (r.errorCode == 404) {
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
-                            web3ViewModel.updateWeb3RawTransaction(transition.hash, TransactionType.TxNotFound.value)
                         }
                     }
                     delay(5_000)

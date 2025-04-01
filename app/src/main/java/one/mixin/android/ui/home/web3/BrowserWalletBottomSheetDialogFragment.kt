@@ -334,7 +334,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val hex = pair.first
                     val hash = Hash.sha3(hex)
-                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second)
+                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, token?.assetId)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)

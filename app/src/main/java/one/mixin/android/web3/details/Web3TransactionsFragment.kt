@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.TransactionType
@@ -47,7 +48,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.job.RefreshWeb3TokenJob
-import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -55,6 +55,7 @@ import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
+import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
@@ -380,10 +381,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
-                            jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
-                        } else if (r.errorCode == 404) {
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
-                            web3ViewModel.updateWeb3RawTransaction(transition.hash, TransactionType.TxNotFound.value)
                         }
                     }
                     delay(5_000)
@@ -411,8 +408,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         }
 
         val stakeAccountSummary = StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString())
-        updateStake(stakeAccountSummary)
+        this.stakeAccounts = stakeAccounts
     }
+
+    var stakeAccounts: List<StakeAccount>? = null
 
     private fun updateStake(stakeAccountSummary: StakeAccountSummary?) {
         binding.stake.apply {
@@ -425,6 +424,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 amountTv.text = "${stakeAccountSummary.amount} SOL"
                 countTv.text = "${stakeAccountSummary.count} account"
                 stakeRl.setOnClickListener {
+                    navTo(StakingFragment.newInstance(ArrayList(stakeAccounts ?: emptyList()), token.balance), StakingFragment.TAG)
                 }
             }
         }
