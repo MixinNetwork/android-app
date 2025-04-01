@@ -88,6 +88,7 @@ import one.mixin.android.tip.isTipNodeException
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
+import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
@@ -458,7 +459,10 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 step = Step.Sending
                 val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsedLink.assetId, parsedLink.amount)
                 val token = bottomViewModel.findAssetItemById(parsedLink.assetId)
-                if (consolidationAmount != null && token != null) {
+                if (consolidationAmount == "") {
+                    WaitingBottomSheetDialogFragment.newInstance(true)
+                        .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+                } else if (consolidationAmount != null && token != null) {
                     UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
                         .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
                     step = Step.Pending
