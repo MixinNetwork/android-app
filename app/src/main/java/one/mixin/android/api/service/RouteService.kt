@@ -285,11 +285,6 @@ interface RouteService {
         @Query("limit") limit: Int = 30
     ): MixinResponse<List<Web3Transaction>>
 
-    @GET("transactions/{id}")
-    suspend fun getTransaction(
-        @Path("id") id: String
-    ): MixinResponse<Web3Transaction>
-
     @GET("assets/{id}")
     suspend fun getAssetByAddress(
         @Path("id") id: String,
