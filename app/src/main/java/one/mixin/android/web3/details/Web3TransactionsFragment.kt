@@ -394,7 +394,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     private suspend fun getStakeAccounts(address: String) {
         val stakeAccounts = web3ViewModel.getStakeAccounts(address)
-        if (!isAdded) return
+        if (!isAdded) { return }
+        
         if (stakeAccounts.isNullOrEmpty()) {
             updateStake(StakeAccountSummary(0, "0"))
             return
@@ -407,8 +408,12 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
         }
 
-        val stakeAccountSummary = StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString())
+        val amountStr = amount.solLamportToAmount().stripTrailingZeros().toPlainString()
+        
+        val stakeAccountSummary = StakeAccountSummary(count, amountStr)
         this.stakeAccounts = stakeAccounts
+        
+        updateStake(stakeAccountSummary)
     }
 
     var stakeAccounts: List<StakeAccount>? = null
