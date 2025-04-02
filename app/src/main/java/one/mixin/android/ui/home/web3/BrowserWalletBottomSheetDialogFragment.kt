@@ -31,7 +31,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
@@ -279,6 +278,16 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
+                    val hex = JsSigner.ethPreviewTransaction(
+                        JsSigner.evmAddress,
+                        transaction,
+                        tipGas!!,
+                        chain = token?.getChainFromName()
+                    ) { _ ->
+                        val nonce = rpc.nonceAt(currentChain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
+                        return@ethPreviewTransaction nonce
+                    }
+                    parsedTx = viewModel.simulateWeb3Tx(hex, assetId)
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
