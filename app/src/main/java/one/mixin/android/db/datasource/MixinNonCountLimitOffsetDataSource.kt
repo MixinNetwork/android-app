@@ -7,12 +7,12 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import androidx.room.getQueryDispatcher
 import androidx.room.paging.util.ThreadSafeInvalidationObserver
 import androidx.room.paging.util.getClippedRefreshKey
 import androidx.room.paging.util.getLimit
 import androidx.room.paging.util.getOffset
 import androidx.room.withTransaction
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 @SuppressLint("RestrictedApi")
@@ -29,7 +29,7 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
         )
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
-        return withContext(db.getQueryDispatcher()) {
+        return withContext(db.queryExecutor.asCoroutineDispatcher()) {
             observer.registerIfNecessary(db)
             initialLoad(params)
         }

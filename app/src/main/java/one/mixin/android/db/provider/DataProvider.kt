@@ -6,7 +6,7 @@ import android.os.CancellationSignal
 import androidx.paging.DataSource
 import androidx.room.CoroutinesRoom
 import androidx.room.RoomSQLiteQuery
-import androidx.room.getQueryDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
@@ -434,7 +434,7 @@ class DataProvider {
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> =
-            withContext(db.getQueryDispatcher()) {
+            withContext(db.queryExecutor.asCoroutineDispatcher()) {
                 val result = ftsDatabase.rawSearch(query, cancellationSignal)
                 val sql = """
                 SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,

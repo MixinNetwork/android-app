@@ -154,12 +154,12 @@ class Message(
     val mediaWaveform: ByteArray? = null,
     @Deprecated(
         "Replace with mediaMimeType",
-        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Message.mediaMimeType"),
-        DeprecationLevel.ERROR,
+        ReplaceWith("mediaMimeType"),
+        DeprecationLevel.WARNING,
     )
     @SerializedName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String? = null,
+    val mediaMineType: String? = mediaMimeType,
     @SerializedName("quote_message_id")
     @SerialName("quote_message_id")
     @ColumnInfo(name = "quote_message_id")

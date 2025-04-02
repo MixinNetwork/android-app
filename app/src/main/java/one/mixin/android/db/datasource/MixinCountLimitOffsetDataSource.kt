@@ -7,13 +7,13 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.room.RoomDatabase
 import androidx.room.RoomSQLiteQuery
-import androidx.room.getQueryDispatcher
 import androidx.room.paging.util.INITIAL_ITEM_COUNT
 import androidx.room.paging.util.INVALID
 import androidx.room.paging.util.getClippedRefreshKey
 import androidx.room.paging.util.getLimit
 import androidx.room.paging.util.getOffset
 import androidx.room.withTransaction
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -27,7 +27,7 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
     internal val itemCount: AtomicInteger = AtomicInteger(INITIAL_ITEM_COUNT)
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
-        return withContext(db.getQueryDispatcher()) {
+        return withContext(db.queryExecutor.asCoroutineDispatcher()) {
             val tempCount = itemCount.get()
             // if itemCount is < 0, then it is initial load
             if (tempCount == INITIAL_ITEM_COUNT) {
