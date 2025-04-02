@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,6 +64,7 @@ fun MemoInputPage(
     onScan: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     var memo by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -148,20 +150,36 @@ fun MemoInputPage(
                             Icon(
                                 painter = painterResource(R.drawable.ic_addr_remove),
                                 contentDescription = null,
-                                tint = MixinAppTheme.colors.textPrimary
+                                tint = MixinAppTheme.colors.iconGray
                             )
                         }
                     } else {
-                        IconButton(
-                            onClick = {
-                                onScan?.invoke()
-                            }, modifier = Modifier.align(Alignment.BottomEnd)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_addr_qr),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.textPrimary
-                            )
+                        Row(modifier = Modifier.align(Alignment.BottomEnd)) {
+                            IconButton(
+                                onClick = {
+                                    clipboardManager.getText()?.let {
+                                        memo = it.text
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_paste),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.iconGray
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(24.dp))
+                            IconButton(
+                                onClick = {
+                                    onScan?.invoke()
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_scan),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.iconGray
+                                )
+                            }
                         }
                     }
                 }
