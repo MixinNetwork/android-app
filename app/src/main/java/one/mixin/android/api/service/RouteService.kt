@@ -7,6 +7,7 @@ import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.web3.AuthRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.ParseTxRequest
@@ -19,6 +20,7 @@ import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.web3.AuthResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
@@ -195,6 +197,11 @@ interface RouteService {
         @Query("offset") offset: String?,
         @Query("limit") limit: Int
     ) : MixinResponse<List<SwapOrder>>
+
+    @POST("web3/auth/mixin")
+    suspend fun authWeb3(
+        @Body request: AuthRequest,
+    ): MixinResponse<AuthResponse>
 
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(

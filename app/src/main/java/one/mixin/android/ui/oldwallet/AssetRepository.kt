@@ -2,6 +2,7 @@ package one.mixin.android.ui.oldwallet
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -10,10 +11,12 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.request.web3.AuthRequest
 import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.web3.AuthResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -25,12 +28,14 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ChainDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TraceDao
-import one.mixin.android.db.web3.Web3WalletDao
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.extension.currentTimeSeconds
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.within6Hours
+import one.mixin.android.tip.TipSignSpec
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
+import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
@@ -55,7 +60,6 @@ class AssetRepository
         private val addressService: AddressService,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
-        private val web3WalletDao: Web3WalletDao,
     ) {
         fun assets() = assetService.assets()
 
@@ -404,4 +408,21 @@ class AssetRepository
 
         suspend fun searchStakeValidators(query: String) = routeService.searchStakeValidators(query)
 
+        suspend fun authWeb3(chainId: String, address: String, priv: ByteArray): MixinResponse<AuthResponse> {
+            val ts = currentTimeSeconds()
+            val message = "$ts$chainId$address"
+            val signature = if (chainId == SOLANA_CHAIN_ID) {
+                val seed = priv.sliceArray(0..31)
+                TipSignSpec.Eddsa.Ed25519.sign(seed, message.toByteArray()).hexStringToByteArray().encodeToBase58String()
+            } else {
+                TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+            }
+            val request = AuthRequest(
+                chainId = chainId,
+                address = address,
+                signature = signature,
+                timestamp = ts.toString(),
+            )
+            return routeService.authWeb3(request)
+        }
     }
