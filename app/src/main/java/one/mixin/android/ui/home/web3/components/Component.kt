@@ -189,7 +189,7 @@ fun TokenTransactionPreview(
 fun SolanaParsedTxPreview(
     asset: Token?,
     parsedTx: ParsedTx?,
-    solanaTxSource: SolanaTxSource,
+    solanaTxSource: SolanaTxSource? = null,
 ) {
     Column(
         modifier =
@@ -273,7 +273,7 @@ fun SolanaParsedTxPreview(
                     Box(modifier = Modifier.height(10.dp))
                 }
             }
-            if (!solanaTxSource.isInnerTx()) {
+            if (solanaTxSource != null &&!solanaTxSource.isInnerTx()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

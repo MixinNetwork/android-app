@@ -241,6 +241,8 @@ fun BrowserPage(
                     }
                 } else if (chain == Chain.Solana) {
                     SolanaParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
+                } else if (parsedTx != null) {
+                    SolanaParsedTxPreview(parsedTx = parsedTx, asset = asset)
                 } else if (token != null && amount != null) {
                     TokenTransactionPreview(amount = amount, token = token)
                 } else {
