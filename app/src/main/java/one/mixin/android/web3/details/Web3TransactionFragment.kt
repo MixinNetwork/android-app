@@ -1,7 +1,6 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
-import android.content.ClipData
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
@@ -11,7 +10,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
-import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -19,23 +17,15 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
-import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.priceFormat2
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Fiats
-import one.mixin.android.web3.ChainType
-import one.mixin.android.web3.Web3ChainId
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.widget.BottomSheet
-import java.math.BigDecimal
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -160,13 +150,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val bottomSheet = builder.create()
         bottomBinding.apply {
             explorer.setOnClickListener {
-                val url = when (token.chainId) {
-                    Constants.ChainId.SOLANA_CHAIN_ID -> "https://solscan.io/tx/" + transaction.transactionHash
-                    Constants.ChainId.ETHEREUM_CHAIN_ID -> "https://etherscan.io/tx/" + transaction.transactionHash
-                    Constants.ChainId.Base -> "https://basescan.org/tx/" + transaction.transactionHash
-                    Constants.ChainId.BinanceSmartChain -> "https://bscscan.com/tx/" + transaction.transactionHash
-                    else -> "https://etherscan.io/tx/" + transaction.transactionHash
-                }
+                val url = "${Constants.API.URL}/external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
