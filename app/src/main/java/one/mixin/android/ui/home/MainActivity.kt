@@ -944,6 +944,7 @@ class MainActivity : BlazeBaseActivity() {
                     jobManager.addJobInBackground(RefreshTokensJob())
                     jobManager.addJobInBackground(RefreshSnapshotsJob())
                     jobManager.addJobInBackground(SyncOutputJob())
+                    jobManager.addJobInBackground(RefreshWeb3Job())
                 }
                 
                 lifecycleScope.launch {
