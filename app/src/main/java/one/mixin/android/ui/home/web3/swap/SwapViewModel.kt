@@ -3,8 +3,15 @@ package one.mixin.android.ui.home.web3.swap
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -17,6 +24,7 @@ import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
@@ -26,6 +34,7 @@ import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.route.SwapOrderItem
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
@@ -121,7 +130,14 @@ class SwapViewModel
 
     suspend fun allAssetItems() = tokenRepository.allAssetItems()
 
-    fun swapOrders() = tokenRepository.swapOrders()
+    val swapOrders: Flow<PagingData<SwapOrderItem>> = Pager(
+        config = PagingConfig(
+            pageSize = 10,
+            prefetchDistance = 10,
+            enablePlaceholders = true
+        ),
+        pagingSourceFactory = { tokenRepository.swapOrders() }
+    ).flow.cachedIn(viewModelScope)
 
     fun getOrderById(orderId: String) = tokenRepository.getOrderById(orderId)
 

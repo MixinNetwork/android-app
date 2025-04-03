@@ -21,15 +21,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +40,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -59,7 +63,11 @@ fun SwapOrderListPage(
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
-    val orders by viewModel.swapOrders().collectAsState(emptyList())
+
+    val orders = viewModel.swapOrders.collectAsLazyPagingItems()
+    val listState = rememberSaveable(saver = LazyListState.Saver) {
+        LazyListState()
+    }
 
     MixinAppTheme {
         PageScaffold(
@@ -77,7 +85,7 @@ fun SwapOrderListPage(
                 }
             }
         ) {
-            if (orders.isEmpty()) {
+            if (orders.itemCount == 0 && orders.loadState.refresh !is LoadState.Loading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -96,25 +104,45 @@ fun SwapOrderListPage(
                     Spacer(modifier = Modifier.weight(1f))
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    val groupedOrders = orders.groupBy { it.createdAt.hashForDate() }
-                    groupedOrders.forEach { (_, ordersInGroup) ->
-                        stickyHeader {
-                            DateHeader(
-                                date = ordersInGroup.firstOrNull()?.createdAt?.dayTime() ?: ""
-                            )
-                        }
-                        items(ordersInGroup) { order ->
-                            OrderItem(
-                                order = order,
-                                onClick = { onOrderClick(order.orderId) }
-                            )
-                        }
-                    }
-                }
+                OrderList(
+                    orders = orders,
+                    listState = listState,
+                    onOrderClick = onOrderClick
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun OrderList(
+    orders: LazyPagingItems<SwapOrderItem>,
+    listState: LazyListState,
+    onOrderClick: (String) -> Unit
+) {
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val orderList = (0 until orders.itemCount).mapNotNull { index -> orders[index] }
+        val groupedOrders = orderList.groupBy { it.createdAt.hashForDate() }
+        
+        groupedOrders.forEach { (_, ordersInGroup) ->
+            stickyHeader {
+                DateHeader(
+                    date = ordersInGroup.firstOrNull()?.createdAt?.dayTime() ?: ""
+                )
+            }
+            
+            items(
+                count = ordersInGroup.size,
+                key = { index -> ordersInGroup[index].orderId }
+            ) { index ->
+                OrderItem(
+                    order = ordersInGroup[index],
+                    onClick = { onOrderClick(ordersInGroup[index].orderId) }
+                )
             }
         }
     }
@@ -226,4 +254,3 @@ private fun OrderItem(
         }
     }
 }
-
