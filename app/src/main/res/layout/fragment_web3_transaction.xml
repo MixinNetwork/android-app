@@ -18,6 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/ph"
+        app:rightIcon="@drawable/ic_more"
         app:need_divider="false"
         app:titleText="@string/Transaction" />
 
