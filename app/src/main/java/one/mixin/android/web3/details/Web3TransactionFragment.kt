@@ -150,7 +150,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val bottomSheet = builder.create()
         bottomBinding.apply {
             explorer.setOnClickListener {
-                val url = "${Constants.API.URL}/external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
+                val url = "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
