@@ -6,6 +6,7 @@ import androidx.room.ColumnInfo
 import androidx.room.TypeConverters
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.converter.AssetChangeListConverter
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat8
 import java.math.BigDecimal
 
@@ -106,7 +107,7 @@ data class Web3TransactionItem(
 
     fun getFormattedAmount(): String {
         return try {
-            BigDecimal(getMainAmount()).numberFormat8()
+            BigDecimal(getMainAmount()).numberFormat12()
         } catch (e: Exception) {
             getMainAmount()
         }

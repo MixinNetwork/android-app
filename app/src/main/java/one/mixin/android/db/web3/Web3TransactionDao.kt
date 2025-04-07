@@ -58,18 +58,18 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id
         LEFT JOIN tokens a ON a.asset_id = w.chain_id
-        WHERE w.chain_id = :chainId 
+        WHERE w.send_asset_id = :assetId OR w.receive_asset_id = :assetId
         ORDER BY w.transaction_at DESC 
         LIMIT 21
     """)
-    fun web3Transactions(chainId: String): LiveData<List<Web3TransactionItem>>
+    fun web3Transactions(assetId: String): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3TransactionItem>
-    
+
     @Query("SELECT * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
     suspend fun getLatestTransaction(hash: String, chainId: String): Web3Transaction?
-    
+
     @Query("SELECT COUNT(*) FROM transactions")
     suspend fun getTransactionCount(): Int
 
@@ -78,7 +78,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @Query("UPDATE transactions SET status = :type WHERE transaction_hash = :hash")
     fun updateRawTransaction(type: String, hash: String)
-    
+
     @Query("DELETE FROM transactions")
     suspend fun deleteAllTransactions()
 }

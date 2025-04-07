@@ -89,7 +89,7 @@ internal constructor(
         web3Repository.web3TokenItemById(chainId)
     }
 
-    fun web3Transactions(chainId: String) = web3Repository.web3Transactions(chainId)
+    fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
     fun tokenExtraFlow(assetId: String) =
         tokenRepository.tokenExtraFlow(assetId)

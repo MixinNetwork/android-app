@@ -47,7 +47,7 @@ constructor(
         }
     }
 
-    fun web3Transactions(chainId: String) = web3TransactionDao.web3Transactions(chainId)
+    fun web3Transactions(assetId: String) = web3TransactionDao.web3Transactions(assetId)
     
     suspend fun getAddressesByChainId(walletId: String): Web3Address? {
         return web3AddressDao.getAddressesByChainId(walletId)
