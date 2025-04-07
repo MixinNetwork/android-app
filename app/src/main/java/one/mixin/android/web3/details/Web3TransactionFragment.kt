@@ -3,11 +3,14 @@ package one.mixin.android.web3.details
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
+import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -16,15 +19,13 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Fiats
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
-import java.math.BigDecimal
+import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -67,7 +68,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightIb.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            showBottom()
         }
         binding.root.isClickable = true
         binding.apply {
@@ -132,5 +133,30 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private fun tokenClick(transaction: Web3TransactionItem) {
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        val bottomBinding = ViewWalletWeb3TransactionBottomBinding.bind(
+            View.inflate(
+                ContextThemeWrapper(
+                    requireActivity(),
+                    R.style.Custom
+                ), R.layout.view_wallet_web3_transaction_bottom, null
+            )
+        )
+        builder.setCustomView(bottomBinding.root)
+        val bottomSheet = builder.create()
+        bottomBinding.apply {
+            explorer.setOnClickListener {
+                val url = "${Constants.API.URL}/external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
+                context?.openUrl(url)
+                bottomSheet.dismiss()
+            }
+            cancel.setOnClickListener { bottomSheet.dismiss() }
+        }
+
+        bottomSheet.show()
     }
 }

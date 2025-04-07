@@ -207,8 +207,11 @@ fun TransferDestinationInputPage(
                             visualTransformation = if (text.isExternalTransferUrl() || text.isLightningUrl()) {
                                 VisualTransformation { input ->
                                     val inputText = input.text
-                                    if (inputText.length <= 12) return@VisualTransformation TransformedText(input, OffsetMapping.Identity)
-                                    
+                                    if (inputText.length <= 12) return@VisualTransformation TransformedText(
+                                        input,
+                                        OffsetMapping.Identity
+                                    )
+
                                     val annotatedString = buildAnnotatedString {
                                         append(inputText)
                                         addStyle(
@@ -297,7 +300,8 @@ fun TransferDestinationInputPage(
                                     stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toAccount.invoke(account)
-                                   })
+                                    },
+                                )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (token != null) {
@@ -318,7 +322,8 @@ fun TransferDestinationInputPage(
                                     stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toWallet.invoke()
-                                    }
+                                    },
+                                    isPrivacy = true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
