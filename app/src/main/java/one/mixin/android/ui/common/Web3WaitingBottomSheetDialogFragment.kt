@@ -68,7 +68,7 @@ class Web3WaitingBottomSheetDialogFragment() : MixinBottomSheetDialogFragment() 
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
+                        if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value)) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
                         }
