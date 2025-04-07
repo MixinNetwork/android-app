@@ -386,7 +386,8 @@ class AssetRepository
             amount: String,
             slippage: String,
             source: String,
-        ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, slippage, source)
+            needWithdraw: Boolean,
+        ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, slippage, source, needWithdraw)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,

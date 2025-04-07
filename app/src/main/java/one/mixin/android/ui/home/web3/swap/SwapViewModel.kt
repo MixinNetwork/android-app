@@ -49,7 +49,8 @@ class SwapViewModel
         amount: String,
         slippage: String,
         source: String,
-    ): MixinResponse<QuoteResult> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage, source)
+        needWithdraw: Boolean,
+    ): MixinResponse<QuoteResult> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage, source, needWithdraw)
 
     suspend fun web3Swap(
         swapRequest: SwapRequest,
@@ -66,6 +67,7 @@ class SwapViewModel
         amount: String,
         slippage: String,
         source: String,
+        needWithdraw: Boolean = false, // TODO
     ) : Result<QuoteResult?> {
         return if (amount.isNotBlank() && inputMint != null && outputMint != null) {
             runCatching {
@@ -75,6 +77,7 @@ class SwapViewModel
                     amount = amount,
                     slippage = slippage,
                     source = source,
+                    needWithdraw = needWithdraw,
                 )
                 return if (response.isSuccess) {
                     Result.success(requireNotNull(response.data))

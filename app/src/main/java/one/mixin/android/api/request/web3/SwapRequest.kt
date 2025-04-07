@@ -11,6 +11,7 @@ data class SwapRequest(
     val slippage: Int,
     val source: String,
     val payload: String,
+    val withdrawalDestination: String,
 
     val jupiterQuoteResponse: JupiterQuoteResponse? = null,
 )

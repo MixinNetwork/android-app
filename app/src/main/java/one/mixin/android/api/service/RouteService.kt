@@ -134,6 +134,7 @@ interface RouteService {
         @Query("amount") amount: String,
         @Query("slippage") slippage: String,
         @Query("source") source: String,
+        @Query("needWithdraw") needWithdraw: Boolean,
     ): MixinResponse<QuoteResult>
 
     @POST("web3/swap")
