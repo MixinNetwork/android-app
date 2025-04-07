@@ -132,7 +132,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             toAddress: String,
             tag: String? = null,
             toAccount: Boolean? = null,
-            isReceive: Boolean = false
+            isReceive: Boolean = false,
+            label: String? = null
         ) =
             InputFragment().apply {
                 withArgs {
@@ -143,6 +144,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
                     putBoolean(ARGS_RECEIVE, isReceive)
+                    if (label != null) {
+                        putString(ARGS_TO_ADDRESS_LABEL, label)
+                    }
                 }
             }
 
