@@ -15,7 +15,7 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
 class RefreshWeb3Job : BaseJob(
-    Params(PRIORITY_UI_HIGH).setSingleId(GROUP).persist().requireNetwork(),
+    Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L

@@ -91,11 +91,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     var walletId: String = ""
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        jobManager.addJobInBackground(RefreshWeb3Job())
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -243,6 +238,17 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
         if (walletId.isEmpty().not()) {
             jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        jobManager.addJobInBackground(RefreshWeb3Job())
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        if (!hidden) {
+            jobManager.addJobInBackground(RefreshWeb3Job())
         }
     }
 

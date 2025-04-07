@@ -940,12 +940,12 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
-                if (it.itemId == R.id.nav_wallet && bottomNav.selectedItemId == R.id.nav_wallet) {
+                if (it.itemId == R.id.nav_wallet) {
                     jobManager.addJobInBackground(RefreshTokensJob())
                     jobManager.addJobInBackground(RefreshSnapshotsJob())
                     jobManager.addJobInBackground(SyncOutputJob())
+                    jobManager.addJobInBackground(RefreshWeb3Job())
                 }
-                
                 lifecycleScope.launch {
                     channel.send(it.itemId)
                 }
