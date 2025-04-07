@@ -23,7 +23,7 @@ import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
-import one.mixin.android.web3.details.Web3TransactionType
+import one.mixin.android.db.web3.vo.TransactionType
 
 class AvatarView : ViewAnimator {
     private val binding = ViewAvatarBinding.inflate(LayoutInflater.from(context), this)
@@ -153,9 +153,9 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
         avatarSimple.clear()
-        if (transaction.transactionType == Web3TransactionType.Send.value) {
+        if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
             avatarSimple.setImageResource(R.drawable.ic_snapshot_withdrawal)
-        } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
+        } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value) {
             avatarSimple.setImageResource(R.drawable.ic_snapshot_deposit)
         } else {
             avatarSimple.loadImage(transaction.iconUrl, R.drawable.ic_group_place_holder)

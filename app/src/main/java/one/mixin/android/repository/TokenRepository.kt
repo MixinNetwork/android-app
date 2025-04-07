@@ -72,6 +72,15 @@ import one.mixin.android.db.insertMessage
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.web3.Web3RawTransactionDao
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3RawTransaction
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.AssetChange
+import one.mixin.android.db.web3.vo.TransactionType
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -133,14 +142,8 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
-import one.mixin.android.db.web3.Web3TransactionDao
-import one.mixin.android.db.web3.Web3WalletDao
-import one.mixin.android.db.web3.vo.Web3RawTransaction
-import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.Web3Transaction
-import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.ui.wallet.Web3FilterParams
 
 @Singleton
 class TokenRepository
@@ -1014,7 +1017,30 @@ class TokenRepository
                 val raw = r.data!!
                 web3RawTransactionDao.insertSuspend(raw)
                 web3TransactionDao.deletePending(raw.hash, raw.chainId)
-                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, raw.account, "", "", raw.chainId, assetId?:"", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
+                
+                val senders = listOf(AssetChange(
+                    assetId = assetId ?: raw.chainId,
+                    amount = "0",
+                    from = raw.account,
+                    to = null
+                ))
+
+                web3TransactionDao.insert(Web3Transaction(
+                    transactionHash = raw.hash,
+                    transactionType = TransactionType.TRANSFER_OUT.value,
+                    status = TransactionStatus.PENDING.value,
+                    blockNumber = 0,
+                    chainId = raw.chainId,
+                    fee = "0",
+                    senders = senders,
+                    receivers = emptyList(),
+                    approvals = null,
+                    sendAssetId = assetId,
+                    receiveAssetId = null,
+                    transactionAt = raw.updatedAt,
+                    createdAt = raw.createdAt,
+                    updatedAt = raw.updatedAt
+                ))
             }
             return r
         }

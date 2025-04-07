@@ -5,10 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.db.converter.Web3TypeConverters
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
@@ -37,9 +39,9 @@ import java.io.File
         Web3RawTransaction::class,
         Property::class
     ],
-    version = 1,
+    version = 2,
 )
-@TypeConverters(Web3TypeConverters::class)
+@TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: WalletDatabase? = null
@@ -47,6 +49,20 @@ abstract class WalletDatabase : RoomDatabase() {
         private val lock = Any()
 
         private lateinit var supportSQLiteDatabase: SupportSQLiteDatabase
+
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS transactions")
+                database.execSQL("DELETE FROM properties") // delete old offset
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `transactions` (`transaction_hash` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `chain_id` TEXT NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`))
+                    """
+                )
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_transactions_transaction_at ON transactions(transaction_at)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_transactions_transaction_type_chain_id ON transactions(transaction_type, chain_id)")
+            }
+        }
 
         fun getDatabase(context: Context): WalletDatabase {
             synchronized(lock) {
@@ -65,7 +81,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        )
+                        ).addMigrations(MIGRATION_1_2)
                     INSTANCE = builder.build()
                 }
             }

@@ -59,7 +59,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
                 itemBinding.root,
                 {
                     context.getClipboardManager()
-                        .setPrimaryClip(ClipData.newPlainText(null, item.transactionId))
+                        .setPrimaryClip(ClipData.newPlainText(null, item.transactionHash))
                 },
             )
             addView(itemBinding.root)

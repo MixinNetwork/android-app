@@ -13,20 +13,68 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 @Dao
 interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
-    @Query("SELECT w.transaction_id, w.transaction_type ,w.transaction_hash, w.block_number, w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, w.transaction_at, w.updated_at, t.symbol, t.icon_url, w.status FROM transactions w LEFT JOIN tokens t on t.asset_id = w.asset_id WHERE t.asset_id = :assetId ORDER BY w.transaction_at DESC LIMIT 21")
-    fun web3Transactions(assetId: String): LiveData<List<Web3TransactionItem>>
+    @Query("""
+        SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, 
+            CASE 
+                WHEN w.transaction_type = 'transfer_in' THEN r.symbol
+                WHEN w.transaction_type = 'transfer_out' THEN s.symbol
+                WHEN w.transaction_type = 'swap' THEN r.symbol
+                WHEN w.transaction_type = 'approval' THEN a.symbol
+                ELSE c.symbol
+            END as chain_symbol,
+            CASE 
+                WHEN w.transaction_type = 'transfer_in' THEN r.icon_url
+                WHEN w.transaction_type = 'transfer_out' THEN s.icon_url
+                WHEN w.transaction_type = 'swap' THEN r.icon_url
+                WHEN w.transaction_type = 'approval' THEN a.icon_url
+                ELSE c.icon_url
+            END as chain_icon_url,
+            COALESCE(
+                CASE 
+                    WHEN w.transaction_type = 'transfer_in' THEN w.receive_asset_id
+                    WHEN w.transaction_type = 'transfer_out' THEN w.send_asset_id
+                    WHEN w.transaction_type = 'swap' THEN w.receive_asset_id
+                    WHEN w.transaction_type = 'approval' THEN w.chain_id
+                    ELSE w.chain_id
+                END,
+                w.chain_id
+            ) as asset_id,
+            CASE 
+                WHEN w.transaction_type = 'transfer_in' THEN r.icon_url
+                WHEN w.transaction_type = 'transfer_out' THEN s.icon_url
+                WHEN w.transaction_type = 'swap' THEN r.icon_url
+                WHEN w.transaction_type = 'approval' THEN a.icon_url
+                ELSE c.icon_url
+            END as icon_url,
+            CASE 
+                WHEN w.transaction_type = 'transfer_in' THEN r.symbol
+                WHEN w.transaction_type = 'transfer_out' THEN s.symbol
+                WHEN w.transaction_type = 'swap' THEN r.symbol
+                WHEN w.transaction_type = 'approval' THEN a.symbol
+                ELSE c.symbol
+            END as symbol
+        FROM transactions w 
+        LEFT JOIN tokens c ON c.asset_id = w.chain_id
+        LEFT JOIN tokens s ON s.asset_id = w.send_asset_id
+        LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id
+        LEFT JOIN tokens a ON a.asset_id = w.chain_id
+        WHERE w.chain_id = :chainId 
+        ORDER BY w.transaction_at DESC 
+        LIMIT 21
+    """)
+    fun web3Transactions(chainId: String): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3TransactionItem>
     
-    @Query("SELECT * FROM transactions WHERE sender = :address OR receiver = :address ORDER BY created_at DESC LIMIT 1")
-    suspend fun getLatestTransaction(address: String): Web3Transaction?
+    @Query("SELECT * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
+    suspend fun getLatestTransaction(hash: String, chainId: String): Web3Transaction?
     
     @Query("SELECT COUNT(*) FROM transactions")
     suspend fun getTransactionCount(): Int
 
     @Query("DELETE FROM transactions WHERE status = 'pending' AND transaction_hash = :hash AND chain_id = :chainId")
-    fun deletePending(hash : String, chainId: String)
+    fun deletePending(hash: String, chainId: String)
 
     @Query("UPDATE transactions SET status = :type WHERE transaction_hash = :hash")
     fun updateRawTransaction(type: String, hash: String)

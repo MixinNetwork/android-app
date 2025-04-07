@@ -11,6 +11,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -74,35 +75,39 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.apply {
             transactionHashTv.text = transaction.transactionHash
             val amountColor =
-                if (transaction.status == TransactionType.TxFailed.value || transaction.status == TransactionType.TxNotFound.value) {
+                if (transaction.status == TransactionStatus.FAILED.value || transaction.status == TransactionStatus.NOT_FOUND.value) {
                     requireContext().colorFromAttribute(R.attr.text_assist)
-                } else if (transaction.transactionType == Web3TransactionType.Send.value) {
+                } else if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
                     requireContext().getColor(R.color.wallet_pink)
-                } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
+                } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value) {
                     requireContext().getColor(R.color.wallet_green)
                 } else {
                     requireContext().colorFromAttribute(R.attr.text_primary)
                 }
             val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
+            
+            val mainAmount = transaction.getFormattedAmount()
+            
             valueTv.text = buildAmountSymbol(requireContext(),
                 when (transaction.transactionType) {
-                    Web3TransactionType.Send.value -> "-${transaction.amount}"
-                    Web3TransactionType.Receive.value -> "+${transaction.amount}"
-                    else -> transaction.amount
-                }, transaction.symbol ?: "", amountColor, symbolColor
+                    TransactionType.TRANSFER_OUT.value -> "-$mainAmount"
+                    TransactionType.TRANSFER_IN.value -> "+$mainAmount"
+                    else -> mainAmount
+                }, transaction.chainSymbol ?: "", amountColor, symbolColor
             )
+            
             when(transaction.status) {
-                TransactionType.TxSuccess.value -> {
+                TransactionStatus.SUCCESS.value -> {
                     status.text = getString(R.string.Completed)
                     status.setTextColor(requireContext().getColor(R.color.wallet_green))
                     status.setBackgroundResource(R.drawable.bg_status_success)
                 }
-                TransactionType.TxPending.value -> {
+                TransactionStatus.PENDING.value -> {
                     status.text = getString(R.string.Pending)
                     status.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
                     status.setBackgroundResource(R.drawable.bg_status_default)
                 }
-                TransactionType.TxFailed.value -> {
+                TransactionStatus.FAILED.value -> {
                     status.text = getString(R.string.Failed)
                     status.setTextColor(requireContext().getColor(R.color.wallet_pink))
                     status.setBackgroundResource(R.drawable.bg_status_failed)
@@ -113,26 +118,29 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     status.setBackgroundResource(R.drawable.bg_status_default)
                 }
             }
-            fromTv.text = transaction.sender
-            toTv.text = transaction.receiver
-            avatar.bg.loadImage(transaction.iconUrl, R.drawable.ic_avatar_place_holder)
+            
+            val fromAddress = if (transaction.senders.isNotEmpty()) transaction.senders[0].from ?: "" else ""
+            val toAddress = if (transaction.receivers.isNotEmpty()) transaction.receivers[0].to ?: "" else ""
+            
+            fromTv.text = fromAddress
+            toTv.text = toAddress
+            
+            avatar.bg.loadImage(transaction.chainIconUrl, R.drawable.ic_avatar_place_holder)
             avatar.setOnClickListener {
                 tokenClick(transaction)
             }
-            val badge = transaction.iconUrl
-            if (badge == null) {
-                avatar.badge.isVisible = false
-            } else {
-                avatar.badge.isVisible = true
-                avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
-            }
+            
+            avatar.badge.isVisible = false
+            
             dateTv.text = transaction.transactionAt.fullDate()
-            feeLl.isVisible = false
+            feeLl.isVisible = true
+            feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
         }
     }
 
     private fun tokenClick(transaction: Web3TransactionItem) {
+        // 处理点击事件
     }
 
     @SuppressLint("InflateParams")

@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionsBinding
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -25,11 +26,11 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
             val symbol = transaction.symbol
             avatar.loadUrl(transaction)
             when (transaction.status) {
-                TransactionType.TxSuccess.value -> {
+                TransactionStatus.SUCCESS.value -> {
                     badge.setImageResource(R.drawable.ic_web3_status_success)
                 }
 
-                TransactionType.TxPending.value -> {
+                TransactionStatus.PENDING.value -> {
                     badge.setImageResource(R.drawable.ic_web3_status_pending)
                 }
 
@@ -38,18 +39,18 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                 }
             }
             when (transaction.transactionType) {
-                Web3TransactionType.Receive.value -> {
+                TransactionType.TRANSFER_IN.value -> {
                     value.textColorResource = R.color.wallet_green
                     value.text = "+${amount.numberFormat8()}"
                     symbolTv.text = symbol
                 }
-                Web3TransactionType.Send.value -> {
+                TransactionType.TRANSFER_OUT.value -> {
                     value.textColorResource = R.color.wallet_pink
                     value.text = "-${amount.numberFormat8()}"
                     symbolTv.text = symbol
                 }
                 else -> {
-                    avatar.loadUrl(url = transaction.iconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    avatar.loadUrl(url = transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
                     value.setTextColor(root.context.colorAttr(R.attr.text_primary))
                     value.text = amount.numberFormat8()
                     symbolTv.text = symbol

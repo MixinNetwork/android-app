@@ -7,6 +7,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
@@ -55,7 +56,14 @@ class RefreshWeb3TransactionsJob(
                     web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }
-                syncAsset(destination, result?.map { it.assetId }?.distinct())
+                syncAsset(destination, result?.mapNotNull { 
+                    when (it.transactionType) {
+                        TransactionType.TRANSFER_IN.value -> it.receiveAssetId
+                        TransactionType.TRANSFER_OUT.value -> it.sendAssetId
+                        TransactionType.SWAP.value -> it.receiveAssetId
+                        else -> it.chainId
+                    }
+                }?.distinct())
 
                 result?.lastOrNull()?.createdAt?.let {
                     saveLastCreatedAt(destination, it)
