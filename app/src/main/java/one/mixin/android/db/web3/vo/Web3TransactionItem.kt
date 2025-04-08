@@ -147,18 +147,54 @@ data class Web3TransactionItem(
     }
     
     fun getFromAddress(): String {
-        return if (senders.isNotEmpty()) {
-            senders[0].from ?: if (transactionType !== TransactionType.TRANSFER_IN.value) address else ""
-        } else {
-            address
+        return when (transactionType) {
+            TransactionType.SWAP.value -> address
+            TransactionType.APPROVAL.value -> address
+            TransactionType.TRANSFER_OUT.value -> {
+                if (senders.isNotEmpty()) {
+                    senders[0].from ?: address
+                } else {
+                    address
+                }
+            }
+            TransactionType.TRANSFER_IN.value -> {
+                if (senders.isNotEmpty()) {
+                    senders[0].from ?: ""
+                } else {
+                    ""
+                }
+            }
+            else -> {
+                if (senders.isNotEmpty()) {
+                    senders[0].from ?: address
+                } else {
+                    address
+                }
+            }
         }
     }
     
     fun getToAddress(): String {
-        return if (receivers.isNotEmpty()) {
-            receivers[0].to ?: if (transactionType != TransactionType.TRANSFER_OUT.value) address else ""
-        } else {
-            ""
+        return when (transactionType) {
+            TransactionType.SWAP.value -> address
+            TransactionType.APPROVAL.value -> {
+                approvals?.firstOrNull()?.to ?: ""
+            }
+            TransactionType.TRANSFER_OUT.value -> {
+                if (receivers.isNotEmpty()) {
+                    receivers[0].to ?: ""
+                } else {
+                    ""
+                }
+            }
+            TransactionType.TRANSFER_IN.value -> address
+            else -> {
+                if (receivers.isNotEmpty()) {
+                    receivers[0].to ?: address
+                } else {
+                    address
+                }
+            }
         }
     }
 }

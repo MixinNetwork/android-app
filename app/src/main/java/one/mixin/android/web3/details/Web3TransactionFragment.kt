@@ -195,6 +195,15 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             feeLl.isVisible = true
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
+            
+            typeLl.isVisible = true
+            typeTv.text = when (transaction.transactionType) {
+                TransactionType.TRANSFER_OUT.value -> getString(R.string.Send)
+                TransactionType.TRANSFER_IN.value -> getString(R.string.Receive)
+                TransactionType.APPROVAL.value -> getString(R.string.Approval)
+                TransactionType.SWAP.value -> getString(R.string.Swap)
+                else -> transaction.transactionType
+            }
 
             if (transaction.transactionType == TransactionType.SWAP.value && transaction.senders.isNotEmpty()) {
                 assetChangesLl.visibility = View.VISIBLE
@@ -230,6 +239,33 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         true
                     )
                     assetChangesContainer.addView(receiverView)
+                }
+            } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
+                val approvals = transaction.approvals
+                if (approvals != null && approvals.isNotEmpty()) {
+                    assetChangesLl.visibility = View.VISIBLE
+                    assetChangesContainer.removeAllViews()
+                    
+                    val approvalAssetChange = approvals[0]
+                    val approvalView = AssetChangeItem(requireContext())
+                    
+                    val isUnlimited = approvalAssetChange.type == "unlimited"
+                    val displayAmount = if (isUnlimited) {
+                        "unlimited"
+                    } else {
+                        approvalAssetChange.amount
+                    }
+                    
+                    approvalView.setContent(
+                        displayAmount,
+                        transaction.sendAssetSymbol ?: "",
+                        transaction.sendAssetIconUrl,
+                        transaction.chainSymbol ?: "",
+                        false
+                    )
+                    assetChangesContainer.addView(approvalView)
+                } else {
+                    assetChangesLl.visibility = View.GONE
                 }
             } else {
                 assetChangesLl.visibility = View.GONE
@@ -291,8 +327,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             avatar.loadUrl(iconUrl)
             val prefix = if (isReceive) "+ " else "- "
             val amountValue =
-                (amountStr.toBigDecimalOrNull() ?: BigDecimal.ZERO).stripTrailingZeros()
-                    .toPlainString()
+                (amountStr.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: amountStr)
             amount.text = "$prefix$amountValue $symbol"
             if (isReceive) {
                 amount.setTextColor(context.getColor(R.color.wallet_green))
