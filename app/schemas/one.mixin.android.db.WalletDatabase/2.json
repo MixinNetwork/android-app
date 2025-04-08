@@ -93,11 +93,23 @@
       },
       {
         "tableName": "transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_hash` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`, `chain_id`, `address`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`, `chain_id`, `address`))",
         "fields": [
           {
             "fieldPath": "transactionHash",
             "columnName": "transaction_hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -117,18 +129,6 @@
             "fieldPath": "blockNumber",
             "columnName": "block_number",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "chainId",
-            "columnName": "chain_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "address",
-            "columnName": "address",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
