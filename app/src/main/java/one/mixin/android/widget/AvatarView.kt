@@ -158,7 +158,7 @@ class AvatarView : ViewAnimator {
         } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value) {
             avatarSimple.setImageResource(R.drawable.ic_snapshot_deposit)
         } else {
-            avatarSimple.loadImage(transaction.iconUrl, R.drawable.ic_group_place_holder)
+            avatarSimple.setImageResource(R.drawable.ic_web3_contract)
         }
     }
 

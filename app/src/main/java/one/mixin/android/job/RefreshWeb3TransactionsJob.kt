@@ -61,6 +61,7 @@ class RefreshWeb3TransactionsJob(
                         TransactionType.TRANSFER_IN.value -> it.receiveAssetId
                         TransactionType.TRANSFER_OUT.value -> it.sendAssetId
                         TransactionType.SWAP.value -> it.receiveAssetId
+                        TransactionType.APPROVAL.value -> it.sendAssetId
                         else -> it.chainId
                     }
                 }?.distinct())

@@ -1027,6 +1027,7 @@ class TokenRepository
 
                 web3TransactionDao.insert(Web3Transaction(
                     transactionHash = raw.hash,
+                    address = rawTxRequest.account,
                     transactionType = TransactionType.TRANSFER_OUT.value,
                     status = TransactionStatus.PENDING.value,
                     blockNumber = 0,

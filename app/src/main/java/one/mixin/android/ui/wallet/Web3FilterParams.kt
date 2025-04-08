@@ -79,38 +79,18 @@ class Web3FilterParams(
 
         return SimpleSQLiteQuery(
             "SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
-                "w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
+                "w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
                 "w.transaction_at, w.updated_at, " +
                 "c.symbol as chain_symbol, " +
                 "c.icon_url as chain_icon_url, " +
-                "COALESCE(" +
-                "CASE " +
-                "WHEN w.transaction_type = 'transfer_in' THEN w.receive_asset_id " +
-                "WHEN w.transaction_type = 'transfer_out' THEN w.send_asset_id " +
-                "WHEN w.transaction_type = 'swap' THEN w.receive_asset_id " +
-                "WHEN w.transaction_type = 'approval' THEN w.chain_id " +
-                "ELSE w.chain_id " +
-                "END, " +
-                "w.chain_id) as asset_id, " +
-                "CASE " +
-                "WHEN w.transaction_type = 'transfer_in' THEN r.icon_url " +
-                "WHEN w.transaction_type = 'transfer_out' THEN s.icon_url " +
-                "WHEN w.transaction_type = 'swap' THEN r.icon_url " +
-                "WHEN w.transaction_type = 'approval' THEN a.icon_url " +
-                "ELSE c.icon_url " +
-                "END as icon_url, " +
-                "CASE " +
-                "WHEN w.transaction_type = 'transfer_in' THEN r.symbol " +
-                "WHEN w.transaction_type = 'transfer_out' THEN s.symbol " +
-                "WHEN w.transaction_type = 'swap' THEN r.symbol " +
-                "WHEN w.transaction_type = 'approval' THEN a.symbol " +
-                "ELSE c.symbol " +
-                "END as symbol " +
+                "s.icon_url as send_asset_icon_url, " +
+                "s.symbol as send_asset_symbol, " +
+                "r.icon_url as receive_asset_icon_url, " +
+                "r.symbol as receive_asset_symbol " +
                 "FROM transactions w " +
                 "LEFT JOIN tokens c ON c.asset_id = w.chain_id " +
                 "LEFT JOIN tokens s ON s.asset_id = w.send_asset_id " +
                 "LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id " +
-                "LEFT JOIN tokens a ON a.asset_id = w.chain_id " +
                 "$whereSql $orderSql"
         )
     }

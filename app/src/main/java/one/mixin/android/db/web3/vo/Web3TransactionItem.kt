@@ -27,6 +27,9 @@ data class Web3TransactionItem(
     @ColumnInfo(name = "chain_id")
     val chainId: String,
     
+    @ColumnInfo(name = "address")
+    val address: String,
+    
     @ColumnInfo(name = "fee")
     val fee: String,
     
@@ -56,18 +59,21 @@ data class Web3TransactionItem(
 
     @ColumnInfo(name = "chain_symbol")
     val chainSymbol: String? = null,
-
+    
     @ColumnInfo(name = "chain_icon_url")
     val chainIconUrl: String? = null,
     
-    @ColumnInfo(name = "asset_id")
-    val assetId: String = "",
-    
-    @ColumnInfo(name = "icon_url")
-    val iconUrl: String? = null,
-    
-    @ColumnInfo(name = "symbol")
-    val symbol: String? = null
+    @ColumnInfo(name = "send_asset_icon_url")
+    val sendAssetIconUrl: String? = null,
+
+    @ColumnInfo(name = "send_asset_symbol")
+    val sendAssetSymbol: String? = null,
+
+    @ColumnInfo(name = "receive_asset_icon_url")
+    val receiveAssetIconUrl: String? = null,
+
+    @ColumnInfo(name = "receive_asset_symbol")
+    val receiveAssetSymbol: String? = null
 ) : Parcelable {
 
     companion object {

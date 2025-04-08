@@ -1880,4 +1880,5 @@
     <string name="Privacy_Wallet_Description">一个多链钱包，提供私密、免费和即时交易，满足您大部分需求。</string>
     <string name="Whats_Common_Wallet">什么是普通钱包？</string>
     <string name="Common_Wallet_Description">一个普通的多链钱包，可以访问去中心化应用和 DeFi 协议。</string>
+    <string name="Approval">批准</string>
 </resources>

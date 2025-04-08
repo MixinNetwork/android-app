@@ -12,14 +12,22 @@ import one.mixin.android.db.converter.AssetChangeListConverter
 
 @Entity(
     tableName = "transactions",
-    indices = [Index(value = arrayOf("transaction_at")), Index(value = arrayOf("transaction_type", "chain_id"))]
+    indices = [Index(value = arrayOf("transaction_at")), Index(value = arrayOf("transaction_type", "chain_id"))],
+    primaryKeys = ["transaction_hash", "chain_id", "address"]
 )
 @Parcelize
 data class Web3Transaction(
-    @PrimaryKey
     @ColumnInfo(name = "transaction_hash")
     @SerializedName("transaction_hash")
     val transactionHash: String,
+
+    @ColumnInfo(name = "chain_id")
+    @SerializedName("chain_id")
+    val chainId: String,
+
+    @ColumnInfo(name = "address")
+    @SerializedName("address")
+    val address: String,
 
     @ColumnInfo(name = "transaction_type")
     @SerializedName("transaction_type")
@@ -32,10 +40,6 @@ data class Web3Transaction(
     @ColumnInfo(name = "block_number")
     @SerializedName("block_number")
     val blockNumber: Long,
-
-    @ColumnInfo(name = "chain_id")
-    @SerializedName("chain_id")
-    val chainId: String,
 
     @ColumnInfo(name = "fee")
     @SerializedName("fee")

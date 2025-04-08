@@ -56,7 +56,7 @@ abstract class WalletDatabase : RoomDatabase() {
                 database.execSQL("DELETE FROM properties") // delete old offset
                 database.execSQL(
                     """
-                    CREATE TABLE IF NOT EXISTS `transactions` (`transaction_hash` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `chain_id` TEXT NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`))
+                    CREATE TABLE IF NOT EXISTS `transactions` (`transaction_hash` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`, `chain_id`, `address`))
                     """
                 )
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_transactions_transaction_at ON transactions(transaction_at)")
