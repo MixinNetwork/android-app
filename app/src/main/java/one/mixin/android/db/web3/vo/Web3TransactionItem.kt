@@ -145,4 +145,20 @@ data class Web3TransactionItem(
         return receivers.any { it.to?.equals(address, ignoreCase = true) == true } && 
                !senders.any { it.from?.equals(address, ignoreCase = true) == true }
     }
+    
+    fun getFromAddress(): String {
+        return if (senders.isNotEmpty()) {
+            senders[0].from ?: if (transactionType !== TransactionType.TRANSFER_IN.value) address else ""
+        } else {
+            address
+        }
+    }
+    
+    fun getToAddress(): String {
+        return if (receivers.isNotEmpty()) {
+            receivers[0].to ?: if (transactionType != TransactionType.TRANSFER_OUT.value) address else ""
+        } else {
+            ""
+        }
+    }
 }

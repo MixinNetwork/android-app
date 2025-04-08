@@ -416,6 +416,10 @@ fun BigDecimal.numberFormat12(): String {
     }
 }
 
+fun String.numberFormat12(): String {
+    return runCatching { BigDecimal(this).numberFormat12() }.getOrNull() ?: this
+}
+
 fun BigDecimal.priceFormat2(): String {
     return try {
         DecimalFormat(",##0.00").format(this)

@@ -107,6 +107,10 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
                 getString(R.string.Swap)
+            } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
+                valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                getString(R.string.Approval)
             } else {
                 buildAmountSymbol(
                     requireContext(),
@@ -152,10 +156,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
 
-            val fromAddress =
-                if (transaction.senders.isNotEmpty()) transaction.senders[0].from ?: if (transaction.transactionType == TransactionType.SWAP.value) transaction.address else "" else ""
-            val toAddress =
-                if (transaction.receivers.isNotEmpty()) transaction.receivers[0].to ?: if (transaction.transactionType == TransactionType.SWAP.value) transaction.address else "" else ""
+            val fromAddress = transaction.getFromAddress()
+            val toAddress = transaction.getToAddress()
             fromTv.text = fromAddress
             toTv.text = toAddress
 

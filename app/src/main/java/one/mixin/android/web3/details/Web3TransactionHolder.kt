@@ -72,7 +72,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                 }
                 transaction.transactionType == TransactionType.APPROVAL.value -> {
                     amountAnimator.displayedChild = 0
-                    avatar.loadUrl(url = transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    avatar.loadUrl(transaction)
                     value.setTextColor(root.context.colorAttr(R.attr.text_primary))
                     value.text = ""
                     symbolTv.text = itemView.context.getString(R.string.Approval)
