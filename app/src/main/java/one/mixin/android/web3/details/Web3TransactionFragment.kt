@@ -106,10 +106,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             valueTv.text = if (transaction.transactionType == TransactionType.SWAP.value) {
                 valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
                 getString(R.string.Swap)
             } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
                 valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
                 getString(R.string.Approval)
             } else {
                 buildAmountSymbol(
@@ -162,7 +164,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             toTv.text = toAddress
 
             when (transaction.transactionType) {
-                TransactionType.TRANSFER_OUT.value, TransactionType.APPROVAL.value -> {
+                TransactionType.TRANSFER_OUT.value -> {
                     avatar.bg.loadImage(
                         transaction.sendAssetIconUrl,
                         R.drawable.ic_avatar_place_holder
@@ -176,7 +178,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     )
                 }
 
-                TransactionType.SWAP.value -> {
+                TransactionType.SWAP.value, TransactionType.APPROVAL.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_web3_contract)
                 }
 
@@ -261,7 +263,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         transaction.sendAssetSymbol ?: "",
                         transaction.sendAssetIconUrl,
                         transaction.chainSymbol ?: "",
-                        false
+                        null
                     )
                     assetChangesContainer.addView(approvalView)
                 } else {
@@ -322,14 +324,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             symbol: String,
             iconUrl: String?,
             chainSymbol: String,
-            isReceive: Boolean = false
+            isReceive: Boolean? = false
         ) {
             avatar.loadUrl(iconUrl)
-            val prefix = if (isReceive) "+ " else "- "
+            val prefix = if (isReceive == null) "" else if (isReceive) "+ " else "- "
             val amountValue =
                 (amountStr.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: amountStr)
             amount.text = "$prefix$amountValue $symbol"
-            if (isReceive) {
+            if (isReceive == true) {
                 amount.setTextColor(context.getColor(R.color.wallet_green))
             } else {
                 amount.setTextColor(context.getColor(R.color.wallet_pink))
