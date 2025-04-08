@@ -185,6 +185,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value)) {
                             web3ViewModel.deletePending(transition.hash, transition.chainId)
                             web3ViewModel.insertRawTranscation(r.data!!)
+                        } else if (r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value) {
+                            web3ViewModel.insertRawTranscation(r.data!!)
                         }
                     }
                     delay(5_000)
