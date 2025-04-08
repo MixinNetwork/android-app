@@ -1,12 +1,20 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
+import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import java.math.BigDecimal
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
@@ -26,7 +34,9 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.widget.AvatarView
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.extension.dp
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -53,7 +63,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private val transaction by lazy {
-        requireNotNull(requireArguments().getParcelableCompat(ARGS_TRANSACTION, Web3TransactionItem::class.java))
+        requireNotNull(
+            requireArguments().getParcelableCompat(
+                ARGS_TRANSACTION,
+                Web3TransactionItem::class.java
+            )
+        )
     }
 
     private val chain by lazy {
@@ -78,84 +93,145 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 requireContext().colorFromAttribute(R.attr.text_assist)
             } else if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
                 requireContext().getColor(R.color.wallet_pink)
-            } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value || transaction.transactionType == TransactionType.SWAP.value) {
+            } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value) {
                 requireContext().getColor(R.color.wallet_green)
             } else {
                 requireContext().colorFromAttribute(R.attr.text_primary)
             }
-            
+
             val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
-            
+
             val mainAmount = transaction.getFormattedAmount()
-            
-            valueTv.text = buildAmountSymbol(requireContext(),
-                when (transaction.transactionType) {
-                    TransactionType.TRANSFER_OUT.value -> "-$mainAmount"
-                    TransactionType.APPROVAL.value -> "-$mainAmount"
-                    TransactionType.TRANSFER_IN.value -> "+$mainAmount"
-                    TransactionType.SWAP.value -> "+$mainAmount"
-                    else -> mainAmount
-                }, 
-                when (transaction.transactionType) {
-                    TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
-                    TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
-                    TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
-                    TransactionType.SWAP.value -> transaction.receiveAssetSymbol ?: ""
-                    else -> transaction.chainSymbol ?: ""
-                }, 
-                amountColor, symbolColor
-            )
-            
-            when(transaction.status) {
+
+            valueTv.text = if (transaction.transactionType == TransactionType.SWAP.value) {
+                valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                getString(R.string.Swap)
+            } else {
+                buildAmountSymbol(
+                    requireContext(),
+                    when (transaction.transactionType) {
+                        TransactionType.TRANSFER_OUT.value -> "-$mainAmount"
+                        TransactionType.APPROVAL.value -> "-$mainAmount"
+                        TransactionType.TRANSFER_IN.value -> "+$mainAmount"
+                        else -> mainAmount
+                    },
+                    when (transaction.transactionType) {
+                        TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
+                        TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
+                        TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
+                        else -> ""
+                    },
+                    amountColor, symbolColor
+                )
+            }
+
+            when (transaction.status) {
                 TransactionStatus.SUCCESS.value -> {
                     status.text = getString(R.string.Success)
                     status.setTextColor(requireContext().getColor(R.color.wallet_green))
                     status.setBackgroundResource(R.drawable.bg_status_success)
                 }
+
                 TransactionStatus.PENDING.value -> {
                     status.text = getString(R.string.Pending)
                     status.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     status.setBackgroundResource(R.drawable.bg_status_default)
                 }
+
                 TransactionStatus.FAILED.value -> {
                     status.text = getString(R.string.Failed)
                     status.setTextColor(requireContext().getColor(R.color.wallet_pink))
                     status.setBackgroundResource(R.drawable.bg_status_failed)
                 }
+
                 else -> {
                     status.text = transaction.status
                     status.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     status.setBackgroundResource(R.drawable.bg_status_default)
                 }
             }
-            
-            val fromAddress = if (transaction.senders.isNotEmpty()) transaction.senders[0].from ?: "" else ""
-            val toAddress = if (transaction.receivers.isNotEmpty()) transaction.receivers[0].to ?: "" else ""
+
+            val fromAddress =
+                if (transaction.senders.isNotEmpty()) transaction.senders[0].from ?: if (transaction.transactionType == TransactionType.SWAP.value) transaction.address else "" else ""
+            val toAddress =
+                if (transaction.receivers.isNotEmpty()) transaction.receivers[0].to ?: if (transaction.transactionType == TransactionType.SWAP.value) transaction.address else "" else ""
             fromTv.text = fromAddress
             toTv.text = toAddress
-            
+
             when (transaction.transactionType) {
                 TransactionType.TRANSFER_OUT.value, TransactionType.APPROVAL.value -> {
-                    avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    avatar.bg.loadImage(
+                        transaction.sendAssetIconUrl,
+                        R.drawable.ic_avatar_place_holder
+                    )
                 }
-                TransactionType.TRANSFER_IN.value, TransactionType.SWAP.value -> {
-                    avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
+
+                TransactionType.TRANSFER_IN.value -> {
+                    avatar.bg.loadImage(
+                        transaction.receiveAssetIconUrl,
+                        R.drawable.ic_avatar_place_holder
+                    )
                 }
+
+                TransactionType.SWAP.value -> {
+                    avatar.bg.setImageResource(R.drawable.ic_web3_contract)
+                }
+
                 else -> {
                     avatar.bg.loadImage(transaction.chainIconUrl, R.drawable.ic_avatar_place_holder)
                 }
             }
-            
+
             avatar.setOnClickListener {
                 tokenClick(transaction)
             }
-            
+
             avatar.badge.isVisible = false
-            
+
             dateTv.text = transaction.transactionAt.fullDate()
             feeLl.isVisible = true
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
+
+            if (transaction.transactionType == TransactionType.SWAP.value && transaction.senders.isNotEmpty()) {
+                assetChangesLl.visibility = View.VISIBLE
+                assetChangesContainer.removeAllViews()
+
+                if (transaction.senders.isNotEmpty()) {
+                    val senderAssetChange = transaction.senders[0]
+                    val senderView = AssetChangeItem(requireContext())
+                    senderView.setContent(
+                        senderAssetChange.amount,
+                        transaction.sendAssetSymbol ?: "",
+                        transaction.sendAssetIconUrl,
+                        transaction.chainSymbol ?: "",
+                        false
+                    )
+                    val layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    layoutParams.bottomMargin = 4.dp
+                    senderView.layoutParams = layoutParams
+                    assetChangesContainer.addView(senderView)
+                }
+
+                if (transaction.receivers.isNotEmpty()) {
+                    val receiverAssetChange = transaction.receivers[0]
+                    val receiverView = AssetChangeItem(requireContext())
+                    receiverView.setContent(
+                        receiverAssetChange.amount,
+                        transaction.receiveAssetSymbol ?: "",
+                        transaction.receiveAssetIconUrl,
+                        transaction.chainSymbol ?: "",
+                        true
+                    )
+                    assetChangesContainer.addView(receiverView)
+                }
+            } else {
+                assetChangesLl.visibility = View.GONE
+            }
         }
     }
 
@@ -177,7 +253,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val bottomSheet = builder.create()
         bottomBinding.apply {
             explorer.setOnClickListener {
-                val url = "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
+                val url =
+                    "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
@@ -185,5 +262,41 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
 
         bottomSheet.show()
+    }
+
+    private class AssetChangeItem @JvmOverloads constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = 0,
+    ) : LinearLayout(context, attrs, defStyleAttr) {
+        private val avatar: AvatarView
+        private val amount: TextView
+
+        init {
+            LayoutInflater.from(context).inflate(R.layout.item_asset_change_simple, this, true)
+            avatar = findViewById(R.id.avatar)
+            amount = findViewById(R.id.amount)
+        }
+
+        @SuppressLint("SetTextI18n")
+        fun setContent(
+            amountStr: String,
+            symbol: String,
+            iconUrl: String?,
+            chainSymbol: String,
+            isReceive: Boolean = false
+        ) {
+            avatar.loadUrl(iconUrl)
+            val prefix = if (isReceive) "+ " else "- "
+            val amountValue =
+                (amountStr.toBigDecimalOrNull() ?: BigDecimal.ZERO).stripTrailingZeros()
+                    .toPlainString()
+            amount.text = "$prefix$amountValue $symbol"
+            if (isReceive) {
+                amount.setTextColor(context.getColor(R.color.wallet_green))
+            } else {
+                amount.setTextColor(context.getColor(R.color.wallet_pink))
+            }
+        }
     }
 }

@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@id/avatar_fl"
-        android:layout_toStartOf="@id/value"
+        android:layout_toStartOf="@id/amount_animator"
         android:breakStrategy="simple"
         android:hyphenationFrequency="none"
         android:ellipsize="end"
@@ -49,32 +49,109 @@
         android:textColor="?attr/text_primary"
         android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/value"
+    <ViewAnimator
+        android:id="@+id/amount_animator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toStartOf="@id/symbol_tv"
-        android:layout_marginEnd="6dp"
-        android:ellipsize="end"
-        android:fontFamily="@font/mixin_font"
-        android:maxWidth="200dp"
-        android:singleLine="true"
-        android:textColor="@color/wallet_pink"
-        android:textSize="22sp" />
-
-    <TextView
-        android:id="@+id/symbol_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minWidth="20dp"
-        android:maxWidth="200dp"
-        android:translationY="-1dp"
-        android:textSize="12sp"
-        android:textColor="?attr/text_primary"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="@dimen/margin20"
-        android:layout_alignBaseline="@id/value" />
+        android:layout_marginEnd="@dimen/margin20">
+
+        <!-- Single line view -->
+        <LinearLayout
+            android:id="@+id/single_line_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/mixin_font"
+                android:maxWidth="200dp"
+                android:singleLine="true"
+                android:textColor="@color/wallet_pink"
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/symbol_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="20dp"
+                android:maxWidth="200dp"
+                android:translationY="-1dp"
+                android:textSize="12sp"
+                android:textColor="?attr/text_primary" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/double_line_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/receive_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/mixin_font"
+                    android:maxWidth="200dp"
+                    android:singleLine="true"
+                    android:textColor="@color/wallet_green"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/receive_symbol_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="20dp"
+                    android:maxWidth="200dp"
+                    android:translationY="-1dp"
+                    android:textSize="10sp"
+                    android:textColor="?attr/text_primary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="2dp">
+
+                <TextView
+                    android:id="@+id/send_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/mixin_font"
+                    android:maxWidth="200dp"
+                    android:singleLine="true"
+                    android:textColor="@color/wallet_pink"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/send_symbol_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="20dp"
+                    android:maxWidth="200dp"
+                    android:textSize="10sp"
+                    android:textColor="?attr/text_primary" />
+            </LinearLayout>
+        </LinearLayout>
+    </ViewAnimator>
 
 </one.mixin.android.widget.ConfirmationBgView>
