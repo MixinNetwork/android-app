@@ -144,7 +144,7 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
         avatarSimple.clear()
-        avatarSimple.loadImage(url, R.drawable.ic_group_place_holder)
+        avatarSimple.loadImage(url, holder)
     }
 
     fun loadUrl(transaction: Web3TransactionItem) {
