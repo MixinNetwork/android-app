@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -52,7 +53,9 @@ class Web3FilterParams(
             when (it) {
                 Web3TokenFilterType.SEND -> filters.add("w.transaction_type = 'transfer_out'")
                 Web3TokenFilterType.RECEIVE -> filters.add("w.transaction_type = 'transfer_in'")
-                Web3TokenFilterType.CONTRACT -> filters.add("w.transaction_type = 'approval'")
+                Web3TokenFilterType.APPROVAL -> filters.add("w.transaction_type = 'approval'")
+                Web3TokenFilterType.SWAP -> filters.add("w.transaction_type = 'swap'")
+                Web3TokenFilterType.PENDING -> filters.add("w.status = '${TransactionStatus.PENDING.value}'")
                 else ->  {}
             }
         }

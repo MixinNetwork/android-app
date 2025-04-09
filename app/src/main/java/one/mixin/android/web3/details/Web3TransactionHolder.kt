@@ -1,6 +1,7 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
+import android.util.TypedValue
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
@@ -27,12 +28,14 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
             val amount = transaction.getFormattedAmount()
             when {
                 transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value -> {
+                    value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
                     value.setTextColor(root.context.colorAttr(R.attr.text_assist))
                     value.text = ""
                     symbolTv.text = itemView.context.getString(R.string.Pending)
                 }
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
+                    value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
                     value.textColorResource = R.color.wallet_green
                     value.text = "+${amount.numberFormat12()}"
@@ -40,6 +43,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     avatar.loadUrl(url = transaction.receiveAssetIconUrl ?: transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
+                    value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
                     value.textColorResource = R.color.wallet_pink
                     value.text = "-${amount.numberFormat12()}"
@@ -47,6 +51,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     avatar.loadUrl(url = transaction.sendAssetIconUrl ?: transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
                 }
                 transaction.transactionType == TransactionType.SWAP.value -> {
+                    value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     if (transaction.senders.isNotEmpty()) {
                         amountAnimator.displayedChild = 1
                         
@@ -72,6 +77,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                 }
                 transaction.transactionType == TransactionType.APPROVAL.value -> {
                     amountAnimator.displayedChild = 0
+                    value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                     avatar.loadUrl(transaction)
                     
                     val approvals = transaction.approvals
@@ -81,20 +87,21 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                         
                         if (isUnlimited) {
                             value.textColorResource = R.color.wallet_pink
-                            value.text = "unlimited"
+                            value.text = itemView.context.getString(R.string.unlimited)
                             symbolTv.text = transaction.sendAssetSymbol ?: ""
                         } else {
                             value.textColorResource = R.color.wallet_pink
-                            value.text = "Approved"
+                            value.text = itemView.context.getString(R.string.Approved)
                             symbolTv.text = "${approvalAssetChange.amount} ${transaction.sendAssetSymbol ?: ""}"
                         }
                     } else {
                         value.textColorResource = R.color.wallet_pink
-                        value.text = "Approved"
+                        value.text = itemView.context.getString(R.string.Approved)
                         symbolTv.text = transaction.sendAssetSymbol ?: ""
                     }
                 }
                 else -> {
+                    value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
                     avatar.loadUrl(url = transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
                     value.setTextColor(root.context.colorAttr(R.attr.text_primary))

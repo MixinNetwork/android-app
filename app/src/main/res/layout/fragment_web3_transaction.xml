@@ -91,6 +91,7 @@
                 android:visibility="gone">
 
                 <TextView
+                    android:id="@+id/asset_changes_title"
                     style="@style/TransactionTitleTextStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

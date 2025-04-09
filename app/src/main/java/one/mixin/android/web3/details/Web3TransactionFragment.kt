@@ -247,7 +247,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 if (approvals != null && approvals.isNotEmpty()) {
                     assetChangesLl.visibility = View.VISIBLE
                     assetChangesContainer.removeAllViews()
-                    
+                    assetChangesTitle.setText(R.string.Token_ACCESS_APPROVAL)
                     val approvalAssetChange = approvals[0]
                     val approvalView = AssetChangeItem(requireContext())
                     

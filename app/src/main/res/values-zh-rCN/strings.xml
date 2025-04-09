@@ -163,6 +163,7 @@
     <string name="Chain">所属公链</string>
     <string name="Change">更改</string>
     <string name="Change_Amount">修改金额</string>
+    <string name="ASSET_CHANGES">资产变动</string>
     <string name="Change_emergency_contact">修改恢复联系人</string>
     <string name="Change_Number_Instead">仅修改手机号码</string>
     <string name="Change_Phone_Number">修改手机号</string>

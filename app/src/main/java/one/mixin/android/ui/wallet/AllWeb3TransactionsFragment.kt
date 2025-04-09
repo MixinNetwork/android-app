@@ -135,7 +135,9 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                     Web3TokenFilterType.ALL -> 0
                     Web3TokenFilterType.SEND -> 1
                     Web3TokenFilterType.RECEIVE -> 2
-                    Web3TokenFilterType.CONTRACT -> 3
+                    Web3TokenFilterType.APPROVAL -> 3
+                    Web3TokenFilterType.SWAP -> 4
+                    Web3TokenFilterType.PENDING -> 5
                 }
                 typeMenu.show()
             }
@@ -354,14 +356,18 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             Web3TypeMenuData(Web3TokenFilterType.ALL, null, Web3TokenFilterType.ALL.titleRes),
             Web3TypeMenuData(Web3TokenFilterType.SEND, R.drawable.ic_menu_type_withdrawal, Web3TokenFilterType.SEND.titleRes),
             Web3TypeMenuData(Web3TokenFilterType.RECEIVE, R.drawable.ic_menu_type_deoisit, Web3TokenFilterType.RECEIVE.titleRes),
-            Web3TypeMenuData(Web3TokenFilterType.CONTRACT, R.drawable.ic_menu_type_contract, Web3TokenFilterType.CONTRACT.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.APPROVAL, R.drawable.ic_menu_type_approval, Web3TokenFilterType.APPROVAL.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.SWAP, R.drawable.ic_menu_type_swap, Web3TokenFilterType.SWAP.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.PENDING, R.drawable.ic_menu_type_pending, Web3TokenFilterType.PENDING.titleRes)
         )
         Web3TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = when (filterParams.tokenFilterType) {
                 Web3TokenFilterType.ALL -> 0
                 Web3TokenFilterType.SEND -> 1
                 Web3TokenFilterType.RECEIVE -> 2
-                Web3TokenFilterType.CONTRACT -> 3
+                Web3TokenFilterType.APPROVAL -> 3
+                Web3TokenFilterType.SWAP -> 4
+                Web3TokenFilterType.PENDING -> 5
             }
         }
     }

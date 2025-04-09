@@ -44,7 +44,7 @@
         android:breakStrategy="simple"
         android:hyphenationFrequency="none"
         android:ellipsize="end"
-        android:maxWidth="200dp"
+        android:maxWidth="220dp"
         android:maxLines="2"
         android:textColor="?attr/text_primary"
         android:textSize="14sp" />
