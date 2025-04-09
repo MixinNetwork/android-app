@@ -12,7 +12,10 @@ import one.mixin.android.db.converter.AssetChangeListConverter
 
 @Entity(
     tableName = "transactions",
-    indices = [Index(value = arrayOf("transaction_at")), Index(value = arrayOf("transaction_type", "chain_id"))],
+    indices = [
+        Index(value = arrayOf("address", "transaction_at")),
+        Index(value = arrayOf("transaction_type", "send_asset_id", "receive_asset_id", "transaction_at"))
+    ],
     primaryKeys = ["transaction_hash", "chain_id", "address"]
 )
 @Parcelize

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "ab01f14c3dc6a888a174ffa2529c8eec",
+    "identityHash": "4d306dc27e3a8b63814195f8814ef102",
     "entities": [
       {
         "tableName": "tokens",
@@ -196,23 +196,26 @@
         },
         "indices": [
           {
-            "name": "index_transactions_transaction_at",
+            "name": "index_transactions_address_transaction_at",
             "unique": false,
             "columnNames": [
+              "address",
               "transaction_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_transaction_at` ON `${TABLE_NAME}` (`transaction_at`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_address_transaction_at` ON `${TABLE_NAME}` (`address`, `transaction_at`)"
           },
           {
-            "name": "index_transactions_transaction_type_chain_id",
+            "name": "index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at",
             "unique": false,
             "columnNames": [
               "transaction_type",
-              "chain_id"
+              "send_asset_id",
+              "receive_asset_id",
+              "transaction_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_chain_id` ON `${TABLE_NAME}` (`transaction_type`, `chain_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at` ON `${TABLE_NAME}` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`)"
           }
         ],
         "foreignKeys": []
@@ -490,7 +493,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ab01f14c3dc6a888a174ffa2529c8eec')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4d306dc27e3a8b63814195f8814ef102')"
     ]
   }
 }

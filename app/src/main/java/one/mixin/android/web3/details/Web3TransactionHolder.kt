@@ -73,9 +73,26 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                 transaction.transactionType == TransactionType.APPROVAL.value -> {
                     amountAnimator.displayedChild = 0
                     avatar.loadUrl(transaction)
-                    value.setTextColor(root.context.colorAttr(R.attr.text_primary))
-                    value.text = ""
-                    symbolTv.text = itemView.context.getString(R.string.Approval)
+                    
+                    val approvals = transaction.approvals
+                    if (approvals != null && approvals.isNotEmpty()) {
+                        val approvalAssetChange = approvals[0]
+                        val isUnlimited = approvalAssetChange.type == "unlimited"
+                        
+                        if (isUnlimited) {
+                            value.textColorResource = R.color.wallet_pink
+                            value.text = "unlimited"
+                            symbolTv.text = transaction.sendAssetSymbol ?: ""
+                        } else {
+                            value.textColorResource = R.color.wallet_pink
+                            value.text = "Approved"
+                            symbolTv.text = "${approvalAssetChange.amount} ${transaction.sendAssetSymbol ?: ""}"
+                        }
+                    } else {
+                        value.textColorResource = R.color.wallet_pink
+                        value.text = "Approved"
+                        symbolTv.text = transaction.sendAssetSymbol ?: ""
+                    }
                 }
                 else -> {
                     amountAnimator.displayedChild = 0

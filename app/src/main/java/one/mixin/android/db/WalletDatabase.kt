@@ -59,8 +59,8 @@ abstract class WalletDatabase : RoomDatabase() {
                     CREATE TABLE IF NOT EXISTS `transactions` (`transaction_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`, `chain_id`, `address`))
                     """
                 )
-                database.execSQL("CREATE INDEX IF NOT EXISTS index_transactions_transaction_at ON transactions(transaction_at)")
-                database.execSQL("CREATE INDEX IF NOT EXISTS index_transactions_transaction_type_chain_id ON transactions(transaction_type, chain_id)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_address_transaction_at` ON `transactions` (`address`, `transaction_at`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`)")
             }
         }
 
