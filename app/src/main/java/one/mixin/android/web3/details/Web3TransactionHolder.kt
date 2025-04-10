@@ -33,6 +33,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     value.setTextColor(root.context.colorAttr(R.attr.text_assist))
                     value.text = ""
                     symbolTv.text = itemView.context.getString(R.string.Pending)
+                    avatar.loadUrl(transaction)
                 }
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
@@ -40,7 +41,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     value.textColorResource = R.color.wallet_green
                     value.text = "+${amount.numberFormat12()}"
                     symbolTv.text = transaction.receiveAssetSymbol ?: ""
-                    avatar.loadUrl(url = transaction.receiveAssetIconUrl ?: transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    avatar.loadUrl(transaction)
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
@@ -48,7 +49,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     value.textColorResource = R.color.wallet_pink
                     value.text = "-${amount.numberFormat12()}"
                     symbolTv.text = transaction.sendAssetSymbol ?: ""
-                    avatar.loadUrl(url = transaction.sendAssetIconUrl ?: transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    avatar.loadUrl(transaction)
                 }
                 transaction.transactionType == TransactionType.SWAP.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
@@ -103,7 +104,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                 else -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
-                    avatar.loadUrl(url = transaction.chainIconUrl, holder = R.drawable.ic_avatar_place_holder)
+                    avatar.loadUrl(transaction)
                     value.setTextColor(root.context.colorAttr(R.attr.text_primary))
                     value.text = ""
                     symbolTv.text = ""

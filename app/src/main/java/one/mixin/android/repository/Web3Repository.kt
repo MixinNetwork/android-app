@@ -31,6 +31,8 @@ constructor(
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     suspend fun web3TokenItemById(assetId: String) = web3TokenDao.web3TokenItemById(assetId)
+    
+    suspend fun findWeb3TokenItemsByIds(assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(assetIds)
 
     fun web3Tokens() = web3TokenDao.web3TokenItems()
     

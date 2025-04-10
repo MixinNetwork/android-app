@@ -428,6 +428,10 @@ internal constructor(
 
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
+    suspend fun findTokensByIds(assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.findWeb3TokenItemsByIds(assetIds)
+    }
+
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()

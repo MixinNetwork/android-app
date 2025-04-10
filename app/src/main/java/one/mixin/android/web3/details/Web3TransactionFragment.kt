@@ -11,9 +11,12 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -170,8 +173,28 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
             val fromAddress = transaction.getFromAddress()
             val toAddress = transaction.getToAddress()
-            fromTv.text = fromAddress
-            toTv.text = toAddress
+            
+            when (transaction.transactionType) {
+                TransactionType.TRANSFER_IN.value -> {
+                    fromTv.text = fromAddress
+                    fromLl.isVisible = true
+                    toLl.isVisible = false
+                }
+                TransactionType.TRANSFER_OUT.value -> {
+                    toTv.text = toAddress
+                    fromLl.isVisible = false
+                    toLl.isVisible = true
+                }
+                TransactionType.APPROVAL.value -> {
+                    toTv.text = toAddress
+                    fromLl.isVisible = false
+                    toLl.isVisible = true
+                }
+                else -> {
+                    fromLl.isVisible = false
+                    toLl.isVisible = false
+                }
+            }
 
             when (transaction.transactionType) {
                 TransactionType.TRANSFER_OUT.value -> {
@@ -219,65 +242,26 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
             if (transaction.transactionType == TransactionType.SWAP.value && transaction.senders.isNotEmpty()) {
                 assetChangesLl.visibility = View.VISIBLE
-                assetChangesContainer.removeAllViews()
-
-                if (transaction.senders.isNotEmpty()) {
-                    val senderAssetChange = transaction.senders[0]
-                    val senderView = AssetChangeItem(requireContext())
-                    senderView.setContent(
-                        senderAssetChange.amount,
-                        transaction.sendAssetSymbol ?: "",
-                        transaction.sendAssetIconUrl,
-                        transaction.chainSymbol ?: "",
-                        false
+                assetChangesContainer.setContent {
+                    AssetChangesList(
+                        senders = transaction.senders,
+                        receivers = transaction.receivers,
+                        fetchToken = { assetId ->
+                            web3ViewModel.web3TokenItemById(assetId)
+                        }
                     )
-                    val layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                    )
-                    layoutParams.bottomMargin = 4.dp
-                    senderView.layoutParams = layoutParams
-                    assetChangesContainer.addView(senderView)
-                }
-
-                if (transaction.receivers.isNotEmpty()) {
-                    val receiverAssetChange = transaction.receivers[0]
-                    val receiverView = AssetChangeItem(requireContext())
-                    receiverView.setContent(
-                        receiverAssetChange.amount,
-                        transaction.receiveAssetSymbol ?: "",
-                        transaction.receiveAssetIconUrl,
-                        transaction.chainSymbol ?: "",
-                        true
-                    )
-                    assetChangesContainer.addView(receiverView)
                 }
             } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
-                val approvals = transaction.approvals
-                if (approvals != null && approvals.isNotEmpty()) {
-                    assetChangesLl.visibility = View.VISIBLE
-                    assetChangesContainer.removeAllViews()
-                    assetChangesTitle.setText(R.string.Token_ACCESS_APPROVAL)
-                    val approvalAssetChange = approvals[0]
-                    val approvalView = AssetChangeItem(requireContext())
-                    
-                    val isUnlimited = approvalAssetChange.type == "unlimited"
-                    val displayAmount = if (isUnlimited) {
-                        "unlimited"
-                    } else {
-                        approvalAssetChange.amount
-                    }
-                    
-                    approvalView.setContent(
-                        displayAmount,
-                        transaction.sendAssetSymbol ?: "",
-                        transaction.sendAssetIconUrl,
-                        transaction.chainSymbol ?: "",
-                        null
+                assetChangesLl.visibility = View.VISIBLE
+                assetChangesTitle.setText(R.string.Token_ACCESS_APPROVAL)
+                assetChangesContainer.setContent {
+                    AssetChangesList(
+                        senders = transaction.senders,
+                        receivers = transaction.receivers,
+                        fetchToken = { assetId ->
+                            web3ViewModel.web3TokenItemById(assetId)
+                        }
                     )
-                    assetChangesContainer.addView(approvalView)
-                } else {
-                    assetChangesLl.visibility = View.GONE
                 }
             } else {
                 assetChangesLl.visibility = View.GONE
@@ -312,40 +296,5 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
 
         bottomSheet.show()
-    }
-
-    private class AssetChangeItem @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0,
-    ) : LinearLayout(context, attrs, defStyleAttr) {
-        private val avatar: AvatarView
-        private val amount: TextView
-
-        init {
-            LayoutInflater.from(context).inflate(R.layout.item_asset_change_simple, this, true)
-            avatar = findViewById(R.id.avatar)
-            amount = findViewById(R.id.amount)
-        }
-
-        @SuppressLint("SetTextI18n")
-        fun setContent(
-            amountStr: String,
-            symbol: String,
-            iconUrl: String?,
-            chainSymbol: String,
-            isReceive: Boolean? = false
-        ) {
-            avatar.loadUrl(iconUrl)
-            val prefix = if (isReceive == null) "" else if (isReceive) "+ " else "- "
-            val amountValue =
-                (amountStr.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: amountStr)
-            amount.text = "$prefix$amountValue $symbol"
-            if (isReceive == true) {
-                amount.setTextColor(context.getColor(R.color.wallet_green))
-            } else {
-                amount.setTextColor(context.getColor(R.color.wallet_pink))
-            }
-        }
     }
 }

@@ -97,15 +97,12 @@
                     android:layout_height="wrap_content"
                     android:text="@string/ASSET_CHANGES" />
 
-                <LinearLayout
+                <androidx.compose.ui.platform.ComposeView
                     android:id="@+id/asset_changes_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingTop="8dp"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginEnd="20dp"
-                    />
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginVertical="8dp" />
             </LinearLayout>
 
             <LinearLayout
