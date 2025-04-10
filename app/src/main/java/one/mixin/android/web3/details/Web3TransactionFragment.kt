@@ -89,7 +89,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.root.isClickable = true
         binding.apply {
             transactionHashTv.text = transaction.transactionHash
-            val amountColor = if (transaction.status == TransactionStatus.PENDING.value) {
+            val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
                 requireContext().colorFromAttribute(R.attr.text_assist)
             } else if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
                 requireContext().getColor(R.color.wallet_pink)
@@ -103,38 +103,42 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
             val mainAmount = transaction.getFormattedAmount()
 
-            valueTv.text = if (transaction.transactionType == TransactionType.SWAP.value) {
-                valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-                valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
-                valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
-                getString(R.string.Swap)
-            } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
-                valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-                valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
-                valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
-                getString(R.string.Approval)
-            } else {
-                buildAmountSymbol(
-                    requireContext(),
-                    when (transaction.transactionType) {
-                        TransactionType.TRANSFER_OUT.value -> "-$mainAmount"
-                        TransactionType.APPROVAL.value -> "-$mainAmount"
-                        TransactionType.TRANSFER_IN.value -> "+$mainAmount"
-                        else -> mainAmount
-                    },
-                    when (transaction.transactionType) {
-                        TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
-                        TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
-                        TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
-                        else -> ""
-                    },
-                    amountColor, symbolColor
-                )
+            valueTv.text = when (transaction.transactionType) {
+                TransactionType.SWAP.value -> {
+                    valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                    valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                    valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    getString(R.string.Swap)
+                }
+                TransactionType.APPROVAL.value -> {
+                    valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                    valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                    valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    getString(R.string.Approval)
+                }
+                else -> {
+                    buildAmountSymbol(
+                        requireContext(),
+                        when (transaction.transactionType) {
+                            TransactionType.TRANSFER_OUT.value -> "-$mainAmount"
+                            TransactionType.APPROVAL.value -> "-$mainAmount"
+                            TransactionType.TRANSFER_IN.value -> "+$mainAmount"
+                            else -> mainAmount
+                        },
+                        when (transaction.transactionType) {
+                            TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
+                            TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
+                            TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
+                            else -> ""
+                        },
+                        amountColor, symbolColor
+                    )
+                }
             }
 
             when (transaction.status) {
                 TransactionStatus.SUCCESS.value -> {
-                    status.text = getString(R.string.Success)
+                    status.text = getString(R.string.Completed)
                     status.setTextColor(requireContext().getColor(R.color.wallet_green))
                     status.setBackgroundResource(R.drawable.bg_status_success)
                 }
@@ -146,7 +150,13 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
 
                 TransactionStatus.FAILED.value -> {
-                    status.text = getString(R.string.Failed)
+                    status.text = getString(R.string.Canceled)
+                    status.setTextColor(requireContext().getColor(R.color.wallet_pink))
+                    status.setBackgroundResource(R.drawable.bg_status_failed)
+                }
+
+                TransactionStatus.NOT_FOUND.value -> {
+                    status.text = getString(R.string.Expired)
                     status.setTextColor(requireContext().getColor(R.color.wallet_pink))
                     status.setBackgroundResource(R.drawable.bg_status_failed)
                 }
