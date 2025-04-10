@@ -93,13 +93,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var distance = 0
     private var snackBar: Snackbar? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        jobManager.addJobInBackground(RefreshTokensJob())
-        jobManager.addJobInBackground(RefreshSnapshotsJob())
-        jobManager.addJobInBackground(SyncOutputJob())
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -268,7 +261,18 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onResume() {
         super.onResume()
+        jobManager.addJobInBackground(RefreshTokensJob())
+        jobManager.addJobInBackground(RefreshSnapshotsJob())
+        jobManager.addJobInBackground(SyncOutputJob())
         refreshAllPendingDeposit()
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        if (!hidden) {
+            jobManager.addJobInBackground(RefreshTokensJob())
+            jobManager.addJobInBackground(RefreshSnapshotsJob())
+            jobManager.addJobInBackground(SyncOutputJob())
+        }
     }
 
     private fun refreshAllPendingDeposit() =
@@ -302,14 +306,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
     private var lastFiatCurrency :String? = null
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        if (!hidden) {
-            jobManager.addJobInBackground(RefreshTokensJob())
-            jobManager.addJobInBackground(RefreshSnapshotsJob())
-            jobManager.addJobInBackground(SyncOutputJob())
-        }
-    }
 
     override fun onStop() {
         super.onStop()

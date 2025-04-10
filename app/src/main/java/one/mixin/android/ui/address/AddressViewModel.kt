@@ -26,4 +26,6 @@ class AddressViewModel
     suspend fun validateExternalAddress(
         assetId: String, destination: String, tag: String?
     ) = accountRepository.validateExternalAddress(assetId, destination, tag)
+
+    fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
 }

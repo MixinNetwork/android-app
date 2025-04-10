@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -44,15 +45,17 @@ class Web3FilterParams(
         tokenItems?.let {
             if (it.isNotEmpty()) {
                 val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
-                filters.add("w.asset_id IN ($tokenIds)")
+                filters.add("(w.send_asset_id IN ($tokenIds) OR w.receive_asset_id IN ($tokenIds))")
             }
         }
 
         tokenFilterType.let {
             when (it) {
-                Web3TokenFilterType.SEND -> filters.add("w.transaction_type = 'send'")
-                Web3TokenFilterType.RECEIVE -> filters.add("w.transaction_type = 'receive'")
-                Web3TokenFilterType.CONTRACT -> filters.add("w.transaction_type = 'contract'")
+                Web3TokenFilterType.SEND -> filters.add("w.transaction_type = 'transfer_out'")
+                Web3TokenFilterType.RECEIVE -> filters.add("w.transaction_type = 'transfer_in'")
+                Web3TokenFilterType.APPROVAL -> filters.add("w.transaction_type = 'approval'")
+                Web3TokenFilterType.SWAP -> filters.add("w.transaction_type = 'swap'")
+                Web3TokenFilterType.PENDING -> filters.add("w.status = '${TransactionStatus.PENDING.value}'")
                 else ->  {}
             }
         }
@@ -74,17 +77,24 @@ class Web3FilterParams(
         val orderSql = when (order) {
             SortOrder.Recent -> "ORDER BY w.transaction_at DESC"
             SortOrder.Oldest -> "ORDER BY w.transaction_at ASC"
-            SortOrder.Value -> "ORDER BY abs(w.amount * t.price_usd) DESC"
-            SortOrder.Amount -> "ORDER BY w.amount DESC"
             else -> ""
         }
 
         return SimpleSQLiteQuery(
-            "SELECT w.transaction_id, w.transaction_type, w.transaction_hash, w.block_number, " +
-                "w.sender, w.receiver, w.output_hash, w.chain_id, w.asset_id, w.amount, " +
-                "w.transaction_at, w.updated_at, w.transaction_type, w.status, t.symbol, t.icon_url, w.status " +
+            "SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
+                "w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
+                "w.transaction_at, w.updated_at, " +
+                "c.symbol as chain_symbol, " +
+                "c.icon_url as chain_icon_url, " +
+                "s.icon_url as send_asset_icon_url, " +
+                "s.symbol as send_asset_symbol, " +
+                "r.icon_url as receive_asset_icon_url, " +
+                "r.symbol as receive_asset_symbol " +
                 "FROM transactions w " +
-                "LEFT JOIN tokens t on t.asset_id = w.asset_id $whereSql $orderSql"
+                "LEFT JOIN tokens c ON c.asset_id = w.chain_id " +
+                "LEFT JOIN tokens s ON s.asset_id = w.send_asset_id " +
+                "LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id " +
+                "$whereSql $orderSql"
         )
     }
 }

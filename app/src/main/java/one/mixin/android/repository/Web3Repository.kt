@@ -31,6 +31,8 @@ constructor(
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     suspend fun web3TokenItemById(assetId: String) = web3TokenDao.web3TokenItemById(assetId)
+    
+    suspend fun findWeb3TokenItemsByIds(assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(assetIds)
 
     fun web3Tokens() = web3TokenDao.web3TokenItems()
     
@@ -48,6 +50,8 @@ constructor(
     }
 
     fun web3Transactions(assetId: String) = web3TransactionDao.web3Transactions(assetId)
+    
+    fun updateRawTransaction(type: String, hash: String, chainId: String) = web3TransactionDao.updateRawTransaction(type, hash, chainId)
     
     suspend fun getAddressesByChainId(walletId: String): Web3Address? {
         return web3AddressDao.getAddressesByChainId(walletId)

@@ -1,8 +1,9 @@
 package one.mixin.android.web3.details
 
 enum class Web3TransactionType(val value: String) {
-    Receive("receive"),
-    Send("send"),
-    Other("other"),
-    Contract("contract"),
+    TRANSFER_IN("transfer_in"),
+    TRANSFER_OUT("transfer_out"),
+    SWAP("swap"),
+    APPROVAL("approval"),
+    UNKNOWN("unknown"),
 }

@@ -428,6 +428,10 @@ internal constructor(
 
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
+    suspend fun findTokensByIds(assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.findWeb3TokenItemsByIds(assetIds)
+    }
+
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()
@@ -444,8 +448,13 @@ internal constructor(
     suspend fun deletePending(hash: String, chainId: String) =
         withContext(Dispatchers.IO) { tokenRepository.deletePending(hash, chainId) }
 
-    suspend fun updateWeb3RawTransaction(hash: String, type: String) =
-        withContext(Dispatchers.IO) { tokenRepository.updateWeb3RawTransaction(hash, type) }
+    suspend fun updateWeb3RawTransaction(hash: String, type: String, chainId: String) =
+        withContext(Dispatchers.IO) { tokenRepository.updateWeb3RawTransaction(hash, type, chainId) }
+
+    suspend fun updateTransaction(hash: String, chainId: String, state: String?) =
+        withContext(Dispatchers.IO) { 
+            state?.let { tokenRepository.updateWeb3RawTransaction(hash, it, chainId) }
+        }
 
     suspend fun insertRawTranscation(raw: Web3RawTransaction) =
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }

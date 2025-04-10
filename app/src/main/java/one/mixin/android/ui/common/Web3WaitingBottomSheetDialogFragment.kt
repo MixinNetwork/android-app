@@ -8,6 +8,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.databinding.FragmentWaitingBottomSheetBinding
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
@@ -68,9 +69,11 @@ class Web3WaitingBottomSheetDialogFragment() : MixinBottomSheetDialogFragment() 
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
+                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
                             web3ViewModel.insertRawTranscation(r.data!!)
+                            if (r.data?.state == TransactionStatus.FAILED.value ||r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value) {
+                                web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
+                            }
                         }
                     }
                     delay(5_000)

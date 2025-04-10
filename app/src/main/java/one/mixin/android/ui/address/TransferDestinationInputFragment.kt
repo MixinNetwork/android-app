@@ -24,7 +24,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
@@ -564,15 +566,18 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 if (assetId.isNotEmpty() && destination.isNotEmpty()) {
                     val response = viewModel.validateExternalAddress(assetId, destination, tag)
                     if (response.isSuccess) {
+                        val addressLabel = withContext(Dispatchers.IO) {
+                            viewModel.findAddressByReceiver(destination, tag ?: "")
+                        }
                         when {
                             asset != null && destination.isNotEmpty() && tag != null -> {
-                                navTo(InputFragment.newInstance(asset, destination, tag), InputFragment.TAG)
+                                navTo(InputFragment.newInstance(asset, destination, tag, label = addressLabel), InputFragment.TAG)
                             }
                             asset != null && destination.isNotEmpty() -> {
-                                navTo(InputFragment.newInstance(asset, destination, toAccount = toAccount), InputFragment.TAG)
+                                navTo(InputFragment.newInstance(asset, destination, toAccount = toAccount, label = addressLabel), InputFragment.TAG)
                             }
                             fromAddress != null && destination.isNotEmpty() && web3Token != null && chainToken != null -> {
-                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = destination, web3Token = web3Token, chainToken = chainToken), InputFragment.TAG)
+                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = destination, web3Token = web3Token, chainToken = chainToken, label = addressLabel), InputFragment.TAG)
                             }
                         }
                     } else {

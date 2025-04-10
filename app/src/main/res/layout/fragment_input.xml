@@ -145,6 +145,7 @@
                     android:paddingStart="20dp"
                     android:paddingEnd="20dp"
                     android:paddingBottom="10dp"
+                    android:minHeight="36sp"
                     android:paddingTop="10dp">
 
                     <TextView
@@ -160,7 +161,7 @@
                     <LinearLayout
                         android:id="@+id/info_linear_layout"
                         android:layout_width="wrap_content"
-                        android:layout_height="16sp"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:gravity="center_vertical"

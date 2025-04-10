@@ -7,7 +7,7 @@ import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.vo.safe.SafeSnapshot
 import org.threeten.bp.Instant
 
-class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
+class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork()) {
     companion object {
         private const val serialVersionUID = 2L
         private val TIME_ZERO: String = Instant.ofEpochMilli(0).toString()

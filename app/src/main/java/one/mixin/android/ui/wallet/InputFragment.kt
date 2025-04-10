@@ -132,7 +132,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             toAddress: String,
             tag: String? = null,
             toAccount: Boolean? = null,
-            isReceive: Boolean = false
+            isReceive: Boolean = false,
+            label: String? = null
         ) =
             InputFragment().apply {
                 withArgs {
@@ -143,6 +144,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
                     putBoolean(ARGS_RECEIVE, isReceive)
+                    if (label != null) {
+                        putString(ARGS_TO_ADDRESS_LABEL, label)
+                    }
                 }
             }
 
@@ -410,18 +414,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 )
                 when(transferType) {
                     TransferType.USER, TransferType.BIOMETRIC_ITEM -> {
-                        binding.infoLinearLayout.setOnClickListener {
-                            noteDialog()
-                        }
-                        binding.titleTextView.setText(R.string.Note_Optional)
-                        if (assetBiometricItem?.memo != null) {
-                            binding.contentTextView.text = assetBiometricItem?.memo
+                        if (assetBiometricItem is WithdrawBiometricItem) {
+                            binding.titleTextView.setText(R.string.Network_Fee)
                         } else {
-                            binding.contentTextView.setText(R.string.add_a_note)
+                            binding.infoLinearLayout.setOnClickListener {
+                                noteDialog()
+                            }
+                            binding.titleTextView.setText(R.string.Note_Optional)
+                            if (assetBiometricItem?.memo != null) {
+                                binding.contentTextView.text = assetBiometricItem?.memo
+                            } else {
+                                binding.contentTextView.setText(R.string.add_a_note)
+                            }
+                            binding.iconImageView.isVisible = true
+                            binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
+                            currentNote = assetBiometricItem?.memo
                         }
-                        binding.iconImageView.isVisible = true
-                        binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
-                        currentNote = assetBiometricItem?.memo
                     }
                     else -> {
                         binding.titleTextView.setText(R.string.Network_Fee)
@@ -542,6 +550,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 serializedTx,
                                                 null
                                             )
+                                        txStateFragment.setCloseAction {
+                                            parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
+                                                parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+                                            }
+                                        }
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
                                 )

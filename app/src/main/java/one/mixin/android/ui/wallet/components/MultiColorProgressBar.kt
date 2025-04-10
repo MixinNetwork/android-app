@@ -108,7 +108,7 @@ fun MultiColorProgressBar(
                     
                     Box(
                         modifier = Modifier
-                            .weight(asset.percentage)
+                            .weight(maxOf(asset.percentage, 0.001f))
                             .fillMaxHeight()
                             .clip(shape)
                             .background(brush)

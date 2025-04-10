@@ -7,7 +7,9 @@ enum class Web3TokenFilterType(val value: Int, val titleRes: Int) {
     ALL(0, R.string.All),
     SEND(1, R.string.Send),
     RECEIVE(2, R.string.Receive),
-    CONTRACT(3, R.string.Contract);
+    APPROVAL(3, R.string.Approval),
+    SWAP(4, R.string.Swap),
+    PENDING(5, R.string.Pending);
 
     companion object {
         fun fromInt(value: Int): Web3TokenFilterType {
