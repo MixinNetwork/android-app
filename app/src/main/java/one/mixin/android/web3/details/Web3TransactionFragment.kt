@@ -1,16 +1,28 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
+import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.math.BigDecimal
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -25,7 +37,9 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.widget.AvatarView
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.extension.dp
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -52,7 +66,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private val transaction by lazy {
-        requireNotNull(requireArguments().getParcelableCompat(ARGS_TRANSACTION, Web3TransactionItem::class.java))
+        requireNotNull(
+            requireArguments().getParcelableCompat(
+                ARGS_TRANSACTION,
+                Web3TransactionItem::class.java
+            )
+        )
     }
 
     private val chain by lazy {
@@ -73,62 +92,182 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.root.isClickable = true
         binding.apply {
             transactionHashTv.text = transaction.transactionHash
-            val amountColor =
-                if (transaction.status == TransactionType.TxFailed.value || transaction.status == TransactionType.TxNotFound.value) {
-                    requireContext().colorFromAttribute(R.attr.text_assist)
-                } else if (transaction.transactionType == Web3TransactionType.Send.value) {
-                    requireContext().getColor(R.color.wallet_pink)
-                } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
-                    requireContext().getColor(R.color.wallet_green)
-                } else {
-                    requireContext().colorFromAttribute(R.attr.text_primary)
-                }
+            val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
+                requireContext().colorFromAttribute(R.attr.text_assist)
+            } else if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
+                requireContext().getColor(R.color.wallet_pink)
+            } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value) {
+                requireContext().getColor(R.color.wallet_green)
+            } else {
+                requireContext().colorFromAttribute(R.attr.text_primary)
+            }
+
             val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
-            valueTv.text = buildAmountSymbol(requireContext(),
-                when (transaction.transactionType) {
-                    Web3TransactionType.Send.value -> "-${transaction.amount}"
-                    Web3TransactionType.Receive.value -> "+${transaction.amount}"
-                    else -> transaction.amount
-                }, transaction.symbol ?: "", amountColor, symbolColor
-            )
-            when(transaction.status) {
-                TransactionType.TxSuccess.value -> {
+
+            val mainAmount = transaction.getFormattedAmount()
+
+            valueTv.text = when (transaction.transactionType) {
+                TransactionType.SWAP.value -> {
+                    valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                    valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                    valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    getString(R.string.Swap)
+                }
+                TransactionType.APPROVAL.value -> {
+                    valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                    valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                    valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    getString(R.string.Approval)
+                }
+                else -> {
+                    buildAmountSymbol(
+                        requireContext(),
+                        when (transaction.transactionType) {
+                            TransactionType.TRANSFER_OUT.value -> "-$mainAmount"
+                            TransactionType.APPROVAL.value -> "-$mainAmount"
+                            TransactionType.TRANSFER_IN.value -> "+$mainAmount"
+                            else -> mainAmount
+                        },
+                        when (transaction.transactionType) {
+                            TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
+                            TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
+                            TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
+                            else -> ""
+                        },
+                        amountColor, symbolColor
+                    )
+                }
+            }
+
+            when (transaction.status) {
+                TransactionStatus.SUCCESS.value -> {
                     status.text = getString(R.string.Completed)
                     status.setTextColor(requireContext().getColor(R.color.wallet_green))
                     status.setBackgroundResource(R.drawable.bg_status_success)
                 }
-                TransactionType.TxPending.value -> {
+
+                TransactionStatus.PENDING.value -> {
                     status.text = getString(R.string.Pending)
-                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     status.setBackgroundResource(R.drawable.bg_status_default)
                 }
-                TransactionType.TxFailed.value -> {
-                    status.text = getString(R.string.Failed)
+
+                TransactionStatus.FAILED.value -> {
+                    status.text = getString(R.string.Canceled)
                     status.setTextColor(requireContext().getColor(R.color.wallet_pink))
                     status.setBackgroundResource(R.drawable.bg_status_failed)
                 }
+
+                TransactionStatus.NOT_FOUND.value -> {
+                    status.text = getString(R.string.Expired)
+                    status.setTextColor(requireContext().getColor(R.color.wallet_pink))
+                    status.setBackgroundResource(R.drawable.bg_status_failed)
+                }
+
                 else -> {
-                    status.text = getString(R.string.Not_found)
-                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                    status.text = transaction.status
+                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     status.setBackgroundResource(R.drawable.bg_status_default)
                 }
             }
-            fromTv.text = transaction.sender
-            toTv.text = transaction.receiver
-            avatar.bg.loadImage(transaction.iconUrl, R.drawable.ic_avatar_place_holder)
+
+            val fromAddress = transaction.getFromAddress()
+            val toAddress = transaction.getToAddress()
+            
+            when (transaction.transactionType) {
+                TransactionType.TRANSFER_IN.value -> {
+                    fromTv.text = fromAddress
+                    fromLl.isVisible = true
+                    toLl.isVisible = false
+                }
+                TransactionType.TRANSFER_OUT.value -> {
+                    toTv.text = toAddress
+                    fromLl.isVisible = false
+                    toLl.isVisible = true
+                }
+                TransactionType.APPROVAL.value -> {
+                    toTv.text = toAddress
+                    fromLl.isVisible = false
+                    toLl.isVisible = true
+                }
+                else -> {
+                    fromLl.isVisible = false
+                    toLl.isVisible = false
+                }
+            }
+
+            when (transaction.transactionType) {
+                TransactionType.TRANSFER_OUT.value -> {
+                    avatar.bg.loadImage(
+                        transaction.sendAssetIconUrl,
+                        R.drawable.ic_avatar_place_holder
+                    )
+                }
+
+                TransactionType.TRANSFER_IN.value -> {
+                    avatar.bg.loadImage(
+                        transaction.receiveAssetIconUrl,
+                        R.drawable.ic_avatar_place_holder
+                    )
+                }
+
+                TransactionType.SWAP.value, TransactionType.APPROVAL.value -> {
+                    avatar.bg.setImageResource(R.drawable.ic_web3_contract)
+                }
+
+                else -> {
+                    avatar.bg.loadImage(transaction.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                }
+            }
+
             avatar.setOnClickListener {
                 tokenClick(transaction)
             }
-            val badge = transaction.iconUrl
-            if (badge == null) {
-                avatar.badge.isVisible = false
-            } else {
-                avatar.badge.isVisible = true
-                avatar.badge.loadImage(badge, R.drawable.ic_avatar_place_holder)
-            }
+
+            avatar.badge.isVisible = false
+
             dateTv.text = transaction.transactionAt.fullDate()
-            feeLl.isVisible = false
+            feeLl.isVisible = true
+            feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
+            
+            typeLl.isVisible = true
+            typeTv.text = when (transaction.transactionType) {
+                TransactionType.TRANSFER_OUT.value -> getString(R.string.Send)
+                TransactionType.TRANSFER_IN.value -> getString(R.string.Receive)
+                TransactionType.APPROVAL.value -> getString(R.string.Approval)
+                TransactionType.SWAP.value -> getString(R.string.Swap)
+                else -> transaction.transactionType
+            }
+
+            if (transaction.transactionType == TransactionType.SWAP.value && transaction.senders.isNotEmpty()) {
+                assetChangesLl.visibility = View.VISIBLE
+                assetChangesContainer.setContent {
+                    AssetChangesList(
+                        senders = transaction.senders,
+                        receivers = transaction.receivers,
+                        fetchToken = { assetId ->
+                            web3ViewModel.web3TokenItemById(assetId)
+                        }
+                    )
+                }
+            } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
+                assetChangesLl.visibility = View.VISIBLE
+                assetChangesTitle.setText(R.string.TOKEN_ACCESS_APPROVAL)
+                
+                assetChangesContainer.setContent {
+                    AssetChangesList(
+                        senders = transaction.senders,
+                        receivers = transaction.receivers,
+                        fetchToken = { assetId ->
+                            web3ViewModel.web3TokenItemById(assetId)
+                        },
+                        approvals = transaction.approvals
+                    )
+                }
+            } else {
+                assetChangesLl.visibility = View.GONE
+            }
         }
     }
 
@@ -150,7 +289,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val bottomSheet = builder.create()
         bottomBinding.apply {
             explorer.setOnClickListener {
-                val url = "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
+                val url =
+                    "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }

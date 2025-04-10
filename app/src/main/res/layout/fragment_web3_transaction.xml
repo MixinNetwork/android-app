@@ -61,7 +61,8 @@
                         android:layout_marginEnd="32dp"
                         android:gravity="center_horizontal"
                         android:textIsSelectable="true"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:textColor="?attr/text_primary"/>
 
                     <TextView
                         android:id="@+id/status"
@@ -80,6 +81,29 @@
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
                 android:background="?attr/bg_window" />
+
+
+            <LinearLayout
+                android:id="@+id/asset_changes_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/asset_changes_title"
+                    style="@style/TransactionTitleTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ASSET_CHANGES" />
+
+                <androidx.compose.ui.platform.ComposeView
+                    android:id="@+id/asset_changes_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginVertical="8dp" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -202,7 +226,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/Fee" />
+                        android:text="@string/Network_Fee" />
 
                     <TextView
                         android:id="@+id/fee_tv"
@@ -212,6 +236,25 @@
                         android:textIsSelectable="true" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/type_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/Type" />
+
+                    <TextView
+                        android:id="@+id/type_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

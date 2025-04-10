@@ -550,6 +550,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 serializedTx,
                                                 null
                                             )
+                                        txStateFragment.setCloseAction {
+                                            parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
+                                                parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
+                                            }
+                                        }
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
                                 )
