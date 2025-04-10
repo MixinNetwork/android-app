@@ -253,14 +253,16 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
                 assetChangesLl.visibility = View.VISIBLE
-                assetChangesTitle.setText(R.string.Token_ACCESS_APPROVAL)
+                assetChangesTitle.setText(R.string.TOKEN_ACCESS_APPROVAL)
+                
                 assetChangesContainer.setContent {
                     AssetChangesList(
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
                             web3ViewModel.web3TokenItemById(assetId)
-                        }
+                        },
+                        approvals = transaction.approvals
                     )
                 }
             } else {

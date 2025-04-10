@@ -33,15 +33,20 @@ fun AssetChangeItem(
     amount: String,
     symbol: String,
     iconUrl: String?,
-    isReceive: Boolean = false
+    isReceive: Boolean = false,
+    isUnlimited: Boolean = false
 ) {
-    val amountValue = try {
-        BigDecimal(amount).stripTrailingZeros().toPlainString()
-    } catch (e: Exception) {
-        amount
+    val amountValue = if (isUnlimited) {
+        "Unlimited "
+    } else {
+        try {
+            BigDecimal(amount).stripTrailingZeros().toPlainString()
+        } catch (e: Exception) {
+            amount
+        }
     }
 
-    val prefix = if (isReceive) "+ " else "- "
+    val prefix = if (isReceive) "+" else "-"
     val textColor =
         if (isReceive) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
@@ -57,7 +62,7 @@ fun AssetChangeItem(
         Spacer(modifier = Modifier.width(4.dp))
 
         Text(
-            text = "$prefix$amountValue ",
+            text = if (isUnlimited) amountValue else "$prefix$amountValue ",
             fontSize = 14.sp,
             color = textColor
         )
@@ -74,11 +79,16 @@ fun AssetChangeItem(
 fun AssetChangesList(
     senders: List<AssetChange>,
     receivers: List<AssetChange>,
-    fetchToken: suspend (String) -> Web3TokenItem?
+    fetchToken: suspend (String) -> Web3TokenItem?,
+    approvals: List<AssetChange>? = null
 ) {
     val scope = rememberCoroutineScope()
-    val assetIds = remember(senders, receivers) {
-        (senders.map { it.assetId } + receivers.map { it.assetId }).distinct()
+    val assetIds = remember(senders, receivers, approvals) {
+        val ids = mutableListOf<String>()
+        ids.addAll(senders.map { it.assetId })
+        ids.addAll(receivers.map { it.assetId })
+        approvals?.let { ids.addAll(it.map { approval -> approval.assetId }) }
+        ids.distinct()
     }
 
     var tokens by remember { mutableStateOf<Map<String, Web3TokenItem>>(emptyMap()) }
@@ -95,6 +105,24 @@ fun AssetChangesList(
     }
     MixinAppTheme {
         Column {
+            approvals?.forEachIndexed { index, approval ->
+                val token = tokens[approval.assetId]
+                AssetChangeItem(
+                    amount = approval.amount,
+                    symbol = token?.symbol ?: "",
+                    iconUrl = token?.iconUrl,
+                    isReceive = false,
+                    isUnlimited = approval.type == "unlimited"
+                )
+                if (index < approvals.size - 1) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+            
+            if (approvals != null && approvals.isNotEmpty() && (receivers.isNotEmpty() || senders.isNotEmpty())) {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+            
             receivers.forEachIndexed { index, receiver ->
                 val token = tokens[receiver.assetId]
                 AssetChangeItem(
@@ -107,7 +135,11 @@ fun AssetChangesList(
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            
+            if (receivers.isNotEmpty() && senders.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+            
             senders.forEachIndexed { index, sender ->
                 val token = tokens[sender.assetId]
                 AssetChangeItem(
