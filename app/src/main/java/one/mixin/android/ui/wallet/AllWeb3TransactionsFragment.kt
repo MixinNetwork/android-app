@@ -185,7 +185,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value ||r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
+                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
                             web3ViewModel.insertRawTranscation(r.data!!)
                             if (r.data?.state == TransactionStatus.FAILED.value ||r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value) {
                                 web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
