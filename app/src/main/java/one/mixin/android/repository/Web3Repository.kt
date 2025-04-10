@@ -51,6 +51,8 @@ constructor(
 
     fun web3Transactions(assetId: String) = web3TransactionDao.web3Transactions(assetId)
     
+    fun updateRawTransaction(type: String, hash: String, chainId: String) = web3TransactionDao.updateRawTransaction(type, hash, chainId)
+    
     suspend fun getAddressesByChainId(walletId: String): Web3Address? {
         return web3AddressDao.getAddressesByChainId(walletId)
     }
