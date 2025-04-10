@@ -12,6 +12,7 @@ private val chainNetworks by lazy {
         "b7938396-3f94-4e0a-9179-d3440718156f" to "Polygon",
         "64692c23-8971-4cf4-84a7-4dd1271dd887" to "Solana",
         "3fb612c5-6844-3979-ae4a-5a84e79da870" to "Base",
+        "59c09123-95cc-3ffd-a659-0f9169074cee" to "Lightning",
     )
 }
 
@@ -33,7 +34,7 @@ fun getChainNetwork(
         return "Base"
     }
 
-    if (assetId == chainId && !bepChains.contains(chainId)) return null
+    if (assetId == chainId && !bepChains.contains(chainId) && assetId != "59c09123-95cc-3ffd-a659-0f9169074cee") return null
 
     if (chainId == Constants.ChainId.TRON_CHAIN_ID) {
         return if (!assetKey.isNullOrBlank() && assetKey.isDigitsOnly()) {
@@ -52,6 +53,7 @@ private val chainNames by lazy {
         "17f78d7c-ed96-40ff-980c-5dc62fecbc85" to "BNB Beacon Chain (BEP-2)",
         "1949e683-6a08-49e2-b087-d6b72398588f" to "BNB Smart Chain (BEP-20)",
         "05891083-63d2-4f3d-bfbe-d14d7fb9b25a" to "BitShares",
+        "59c09123-95cc-3ffd-a659-0f9169074cee" to "Lightning",
     )
 }
 
