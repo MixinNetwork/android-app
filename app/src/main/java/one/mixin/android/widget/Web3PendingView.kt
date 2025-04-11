@@ -48,7 +48,11 @@ class Web3PendingView @JvmOverloads constructor(
         }
         
         isVisible = true
-        pendingText.text = context.getString(R.string.transactions_pending_count, count)
+        pendingText.text = if (count == 1) {
+            context.getString(R.string.Transaction_Pending_Confirmation)
+        } else {
+            context.getString(R.string.Transactions_Pending_Confirmation, count)
+        }
     }
 
     fun getPendingCount(): Int {

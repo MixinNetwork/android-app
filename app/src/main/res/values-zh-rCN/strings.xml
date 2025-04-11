@@ -1883,5 +1883,7 @@
     <string name="Common_Wallet_Description">一个普通的多链钱包，可以访问去中心化应用和 DeFi 协议。</string>
     <string name="Approval">授权</string>
     <string name="unlimited">无限量</string>
-    <string name="transactions_pending_count">有 %1$d 笔交易处理中</string>
+    <string name="Transaction_Pending_Confirmation">有 1 笔交易处理中</string>
+    <string name="Transactions_Pending_Confirmation">有 %1$d 笔交易处理中</string>
+
 </resources>

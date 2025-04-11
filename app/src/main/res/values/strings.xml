@@ -1926,5 +1926,6 @@
     <string name="Approval">Approval</string>
     <string name="Approved">Approved</string>
     <string name="unlimited">unlimited</string>
-    <string name="transactions_pending_count">%1$d transactions are in process</string>
+    <string name="Transaction_Pending_Confirmation">1 Transaction Pending Confirmation</string>
+    <string name="Transactions_Pending_Confirmation">%1$d Transactions Pending Confirmation</string>
 </resources>
