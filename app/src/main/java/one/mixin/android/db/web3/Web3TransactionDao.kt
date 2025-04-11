@@ -48,4 +48,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @Query("DELETE FROM transactions")
     suspend fun deleteAllTransactions()
+
+    @Query("SELECT COUNT(*) FROM transactions WHERE status = 'pending'")
+    fun getPendingTransactionCount(): LiveData<Int>
 }
