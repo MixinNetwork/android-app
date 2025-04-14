@@ -1,23 +1,14 @@
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
-import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import java.math.BigDecimal
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
@@ -37,9 +28,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
-import one.mixin.android.widget.AvatarView
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.extension.dp
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -174,18 +163,23 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             val fromAddress = transaction.getFromAddress()
             val toAddress = transaction.getToAddress()
             
-            when (transaction.transactionType) {
-                TransactionType.TRANSFER_IN.value -> {
+            when  {
+                transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value -> {
+                    valueTv.isVisible = false
+                    fromLl.isVisible = false
+                    toLl.isVisible = false
+                }
+                transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     fromTv.text = fromAddress
                     fromLl.isVisible = true
                     toLl.isVisible = false
                 }
-                TransactionType.TRANSFER_OUT.value -> {
+                transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     toTv.text = toAddress
                     fromLl.isVisible = false
                     toLl.isVisible = true
                 }
-                TransactionType.APPROVAL.value -> {
+                transaction.transactionType ==TransactionType.APPROVAL.value -> {
                     toTv.text = toAddress
                     fromLl.isVisible = false
                     toLl.isVisible = true
@@ -197,30 +191,29 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             }
 
             when {
-                transaction.status === TransactionStatus.PENDING.value -> {
-                    avatar.bg.setImageResource(R.drawable.ic_web3_contract)
+
+                transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value || transaction.status == TransactionStatus.PENDING.value -> {
+                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_contract)
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
-                    avatar.bg.loadImage(
-                        transaction.sendAssetIconUrl,
-                        R.drawable.ic_avatar_place_holder
-                    )
+                    avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
-                    avatar.bg.loadImage(
-                        transaction.receiveAssetIconUrl,
-                        R.drawable.ic_avatar_place_holder
-                    )
+                    avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
                 }
 
-                transaction.transactionType == TransactionType.SWAP.value || transaction.transactionType == TransactionType.APPROVAL.value -> {
-                    avatar.bg.setImageResource(R.drawable.ic_web3_contract)
+                transaction.transactionType == TransactionType.SWAP.value -> {
+                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_swap)
+                }
+
+                transaction.transactionType == TransactionType.APPROVAL.value -> {
+                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_approval)
                 }
 
                 else -> {
-                    avatar.bg.loadImage(transaction.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_contract)
                 }
             }
 

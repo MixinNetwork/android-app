@@ -443,6 +443,8 @@ internal constructor(
 
     suspend fun getPendingTransactions(chainId: String) = tokenRepository.getPendingTransactions(chainId)
 
+    fun getPendingTransactionCount(): LiveData<Int> = tokenRepository.getPendingTransactionCount()
+
     suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
     suspend fun deletePending(hash: String, chainId: String) =
