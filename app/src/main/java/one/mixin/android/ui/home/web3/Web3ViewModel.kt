@@ -398,8 +398,8 @@ internal constructor(
         if (totalSelectedAmount < desiredAmount) {
             // Refresh when balance is insufficient
             jobManager.addJobInBackground(SyncOutputJob())
-            if (anyNotConfirmed) return ""
-            else return null
+            return if (anyNotConfirmed) ""
+            else null
         }
 
         throw Exception("Impossible")

@@ -706,6 +706,11 @@ class BottomSheetViewModel
                         is Reference.HashValue -> {
                             reference.value
                         }
+
+                        else -> {
+                            throw IllegalArgumentException("Reference type not supported")
+                            ""
+                        }
                     }
                 }
 
@@ -852,18 +857,14 @@ class BottomSheetViewModel
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val recipient = invoice.recipient
             val senderIds = listOf(Session.getAccountId()!!)
+
             val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
             val signedTransactions = mutableListOf<SignedTransaction>()
 
             val traceIds = invoice.entries.map { it.traceId }
-            val completedTransactions = tokenRepository.transactionsFetch(traceIds)
-
-            if (completedTransactions.isSuccess && completedTransactions.data != null && completedTransactions.data!!.isNotEmpty()) {
-                val verifiedTransactionList: Collection<VerifiedTransactionData> = completedTransactions.data!!.map {
-                    VerifiedTransactionData(it.requestId, "", it.transactionHash, UtxoWrapper(emptyList()), "", "", "", "", emptyList(), byteArrayOf(), "")
-                }
-                verifiedTransactions.addAll(verifiedTransactionList)
-                Timber.e("Added to verifiedTransactions: ${verifiedTransactions.map { it.trace }.joinToString()}")
+            val completedTransactions = tokenRepository.transactionsFetch(traceIds).data
+            if (completedTransactions != null && completedTransactions.isNotEmpty()) {
+                Timber.e("Completed transactions: ${completedTransactions.map { it.requestId }.joinToString()}")
             } else {
                 Timber.e("No completed transactions found")
             }
@@ -871,7 +872,7 @@ class BottomSheetViewModel
             Timber.e("Kernel Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
 
             invoice.entries.forEachIndexed { index, entry ->
-                val isCompleted = verifiedTransactions.any { it.trace == entry.traceId }
+                val isCompleted = completedTransactions?.any { it.requestId == entry.traceId } == true
                 if (isCompleted) {
                     Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): already completed, skipping")
                     return@forEachIndexed
@@ -916,13 +917,29 @@ class BottomSheetViewModel
                 val changeKeys = data.last().keys.joinToString(",")
                 val changeMask = data.last().mask
                 val reference = entry.references.joinToString(",") { reference ->
-                    if (reference is Reference.IndexValue) {
-                        verifiedTransactions.getOrNull(reference.value)?.hash ?: throw IllegalArgumentException("Reference not found")
-                    } else if (reference is Reference.HashValue) {
-                        reference.value
-                    } else {
-                        throw IllegalArgumentException("Reference type not supported")
-                        ""
+                    when (reference) {
+                        is Reference.IndexValue -> {
+                            if (completedTransactions != null && completedTransactions.isNotEmpty() && reference.value < completedTransactions.size) {
+                                Timber.e("Kernel Invoice Transaction: Reference found in completedTransactions at index ${reference.value}")
+                                completedTransactions[reference.value].transactionHash
+                            } else {
+                                val adjustedIndex = if (completedTransactions != null && completedTransactions.isNotEmpty())
+                                    reference.value - completedTransactions.size 
+                                else 
+                                    reference.value
+                                Timber.e("Kernel Invoice Transaction: Reference not found in completedTransactions, looking in verifiedTransactions at index $adjustedIndex")
+                                verifiedTransactions.getOrNull(adjustedIndex)?.hash ?: throw IllegalArgumentException("Reference not found")
+                            }
+                        }
+
+                        is Reference.HashValue -> {
+                            reference.value
+                        }
+
+                        else -> {
+                            throw IllegalArgumentException("Reference type not supported")
+                            ""
+                        }
                     }
                 }
                 val tx = if (entry.isStorage()) {
