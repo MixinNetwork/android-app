@@ -864,7 +864,7 @@ class TokenRepository
             inscriptionHash: String?,
         ) {
             val snapshotId = data.getSnapshotId
-            if (conversationId != "") {
+            if (conversationId != "" && data.userId.isUUID()) {
                 val category =
                     if (inscriptionHash != null) {
                         MessageCategory.SYSTEM_SAFE_INSCRIPTION.name

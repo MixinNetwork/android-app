@@ -615,9 +615,33 @@ class BottomSheetViewModel
             val senderIds = listOf(Session.getAccountId()!!)
             val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
 
+            val traceIds = invoice.entries.map { it.traceId }
+            val completedTransactions = tokenRepository.transactionsFetch(traceIds)
+            
+            if (completedTransactions.isSuccess && completedTransactions.data != null && completedTransactions.data!!.isNotEmpty()) {
+                Timber.e("Found completed transactions: ${completedTransactions.data!!.map { it.requestId }.joinToString()}")
+
+                val verifiedTransactionList: Collection<VerifiedTransactionData> = completedTransactions.data!!.map {
+                    VerifiedTransactionData(it.requestId, "", it.transactionHash, UtxoWrapper(emptyList()), "", "", "", "", emptyList(), byteArrayOf(), "")
+                }
+                verifiedTransactions.addAll(verifiedTransactionList)
+
+                Timber.e("Added to verifiedTransactions: ${verifiedTransactions.map { it.trace }.joinToString()}")
+            } else {
+                Timber.e("No completed transactions found")
+            }
+
             Timber.e("Kernel Duplicate Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
-            for (index in invoice.entries.indices) {
-                val entry = invoice.entries[index]
+
+            invoice.entries.forEachIndexed { index, entry ->
+                Timber.e("Processing entry ${index}: ${entry.traceId}, verified traces: ${verifiedTransactions.map { it.trace }.joinToString()}")
+                val isCompleted = verifiedTransactions.any { it.trace == entry.traceId }
+                if (isCompleted) {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): already completed, skipping")
+                    return@forEachIndexed
+                } else {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): not completed, processing")
+                }
                 val amount = entry.amountString()
                 val assetId = entry.assetId
                 val asset = assetIdToAsset(assetId)
@@ -820,26 +844,45 @@ class BottomSheetViewModel
                 listOf(TransactionRequest(raw, trace))
             )
         }
-
-
-    suspend fun invoiceTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
+        suspend fun invoiceTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
             if (invoice.isDuplicateInvoiceEntries()) return invoiceDuplicateTransaction(pin, invoice)
             val context = MixinApplication.appContext
             val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
             tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val recipient = invoice.recipient
-            val storageIndex = invoice.entries.indexOfFirst { it.isStorage() }
             val senderIds = listOf(Session.getAccountId()!!)
             val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
             val signedTransactions = mutableListOf<SignedTransaction>()
+
+            val traceIds = invoice.entries.map { it.traceId }
+            val completedTransactions = tokenRepository.transactionsFetch(traceIds)
+
+            if (completedTransactions.isSuccess && completedTransactions.data != null && completedTransactions.data!!.isNotEmpty()) {
+                val verifiedTransactionList: Collection<VerifiedTransactionData> = completedTransactions.data!!.map {
+                    VerifiedTransactionData(it.requestId, "", it.transactionHash, UtxoWrapper(emptyList()), "", "", "", "", emptyList(), byteArrayOf(), "")
+                }
+                verifiedTransactions.addAll(verifiedTransactionList)
+                Timber.e("Added to verifiedTransactions: ${verifiedTransactions.map { it.trace }.joinToString()}")
+            } else {
+                Timber.e("No completed transactions found")
+            }
+
             Timber.e("Kernel Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
+
             invoice.entries.forEachIndexed { index, entry ->
+                val isCompleted = verifiedTransactions.any { it.trace == entry.traceId }
+                if (isCompleted) {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): already completed, skipping")
+                    return@forEachIndexed
+                } else {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): not completed, processing")
+                }
                 val amount = entry.amountString()
                 val assetId = entry.assetId
                 val asset = assetIdToAsset(assetId)
                 val trace = entry.traceId
-                val data = if (storageIndex == index) {
+                val data = if (entry.isStorage()) {
                     val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderIds.first(), trace))
                     if (ghostKeyResponse.error != null) {
                         Timber.e("Kernel Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
@@ -882,7 +925,7 @@ class BottomSheetViewModel
                         ""
                     }
                 }
-                val tx = if (index == storageIndex) {
+                val tx = if (entry.isStorage()) {
                     Kernel.buildTxToKernelAddress(asset, amount, 64, MixAddress.newStorageRecipient().xinMembers.first().string(), input, changeKeys, changeMask, entry.extra.hexString(), reference )
                 } else if (recipient.xinMembers.isNotEmpty()){
                     Kernel.buildTxToKernelAddress(asset, amount, 1, recipient.xinMembers.first().string(), input, changeKeys, changeMask, entry.extra.hexString(), reference )
@@ -1502,7 +1545,6 @@ class BottomSheetViewModel
                 )
             }
         }
-
         private fun refreshAppNotExist(appIds: List<String>) =
             viewModelScope.launch(Dispatchers.IO) {
                 accountRepository.refreshAppNotExist(appIds)
@@ -1705,4 +1747,4 @@ class BottomSheetViewModel
         }
 
         fun web3TokenItems() = tokenRepository.web3TokenItems()
-}
+    }
