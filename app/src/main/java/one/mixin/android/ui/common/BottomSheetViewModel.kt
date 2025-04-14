@@ -596,31 +596,6 @@ class BottomSheetViewModel
             return transactionRsp
         }
 
-        private suspend fun requestTransactionWithRetry(
-            raw: String,
-            trace: String,
-            maxRetries: Int = 100
-        ): MixinResponse<List<TransactionResponse>> {
-            var retryCount = 1
-            while (retryCount < maxRetries) {
-                val response = tokenRepository.transactionRequest(
-                    listOf(TransactionRequest(raw, trace))
-                )
-
-                if (response.errorCode != ErrorHandler.INVALID_UTXO) {
-                    return response
-                }
-
-                Timber.e("Kernel Transaction($trace): INVALID_UTXO, delay and retry ${retryCount + 1}/$maxRetries")
-                delay(5000)
-                retryCount++
-            }
-
-            return tokenRepository.transactionRequest(
-                listOf(TransactionRequest(raw, trace))
-            )
-        }
-
         suspend fun invoiceDuplicateTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
             val context = MixinApplication.appContext
             val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
@@ -720,8 +695,9 @@ class BottomSheetViewModel
 
                 val verifiedTransactionData = VerifiedTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference)
                 verifiedTransactions.add(verifiedTransactionData)
-                val verifyTransaction = requestTransactionWithRetry(verifiedTransactionData.raw, verifiedTransactionData.trace)
-
+                val verifyTransaction = tokenRepository.transactionRequest(
+                    listOf(TransactionRequest(verifiedTransactionData.raw, verifiedTransactionData.trace))
+                )
                 if (verifyTransaction.error != null) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
                     return verifyTransaction
@@ -773,14 +749,7 @@ class BottomSheetViewModel
                     }
                 }
 
-                val signedResponse = tokenRepository.transactions(
-                    listOf(
-                        TransactionRequest(
-                            signedTransaction.signResult.raw,
-                            signedTransaction.trace
-                        )
-                    )
-                )
+                val signedResponse = postTransactionWithRetry(signedTransaction.signResult.raw,signedTransaction.trace)
                 if (signedResponse.isSuccess) {
                     withContext(SINGLE_DB_THREAD) {
                         appDatabase.runInTransaction {
@@ -795,7 +764,7 @@ class BottomSheetViewModel
                         }
                     }
 
-                    if (recipient.uuidMembers.size == 1) {
+                    if (recipient.uuidMembers.size == 1 && entry.isStorage().not()) {
                         val receiverId = recipient.uuidMembers.first()
                         val user = tokenRepository.findUser(receiverId)
                         if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
@@ -823,7 +792,37 @@ class BottomSheetViewModel
             throw IllegalStateException()
         }
 
-        suspend fun invoiceTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
+        private suspend fun postTransactionWithRetry(
+            raw: String,
+            trace: String,
+            maxRetries: Int = 100
+        ): MixinResponse<List<TransactionResponse>> {
+            var retryCount = 1
+            while (retryCount < maxRetries) {
+                val response =  tokenRepository.transactions(
+                    listOf(
+                        TransactionRequest(
+                            raw, trace
+                        )
+                    )
+                )
+
+                if (response.errorCode != ErrorHandler.INVALID_UTXO || response.errorCode < 500) {
+                    return response
+                }
+
+                Timber.e("Kernel Transaction($trace): INVALID_UTXO, delay and retry ${retryCount + 1}/$maxRetries")
+                delay(5000)
+                retryCount++
+            }
+
+            return tokenRepository.transactionRequest(
+                listOf(TransactionRequest(raw, trace))
+            )
+        }
+
+
+    suspend fun invoiceTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
             if (invoice.isDuplicateInvoiceEntries()) return invoiceDuplicateTransaction(pin, invoice)
             val context = MixinApplication.appContext
             val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
