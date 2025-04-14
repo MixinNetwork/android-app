@@ -1329,4 +1329,6 @@ class TokenRepository
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
+    fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
+
 }

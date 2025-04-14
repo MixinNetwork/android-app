@@ -49,10 +49,12 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_TOKEN = "args_token"
+        const val ARGS_FILTER_PARAMS = "filter_params"
 
-        fun newInstance(tokenItem: Web3TokenItem? = null): AllWeb3TransactionsFragment {
+        fun newInstance(tokenItem: Web3TokenItem? = null, filterParams: Web3FilterParams? = null): AllWeb3TransactionsFragment {
             return AllWeb3TransactionsFragment().withArgs {
                 putParcelable(ARGS_TOKEN, tokenItem)
+                putParcelable(ARGS_FILTER_PARAMS, filterParams)
             }
         }
     }
@@ -77,7 +79,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val filterParams by lazy {
-        Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
+        requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java) 
+            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
