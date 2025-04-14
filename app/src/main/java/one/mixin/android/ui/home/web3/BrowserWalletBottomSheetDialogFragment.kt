@@ -287,7 +287,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val nonce = rpc.nonceAt(currentChain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethPreviewTransaction nonce
                     }
-                    parsedTx = viewModel.simulateWeb3Tx(hex, assetId)
+                    parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress)
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
@@ -306,7 +306,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 solanaTx = txWithPriorityFee
                             }
                         if (parsedTx == null) {
-                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana)
+                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, null)
                         }
                         val ptx = parsedTx
                         if (ptx != null && ptx.tokens == null) {
