@@ -91,11 +91,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     var walletId: String = ""
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        jobManager.addJobInBackground(RefreshWeb3Job())
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -153,6 +148,14 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                 }
             _headBinding?.pendingView?.isVisible = false
+            _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
+            _headBinding?.web3PendingView?.setOnClickListener {
+                if (_headBinding?.web3PendingView?.getPendingCount() ?: 0 > 0) {
+                    val filterParams = Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING)
+                    val fragment = AllWeb3TransactionsFragment.newInstance(filterParams = filterParams)
+                    navTo(fragment, AllWeb3TransactionsFragment.TAG)
+                }
+            }
             assetsAdapter.headerView = _headBinding!!.root
             coinsRv.itemAnimator = null
             coinsRv.setHasFixedSize(true)
@@ -243,6 +246,17 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
         if (walletId.isEmpty().not()) {
             jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        jobManager.addJobInBackground(RefreshWeb3Job())
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        if (!hidden) {
+            jobManager.addJobInBackground(RefreshWeb3Job())
         }
     }
 

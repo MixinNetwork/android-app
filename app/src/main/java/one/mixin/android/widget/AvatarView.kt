@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewAvatarBinding
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.clear
@@ -23,7 +24,7 @@ import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
-import one.mixin.android.web3.details.Web3TransactionType
+import one.mixin.android.db.web3.vo.TransactionType
 
 class AvatarView : ViewAnimator {
     private val binding = ViewAvatarBinding.inflate(LayoutInflater.from(context), this)
@@ -144,7 +145,7 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
         avatarSimple.clear()
-        avatarSimple.loadImage(url, R.drawable.ic_group_place_holder)
+        avatarSimple.loadImage(url, holder)
     }
 
     fun loadUrl(transaction: Web3TransactionItem) {
@@ -153,12 +154,18 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
         avatarSimple.clear()
-        if (transaction.transactionType == Web3TransactionType.Send.value) {
+        if (transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_contract)
+        } else if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
             avatarSimple.setImageResource(R.drawable.ic_snapshot_withdrawal)
-        } else if (transaction.transactionType == Web3TransactionType.Receive.value) {
+        } else if (transaction.transactionType == TransactionType.TRANSFER_IN.value) {
             avatarSimple.setImageResource(R.drawable.ic_snapshot_deposit)
+        } else if (transaction.transactionType == TransactionType.SWAP.value) {
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_swap)
+        } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_approval)
         } else {
-            avatarSimple.loadImage(transaction.iconUrl, R.drawable.ic_group_place_holder)
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_contract)
         }
     }
 

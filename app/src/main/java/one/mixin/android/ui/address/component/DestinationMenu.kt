@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -32,7 +33,7 @@ fun DestinationMenu(
     onClick: () -> Unit = {},
     free: Boolean = false
 ) {
-    DestinationMenu(icon, stringResource(title), stringResource(subTile), onClick, free)
+    DestinationMenu(icon, stringResource(title), stringResource(subTile), onClick, free = free)
 }
 
 @Composable
@@ -43,7 +44,7 @@ fun DestinationMenu(
     onClick: () -> Unit = {},
     free: Boolean = false
 ) {
-    DestinationMenu(icon, title, stringResource(subTile), onClick, free)
+    DestinationMenu(icon, title, stringResource(subTile), onClick, free = free)
 }
 
 @Composable
@@ -52,9 +53,10 @@ fun DestinationMenu(
     title: Int,
     subTile: String,
     onClick: () -> Unit = {},
-    free: Boolean = false
+    free: Boolean = false,
+    isPrivacy: Boolean = false,
 ) {
-    DestinationMenu(icon, stringResource(title), subTile, onClick, free)
+    DestinationMenu(icon, stringResource(title), subTile, onClick, free = free, isPrivacy = isPrivacy)
 }
 
 @Composable
@@ -63,7 +65,8 @@ fun DestinationMenu(
     title: String,
     subTile: String,
     onClick: () -> Unit = {},
-    free: Boolean = false
+    free: Boolean = false,
+    isPrivacy: Boolean = false,
 ) {
     Row(
         modifier = Modifier
@@ -102,6 +105,14 @@ fun DestinationMenu(
                                 shape = RoundedCornerShape(4.dp)
                             )
                             .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                } else if (isPrivacy) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                        tint = Color.Unspecified,
+                        contentDescription = null,
                     )
                 }
             }

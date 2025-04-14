@@ -163,6 +163,7 @@
     <string name="Chain">所属公链</string>
     <string name="Change">更改</string>
     <string name="Change_Amount">修改金额</string>
+    <string name="ASSET_CHANGES">资产变动</string>
     <string name="Change_emergency_contact">修改恢复联系人</string>
     <string name="Change_Number_Instead">仅修改手机号码</string>
     <string name="Change_Phone_Number">修改手机号</string>
@@ -1543,7 +1544,7 @@
     <string name="single_transaction_should_be_less_than">最高金额 %1$s %2$s</string>
     <string name="single_transaction_should_be_between">金额范围 %1$s %2$s ~ %3$s %4$s</string>
     <!-- Web3 -->
-    <string name="web3_approve">批准</string>
+    <string name="web3_approve">授权</string>
     <string name="web3_borrow">借款</string>
     <string name="web3_burn">燃烧</string>
     <string name="web3_cancel">取消</string>
@@ -1656,7 +1657,7 @@
     <string name="Approving_Transaction">正在批准</string>
     <string name="Transaction_Approved">批准成功</string>
     <string name="Approving_Transaction_Failed">批准失败</string>
-    <string name="Approve">批准</string>
+    <string name="Approve">授权</string>
     <string name="Reject_Transaction">拒绝交易</string>
     <string name="Rejecting_Transaction">正在拒绝</string>
     <string name="Transaction_Rejected">拒绝成功</string>
@@ -1880,4 +1881,9 @@
     <string name="Privacy_Wallet_Description">一个多链钱包，提供私密、免费和即时交易，满足您大部分需求。</string>
     <string name="Whats_Common_Wallet">什么是普通钱包？</string>
     <string name="Common_Wallet_Description">一个普通的多链钱包，可以访问去中心化应用和 DeFi 协议。</string>
+    <string name="Approval">授权</string>
+    <string name="unlimited">无限量</string>
+    <string name="Transaction_Pending_Confirmation">有 1 笔交易处理中</string>
+    <string name="Transactions_Pending_Confirmation">有 %1$d 笔交易处理中</string>
+
 </resources>
