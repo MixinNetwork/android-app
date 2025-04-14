@@ -459,10 +459,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 step = Step.Sending
                 val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsedLink.assetId, parsedLink.amount)
                 val token = bottomViewModel.findAssetItemById(parsedLink.assetId)
-                if (consolidationAmount == "") {
-                    WaitingBottomSheetDialogFragment.newInstance(true)
-                        .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
-                } else if (consolidationAmount != null && token != null) {
+                if (consolidationAmount != null && token != null) {
                     UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
                         .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
                     step = Step.Pending

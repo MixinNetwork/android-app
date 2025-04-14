@@ -805,15 +805,10 @@ class TokenRepository
             limit: Int,
             asset: String,
             inscriptionHash: String? = null,
-            ignoreZero: Boolean = false,
         ) = if (inscriptionHash != null) {
             outputDao.findUnspentInscriptionByAssetHash(limit, asset, inscriptionHash)
         } else {
-            if (ignoreZero) {
-                outputDao.findDeterminedOutputsByAsset(limit, asset)
-            } else {
-                outputDao.findUnspentOutputsByAsset(limit, asset)
-            }
+            outputDao.findUnspentOutputsByAsset(limit, asset)
         }
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)

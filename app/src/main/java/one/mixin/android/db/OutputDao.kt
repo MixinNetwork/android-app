@@ -20,13 +20,6 @@ interface OutputDao : BaseDao<Output> {
         asset: String,
     ): List<Output>
 
-    // Determine the UTXO  can spend
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') AND sequence > 0 ORDER BY sequence ASC LIMIT :limit")
-    suspend fun findDeterminedOutputsByAsset(
-        limit: Int,
-        asset: String,
-    ): List<Output>
-
     @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(
         limit: Int,

@@ -689,7 +689,7 @@ class BottomSheetViewModel
                 }
 
                 Timber.e("Kernel Duplicate Invoice Transaction UtxoWrapper: $amount $assetId $asset")
-                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input
                 val receiverKeys = data.first().keys.joinToString(",")
                 val receiverMask = data.first().mask
@@ -909,7 +909,7 @@ class BottomSheetViewModel
                     null
                 } ?: throw IllegalArgumentException("Transfer has no recipient")
                 Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
-                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input
                 val receiverKeys = data.first().keys.joinToString(",")
                 val receiverMask = data.first().mask
@@ -1058,10 +1058,9 @@ class BottomSheetViewModel
             asset: String,
             amount: String,
             inscriptionHash: String? = null,
-            ignoreZero: Boolean = true,
         ): List<Output> {
             val desiredAmount = BigDecimal(amount)
-            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash, ignoreZero)
+            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash)
 
             if (candidateOutputs.isEmpty()) {
                 throw EmptyUtxoException
@@ -1102,21 +1101,12 @@ class BottomSheetViewModel
 
             val selectedOutputs = mutableListOf<Output>()
             var totalSelectedAmount = BigDecimal.ZERO
-            var anyNotConfirmed = false
             candidateOutputs.forEach { output ->
-                if (output.sequence == 0L) {
-                    anyNotConfirmed = true
-                }
                 val outputAmount = BigDecimal(output.amount)
                 selectedOutputs.add(output)
                 totalSelectedAmount += outputAmount
                 if (totalSelectedAmount >= desiredAmount) {
-                    if (anyNotConfirmed) {
-                        // Refresh when there is an undetermined UTXO
-                        jobManager.addJobInBackground(SyncOutputJob())
-                    }
-                    return if (anyNotConfirmed) ""
-                    else null
+                    return null
                 }
             }
 
@@ -1127,7 +1117,6 @@ class BottomSheetViewModel
             if (totalSelectedAmount < desiredAmount) {
                 // Refresh when balance is insufficient
                 jobManager.addJobInBackground(SyncOutputJob())
-                if (anyNotConfirmed) return ""
             }
 
             throw Exception("Impossible")
