@@ -196,22 +196,26 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
 
-            when (transaction.transactionType) {
-                TransactionType.TRANSFER_OUT.value -> {
+            when {
+                transaction.status === TransactionStatus.PENDING.value -> {
+                    avatar.bg.setImageResource(R.drawable.ic_web3_contract)
+                }
+
+                transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     avatar.bg.loadImage(
                         transaction.sendAssetIconUrl,
                         R.drawable.ic_avatar_place_holder
                     )
                 }
 
-                TransactionType.TRANSFER_IN.value -> {
+                transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     avatar.bg.loadImage(
                         transaction.receiveAssetIconUrl,
                         R.drawable.ic_avatar_place_holder
                     )
                 }
 
-                TransactionType.SWAP.value, TransactionType.APPROVAL.value -> {
+                transaction.transactionType == TransactionType.SWAP.value || transaction.transactionType == TransactionType.APPROVAL.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_web3_contract)
                 }
 
