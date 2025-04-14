@@ -14,7 +14,7 @@ import timber.log.Timber
 
 @Dao
 interface OutputDao : BaseDao<Output> {
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY CASE WHEN sequence = 0 THEN 1 ELSE 0 END, sequence ASC LIMIT :limit")
     suspend fun findUnspentOutputsByAsset(
         limit: Int,
         asset: String,
@@ -27,7 +27,7 @@ interface OutputDao : BaseDao<Output> {
         offset: Int,
     ): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash = :inscriptionHash ORDER BY sequence ASC LIMIT :limit")
+    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash = :inscriptionHash ORDER BY CASE WHEN sequence = 0 THEN 1 ELSE 0 END, sequence ASC LIMIT :limit")
     suspend fun findUnspentInscriptionByAssetHash(
         limit: Int,
         asset: String,
