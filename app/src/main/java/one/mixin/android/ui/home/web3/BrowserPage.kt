@@ -26,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -50,7 +49,7 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
-import one.mixin.android.ui.home.web3.components.SolanaParsedTxPreview
+import one.mixin.android.ui.home.web3.components.ParsedTxPreview
 import one.mixin.android.ui.home.web3.components.TokenTransactionPreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -240,9 +239,9 @@ fun BrowserPage(
                         onPreviewMessage.invoke(it)
                     }
                 } else if (chain == Chain.Solana) {
-                    SolanaParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
-                } else if (parsedTx != null) {
-                    SolanaParsedTxPreview(parsedTx = parsedTx, asset = asset)
+                    ParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
+                } else if (type == JsSignMessage.TYPE_TRANSACTION) {
+                    ParsedTxPreview(parsedTx = parsedTx, asset = asset)
                 } else if (token != null && amount != null) {
                     TokenTransactionPreview(amount = amount, token = token)
                 } else {

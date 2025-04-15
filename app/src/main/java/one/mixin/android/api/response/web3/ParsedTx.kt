@@ -31,15 +31,7 @@ data class BalanceChange(
     val symbol: String,
     @SerializedName("icon")
     val icon: String?,
-) {
-    fun toStringAmount(): String {
-        return realAmount().stripTrailingZeros().toPlainString()
-    }
-
-    fun realAmount(): BigDecimal {
-        return BigDecimal(amount).divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
-    }
-}
+)
 
 data class Approve(
     @SerializedName("spender")
