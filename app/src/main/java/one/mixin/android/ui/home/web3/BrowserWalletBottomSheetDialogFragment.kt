@@ -287,7 +287,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val nonce = rpc.nonceAt(currentChain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethPreviewTransaction nonce
                     }
-                    parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress)
+                    if (parsedTx == null) {
+                        parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress)
+                    }
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
@@ -307,16 +309,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         if (parsedTx == null) {
                             parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, null)
-                        }
-                        val ptx = parsedTx
-                        if (ptx != null && ptx.tokens == null) {
-                            ptx.balanceChanges?.map { it.address }?.let { bc ->
-                                val tokens = viewModel.solanaWeb3Tokens(bc)
-                                if (tokens.isNotEmpty()) {
-                                    ptx.tokens = tokens.associateBy { it.address }
-                                    parsedTx = ptx
-                                }
-                            }
                         }
                         tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {

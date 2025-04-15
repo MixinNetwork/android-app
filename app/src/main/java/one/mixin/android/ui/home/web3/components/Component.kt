@@ -192,8 +192,7 @@ fun SolanaParsedTxPreview(
     solanaTxSource: SolanaTxSource? = null,
 ) {
     Column(
-        modifier =
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .background(MixinAppTheme.colors.background)
@@ -208,9 +207,7 @@ fun SolanaParsedTxPreview(
             )
         } else if (parsedTx.instructions?.isEmpty() == true) {
             Row(
-                modifier =
-                Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Text(
@@ -224,70 +221,42 @@ fun SolanaParsedTxPreview(
                 Box(modifier = Modifier.weight(1f))
                 CoilImage(
                     model = asset?.iconUrl,
-                    modifier =
-                    Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
+                    modifier = Modifier.size(32.dp).clip(CircleShape),
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
             }
-        } else if (parsedTx.balanceChanges != null && parsedTx.tokens == null) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
-                color = MixinAppTheme.colors.accent,
-            )
+        } else if (parsedTx.balanceChanges.isNullOrEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    modifier = Modifier.alignByBaseline(),
+                    text = stringResource(id = R.string.No_balance_change_detected),
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontFamily = FontFamily(Font(R.font.mixin_font)),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600
+                )
+                Box(modifier = Modifier.weight(1f))
+            }
         } else {
-            val viewDetails = remember {
-                mutableStateOf(false)
-            }
+            val viewDetails = remember { mutableStateOf(false) }
             val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-            if (parsedTx.balanceChanges == null) {
-                Row(
-                    modifier =
-                    Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = stringResource(id = R.string.No_balance_change_detected),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontFamily = FontFamily(Font(R.font.mixin_font)),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.W600
-                    )
-                    Box(modifier = Modifier.weight(1f))
-                    CoilImage(
-                        model = asset?.iconUrl,
-                        modifier =
-                        Modifier
-                            .size(32.dp)
-                            .clip(CircleShape),
-                        placeholder = R.drawable.ic_avatar_place_holder,
-                    )
-                }
-            } else {
-                parsedTx.balanceChanges.forEach { bc ->
-                    val token = parsedTx.tokens?.get(bc.address) ?: return
-                    BalanceChangeItem(token, bc)
-                    Box(modifier = Modifier.height(10.dp))
-                }
+            parsedTx.balanceChanges?.forEach { bc ->
+                BalanceChangeItem(balanceChange = bc)
+                Box(modifier = Modifier.height(10.dp))
             }
-            if (solanaTxSource != null &&!solanaTxSource.isInnerTx()) {
+            if (solanaTxSource != null && !solanaTxSource.isInnerTx()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            viewDetails.value = !viewDetails.value
-                        },
+                        .clickable { viewDetails.value = !viewDetails.value },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_play_arrow),
-                        modifier =
-                        Modifier
-                            .size(24.dp, 24.dp)
-                            .rotate(rotation),
+                        modifier = Modifier.size(24.dp, 24.dp).rotate(rotation),
                         contentDescription = null,
                         tint = MixinAppTheme.colors.accent,
                     )
@@ -372,7 +341,11 @@ fun Warning(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
                 .background(MixinAppTheme.colors.tipWarning)
-                .border(1.dp, MixinAppTheme.colors.tipWarningBorder, shape = RoundedCornerShape(8.dp))
+                .border(
+                    1.dp,
+                    MixinAppTheme.colors.tipWarningBorder,
+                    shape = RoundedCornerShape(8.dp)
+                )
                 .padding(20.dp),
         ) {
             Image(
@@ -409,32 +382,35 @@ fun Warning(
 
 @Composable
 private fun BalanceChangeItem(
-    token: SwapToken,
     balanceChange: BalanceChange,
 ) {
     Row(
-        modifier =
-            Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CoilImage(
-            model = token.icon,
-            modifier =
-            Modifier
-                .size(32.dp)
-                .clip(CircleShape),
+            model = balanceChange.icon,
+            modifier = Modifier.size(32.dp).clip(CircleShape),
             placeholder = R.drawable.ic_avatar_place_holder,
         )
-        Box(modifier = Modifier.width(12.dp))
-        Text(
-            text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else token.name,
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.W600
-        )
+        Column(modifier = Modifier.padding(start = 12.dp)) {
+            Text(
+                text = balanceChange.name,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W600
+            )
+            Text(
+                text = balanceChange.assetId,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+            )
+        }
         Box(modifier = Modifier.weight(1f))
         Text(
-            text = "${token.toStringAmount(balanceChange.amount)} ${token.symbol}",
+            text = "${balanceChange.toStringAmount()} ${balanceChange.symbol}",
             color = if ((balanceChange.amount.toLongOrNull() ?: 0) >= 0) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
             fontSize = 14.sp,
         )
