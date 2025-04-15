@@ -31,7 +31,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
@@ -279,6 +278,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
+                    val hex = JsSigner.ethPreviewTransaction(
+                        JsSigner.evmAddress,
+                        transaction,
+                        tipGas!!,
+                        chain = token?.getChainFromName()
+                    ) { _ ->
+                        val nonce = rpc.nonceAt(currentChain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
+                        return@ethPreviewTransaction nonce
+                    }
+                    if (parsedTx == null) {
+                        parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress)
+                    }
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
@@ -297,17 +308,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 solanaTx = txWithPriorityFee
                             }
                         if (parsedTx == null) {
-                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana)
-                        }
-                        val ptx = parsedTx
-                        if (ptx != null && ptx.tokens == null) {
-                            ptx.balanceChanges?.map { it.address }?.let { bc ->
-                                val tokens = viewModel.solanaWeb3Tokens(bc)
-                                if (tokens.isNotEmpty()) {
-                                    ptx.tokens = tokens.associateBy { it.address }
-                                    parsedTx = ptx
-                                }
-                            }
+                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, null)
                         }
                         tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {

@@ -162,6 +162,7 @@ open class ErrorHandler {
         const val INVALID_SWAP = 10611
         const val INVALID_QUOTE_AMOUNT = 10614
         const val NO_AVAILABLE_QUOTE = 10615
+        const val SIMULATE_TRANSACTION_FAILED = 10631
 
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111

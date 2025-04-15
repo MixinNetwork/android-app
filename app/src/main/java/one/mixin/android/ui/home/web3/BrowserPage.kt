@@ -23,10 +23,13 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -50,13 +53,14 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
-import one.mixin.android.ui.home.web3.components.SolanaParsedTxPreview
+import one.mixin.android.ui.home.web3.components.ParsedTxPreview
 import one.mixin.android.ui.home.web3.components.TokenTransactionPreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
@@ -64,7 +68,6 @@ import one.mixin.android.web3.js.SolanaTxSource
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
-import java.math.BigInteger
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -92,6 +95,12 @@ fun BrowserPage(
     onDismissRequest: () -> Unit,
     onRejectAction: () -> Unit,
 ) {
+    var showWarning by remember { mutableStateOf(false) }
+
+    LaunchedEffect (parsedTx) {
+        showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
+    }
+
     MixinAppTheme {
         Column(
             modifier =
@@ -240,7 +249,9 @@ fun BrowserPage(
                         onPreviewMessage.invoke(it)
                     }
                 } else if (chain == Chain.Solana) {
-                    SolanaParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
+                    ParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
+                } else if (type == JsSignMessage.TYPE_TRANSACTION) {
+                    ParsedTxPreview(parsedTx = parsedTx, asset = asset)
                 } else if (token != null && amount != null) {
                     TokenTransactionPreview(amount = amount, token = token)
                 } else {
@@ -332,7 +343,8 @@ fun BrowserPage(
                         confirmAction = showPin,
                     )
                 }
-                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.decodeQuantity(transaction.value) == BigInteger.ZERO)) {
+
+                if (showWarning) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
