@@ -1,6 +1,7 @@
 package one.mixin.android.api.response.web3
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Token
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -31,7 +32,9 @@ data class BalanceChange(
     val symbol: String,
     @SerializedName("icon")
     val icon: String?,
-)
+) {
+    fun amountString() = if ((amount.toBigDecimalOrNull()?: BigDecimal.ZERO) >= BigDecimal.ZERO) "+$amount" else amount
+}
 
 data class Approve(
     @SerializedName("spender")

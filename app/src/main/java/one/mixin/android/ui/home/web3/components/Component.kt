@@ -338,6 +338,7 @@ fun Warning(
             modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
+                .padding(bottom = 16.dp)
                 .background(MixinAppTheme.colors.tipWarning)
                 .border(
                     1.dp,
@@ -400,8 +401,8 @@ private fun BalanceChangeItem(
         )
         Box(modifier = Modifier.weight(1f))
         Text(
-            text = "${balanceChange.amount} ${balanceChange.symbol}",
-            color = if ((balanceChange.amount.toBigDecimal() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            text = "${balanceChange.amountString()} ${balanceChange.symbol}",
+            color = if ((balanceChange.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
             fontSize = 14.sp,
         )
     }
