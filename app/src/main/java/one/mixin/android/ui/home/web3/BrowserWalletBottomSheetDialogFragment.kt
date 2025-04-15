@@ -250,10 +250,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         val assetId = chain.getWeb3ChainId()
         val transaction = signMessage.wcEthereumTransaction ?: return
-        if (assetId == null) {
-            Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
-            return
-        }
         tickerFlow(15.seconds)
             .onEach {
                 asset = viewModel.refreshAsset(assetId)

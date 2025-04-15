@@ -706,11 +706,6 @@ class BottomSheetViewModel
                         is Reference.HashValue -> {
                             reference.value
                         }
-
-                        else -> {
-                            throw IllegalArgumentException("Reference type not supported")
-                            ""
-                        }
                     }
                 }
 
@@ -934,11 +929,6 @@ class BottomSheetViewModel
 
                         is Reference.HashValue -> {
                             reference.value
-                        }
-
-                        else -> {
-                            throw IllegalArgumentException("Reference type not supported")
-                            ""
                         }
                     }
                 }
