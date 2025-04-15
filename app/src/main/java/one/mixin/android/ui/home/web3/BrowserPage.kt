@@ -333,9 +333,6 @@ fun BrowserPage(
                         confirmAction = showPin,
                     )
                 }
-                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.decodeQuantity(transaction.value) == BigInteger.ZERO)) {
-                    Warning(modifier = Modifier.align(Alignment.BottomCenter))
-                }
             }
             Box(modifier = Modifier.height(16.dp))
         }
