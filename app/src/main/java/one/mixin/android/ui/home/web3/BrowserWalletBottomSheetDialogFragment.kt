@@ -346,7 +346,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val sig = tx.signatures.first()
                     val rawTx = tx.serialize().base64Encode()
-                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58())
+                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), token?.assetId)
                     onTxhash?.invoke(sig, rawTx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {

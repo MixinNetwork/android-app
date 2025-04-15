@@ -23,7 +23,12 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
     @SuppressLint("SetTextI18s")
     fun bind(transaction: Web3TransactionItem) {
         binding.apply {
-            name.text = transaction.transactionHash
+            val hash = transaction.transactionHash
+            name.text = if (hash.length > 14) {
+                "${hash.substring(0, 8)}...${hash.substring(hash.length - 6)}"
+            } else {
+                hash
+            }
 
             val amount = transaction.getFormattedAmount()
             when {
