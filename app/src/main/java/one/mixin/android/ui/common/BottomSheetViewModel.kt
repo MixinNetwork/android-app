@@ -836,8 +836,7 @@ class BottomSheetViewModel
                     )
                 )
 
-                if (response.errorCode != ErrorHandler.INVALID_UTXO || response.errorCode < 500) {
-                    return response
+                if ((response.errorCode != ErrorHandler.INVALID_UTXO) || (response.errorCode < 500)) {
                 }
 
                 Timber.e("Kernel Transaction($trace): INVALID_UTXO, delay and retry ${retryCount + 1}/$maxRetries")
