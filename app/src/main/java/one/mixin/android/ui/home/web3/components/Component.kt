@@ -61,6 +61,7 @@ import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
@@ -223,6 +224,21 @@ fun ParsedTxPreview(
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
             }
+        } else if (parsedTx.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    modifier = Modifier.alignByBaseline(),
+                    text = stringResource(id = R.string.decode_transaction_failed_content),
+                    color = MixinAppTheme.colors.red,
+                    fontFamily = FontFamily(Font(R.font.mixin_font)),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600
+                )
+                Box(modifier = Modifier.weight(1f))
+            }
         } else if (parsedTx.balanceChanges.isNullOrEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -241,7 +257,7 @@ fun ParsedTxPreview(
         } else {
             val viewDetails = remember { mutableStateOf(false) }
             val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-            parsedTx.balanceChanges?.forEach { bc ->
+            parsedTx.balanceChanges.forEach { bc ->
                 BalanceChangeItem(balanceChange = bc)
                 Box(modifier = Modifier.height(10.dp))
             }

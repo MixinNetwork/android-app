@@ -17,6 +17,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
+import one.mixin.android.util.ErrorHandler
 import org.sol4k.exception.RpcException
 import javax.inject.Inject
 
@@ -67,11 +68,15 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?): ParsedTx? {
             var meet401 = false
-            val parsedTx = handleMixinResponse(
+            var parsedTx: ParsedTx? = null
+            handleMixinResponse(
                 invokeNetwork = { assetRepo.simulateWeb3Tx(ParseTxRequest(tx, chainId, from)) },
-                successBlock = { it.data },
+                successBlock = { parsedTx = it.data },
                 failureBlock = {
-                    if (it.errorCode == 401) {
+                    if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+                        parsedTx = ParsedTx(code = ErrorHandler.SIMULATE_TRANSACTION_FAILED)
+                        return@handleMixinResponse true
+                    } else if (it.errorCode == 401) {
                         meet401 = true
                         return@handleMixinResponse true
                     }

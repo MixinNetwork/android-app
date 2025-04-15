@@ -1482,6 +1482,7 @@
     <string name="withdraw_all_of_token_warning">这个应用可以提取你所有的 %1$s。</string>
     <string name="Unlocking">正在解锁</string>
     <string name="decode_transaction_failed">无法估计资产变化，注意只给您信任的应用程序签名。</string>
+    <string name="decode_transaction_failed_content">无法估计资产变化</string>
     <string name="web3_ensure_trust">请确保您信任此应用程序。</string>
     <string name="web3_transaction_request">交易签名</string>
     <string name="web3_message_request">消息签名</string>

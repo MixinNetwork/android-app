@@ -13,6 +13,7 @@ data class ParsedTx(
     val instructions: List<ParsedInstruction>? = null,
     @SerializedName("approves")
     val approves: List<Approve>? = null,
+    val code: Int? = null
 ) {
     fun noBalanceChange(): Boolean = instructions?.isNotEmpty() == true && balanceChanges.isNullOrEmpty()
 }
