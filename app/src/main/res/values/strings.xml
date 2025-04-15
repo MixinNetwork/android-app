@@ -1519,6 +1519,7 @@
     <string name="withdraw_all_of_token_warning">This app can withdraw all your %1$s.</string>
     <string name="Unlocking">Unlocking</string>
     <string name="decode_transaction_failed">Transaction decoding failed, making it impossible to estimate asset changes. Be cautious and only sign transactions for apps you trust.</string>
+    <string name="decode_transaction_failed_content">Transaction decoding failed</string>
     <string name="web3_ensure_trust">Please ensure you trust this app before proceeding with the request.</string>
     <string name="web3_transaction_request">Transaction Request</string>
     <string name="web3_message_request">Message Request</string>
