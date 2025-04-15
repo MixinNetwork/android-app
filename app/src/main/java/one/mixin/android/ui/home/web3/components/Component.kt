@@ -408,17 +408,21 @@ private fun BalanceChangeItem(
             modifier = Modifier.size(32.dp).clip(CircleShape),
             placeholder = R.drawable.ic_avatar_place_holder,
         )
-        Box(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else balanceChange.name,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 16.sp,
-            fontWeight = FontWeight.W600
+            fontWeight = FontWeight.W600,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
         )
-        Box(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = "${balanceChange.amountString()} ${balanceChange.symbol}",
             color = if ((balanceChange.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            maxLines = 1,
             fontSize = 14.sp,
         )
     }
