@@ -142,7 +142,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
 
                 TransactionStatus.FAILED.value -> {
-                    status.text = getString(R.string.Canceled)
+                    status.text = getString(R.string.Failed)
                     status.setTextColor(requireContext().getColor(R.color.wallet_pink))
                     status.setBackgroundResource(R.drawable.bg_status_failed)
                 }
