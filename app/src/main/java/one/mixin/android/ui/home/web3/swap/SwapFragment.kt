@@ -598,11 +598,13 @@ class SwapFragment : BaseFragment() {
                     SwapRequest(
                         Session.getAccountId()!!,
                         inputMint,
-                         quote.inAmount,
+                        quote.inAmount,
                         outputMint,
                         quote.payload,
                         getSource(),
-                        if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress,
+                        if (inMixin()) null else {
+                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                        },
                     )
                 )
             },
@@ -621,32 +623,11 @@ class SwapFragment : BaseFragment() {
             AnalyticsTracker.trackSwapPreview()
             openSwapTransfer(resp, from, to)
         } else {
+            AnalyticsTracker.trackSwapPreview()
             val token = swapViewModel.web3TokenItemById(from.assetId) ?: return
             val chainToken = swapViewModel.web3TokenItemById(from.chain.chainId) ?: return
             val depositDestination = resp.depositDestination ?: return
-            val transaction =
-                token.buildTransaction(rpc, JsSigner.evmAddress, depositDestination, resp.quote.inAmount)
-            showBrowserBottomSheetDialogFragment(
-                requireActivity(),
-                transaction,
-                token = token,
-                amount = amount,
-                toAddress = depositDestination,
-                chainToken = chainToken,
-                onTxhash = { _, serializedTx ->
-                    val txStateFragment =
-                        TransactionStateFragment.newInstance(
-                            serializedTx,
-                            null
-                        )
-                    txStateFragment.setCloseAction {
-                        parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
-                            parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
-                        }
-                    }
-                    navTo(txStateFragment, TransactionStateFragment.TAG)
-                },
-            )
+            openSwapTransfer(resp, from, to)
         }
     }
 

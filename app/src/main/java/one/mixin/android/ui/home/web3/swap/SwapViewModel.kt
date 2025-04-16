@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -135,7 +136,13 @@ class SwapViewModel
         return@withContext tokenRepository.checkMarketById(assetId, true)
     }
 
-    fun tokenExtraFlow(assetId: String) = tokenRepository.tokenExtraFlow(assetId)
+    fun tokenExtraFlow(token: SwapToken): Flow<String?> {
+        return if (token.isWeb3) {
+            tokenRepository.web3TokenExtraFlow(token.assetId)
+        } else {
+            tokenRepository.tokenExtraFlow(token.assetId)
+        }
+    }
 
     suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
         web3Repository.web3TokenItemById(assetId)

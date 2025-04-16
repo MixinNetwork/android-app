@@ -17,8 +17,8 @@ fun QuoteResult?.rate(fromToken: SwapToken?, toToken: SwapToken?): BigDecimal {
     if (this == null) return BigDecimal.ZERO
     if (fromToken == null || toToken == null) return BigDecimal.ZERO
     return runCatching {
-        val inValue = fromToken.realAmount(inAmount.toBigDecimal())
-        val outValue = toToken.realAmount(outAmount.toBigDecimal())
+        val inValue = inAmount.toBigDecimal()
+        val outValue = outAmount.toBigDecimal()
         outValue.divide(inValue, 8, RoundingMode.CEILING)
     }.getOrDefault(BigDecimal.ZERO)
 }

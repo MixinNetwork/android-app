@@ -9,5 +9,5 @@ data class SwapRequest(
     val outputMint: String,
     val payload: String,
     val source: String,
-    val withdrawalDestination: String,
+    val withdrawalDestination: String?,
 )

@@ -69,7 +69,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -227,8 +226,8 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = viewModel.tokenExtraFlow(if (from.isWeb3 == true) "" else from.assetId).map { it?.balance ?: from.balance } // Use externally provided data if no local data is available.
-                .collectAsStateWithLifecycle(from.balance).value
+            val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
                 content = {
@@ -350,7 +349,7 @@ fun SwapPage(
                                                             inputText = quoteMin!!
                                                         }
                                                     }
-                                            },
+                                                },
                                             style = TextStyle(
                                                 fontSize = 14.sp,
                                                 color = MixinAppTheme.colors.tipError,
@@ -465,8 +464,11 @@ fun InputArea(
     onMax: (() -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
-    val balance = viewModel.tokenExtraFlow(if (token?.isWeb3 == true) "" else token?.assetId ?: "").map { it?.balance ?: token?.balance } // Use externally provided data if no local data is available.
-        .collectAsStateWithLifecycle(token?.balance).value
+    val balance = if (token == null) {
+        token?.balance
+    } else {
+        viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
+    }
     Column(
         modifier =
             modifier
