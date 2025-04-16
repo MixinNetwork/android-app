@@ -83,7 +83,7 @@ data class Web3Token(
     }
 
     override fun getUnique(): String {
-        return if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey
+        return assetId
     }
 
     fun fiat(): BigDecimal = try {

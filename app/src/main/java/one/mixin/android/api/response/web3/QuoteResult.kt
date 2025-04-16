@@ -11,7 +11,6 @@ data class QuoteResult(
     val slippage: Int,
     val source: String,
     val payload: String,
-    val jupiterQuoteResponse: JupiterQuoteResponse? = null,
 )
 
 fun QuoteResult?.rate(fromToken: SwapToken?, toToken: SwapToken?): BigDecimal {

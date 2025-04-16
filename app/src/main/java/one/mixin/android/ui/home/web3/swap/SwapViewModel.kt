@@ -20,6 +20,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -35,6 +36,7 @@ class SwapViewModel
         private val jobManager: MixinJobManager,
         private val tokenRepository: TokenRepository,
         private val userRepository: UserRepository,
+        private val web3Repository: Web3Repository,
     ) : ViewModel() {
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
@@ -45,9 +47,8 @@ class SwapViewModel
         inputMint: String,
         outputMint: String,
         amount: String,
-        slippage: String,
         source: String,
-    ): MixinResponse<QuoteResult> = assetRepository.web3Quote(inputMint, outputMint, amount, slippage, source)
+    ): MixinResponse<QuoteResult> = assetRepository.web3Quote(inputMint, outputMint, amount, source)
 
     suspend fun web3Swap(
         swapRequest: SwapRequest,
@@ -62,7 +63,6 @@ class SwapViewModel
         inputMint: String?,
         outputMint: String?,
         amount: String,
-        slippage: String,
         source: String,
     ) : Result<QuoteResult?> {
         return if (amount.isNotBlank() && inputMint != null && outputMint != null) {
@@ -71,7 +71,6 @@ class SwapViewModel
                     inputMint = inputMint,
                     outputMint = outputMint,
                     amount = amount,
-                    slippage = slippage,
                     source = source,
                 )
                 return if (response.isSuccess) {
@@ -137,4 +136,8 @@ class SwapViewModel
     }
 
     fun tokenExtraFlow(assetId: String) = tokenRepository.tokenExtraFlow(assetId)
+
+    suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(assetId)
+    }
 }

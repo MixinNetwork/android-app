@@ -102,10 +102,8 @@ fun SwapPage(
     lastOrderTime: Long?,
     reviewing: Boolean,
     source: String,
-    slippageBps: Int,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
-    onShowSlippage: () -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onOrderList: () -> Unit,
     pop: () -> Unit,
@@ -155,7 +153,7 @@ fun SwapPage(
                             quoteMin = null
                             quoteMax = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
-                            viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
+                            viewModel.quote(context, from.symbol, from.assetId, to.assetId, amount, source)
                                 .onSuccess { value ->
                                     AnalyticsTracker.trackSwapQuote("success")
                                     quoteResult = value
@@ -255,7 +253,7 @@ fun SwapPage(
                                                 toToken?.let { t ->
                                                     context.defaultSharedPreferences.putString(
                                                         PREF_SWAP_LAST_SELECTED_PAIR,
-                                                        if (isReverse) "${t.getUnique()} ${f.getUnique()}" else "${f.getUnique()} ${t.getUnique()}"
+                                                        if (isReverse) "${t.assetId} ${f.assetId}" else "${f.assetId} ${t.assetId}"
                                                     )
                                                 }
                                             }
@@ -330,13 +328,6 @@ fun SwapPage(
                                                     onPriceExpired = {
                                                         invalidFlag = !invalidFlag
                                                     }
-                                                )
-                                            }
-                                            if (from.isWeb3) {
-                                                SlippageInfo(
-                                                    slippageBps,
-                                                    rate != BigDecimal.ZERO,
-                                                    onShowSlippage
                                                 )
                                             }
                                         }
@@ -563,11 +554,11 @@ private fun PriceInfo(
     }
     var quoteCountDown by remember { mutableFloatStateOf(0f) }
 
-    LaunchedEffect("${fromToken.getUnique()}-${toToken?.getUnique()}") {
+    LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}") {
         isPriceReverse = fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
     }
 
-    LaunchedEffect("${fromToken.getUnique()}-${toToken?.getUnique()}-${exchangeRate}") {
+    LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}-${exchangeRate}") {
         while (isActive) {
             quoteCountDown = 0f
             while (isActive && quoteCountDown < 1f) { // 10s

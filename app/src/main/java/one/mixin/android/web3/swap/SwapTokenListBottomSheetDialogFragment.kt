@@ -301,7 +301,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         token.copy(assetId = "")
                     }
                 }?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.getUnique() == ra.getUnique() }?.let {
+                    localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
                         return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
                     }
                     return@map ra

@@ -121,7 +121,7 @@ interface RouteService {
 
     @GET("web3/tokens")
     suspend fun web3Tokens(
-        @Query("source") source: String,
+        @Query("source") source: String = "web3",
         @Query("version") version: String = BuildConfig.VERSION_NAME,
     ): MixinResponse<List<SwapToken>>
 
@@ -130,13 +130,13 @@ interface RouteService {
         @Query("inputMint") inputMint: String,
         @Query("outputMint") outputMint: String,
         @Query("amount") amount: String,
-        @Query("slippage") slippage: String,
-        @Query("source") source: String,
+        @Query("source") source: String = "web3",
     ): MixinResponse<QuoteResult>
 
     @POST("web3/swap")
     suspend fun web3Swap(
         @Body swapRequest: SwapRequest,
+        @Query("source") source: String = "web3",
     ): MixinResponse<SwapResponse>
 
     @GET("web3/transactions/{txhash}")
@@ -159,10 +159,10 @@ interface RouteService {
         @Path("address") address: String,
     ): MixinResponse<SwapToken?>
 
-    @GET("web3/tokens/search/{query}")
+    @GET("web3/search/{query}")
     suspend fun searchTokens(
         @Path("query") query: String,
-        @Query("source") source: String?
+        @Query("source") source: String = "web3"
     ): MixinResponse<List<SwapToken>>
 
     @POST("web3/stake")

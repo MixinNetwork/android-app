@@ -60,8 +60,7 @@ data class SwapToken(
     }
 
     fun getUnique(): String {
-        return if (isWeb3 || assetId.isEmpty()) assetKey
-        else assetId
+        return assetId
     }
 
     private val assetKey: String
