@@ -184,6 +184,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     fromLl.isVisible = false
                     toLl.isVisible = true
                 }
+                transaction.transactionType ==TransactionType.UNKNOWN.value -> {
+                    valueTv.isVisible = false
+                    fromLl.isVisible = false
+                    toLl.isVisible = false
+                }
                 else -> {
                     fromLl.isVisible = false
                     toLl.isVisible = false
@@ -191,7 +196,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             }
 
             when {
-
                 transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value || transaction.status == TransactionStatus.PENDING.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_web3_transaction_contract)
                 }
@@ -224,7 +228,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             avatar.badge.isVisible = false
 
             dateTv.text = transaction.transactionAt.fullDate()
-            feeLl.isVisible = true
+            feeLl.isVisible = transaction.fee.isNotEmpty()
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
             
