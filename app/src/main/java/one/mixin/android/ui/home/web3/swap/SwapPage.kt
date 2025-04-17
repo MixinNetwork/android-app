@@ -189,7 +189,7 @@ fun SwapPage(
         verticalScrollable = true,
         pop = pop,
         actions = {
-            if (source != "") {
+            if (source != "web3") {
                 Box {
                     IconButton(onClick = {
                         onOrderList()
