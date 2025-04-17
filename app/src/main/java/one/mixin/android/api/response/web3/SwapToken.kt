@@ -37,7 +37,7 @@ data class SwapToken(
 
     fun toStringAmount(amount: String): String {
         return if (address.isNotEmpty()) {
-            realAmount(BigDecimal(amount)).stripTrailingZeros().toPlainString()
+            BigDecimal(amount).stripTrailingZeros().toPlainString()
         } else {
             amount
         }
@@ -45,23 +45,14 @@ data class SwapToken(
 
     fun toStringAmount(amount: Long): String {
         return if (address.isNotEmpty()) {
-            realAmount(amount.toBigDecimal()).stripTrailingZeros().toPlainString()
+            amount.toBigDecimal().stripTrailingZeros().toPlainString()
         } else {
             amount.toBigDecimal().toPlainString()
         }
     }
 
-    fun realAmount(amount: BigDecimal): BigDecimal {
-        return if (address.isNotEmpty()) {
-            amount.divide(BigDecimal.TEN.pow(decimals)).setScale(9, RoundingMode.CEILING)
-        } else {
-            amount
-        }
-    }
-
     fun getUnique(): String {
-        return if (isWeb3 || assetId.isEmpty()) assetKey
-        else assetId
+        return assetId
     }
 
     private val assetKey: String

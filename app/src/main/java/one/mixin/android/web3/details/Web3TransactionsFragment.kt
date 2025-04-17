@@ -198,12 +198,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 sendReceiveView.receive.setOnClickListener {
                     navTo(Web3AddressFragment.newInstance(address), Web3AddressFragment.TAG)
                 }
-                sendReceiveView.swap.isVisible = token.isSolana()
                 sendReceiveView.swap.setOnClickListener {
-                    AnalyticsTracker.trackSwapStart("solana", "solana")
+                    AnalyticsTracker.trackSwapStart("web3", "web3")
                     lifecycleScope.launch {
                         val tokens = web3ViewModel.findWeb3TokenItems()
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }, input = token.getUnique(), inMixin = false), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens, input = token.assetId, inMixin = false), SwapFragment.TAG)
                     }
 
                 }

@@ -380,9 +380,8 @@ class AssetRepository
             inputMint: String,
             outputMint: String,
             amount: String,
-            slippage: String,
             source: String,
-        ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, slippage, source)
+        ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, source)
 
         suspend fun web3Swap(
             swapRequest: SwapRequest,
@@ -390,9 +389,7 @@ class AssetRepository
 
         suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
 
-        suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
-
-        suspend fun searchTokens(query: String, inMixin: Boolean) = routeService.searchTokens(query, if (inMixin) "mixin" else null)
+        suspend fun searchTokens(query: String, inMixin: Boolean) = routeService.searchTokens(query, if (inMixin) "mixin" else "web3")
 
         suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
 
