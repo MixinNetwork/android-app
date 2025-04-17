@@ -1046,7 +1046,6 @@ class TokenRepository
             return r
         }
 
-        suspend fun rpc(chainId: String, request: RpcRequest) = routeService.rpc(chainId, request)
 
         suspend fun refreshInscription(inscriptionHash: String): String? {
             val inscriptionItem = syncInscription(inscriptionHash) ?: return null
