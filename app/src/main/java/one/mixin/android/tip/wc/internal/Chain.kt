@@ -3,6 +3,9 @@ package one.mixin.android.tip.wc.internal
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Base
+import one.mixin.android.Constants.ChainId.Optimism
+import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
@@ -19,12 +22,13 @@ sealed class Chain(
 ) {
     object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
 
-    object Arbitrum : Chain(ETHEREUM_CHAIN_ID, "eip155", "42161", "0xa4b1", "Arbitrum One", "ETH", listOf("https://arbitrum.llamarpc.com"))
+    object Arbitrum : Chain(Constants.ChainId.Arbitrum, "eip155", "42161", "0xa4b1", "Arbitrum One", "ETH", listOf("https://arbitrum.llamarpc.com"))
 
-    object Optimism : Chain(ETHEREUM_CHAIN_ID, "eip155", "10", "0xa", "OP Mainnet", "ETH", listOf("https://optimism.llamarpc.com"))
+    object Optimism : Chain(Constants.ChainId.Optimism, "eip155", "10", "0xa", "OP Mainnet", "ETH", listOf("https://optimism.llamarpc.com"))
 
-    object Base : Chain(ETHEREUM_CHAIN_ID, "eip155", "8453", "0x2105", "Base", "ETH", listOf("https://base.llamarpc.com"))
+    object Base : Chain(Constants.ChainId.Base, "eip155", "8453", "0x2105", "Base", "ETH", listOf("https://base.llamarpc.com"))
 
+    // Todo replace id
     object Blast : Chain(ETHEREUM_CHAIN_ID, "eip155", "81457", "0x13e31", "Blast", "ETH", listOf("https://rpc.blast.io"))
 
     object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
@@ -65,10 +69,10 @@ internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmar
 internal fun String.getChain(): Chain? {
     return when (this) {
         Chain.Ethereum.chainReference -> Chain.Ethereum
-        Chain.Base.chainReference -> Chain.Ethereum
-        Chain.Blast.chainReference -> Chain.Ethereum
-        Chain.Arbitrum.chainReference -> Chain.Ethereum
-        Chain.Optimism.chainReference -> Chain.Ethereum
+        Chain.Base.chainReference -> Chain.Base
+        Chain.Blast.chainReference -> Chain.Blast
+        Chain.Arbitrum.chainReference -> Chain.Arbitrum
+        Chain.Optimism.chainReference -> Chain.Optimism
         Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
         Chain.Polygon.chainReference -> Chain.Polygon
         Chain.Avalanche.chainReference -> Chain.Avalanche

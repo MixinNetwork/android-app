@@ -281,13 +281,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { token ->
-                    if (inMixin) {
-                        token.copy(address = "")
-                    } else {
-                        token.copy(assetId = "")
-                    }
-                }?.map { ra ->
+                return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { ra ->
                     localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
                         return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
                     }
