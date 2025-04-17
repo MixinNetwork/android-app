@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -33,11 +34,15 @@ import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.request.buildKernelTransferGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalFeeGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalSubmitGhostKeyRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.ParseTxRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.response.signature.SignatureAction
+import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
@@ -60,10 +65,12 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
@@ -118,6 +125,7 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
+import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
@@ -133,6 +141,7 @@ class BottomSheetViewModel
         private val jobManager: MixinJobManager,
         private val userRepository: UserRepository,
         private val tokenRepository: TokenRepository,
+        private val web3Repository: Web3Repository,
         private val conversationRepo: ConversationRepository,
         private val cleanMessageHelper: CleanMessageHelper,
         private val pinCipher: PinCipher,
@@ -1317,6 +1326,10 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
+        suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(assetId)
+        }
+
         suspend fun findAssetItemByCollectionHash(assetId: String): TokenItem? =
             tokenRepository.findAssetItemByCollectionHash(assetId)
 
@@ -1706,4 +1719,50 @@ class BottomSheetViewModel
         }
 
         fun web3TokenItems() = tokenRepository.web3TokenItems()
+
+        suspend fun getWeb3Priv(
+            context: Context,
+            pin: String,
+            chainId: String,
+        ): ByteArray {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            return tipPrivToPrivateKey(spendKey, chainId)
+        }
+
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, assetId: String? = null) {
+            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account), assetId)
+            if (!resp.isSuccess) {
+                val err = resp.error!!
+                // simulate RpcException
+                throw RpcException(err.code, err.description, err.toString())
+            }
+        }
+
+        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?): ParsedTx? {
+            var meet401 = false
+            var parsedTx: ParsedTx? = null
+            handleMixinResponse(
+                invokeNetwork = { tokenRepository.simulateWeb3Tx(ParseTxRequest(tx, chainId, from)) },
+                successBlock = { parsedTx = it.data },
+                failureBlock = {
+                    if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+                        parsedTx = ParsedTx(code = ErrorHandler.SIMULATE_TRANSACTION_FAILED)
+                        return@handleMixinResponse true
+                    } else if (it.errorCode == 401) {
+                        meet401 = true
+                        return@handleMixinResponse true
+                    }
+                    return@handleMixinResponse false
+                }
+            )
+            if (parsedTx == null && meet401) {
+                userRepository.getBotPublicKey(ROUTE_BOT_USER_ID, true)
+                return simulateWeb3Tx(tx, chainId, from)
+            } else {
+                return parsedTx
+            }
+        }
+
+        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
 }

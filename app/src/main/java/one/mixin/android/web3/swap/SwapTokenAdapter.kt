@@ -90,7 +90,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             avatar.badge.loadImage(token.chain.icon, R.drawable.ic_avatar_place_holder)
             nameTv.text = token.name
             balanceTv.text = "${token.balance ?: "0"} ${token.symbol}"
-            val chainNetwork = getChainNetwork(token.getUnique(), token.chain.chainId, token.address)
+            val chainNetwork = getChainNetwork(token.assetId, token.chain.chainId, token.address)
             networkTv.isVisible = chainNetwork != null
             if (chainNetwork != null) {
                 binding.networkTv.text = chainNetwork
@@ -103,7 +103,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
                 }
             } else {
                 alert.isVisible = false
-                select.isVisible = token.getUnique() == selectUnique
+                select.isVisible = token.assetId == selectUnique
                 alert.setOnClickListener(null)
             }
         }

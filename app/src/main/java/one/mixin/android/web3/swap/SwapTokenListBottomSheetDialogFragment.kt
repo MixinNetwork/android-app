@@ -96,54 +96,41 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private fun initRadio() {
         binding.apply {
-            if (!inMixin()) { // only solana network
-                radioSolana.isChecked = true
-                radioAll.isVisible = false
-                radioEth.isVisible = false
-                radioBase.isVisible = false
+            if (!inMixin()) {
                 radioTron.isVisible = false
-                radioBsc.isVisible = false
-                radioPolygon.isVisible = false
-            } else {
-                radioAll.isChecked = true
-                radioAll.isVisible = true
-                radioEth.isVisible = true
-                radioBase.isVisible = true
-                radioTron.isVisible = true
-                radioBsc.isVisible = true
-                radioPolygon.isVisible = true
-                radioGroup.setOnCheckedChangeListener { _, id ->
-                    currentChain = when (id) {
-                        R.id.radio_eth -> {
-                            ETHEREUM_CHAIN_ID
-                        }
-
-                        R.id.radio_solana -> {
-                            SOLANA_CHAIN_ID
-                        }
-
-                        R.id.radio_base -> {
-                            Base
-                        }
-
-                        R.id.radio_tron -> {
-                            TRON_CHAIN_ID
-                        }
-
-                        R.id.radio_bsc -> {
-                            BinanceSmartChain
-                        }
-
-                        R.id.radio_polygon -> {
-                            Polygon
-                        }
-
-                        else -> {
-                            null
-                        }
+            }
+            radioAll.isChecked = true
+            radioGroup.setOnCheckedChangeListener { _, id ->
+                currentChain = when (id) {
+                    R.id.radio_eth -> {
+                        ETHEREUM_CHAIN_ID
                     }
-                    filter(searchEt.et.text?.toString() ?: "")
+
+                    R.id.radio_solana -> {
+                        SOLANA_CHAIN_ID
+                    }
+
+                    R.id.radio_base -> {
+                        Base
+                    }
+
+                    R.id.radio_tron -> {
+                        TRON_CHAIN_ID
+                    }
+
+                    R.id.radio_bsc -> {
+                        BinanceSmartChain
+                    }
+
+                    R.id.radio_polygon -> {
+                        Polygon
+                    }
+
+                    else -> {
+                        null
+                    }
                 }
+                filter(searchEt.et.text?.toString() ?: "")
             }
         }
     }
@@ -301,7 +288,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         token.copy(assetId = "")
                     }
                 }?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.getUnique() == ra.getUnique() }?.let {
+                    localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
                         return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
                     }
                     return@map ra
