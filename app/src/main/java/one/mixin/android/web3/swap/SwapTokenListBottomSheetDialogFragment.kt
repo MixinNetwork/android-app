@@ -96,6 +96,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private fun initRadio() {
         binding.apply {
+            if (!inMixin()) {
+                radioTron.isVisible = false
+            }
+            radioAll.isChecked = true
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
                     R.id.radio_eth -> {
