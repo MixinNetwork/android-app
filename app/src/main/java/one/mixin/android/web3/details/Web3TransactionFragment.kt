@@ -239,6 +239,9 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
             
+            networkLl.isVisible = true
+            networkTv.text = token.chainName
+            
             typeLl.isVisible = true
             typeTv.text = when (transaction.transactionType) {
                 TransactionType.TRANSFER_OUT.value -> getString(R.string.Send)
