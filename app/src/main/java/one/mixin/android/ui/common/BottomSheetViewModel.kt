@@ -261,7 +261,7 @@ class BottomSheetViewModel
             } else if ((withdrawalRequestResponse.data?.size ?: 0) < 1) {
                 Timber.e("Kernel Withdrawal($traceId): request transaction, Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name && withdrawalRequestResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Withdrawal($traceId): request transaction, Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -424,7 +424,7 @@ class BottomSheetViewModel
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
                 Timber.e("Kernel Address Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name && transactionResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Address Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -507,7 +507,7 @@ class BottomSheetViewModel
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
                 Timber.e("Kernel Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name && transactionResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -733,7 +733,7 @@ class BottomSheetViewModel
                 } else if ((verifyTransaction.data?.size ?: 0) != 1) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): Parameter exception")
                     throw IllegalArgumentException("Parameter exception")
-                } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+                } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name && it.state != OutputState.pending.name } == true) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): Transfer is already paid")
                     throw IllegalArgumentException("Transfer is already paid")
                 }
@@ -837,6 +837,7 @@ class BottomSheetViewModel
                 )
 
                 if ((response.errorCode != ErrorHandler.INVALID_UTXO) || (response.errorCode < 500)) {
+                    return response
                 }
 
                 Timber.e("Kernel Transaction($trace): INVALID_UTXO, delay and retry ${retryCount + 1}/$maxRetries")
@@ -957,7 +958,7 @@ class BottomSheetViewModel
             } else if ((verifyTransaction.data?.size ?: 0) != verifiedTransactions.size) {
                 Timber.e("Kernel Invoice Transaction: Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+            } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name && it.state != OutputState.pending.name } == true) {
                 Timber.e("Kernel Invoice Transaction: Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }

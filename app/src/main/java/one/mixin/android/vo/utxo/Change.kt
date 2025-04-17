@@ -36,7 +36,7 @@ fun changeToOutput(
         lastOutput.receiversHash,
         1,
         "",
-        OutputState.unspent.name,
+        OutputState.pending.name,
         nowInUtc(),
         "",
         "",
