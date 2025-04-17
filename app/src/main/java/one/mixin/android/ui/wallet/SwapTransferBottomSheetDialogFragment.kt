@@ -226,12 +226,11 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
 
-    private var parsedTx: ParsedTx? = null
-    private var solanaTx: VersionedTransaction? = null
-    private var asset: TokenItem? = null
-    private var chainToken: Web3TokenItem? = null
-    private var token: Web3TokenItem? = null
-    private var insufficientGas = false
+    private var solanaTx: VersionedTransaction? by mutableStateOf(null)
+    private var asset: TokenItem? by mutableStateOf(null)
+    private var chainToken: Web3TokenItem? by mutableStateOf(null)
+    private var token: Web3TokenItem? by mutableStateOf(null)
+    private var insufficientGas by mutableStateOf(false)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -389,9 +388,9 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             ItemPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
                             Box(modifier = Modifier.height(20.dp))
                             if (source == "web3") {
-                                if (tipGas != null) {
+                                if (tipGas != null || solanaFee != null) {
                                     val transaction = web3Transaction?.wcEthereumTransaction
-                                    val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                                    val fee = solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
                                     if (fee == BigDecimal.ZERO) {
                                         FeeInfo(
                                             amount = "$fee",
@@ -748,19 +747,9 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             )
                             web3Transaction = transaction
                             this@SwapTransferBottomSheetDialogFragment.token = token
-                            
-                            if (token.chainId == Constants.ChainId.Solana) {
-                                refreshSolana()
-                            } else {
-                                val chain = token.getChainFromName()
-                                if (chain != null) {
-                                    refreshEstimatedGasAndAsset(chain)
-                                } else {
-                                    Timber.e("Unknown chain ID: ${token.chainId}")
-                                    errorInfo = "Unknown chain ID: ${token.chainId}"
-                                    step = Step.Error
-                                }
-                            }
+
+                            val chain = token.getChainFromName()
+                            refreshEstimatedGasAndAsset(chain)
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to build transaction")
                             errorInfo = e.message
@@ -835,10 +824,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val nonce = rpc.nonceAt(chain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethPreviewTransaction nonce
                     }
-                    
-                    if (parsedTx == null) {
-                        parsedTx = bottomViewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress)
-                    }
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
@@ -853,10 +838,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                         val tx = solanaTx ?: VersionedTransaction.from(web3Transaction?.data ?: "").apply {
                             solanaTx = this
-                        }
-                        
-                        if (parsedTx == null) {
-                            parsedTx = bottomViewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.SOLANA_CHAIN_ID, null)
                         }
                         
                         solanaFee = solanaTx?.calcFee()
