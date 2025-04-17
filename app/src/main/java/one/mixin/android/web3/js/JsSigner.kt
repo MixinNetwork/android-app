@@ -10,6 +10,7 @@ import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
@@ -212,6 +213,35 @@ object JsSigner {
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
         return Pair(hexMessage, credential.address)
+    }
+
+    suspend fun ethPreviewTransaction(
+        address: String,
+        transaction: WCEthereumTransaction,
+        tipGas: TipGas,
+        chain: Chain?,
+        getNonce: suspend (String) -> BigInteger,
+    ): String {
+        val value = transaction.value ?: "0x0"
+        val nonce = getNonce(address)
+        val v = Numeric.decodeQuantity(value)
+
+        val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
+        val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
+        val gasLimit = tipGas.gasLimit
+
+        val rawTransaction =
+            RawTransaction.createTransaction(
+                (chain ?: currentChain).chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data ?: "",
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
+        return Numeric.toHexString(TransactionEncoder.encode(rawTransaction))
     }
 
     fun signMessage(

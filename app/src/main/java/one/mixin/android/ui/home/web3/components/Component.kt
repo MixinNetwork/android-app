@@ -54,15 +54,14 @@ import one.mixin.android.api.response.web3.BalanceChange
 import one.mixin.android.api.response.web3.Item
 import one.mixin.android.api.response.web3.ParsedInstruction
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
@@ -186,14 +185,13 @@ fun TokenTransactionPreview(
 }
 
 @Composable
-fun SolanaParsedTxPreview(
+fun ParsedTxPreview(
     asset: Token?,
     parsedTx: ParsedTx?,
-    solanaTxSource: SolanaTxSource,
+    solanaTxSource: SolanaTxSource? = null,
 ) {
     Column(
-        modifier =
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .background(MixinAppTheme.colors.background)
@@ -208,9 +206,7 @@ fun SolanaParsedTxPreview(
             )
         } else if (parsedTx.instructions?.isEmpty() == true) {
             Row(
-                modifier =
-                Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Text(
@@ -224,70 +220,57 @@ fun SolanaParsedTxPreview(
                 Box(modifier = Modifier.weight(1f))
                 CoilImage(
                     model = asset?.iconUrl,
-                    modifier =
-                    Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
+                    modifier = Modifier.size(32.dp).clip(CircleShape),
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
             }
-        } else if (parsedTx.balanceChanges != null && parsedTx.tokens == null) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
-                color = MixinAppTheme.colors.accent,
-            )
+        } else if (parsedTx.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    modifier = Modifier.alignByBaseline(),
+                    text = stringResource(id = R.string.decode_transaction_failed_content),
+                    color = MixinAppTheme.colors.red,
+                    fontFamily = FontFamily(Font(R.font.mixin_font)),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600
+                )
+                Box(modifier = Modifier.weight(1f))
+            }
+        } else if (parsedTx.balanceChanges.isNullOrEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    modifier = Modifier.alignByBaseline(),
+                    text = stringResource(id = R.string.No_balance_change_detected),
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontFamily = FontFamily(Font(R.font.mixin_font)),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W600
+                )
+                Box(modifier = Modifier.weight(1f))
+            }
         } else {
-            val viewDetails = remember {
-                mutableStateOf(false)
-            }
+            val viewDetails = remember { mutableStateOf(false) }
             val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-            if (parsedTx.balanceChanges == null) {
-                Row(
-                    modifier =
-                    Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    Text(
-                        modifier = Modifier.alignByBaseline(),
-                        text = stringResource(id = R.string.No_balance_change_detected),
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontFamily = FontFamily(Font(R.font.mixin_font)),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.W600
-                    )
-                    Box(modifier = Modifier.weight(1f))
-                    CoilImage(
-                        model = asset?.iconUrl,
-                        modifier =
-                        Modifier
-                            .size(32.dp)
-                            .clip(CircleShape),
-                        placeholder = R.drawable.ic_avatar_place_holder,
-                    )
-                }
-            } else {
-                parsedTx.balanceChanges.forEach { bc ->
-                    val token = parsedTx.tokens?.get(bc.address) ?: return
-                    BalanceChangeItem(token, bc)
-                    Box(modifier = Modifier.height(10.dp))
-                }
+            parsedTx.balanceChanges.forEach { bc ->
+                BalanceChangeItem(balanceChange = bc)
+                Box(modifier = Modifier.height(10.dp))
             }
-            if (!solanaTxSource.isInnerTx()) {
+            if (solanaTxSource != null && !solanaTxSource.isInnerTx()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            viewDetails.value = !viewDetails.value
-                        },
+                        .clickable { viewDetails.value = !viewDetails.value },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_play_arrow),
-                        modifier =
-                        Modifier
-                            .size(24.dp, 24.dp)
-                            .rotate(rotation),
+                        modifier = Modifier.size(24.dp, 24.dp).rotate(rotation),
                         contentDescription = null,
                         tint = MixinAppTheme.colors.accent,
                     )
@@ -371,8 +354,13 @@ fun Warning(
             modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
+                .padding(bottom = 16.dp)
                 .background(MixinAppTheme.colors.tipWarning)
-                .border(1.dp, MixinAppTheme.colors.tipWarningBorder, shape = RoundedCornerShape(8.dp))
+                .border(
+                    1.dp,
+                    MixinAppTheme.colors.tipWarningBorder,
+                    shape = RoundedCornerShape(8.dp)
+                )
                 .padding(20.dp),
         ) {
             Image(
@@ -409,33 +397,32 @@ fun Warning(
 
 @Composable
 private fun BalanceChangeItem(
-    token: SwapToken,
     balanceChange: BalanceChange,
 ) {
     Row(
-        modifier =
-            Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CoilImage(
-            model = token.icon,
-            modifier =
-            Modifier
-                .size(32.dp)
-                .clip(CircleShape),
+            model = balanceChange.icon,
+            modifier = Modifier.size(32.dp).clip(CircleShape),
             placeholder = R.drawable.ic_avatar_place_holder,
         )
-        Box(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else token.name,
+            text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else balanceChange.name,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 16.sp,
-            fontWeight = FontWeight.W600
+            fontWeight = FontWeight.W600,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
         )
-        Box(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = "${token.toStringAmount(balanceChange.amount)} ${token.symbol}",
-            color = if ((balanceChange.amount.toLongOrNull() ?: 0) >= 0) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            text = "${balanceChange.amountString()} ${balanceChange.symbol}",
+            color = if ((balanceChange.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            maxLines = 1,
             fontSize = 14.sp,
         )
     }
@@ -684,7 +671,7 @@ fun InstructionPreview() {
 @Preview
 @Composable
 fun SolanaParsedTxNullPreview() {
-    SolanaParsedTxPreview(parsedTx = null, asset = null, solanaTxSource = SolanaTxSource.Web)
+    ParsedTxPreview(parsedTx = null, asset = null, solanaTxSource = SolanaTxSource.Web)
 }
 
 @Preview
@@ -692,7 +679,7 @@ fun SolanaParsedTxNullPreview() {
 fun SolanaParsedTxInstructionNullPreview() {
     val data = """{"instructions":[]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
 }
 
 @Preview
@@ -700,7 +687,7 @@ fun SolanaParsedTxInstructionNullPreview() {
 fun SolanaParsedTxBalanceChangeNullWebPreview() {
     val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
+    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.Web)
 }
 
 @Preview
@@ -708,7 +695,7 @@ fun SolanaParsedTxBalanceChangeNullWebPreview() {
 fun SolanaParsedTxBalanceChangeNullInnerPreview() {
     val data = """{"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
 }
 
 @Preview
@@ -716,5 +703,5 @@ fun SolanaParsedTxBalanceChangeNullInnerPreview() {
 fun SolanaParsedTxTokenNullPreview() {
     val data = """{"balance_changes":[{"address":"So11111111111111111111111111111111111111112","amount":-10000000},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264}],"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
     val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    SolanaParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
 }

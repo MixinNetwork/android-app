@@ -191,7 +191,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             }
 
             when {
-                transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value -> {
+
+                transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value || transaction.status == TransactionStatus.PENDING.value -> {
                     avatar.bg.setImageResource(R.drawable.ic_web3_transaction_contract)
                 }
 
