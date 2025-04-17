@@ -134,10 +134,15 @@ class NewSchemeParser(
                 val traces = invoice.entries.map { it.traceId }
                 val response = linkViewModel.transactionsFetch(traces)
                 if (response.isSuccess && response.data.isNullOrEmpty().not()) {
-                    return if ((response.data?.size ?: 0) == traces.size) {
-                        Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
-                    } else {
-                        Result.failure(ParserError(FAILURE))
+                    if ((response.data?.size ?: 0) == traces.size) {
+                        return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
+                    }
+
+                    val responseRequestIds = response.data?.map { it.requestId }
+                    val isValid = traces.size > (responseRequestIds?.size ?: 0) && 
+                        traces.subList(0, responseRequestIds?.size ?: 0) == responseRequestIds
+                    if (!isValid) {
+                        return Result.failure(ParserError(FAILURE))
                     }
                 }
                 var result: Result<Int>? = null
