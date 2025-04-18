@@ -198,12 +198,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 sendReceiveView.receive.setOnClickListener {
                     navTo(Web3AddressFragment.newInstance(address), Web3AddressFragment.TAG)
                 }
-                sendReceiveView.swap.isVisible = token.isSolana()
                 sendReceiveView.swap.setOnClickListener {
-                    AnalyticsTracker.trackSwapStart("solana", "solana")
+                    AnalyticsTracker.trackSwapStart("web3", "web3")
                     lifecycleScope.launch {
                         val tokens = web3ViewModel.findWeb3TokenItems()
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }, input = token.getUnique(), inMixin = false), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens, input = token.assetId, inMixin = false), SwapFragment.TAG)
                     }
 
                 }
@@ -381,7 +380,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
                             web3ViewModel.insertRawTranscation(r.data!!)
-                            if (r.data?.state == TransactionStatus.FAILED.value ||r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value) {
+                            if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
                                 web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
                             }
                         }

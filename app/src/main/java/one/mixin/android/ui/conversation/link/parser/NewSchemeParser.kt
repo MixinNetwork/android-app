@@ -137,10 +137,8 @@ class NewSchemeParser(
                     if ((response.data?.size ?: 0) == traces.size) {
                         return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
                     }
-
-                    // todo remove revered
-                    val responseRequestIds = response.data?.map { it.requestId }?.reversed()
-                    val isValid = traces.size > (responseRequestIds?.size ?: 0) && 
+                    val responseRequestIds = response.data?.map { it.requestId }
+                    val isValid = traces.size > (responseRequestIds?.size ?: 0) &&
                         traces.subList(0, responseRequestIds?.size ?: 0) == responseRequestIds
                     if (!isValid) {
                         return Result.failure(ParserError(FAILURE))

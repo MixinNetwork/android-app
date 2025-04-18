@@ -118,7 +118,7 @@ data class Web3TokenItem(
     }
     
     override fun getUnique(): String {
-        return if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey
+       return assetId
     }
 
     fun toStringAmount(amount: Long): String {

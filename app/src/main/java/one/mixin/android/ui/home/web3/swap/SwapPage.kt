@@ -69,7 +69,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -102,10 +101,8 @@ fun SwapPage(
     lastOrderTime: Long?,
     reviewing: Boolean,
     source: String,
-    slippageBps: Int,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
-    onShowSlippage: () -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onOrderList: () -> Unit,
     pop: () -> Unit,
@@ -155,7 +152,7 @@ fun SwapPage(
                             quoteMin = null
                             quoteMax = null
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
-                            viewModel.quote(context, from.symbol, from.getUnique(), to.getUnique(), amount, slippageBps.toString(), source)
+                            viewModel.quote(context, from.symbol, from.assetId, to.assetId, amount, source)
                                 .onSuccess { value ->
                                     AnalyticsTracker.trackSwapQuote("success")
                                     quoteResult = value
@@ -192,7 +189,7 @@ fun SwapPage(
         verticalScrollable = true,
         pop = pop,
         actions = {
-            if (source != "") {
+            if (source != "web3") {
                 Box {
                     IconButton(onClick = {
                         onOrderList()
@@ -229,8 +226,8 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = viewModel.tokenExtraFlow(if (from.isWeb3 == true) "" else from.assetId).map { it?.balance ?: from.balance } // Use externally provided data if no local data is available.
-                .collectAsStateWithLifecycle(from.balance).value
+            val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
                 content = {
@@ -255,7 +252,7 @@ fun SwapPage(
                                                 toToken?.let { t ->
                                                     context.defaultSharedPreferences.putString(
                                                         PREF_SWAP_LAST_SELECTED_PAIR,
-                                                        if (isReverse) "${t.getUnique()} ${f.getUnique()}" else "${f.getUnique()} ${t.getUnique()}"
+                                                        if (isReverse) "${t.assetId} ${f.assetId}" else "${f.assetId} ${t.assetId}"
                                                     )
                                                 }
                                             }
@@ -332,13 +329,6 @@ fun SwapPage(
                                                     }
                                                 )
                                             }
-                                            if (from.isWeb3) {
-                                                SlippageInfo(
-                                                    slippageBps,
-                                                    rate != BigDecimal.ZERO,
-                                                    onShowSlippage
-                                                )
-                                            }
                                         }
                                     }
                                 } else {
@@ -359,7 +349,7 @@ fun SwapPage(
                                                             inputText = quoteMin!!
                                                         }
                                                     }
-                                            },
+                                                },
                                             style = TextStyle(
                                                 fontSize = 14.sp,
                                                 color = MixinAppTheme.colors.tipError,
@@ -474,8 +464,11 @@ fun InputArea(
     onMax: (() -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
-    val balance = viewModel.tokenExtraFlow(if (token?.isWeb3 == true) "" else token?.assetId ?: "").map { it?.balance ?: token?.balance } // Use externally provided data if no local data is available.
-        .collectAsStateWithLifecycle(token?.balance).value
+    val balance = if (token == null) {
+        token?.balance
+    } else {
+        viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
+    }
     Column(
         modifier =
             modifier
@@ -563,11 +556,11 @@ private fun PriceInfo(
     }
     var quoteCountDown by remember { mutableFloatStateOf(0f) }
 
-    LaunchedEffect("${fromToken.getUnique()}-${toToken?.getUnique()}") {
+    LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}") {
         isPriceReverse = fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
     }
 
-    LaunchedEffect("${fromToken.getUnique()}-${toToken?.getUnique()}-${exchangeRate}") {
+    LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}-${exchangeRate}") {
         while (isActive) {
             quoteCountDown = 0f
             while (isActive && quoteCountDown < 1f) { // 10s

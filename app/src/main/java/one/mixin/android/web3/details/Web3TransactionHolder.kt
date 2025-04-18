@@ -41,6 +41,14 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                         itemView.context.getString(if (transaction.status == TransactionStatus.NOT_FOUND.value) R.string.Expired else R.string.Pending)
                     avatar.loadUrl(transaction)
                 }
+                transaction.transactionType == TransactionType.UNKNOWN.value -> {
+                    value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+                    amountAnimator.displayedChild = 0
+                    value.setTextColor(root.context.colorAttr(R.attr.text_assist))
+                    value.text = ""
+                    symbolTv.text = itemView.context.getString(R.string.Unknown)
+                    avatar.loadUrl(transaction)
+                }
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
