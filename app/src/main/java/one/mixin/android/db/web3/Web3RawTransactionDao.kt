@@ -14,6 +14,9 @@ interface Web3RawTransactionDao : BaseDao<Web3RawTransaction> {
     @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND chain_id = :chainId")
     suspend fun getPendingRawTransactions(chainId: String): List<Web3RawTransaction>
 
+    @Query("SELECT * FROM raw_transactions WHERE hash = :hash AND chain_id = :chainId")
+    suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String): Web3RawTransaction?
+
     @Query("SELECT nonce FROM raw_transactions WHERE chain_id = :chainId AND state = 'pending' ORDER BY nonce DESC LIMIT 1")
     suspend fun getNonce(chainId: String): String?
 }

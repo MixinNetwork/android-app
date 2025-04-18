@@ -79,6 +79,8 @@ fun BrowserPage(
     toAddress: String?,
     type: Int,
     step: WalletConnectBottomSheetDialogFragment.Step,
+    isCancel: Boolean,
+    isSpeedUp: Boolean,
     tipGas: TipGas?,
     solanaFee: BigDecimal?,
     parsedTx: ParsedTx?,
@@ -155,7 +157,7 @@ fun BrowserPage(
                             modifier = Modifier.size(70.dp),
                             painter =
                                 painterResource(
-                                    id = if (token != null) R.drawable.ic_web3_transaction else R.drawable.ic_no_dapp,
+                                    id = if (isCancel) R.drawable.ic_web3_cancel else if (isSpeedUp) R.drawable.ic_web3_speed_up else if (token != null) R.drawable.ic_web3_transaction else R.drawable.ic_no_dapp,
                                 ),
                             contentDescription = null,
                             tint = Color.Unspecified,
@@ -179,7 +181,7 @@ fun BrowserPage(
                                     }
                                 } else {
                                     when (step) {
-                                        WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing_confirmation
+                                        WalletConnectBottomSheetDialogFragment.Step.Loading -> if (isCancel) R.string.Cancel_Transaction else if (isSpeedUp) R.string.Speed_Up_Transaction else R.string.web3_signing_confirmation
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
                                         WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else if (tipGas == null) R.string.Data_error else R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
@@ -244,16 +246,22 @@ fun BrowserPage(
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.backgroundWindow),
                 )
-                if (JsSignMessage.isSignMessage(type)) {
+                if (isCancel) {
+                  // empty
+                } else if (JsSignMessage.isSignMessage(type)) {
                     MessagePreview(content = data ?: "") {
                         onPreviewMessage.invoke(it)
                     }
+                    Box(modifier = Modifier.height(10.dp))
                 } else if (chain == Chain.Solana) {
                     ParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
+                    Box(modifier = Modifier.height(10.dp))
                 } else if (type == JsSignMessage.TYPE_TRANSACTION) {
                     ParsedTxPreview(parsedTx = parsedTx, asset = asset)
+                    Box(modifier = Modifier.height(10.dp))
                 } else if (token != null && amount != null) {
                     TokenTransactionPreview(amount = amount, token = token)
+                    Box(modifier = Modifier.height(10.dp))
                 } else {
                     TransactionPreview(
                         balance =
@@ -264,8 +272,8 @@ fun BrowserPage(
                         chain,
                         asset,
                     )
+                    Box(modifier = Modifier.height(10.dp))
                 }
-                Box(modifier = Modifier.height(10.dp))
                 val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(

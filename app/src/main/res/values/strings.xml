@@ -1929,4 +1929,7 @@
     <string name="unlimited">unlimited</string>
     <string name="Transaction_Pending_Confirmation">1 Pending Transaction</string>
     <string name="Transactions_Pending_Confirmation">%1$d Pending Transactions</string>
+    <string name="Speed_Up">Speed Up</string>
+    <string name="Cancel_Transaction">Cancel Transaction</string>
+    <string name="Speed_Up_Transaction">Speed Up Transaction</string>
 </resources>

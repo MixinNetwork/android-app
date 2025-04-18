@@ -182,7 +182,7 @@ object JsSigner {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val nonce = getNonce(credential.address)
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
 
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
@@ -223,7 +223,7 @@ object JsSigner {
         getNonce: suspend (String) -> BigInteger,
     ): String {
         val value = transaction.value ?: "0x0"
-        val nonce = getNonce(address)
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(address)
         val v = Numeric.decodeQuantity(value)
 
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
