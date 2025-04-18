@@ -69,7 +69,7 @@ class BrowserWalletBottomSheetViewModel
             var meet401 = false
             var parsedTx: ParsedTx? = null
             handleMixinResponse(
-                invokeNetwork = { assetRepo.simulateWeb3Tx(Web3RawTransactionRequest(tx, chainId, from)) },
+                invokeNetwork = { assetRepo.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx,from)) },
                 successBlock = { parsedTx = it.data },
                 failureBlock = {
                     if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
