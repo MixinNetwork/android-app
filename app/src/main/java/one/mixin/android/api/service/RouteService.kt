@@ -9,7 +9,6 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
-import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.StakeRequest
@@ -151,7 +150,7 @@ interface RouteService {
 
     @POST("web3/transactions/simulate")
     suspend fun simulateWeb3Tx(
-        @Body parseTxRequest: ParseTxRequest,
+        @Body parseTxRequest: Web3RawTransactionRequest,
     ): MixinResponse<ParsedTx>
 
     @GET("web3/tokens/{address}")

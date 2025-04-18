@@ -32,7 +32,6 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
-import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.RouteOrderResponse
@@ -1009,7 +1008,7 @@ class TokenRepository
             }
         }
 
-        suspend fun simulateWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
+        suspend fun simulateWeb3Tx(parseTxRequest: Web3RawTransactionRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
 
         suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest, assetId: String? = null): MixinResponse<Web3RawTransaction> {
             val r = routeService.postWeb3Tx(rawTxRequest)

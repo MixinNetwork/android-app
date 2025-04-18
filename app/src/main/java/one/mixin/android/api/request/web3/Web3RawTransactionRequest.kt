@@ -7,6 +7,6 @@ data class Web3RawTransactionRequest(
     val chainId: String,
     @SerializedName("raw_transaction")
     val rawTransaction: String,
-    @SerializedName("account")
-    val account: String,
+    @SerializedName("from")
+    val from: String?,
 )
