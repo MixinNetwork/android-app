@@ -78,6 +78,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getStringDeviceId
@@ -608,7 +609,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesRpc(routerService: RouteService) = Rpc(routerService)
+    fun providesRpc(routerService: RouteService, web3RawTransactionDao: Web3RawTransactionDao) = Rpc(routerService, web3RawTransactionDao)
 
     @DefaultDispatcher
     @Provides
