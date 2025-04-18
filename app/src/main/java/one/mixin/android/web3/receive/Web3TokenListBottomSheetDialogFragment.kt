@@ -298,27 +298,33 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             Constants.ChainId.BinanceSmartChain, Constants.ChainId.ETHEREUM_CHAIN_ID,
                             Constants.ChainId.Polygon)
                     }.map { item ->
-                        Web3TokenItem(
-                            walletId = "",
-                            assetId = item.assetId,
-                            chainId = item.chainId,
-                            name = item.name,
-                            assetKey = item.assetKey ?: "",
-                            symbol = item.symbol,
-                            iconUrl = item.iconUrl,
-                            precision = 9,
-                            kernelAssetId = "",
-                            balance = item.balance,
-                            priceUsd = item.priceUsd,
-                            changeUsd = item.changeUsd,
-                            chainIcon = item.chainIconUrl,
-                            chainName = item.chainName,
-                            chainSymbol = item.chainSymbol,
-                            hidden = item.hidden
-                        )
+                        defaultAssets.find { item.assetId == it.assetId }.let {
+                            if (it == null) {
+                                Web3TokenItem(
+                                    walletId = "",
+                                    assetId = item.assetId,
+                                    chainId = item.chainId,
+                                    name = item.name,
+                                    assetKey = item.assetKey ?: "",
+                                    symbol = item.symbol,
+                                    iconUrl = item.iconUrl,
+                                    precision = 9,
+                                    kernelAssetId = "",
+                                    balance = item.balance,
+                                    priceUsd = item.priceUsd,
+                                    changeUsd = item.changeUsd,
+                                    chainIcon = item.chainIconUrl,
+                                    chainName = item.chainName,
+                                    chainSymbol = item.chainSymbol,
+                                    hidden = item.hidden
+                                )
+                            } else {
+                                it
+                            }
+                        }
                     }
                 } else {
-                    emptyList()
+                    null
                 }
 
                 val result = remoteAssets ?: defaultAssets.filter {

@@ -350,7 +350,7 @@
                         app:autoSizeMinTextSize="12sp"
                         app:autoSizeStepGranularity="1sp"
                         app:autoSizeTextType="uniform" />
-                    
+
                     <TextView
                         android:id="@+id/day"
                         android:layout_width="wrap_content"
