@@ -1807,4 +1807,3 @@ class BottomSheetViewModel
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
 }
->>>>>>> origin/master
