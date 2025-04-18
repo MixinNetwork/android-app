@@ -33,6 +33,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -298,36 +299,46 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             Constants.ChainId.BinanceSmartChain, Constants.ChainId.ETHEREUM_CHAIN_ID,
                             Constants.ChainId.Polygon)
                     }.map { item ->
-                        Web3TokenItem(
-                            walletId = "",
-                            assetId = item.assetId,
-                            chainId = item.chainId,
-                            name = item.name,
-                            assetKey = item.assetKey ?: "",
-                            symbol = item.symbol,
-                            iconUrl = item.iconUrl,
-                            precision = 9,
-                            kernelAssetId = "",
-                            balance = item.balance,
-                            priceUsd = item.priceUsd,
-                            changeUsd = item.changeUsd,
-                            chainIcon = item.chainIconUrl,
-                            chainName = item.chainName,
-                            chainSymbol = item.chainSymbol,
-                            hidden = item.hidden
-                        )
+                        defaultAssets.find { item.assetId == it.assetId }.let { local ->
+                            local
+                                ?: Web3TokenItem(
+                                    walletId = "",
+                                    assetId = item.assetId,
+                                    chainId = item.chainId,
+                                    name = item.name,
+                                    assetKey = item.assetKey ?: "",
+                                    symbol = item.symbol,
+                                    iconUrl = item.iconUrl,
+                                    precision = 9,
+                                    kernelAssetId = "",
+                                    balance = item.balance,
+                                    priceUsd = item.priceUsd,
+                                    changeUsd = item.changeUsd,
+                                    chainIcon = item.chainIconUrl,
+                                    chainName = item.chainName,
+                                    chainSymbol = item.chainSymbol,
+                                    hidden = item.hidden
+                                )
+                        }
                     }
                 } else {
                     emptyList()
                 }
 
-                val result = remoteAssets ?: defaultAssets.filter {
+                val result = defaultAssets.plus(
+                    remoteAssets.filterNot { r ->
+                        defaultAssets.any { l ->
+                            l.assetId == r.assetId
+                        }
+                    }).filter {
                     it.name.containsIgnoreCase(query) ||
-                    it.symbol.containsIgnoreCase(query) ||
-                    (it.chainName?.containsIgnoreCase(query) == true) ||
-                    it.getChainDisplayName().containsIgnoreCase(query)
+                        it.symbol.containsIgnoreCase(query) ||
+                        (it.chainName?.containsIgnoreCase(query) == true) ||
+                        it.getChainDisplayName().containsIgnoreCase(query)
                 }.filter { item ->
                     ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+                }.sortedByDescending {
+                    (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                 }
 
                 adapter.tokens = ArrayList(result)

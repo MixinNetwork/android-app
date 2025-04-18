@@ -35,7 +35,6 @@ import one.mixin.android.api.request.buildKernelTransferGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalFeeGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalSubmitGhostKeyRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -1785,7 +1784,7 @@ class BottomSheetViewModel
             var meet401 = false
             var parsedTx: ParsedTx? = null
             handleMixinResponse(
-                invokeNetwork = { tokenRepository.simulateWeb3Tx(ParseTxRequest(tx, chainId, from)) },
+                invokeNetwork = { tokenRepository.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx, from)) },
                 successBlock = { parsedTx = it.data },
                 failureBlock = {
                     if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
