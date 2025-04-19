@@ -228,7 +228,7 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+            val fromBalance = viewModel.tokenExtraFlow(from, inMixin).collectAsStateWithLifecycle(from.balance).value
 
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
@@ -278,6 +278,7 @@ fun SwapPage(
                                 InputArea(
                                     modifier = Modifier,
                                     token = fromToken,
+                                    inMixin = inMixin,
                                     text = inputText,
                                     title = stringResource(id = R.string.swap_send),
                                     readOnly = false,
@@ -298,6 +299,7 @@ fun SwapPage(
                                 InputArea(
                                     modifier = Modifier,
                                     token = toToken,
+                                    inMixin = inMixin,
                                     text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
                                     title = stringResource(id = R.string.swap_receive),
                                     readOnly = true,
@@ -457,6 +459,7 @@ fun SwapPage(
 fun InputArea(
     modifier: Modifier = Modifier,
     token: SwapToken?,
+    inMixin: Boolean,
     text: String,
     title: String,
     readOnly: Boolean,
@@ -467,9 +470,9 @@ fun InputArea(
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
-        token?.balance
+        null
     } else {
-        viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
+        viewModel.tokenExtraFlow(token, inMixin).collectAsStateWithLifecycle(token.balance).value
     }
     Column(
         modifier =

@@ -136,8 +136,8 @@ class SwapViewModel
         return@withContext tokenRepository.checkMarketById(assetId, true)
     }
 
-    fun tokenExtraFlow(token: SwapToken): Flow<String?> {
-        return if (token.isWeb3) {
+    fun tokenExtraFlow(token: SwapToken, inMixin: Boolean): Flow<String?> {
+        return if (!inMixin) {
             tokenRepository.web3TokenExtraFlow(token.assetId)
         } else {
             tokenRepository.tokenExtraFlow(token.assetId)
