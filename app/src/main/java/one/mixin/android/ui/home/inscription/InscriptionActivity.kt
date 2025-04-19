@@ -249,7 +249,7 @@ class InscriptionActivity : BaseActivity() {
         _bottomBinding = ViewInscriptionMenuBinding.bind(View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_inscription_menu, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
-        val isOwner = inscriptionState.state == "unspent"
+        val isOwner = inscriptionState.state == "unspent" || inscriptionState.state == "pending"
         val isImage = inscriptionState.contentType?.startsWith("image", true) == true
         bottomBinding.setAvatarTv.isVisible = isOwner && isImage
         bottomBinding.saveTv.isVisible = isOwner && isImage
