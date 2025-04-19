@@ -80,6 +80,8 @@ import one.mixin.android.api.response.web3.rate
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
@@ -519,7 +521,11 @@ fun InputArea(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = balance?.numberFormat8() ?: "0",
+                    text = if (token.isWeb3) {
+                        balance?.numberFormat() ?: "0"
+                    } else {
+                        balance?.numberFormat8() ?: "0"
+                    },
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,
