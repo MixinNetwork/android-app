@@ -526,7 +526,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 step = Step.Sending
-                
                 if (source == "web3" && web3Transaction != null) {
                     try {
                         when (web3Transaction!!.type) {
@@ -576,10 +575,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val parsedLink = this@SwapTransferBottomSheetDialogFragment.parsedLink ?: return@launch
                     val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsedLink.assetId, parsedLink.amount)
                     val token = bottomViewModel.findAssetItemById(parsedLink.assetId)
-                    if (consolidationAmount == "") {
-                        WaitingBottomSheetDialogFragment.newInstance(true)
-                            .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
-                    } else if (consolidationAmount != null && token != null) {
+                    if (consolidationAmount != null && token != null) {
                         UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
                             .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
                         step = Step.Pending

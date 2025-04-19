@@ -269,7 +269,7 @@ class BottomSheetViewModel
             } else if ((withdrawalRequestResponse.data?.size ?: 0) < 1) {
                 Timber.e("Kernel Withdrawal($traceId): request transaction, Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name && withdrawalRequestResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Withdrawal($traceId): request transaction, Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -432,7 +432,7 @@ class BottomSheetViewModel
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
                 Timber.e("Kernel Address Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name && transactionResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Address Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -515,7 +515,7 @@ class BottomSheetViewModel
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
                 Timber.e("Kernel Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name && transactionResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -697,7 +697,7 @@ class BottomSheetViewModel
                 }
 
                 Timber.e("Kernel Duplicate Invoice Transaction UtxoWrapper: $amount $assetId $asset")
-                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input
                 val receiverKeys = data.first().keys.joinToString(",")
                 val receiverMask = data.first().mask
@@ -713,6 +713,11 @@ class BottomSheetViewModel
 
                         is Reference.HashValue -> {
                             reference.value
+                        }
+
+                        else -> {
+                            throw IllegalArgumentException("Reference type not supported")
+                            ""
                         }
                     }
                 }
@@ -736,7 +741,7 @@ class BottomSheetViewModel
                 } else if ((verifyTransaction.data?.size ?: 0) != 1) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): Parameter exception")
                     throw IllegalArgumentException("Parameter exception")
-                } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+                } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name && it.state != OutputState.pending.name } == true) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): Transfer is already paid")
                     throw IllegalArgumentException("Transfer is already paid")
                 }
@@ -839,7 +844,7 @@ class BottomSheetViewModel
                     )
                 )
 
-                if (response.errorCode != ErrorHandler.INVALID_UTXO || response.errorCode < 500) {
+                if ((response.errorCode != ErrorHandler.INVALID_UTXO) || (response.errorCode < 500)) {
                     return response
                 }
 
@@ -912,7 +917,7 @@ class BottomSheetViewModel
                     null
                 } ?: throw IllegalArgumentException("Transfer has no recipient")
                 Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
-                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input
                 val receiverKeys = data.first().keys.joinToString(",")
                 val receiverMask = data.first().mask
@@ -956,7 +961,7 @@ class BottomSheetViewModel
             } else if ((verifyTransaction.data?.size ?: 0) != verifiedTransactions.size) {
                 Timber.e("Kernel Invoice Transaction: Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+            } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name && it.state != OutputState.pending.name } == true) {
                 Timber.e("Kernel Invoice Transaction: Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -1056,10 +1061,9 @@ class BottomSheetViewModel
             asset: String,
             amount: String,
             inscriptionHash: String? = null,
-            ignoreZero: Boolean = true,
         ): List<Output> {
             val desiredAmount = BigDecimal(amount)
-            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash, ignoreZero)
+            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash)
 
             if (candidateOutputs.isEmpty()) {
                 throw EmptyUtxoException
@@ -1100,21 +1104,12 @@ class BottomSheetViewModel
 
             val selectedOutputs = mutableListOf<Output>()
             var totalSelectedAmount = BigDecimal.ZERO
-            var anyNotConfirmed = false
             candidateOutputs.forEach { output ->
-                if (output.sequence == 0L) {
-                    anyNotConfirmed = true
-                }
                 val outputAmount = BigDecimal(output.amount)
                 selectedOutputs.add(output)
                 totalSelectedAmount += outputAmount
                 if (totalSelectedAmount >= desiredAmount) {
-                    if (anyNotConfirmed) {
-                        // Refresh when there is an undetermined UTXO
-                        jobManager.addJobInBackground(SyncOutputJob())
-                    }
-                    return if (anyNotConfirmed) ""
-                    else null
+                    return null
                 }
             }
 
@@ -1125,7 +1120,7 @@ class BottomSheetViewModel
             if (totalSelectedAmount < desiredAmount) {
                 // Refresh when balance is insufficient
                 jobManager.addJobInBackground(SyncOutputJob())
-                if (anyNotConfirmed) return ""
+                return null
             }
 
             throw Exception("Impossible")

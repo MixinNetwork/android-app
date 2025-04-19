@@ -79,4 +79,5 @@ data class Output(
 enum class OutputState {
     unspent,
     signed,
+    pending
 }

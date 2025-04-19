@@ -12,11 +12,11 @@ import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class WaitingBottomSheetDialogFragment(val anyNotConfirmed: Boolean = false) : MixinBottomSheetDialogFragment() {
+class WaitingBottomSheetDialogFragment() : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "WaitingBottomSheetDialogFragment"
 
-        fun newInstance(anyNotConfirmed: Boolean = false) = WaitingBottomSheetDialogFragment(anyNotConfirmed)
+        fun newInstance() = WaitingBottomSheetDialogFragment()
     }
 
     private val binding by viewBinding(FragmentWaitingBottomSheetBinding::inflate)
@@ -41,8 +41,6 @@ class WaitingBottomSheetDialogFragment(val anyNotConfirmed: Boolean = false) : M
                 dismiss()
             }
         }
-
-        if (anyNotConfirmed) jobManager.addJobInBackground(SyncOutputJob())
-        else jobManager.addJobInBackground(RestoreTransactionJob())
+        jobManager.addJobInBackground(RestoreTransactionJob())
     }
 }

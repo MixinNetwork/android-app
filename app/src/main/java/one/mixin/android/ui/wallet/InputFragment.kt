@@ -67,6 +67,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -743,7 +744,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                    navTo(Web3AddressFragment.newInstance(if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress), Web3AddressFragment.TAG)
                 }
 
                 transferType ==  TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem -> {
@@ -939,10 +940,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val token = token ?: return
         lifecycleScope.launch {
             val consolidationAmount = web3ViewModel.checkUtxoSufficiency(token.assetId, amount)
-            if (consolidationAmount == "") {
-                WaitingBottomSheetDialogFragment.newInstance(true)
-                    .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
-            } else if (consolidationAmount != null) {
+            if (consolidationAmount != null) {
                 UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
                     .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
             } else {

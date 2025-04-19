@@ -80,6 +80,8 @@ import one.mixin.android.api.response.web3.rate
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
@@ -226,7 +228,7 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+            val fromBalance = viewModel.tokenExtraFlow(from, inMixin).collectAsStateWithLifecycle(from.balance).value
 
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
@@ -276,6 +278,7 @@ fun SwapPage(
                                 InputArea(
                                     modifier = Modifier,
                                     token = fromToken,
+                                    inMixin = inMixin,
                                     text = inputText,
                                     title = stringResource(id = R.string.swap_send),
                                     readOnly = false,
@@ -296,6 +299,7 @@ fun SwapPage(
                                 InputArea(
                                     modifier = Modifier,
                                     token = toToken,
+                                    inMixin = inMixin,
                                     text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
                                     title = stringResource(id = R.string.swap_receive),
                                     readOnly = true,
@@ -455,6 +459,7 @@ fun SwapPage(
 fun InputArea(
     modifier: Modifier = Modifier,
     token: SwapToken?,
+    inMixin: Boolean,
     text: String,
     title: String,
     readOnly: Boolean,
@@ -465,9 +470,9 @@ fun InputArea(
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
-        token?.balance
+        null
     } else {
-        viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
+        viewModel.tokenExtraFlow(token, inMixin).collectAsStateWithLifecycle(token.balance).value
     }
     Column(
         modifier =
@@ -519,7 +524,11 @@ fun InputArea(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = balance?.numberFormat8() ?: "0",
+                    text = if (token.isWeb3) {
+                        balance?.numberFormat() ?: "0"
+                    } else {
+                        balance?.numberFormat8() ?: "0"
+                    },
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = MixinAppTheme.colors.textAssist,

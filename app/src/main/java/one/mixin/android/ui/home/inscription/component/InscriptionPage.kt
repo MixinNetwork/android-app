@@ -216,7 +216,7 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(20.dp))
 
                                         Row(modifier = Modifier.padding(horizontal = 4.dp)) {
-                                            if (inscription.state == "unspent") {
+                                            if (inscription.state == "unspent" || inscription.state == "pending") {
                                                 Button(
                                                     onClick = onSendAction,
                                                     colors =
