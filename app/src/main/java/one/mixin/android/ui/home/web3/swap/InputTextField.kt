@@ -69,7 +69,14 @@ fun InputContent(
                         Text(
                             text = text,
                             style = TextStyle(
-                                fontSize = 24.sp,
+                                fontSize = when {
+                                    text.length <= 15 -> 24.sp
+                                    else -> {
+                                        val excess = text.length - 15
+                                        val reduction = (excess / 2) * 2
+                                        (24 - reduction).coerceAtLeast(16).sp
+                                    }
+                                },
                                 color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
                                 fontWeight = FontWeight.Black,
                                 textAlign = TextAlign.Start,
@@ -140,7 +147,14 @@ fun InputContent(
                                 }
                             },
                         textStyle = TextStyle(
-                            fontSize = 24.sp,
+                            fontSize = when {
+                                textFieldValue.text.length <= 15 -> 24.sp
+                                else -> {
+                                    val excess = textFieldValue.text.length - 15
+                                    val reduction = (excess / 2) * 2
+                                    (24 - reduction).coerceAtLeast(16).sp
+                                }
+                            },
                             color = MixinAppTheme.colors.textPrimary,
                             fontWeight = FontWeight.Black,
                             textAlign = TextAlign.Start,
@@ -154,7 +168,14 @@ fun InputContent(
                         Text(
                             text = "0",
                             color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 24.sp,
+                            fontSize = when {
+                                text.length <= 15 -> 24.sp
+                                else -> {
+                                    val excess = text.length - 15
+                                    val reduction = (excess / 2) * 2
+                                    (24 - reduction).coerceAtLeast(16).sp
+                                }
+                            },
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.align(Alignment.CenterStart)
                         )
