@@ -1120,6 +1120,7 @@ class BottomSheetViewModel
             if (totalSelectedAmount < desiredAmount) {
                 // Refresh when balance is insufficient
                 jobManager.addJobInBackground(SyncOutputJob())
+                return null
             }
 
             throw Exception("Impossible")

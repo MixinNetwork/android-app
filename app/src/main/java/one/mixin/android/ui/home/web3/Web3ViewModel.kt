@@ -365,28 +365,18 @@ internal constructor(
     ): String? {
         val desiredAmount = BigDecimal(amount)
         val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, assetIdToAsset(assetId))
-
         if (candidateOutputs.isEmpty()) {
             return null
         }
 
         val selectedOutputs = mutableListOf<Output>()
         var totalSelectedAmount = BigDecimal.ZERO
-        var anyNotConfirmed = false
         candidateOutputs.forEach { output ->
-            if (output.sequence == 0L) {
-                anyNotConfirmed = true
-            }
             val outputAmount = BigDecimal(output.amount)
             selectedOutputs.add(output)
             totalSelectedAmount += outputAmount
             if (totalSelectedAmount >= desiredAmount) {
-                if (anyNotConfirmed) {
-                    // Refresh when there is an undetermined UTXO
-                    jobManager.addJobInBackground(SyncOutputJob())
-                }
-                return if (anyNotConfirmed) ""
-                else null
+                return null
             }
         }
 
@@ -397,12 +387,12 @@ internal constructor(
         if (totalSelectedAmount < desiredAmount) {
             // Refresh when balance is insufficient
             jobManager.addJobInBackground(SyncOutputJob())
-            return if (anyNotConfirmed) ""
-            else null
+            return null
         }
 
         throw Exception("Impossible")
     }
+
 
     suspend fun firstUnspentTransaction() =
         withContext(Dispatchers.IO) {
