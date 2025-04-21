@@ -554,7 +554,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             )
                                         txStateFragment.setCloseAction {
                                             parentFragmentManager.apply {
-                                                val beginTransaction = beginTransaction()
                                                 if (backStackEntryCount > 0) {
                                                     popBackStack(
                                                         null,
