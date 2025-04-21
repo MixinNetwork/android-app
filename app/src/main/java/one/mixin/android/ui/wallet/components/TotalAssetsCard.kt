@@ -39,7 +39,7 @@ fun TotalAssetsCard(
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
-        Text(stringResource(R.string.Total_assets), color = MixinAppTheme.colors.textPrimary)
+        Text(stringResource(R.string.Total_Balance), color = MixinAppTheme.colors.textPrimary)
         Spacer(modifier = Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
