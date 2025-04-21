@@ -536,7 +536,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 },
                             ) {
                                 val list =
-                                    web3ViewModel.getPendingTransactions(web3Token?.chainId ?: "")
+                                    web3ViewModel.getPendingRawTransactions(web3Token?.chainId ?: "")
                                 if (list.isNotEmpty()) {
                                     Web3WaitingBottomSheetDialogFragment.newInstance(web3Token?.chainId ?: "").showNow(
                                         parentFragmentManager, Web3WaitingBottomSheetDialogFragment.TAG)

@@ -32,7 +32,6 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
-import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -1387,13 +1386,15 @@ class TokenRepository
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
-    suspend fun getPendingTransactions() = web3RawTransactionDao.getPendingTransactions()
+    suspend fun getPendingRawTransactions() = web3RawTransactionDao.getPendingRawTransactions()
 
-    suspend fun getPendingTransactions(chainId: String) = web3RawTransactionDao.getPendingTransactions(chainId)
+    suspend fun getPendingTransactions() = web3TransactionDao.getPendingTransactions()
+
+    suspend fun getPendingRawTransactions(chainId: String) = web3RawTransactionDao.getPendingRawTransactions(chainId)
 
     suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
 
-    suspend fun updateWeb3RawTransaction(hash: String, type: String, chainId: String) = web3TransactionDao.updateRawTransaction(type, hash, chainId)
+    suspend fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 

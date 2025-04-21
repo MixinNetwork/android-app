@@ -74,7 +74,7 @@ fun AssetDashboardScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                text = stringResource(R.string.Wallet),
+                text = stringResource(R.string.Wallets),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MixinAppTheme.colors.textPrimary,

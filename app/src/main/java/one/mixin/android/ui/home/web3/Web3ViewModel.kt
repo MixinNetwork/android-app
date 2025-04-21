@@ -428,25 +428,19 @@ internal constructor(
 
     fun marketById(assetId: String) = tokenRepository.marketById(assetId)
 
+    suspend fun getPendingRawTransactions() = tokenRepository.getPendingRawTransactions()
+
     suspend fun getPendingTransactions() = tokenRepository.getPendingTransactions()
 
-    suspend fun getPendingTransactions(chainId: String) = tokenRepository.getPendingTransactions(chainId)
+    suspend fun getPendingRawTransactions(chainId: String) = tokenRepository.getPendingRawTransactions(chainId)
 
     fun getPendingTransactionCount(): LiveData<Int> = tokenRepository.getPendingTransactionCount()
 
     suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
-    suspend fun deletePending(hash: String, chainId: String) =
-        withContext(Dispatchers.IO) { tokenRepository.deletePending(hash, chainId) }
+    suspend fun updateTransaction(hash: String, status: String, chainId: String) =
+        withContext(Dispatchers.IO) { tokenRepository.updateTransaction(hash, status, chainId) }
 
-    suspend fun updateWeb3RawTransaction(hash: String, type: String, chainId: String) =
-        withContext(Dispatchers.IO) { tokenRepository.updateWeb3RawTransaction(hash, type, chainId) }
-
-    suspend fun updateTransaction(hash: String, chainId: String, state: String?) =
-        withContext(Dispatchers.IO) { 
-            state?.let { tokenRepository.updateWeb3RawTransaction(hash, it, chainId) }
-        }
-
-    suspend fun insertRawTranscation(raw: Web3RawTransaction) =
+    suspend fun insertRawTransaction(raw: Web3RawTransaction) =
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
 }
