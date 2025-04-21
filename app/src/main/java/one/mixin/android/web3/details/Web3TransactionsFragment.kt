@@ -49,6 +49,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.job.RefreshWeb3TokenJob
+import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -381,6 +382,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
                             web3ViewModel.insertRawTranscation(r.data!!)
                             if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
+                                if (r.data?.state == TransactionStatus.SUCCESS.value) {
+                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                                }
                                 web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
                             }
                         }
