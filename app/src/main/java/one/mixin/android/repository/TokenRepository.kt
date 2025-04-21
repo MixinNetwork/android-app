@@ -1033,7 +1033,7 @@ class TokenRepository
                             senders.add(
                                 AssetChange(
                                     assetId = bc.assetId,
-                                    amount = amt.abs().toPlainString(),
+                                    amount = amt.toPlainString(),
                                     from = bc.address,
                                     to = null
                                 )
