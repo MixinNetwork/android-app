@@ -20,6 +20,15 @@ import one.mixin.android.widget.BadgeAvatarView
 
 class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : RecyclerView.ViewHolder(binding.root) {
 
+    private fun formatAmountWithSign(amount: String, positive: Boolean): String {
+        val formattedAmount = amount.numberFormat12()
+        return if (positive) {
+            if (formattedAmount.startsWith("+")) formattedAmount else "+$formattedAmount"
+        } else {
+            if (formattedAmount.startsWith("-")) formattedAmount else "-$formattedAmount"
+        }
+    }
+
     @SuppressLint("SetTextI18s")
     fun bind(transaction: Web3TransactionItem) {
         binding.apply {
@@ -53,7 +62,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
                     value.textColorResource = R.color.wallet_green
-                    value.text = "+${amount.numberFormat12()}"
+                    value.text = formatAmountWithSign(amount, true)
                     symbolTv.text = transaction.receiveAssetSymbol ?: ""
                     avatar.loadUrl(transaction)
                 }
@@ -61,7 +70,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     amountAnimator.displayedChild = 0
                     value.textColorResource = R.color.wallet_pink
-                    value.text = "-${amount.numberFormat12()}"
+                    value.text = formatAmountWithSign(amount, false)
                     symbolTv.text = transaction.sendAssetSymbol ?: ""
                     avatar.loadUrl(transaction)
                 }
@@ -71,7 +80,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                         amountAnimator.displayedChild = 1
                         
                         receiveValue.textColorResource = R.color.wallet_green
-                        receiveValue.text = "+${amount.numberFormat12()}"
+                        receiveValue.text = formatAmountWithSign(amount, true)
                         receiveSymbolTv.text = transaction.receiveAssetSymbol ?: ""
                         
                         val sendAmount = try {
@@ -80,12 +89,12 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                             transaction.senders[0].amount
                         }
                         sendValue.textColorResource = R.color.wallet_pink
-                        sendValue.text = "-${sendAmount}"
+                        sendValue.text = formatAmountWithSign(sendAmount, false)
                         sendSymbolTv.text = transaction.sendAssetSymbol ?: ""
                     } else {
                         amountAnimator.displayedChild = 0
                         value.textColorResource = R.color.wallet_green
-                        value.text = "+${amount.numberFormat12()}"
+                        value.text = formatAmountWithSign(amount, true)
                         symbolTv.text = transaction.receiveAssetSymbol ?: ""
                     }
                     avatar.loadUrl(transaction)
