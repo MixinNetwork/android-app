@@ -61,24 +61,20 @@ class RefreshWeb3TransactionsJob(
                 val chainIds = arraySetOf<String>()
                 
                 result?.forEach { tx ->
+                    tx.chainId.let { chainIds.add(it) }
                     when (tx.transactionType) {
                         TransactionType.TRANSFER_IN.value -> {
                             tx.receiveAssetId?.let { assetIds.add(it) }
                         }
                         TransactionType.TRANSFER_OUT.value -> {
                             tx.sendAssetId?.let { assetIds.add(it) }
-                            tx.chainId?.let { chainIds.add(it) }
                         }
                         TransactionType.SWAP.value -> {
                             tx.receiveAssetId?.let { assetIds.add(it) }
                             tx.sendAssetId?.let { assetIds.add(it) }
-                            tx.chainId?.let { chainIds.add(it) }
                         }
                         TransactionType.APPROVAL.value -> {
                             tx.sendAssetId?.let { assetIds.add(it) }
-                        }
-                        else -> {
-                            tx.chainId?.let { chainIds.add(it) }
                         }
                     }
                 }
