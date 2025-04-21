@@ -9,8 +9,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
@@ -18,6 +20,7 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
+import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -70,6 +73,7 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.Keyboard
+import org.sol4k.PublicKey
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -272,6 +276,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private var currentNote: String? = null
+
+    private var isSolanaToAccountExists = true
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -607,6 +613,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 updateUI()
             }
+            checkSolanaToExists()
             refreshFee()
         }
     }
@@ -712,12 +719,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else  if (
+                } else if (
                     web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas)
                 ) {
                     insufficientFeeBalance.isVisible = true
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = false
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (!isSolanaToAccountExists && BigDecimal(v) < BigDecimal("0.00203928")) { // rent
+                    insufficientFeeBalance.isVisible = false
+                    insufficientBalance.isVisible = false
+                    continueTv.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
@@ -759,7 +771,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     override
     fun onWalletClick() {
         QrBottomSheetDialogFragment.newInstance(
-            one.mixin.android.session.Session.getAccountId()!!,
+            Session.getAccountId()!!,
             TYPE_RECEIVE_QR
         ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
     }
@@ -822,6 +834,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
         v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).stripTrailingZeros().toPlainString()
         updateUI()
+    }
+
+    private suspend fun checkSolanaToExists() {
+        val token = web3Token ?: return
+        val to = toAddress ?: return
+        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isSolToken()) return
+
+        val toAccount = withContext(Dispatchers.IO) {
+            rpc.getAccountInfo(PublicKey(to))
+        }
+        isSolanaToAccountExists = toAccount != null
     }
 
     private suspend fun refreshFee() {
