@@ -67,6 +67,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         requireNotNull(requireArguments().getString(ARGS_CHAIN))
     }
 
+    private fun formatAmountWithSign(amount: String, positive: Boolean): String {
+        return if (positive) {
+            if (amount.startsWith("+")) amount else "+$amount"
+        } else {
+            if (amount.startsWith("-")) amount else "-$amount"
+        }
+    }
+
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
         view: View,
@@ -122,12 +130,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 else -> {
                     buildAmountSymbol(
                         requireContext(),
-                        when (transaction.transactionType) {
-                            TransactionType.TRANSFER_OUT.value -> "-$mainAmount"
-                            TransactionType.APPROVAL.value -> "-$mainAmount"
-                            TransactionType.TRANSFER_IN.value -> "+$mainAmount"
-                            else -> mainAmount
-                        },
+                        formatAmountWithSign(mainAmount, transaction.transactionType == TransactionType.TRANSFER_IN.value),
                         when (transaction.transactionType) {
                             TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
                             TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
