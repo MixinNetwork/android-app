@@ -191,6 +191,9 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
                             web3ViewModel.insertRawTranscation(r.data!!)
                             if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
+                                if (r.data?.state == TransactionStatus.SUCCESS.value) {
+                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                                }
                                 web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
                             }
                         }

@@ -56,16 +56,33 @@ class RefreshWeb3TransactionsJob(
                     web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }
-                syncAsset(destination, result?.mapNotNull { 
-                    when (it.transactionType) {
-                        TransactionType.TRANSFER_IN.value -> it.receiveAssetId
-                        TransactionType.TRANSFER_OUT.value -> it.sendAssetId
-                        TransactionType.SWAP.value -> it.receiveAssetId
-                        TransactionType.APPROVAL.value -> it.sendAssetId
-                        else -> it.chainId
-                    }
-                }?.distinct())
 
+                val assetIds = arraySetOf<String>()
+                val chainIds = arraySetOf<String>()
+                
+                result?.forEach { tx ->
+                    tx.chainId.let { chainIds.add(it) }
+                    when (tx.transactionType) {
+                        TransactionType.TRANSFER_IN.value -> {
+                            tx.receiveAssetId?.let { assetIds.add(it) }
+                        }
+                        TransactionType.TRANSFER_OUT.value -> {
+                            tx.sendAssetId?.let { assetIds.add(it) }
+                        }
+                        TransactionType.SWAP.value -> {
+                            tx.receiveAssetId?.let { assetIds.add(it) }
+                            tx.sendAssetId?.let { assetIds.add(it) }
+                        }
+                        TransactionType.APPROVAL.value -> {
+                            tx.sendAssetId?.let { assetIds.add(it) }
+                        }
+                    }
+                }
+                
+                if (assetIds.isNotEmpty()) {
+                    syncAsset(destination, assetIds)
+                }
+                
                 result?.lastOrNull()?.createdAt?.let {
                     saveLastCreatedAt(destination, it)
                     if ((result?.size ?: 0) >= DEFAULT_LIMIT) {
@@ -94,7 +111,7 @@ class RefreshWeb3TransactionsJob(
         return Web3PropertyHelper.findValueByKey(destination, null)
     }
 
-    private suspend fun syncAsset(destination:String, ids: List<String>?) {
+    private suspend fun syncAsset(destination:String, ids: Collection<String>?) {
         if (ids.isNullOrEmpty()) return
         
         Timber.d("Syncing ${ids.size} assets")

@@ -12,6 +12,7 @@ import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
@@ -72,6 +73,9 @@ class Web3WaitingBottomSheetDialogFragment() : MixinBottomSheetDialogFragment() 
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
                             web3ViewModel.insertRawTranscation(r.data!!)
                             if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
+                                if (r.data?.state == TransactionStatus.SUCCESS.value) {
+                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                                }
                                 web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
                             }
                         }
