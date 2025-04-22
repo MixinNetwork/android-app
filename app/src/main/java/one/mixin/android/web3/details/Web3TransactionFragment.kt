@@ -8,7 +8,11 @@ import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
@@ -24,11 +28,15 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -66,6 +74,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     private val chain by lazy {
         requireNotNull(requireArguments().getString(ARGS_CHAIN))
     }
+    
+    @Inject
+    lateinit var jobManager: MixinJobManager
+    
+    private var refreshJob: Job? = null
 
     private fun formatAmountWithSign(amount: String, positive: Boolean): String {
         return if (positive) {
@@ -316,5 +329,98 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
 
         bottomSheet.show()
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        startRefreshData()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        cancelRefreshData()
+    }
+
+    private fun startRefreshData() {
+        cancelRefreshData()
+        refreshJob = lifecycleScope.launch {
+            refreshTransactionData()
+        }
+    }
+
+    private fun cancelRefreshData() {
+        refreshJob?.cancel()
+        refreshJob = null
+    }
+
+    private suspend fun refreshTransactionData() {
+        try {
+            while (true) {
+                val isPending = transaction.status == TransactionStatus.PENDING.value
+                
+                if (isPending) {
+                    val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(chain)
+                    val pendingRawTransactionForThisHash = pendingRawTransaction.find { it.hash == transaction.transactionHash }
+                    
+                    if (pendingRawTransactionForThisHash != null) {
+                        val r = web3ViewModel.transaction(pendingRawTransactionForThisHash.hash, pendingRawTransactionForThisHash.chainId)
+                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
+                            web3ViewModel.insertRawTransaction(r.data!!)
+                            if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
+                                if (r.data?.state == TransactionStatus.SUCCESS.value) {
+                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                                }
+                                if (r.data?.state != TransactionStatus.SUCCESS.value) {
+                                    web3ViewModel.updateTransaction(pendingRawTransactionForThisHash.hash, r.data?.state!!, pendingRawTransactionForThisHash.chainId)
+                                }
+                            }
+                        }
+                        delay(5_000)
+                    } else {
+                        delay(10_000)
+                    }
+                } else {
+                    delay(30_000)
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+    
+    private fun updateTransactionStatus(newStatus: String) {
+        binding.apply {
+            when (newStatus) {
+                TransactionStatus.SUCCESS.value -> {
+                    status.text = getString(R.string.Completed)
+                    status.setTextColor(requireContext().getColor(R.color.wallet_green))
+                    status.setBackgroundResource(R.drawable.bg_status_success)
+                }
+
+                TransactionStatus.PENDING.value -> {
+                    status.text = getString(R.string.Pending)
+                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+                    status.setBackgroundResource(R.drawable.bg_status_default)
+                }
+
+                TransactionStatus.FAILED.value -> {
+                    status.text = getString(R.string.Failed)
+                    status.setTextColor(requireContext().getColor(R.color.wallet_pink))
+                    status.setBackgroundResource(R.drawable.bg_status_failed)
+                }
+
+                TransactionStatus.NOT_FOUND.value -> {
+                    status.text = getString(R.string.Expired)
+                    status.setTextColor(requireContext().getColor(R.color.wallet_pink))
+                    status.setBackgroundResource(R.drawable.bg_status_failed)
+                }
+
+                else -> {
+                    status.text = newStatus
+                    status.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+                    status.setBackgroundResource(R.drawable.bg_status_default)
+                }
+            }
+        }
     }
 }
