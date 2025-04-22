@@ -31,6 +31,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
@@ -333,61 +334,24 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     
     override fun onResume() {
         super.onResume()
-        startRefreshData()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        cancelRefreshData()
-    }
-
-    private fun startRefreshData() {
-        cancelRefreshData()
-        refreshJob = lifecycleScope.launch {
-            refreshTransactionData()
-        }
-    }
-
-    private fun cancelRefreshData() {
-        refreshJob?.cancel()
-        refreshJob = null
-    }
-
-    private suspend fun refreshTransactionData() {
-        try {
-            while (true) {
-                val isPending = transaction.status == TransactionStatus.PENDING.value
-                
-                if (isPending) {
-                    val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(chain)
-                    val pendingRawTransactionForThisHash = pendingRawTransaction.find { it.hash == transaction.transactionHash }
-                    
-                    if (pendingRawTransactionForThisHash != null) {
-                        val r = web3ViewModel.transaction(pendingRawTransactionForThisHash.hash, pendingRawTransactionForThisHash.chainId)
-                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTransaction(r.data!!)
-                            if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
-                                if (r.data?.state == TransactionStatus.SUCCESS.value) {
-                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
-                                }
-                                if (r.data?.state != TransactionStatus.SUCCESS.value) {
-                                    web3ViewModel.updateTransaction(pendingRawTransactionForThisHash.hash, r.data?.state!!, pendingRawTransactionForThisHash.chainId)
-                                }
-                            }
-                        }
-                        delay(5_000)
-                    } else {
-                        delay(10_000)
-                    }
-                } else {
-                    delay(30_000)
+        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+            fragment = this,
+            web3ViewModel = web3ViewModel,
+            jobManager = jobManager,
+            refreshJob = refreshJob,
+            onTransactionStatusUpdated = { hash, newStatus ->
+                if (hash == transaction.transactionHash) {
+                    updateTransactionStatus(newStatus)
                 }
             }
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
+        )
     }
     
+    override fun onPause() {
+        super.onPause()
+        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
+    }
+
     private fun updateTransactionStatus(newStatus: String) {
         binding.apply {
             when (newStatus) {
