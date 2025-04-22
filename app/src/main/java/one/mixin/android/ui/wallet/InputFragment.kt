@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -564,12 +565,20 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 null
                                             )
                                         txStateFragment.setCloseAction {
-                                            parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
-                                                parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
-                                            }
+                                            // do nothing
                                         }
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
+                                    onDismiss = {
+                                        this@InputFragment.parentFragmentManager.apply {
+                                            if (backStackEntryCount > 0) {
+                                                popBackStack(
+                                                    null,
+                                                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                                )
+                                            }
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -1040,11 +1049,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     override fun onDismiss(success: Boolean) {
                         if (success) {
                             parentFragmentManager.apply {
-                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                                    beginTransaction().remove(it).commit()
-                                }
-                                findFragmentByTag(TAG)?.let {
-                                    beginTransaction().remove(it).commit()
+                                if (backStackEntryCount > 0) {
+                                    popBackStack(
+                                        null,
+                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                    )
                                 }
                             }
                         }

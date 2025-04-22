@@ -364,16 +364,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
     override fun onDismiss(dialog: DialogInterface) {
-        parentFragmentManager.apply {
-            if (step == Step.Done) {
-                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                    beginTransaction().remove(it).commit()
-                }
-                findFragmentByTag(InputFragment.TAG)?.let {
-                    beginTransaction().remove(it).commit()
-                }
-            }
-        }
         super.onDismiss(dialog)
         onDismissAction?.invoke()
     }
