@@ -132,11 +132,11 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         searchAdapter.onItemClickListener =
             object : SearchFragment.OnSearchClickListener {
                 override fun onUserClick(user: User) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onUserClick(user: MaoUser) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onMaoAppClick(userId: String) {
@@ -150,15 +150,15 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onAssetClick(tokenItem: TokenItem) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onDappClick(dapp: Dapp) {
@@ -167,7 +167,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onTipClick() {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onMarketClick(market: Market) {
@@ -184,7 +184,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
-                    // do noting
+                    // do nothing
                     return false
                 }
             }
