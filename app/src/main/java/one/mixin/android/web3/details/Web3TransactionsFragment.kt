@@ -21,7 +21,6 @@ import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
-import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isSolToken
@@ -373,19 +372,25 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     private suspend fun refreshTransactionData() {
         try {
             while (true) {
-                val pendingRawTransaction = web3ViewModel.getPendingTransactions(token.chainId)
+                val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(token.chainId)
                 if (pendingRawTransaction.isEmpty()) {
-                    delay(10_000)
+                    val pendingTransaction = web3ViewModel.getPendingTransactions()
+                    if (pendingTransaction.isNotEmpty()) {
+                        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                        delay(5_000)
+                    } else {
+                        delay(10_000)
+                    }
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTranscation(r.data!!)
+                            web3ViewModel.insertRawTransaction(r.data!!)
                             if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
                                     jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
                                 }
-                                web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
+                                web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
                             }
                         }
                     }

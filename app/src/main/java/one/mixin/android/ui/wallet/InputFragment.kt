@@ -10,8 +10,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
@@ -19,6 +21,7 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
+import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -27,6 +30,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
@@ -71,6 +75,7 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.Keyboard
+import org.sol4k.PublicKey
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -274,6 +279,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private var currentNote: String? = null
 
+    private var isSolanaToAccountExists = true
+
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -398,7 +405,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
+                balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                    if (web3Token == null) {
+                        it.numberFormat8()
+                    } else {
+                        it.numberFormat12()
+                    }}} $tokenSymbol")
                 max.setOnClickListener {
                     valueClick(BigDecimal.ONE)
                 }
@@ -531,7 +543,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 },
                             ) {
                                 val list =
-                                    web3ViewModel.getPendingTransactions(web3Token?.chainId ?: "")
+                                    web3ViewModel.getPendingRawTransactions(web3Token?.chainId ?: "")
                                 if (list.isNotEmpty()) {
                                     Web3WaitingBottomSheetDialogFragment.newInstance(web3Token?.chainId ?: "").showNow(
                                         parentFragmentManager, Web3WaitingBottomSheetDialogFragment.TAG)
@@ -613,6 +625,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 updateUI()
             }
+            checkSolanaToExists()
             refreshFee()
         }
     }
@@ -701,7 +714,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     } else {
                         value
                     }
-                if (isReverse && v == "0") {
+                if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
@@ -718,12 +731,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else  if (
-                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas)
+                } else if (
+                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas ||
+                        (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
-                    insufficientFeeBalance.isVisible = true
+                    insufficientFeeBalance.isVisible = gas != null
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = false
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (!isSolanaToAccountExists && BigDecimal(v) < BigDecimal("0.00203928")) { // rent
+                    insufficientFeeBalance.isVisible = false
+                    insufficientBalance.isVisible = false
+                    continueTv.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
@@ -765,7 +784,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     override
     fun onWalletClick() {
         QrBottomSheetDialogFragment.newInstance(
-            one.mixin.android.session.Session.getAccountId()!!,
+            Session.getAccountId()!!,
             TYPE_RECEIVE_QR
         ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
     }
@@ -830,6 +849,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         updateUI()
     }
 
+    private suspend fun checkSolanaToExists() {
+        val token = web3Token ?: return
+        val to = toAddress ?: return
+        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isSolToken()) return
+
+        val toAccount = withContext(Dispatchers.IO) {
+            rpc.getAccountInfo(PublicKey(to))
+        }
+        isSolanaToAccountExists = toAccount != null
+    }
+
     private suspend fun refreshFee() {
         when  {
             transferType == TransferType.ADDRESS -> {
@@ -854,13 +884,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             field = value
             if (value != null) {
                 if (value.token.assetId == token?.assetId || value.token.assetId == web3Token?.assetId) {
+
                     val balance = runCatching {
-                        tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull()?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                        tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO)?.max(BigDecimal.ZERO)?.let {
+                            if (web3Token == null) {
+                                it.numberFormat8()
+                            } else {
+                                it.numberFormat12()
+                            }
+                        }
                     }.getOrDefault("0")
 
                     binding.balance.text = getString(R.string.available_balance, "$balance $tokenSymbol")
                 } else {
-                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
+                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                        if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
+                    } $tokenSymbol")
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, value.token.symbol)
             }
@@ -1042,7 +1081,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             gas = web3ViewModel.calcFee(t, transaction, fromAddress)
             if (chainToken?.assetId == t.assetId) {
                 val balance = runCatching {
-                    tokenBalance.toBigDecimalOrNull()?.subtract(gas?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                    tokenBalance.toBigDecimalOrNull()?.subtract(gas ?: BigDecimal.ZERO)
+                        ?.max(BigDecimal.ZERO)?.let {
+                        if (web3Token == null) {
+                            it.numberFormat8()
+                        } else {
+                            it.numberFormat12()
+                        }
+                    }
+
                 }.getOrDefault("0")
                 binding.balance.text = getString(
                     R.string.available_balance,
@@ -1051,7 +1098,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             } else {
                 binding.balance.text = getString(
                     R.string.available_balance,
-                    "${tokenBalance.numberFormat8()} $tokenSymbol"
+                    "${
+                        tokenBalance.let {
+                            if (web3Token == null) {
+                                it.numberFormat8()
+                            } else {
+                                it.numberFormat12()
+                            }
+                        }
+                    } $tokenSymbol"
                 )
             }
             binding.insufficientFeeBalance.text =

@@ -47,7 +47,8 @@ fun AssetChangeItem(
         }
     }
 
-    val prefix = if (isReceive) "+" else "-"
+    val prefix =
+        if (amount.startsWith("+") || amount.startsWith("-")) amount else if (isReceive) "+" else "-"
     val textColor =
         if (isReceive) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 

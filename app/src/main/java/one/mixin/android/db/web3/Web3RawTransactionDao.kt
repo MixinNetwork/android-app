@@ -9,10 +9,10 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 interface Web3RawTransactionDao : BaseDao<Web3RawTransaction> {
     
     @Query("SELECT * FROM raw_transactions WHERE state = 'pending'")
-    suspend fun getPendingTransactions(): List<Web3RawTransaction>
+    suspend fun getPendingRawTransactions(): List<Web3RawTransaction>
 
     @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND chain_id = :chainId")
-    suspend fun getPendingTransactions(chainId: String): List<Web3RawTransaction>
+    suspend fun getPendingRawTransactions(chainId: String): List<Web3RawTransaction>
 
     @Query("SELECT nonce FROM raw_transactions WHERE chain_id = :chainId AND state = 'pending' ORDER BY nonce DESC LIMIT 1")
     suspend fun getNonce(chainId: String): String?

@@ -70,6 +70,7 @@ fun WalletCard(
                 if (destination == WalletDestination.Privacy) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
+                        modifier = Modifier.size(18.dp),
                         painter = painterResource(id = R.drawable.ic_wallet_privacy),
                         tint = Color.Unspecified,
                         contentDescription = null,

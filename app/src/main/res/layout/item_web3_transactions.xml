@@ -84,8 +84,7 @@
                 android:layout_height="wrap_content"
                 android:minWidth="20dp"
                 android:maxWidth="200dp"
-                android:translationY="-1dp"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textColor="?attr/text_primary" />
         </LinearLayout>
 
