@@ -373,7 +373,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             } else {
                                 if (v == "0" && value != ".") {
                                     v = value
-                                } else if (!isReverse && ((isEightDecimal(v) && web3Token == null) || (isTwelveDecimal(v) && web3Token != null))) {
+                                } else if (!isReverse && ((isEightDecimal(v) && web3Token == null))) {
                                     // do nothing
                                     return
                                 } else if (isReverse && isTwoDecimal(v)) {
@@ -665,10 +665,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun isEightDecimal(string: String): Boolean {
         return string.matches(Regex("\\d+\\.\\d{8}"))
-    }
-
-    private fun isTwelveDecimal(string: String): Boolean {
-        return string.matches(Regex("\\d+\\.\\d{12}"))
     }
 
     private var v = "0"
