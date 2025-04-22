@@ -242,8 +242,14 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             binding.bottomRl.isVisible = list.isEmpty()
             binding.transactionsRv.list = list
         }
-
         updateHeader(token)
+        lifecycleScope.launch {
+            web3ViewModel.web3TokenExtraFlow(token.assetId).collect { balance ->
+                balance?.let {
+                    updateHeader(token.copy(balance = it))
+                }
+            }
+        }
     }
 
 

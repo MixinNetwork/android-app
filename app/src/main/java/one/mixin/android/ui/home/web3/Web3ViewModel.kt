@@ -90,8 +90,8 @@ internal constructor(
 
     fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
-    fun tokenExtraFlow(assetId: String) =
-        tokenRepository.tokenExtraFlow(assetId)
+    fun web3TokenExtraFlow(assetId: String) =
+        tokenRepository.web3TokenExtraFlow(assetId)
 
     suspend fun findOrSyncAsset(
         assetId: String,
