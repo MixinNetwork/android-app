@@ -43,12 +43,15 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     @Query("DELETE FROM transactions WHERE status = 'pending' AND transaction_hash = :hash AND chain_id = :chainId")
     fun deletePending(hash: String, chainId: String)
 
-    @Query("UPDATE transactions SET status = :type WHERE transaction_hash = :hash AND chain_id = :chainId")
-    fun updateRawTransaction(type: String, hash: String, chainId: String)
+    @Query("UPDATE transactions SET status = :status WHERE transaction_hash = :hash AND chain_id = :chainId")
+    fun updateTransaction(hash: String, status: String, chainId: String)
 
     @Query("DELETE FROM transactions")
     suspend fun deleteAllTransactions()
 
     @Query("SELECT COUNT(*) FROM transactions WHERE status = 'pending'")
     fun getPendingTransactionCount(): LiveData<Int>
+
+    @Query("SELECT * FROM transactions WHERE status = 'pending'")
+    suspend fun getPendingTransactions(): List<Web3Transaction>
 }

@@ -29,6 +29,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
@@ -403,7 +404,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
+                balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                    if (web3Token == null) {
+                        it.numberFormat8()
+                    } else {
+                        it.numberFormat12()
+                    }}} $tokenSymbol")
                 max.setOnClickListener {
                     valueClick(BigDecimal.ONE)
                 }
@@ -536,7 +542,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 },
                             ) {
                                 val list =
-                                    web3ViewModel.getPendingTransactions(web3Token?.chainId ?: "")
+                                    web3ViewModel.getPendingRawTransactions(web3Token?.chainId ?: "")
                                 if (list.isNotEmpty()) {
                                     Web3WaitingBottomSheetDialogFragment.newInstance(web3Token?.chainId ?: "").showNow(
                                         parentFragmentManager, Web3WaitingBottomSheetDialogFragment.TAG)
@@ -702,7 +708,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     } else {
                         value
                     }
-                if (isReverse && v == "0") {
+                if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
@@ -720,9 +726,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (
-                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas)
+                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas ||
+                        (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
-                    insufficientFeeBalance.isVisible = true
+                    insufficientFeeBalance.isVisible = gas != null
                     insufficientBalance.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
@@ -871,13 +878,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             field = value
             if (value != null) {
                 if (value.token.assetId == token?.assetId || value.token.assetId == web3Token?.assetId) {
+
                     val balance = runCatching {
-                        tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull()?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                        tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO)?.max(BigDecimal.ZERO)?.let {
+                            if (web3Token == null) {
+                                it.numberFormat8()
+                            } else {
+                                it.numberFormat12()
+                            }
+                        }
                     }.getOrDefault("0")
 
                     binding.balance.text = getString(R.string.available_balance, "$balance $tokenSymbol")
                 } else {
-                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
+                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                        if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
+                    } $tokenSymbol")
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, value.token.symbol)
             }
@@ -1059,7 +1075,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             gas = web3ViewModel.calcFee(t, transaction, fromAddress)
             if (chainToken?.assetId == t.assetId) {
                 val balance = runCatching {
-                    tokenBalance.toBigDecimalOrNull()?.subtract(gas?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                    tokenBalance.toBigDecimalOrNull()?.subtract(gas ?: BigDecimal.ZERO)
+                        ?.max(BigDecimal.ZERO)?.let {
+                        if (web3Token == null) {
+                            it.numberFormat8()
+                        } else {
+                            it.numberFormat12()
+                        }
+                    }
+
                 }.getOrDefault("0")
                 binding.balance.text = getString(
                     R.string.available_balance,
@@ -1068,7 +1092,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             } else {
                 binding.balance.text = getString(
                     R.string.available_balance,
-                    "${tokenBalance.numberFormat8()} $tokenSymbol"
+                    "${
+                        tokenBalance.let {
+                            if (web3Token == null) {
+                                it.numberFormat8()
+                            } else {
+                                it.numberFormat12()
+                            }
+                        }
+                    } $tokenSymbol"
                 )
             }
             binding.insufficientFeeBalance.text =

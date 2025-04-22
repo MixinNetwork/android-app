@@ -9,7 +9,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.databinding.FragmentWaitingBottomSheetBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
-import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionsJob
@@ -64,19 +63,25 @@ class Web3WaitingBottomSheetDialogFragment() : MixinBottomSheetDialogFragment() 
         chainId ?: return
         try {
             while (true) {
-                val pendingRawTransaction = web3ViewModel.getPendingTransactions(chainId)
+                val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(chainId)
                 if (pendingRawTransaction.isEmpty()) {
+                    val pendingTransaction = web3ViewModel.getPendingTransactions()
+                    if (pendingTransaction.isNotEmpty()) {
+                        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                    }
                     dismiss()
                 } else {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTranscation(r.data!!)
+                            web3ViewModel.insertRawTransaction(r.data!!)
                             if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
                                     jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
                                 }
-                                web3ViewModel.updateTransaction(transition.hash, transition.chainId, r.data?.state)
+                                if (r.data?.state != TransactionStatus.SUCCESS.value) {
+                                    web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
+                                }
                             }
                         }
                     }
