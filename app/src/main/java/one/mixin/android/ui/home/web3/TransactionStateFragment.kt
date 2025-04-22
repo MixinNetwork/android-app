@@ -88,12 +88,19 @@ class TransactionStateFragment : BaseFragment() {
                             activity?.onBackPressedDispatcher?.onBackPressed()
                         } else {
                             closeAction?.invoke()
+                            closeAction = null
                         }
                     }
                 }
             }
             refreshTx()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        closeAction?.invoke()
+        closeAction = null
     }
 
     private var refreshTxJob: Job? = null
