@@ -168,7 +168,7 @@ fun MemoInputPage(
                                     tint = MixinAppTheme.colors.iconGray
                                 )
                             }
-                            Spacer(modifier = Modifier.width(24.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
                             IconButton(
                                 onClick = {
                                     onScan?.invoke()

@@ -111,7 +111,8 @@ class Rpc(
         return handleMixinResponse(
             invokeNetwork = {
                 routeService.rpc(SOLANA_CHAIN_ID,
-                    RpcRequest("getLatestBlockhash", listOf()))
+                    RpcRequest("getLatestBlockhash", listOf(mapOf("commitment" to "confirmed")))
+                )
             },
             successBlock = {
                 if (it.data == null || it.data == "null") {

@@ -42,7 +42,7 @@ class MigrateRestoreFragment : BaseFragment(R.layout.fragment_migrate_restore) {
                     requireContext().showConfirmDialog(
                         getString(R.string.Please_log_in_to_the_desktop_first),
                     ) {
-                        // do noting
+                        // do nothing
                     }
                 } else {
                     TransferActivity.showTransferToPC(requireContext())
@@ -53,7 +53,7 @@ class MigrateRestoreFragment : BaseFragment(R.layout.fragment_migrate_restore) {
                     requireContext().showConfirmDialog(
                         getString(R.string.Please_log_in_to_the_desktop_first),
                     ) {
-                        // do noting
+                        // do nothing
                     }
                 } else {
                     TransferActivity.showRestoreFromPC(requireContext())

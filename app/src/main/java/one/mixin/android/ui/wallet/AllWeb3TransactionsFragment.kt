@@ -34,6 +34,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -157,59 +158,17 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     override fun onResume() {
         super.onResume()
-        startRefreshData()
+        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+            fragment = this,
+            web3ViewModel = web3ViewModel,
+            jobManager = jobManager,
+            refreshJob = refreshJob
+        )
     }
 
     override fun onPause() {
         super.onPause()
-        cancelRefreshData()
-    }
-
-    private fun startRefreshData() {
-        cancelRefreshData()
-        refreshJob = lifecycleScope.launch {
-            refreshTransactionData()
-        }
-    }
-
-    private fun cancelRefreshData() {
-        refreshJob?.cancel()
-        refreshJob = null
-    }
-
-    private suspend fun refreshTransactionData() {
-        try {
-            while (true) {
-                val pendingRawTransaction = web3ViewModel.getPendingRawTransactions()
-                if (pendingRawTransaction.isEmpty()) {
-                    val pendingTransaction = web3ViewModel.getPendingTransactions()
-                    if (pendingTransaction.isNotEmpty()) {
-                        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
-                        delay(5_000)
-                    } else {
-                        delay(10_000)
-                    }
-                } else {
-                    pendingRawTransaction.forEach { transition ->
-                        val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTransaction(r.data!!)
-                            if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
-                                if (r.data?.state == TransactionStatus.SUCCESS.value) {
-                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
-                                }
-                                if (r.data?.state != TransactionStatus.SUCCESS.value) {
-                                    web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
-                                }
-                            }
-                        }
-                    }
-                    delay(5_000)
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
+        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     private fun loadFilter() {
@@ -235,7 +194,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     override fun onApplyClick() {
         // Do noting
     }
-
 
     private fun bindLiveData() {
         bindLiveData(walletViewModel.allWeb3Transaction(initialLoadKey = initialLoadKey, filterParams))

@@ -268,7 +268,7 @@ class TransferServer
                         }
                         else -> {
                             // File ByteArray null
-                            // do noting
+                            // do nothing
                         }
                     }
                 } while (!quit)

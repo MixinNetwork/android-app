@@ -44,7 +44,6 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
-import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
@@ -374,14 +373,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             } else {
                                 if (v == "0" && value != ".") {
                                     v = value
-                                } else if (!isReverse && isEightDecimal(v)) {
-                                    // do noting
+                                } else if (!isReverse && ((isEightDecimal(v) && web3Token == null))) {
+                                    // do nothing
                                     return
                                 } else if (isReverse && isTwoDecimal(v)) {
-                                    // do noting
+                                    // do nothing
                                     return
                                 } else if (value == "." && v.contains(".")) {
-                                    // do noting
+                                    // do nothing
                                     return
                                 } else {
                                     v += value

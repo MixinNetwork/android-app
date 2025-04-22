@@ -52,6 +52,7 @@ import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -242,8 +243,14 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             binding.bottomRl.isVisible = list.isEmpty()
             binding.transactionsRv.list = list
         }
-
         updateHeader(token)
+        lifecycleScope.launch {
+            web3ViewModel.web3TokenExtraFlow(token.assetId).collect { balance ->
+                balance?.let {
+                    updateHeader(token.copy(balance = it))
+                }
+            }
+        }
     }
 
 
@@ -349,58 +356,17 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun onResume() {
         super.onResume()
-        startRefreshData()
+        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+            fragment = this,
+            web3ViewModel = web3ViewModel,
+            jobManager = jobManager,
+            refreshJob = refreshJob
+        )
     }
 
     override fun onPause() {
         super.onPause()
-        cancelRefreshData()
-    }
-
-    private fun startRefreshData() {
-        cancelRefreshData()
-        refreshJob = lifecycleScope.launch {
-            refreshTransactionData()
-        }
-    }
-
-    private fun cancelRefreshData() {
-        refreshJob?.cancel()
-        refreshJob = null
-    }
-
-    private suspend fun refreshTransactionData() {
-        try {
-            while (true) {
-                val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(token.chainId)
-                if (pendingRawTransaction.isEmpty()) {
-                    val pendingTransaction = web3ViewModel.getPendingTransactions()
-                    if (pendingTransaction.isNotEmpty()) {
-                        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
-                        delay(5_000)
-                    } else {
-                        delay(10_000)
-                    }
-                } else {
-                    pendingRawTransaction.forEach { transition ->
-                        val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTransaction(r.data!!)
-                            if (r.data?.state == TransactionStatus.FAILED.value || r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || r.data?.state == TransactionStatus.SUCCESS.value) {
-                                if (r.data?.state == TransactionStatus.SUCCESS.value) {
-                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
-                                }
-                                web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
-                            }
-                        }
-                    }
-                    delay(5_000)
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-
+        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     private suspend fun getStakeAccounts(address: String) {

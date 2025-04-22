@@ -419,7 +419,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     AnalyticsTracker.trackSignUpSetPin()
                 }
                 else -> {
-                    // do noting
+                    // do nothing
                 }
             }
 
