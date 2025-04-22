@@ -565,17 +565,20 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 null
                                             )
                                         txStateFragment.setCloseAction {
-                                            parentFragmentManager.apply {
-                                                if (backStackEntryCount > 0) {
-                                                    popBackStack(
-                                                        null,
-                                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                                    )
-                                                }
-                                            }
+                                            // do nothing
                                         }
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
+                                    onDismiss = {
+                                        this@InputFragment.parentFragmentManager.apply {
+                                            if (backStackEntryCount > 0) {
+                                                popBackStack(
+                                                    null,
+                                                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                                )
+                                            }
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -1046,11 +1049,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     override fun onDismiss(success: Boolean) {
                         if (success) {
                             parentFragmentManager.apply {
-                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                                    beginTransaction().remove(it).commit()
-                                }
-                                findFragmentByTag(TAG)?.let {
-                                    beginTransaction().remove(it).commit()
+                                if (backStackEntryCount > 0) {
+                                    popBackStack(
+                                        null,
+                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                    )
                                 }
                             }
                         }
