@@ -390,7 +390,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
                                     jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
                                 }
-                                web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
+                                if (r.data?.state != TransactionStatus.SUCCESS.value) {
+                                    web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
+                                }
                             }
                         }
                     }

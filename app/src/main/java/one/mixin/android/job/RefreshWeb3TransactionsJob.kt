@@ -80,7 +80,7 @@ class RefreshWeb3TransactionsJob(
                 }
                 
                 if (assetIds.isNotEmpty()) {
-                    syncAsset(destination, assetIds)
+                    syncAssetBalance(destination, assetIds)
                 }
                 
                 result?.lastOrNull()?.createdAt?.let {
@@ -111,41 +111,36 @@ class RefreshWeb3TransactionsJob(
         return Web3PropertyHelper.findValueByKey(destination, null)
     }
 
-    private suspend fun syncAsset(destination:String, ids: Collection<String>?) {
+    private suspend fun syncAssetBalance(destination:String, ids: Collection<String>?) {
         if (ids.isNullOrEmpty()) return
         
         Timber.d("Syncing ${ids.size} assets")
         val chainId = arraySetOf<String>()
         ids.forEach { assetId ->
             try {
-                val token = web3TokenDao.findTokenById(assetId)
-                if (token == null) {
-                    requestRouteAPI(
-                        invokeNetwork = {
-                            routeService.getAssetByAddress(assetId, destination)
-                        },
-                        successBlock = { response ->
-                            val asset = response.data
-                            if (asset != null) {
-                                web3TokenDao.insert(asset)
-                                chainId.add(asset.chainId)
-                                Timber.d("Inserted ${asset.symbol} into database")
-                            } else {
-                                Timber.d("No asset found for wallet $assetId ${destination}")
-                            }
-                        },
-                        failureBlock = { response ->
-                            Timber.e("Failed to fetch asset for address ${destination} ${assetId}: ${response.errorCode} - ${response.errorDescription}")
-                            false
-                        },
-                        requestSession = {
-                            userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-                        },
-                        defaultErrorHandle = {}
-                    )
-                } else {
-                    Timber.d("Token $assetId already exists in local database, skipping fetch")
-                }
+                requestRouteAPI(
+                    invokeNetwork = {
+                        routeService.getAssetByAddress(assetId, destination)
+                    },
+                    successBlock = { response ->
+                        val asset = response.data
+                        if (asset != null) {
+                            web3TokenDao.insert(asset)
+                            chainId.add(asset.chainId)
+                            Timber.d("Inserted ${asset.symbol} into database")
+                        } else {
+                            Timber.d("No asset found for wallet $assetId ${destination}")
+                        }
+                    },
+                    failureBlock = { response ->
+                        Timber.e("Failed to fetch asset for address ${destination} ${assetId}: ${response.errorCode} - ${response.errorDescription}")
+                        false
+                    },
+                    requestSession = {
+                        userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+                    },
+                    defaultErrorHandle = {}
+                )
             } catch (e: Exception) {
                 Timber.e(e, "Error syncing asset $assetId")
             }
@@ -156,7 +151,7 @@ class RefreshWeb3TransactionsJob(
     private suspend fun fetchChain(chainIds: List<String>) {
         chainIds.forEach { chainId ->
             try {
-                if (web3ChainDao.chainExists(chainId) == null) {
+                if (web3ChainDao.chainExists(chainId) == null) { // only chain, have not amount
                     val response = tokenService.getChainById(chainId)
                     if (response.isSuccess) {
                         val chain = response.data
