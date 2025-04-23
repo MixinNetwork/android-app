@@ -1932,4 +1932,5 @@
     <string name="Speed_Up">Speed Up</string>
     <string name="Cancel_Transaction">Cancel Transaction</string>
     <string name="Speed_Up_Transaction">Speed Up Transaction</string>
+    <string name="Insufficient_Funds_For_Rent">Insufficient Funds For Rent</string>
 </resources>
