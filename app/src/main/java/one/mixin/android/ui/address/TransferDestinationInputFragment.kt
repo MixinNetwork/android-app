@@ -567,6 +567,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     val response = viewModel.validateExternalAddress(assetId, destination, tag)
                     if (response.isSuccess) {
                         val addressLabel = withContext(Dispatchers.IO) {
+                            if (toAccount == true) return@withContext null
                             viewModel.findAddressByReceiver(destination, tag ?: "")
                         }
                         when {
