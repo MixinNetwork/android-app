@@ -101,17 +101,13 @@ fun TransferDestinationInputPage(
     val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
 
     LaunchedEffect(token?.chainId) {
-        account = when (token?.chainId) {
-            ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(
+        account = when {
+            token?.chainId == ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(
                 Constants.Account.ChainAddress.SOLANA_ADDRESS,
                 ""
             )
 
-            ChainId.ETHEREUM_CHAIN_ID,
-            ChainId.Base,
-            ChainId.Polygon,
-            ChainId.Arbitrum,
-            ChainId.Optimism -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            token?.chainId in Constants.Web3ChainIds -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
 
             else -> ""
         }
