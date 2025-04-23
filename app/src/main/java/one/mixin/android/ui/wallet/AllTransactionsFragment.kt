@@ -30,6 +30,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -264,6 +265,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
                             lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct().forEach {
+                                    walletViewModel.findOrSyncAsset(it)
+                                }
                                 walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
