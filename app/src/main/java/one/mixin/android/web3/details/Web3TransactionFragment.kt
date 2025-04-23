@@ -197,7 +197,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             val toAddress = transaction.getToAddress()
             
             when  {
-                transaction.status == TransactionStatus.FAILED.value -> {
+                transaction.status == TransactionStatus.NOT_FOUND.value -> {
+                    fromLl.isVisible = false
+                    toLl.isVisible = false
+                }
+                transaction.status == TransactionStatus.FAILED.value-> {
                     valueTv.isVisible = false
                     fromLl.isVisible = false
                     toLl.isVisible = false
