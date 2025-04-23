@@ -1886,5 +1886,7 @@
     <string name="unlimited">无限量</string>
     <string name="Transaction_Pending_Confirmation">有 1 笔交易处理中</string>
     <string name="Transactions_Pending_Confirmation">有 %1$d 笔交易处理中</string>
-
+    <string name="Speed_Up">加速</string>
+    <string name="Cancel_Transaction">取消交易</string>
+    <string name="Speed_Up_Transaction">加速交易</string>
 </resources>

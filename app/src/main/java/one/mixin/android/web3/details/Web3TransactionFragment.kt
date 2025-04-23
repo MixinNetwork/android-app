@@ -11,7 +11,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -30,23 +29,19 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3TransactionsJob
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
-import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
-import one.mixin.android.widget.TransactionActionsView
 import org.web3j.crypto.TransactionDecoder
 import org.web3j.utils.Numeric
-import java.math.BigInteger
 import javax.inject.Inject
 
 @AndroidEntryPoint
