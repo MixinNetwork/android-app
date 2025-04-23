@@ -1889,4 +1889,6 @@
     <string name="Speed_Up">加速</string>
     <string name="Cancel_Transaction">取消交易</string>
     <string name="Speed_Up_Transaction">加速交易</string>
+    <string name="web3_transaction_cancel_warning">如果交易已经处于较后阶段，可能无法取消。</string>
+    <string name="web3_transaction_speed_up_warning">如果交易已经处于较后阶段，可能无法加速</string>
 </resources>

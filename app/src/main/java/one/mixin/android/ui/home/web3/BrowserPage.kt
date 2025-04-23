@@ -225,7 +225,13 @@ fun BrowserPage(
                                         R.string.web3_signing_message_success
                                     }
                                 } else {
-                                    R.string.web3_ensure_trust
+                                    if (isCancel) {
+                                        R.string.web3_transaction_cancel_warning
+                                    } else if (isSpeedUp) {
+                                        R.string.web3_transaction_speed_up_warning
+                                    } else {
+                                        R.string.web3_ensure_trust
+                                    }
                                 },
                         ),
                     textAlign = TextAlign.Center,
