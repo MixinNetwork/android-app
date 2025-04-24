@@ -2,7 +2,6 @@ package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
 import android.util.TypedValue
-import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
@@ -14,9 +13,7 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.textColorResource
-import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.home.web3.StakeAccountSummary
-import one.mixin.android.widget.BadgeAvatarView
 
 class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : RecyclerView.ViewHolder(binding.root) {
 

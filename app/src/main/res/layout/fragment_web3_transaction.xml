@@ -74,6 +74,16 @@
                         android:layout_marginBottom="24dp"
                         android:textColor="?attr/text_assist" />
 
+                    <one.mixin.android.widget.TransactionActionsView
+                        android:id="@+id/actions"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_below="@+id/status"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:visibility="gone"/>
+
                 </RelativeLayout>
             </FrameLayout>
 

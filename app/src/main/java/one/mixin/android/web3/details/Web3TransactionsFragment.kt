@@ -13,14 +13,12 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
-import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isSolToken
@@ -48,7 +46,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.job.RefreshWeb3TokenJob
-import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -72,7 +69,6 @@ import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 

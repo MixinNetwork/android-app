@@ -409,6 +409,8 @@ internal constructor(
         return@withContext web3Repository.findWeb3TokenItemsByIds(assetIds)
     }
 
+    suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)
+
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()

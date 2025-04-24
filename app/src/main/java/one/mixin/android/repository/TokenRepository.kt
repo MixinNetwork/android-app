@@ -528,6 +528,8 @@ class TokenRepository
             }
         }
 
+        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(hash, chainId)
+
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()

@@ -1929,4 +1929,10 @@
     <string name="unlimited">unlimited</string>
     <string name="Transaction_Pending_Confirmation">1 Pending Transaction</string>
     <string name="Transactions_Pending_Confirmation">%1$d Pending Transactions</string>
+    <string name="Speed_Up">Speed Up</string>
+    <string name="Cancel_Transaction">Cancel Transaction</string>
+    <string name="Speed_Up_Transaction">Speed Up Transaction</string>
+    <string name="Insufficient_Funds_For_Rent">Insufficient Funds For Rent</string>
+    <string name="web3_transaction_cancel_warning">If the transaction is too far along cancellation may not be possible.</string>
+    <string name="web3_transaction_speed_up_warning">If the transaction is too far along this may not be possible.</string>
 </resources>
