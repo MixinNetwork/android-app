@@ -168,6 +168,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     toAddress,
                     signMessage.type,
                     step,
+                    signMessage.isCancelTx,
+                    signMessage.isSpeedUp,
                     tipGas,
                     solanaTx?.calcFee(),
                     parsedTx,

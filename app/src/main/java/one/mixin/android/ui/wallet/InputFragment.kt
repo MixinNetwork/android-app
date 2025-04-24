@@ -491,6 +491,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 if (feeTokensExtra == null || (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
                                     binding.insufficientFeeBalance.isVisible = true
                                     binding.insufficientBalance.isVisible = false
+                                    binding.insufficientFunds.isVisible = false
                                     binding.addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                                     binding.addTv.setOnClickListener {
                                         binding.addTv.setOnClickListener {
@@ -699,6 +700,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             if (value == "0") {
                 insufficientBalance.isVisible = false
                 insufficientFeeBalance.isVisible = false
+                insufficientFunds.isVisible = false
                 continueVa.isEnabled = false
                 continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
             } else {
@@ -710,11 +712,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                 if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
                     insufficientBalance.isVisible = false
+                    insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (BigDecimal(v) > BigDecimal(tokenBalance) && v != "0") {
                     insufficientBalance.isVisible = true
                     insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (transferType != TransferType.WEB3 && (currentFee != null && feeTokensExtra == null ||
@@ -723,6 +728,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 ) {
                     insufficientFeeBalance.isVisible = true
                     insufficientBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (
@@ -731,16 +737,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 ) {
                     insufficientFeeBalance.isVisible = gas != null
                     insufficientBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (!isSolanaToAccountExists && BigDecimal(v) < BigDecimal("0.00203928")) { // rent
                     insufficientFeeBalance.isVisible = false
                     insufficientBalance.isVisible = false
+                    insufficientFunds.isVisible = true
                     continueTv.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = true
                     continueTv.textColor = requireContext().getColor(R.color.white)
                 }

@@ -11,7 +11,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -19,6 +18,7 @@ import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
+import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.buildAmountSymbol
@@ -29,14 +29,19 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3TransactionsJob
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
+import org.web3j.crypto.TransactionDecoder
+import org.web3j.utils.Numeric
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -78,8 +83,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     
     @Inject
     lateinit var jobManager: MixinJobManager
-    
     private var refreshJob: Job? = null
+    lateinit var rpc: Rpc
 
     private fun formatAmountWithSign(amount: String, positive: Boolean): String {
         return if (positive) {
@@ -192,7 +197,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             val toAddress = transaction.getToAddress()
             
             when  {
-                transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value -> {
+                transaction.status == TransactionStatus.NOT_FOUND.value -> {
+                    fromLl.isVisible = false
+                    toLl.isVisible = false
+                }
+                transaction.status == TransactionStatus.FAILED.value-> {
                     valueTv.isVisible = false
                     fromLl.isVisible = false
                     toLl.isVisible = false
@@ -300,6 +309,28 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             } else {
                 assetChangesLl.visibility = View.GONE
             }
+            
+            if (transaction.status == TransactionStatus.PENDING.value
+                && transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
+                lifecycleScope.launch {
+                    val pendingRawTx = web3ViewModel.getPendingRawTransactions(transaction.chainId)
+                        .firstOrNull { it.hash == transaction.transactionHash }
+                    
+                    val shouldShowActions = pendingRawTx != null
+                    
+                    if (shouldShowActions) {
+                        actions.isVisible = true
+                        
+                        actions.speedUp.setOnClickListener {
+                            handleSpeedUp(pendingRawTx)
+                        }
+                        
+                        actions.cancelTx.setOnClickListener {
+                            handleCancelTransaction(pendingRawTx)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -326,12 +357,13 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
+            
             cancel.setOnClickListener { bottomSheet.dismiss() }
         }
 
         bottomSheet.show()
     }
-    
+
     override fun onResume() {
         super.onResume()
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
@@ -346,7 +378,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             }
         )
     }
-    
+
     override fun onPause() {
         super.onPause()
         refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
@@ -386,5 +418,99 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
         }
+    }
+
+    private fun handleSpeedUp(rawTransaction: Web3RawTransaction) {
+        lifecycleScope.launch {
+            val jsSignMessage = createSpeedUpMessage(rawTransaction)
+            
+            showBrowserBottomSheetDialogFragment(
+                requireActivity(),
+                jsSignMessage,
+                token = token,
+                chainToken = token,
+                currentTitle = getString(R.string.Speed_Up_Transaction),
+                onDone = { result ->
+
+                }
+            )
+        }
+    }
+    
+    private fun handleCancelTransaction(rawTransaction: Web3RawTransaction) {
+        lifecycleScope.launch {
+            val jsSignMessage = createCancelMessage(rawTransaction)
+            
+            showBrowserBottomSheetDialogFragment(
+                requireActivity(),
+                jsSignMessage,
+                token = token,
+                chainToken = token,
+                currentTitle = getString(R.string.Cancel_Transaction),
+                onDone = { result ->
+
+                }
+            )
+        }
+    }
+    
+    private suspend fun createSpeedUpMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
+        val decodedTx = TransactionDecoder.decode(rawTransaction.raw)
+        
+        val nonce = rawTransaction.nonce
+        val data = decodedTx.data
+        val value = decodedTx.value
+        val to = decodedTx.to
+        
+        val formattedData = if (data.isNullOrEmpty()) {
+            data
+        } else if (!data.startsWith("0x", ignoreCase = true)) {
+            "0x$data"
+        } else {
+            data
+        }
+
+        return JsSignMessage(
+            callbackId = System.currentTimeMillis(),
+            type = JsSignMessage.TYPE_TRANSACTION,
+            wcEthereumTransaction = WCEthereumTransaction(
+                from = transaction.getFromAddress(),
+                to = to,
+                data = formattedData,
+                value = Numeric.toHexStringWithPrefix(value),
+                nonce = nonce,
+                gasPrice = null,
+                gas = null,
+                gasLimit = null,
+                maxFeePerGas = null,
+                maxPriorityFeePerGas = null
+            ),
+            solanaTxSource = SolanaTxSource.InnerTransfer,
+            isSpeedUp = true
+        )
+    }
+    
+    private suspend fun createCancelMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
+        val decodedTx = TransactionDecoder.decode(rawTransaction.raw)
+        val nonce = rawTransaction.nonce
+
+        return JsSignMessage(
+            callbackId = System.currentTimeMillis(),
+            type = JsSignMessage.TYPE_TRANSACTION,
+            wcEthereumTransaction = WCEthereumTransaction(
+                from = transaction.getFromAddress(),
+                to = transaction.getFromAddress(), // self address
+                data = null,
+                value = "0x0",
+                nonce = nonce,
+                gasPrice = null,
+                gas = null,
+                gasLimit = null,
+                maxFeePerGas = null,
+                maxPriorityFeePerGas = null
+            ),
+            solanaTxSource = SolanaTxSource.InnerTransfer,
+            isCancelTx = true
+        )
     }
 }
