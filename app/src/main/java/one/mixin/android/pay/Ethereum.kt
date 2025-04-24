@@ -24,7 +24,8 @@ internal suspend fun parseEthereum(
     if (!erc681.valid) return null
 
     val chainId = erc681.chainId?.toInt() ?: 1
-    var assetId = ethereumChainIdMap[chainId] ?: return null
+    val chain = ethereumChainIdMap[chainId] ?: return null
+    var assetId = chain
 
     val value = erc681.value
     var address: String? = null
@@ -89,7 +90,7 @@ internal suspend fun parseEthereum(
         }
     }
 
-    val addressResponse = validateAddress(assetId, assetId, destination) ?: return null
+    val addressResponse = validateAddress(assetId, chain, destination) ?: return null
     if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
