@@ -425,6 +425,8 @@ dependencies {
     implementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
+    implementation "org.sol4k:sol4k:${sol4kVersion}"
+
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'

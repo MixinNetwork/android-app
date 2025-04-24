@@ -1,12 +1,12 @@
 package org.sol4k
 
 import okio.Buffer
-import org.sol4k.VersionedTransaction.Companion.PUBLIC_KEY_LENGTH
+import org.sol4k.VersionedTransactionCompat.Companion.PUBLIC_KEY_LENGTH
 import org.sol4k.instruction.CompiledInstruction
 import org.sol4k.instruction.SetComputeUnitLimitInstruction
 import org.sol4k.instruction.SetComputeUnitPriceInstruction
 
-data class Message(
+data class MessageCompat(
     val version: MessageVersion,
     val header: MessageHeader,
     var accounts: List<PublicKey>,
@@ -93,7 +93,7 @@ data class Message(
     }
 
     companion object {
-        fun deserialize(d: ByteArray): Message {
+        fun deserialize(d: ByteArray): MessageCompat {
             var data = d
             val v = data.first().toUByte()
             val version = if (v > 127.toUByte()) {
@@ -107,7 +107,7 @@ data class Message(
             val numReadonlySignedAccounts = data.first().toInt().also { data = data.drop(1).toByteArray() }
             val numReadonlyUnsignedAccounts = data.first().toInt().also { data = data.drop(1).toByteArray() }
 
-            val accountKeyCount = Binary.decodeLength(data)
+            val accountKeyCount = BinaryCompat.decodeLength(data)
             data = accountKeyCount.second
             val accountKeys = mutableListOf<PublicKey>() // list of all accounts
             for (i in 0 until accountKeyCount.first) {
@@ -120,19 +120,19 @@ data class Message(
                 data = data.drop(PUBLIC_KEY_LENGTH).toByteArray()
             }
 
-            val instructionCount = Binary.decodeLength(data)
+            val instructionCount = BinaryCompat.decodeLength(data)
             data = instructionCount.second
             val instructions = mutableListOf<CompiledInstruction>()
             for(i in 0 until instructionCount.first) {
                 val programIdIndex = data.first().toInt().also { data = data.drop(1).toByteArray() }
 
-                val accountCount = Binary.decodeLength(data)
+                val accountCount = BinaryCompat.decodeLength(data)
                 data = accountCount.second
                 val accountIndices = data.slice(0 until accountCount.first).map(Byte::toInt).also {
                     data = data.drop(accountCount.first).toByteArray()
                 }
 
-                val dataLength = Binary.decodeLength(data)
+                val dataLength = BinaryCompat.decodeLength(data)
                 data = dataLength.second
                 val dataSlice = data.slice(0 until dataLength.first).toByteArray().also {
                     data = data.drop(dataLength.first).toByteArray()
@@ -148,18 +148,18 @@ data class Message(
 
             val addressLookupTables = mutableListOf<CompiledAddressLookupTable>()
             if (version == MessageVersion.V0) {
-                val addressLookupTableCount = Binary.decodeLength(data)
+                val addressLookupTableCount = BinaryCompat.decodeLength(data)
                 data = addressLookupTableCount.second
                 for (i in 0 until addressLookupTableCount.first) {
                     val account = data.slice(0 until PUBLIC_KEY_LENGTH).toByteArray().also {
                         data = data.drop(PUBLIC_KEY_LENGTH).toByteArray()
                     }
-                    val writableAccountIdxCount = Binary.decodeLength(data)
+                    val writableAccountIdxCount = BinaryCompat.decodeLength(data)
                     data = writableAccountIdxCount.second
                     val writableAccountIdx = data.slice(0 until writableAccountIdxCount.first).toByteArray().also {
                         data = data.drop(writableAccountIdxCount.first).toByteArray()
                     }
-                    val readOnlyAccountIdxCount = Binary.decodeLength(data)
+                    val readOnlyAccountIdxCount = BinaryCompat.decodeLength(data)
                     data = readOnlyAccountIdxCount.second
                     val readOnlyAccountIdx = data.slice(0 until readOnlyAccountIdxCount.first).toByteArray().also {
                         data = data.drop(readOnlyAccountIdxCount.first).toByteArray()
@@ -173,7 +173,7 @@ data class Message(
                     )
                 }
             }
-            return Message(
+            return MessageCompat(
                 version = version,
                 header = MessageHeader(
                     numRequireSignatures = numRequiredSignatures,

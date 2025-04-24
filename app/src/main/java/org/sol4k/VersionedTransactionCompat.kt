@@ -1,13 +1,14 @@
 package org.sol4k
 
 import okio.Buffer
+import org.sol4k.Convert.lamportToSol
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
 import kotlin.math.max
 
-class VersionedTransaction(
-    val message: Message,
+class VersionedTransactionCompat(
+    val message: MessageCompat,
     val signatures: MutableList<String>,
 ) {
 
@@ -46,8 +47,8 @@ class VersionedTransaction(
     fun setPriorityFee(unitPrice: String, unitLimit: String): Boolean {
         val voidSig = Base58.encode(ByteArray(SIGNATURE_LENGTH))
         if (signatures.any { s ->
-            s != voidSig
-        }) {
+                s != voidSig
+            }) {
             return false
         }
         message.setPriorityFee(unitPrice.toLong(), unitLimit.toInt())
@@ -70,7 +71,7 @@ class VersionedTransaction(
             }
             data.add(i.data)
         }
-       return computeBudget(data)
+        return computeBudget(data)
     }
 
     private fun parseSystemProgramData(data: ByteArray): Long? {
@@ -103,9 +104,9 @@ class VersionedTransaction(
         private const val SIGNATURE_LENGTH = 64
 
         @JvmStatic
-        fun from(encodedTransaction: String): VersionedTransaction {
+        fun from(encodedTransaction: String): VersionedTransactionCompat {
             var byteArray = Base64.getDecoder().decode(encodedTransaction)
-            val signaturesCount = Binary.decodeLength(byteArray)
+            val signaturesCount = BinaryCompat.decodeLength(byteArray)
             byteArray = signaturesCount.second
             val signatures = mutableListOf<String>()
             for (i in 0 until signaturesCount.first) {
@@ -115,12 +116,12 @@ class VersionedTransaction(
                 signatures.add(encodedSignature)
             }
 
-            val message = Message.deserialize(byteArray)
+            val message = MessageCompat.deserialize(byteArray)
 
             if(signaturesCount.first > 0 && message.header.numRequireSignatures != signaturesCount.first) {
                 throw Exception("numRequireSignatures is not equal to signatureCount")
             }
-            return VersionedTransaction(message, signatures)
+            return VersionedTransactionCompat(message, signatures)
         }
     }
 }

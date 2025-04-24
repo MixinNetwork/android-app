@@ -31,6 +31,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.Rpc
 import org.sol4k.VersionedTransaction
+import org.sol4k.VersionedTransactionCompat
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -55,9 +56,9 @@ class TransactionStateFragment : BaseFragment() {
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
-    private val tx: VersionedTransaction by lazy {
+    private val tx: VersionedTransactionCompat by lazy {
         val serializedTx = requireArguments().getString(ARGS_TX)!!
-        VersionedTransaction.from(serializedTx)
+        VersionedTransactionCompat.from(serializedTx)
     }
     private val symbol: String? by lazy { requireArguments().getString(ARGS_TOKEN_SYMBOL) }
 

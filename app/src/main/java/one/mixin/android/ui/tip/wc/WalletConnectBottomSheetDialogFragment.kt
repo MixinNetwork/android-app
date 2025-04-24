@@ -76,6 +76,7 @@ import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
+import org.sol4k.VersionedTransactionCompat
 import org.sol4k.exception.RpcException
 import timber.log.Timber
 import javax.inject.Inject
@@ -315,7 +316,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val m = signData.signMessage
             if (m is WCEthereumTransaction) {
                 refreshEstimatedGasAndAsset(chain)
-            } else if (m is VersionedTransaction) {
+            } else if (m is VersionedTransactionCompat) {
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
                 try {
                     m.throwIfAnyMaliciousInstruction()

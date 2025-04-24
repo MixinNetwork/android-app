@@ -54,9 +54,9 @@ import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
+import org.sol4k.Convert.lamportToSol
 import org.sol4k.PublicKey
-import org.sol4k.VersionedTransaction
-import org.sol4k.lamportToSol
+import org.sol4k.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -276,7 +276,7 @@ internal constructor(
     ): BigDecimal? {
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
-            val tx = VersionedTransaction.from(transaction.data ?: "")
+            val tx = VersionedTransactionCompat.from(transaction.data ?: "")
             val fee = tx.calcFee()
             return fee
         } else {
