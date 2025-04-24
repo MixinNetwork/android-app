@@ -165,7 +165,7 @@ class AvatarView : ViewAnimator {
         } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
             avatarSimple.setImageResource(R.drawable.ic_web3_transaction_approval)
         } else {
-            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_contract)
+            avatarSimple.setImageResource(R.drawable.ic_web3_transaction_unknown)
         }
     }
 

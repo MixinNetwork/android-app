@@ -16,12 +16,15 @@ import one.mixin.android.databinding.FragmentHiddenAssetsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.navigate
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.details.Web3TransactionsFragment
 import kotlin.math.abs
 
 @AndroidEntryPoint
@@ -60,7 +63,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                             val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                             val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
                             lifecycleScope.launch {
-                                web3ViewModel.updateTokenHidden(asset.assetId, "", false)
+                                web3ViewModel.updateTokenHidden(asset.assetId, asset.walletId, false)
                                 val anchorView = assetsRv
 
                                 snackbar =
@@ -68,7 +71,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                                         .setAction(R.string.UNDO) {
                                             assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                             lifecycleScope.launch {
-                                                web3ViewModel.updateTokenHidden(asset.assetId, "", true)
+                                                web3ViewModel.updateTokenHidden(asset.assetId, asset.walletId, true)
                                             }
                                         }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                                             (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text))
@@ -122,11 +125,24 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
     override fun <T> onNormalItemClick(item: T) {
         val token = item as Web3TokenItem
         lifecycleScope.launch {
-            // navTo(Web3TransactionsFragment.newInstance(
-            //     address = "",
-            //     chain = ChainType.ethereum.name,
-            //     token = token,
-            // ), Web3TransactionsFragment.TAG)
+            val address = getAddressesByChainId(token.chainId)
+            if (address != null) {
+                view?.navigate(
+                    R.id.action_web3_hidden_assets_to_web3_transactions,
+                    Bundle().apply {
+                        putString(Web3TransactionsFragment.ARGS_ADDRESS, address)
+                        putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
+                    }
+                )
+            } else {
+                toast(R.string.Data_error)
+            }
         }
+    }
+
+
+    private suspend fun getAddressesByChainId(chainId: String): String? {
+        val address = web3ViewModel.getAddressesByChainId(chainId)
+        return address?.destination
     }
 }

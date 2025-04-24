@@ -205,13 +205,6 @@ internal constructor(
 
     suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
-    suspend fun validateExternalAddress(
-        assetId: String,
-        destination: String,
-        tag: String?,
-    ) =
-        accountRepository.validateExternalAddress(assetId, destination, tag)
-
     fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
         tokenRepository.collectibles(sortOrder)
 
@@ -283,14 +276,9 @@ internal constructor(
     ): BigDecimal? {
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
-            if (token.isSolToken()) {
-                val tx = VersionedTransaction.from(transaction.data ?: "")
-                val fee = tx.calcFee()
-                val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
-                return fee.add(mb)
-            } else {
-                return BigDecimal.ZERO
-            }
+            val tx = VersionedTransaction.from(transaction.data ?: "")
+            val fee = tx.calcFee()
+            return fee
         } else {
             val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
                 EstimateFeeRequest(

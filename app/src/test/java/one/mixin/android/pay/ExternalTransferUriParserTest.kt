@@ -221,8 +221,8 @@ class ExternalTransferUriParserTest {
     private suspend fun parse(url: String) =
         parseExternalTransferUri(
             url,
-            { assetId, destination ->
-                mockGetAddressResponse(assetId, destination)
+            { assetId, chainId, destination ->
+                mockGetAddressResponse(assetId, chainId, destination)
             },
             { assetId, destination ->
                 mockGetFeeResponse(assetId, destination)
@@ -236,9 +236,12 @@ class ExternalTransferUriParserTest {
             { _, _, _, _ ->
                 // do nothing
             },
+            parseLighting = { _ ->
+                null
+            }
         )
 
-    private val mockGetAddressResponse: suspend (String, String) -> AddressResponse? = { assetId, destination ->
+    private val mockGetAddressResponse: suspend (String, String, String) -> AddressResponse? = { assetId, chainId, destination ->
         AddressResponse(destination, null, assetId)
     }
 

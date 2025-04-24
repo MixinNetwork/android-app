@@ -45,7 +45,7 @@ constructor(
         if (tokensExtra != null) {
             web3TokensExtraDao.updateHidden(tokenId, walletId, hidden)
         } else {
-            web3TokensExtraDao.insertSuspend(Web3TokensExtra(tokenId, walletId, hidden,))
+            web3TokensExtraDao.insertSuspend(Web3TokensExtra(walletId, tokenId, hidden))
         }
     }
 

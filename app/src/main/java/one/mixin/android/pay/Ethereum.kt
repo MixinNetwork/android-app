@@ -14,7 +14,7 @@ data class EthereumURI(val uri: String)
 
 internal suspend fun parseEthereum(
     url: String,
-    validateAddress: suspend (String, String) -> AddressResponse?,
+    validateAddress: suspend (String, String, String) -> AddressResponse?,
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
@@ -24,7 +24,8 @@ internal suspend fun parseEthereum(
     if (!erc681.valid) return null
 
     val chainId = erc681.chainId?.toInt() ?: 1
-    var assetId = ethereumChainIdMap[chainId] ?: return null
+    val chain = ethereumChainIdMap[chainId] ?: return null
+    var assetId = chain
 
     val value = erc681.value
     var address: String? = null
@@ -89,7 +90,7 @@ internal suspend fun parseEthereum(
         }
     }
 
-    val addressResponse = validateAddress(assetId, destination) ?: return null
+    val addressResponse = validateAddress(assetId, chain, destination) ?: return null
     if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
@@ -135,6 +136,8 @@ fun String?.uint256ToBigDecimal(): BigDecimal? {
 private val ethereumChainIdMap by lazy {
     mapOf(
         1 to Constants.ChainId.ETHEREUM_CHAIN_ID,
+        56 to Constants.ChainId.BinanceSmartChain,
         137 to Constants.ChainId.Polygon,
+        8453 to Constants.ChainId.Base,
     )
 }
