@@ -42,6 +42,12 @@ data class Approve(
     val spender: String,
     @SerializedName("amount")
     val amount: String,
+    @SerializedName("icon")
+    val icon: String?,
+    @SerializedName("name")
+    val name: String?,
+    @SerializedName("symbol")
+    val symbol: String?,
 )
 
 data class ParsedInstruction(

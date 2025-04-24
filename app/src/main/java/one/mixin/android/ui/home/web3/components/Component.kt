@@ -50,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.Approve
 import one.mixin.android.api.response.web3.BalanceChange
 import one.mixin.android.api.response.web3.Item
 import one.mixin.android.api.response.web3.ParsedInstruction
@@ -239,7 +240,7 @@ fun ParsedTxPreview(
                 )
                 Box(modifier = Modifier.weight(1f))
             }
-        } else if (parsedTx.balanceChanges.isNullOrEmpty()) {
+        } else if (parsedTx.balanceChanges.isNullOrEmpty() && parsedTx.approves.isNullOrEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
@@ -247,17 +248,22 @@ fun ParsedTxPreview(
                 Text(
                     modifier = Modifier.alignByBaseline(),
                     text = stringResource(id = R.string.No_balance_change_detected),
-                    color = MixinAppTheme.colors.textPrimary,
+                    color = MixinAppTheme.colors.red,
                     fontFamily = FontFamily(Font(R.font.mixin_font)),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W600
                 )
                 Box(modifier = Modifier.weight(1f))
             }
+        } else if (parsedTx.approves.isNullOrEmpty().not()){
+            parsedTx.approves.forEach { approve ->
+                ApproveChangeItem(approve)
+                Box(modifier = Modifier.height(10.dp))
+            }
         } else {
             val viewDetails = remember { mutableStateOf(false) }
             val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-            parsedTx.balanceChanges.forEach { bc ->
+            parsedTx.balanceChanges?.forEach { bc ->
                 BalanceChangeItem(balanceChange = bc)
                 Box(modifier = Modifier.height(10.dp))
             }
@@ -392,6 +398,48 @@ fun Warning(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ApproveChangeItem(
+    approve: Approve,
+) {
+    val amountValue = if (approve.amount.equals("unlimited", true)) {
+        stringResource(R.string.unlimited).replaceFirstChar { it.uppercase() }
+    } else {
+        try {
+            BigDecimal(approve.amount).stripTrailingZeros().toPlainString()
+        } catch (e: Exception) {
+            approve.amount
+        }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CoilImage(
+            model = approve.icon,
+            modifier = Modifier.size(32.dp).clip(CircleShape),
+            placeholder = R.drawable.ic_avatar_place_holder,
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = approve.name?:"",
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W600,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "$amountValue ${approve.symbol}",
+            color = if ((approve.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            maxLines = 1,
+            fontSize = 14.sp,
+        )
     }
 }
 
