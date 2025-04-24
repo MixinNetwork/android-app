@@ -233,6 +233,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     token?.let { t ->
                                         validateAndNavigateToInput(
                                             assetId = t.assetId,
+                                            chainId = t.chainId,
                                             destination = address,
                                             asset = t,
                                             toAccount = true
@@ -313,6 +314,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                         val chain = chainToken ?: web3ViewModel.web3TokenItemById(token.chainId) ?:return@launch
                                                         validateAndNavigateToInput(
                                                             assetId = token.assetId,
+                                                            chainId = token.chainId,
                                                             destination = address,
                                                             fromAddress = fromAddress,
                                                             web3Token = token,
@@ -325,6 +327,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             token?.let { t ->
                                                 validateAndNavigateToInput(
                                                     assetId = t.assetId,
+                                                    chainId = t.chainId,
                                                     destination = address,
                                                     asset = t
                                                 )
@@ -417,6 +420,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     token?.let { t ->
                                         validateAndNavigateToInput(
                                             assetId = t.assetId,
+                                            chainId = t.chainId,
                                             destination = address,
                                             tag = memo,
                                             asset = t
@@ -547,6 +551,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     private fun validateAndNavigateToInput(
         assetId: String,
+        chainId: String,
         destination: String,
         tag: String? = null,
         fromAddress: String? = null,
@@ -564,7 +569,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             dialog.show()
             try {
                 if (assetId.isNotEmpty() && destination.isNotEmpty()) {
-                    val response = viewModel.validateExternalAddress(assetId, destination, tag)
+                    val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
                     if (response.isSuccess) {
                         val addressLabel = withContext(Dispatchers.IO) {
                             if (toAccount == true) return@withContext null

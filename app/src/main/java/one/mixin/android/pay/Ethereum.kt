@@ -14,7 +14,7 @@ data class EthereumURI(val uri: String)
 
 internal suspend fun parseEthereum(
     url: String,
-    validateAddress: suspend (String, String) -> AddressResponse?,
+    validateAddress: suspend (String, String, String) -> AddressResponse?,
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
@@ -89,7 +89,7 @@ internal suspend fun parseEthereum(
         }
     }
 
-    val addressResponse = validateAddress(assetId, destination) ?: return null
+    val addressResponse = validateAddress(assetId, assetId, destination) ?: return null
     if (!addressResponse.destination.equals(destination, true)) {
         return null
     }

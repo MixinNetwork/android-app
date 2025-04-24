@@ -205,13 +205,6 @@ internal constructor(
 
     suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
-    suspend fun validateExternalAddress(
-        assetId: String,
-        destination: String,
-        tag: String?,
-    ) =
-        accountRepository.validateExternalAddress(assetId, destination, tag)
-
     fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
         tokenRepository.collectibles(sortOrder)
 

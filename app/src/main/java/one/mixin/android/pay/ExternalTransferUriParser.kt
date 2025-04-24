@@ -16,7 +16,7 @@ import java.math.BigDecimal
 
 suspend fun parseExternalTransferUri(
     url: String,
-    validateAddress: suspend (String, String) -> AddressResponse?,
+    validateAddress: suspend (String, String, String) -> AddressResponse?,
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     findAssetIdByAssetKey: suspend (String) -> String?,
     getAssetPrecisionById: suspend (String) -> AssetPrecision?,
@@ -51,7 +51,7 @@ suspend fun parseExternalTransferUri(
     val assetId = splAssetId ?: chainId
 
     val destination = uri.host ?: return null
-    val addressResponse = validateAddress(assetId, destination) ?: return null
+    val addressResponse = validateAddress(assetId, assetId, destination) ?: return null
     if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
