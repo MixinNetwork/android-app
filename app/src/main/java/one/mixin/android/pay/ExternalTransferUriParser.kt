@@ -51,7 +51,7 @@ suspend fun parseExternalTransferUri(
     val assetId = splAssetId ?: chainId
 
     val destination = uri.host ?: return null
-    val addressResponse = validateAddress(assetId, assetId, destination) ?: return null
+    val addressResponse = validateAddress(assetId, chainId, destination) ?: return null
     if (!addressResponse.destination.equals(destination, true)) {
         return null
     }
