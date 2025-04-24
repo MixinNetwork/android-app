@@ -271,11 +271,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             title.text = token.name
             addressTv.text = token.assetKey
             explorer.setOnClickListener {
-                if (token.isSolana()) {
-                    context?.openUrl("https://solscan.io/token/" + token.assetKey)
-                } else {
-                    context?.openUrl("https://etherscan.io/token/" + token.assetKey)
-                }
+                val url =
+                    "${Constants.HelpLink.SPACE}external/explore/${token.chainId}/token/${token.assetKey}"
+                context?.openUrl(url)
                 bottomSheet.dismiss()
             }
             stakeSolTv.isVisible = token.isSolToken()
