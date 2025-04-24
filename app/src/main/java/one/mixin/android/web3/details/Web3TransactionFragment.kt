@@ -245,7 +245,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
 
                 else -> {
-                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_contract)
+                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_unknown)
                 }
             }
 
