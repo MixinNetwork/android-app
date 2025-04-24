@@ -276,14 +276,9 @@ internal constructor(
     ): BigDecimal? {
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
-            if (token.isSolToken()) {
-                val tx = VersionedTransaction.from(transaction.data ?: "")
-                val fee = tx.calcFee()
-                val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
-                return fee.add(mb)
-            } else {
-                return BigDecimal.ZERO
-            }
+            val tx = VersionedTransaction.from(transaction.data ?: "")
+            val fee = tx.calcFee()
+            return fee
         } else {
             val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
                 EstimateFeeRequest(
