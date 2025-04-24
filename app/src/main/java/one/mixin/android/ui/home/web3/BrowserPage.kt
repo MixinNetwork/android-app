@@ -154,9 +154,7 @@ fun BrowserPage(
                         Icon(
                             modifier = Modifier.size(70.dp),
                             painter =
-                                painterResource(
-                                    id = if (token != null) R.drawable.ic_web3_transaction else R.drawable.ic_no_dapp,
-                                ),
+                                painterResource(R.drawable.ic_web3_transaction),
                             contentDescription = null,
                             tint = Color.Unspecified,
                         )

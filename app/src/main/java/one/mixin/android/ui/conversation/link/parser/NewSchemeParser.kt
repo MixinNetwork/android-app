@@ -289,10 +289,10 @@ class NewSchemeParser(
     suspend fun parseExternalTransferUrl(url: String) {
         var errorMsg: String? = null
         val result =
-            parseExternalTransferUri(url, { assetId, destination ->
+            parseExternalTransferUri(url, { assetId, chainId, destination ->
                 handleMixinResponse(
                     invokeNetwork = {
-                        linkViewModel.validateExternalAddress(assetId, destination, null)
+                        linkViewModel.validateExternalAddress(assetId, chainId, destination, null)
                     },
                     successBlock = {
                         return@handleMixinResponse it.data

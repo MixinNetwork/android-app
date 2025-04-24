@@ -236,6 +236,7 @@ interface AccountService {
     @GET("external/addresses/check")
     suspend fun validateExternalAddress(
         @Query("asset") assetId: String,
+        @Query("chain") chain: String,
         @Query("destination") destination: String,
         @Query("tag") tag: String?,
     ): MixinResponse<AddressResponse>
