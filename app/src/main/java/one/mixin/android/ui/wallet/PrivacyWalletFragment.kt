@@ -298,6 +298,9 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
                             lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct()?.forEach {
+                                    walletViewModel.findOrSyncAsset(it)
+                                }
                                 walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
