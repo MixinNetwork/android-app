@@ -7,7 +7,7 @@ import org.sol4k.Constants.SYSTEM_PROGRAM
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.PublicKey
 
-class CreateAssociatedTokenAccountInstruction(
+class CreateAssociatedTokenAccountInstructionCompat(
     payer: PublicKey,
     associatedToken: PublicKey,
     owner: PublicKey,
@@ -29,7 +29,7 @@ class CreateAssociatedTokenAccountInstruction(
         AccountMeta(mint),
         AccountMeta(SYSTEM_PROGRAM),
         AccountMeta(tokenProgramId),
-        AccountMeta(Constants.SysPubkey.RENT_PUBKEY),
+        AccountMeta(Constants.SYSVAR_RENT_ADDRESS)
     )
 
     override val programId: PublicKey = ASSOCIATED_TOKEN_PROGRAM_ID

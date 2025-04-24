@@ -2,11 +2,10 @@ package org.sol4k.instruction
 
 import okio.Buffer
 import org.sol4k.AccountMeta
-import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.PublicKey
 
-class SplTransferInstruction(
+class SplTransferInstructionCompat(
     from: PublicKey,
     to: PublicKey,
     mint: PublicKey,

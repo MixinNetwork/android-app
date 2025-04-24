@@ -1,6 +1,6 @@
 package org.sol4k
 
-object Binary {
+object BinaryCompat {
     @JvmStatic
     fun uint32(value: Long): ByteArray {
         val byteArray = ByteArray(4)

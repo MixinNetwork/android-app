@@ -2,10 +2,6 @@ package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
 import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -24,13 +20,14 @@ import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
+import org.sol4k.Convert.solToLamport
 import org.sol4k.PublicKey
 import org.sol4k.Transaction
-import org.sol4k.instruction.CreateAssociatedTokenAccountInstruction
+import org.sol4k.addPlaceholderSignature
+import org.sol4k.instruction.CreateAssociatedTokenAccountInstructionCompat
 import org.sol4k.instruction.Instruction
-import org.sol4k.instruction.SplTransferInstruction
+import org.sol4k.instruction.SplTransferInstructionCompat
 import org.sol4k.instruction.TransferInstruction
-import org.sol4k.solToLamport
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function
@@ -229,7 +226,7 @@ suspend fun Web3TokenItem.buildTransaction(
                 }
             if (receiveAssociatedAccountInfo == null) {
                 instructions.add(
-                    CreateAssociatedTokenAccountInstruction(
+                    CreateAssociatedTokenAccountInstructionCompat(
                         payer = sender,
                         associatedToken = receiveAssociatedAccount,
                         owner = receiver,
@@ -250,7 +247,7 @@ suspend fun Web3TokenItem.buildTransaction(
             }
             val (sendAssociatedAccount) = PublicKey.findProgramDerivedAddress(sender, tokenMintAddress, tokenProgramId)
             instructions.add(
-                SplTransferInstruction(
+                SplTransferInstructionCompat(
                     from = sendAssociatedAccount,
                     to = receiveAssociatedAccount,
                     mint = tokenMintAddress,

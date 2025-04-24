@@ -3,6 +3,8 @@
 package org.sol4k
 
 import okio.Buffer
+import org.sol4k.Convert.lamportToSol
+import org.sol4k.Convert.microToLamport
 import java.math.BigDecimal
 
 private const val InstructionRequestUnits = 0

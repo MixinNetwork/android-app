@@ -127,6 +127,7 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import org.sol4k.VersionedTransaction
+import org.sol4k.VersionedTransactionCompat
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -226,7 +227,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
 
-    private var solanaTx: VersionedTransaction? by mutableStateOf(null)
+    private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
     private var asset: TokenItem? by mutableStateOf(null)
     private var chainToken: Web3TokenItem? by mutableStateOf(null)
     private var token: Web3TokenItem? by mutableStateOf(null)
@@ -832,7 +833,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             .onEach {
                 try {
                     if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                        val tx = solanaTx ?: VersionedTransaction.from(web3Transaction?.data ?: "").apply {
+                        val tx = solanaTx ?: VersionedTransactionCompat.from(web3Transaction?.data ?: "").apply {
                             solanaTx = this
                         }
                         

@@ -69,6 +69,7 @@ import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.SignInInput
 import org.sol4k.VersionedTransaction
+import org.sol4k.VersionedTransactionCompat
 import org.sol4k.exception.RpcException
 import org.web3j.crypto.Hash
 import org.web3j.utils.Convert
@@ -142,7 +143,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
-    private var solanaTx: VersionedTransaction? by mutableStateOf(null)
+    private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
     private var parsedTx: ParsedTx? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
 
@@ -301,7 +302,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                         val tx =
-                            solanaTx ?: VersionedTransaction.from(signMessage.data ?: "").apply {
+                            solanaTx ?: VersionedTransactionCompat.from(signMessage.data ?: "").apply {
                                 val txWithPriorityFee = updateTxPriorityFee(this, signMessage.solanaTxSource)
                                 solanaTx = txWithPriorityFee
                             }
@@ -369,7 +370,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
         onDismissAction?.invoke()
     }
-    private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
+    private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
         if (priorityFeeResp != null && priorityFeeResp.unitPrice != null && priorityFeeResp.unitLimit != null) {
             tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)
