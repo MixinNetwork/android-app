@@ -198,6 +198,13 @@
         android:id="@+id/web3_hidden_assets_fragment"
         android:name="one.mixin.android.ui.wallet.Web3HiddenAssetsFragment"
         tools:layout="@layout/fragment_hidden_assets">
+        <action
+            android:id="@+id/action_web3_hidden_assets_to_web3_transactions"
+            app:destination="@id/web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right" 
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
     </fragment>
 
     <fragment
