@@ -204,7 +204,12 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
                 }
                 transactionsTitleLl.setOnClickListener {
-                    navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+                    view.navigate(
+                        R.id.action_web3_transactions_to_all_web3_transactions,
+                        Bundle().apply {
+                            putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+                        }
+                    )
                 }
                 marketRl.setOnClickListener {
                     lifecycleScope.launch {
@@ -424,6 +429,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     }
 
     override fun onMoreClick() {
-        navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+        requireView().navigate(
+            R.id.action_web3_transactions_to_all_web3_transactions,
+            Bundle().apply {
+                putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+            }
+        )
     }
 }

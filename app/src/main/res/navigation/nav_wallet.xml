@@ -447,6 +447,14 @@
             app:argType="string" />
 
         <action
+            android:id="@+id/action_web3_transactions_to_all_web3_transactions"
+            app:destination="@id/all_web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+
+        <action
             android:id="@+id/action_web3_transactions_to_market_details"
             app:destination="@id/market_fragment_details"
             app:enterAnim="@anim/slide_in_right"
