@@ -1,4 +1,4 @@
-package org.sol4k
+package org.sol4kt
 
 object BinaryCompat {
     @JvmStatic

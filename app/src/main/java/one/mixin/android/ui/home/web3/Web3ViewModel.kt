@@ -56,7 +56,7 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import org.sol4k.Convert.lamportToSol
 import org.sol4k.PublicKey
-import org.sol4k.VersionedTransactionCompat
+import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode

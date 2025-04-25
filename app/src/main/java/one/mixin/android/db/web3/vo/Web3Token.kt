@@ -10,7 +10,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.vo.Fiats
 import org.sol4k.Convert.lamportToSol
-import org.sol4k.VersionedTransactionCompat
+import org.sol4kt.VersionedTransactionCompat
 import java.math.BigDecimal
 import java.math.RoundingMode
 

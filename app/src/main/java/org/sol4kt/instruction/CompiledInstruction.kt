@@ -1,4 +1,4 @@
-package org.sol4k.instruction
+package org.sol4kt.instruction
 
 data class CompiledInstruction(
     @Suppress("ArrayInDataClass") val data: ByteArray,

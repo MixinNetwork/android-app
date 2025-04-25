@@ -1,4 +1,6 @@
-package org.sol4k
+package org.sol4kt
+
+import org.sol4k.PublicKey
 
 data class CompiledAddressLookupTable(
     val publicKey: PublicKey,

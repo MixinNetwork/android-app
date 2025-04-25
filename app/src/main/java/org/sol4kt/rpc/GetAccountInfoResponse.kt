@@ -1,4 +1,4 @@
-package org.sol4k.rpc
+package org.sol4kt.rpc
 
 import kotlinx.serialization.Serializable
 import java.math.BigInteger

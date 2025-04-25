@@ -1,4 +1,4 @@
-package org.sol4k.instruction
+package org.sol4kt.instruction
 
 import org.sol4k.AccountMeta
 import org.sol4k.Constants
@@ -6,6 +6,7 @@ import org.sol4k.Constants.ASSOCIATED_TOKEN_PROGRAM_ID
 import org.sol4k.Constants.SYSTEM_PROGRAM
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.PublicKey
+import org.sol4k.instruction.Instruction
 
 class CreateAssociatedTokenAccountInstructionCompat(
     payer: PublicKey,

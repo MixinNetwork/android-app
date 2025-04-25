@@ -30,15 +30,12 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import org.sol4k.Keypair
-import org.sol4k.VersionedTransaction
-import org.sol4k.VersionedTransactionCompat
-import org.sol4k.api.Commitment
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger

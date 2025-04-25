@@ -1,7 +1,11 @@
-package org.sol4k
+package org.sol4kt
 
 import okio.Buffer
+import org.sol4k.Base58
+import org.sol4k.Binary
+import org.sol4k.Constants
 import org.sol4k.Convert.lamportToSol
+import org.sol4k.Keypair
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
@@ -116,7 +120,7 @@ class VersionedTransactionCompat(
                 signatures.add(encodedSignature)
             }
 
-            val message = MessageCompat.deserialize(byteArray)
+            val message = org.sol4kt.MessageCompat.deserialize(byteArray)
 
             if(signaturesCount.first > 0 && message.header.numRequireSignatures != signaturesCount.first) {
                 throw Exception("numRequireSignatures is not equal to signatureCount")

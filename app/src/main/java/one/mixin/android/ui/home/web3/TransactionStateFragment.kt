@@ -30,8 +30,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.Rpc
-import org.sol4k.VersionedTransaction
-import org.sol4k.VersionedTransactionCompat
+import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds

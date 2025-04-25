@@ -1,9 +1,10 @@
-package org.sol4k.instruction
+package org.sol4kt.instruction
 
 import okio.Buffer
 import org.sol4k.AccountMeta
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.PublicKey
+import org.sol4k.instruction.Instruction
 
 class SplTransferInstructionCompat(
     from: PublicKey,

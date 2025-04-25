@@ -23,11 +23,11 @@ import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
 import org.sol4k.PublicKey
 import org.sol4k.Transaction
-import org.sol4k.addPlaceholderSignature
-import org.sol4k.instruction.CreateAssociatedTokenAccountInstructionCompat
 import org.sol4k.instruction.Instruction
-import org.sol4k.instruction.SplTransferInstructionCompat
 import org.sol4k.instruction.TransferInstruction
+import org.sol4kt.addPlaceholderSignature
+import org.sol4kt.instruction.CreateAssociatedTokenAccountInstructionCompat
+import org.sol4kt.instruction.SplTransferInstructionCompat
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function

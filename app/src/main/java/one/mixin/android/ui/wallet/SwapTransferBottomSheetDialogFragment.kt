@@ -120,14 +120,12 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
-import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
-import org.sol4k.VersionedTransaction
-import org.sol4k.VersionedTransactionCompat
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber

@@ -67,10 +67,9 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
-import org.sol4k.SignInInput
-import org.sol4k.VersionedTransaction
-import org.sol4k.VersionedTransactionCompat
 import org.sol4k.exception.RpcException
+import org.sol4kt.SignInInput
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric

@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package org.sol4k
+package org.sol4kt
 
 import okio.Buffer
 import org.sol4k.Convert.lamportToSol

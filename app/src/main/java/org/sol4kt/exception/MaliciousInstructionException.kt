@@ -1,4 +1,4 @@
-package org.sol4k.exception
+package org.sol4kt.exception
 
 class MaliciousInstructionException(message: String): RuntimeException(message) {
     companion object {

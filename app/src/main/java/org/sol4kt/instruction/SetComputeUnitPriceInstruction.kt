@@ -1,20 +1,21 @@
-package org.sol4k.instruction
+package org.sol4kt.instruction
 
 import okio.Buffer
 import org.sol4k.AccountMeta
 import org.sol4k.Constants.COMPUTE_BUDGET_PROGRAM_ID
-import org.sol4k.InstructionSetComputeUnitLimit
+import org.sol4kt.InstructionSetComputeUnitPrice
 import org.sol4k.PublicKey
+import org.sol4k.instruction.Instruction
 
-class SetComputeUnitLimitInstruction(
-    private val units: Int,
+class SetComputeUnitPriceInstruction(
+    private val microLamports: Long,
 ) : Instruction {
 
     override val data: ByteArray
         get() {
             val buffer = Buffer()
-            buffer.writeByte(InstructionSetComputeUnitLimit)
-                .writeIntLe(units)
+            buffer.writeByte(InstructionSetComputeUnitPrice)
+                .writeLongLe(microLamports)
             return buffer.readByteArray()
         }
 

@@ -8,8 +8,6 @@ import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.web3.Web3RawTransactionDao
 import org.sol4k.PublicKey
 import org.sol4k.api.AccountInfo
-import org.sol4k.rpc.BlockhashValue
-import org.sol4k.rpc.GetAccountInfoValue
 import org.sol4k.rpc.TokenAmount
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -63,7 +61,7 @@ class Rpc(
                 if (it.data == null || it.data == "null") {
                     return@handleMixinResponse null
                 }
-                val value = jsonParser.decodeFromString<GetAccountInfoValue>(it.data!!)
+                val value = jsonParser.decodeFromString<org.sol4kt.rpc.GetAccountInfoValue>(it.data!!)
                 val data = Base64.getDecoder().decode(value.data[0])
                 AccountInfo(
                     data,
@@ -118,7 +116,7 @@ class Rpc(
                 if (it.data == null || it.data == "null") {
                     return@handleMixinResponse null
                 }
-                val blockhashValue = jsonParser.decodeFromString<BlockhashValue>(it.data!!)
+                val blockhashValue = jsonParser.decodeFromString<org.sol4kt.rpc.BlockhashValue>(it.data!!)
                 blockhashValue.blockhash
             }
         )
