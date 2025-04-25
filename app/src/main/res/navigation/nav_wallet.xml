@@ -461,6 +461,76 @@
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
             app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_transfer_destination"
+            app:destination="@id/transfer_destination_input_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_web3_address"
+            app:destination="@id/web3_address_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_swap"
+            app:destination="@id/swap_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_web3_transaction"
+            app:destination="@id/web3_transaction_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_staking"
+            app:destination="@id/staking_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_validators"
+            app:destination="@id/validators_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/staking_fragment"
+        android:name="one.mixin.android.ui.home.web3.stake.StakingFragment" />
+
+    <fragment
+        android:id="@+id/validators_fragment"
+        android:name="one.mixin.android.ui.home.web3.stake.ValidatorsFragment" />
+
+    <fragment
+        android:id="@+id/web3_transaction_fragment"
+        android:name="one.mixin.android.web3.details.Web3TransactionFragment">
+        <argument
+            android:name="args_transaction"
+            app:argType="one.mixin.android.db.web3.vo.Web3TransactionItem" />
+        <argument
+            android:name="args_chain"
+            app:argType="string" />
+        <argument
+            android:name="args_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
     </fragment>
 
 </navigation>
