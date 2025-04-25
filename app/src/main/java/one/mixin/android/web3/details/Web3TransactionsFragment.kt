@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,6 +22,7 @@ import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
@@ -189,22 +191,48 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         if (chain == null) {
                             jobManager.addJobInBackground(RefreshWeb3TokenJob(token.assetId))
                             toast(R.string.Please_wait_a_bit)
-                        } else navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
+                        } else {
+                            requireView().navigate(
+                                R.id.action_web3_transactions_to_transfer_destination,
+                                Bundle().apply {
+                                    putString(TransferDestinationInputFragment.ARGS_ADDRESS, address)
+                                    putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
+                                    putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
+                                }
+                            )
+                        }
                     }
                 }
                 sendReceiveView.receive.setOnClickListener {
-                    navTo(Web3AddressFragment.newInstance(address), Web3AddressFragment.TAG)
+                    requireView().navigate(
+                        R.id.action_web3_transactions_to_web3_address,
+                        Bundle().apply {
+                            putString("address", address)
+                        }
+                    )
                 }
                 sendReceiveView.swap.setOnClickListener {
                     AnalyticsTracker.trackSwapStart("web3", "web3")
                     lifecycleScope.launch {
                         val tokens = web3ViewModel.findWeb3TokenItems()
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens, input = token.assetId, inMixin = false), SwapFragment.TAG)
+                        requireView().navigate(
+                            R.id.action_web3_transactions_to_swap,
+                            Bundle().apply {
+                                putParcelableArrayList(SwapFragment.ARGS_WEB3_TOKENS, ArrayList(tokens))
+                                putString(SwapFragment.ARGS_INPUT, token.assetId)
+                                putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
+                            }
+                        )
                     }
-
                 }
+
                 transactionsTitleLl.setOnClickListener {
-                    navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+                    view.navigate(
+                        R.id.action_web3_transactions_to_all_web3_transactions,
+                        Bundle().apply {
+                            putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+                        }
+                    )
                 }
                 marketRl.setOnClickListener {
                     lifecycleScope.launch {
@@ -414,9 +442,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
-        navTo(
-            Web3TransactionFragment.newInstance(item, if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name, token),
-            Web3TransactionFragment.TAG
+        findNavController().navigate(
+            R.id.action_web3_transactions_to_web3_transaction,
+            Bundle().apply {
+                putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
+                putString(Web3TransactionFragment.ARGS_CHAIN, if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name)
+                putParcelable(ARGS_TOKEN, token)
+            }
         )
     }
 
@@ -424,6 +456,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     }
 
     override fun onMoreClick() {
-        navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+        requireView().navigate(
+            R.id.action_web3_transactions_to_all_web3_transactions,
+            Bundle().apply {
+                putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+            }
+        )
     }
 }

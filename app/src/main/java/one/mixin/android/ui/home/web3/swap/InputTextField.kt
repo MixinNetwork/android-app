@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -223,14 +226,20 @@ private fun Right(
             }
         }
         Box(modifier = Modifier.width(8.dp))
-        Text(
+        BasicText(
+            modifier = Modifier.widthIn(max = 56.dp),
             text = token?.symbol ?: "",
-            style =
-                TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textPrimary,
-                ),
+            maxLines = 2,
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary,
+            ),
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 6.sp,
+                maxFontSize = 16.sp,
+                stepSize = 1.sp
+            )
         )
         Box(modifier = Modifier.width(8.dp))
         Icon(
