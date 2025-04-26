@@ -210,6 +210,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     fromTv.text = fromAddress
                     fromLl.isVisible = true
                     toLl.isVisible = false
+                    feeLl.isVisible = false
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     toTv.text = toAddress
@@ -285,6 +286,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 assetChangesLl.visibility = View.VISIBLE
                 assetChangesContainer.setContent {
                     AssetChangesList(
+                        status = transaction.status,
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
@@ -298,6 +300,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 
                 assetChangesContainer.setContent {
                     AssetChangesList(
+                        status = transaction.status,
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->

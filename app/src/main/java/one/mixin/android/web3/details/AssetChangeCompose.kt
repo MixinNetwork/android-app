@@ -24,11 +24,13 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.AssetChange
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import java.math.BigDecimal
 
 @Composable
 fun AssetChangeItem(
+    status: String,
     amount: String,
     symbol: String,
     iconUrl: String?,
@@ -48,7 +50,8 @@ fun AssetChangeItem(
     val prefix =
         if (amount.startsWith("+") || amount.startsWith("-")) amount else if (isReceive) "+" else "-"
     val textColor =
-        if (isReceive) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+        if (status == TransactionStatus.PENDING.value) MixinAppTheme.colors.textPrimary
+        else if (isReceive) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -77,6 +80,7 @@ fun AssetChangeItem(
 
 @Composable
 fun AssetChangesList(
+    status: String,
     senders: List<AssetChange>,
     receivers: List<AssetChange>,
     fetchToken: suspend (String) -> Web3TokenItem?,
@@ -108,6 +112,7 @@ fun AssetChangesList(
             approvals?.forEachIndexed { index, approval ->
                 val token = tokens[approval.assetId]
                 AssetChangeItem(
+                    status = status,
                     amount = approval.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
@@ -126,6 +131,7 @@ fun AssetChangesList(
             receivers.forEachIndexed { index, receiver ->
                 val token = tokens[receiver.assetId]
                 AssetChangeItem(
+                    status = status,
                     amount = receiver.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
@@ -143,6 +149,7 @@ fun AssetChangesList(
             senders.forEachIndexed { index, sender ->
                 val token = tokens[sender.assetId]
                 AssetChangeItem(
+                    status = status,
                     amount = sender.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
