@@ -210,7 +210,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     fromTv.text = fromAddress
                     fromLl.isVisible = true
                     toLl.isVisible = false
-                    feeLl.isVisible = false
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     toTv.text = toAddress
@@ -266,7 +265,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             avatar.badge.isVisible = false
 
             dateTv.text = transaction.transactionAt.fullDate()
-            feeLl.isVisible = transaction.fee.isNotEmpty()
+            feeLl.isVisible = transaction.transactionType != TransactionType.TRANSFER_IN.value && transaction.fee.isNotEmpty()
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
             
