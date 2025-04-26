@@ -1891,4 +1891,6 @@
     <string name="Speed_Up_Transaction">加速交易</string>
     <string name="web3_transaction_cancel_warning">如果交易已经处于较后阶段，可能无法取消。</string>
     <string name="web3_transaction_speed_up_warning">如果交易已经处于较后阶段，可能无法加速</string>
+    <string name="url_privacy_wallet">https://support.mixin.one/zh/article/5lua5lmi5piv6zqq56eb6zkx5yyf77yf-1s7o0e2/</string>
+    <string name="url_classic_wallet">https://support.mixin.one/zh/article/5lua5lmi5piv5pmu6yca6zkx5yyf77yf-8308b1/</string>
 </resources>

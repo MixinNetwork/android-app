@@ -156,13 +156,13 @@ fun WalletInfoCard(
                     when (page) {
                         0 -> PrivacyWalletInfo(
                             onLearnMoreClick = {
-                                context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv6zqq56eb6zkx5yyf77yf-1s7o0e2/")
+                                context.openUrl(context.getString(R.string.url_privacy_wallet))
                             },
                             onClose = onPrivacyClose
                         )
                         1 -> CommonWalletInfo(
                             onLearnMoreClick = {
-                                context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv5pmu6yca6zkx5yyf77yf-8308b1/")
+                                context.openUrl(context.getString(R.string.url_classic_wallet))
                             },
                             onClose = onCommonClose
                         )
