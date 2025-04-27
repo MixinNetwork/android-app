@@ -265,7 +265,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             avatar.badge.isVisible = false
 
             dateTv.text = transaction.transactionAt.fullDate()
-            feeLl.isVisible = transaction.fee.isNotEmpty()
+            feeLl.isVisible = transaction.transactionType != TransactionType.TRANSFER_IN.value && transaction.fee.isNotEmpty()
             feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
             statusLl.isVisible = false
             
@@ -285,6 +285,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 assetChangesLl.visibility = View.VISIBLE
                 assetChangesContainer.setContent {
                     AssetChangesList(
+                        status = transaction.status,
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
@@ -298,6 +299,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 
                 assetChangesContainer.setContent {
                     AssetChangesList(
+                        status = transaction.status,
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->

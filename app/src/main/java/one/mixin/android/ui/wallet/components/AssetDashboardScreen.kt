@@ -47,7 +47,8 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import androidx.core.content.edit
 
 private const val PREF_NAME = "wallet_info_card"
-private const val KEY_HIDE_WALLET_INFO = "hide_wallet_info"
+private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
+private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -64,7 +65,8 @@ fun AssetDashboardScreen(
     
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-    val hideWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_WALLET_INFO, false)) }
+    val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
+    val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
 
     MixinAppTheme {
         Column(
@@ -104,12 +106,18 @@ fun AssetDashboardScreen(
             }
 
 
-            if (!hideWalletInfo.value) {
+            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
                 Spacer(modifier = Modifier.weight(1f))
                 WalletInfoCard(
-                    onClose = {
-                        hideWalletInfo.value = true
-                        prefs.edit { putBoolean(KEY_HIDE_WALLET_INFO, true) }
+                    hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
+                    hideCommonWalletInfo = hideCommonWalletInfo.value,
+                    onPrivacyClose = {
+                        hidePrivacyWalletInfo.value = true
+                        prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
+                    },
+                    onCommonClose = {
+                        hideCommonWalletInfo.value = true
+                        prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
                     }
                 )
                 Spacer(modifier = Modifier.height(20.dp))
@@ -121,9 +129,16 @@ fun AssetDashboardScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WalletInfoCard(
-    onClose: () -> Unit
+    hidePrivacyWalletInfo: Boolean,
+    hideCommonWalletInfo: Boolean,
+    onPrivacyClose: () -> Unit,
+    onCommonClose: () -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    // 确定初始页面：如果隐私钱包信息卡被隐藏，默认显示普通钱包信息卡
+    val initialPage = if (hidePrivacyWalletInfo && !hideCommonWalletInfo) 0 else 0
+    val pageCount = if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) 2 else 1
+    
+    val pagerState = rememberPagerState(initialPage = initialPage) { pageCount }
     val context = LocalContext.current
     
     Box(
@@ -137,38 +152,56 @@ fun WalletInfoCard(
                 state = pagerState,
                 modifier = Modifier.fillMaxWidth()
             ) { page ->
-                when (page) {
-                    0 -> PrivacyWalletInfo(
+                if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) {
+                    when (page) {
+                        0 -> PrivacyWalletInfo(
+                            onLearnMoreClick = {
+                                context.openUrl(context.getString(R.string.url_privacy_wallet))
+                            },
+                            onClose = onPrivacyClose
+                        )
+                        1 -> CommonWalletInfo(
+                            onLearnMoreClick = {
+                                context.openUrl(context.getString(R.string.url_classic_wallet))
+                            },
+                            onClose = onCommonClose
+                        )
+                    }
+                } else if (!hidePrivacyWalletInfo) {
+                    PrivacyWalletInfo(
                         onLearnMoreClick = {
                             context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv6zqq56eb6zkx5yyf77yf-1s7o0e2/")
                         },
-                        onClose = onClose
+                        onClose = onPrivacyClose
                     )
-                    1 -> CommonWalletInfo(
+                } else if (!hideCommonWalletInfo) {
+                    CommonWalletInfo(
                         onLearnMoreClick = {
                             context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv5pmu6yca6zkx5yyf77yf-8308b1/")
                         },
-                        onClose = onClose
+                        onClose = onCommonClose
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                repeat(2) { index ->
-                    val isSelected = pagerState.currentPage == index
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(if (isSelected) 8.dp else 6.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor
-                            )
-                    )
+            if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    repeat(2) { index ->
+                        val isSelected = pagerState.currentPage == index
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(if (isSelected) 8.dp else 6.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor
+                                )
+                        )
+                    }
                 }
             }
         }
