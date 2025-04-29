@@ -14,7 +14,9 @@ import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.StakeAccount
@@ -269,9 +271,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         }
         updateHeader(token)
         lifecycleScope.launch {
-            web3ViewModel.web3TokenExtraFlow(token.assetId).collect { balance ->
+            web3ViewModel.web3TokenExtraFlow(token.assetId).flowOn(Dispatchers.Main).collect { balance ->
                 balance?.let {
-                    updateHeader(token.copy(balance = it))
+                    if (isAdded) {
+                        updateHeader(token.copy(balance = it))
+                    }
                 }
             }
         }
