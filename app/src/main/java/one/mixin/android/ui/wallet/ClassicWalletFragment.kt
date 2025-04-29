@@ -91,6 +91,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     var walletId: String = ""
 
+    private val minAssetLevel: Int by lazy {
+        requireContext().defaultSharedPreferences.getInt(Constants.Account.PREF_ASSET_LIST_ABOVE_LEVEL, Constants.AssetLevel.UNKNOWN)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -210,7 +214,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
-        web3ViewModel.web3TokensExcludeHidden().observe(viewLifecycleOwner) {
+        web3ViewModel.web3TokensExcludeHidden(minAssetLevel).observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
                 setEmpty()
                 assets = it

@@ -10,6 +10,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -77,7 +78,7 @@ internal constructor(
 ) : ViewModel() {
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()
+    fun web3TokensExcludeHidden(minAssetLevel: Int = Constants.AssetLevel.VERIFIED) = web3Repository.web3TokensExcludeHidden(minAssetLevel)
     
     fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
 

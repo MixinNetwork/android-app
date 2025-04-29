@@ -39,7 +39,7 @@ import java.io.File
         Web3RawTransaction::class,
         Property::class
     ],
-    version = 2,
+    version = 3,
 )
 @TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
@@ -64,6 +64,13 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE tokens ADD COLUMN asset_level INTEGER NOT NULL DEFAULT 11")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_tokens_asset_level` ON `tokens` (`asset_level`)")
+            }
+        }
+
         fun getDatabase(context: Context): WalletDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -81,7 +88,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     INSTANCE = builder.build()
                 }
             }

@@ -21,4 +21,8 @@ data class AccountUpdateRequest(
     val transferNotificationThreshold: Double? = null,
     @SerializedName("transfer_confirmation_threshold")
     val transferConfirmationThreshold: Double? = null,
+    @SerializedName("asset_list_above_level")
+    val assetListAboveLevel: Int? = null,
+    @SerializedName("transaction_list_above_level")
+    val transactionListAboveLevel: Int? = null,
 )

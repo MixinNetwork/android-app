@@ -1937,4 +1937,5 @@
     <string name="web3_transaction_speed_up_warning">If the transaction is too far along this may not be possible.</string>
     <string name="url_privacy_wallet">https://support.mixin.one/en/article/what-is-a-privacy-wallet-1ng5j8f/</string>
     <string name="url_classic_wallet">https://support.mixin.one/en/article/what-is-a-common-wallet-y0rxkx/</string>
+    <string name="hide_unverified_token">Hide Unverified Tokens</string>
 </resources>

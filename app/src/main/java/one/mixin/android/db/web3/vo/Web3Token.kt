@@ -3,8 +3,10 @@ package one.mixin.android.db.web3.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
@@ -16,7 +18,10 @@ import java.math.RoundingMode
 
 @Entity(
     tableName = "tokens",
-    primaryKeys = ["wallet_id", "asset_id"]
+    primaryKeys = ["wallet_id", "asset_id"],
+    indices = [
+        Index(value = arrayOf("asset_level")),
+    ]
 )
 @Parcelize
 data class Web3Token(
@@ -56,6 +61,9 @@ data class Web3Token(
     @ColumnInfo(name = "change_usd")
     @SerializedName("change_usd")
     val changeUsd: String,
+    @ColumnInfo(name = "asset_level")
+    @SerializedName("asset_level")
+    val assetLevel: Int = Constants.AssetLevel.UNKNOWN,
 ) : Parcelable, Swappable {
 
     override fun toSwapToken(): SwapToken {

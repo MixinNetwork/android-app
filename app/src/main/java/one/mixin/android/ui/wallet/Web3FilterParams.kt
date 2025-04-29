@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.os.Parcelable
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.tip.wc.SortOrder
@@ -17,11 +18,13 @@ class Web3FilterParams(
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
+    var minAssetLevel: Int = Constants.AssetLevel.VERIFIED, // Default to Constants.AssetLevel.VERIFIED
 ) : Parcelable {
     override fun toString(): String {
         return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
             "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
-            "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
+            "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""} " +
+            "minAssetLevel:$minAssetLevel"
     }
 
     val selectTime: String?
@@ -71,6 +74,8 @@ class Web3FilterParams(
             filters.add("w.transaction_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
         
+        filters.add("(s.asset_level >= $minAssetLevel OR s.asset_level IS NULL)")
+
         val whereSql = if (filters.isEmpty()) {
             ""
         } else {

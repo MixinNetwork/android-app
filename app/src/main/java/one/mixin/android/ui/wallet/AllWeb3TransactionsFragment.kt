@@ -23,11 +23,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
@@ -77,9 +79,15 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
     }
 
+    private val minAssetLevel: Int by lazy {
+        requireContext().defaultSharedPreferences.getInt(Constants.Account.PREF_ASSET_LIST_ABOVE_LEVEL, Constants.AssetLevel.UNKNOWN)
+    }
+
     private val filterParams by lazy {
-        requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java) 
-            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
+        (requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java) 
+            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })).apply { 
+                minAssetLevel = this@AllWeb3TransactionsFragment.minAssetLevel 
+            }
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()

@@ -8,10 +8,15 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -21,6 +26,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
@@ -50,6 +56,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
     }
 
     private val binding by viewBinding(FragmentAppearanceBinding::bind)
+    private val viewModel by viewModels<SettingViewModel>()
 
     override fun onViewCreated(
         view: View,
@@ -137,6 +144,47 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 menuAdapter.checkPosition = if (requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)) 1 else 0
                 menuAdapter.notifyDataSetChanged()
                 sortMenu.show()
+            }
+            val hideUnverifiedToken = requireContext().defaultSharedPreferences.getInt(
+                Constants.Account.PREF_ASSET_LIST_ABOVE_LEVEL,
+                Constants.AssetLevel.UNKNOWN
+            ) != Constants.AssetLevel.UNKNOWN
+
+            binding.hideUnverifiedTokenSwitch.isChecked = hideUnverifiedToken
+
+            binding.hideUnverifiedTokenRl.setOnClickListener {
+                binding.hideUnverifiedTokenSwitch.isChecked = !binding.hideUnverifiedTokenSwitch.isChecked
+                val level = if (binding.hideUnverifiedTokenSwitch.isChecked) {
+                    Constants.AssetLevel.VERIFIED
+                } else {
+                    Constants.AssetLevel.UNKNOWN
+                }
+                lifecycleScope.launch {
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            viewModel.preferences(
+                                AccountUpdateRequest(
+                                    assetListAboveLevel = level,
+                                    transactionListAboveLevel = level
+                                )
+                            )
+                        },
+                        successBlock = {
+                            it.data?.let { account ->
+                                Session.storeAccount(account)
+                                requireContext().defaultSharedPreferences.edit().apply {
+                                    putInt(Constants.Account.PREF_ASSET_LIST_ABOVE_LEVEL, level)
+                                    apply()
+                                }
+                                toast(R.string.Save_success)
+                            }
+                        },
+                        exceptionBlock = {
+                            toast(R.string.Data_error)
+                            return@handleMixinResponse false
+                        }
+                    )
+                }
             }
         }
     }

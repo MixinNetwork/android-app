@@ -90,6 +90,7 @@ object Constants {
         const val PREF_GLOBAL_MARKET = "pref_global_market"
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
+        const val PREF_ASSET_LIST_ABOVE_LEVEL = "pref_asset_list_above_level"
 
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
@@ -251,6 +252,14 @@ object Constants {
         const val USDT_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
         const val USDC_ASSET_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
         const val XIN_ASSET_ID = "c94ac88f-4671-3976-b60a-09064f1811e8"
+    }
+
+    object AssetLevel {
+        const val GOOD = 12
+        const val VERIFIED = 11
+        const val UNKNOWN = 10
+        const val SPAM = 1
+        const val SCAM = 0
     }
 
     object Mute {
