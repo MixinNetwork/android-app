@@ -199,13 +199,14 @@ fun ParsedTxPreview(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
-        BalanceChangeHead()
         if (parsedTx == null) {
+            BalanceChangeHead()
             CircularProgressIndicator(
                 modifier = Modifier.size(32.dp),
                 color = MixinAppTheme.colors.accent,
             )
         } else if (parsedTx.instructions?.isEmpty() == true) {
+            BalanceChangeHead()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
@@ -226,6 +227,7 @@ fun ParsedTxPreview(
                 )
             }
         } else if (parsedTx.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+            BalanceChangeHead()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
@@ -241,6 +243,7 @@ fun ParsedTxPreview(
                 Box(modifier = Modifier.weight(1f))
             }
         } else if (parsedTx.balanceChanges.isNullOrEmpty() && parsedTx.approves.isNullOrEmpty()) {
+            BalanceChangeHead()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
@@ -255,12 +258,25 @@ fun ParsedTxPreview(
                 )
                 Box(modifier = Modifier.weight(1f))
             }
-        } else if (parsedTx.approves.isNullOrEmpty().not()){
+        } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty().not()){
+            BalanceChangeHead()
+            parsedTx.balanceChanges.forEach { bc ->
+                BalanceChangeItem(balanceChange = bc)
+                Box(modifier = Modifier.height(10.dp))
+            }
+            BalanceChangeHead(R.string.Approve)
+            parsedTx.approves.forEach { approve ->
+                ApproveChangeItem(approve)
+                Box(modifier = Modifier.height(10.dp))
+            }
+        } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty()){
+            BalanceChangeHead(R.string.Approve)
             parsedTx.approves.forEach { approve ->
                 ApproveChangeItem(approve)
                 Box(modifier = Modifier.height(10.dp))
             }
         } else {
+            BalanceChangeHead()
             val viewDetails = remember { mutableStateOf(false) }
             val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
             parsedTx.balanceChanges?.forEach { bc ->
@@ -298,10 +314,10 @@ fun ParsedTxPreview(
 }
 
 @Composable
-fun BalanceChangeHead() {
+fun BalanceChangeHead(string: Int = R.string.Balance_Change) {
     Box(modifier = Modifier.height(16.dp))
     Text(
-        text = stringResource(id = R.string.Balance_Change),
+        text = stringResource(id = string),
         color = MixinAppTheme.colors.textAssist,
         fontSize = 14.sp,
     )
