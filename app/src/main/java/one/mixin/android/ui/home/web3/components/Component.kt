@@ -222,7 +222,9 @@ fun ParsedTxPreview(
                 Box(modifier = Modifier.weight(1f))
                 CoilImage(
                     model = asset?.iconUrl,
-                    modifier = Modifier.size(32.dp).clip(CircleShape),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
             }
@@ -259,22 +261,22 @@ fun ParsedTxPreview(
                 Box(modifier = Modifier.weight(1f))
             }
         } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty().not()){
+            BalanceChangeHead(R.string.preauthorize_amount)
+            parsedTx.approves.forEach { approve ->
+                ApproveChangeItem(approve)
+                Box(modifier = Modifier.height(10.dp))
+            }
             BalanceChangeHead()
             parsedTx.balanceChanges.forEach { bc ->
                 BalanceChangeItem(balanceChange = bc)
                 Box(modifier = Modifier.height(10.dp))
             }
-            BalanceChangeHead(R.string.Approve)
-            parsedTx.approves.forEach { approve ->
-                ApproveChangeItem(approve)
-                Box(modifier = Modifier.height(10.dp))
-            }
         } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty()){
-            BalanceChangeHead(R.string.Approve)
-            parsedTx.approves.forEach { approve ->
+            BalanceChangeHead(R.string.preauthorize_amount)
+            parsedTx.approves.firstOrNull()?.let { approve ->
                 ApproveChangeItem(approve)
-                Box(modifier = Modifier.height(10.dp))
             }
+            Box(modifier = Modifier.height(10.dp))
         } else {
             BalanceChangeHead()
             val viewDetails = remember { mutableStateOf(false) }
@@ -292,7 +294,9 @@ fun ParsedTxPreview(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_play_arrow),
-                        modifier = Modifier.size(24.dp, 24.dp).rotate(rotation),
+                        modifier = Modifier
+                            .size(24.dp, 24.dp)
+                            .rotate(rotation),
                         contentDescription = null,
                         tint = MixinAppTheme.colors.accent,
                     )
@@ -318,7 +322,7 @@ fun BalanceChangeHead(string: Int = R.string.Balance_Change) {
     Box(modifier = Modifier.height(16.dp))
     Text(
         text = stringResource(id = string),
-        color = MixinAppTheme.colors.textAssist,
+        color = MixinAppTheme.colors.textRemarks,
         fontSize = 14.sp,
     )
     Box(modifier = Modifier.height(8.dp))
@@ -434,27 +438,29 @@ private fun ApproveChangeItem(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        CoilImage(
-            model = approve.icon,
-            modifier = Modifier.size(32.dp).clip(CircleShape),
-            placeholder = R.drawable.ic_avatar_place_holder,
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = approve.name?:"",
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.W600,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-        )
-        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = "$amountValue ${approve.symbol}",
-            color = if ((approve.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            color = MixinAppTheme.colors.red,
             maxLines = 1,
-            fontSize = 14.sp,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        CoilImage(
+            model = approve.icon,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape),
+            placeholder = R.drawable.ic_avatar_place_holder,
+        )
+    }
+    Spacer(modifier = Modifier.height(4.dp))
+    if (approve.amount.equals("unlimited", true)) {
+        Text(
+            text = stringResource(R.string.approval_unlimited_warning, approve.symbol ?: ""),
+            color = MixinAppTheme.colors.red,
+            maxLines = 1,
+            fontSize = 12.sp,
         )
     }
 }
@@ -469,7 +475,9 @@ private fun BalanceChangeItem(
     ) {
         CoilImage(
             model = balanceChange.icon,
-            modifier = Modifier.size(32.dp).clip(CircleShape),
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape),
             placeholder = R.drawable.ic_avatar_place_holder,
         )
         Spacer(modifier = Modifier.width(12.dp))

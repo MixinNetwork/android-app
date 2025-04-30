@@ -1286,7 +1286,7 @@
     <string name="normal">Normal</string>
     <string name="slow">Slow</string>
     <string name="Message">Message</string>
-    <string name="Balance_Change">Balance Changes (estimate)</string>
+    <string name="Balance_Change">BALANCE CHANGES(ESTIMATE)</string>
     <string name="Success">Success</string>
     <string name="TIP_Wallet">TIP Wallet</string>
     <string name="Cancel_transaction">Cancel transaction</string>
@@ -1937,4 +1937,6 @@
     <string name="web3_transaction_speed_up_warning">If the transaction is too far along this may not be possible.</string>
     <string name="url_privacy_wallet">https://support.mixin.one/en/article/what-is-a-privacy-wallet-1ng5j8f/</string>
     <string name="url_classic_wallet">https://support.mixin.one/en/article/what-is-a-common-wallet-y0rxkx/</string>
+    <string name="preauthorize_amount">PRE-AUTHORIZE AMOUNT</string>
+    <string name="approval_unlimited_warning">This app can withdraw all your %1$s</string>
 </resources>
