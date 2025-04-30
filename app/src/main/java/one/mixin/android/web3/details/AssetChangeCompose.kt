@@ -35,7 +35,8 @@ fun AssetChangeItem(
     symbol: String,
     iconUrl: String?,
     isReceive: Boolean = false,
-    isUnlimited: Boolean = false
+    isUnlimited: Boolean = false,
+    isApproval: Boolean = false
 ) {
     val amountValue = if (isUnlimited) {
         stringResource(R.string.unlimited).replaceFirstChar { it.uppercase() }
@@ -51,6 +52,7 @@ fun AssetChangeItem(
         if (amount.startsWith("+") || amount.startsWith("-")) "" else if (isReceive) "+" else "-"
     val textColor =
         if (status == TransactionStatus.PENDING.value) MixinAppTheme.colors.textPrimary
+        else if (isApproval) MixinAppTheme.colors.walletRed
         else if (isReceive) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
     Row(
@@ -69,7 +71,7 @@ fun AssetChangeItem(
             fontSize = 14.sp,
             color = textColor
         )
-
+        Spacer(modifier = Modifier.width(2.dp))
         Text(
             text = symbol,
             fontSize = 14.sp,
@@ -117,7 +119,8 @@ fun AssetChangesList(
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
                     isReceive = false,
-                    isUnlimited = approval.type == "unlimited"
+                    isUnlimited = approval.type == "unlimited",
+                    isApproval = approvals.isEmpty().not()
                 )
                 if (index < approvals.size - 1) {
                     Spacer(modifier = Modifier.height(4.dp))
