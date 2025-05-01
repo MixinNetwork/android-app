@@ -8,6 +8,10 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -22,7 +26,6 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
-import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
@@ -87,6 +90,13 @@ internal constructor(
     suspend fun  web3TokenItemById(chainId: String) = withContext(Dispatchers.IO) {
         web3Repository.web3TokenItemById(chainId)
     }
+
+    fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
+        val item = tokenRepository.findAssetItemById(assetId)?.priceUsd
+        emit(item)
+    }.catch { e ->
+        emit(null)
+    }.flowOn(Dispatchers.IO)
 
     fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
