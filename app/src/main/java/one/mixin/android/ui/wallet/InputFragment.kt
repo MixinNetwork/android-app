@@ -556,9 +556,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 serializedTx,
                                                 null
                                             )
-                                        txStateFragment.setCloseAction {
-                                            // do nothing
-                                        }
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
                                     onDismiss = {

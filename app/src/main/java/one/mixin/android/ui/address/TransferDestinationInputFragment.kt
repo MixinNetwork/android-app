@@ -39,7 +39,6 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -57,6 +56,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
+import one.mixin.android.ui.wallet.InputFragment.Companion.ARGS_TO_USER
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
@@ -77,28 +77,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         const val ARGS_WEB3_TOKEN = "args_web3_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
-
-        fun newInstance(
-            address: String,
-            web3Token: Web3TokenItem,
-            chainToken: Web3TokenItem,
-        ) =
-            TransferDestinationInputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_WEB3_TOKEN, web3Token)
-                    putParcelable(ARGS_CHAIN_TOKEN, chainToken)
-                    putString(ARGS_ADDRESS, address)
-                }
-            }
-
-        fun newInstance(
-            token: TokenItem,
-        ) =
-            TransferDestinationInputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_ASSET, token)
-                }
-            }
     }
 
     private val token: TokenItem? by lazy {
@@ -246,7 +224,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         TransferContactBottomSheetDialogFragment.newInstance(t)
                                             .apply {
                                                 onUserClick = { user->
-                                                    this@TransferDestinationInputFragment.navTo(InputFragment.newInstance(t, user), InputFragment.TAG)
+                                                    navigateToInputFragmentWithBundle(
+                                                        Bundle().apply {
+                                                            putParcelable(InputFragment.ARGS_TO_USER, user)
+                                                            putParcelable(InputFragment.ARGS_TOKEN, t)
+                                                        })
                                                 }
                                             }
                                             .show(
@@ -279,7 +261,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
                                                 (chainToken ?: web3ViewModel.web3TokenItemById(token.chainId))?.let { chain ->
-                                                    navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = deposit.destination, web3Token = token, chainToken = chain, toWallet = true), InputFragment.TAG)
+                                                  navigateToInputFragmentWithBundle(
+                                                        Bundle().apply {
+                                                                putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                                putString(InputFragment.ARGS_TO_ADDRESS, deposit.destination)
+                                                                putParcelable(InputFragment.ARGS_WEB3_TOKEN, token)
+                                                                putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                putBoolean(InputFragment.ARGS_TO_WALLET, true)
+                                                    })
                                                 }
                                             }
                                         }
@@ -355,24 +344,24 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                 (chainToken ?: web3ViewModel.web3TokenItemById(
                                                     web3Token!!.chainId
                                                 ))?.let { chain ->
-                                                    navTo(
-                                                        InputFragment.newInstance(
-                                                            fromAddress = fromAddress,
-                                                            toAddress = address.destination,
-                                                            web3Token = web3Token!!,
-                                                            chainToken = chain,
-                                                            label = address.label
-                                                        ), InputFragment.TAG
-                                                    )
+                                                    navigateToInputFragmentWithBundle(Bundle().apply {
+                                                        putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                        putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                                                        putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token!!)
+                                                        putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                        putString(InputFragment.ARGS_TO_ADDRESS_LABEL, address.label)
+                                                    })
                                                 }
                                             }
                                             dialog.dismiss()
                                         }
-                                    } else if (token != null){
-                                        navTo(
-                                            InputFragment.newInstance(buildWithdrawalBiometricItem(address, token!!)),
-                                            InputFragment.TAG
-                                        )
+                                    } else if (token != null) {
+                                        navigateToInputFragmentWithBundle(Bundle().apply {
+                                            putParcelable(
+                                                InputFragment.ARGS_BIOMETRIC_ITEM,
+                                                buildWithdrawalBiometricItem(address, token!!)
+                                            )
+                                        })
                                     }
                                 },
                                 onDeleteAddress = { address ->
@@ -564,7 +553,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
             setCancelable(false)
         }
-        
+
         lifecycleScope.launch {
             dialog.show()
             try {
@@ -577,13 +566,29 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                         }
                         when {
                             asset != null && destination.isNotEmpty() && tag != null -> {
-                                navTo(InputFragment.newInstance(asset, destination, tag, label = addressLabel), InputFragment.TAG)
+                                navigateToInputFragmentWithBundle(Bundle().apply {
+                                    putParcelable(InputFragment.ARGS_TOKEN, asset)
+                                    putString(InputFragment.ARGS_TO_ADDRESS, destination)
+                                    putString(InputFragment.ARGS_TO_ADDRESS_TAG, tag)
+                                    putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
+                                })
                             }
                             asset != null && destination.isNotEmpty() -> {
-                                navTo(InputFragment.newInstance(asset, destination, toAccount = toAccount, label = addressLabel), InputFragment.TAG)
+                                navigateToInputFragmentWithBundle(Bundle().apply {
+                                    putParcelable(InputFragment.ARGS_TOKEN, asset)
+                                    putString(InputFragment.ARGS_TO_ADDRESS, destination)
+                                    putBoolean(InputFragment.ARGS_TO_ACCOUNT, toAccount ?: false)
+                                    putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
+                                })
                             }
                             fromAddress != null && destination.isNotEmpty() && web3Token != null && chainToken != null -> {
-                                navTo(InputFragment.newInstance(fromAddress = fromAddress, toAddress = destination, web3Token = web3Token, chainToken = chainToken, label = addressLabel), InputFragment.TAG)
+                                navigateToInputFragmentWithBundle(Bundle().apply {
+                                    putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                    putString(InputFragment.ARGS_TO_ADDRESS, destination)
+                                    putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token)
+                                    putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
+                                    putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
+                                })
                             }
                         }
                     } else {
@@ -596,6 +601,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 dialog.dismiss()
             }
         }
+    }
+
+    private fun navigateToInputFragmentWithBundle(bundle: Bundle) {
+        findNavController().navigate(R.id.action_transfer_destination_to_input, bundle)
     }
 
     private fun handleLabelComplete(

@@ -476,4 +476,23 @@
         <item name="android:autoSizeTextType" tools:ignore="NewApi">uniform</item>
     </style>
 
+    <style name="DatabaseSpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:dropDownWidth">200dp</item>
+        <item name="android:popupBackground">?attr/bg_white</item>
+        <item name="android:dropDownVerticalOffset">4dp</item>
+        <item name="android:textColor">?attr/text_primary</item>
+    </style>
+
+    <style name="DatabaseSpinnerDropDownStyle" parent="Widget.AppCompat.DropDownItem.Spinner">
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
 </resources>
