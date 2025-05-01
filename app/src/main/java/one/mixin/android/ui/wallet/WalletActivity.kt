@@ -135,7 +135,7 @@ class WalletActivity : BlazeBaseActivity() {
                 val asset = intent.getParcelableExtraCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)
                 navController.setGraph(navGraph, Bundle().apply {
                     asset?.let { asset-> putParcelable(TransactionsFragment.ARGS_ASSET, asset) }
-                    address?.let { address -> putString(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, address) }
+                    address?.let { address -> putString(TransferDestinationInputFragment.ARGS_ADDRESS, address) }
                     token?.let { token -> putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token) }
                     chain?.let { chain -> putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain) }
                 })
