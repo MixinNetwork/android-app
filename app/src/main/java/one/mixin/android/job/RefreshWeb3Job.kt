@@ -31,6 +31,10 @@ class RefreshWeb3Job : BaseJob(
         if (wallets.isEmpty()) {
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+            if (erc20Address.isBlank() || solAddress.isBlank()) {
+                Timber.e("EVM or Solana address is not set")
+                return@runBlocking
+            }
             createWallet(
                 "ClassicWallet", WALLET_CATEGORY_CLASSIC, listOf(
                     Web3AddressRequest(
