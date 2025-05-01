@@ -3,6 +3,9 @@ package one.mixin.android.api.response.web3
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.extension.currencyFormat
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -35,6 +38,20 @@ data class BalanceChange(
     val icon: String?,
 ) {
     fun amountString() = if ((amount.toBigDecimalOrNull()?: BigDecimal.ZERO) >= BigDecimal.ZERO) "+$amount" else amount
+
+    fun formatPrice(priceUsd: String?): String? {
+        if (priceUsd == null || priceUsd == "0") return null
+        
+        val amountDecimal = amount.toBigDecimalOrNull()?.abs() ?: return null
+        val price = amountDecimal.multiply(BigDecimal(priceUsd)).multiply(BigDecimal(Fiats.getRate()))
+        return if (price == BigDecimal.ZERO) {
+            null
+        } else if (price < BigDecimal("0.01")) {
+            "< ${Fiats.getSymbol()} 0.01"
+        } else {
+            "${Fiats.getSymbol()} ${price.setScale(2, RoundingMode.HALF_UP)}"
+        }
+    }
 }
 
 data class Approve(
