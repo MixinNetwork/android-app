@@ -528,6 +528,10 @@ class TokenRepository
             }
         }
 
+        suspend fun deleteWallets() {
+            web3WalletDao.deleteAllWallets()
+        }
+
         suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(hash, chainId)
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)

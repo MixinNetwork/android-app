@@ -29,4 +29,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Transaction
     @Query("SELECT COUNT(*) FROM wallets")
     suspend fun getWalletsCount(): Int
+
+    @Query("DELETE FROM wallets")
+    suspend fun deleteAllWallets()
 }
