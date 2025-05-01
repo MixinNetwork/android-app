@@ -102,8 +102,8 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
-    <string name="ASSET_CHANGES">ASSET CHANGES</string>
-    <string name="TOKEN_ACCESS_APPROVAL">TOKEN ACCESS APPROVAL</string>
+    <string name="ASSET_CHANGES">BALANCE CHANGES</string>
+    <string name="TOKEN_ACCESS_APPROVAL">PRE-AUTHORIZE AMOUNT</string>
     <string name="MAO">MAO</string>
     <string name="DAPPS">APPS</string>
     <string name="Audio">Audio</string>
