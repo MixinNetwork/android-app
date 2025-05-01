@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -120,7 +121,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                     }
                                     val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
                                     Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
-                                    if (address != null) this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
+                                    WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address, token, chain)
                                 }
                                 dismissNow()
                             }

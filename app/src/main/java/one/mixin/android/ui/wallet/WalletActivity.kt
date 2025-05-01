@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
@@ -8,10 +9,13 @@ import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.address.TransferDestinationInputFragment
+import one.mixin.android.ui.address.TransferDestinationInputFragment.Companion.ARGS_WEB3_TOKEN
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -123,6 +127,19 @@ class WalletActivity : BlazeBaseActivity() {
                     putString("args_address", address)
                 })
             }
+            Destination.Web3TransferDestinationInput -> {
+                navGraph.setStartDestination(R.id.transfer_destination_input_fragment)
+                val address = intent.getStringExtra(TransferDestinationInputFragment.ARGS_ADDRESS)
+                val token = intent.getParcelableExtraCompat(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
+                val chain = intent.getParcelableExtraCompat(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
+                val asset = intent.getParcelableExtraCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)
+                navController.setGraph(navGraph, Bundle().apply {
+                    asset?.let { asset-> putParcelable(TransactionsFragment.ARGS_ASSET, asset) }
+                    address?.let { address -> putString(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, address) }
+                    token?.let { token -> putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token) }
+                    chain?.let { chain -> putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain) }
+                })
+            }
         }
     }
 
@@ -141,6 +158,7 @@ class WalletActivity : BlazeBaseActivity() {
         Market,
         Address,
         Web3Transactions,
+        Web3TransferDestinationInput,
     }
 
     companion object {
@@ -151,6 +169,24 @@ class WalletActivity : BlazeBaseActivity() {
         const val ADDRESS = "address"
         const val WEB3_TOKEN = "web3_token"
         const val PENDING_TYPE = "pending_type"
+
+        fun navigateToWalletActivity(activity: Activity, address: String, token: Web3TokenItem, chain: Web3TokenItem) {
+            val intent = Intent(activity, WalletActivity::class.java).apply {
+                putExtra(TransferDestinationInputFragment.ARGS_ADDRESS, address)
+                putExtra(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
+                putExtra(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
+                putExtra(DESTINATION, Destination.Web3TransferDestinationInput)
+            }
+            activity.startActivity(intent)
+        }
+
+        fun navigateToWalletActivity(activity: Activity, asset: TokenItem) {
+            val intent = Intent(activity, WalletActivity::class.java).apply {
+                putExtra(TransactionsFragment.ARGS_ASSET, asset)
+                putExtra(DESTINATION, Destination.Web3TransferDestinationInput)
+            }
+            activity.startActivity(intent)
+        }
 
         fun showWithToken(
             activity: Activity,

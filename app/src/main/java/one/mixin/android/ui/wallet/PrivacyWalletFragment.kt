@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
@@ -114,8 +115,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
-                                navTo(TransferDestinationInputFragment.newInstance(it),
-                                    TransferDestinationInputFragment.TAG)
+                                WalletActivity.navigateToWalletActivity(this@PrivacyWalletFragment.requireActivity(), it)
                             }.setOnDepositClick {
                                 showReceiveAssetList()
                             }
@@ -467,6 +467,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        WalletActivity.showWithToken(requireActivity(), item as TokenItem, WalletActivity.Destination.Transactions)
+        WalletActivity.navigateToWalletActivity(requireActivity(), item as TokenItem)
     }
 }
