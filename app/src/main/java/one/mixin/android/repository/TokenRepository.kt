@@ -645,6 +645,7 @@ class TokenRepository
                         result = safeSnapshotDao.findSnapshotById(snapshotId)
                     }
                 },
+                defaultErrorHandle = {}
             )
             return result
         }
