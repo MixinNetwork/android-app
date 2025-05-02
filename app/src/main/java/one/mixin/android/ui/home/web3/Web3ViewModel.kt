@@ -300,7 +300,8 @@ internal constructor(
             if (r.isSuccess.not()) return BigDecimal.ZERO
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
-                tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas)?.multiply(
+                    BigDecimal.valueOf(1.01)) ?: BigDecimal.ZERO
             }
         }
     }
