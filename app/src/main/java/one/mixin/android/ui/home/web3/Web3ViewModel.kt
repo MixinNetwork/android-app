@@ -8,6 +8,10 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -15,7 +19,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.db.web3.vo.Web3Address
@@ -23,7 +26,6 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
-import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
@@ -55,9 +57,9 @@ import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
+import org.sol4k.Convert.lamportToSol
 import org.sol4k.PublicKey
-import org.sol4k.VersionedTransaction
-import org.sol4k.lamportToSol
+import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -89,10 +91,17 @@ internal constructor(
         web3Repository.web3TokenItemById(chainId)
     }
 
+    fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
+        val item = tokenRepository.findAssetItemById(assetId)?.priceUsd
+        emit(item)
+    }.catch { e ->
+        emit(null)
+    }.flowOn(Dispatchers.IO)
+
     fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
-    fun tokenExtraFlow(assetId: String) =
-        tokenRepository.tokenExtraFlow(assetId)
+    fun web3TokenExtraFlow(assetId: String) =
+        tokenRepository.web3TokenExtraFlow(assetId)
 
     suspend fun findOrSyncAsset(
         assetId: String,
@@ -206,13 +215,6 @@ internal constructor(
 
     suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
-    suspend fun validateExternalAddress(
-        assetId: String,
-        destination: String,
-        tag: String?,
-    ) =
-        accountRepository.validateExternalAddress(assetId, destination, tag)
-
     fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> =
         tokenRepository.collectibles(sortOrder)
 
@@ -284,14 +286,9 @@ internal constructor(
     ): BigDecimal? {
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
-            if (token.isSolToken()) {
-                val tx = VersionedTransaction.from(transaction.data ?: "")
-                val fee = tx.calcFee()
-                val mb = getSolMinimumBalanceForRentExemption(PublicKey(fromAddress))
-                return fee.add(mb)
-            } else {
-                return BigDecimal.ZERO
-            }
+            val tx = VersionedTransactionCompat.from(transaction.data ?: "")
+            val fee = tx.calcFee()
+            return fee
         } else {
             val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
                 EstimateFeeRequest(
@@ -366,28 +363,18 @@ internal constructor(
     ): String? {
         val desiredAmount = BigDecimal(amount)
         val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, assetIdToAsset(assetId))
-
         if (candidateOutputs.isEmpty()) {
             return null
         }
 
         val selectedOutputs = mutableListOf<Output>()
         var totalSelectedAmount = BigDecimal.ZERO
-        var anyNotConfirmed = false
         candidateOutputs.forEach { output ->
-            if (output.sequence == 0L) {
-                anyNotConfirmed = true
-            }
             val outputAmount = BigDecimal(output.amount)
             selectedOutputs.add(output)
             totalSelectedAmount += outputAmount
             if (totalSelectedAmount >= desiredAmount) {
-                if (anyNotConfirmed) {
-                    // Refresh when there is an undetermined UTXO
-                    jobManager.addJobInBackground(SyncOutputJob())
-                }
-                return if (anyNotConfirmed) ""
-                else null
+                return null
             }
         }
 
@@ -398,12 +385,12 @@ internal constructor(
         if (totalSelectedAmount < desiredAmount) {
             // Refresh when balance is insufficient
             jobManager.addJobInBackground(SyncOutputJob())
-            if (anyNotConfirmed) return ""
-            else return null
+            return null
         }
 
         throw Exception("Impossible")
     }
+
 
     suspend fun firstUnspentTransaction() =
         withContext(Dispatchers.IO) {
@@ -428,6 +415,12 @@ internal constructor(
 
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
+    suspend fun findTokensByIds(assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.findWeb3TokenItemsByIds(assetIds)
+    }
+
+    suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)
+
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()
@@ -435,18 +428,19 @@ internal constructor(
 
     fun marketById(assetId: String) = tokenRepository.marketById(assetId)
 
+    suspend fun getPendingRawTransactions() = tokenRepository.getPendingRawTransactions()
+
     suspend fun getPendingTransactions() = tokenRepository.getPendingTransactions()
 
-    suspend fun getPendingTransactions(chainId: String) = tokenRepository.getPendingTransactions(chainId)
+    suspend fun getPendingRawTransactions(chainId: String) = tokenRepository.getPendingRawTransactions(chainId)
+
+    fun getPendingTransactionCount(): LiveData<Int> = tokenRepository.getPendingTransactionCount()
 
     suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
-    suspend fun deletePending(hash: String, chainId: String) =
-        withContext(Dispatchers.IO) { tokenRepository.deletePending(hash, chainId) }
+    suspend fun updateTransaction(hash: String, status: String, chainId: String) =
+        withContext(Dispatchers.IO) { tokenRepository.updateTransaction(hash, status, chainId) }
 
-    suspend fun updateWeb3RawTransaction(hash: String, type: String) =
-        withContext(Dispatchers.IO) { tokenRepository.updateWeb3RawTransaction(hash, type) }
-
-    suspend fun insertRawTranscation(raw: Web3RawTransaction) =
+    suspend fun insertRawTransaction(raw: Web3RawTransaction) =
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
 }

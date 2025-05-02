@@ -134,10 +134,14 @@ class NewSchemeParser(
                 val traces = invoice.entries.map { it.traceId }
                 val response = linkViewModel.transactionsFetch(traces)
                 if (response.isSuccess && response.data.isNullOrEmpty().not()) {
-                    return if ((response.data?.size ?: 0) == traces.size) {
-                        Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
-                    } else {
-                        Result.failure(ParserError(FAILURE))
+                    if ((response.data?.size ?: 0) == traces.size) {
+                        return Result.failure(ParserError(FAILURE, message = bottomSheet.getString(R.string.pay_paid)))
+                    }
+                    val responseRequestIds = response.data?.map { it.requestId }
+                    val isValid = traces.size > (responseRequestIds?.size ?: 0) &&
+                        traces.subList(0, responseRequestIds?.size ?: 0) == responseRequestIds
+                    if (!isValid) {
+                        return Result.failure(ParserError(FAILURE))
                     }
                 }
                 var result: Result<Int>? = null
@@ -285,10 +289,10 @@ class NewSchemeParser(
     suspend fun parseExternalTransferUrl(url: String) {
         var errorMsg: String? = null
         val result =
-            parseExternalTransferUri(url, { assetId, destination ->
+            parseExternalTransferUri(url, { assetId, chainId, destination ->
                 handleMixinResponse(
                     invokeNetwork = {
-                        linkViewModel.validateExternalAddress(assetId, destination, null)
+                        linkViewModel.validateExternalAddress(assetId, chainId, destination, null)
                     },
                     successBlock = {
                         return@handleMixinResponse it.data
@@ -414,10 +418,7 @@ class NewSchemeParser(
             callback.invoke()
         }
         val consolidationAmount = linkViewModel.checkUtxoSufficiency(token.assetId, amount)
-        if (consolidationAmount == "") {
-            WaitingBottomSheetDialogFragment.newInstance(true)
-                .showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
-        } else if (consolidationAmount != null) {
+        if (consolidationAmount != null) {
             UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), t.asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
                 .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
         } else {
@@ -427,11 +428,7 @@ class NewSchemeParser(
 
     private suspend fun checkUtxo(assetId: String, amount: String): Boolean {
         val consolidationAmount = linkViewModel.checkUtxoSufficiency(assetId, amount)
-        if (consolidationAmount == "") {
-            WaitingBottomSheetDialogFragment.newInstance(true)
-                .showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
-            return false
-        } else if (consolidationAmount != null) {
+        if (consolidationAmount != null) {
             val asset = checkAsset(assetId) ?: return false
             UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), asset, consolidationAmount, UUID.randomUUID().toString(), null, null))
                 .show(bottomSheet.parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)

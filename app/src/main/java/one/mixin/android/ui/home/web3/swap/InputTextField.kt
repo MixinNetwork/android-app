@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -69,7 +72,14 @@ fun InputContent(
                         Text(
                             text = text,
                             style = TextStyle(
-                                fontSize = 24.sp,
+                                fontSize = when {
+                                    text.length <= 15 -> 24.sp
+                                    else -> {
+                                        val excess = text.length - 15
+                                        val reduction = (excess / 2) * 2
+                                        (24 - reduction).coerceAtLeast(16).sp
+                                    }
+                                },
                                 color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
                                 fontWeight = FontWeight.Black,
                                 textAlign = TextAlign.Start,
@@ -140,7 +150,14 @@ fun InputContent(
                                 }
                             },
                         textStyle = TextStyle(
-                            fontSize = 24.sp,
+                            fontSize = when {
+                                textFieldValue.text.length <= 15 -> 24.sp
+                                else -> {
+                                    val excess = textFieldValue.text.length - 15
+                                    val reduction = (excess / 2) * 2
+                                    (24 - reduction).coerceAtLeast(16).sp
+                                }
+                            },
                             color = MixinAppTheme.colors.textPrimary,
                             fontWeight = FontWeight.Black,
                             textAlign = TextAlign.Start,
@@ -154,7 +171,14 @@ fun InputContent(
                         Text(
                             text = "0",
                             color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 24.sp,
+                            fontSize = when {
+                                text.length <= 15 -> 24.sp
+                                else -> {
+                                    val excess = text.length - 15
+                                    val reduction = (excess / 2) * 2
+                                    (24 - reduction).coerceAtLeast(16).sp
+                                }
+                            },
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.align(Alignment.CenterStart)
                         )
@@ -202,14 +226,20 @@ private fun Right(
             }
         }
         Box(modifier = Modifier.width(8.dp))
-        Text(
+        BasicText(
+            modifier = Modifier.widthIn(max = 56.dp),
             text = token?.symbol ?: "",
-            style =
-                TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textPrimary,
-                ),
+            maxLines = 2,
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary,
+            ),
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 6.sp,
+                maxFontSize = 16.sp,
+                stepSize = 1.sp
+            )
         )
         Box(modifier = Modifier.width(8.dp))
         Icon(

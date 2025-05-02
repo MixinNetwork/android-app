@@ -10,18 +10,21 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
-import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
@@ -47,14 +50,15 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.job.RefreshWeb3TokenJob
-import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
+import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
@@ -69,7 +73,6 @@ import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -190,23 +193,48 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         if (chain == null) {
                             jobManager.addJobInBackground(RefreshWeb3TokenJob(token.assetId))
                             toast(R.string.Please_wait_a_bit)
-                        } else navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
+                        } else {
+                            requireView().navigate(
+                                R.id.action_web3_transactions_to_transfer_destination,
+                                Bundle().apply {
+                                    putString(TransferDestinationInputFragment.ARGS_ADDRESS, address)
+                                    putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
+                                    putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
+                                }
+                            )
+                        }
                     }
                 }
                 sendReceiveView.receive.setOnClickListener {
-                    navTo(Web3AddressFragment.newInstance(address), Web3AddressFragment.TAG)
+                    requireView().navigate(
+                        R.id.action_web3_transactions_to_web3_address,
+                        Bundle().apply {
+                            putString("address", address)
+                        }
+                    )
                 }
-                sendReceiveView.swap.isVisible = token.isSolana()
                 sendReceiveView.swap.setOnClickListener {
-                    AnalyticsTracker.trackSwapStart("solana", "solana")
+                    AnalyticsTracker.trackSwapStart("web3", "web3")
                     lifecycleScope.launch {
                         val tokens = web3ViewModel.findWeb3TokenItems()
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = tokens.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }, input = token.getUnique(), inMixin = false), SwapFragment.TAG)
+                        requireView().navigate(
+                            R.id.action_web3_transactions_to_swap,
+                            Bundle().apply {
+                                putParcelableArrayList(SwapFragment.ARGS_WEB3_TOKENS, ArrayList(tokens))
+                                putString(SwapFragment.ARGS_INPUT, token.assetId)
+                                putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
+                            }
+                        )
                     }
-
                 }
+
                 transactionsTitleLl.setOnClickListener {
-                    navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+                    view.navigate(
+                        R.id.action_web3_transactions_to_all_web3_transactions,
+                        Bundle().apply {
+                            putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+                        }
+                    )
                 }
                 marketRl.setOnClickListener {
                     lifecycleScope.launch {
@@ -241,8 +269,16 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             binding.bottomRl.isVisible = list.isEmpty()
             binding.transactionsRv.list = list
         }
-
         updateHeader(token)
+        lifecycleScope.launch {
+            web3ViewModel.web3TokenExtraFlow(token.assetId).flowOn(Dispatchers.Main).collect { balance ->
+                balance?.let {
+                    if (isAdded) {
+                        updateHeader(token.copy(balance = it))
+                    }
+                }
+            }
+        }
     }
 
 
@@ -348,56 +384,23 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun onResume() {
         super.onResume()
-        startRefreshData()
+        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+            fragment = this,
+            web3ViewModel = web3ViewModel,
+            jobManager = jobManager,
+            refreshJob = refreshJob
+        )
     }
 
     override fun onPause() {
         super.onPause()
-        cancelRefreshData()
-    }
-
-    private fun startRefreshData() {
-        cancelRefreshData()
-        refreshJob = lifecycleScope.launch {
-            refreshTransactionData()
-        }
-    }
-
-    private fun cancelRefreshData() {
-        refreshJob?.cancel()
-        refreshJob = null
-    }
-
-    private suspend fun refreshTransactionData() {
-        try {
-            while (true) {
-                val pendingRawTransaction = web3ViewModel.getPendingTransactions(token.chainId)
-                if (pendingRawTransaction.isEmpty()) {
-                    delay(10_000)
-                } else {
-                    pendingRawTransaction.forEach { transition ->
-                        val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
-                            web3ViewModel.insertRawTranscation(r.data!!)
-                            jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
-                        } else if (r.errorCode == 404) {
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
-                            web3ViewModel.updateWeb3RawTransaction(transition.hash, TransactionType.TxNotFound.value)
-                        }
-                    }
-                    delay(5_000)
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-
+        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     private suspend fun getStakeAccounts(address: String) {
         val stakeAccounts = web3ViewModel.getStakeAccounts(address)
-        if (!isAdded) return
+        if (!isAdded) { return }
+        
         if (stakeAccounts.isNullOrEmpty()) {
             updateStake(StakeAccountSummary(0, "0"))
             return
@@ -410,9 +413,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             amount += (a.account.data.parsed.info.stake.delegation.stake.toLongOrNull() ?: 0)
         }
 
-        val stakeAccountSummary = StakeAccountSummary(count, amount.solLamportToAmount().stripTrailingZeros().toPlainString())
+        val amountStr = amount.solLamportToAmount().stripTrailingZeros().toPlainString()
+        
+        val stakeAccountSummary = StakeAccountSummary(count, amountStr)
+        this.stakeAccounts = stakeAccounts
+        
         updateStake(stakeAccountSummary)
     }
+
+    var stakeAccounts: List<StakeAccount>? = null
 
     private fun updateStake(stakeAccountSummary: StakeAccountSummary?) {
         binding.stake.apply {
@@ -425,6 +434,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 amountTv.text = "${stakeAccountSummary.amount} SOL"
                 countTv.text = "${stakeAccountSummary.count} account"
                 stakeRl.setOnClickListener {
+                    navTo(StakingFragment.newInstance(ArrayList(stakeAccounts ?: emptyList()), token.balance), StakingFragment.TAG)
                 }
             }
         }
@@ -436,9 +446,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
-        navTo(
-            Web3TransactionFragment.newInstance(item, if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name, token),
-            Web3TransactionFragment.TAG
+        findNavController().navigate(
+            R.id.action_web3_transactions_to_web3_transaction,
+            Bundle().apply {
+                putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
+                putString(Web3TransactionFragment.ARGS_CHAIN, if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name)
+                putParcelable(ARGS_TOKEN, token)
+            }
         )
     }
 
@@ -446,6 +460,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     }
 
     override fun onMoreClick() {
-        navTo(AllWeb3TransactionsFragment.newInstance(tokenItem = token), AllWeb3TransactionsFragment.TAG, AllWeb3TransactionsFragment.TAG)
+        requireView().navigate(
+            R.id.action_web3_transactions_to_all_web3_transactions,
+            Bundle().apply {
+                putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+            }
+        )
     }
 }

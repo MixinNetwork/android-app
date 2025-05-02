@@ -5,12 +5,15 @@ import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
@@ -18,6 +21,7 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
+import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -26,6 +30,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
@@ -39,14 +44,12 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
-import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
-import one.mixin.android.ui.common.Web3WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -67,8 +70,10 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.Keyboard
+import org.sol4k.PublicKey
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -132,7 +137,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             toAddress: String,
             tag: String? = null,
             toAccount: Boolean? = null,
-            isReceive: Boolean = false
+            isReceive: Boolean = false,
+            label: String? = null
         ) =
             InputFragment().apply {
                 withArgs {
@@ -143,6 +149,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
                     putBoolean(ARGS_RECEIVE, isReceive)
+                    if (label != null) {
+                        putString(ARGS_TO_ADDRESS_LABEL, label)
+                    }
                 }
             }
 
@@ -268,6 +277,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private var currentNote: String? = null
 
+    private var isSolanaToAccountExists = true
+
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -361,14 +372,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             } else {
                                 if (v == "0" && value != ".") {
                                     v = value
-                                } else if (!isReverse && isEightDecimal(v)) {
-                                    // do noting
+                                } else if (!isReverse && ((isEightDecimal(v) && web3Token == null))) {
+                                    // do nothing
                                     return
                                 } else if (isReverse && isTwoDecimal(v)) {
-                                    // do noting
+                                    // do nothing
                                     return
                                 } else if (value == "." && v.contains(".")) {
-                                    // do noting
+                                    // do nothing
                                     return
                                 } else {
                                     v += value
@@ -392,7 +403,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
+                balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                    if (web3Token == null) {
+                        it.numberFormat8()
+                    } else {
+                        it.numberFormat12()
+                    }}} $tokenSymbol")
                 max.setOnClickListener {
                     valueClick(BigDecimal.ONE)
                 }
@@ -410,18 +426,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 )
                 when(transferType) {
                     TransferType.USER, TransferType.BIOMETRIC_ITEM -> {
-                        binding.infoLinearLayout.setOnClickListener {
-                            noteDialog()
-                        }
-                        binding.titleTextView.setText(R.string.Note_Optional)
-                        if (assetBiometricItem?.memo != null) {
-                            binding.contentTextView.text = assetBiometricItem?.memo
+                        if (assetBiometricItem is WithdrawBiometricItem) {
+                            binding.titleTextView.setText(R.string.Network_Fee)
                         } else {
-                            binding.contentTextView.setText(R.string.add_a_note)
+                            binding.infoLinearLayout.setOnClickListener {
+                                noteDialog()
+                            }
+                            binding.titleTextView.setText(R.string.Note_Optional)
+                            if (assetBiometricItem?.memo != null) {
+                                binding.contentTextView.text = assetBiometricItem?.memo
+                            } else {
+                                binding.contentTextView.setText(R.string.add_a_note)
+                            }
+                            binding.iconImageView.isVisible = true
+                            binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
+                            currentNote = assetBiometricItem?.memo
                         }
-                        binding.iconImageView.isVisible = true
-                        binding.iconImageView.setImageResource(R.drawable.ic_arrow_right)
-                        currentNote = assetBiometricItem?.memo
                     }
                     else -> {
                         binding.titleTextView.setText(R.string.Network_Fee)
@@ -471,6 +491,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 if (feeTokensExtra == null || (feeTokensExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < totalAmount) {
                                     binding.insufficientFeeBalance.isVisible = true
                                     binding.insufficientBalance.isVisible = false
+                                    binding.insufficientFunds.isVisible = false
                                     binding.addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                                     binding.addTv.setOnClickListener {
                                         binding.addTv.setOnClickListener {
@@ -520,13 +541,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
-                                val list =
-                                    web3ViewModel.getPendingTransactions(web3Token?.chainId ?: "")
-                                if (list.isNotEmpty()) {
-                                    Web3WaitingBottomSheetDialogFragment.newInstance(web3Token?.chainId ?: "").showNow(
-                                        parentFragmentManager, Web3WaitingBottomSheetDialogFragment.TAG)
-                                    return@launch
-                                }
                                 val transaction =
                                     token.buildTransaction(rpc, fromAddress, toAddress, amount)
                                 showBrowserBottomSheetDialogFragment(
@@ -544,6 +558,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             )
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
+                                    onDismiss = {
+                                        this@InputFragment.parentFragmentManager.apply {
+                                            if (backStackEntryCount > 0) {
+                                                popBackStack(
+                                                    null,
+                                                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                                )
+                                            }
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -593,6 +617,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 updateUI()
             }
+            checkSolanaToExists()
             refreshFee()
         }
     }
@@ -672,6 +697,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             if (value == "0") {
                 insufficientBalance.isVisible = false
                 insufficientFeeBalance.isVisible = false
+                insufficientFunds.isVisible = false
                 continueVa.isEnabled = false
                 continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
             } else {
@@ -681,13 +707,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     } else {
                         value
                     }
-                if (isReverse && v == "0") {
+                if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
                     insufficientBalance.isVisible = false
+                    insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (BigDecimal(v) > BigDecimal(tokenBalance) && v != "0") {
                     insufficientBalance.isVisible = true
                     insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (transferType != TransferType.WEB3 && (currentFee != null && feeTokensExtra == null ||
@@ -696,18 +725,28 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 ) {
                     insufficientFeeBalance.isVisible = true
                     insufficientBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else  if (
-                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas)
+                } else if (
+                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas ||
+                        (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
-                    insufficientFeeBalance.isVisible = true
+                    insufficientFeeBalance.isVisible = gas != null
                     insufficientBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (!isSolanaToAccountExists && BigDecimal(v) < BigDecimal("0.00203928")) { // rent
+                    insufficientFeeBalance.isVisible = false
+                    insufficientBalance.isVisible = false
+                    insufficientFunds.isVisible = true
+                    continueTv.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = false
                     continueVa.isEnabled = true
                     continueTv.textColor = requireContext().getColor(R.color.white)
                 }
@@ -730,7 +769,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                    navTo(Web3AddressFragment.newInstance(if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress), Web3AddressFragment.TAG)
                 }
 
                 transferType ==  TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem -> {
@@ -745,7 +784,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     override
     fun onWalletClick() {
         QrBottomSheetDialogFragment.newInstance(
-            one.mixin.android.session.Session.getAccountId()!!,
+            Session.getAccountId()!!,
             TYPE_RECEIVE_QR
         ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
     }
@@ -810,6 +849,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         updateUI()
     }
 
+    private suspend fun checkSolanaToExists() {
+        val token = web3Token ?: return
+        val to = toAddress ?: return
+        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isSolToken()) return
+
+        val toAccount = withContext(Dispatchers.IO) {
+            rpc.getAccountInfo(PublicKey(to))
+        }
+        isSolanaToAccountExists = toAccount != null
+    }
+
     private suspend fun refreshFee() {
         when  {
             transferType == TransferType.ADDRESS -> {
@@ -834,13 +884,22 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             field = value
             if (value != null) {
                 if (value.token.assetId == token?.assetId || value.token.assetId == web3Token?.assetId) {
+
                     val balance = runCatching {
-                        tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull()?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                        tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO)?.max(BigDecimal.ZERO)?.let {
+                            if (web3Token == null) {
+                                it.numberFormat8()
+                            } else {
+                                it.numberFormat12()
+                            }
+                        }
                     }.getOrDefault("0")
 
                     binding.balance.text = getString(R.string.available_balance, "$balance $tokenSymbol")
                 } else {
-                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.numberFormat8()} $tokenSymbol")
+                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                        if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
+                    } $tokenSymbol")
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, value.token.symbol)
             }
@@ -926,10 +985,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val token = token ?: return
         lifecycleScope.launch {
             val consolidationAmount = web3ViewModel.checkUtxoSufficiency(token.assetId, amount)
-            if (consolidationAmount == "") {
-                WaitingBottomSheetDialogFragment.newInstance(true)
-                    .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
-            } else if (consolidationAmount != null) {
+            if (consolidationAmount != null) {
                 UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
                     .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
             } else {
@@ -990,11 +1046,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     override fun onDismiss(success: Boolean) {
                         if (success) {
                             parentFragmentManager.apply {
-                                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                                    beginTransaction().remove(it).commit()
-                                }
-                                findFragmentByTag(TAG)?.let {
-                                    beginTransaction().remove(it).commit()
+                                if (backStackEntryCount > 0) {
+                                    popBackStack(
+                                        null,
+                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                    )
                                 }
                             }
                         }
@@ -1025,7 +1081,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             gas = web3ViewModel.calcFee(t, transaction, fromAddress)
             if (chainToken?.assetId == t.assetId) {
                 val balance = runCatching {
-                    tokenBalance.toBigDecimalOrNull()?.subtract(gas?: BigDecimal.ZERO)?.max(BigDecimal.ZERO) ?.numberFormat8()
+                    tokenBalance.toBigDecimalOrNull()?.subtract(gas ?: BigDecimal.ZERO)
+                        ?.max(BigDecimal.ZERO)?.let {
+                        if (web3Token == null) {
+                            it.numberFormat8()
+                        } else {
+                            it.numberFormat12()
+                        }
+                    }
+
                 }.getOrDefault("0")
                 binding.balance.text = getString(
                     R.string.available_balance,
@@ -1034,7 +1098,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             } else {
                 binding.balance.text = getString(
                     R.string.available_balance,
-                    "${tokenBalance.numberFormat8()} $tokenSymbol"
+                    "${
+                        tokenBalance.let {
+                            if (web3Token == null) {
+                                it.numberFormat8()
+                            } else {
+                                it.numberFormat12()
+                            }
+                        }
+                    } $tokenSymbol"
                 )
             }
             binding.insufficientFeeBalance.text =

@@ -434,10 +434,11 @@ class AccountRepository
 
         suspend fun validateExternalAddress(
             assetId: String,
+            chain: String,
             destination: String,
             tag: String?,
         ) =
-            accountService.validateExternalAddress(assetId, destination, tag)
+            accountService.validateExternalAddress(assetId, chain, destination, tag)
 
         suspend fun refreshSticker(id: String): Sticker? {
             val sticker = stickerDao.findStickerById(id)

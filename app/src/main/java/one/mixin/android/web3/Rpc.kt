@@ -5,17 +5,18 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.db.web3.Web3RawTransactionDao
 import org.sol4k.PublicKey
 import org.sol4k.api.AccountInfo
-import org.sol4k.rpc.BlockhashValue
-import org.sol4k.rpc.GetAccountInfoValue
 import org.sol4k.rpc.TokenAmount
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigInteger
 import java.util.Base64
 
 class Rpc(
     val routeService: RouteService,
+    val web3RawTransactionDao: Web3RawTransactionDao,
 ) {
     inner class SolRpcConfig (
         val encoding: String,
@@ -26,11 +27,25 @@ class Rpc(
         isLenient = true
     }
 
+    private suspend fun getNonce(chainId: String): BigInteger? = web3RawTransactionDao.getNonce(chainId)?.toBigIntegerOrNull()
+
     suspend fun nonceAt(chainId: String, address: String): BigInteger? {
-        return handleMixinResponse(
+        val remote = handleMixinResponse(
             invokeNetwork = { routeService.rpc(chainId, RpcRequest("eth_getTransactionCount", listOf(address, "latest"))) },
             successBlock = {  Numeric.decodeQuantity(it.data) }
         )
+
+        val local = getNonce(chainId)?.add(BigInteger.ONE)
+        
+        val result = if (remote != null && local != null) {
+            val remoteInt = remote
+            val localInt = local
+            if (remoteInt > localInt) remoteInt else localInt
+        } else {
+            remote ?: local
+        }
+        Timber.d("[Web3] Nonce calculation - chainId: $chainId, address: $address, remoteNonce: $remote, localNonce: $local, finalNonce: ${result}")
+        return result
     }
 
     suspend fun getAccountInfo(accountAddress: PublicKey): AccountInfo? {
@@ -46,7 +61,7 @@ class Rpc(
                 if (it.data == null || it.data == "null") {
                     return@handleMixinResponse null
                 }
-                val value = jsonParser.decodeFromString<GetAccountInfoValue>(it.data!!)
+                val value = jsonParser.decodeFromString<org.sol4kt.rpc.GetAccountInfoValue>(it.data!!)
                 val data = Base64.getDecoder().decode(value.data[0])
                 AccountInfo(
                     data,
@@ -94,13 +109,14 @@ class Rpc(
         return handleMixinResponse(
             invokeNetwork = {
                 routeService.rpc(SOLANA_CHAIN_ID,
-                    RpcRequest("getLatestBlockhash", listOf()))
+                    RpcRequest("getLatestBlockhash", listOf(mapOf("commitment" to "confirmed")))
+                )
             },
             successBlock = {
                 if (it.data == null || it.data == "null") {
                     return@handleMixinResponse null
                 }
-                val blockhashValue = jsonParser.decodeFromString<BlockhashValue>(it.data!!)
+                val blockhashValue = jsonParser.decodeFromString<org.sol4kt.rpc.BlockhashValue>(it.data!!)
                 blockhashValue.blockhash
             }
         )

@@ -135,8 +135,8 @@ object NotificationGenerator : Injector() {
             sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
             var app: App? = null
             var isBot = user.isBot()
-            if (user.isBot()) {
-                app = appDao.findAppById(requireNotNull(user.appId) { "Required userId was null." })
+            if (user.isBot() && user.appId != null) {
+                app = appDao.findAppById(requireNotNull(user.appId) { "Required appId was null." })
             } else if (message.isRepresentativeMessage(conversation)) {
                 val representativeUser = syncUser(conversation.ownerId)
                 if (representativeUser == null) {

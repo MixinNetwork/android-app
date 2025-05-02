@@ -3,11 +3,13 @@ package one.mixin.android.ui.address.page
 import PageScaffold
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,19 +35,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -98,17 +101,13 @@ fun TransferDestinationInputPage(
     val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
 
     LaunchedEffect(token?.chainId) {
-        account = when (token?.chainId) {
-            ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(
+        account = when {
+            token?.chainId == ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(
                 Constants.Account.ChainAddress.SOLANA_ADDRESS,
                 ""
             )
 
-            ChainId.ETHEREUM_CHAIN_ID,
-            ChainId.Base,
-            ChainId.Polygon,
-            ChainId.Arbitrum,
-            ChainId.Optimism -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            token?.chainId in Constants.Web3ChainIds -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
 
             else -> ""
         }
@@ -119,6 +118,7 @@ fun TransferDestinationInputPage(
         skipHalfExpanded = true
     )
     var text by remember(contentText) { mutableStateOf(contentText) }
+    val clipboardManager = LocalClipboardManager.current
 
     MixinAppTheme {
         ModalBottomSheetLayout(
@@ -203,8 +203,11 @@ fun TransferDestinationInputPage(
                             visualTransformation = if (text.isExternalTransferUrl() || text.isLightningUrl()) {
                                 VisualTransformation { input ->
                                     val inputText = input.text
-                                    if (inputText.length <= 12) return@VisualTransformation TransformedText(input, OffsetMapping.Identity)
-                                    
+                                    if (inputText.length <= 12) return@VisualTransformation TransformedText(
+                                        input,
+                                        OffsetMapping.Identity
+                                    )
+
                                     val annotatedString = buildAnnotatedString {
                                         append(inputText)
                                         addStyle(
@@ -234,20 +237,36 @@ fun TransferDestinationInputPage(
                                 Icon(
                                     painter = painterResource(R.drawable.ic_addr_remove),
                                     contentDescription = null,
-                                    tint = MixinAppTheme.colors.textPrimary
+                                    tint = MixinAppTheme.colors.iconGray
                                 )
                             }
                         } else {
-                            IconButton(
-                                onClick = {
-                                    onScan?.invoke()
-                                }, modifier = Modifier.align(Alignment.BottomEnd)
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_addr_qr),
-                                    contentDescription = null,
-                                    tint = MixinAppTheme.colors.textPrimary
-                                )
+                            Row(modifier = Modifier.align(Alignment.BottomEnd)) {
+                                IconButton(
+                                    onClick = {
+                                        clipboardManager.getText()?.let {
+                                            text = it.text
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_paste),
+                                        contentDescription = null,
+                                        tint = MixinAppTheme.colors.iconGray
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                IconButton(
+                                    onClick = {
+                                        onScan?.invoke()
+                                    }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_scan),
+                                        contentDescription = null,
+                                        tint = MixinAppTheme.colors.iconGray
+                                    )
+                                }
                             }
                         }
                     }
@@ -277,7 +296,8 @@ fun TransferDestinationInputPage(
                                     stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toAccount.invoke(account)
-                                   })
+                                    },
+                                )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (token != null) {
@@ -298,7 +318,8 @@ fun TransferDestinationInputPage(
                                     stringResource(R.string.Send_to_web3_wallet_description),
                                     onClick = {
                                         toWallet.invoke()
-                                    }
+                                    },
+                                    isPrivacy = true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }

@@ -102,7 +102,8 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
-    <string name="ASSET_CHANGES">ASSET CHANGES</string>
+    <string name="ASSET_CHANGES">BALANCE CHANGES</string>
+    <string name="TOKEN_ACCESS_APPROVAL">PRE-AUTHORIZE AMOUNT</string>
     <string name="MAO">MAO</string>
     <string name="DAPPS">APPS</string>
     <string name="Audio">Audio</string>
@@ -1285,7 +1286,7 @@
     <string name="normal">Normal</string>
     <string name="slow">Slow</string>
     <string name="Message">Message</string>
-    <string name="Balance_Change">Balance Changes (estimate)</string>
+    <string name="Balance_Change">BALANCE CHANGES(ESTIMATE)</string>
     <string name="Success">Success</string>
     <string name="TIP_Wallet">TIP Wallet</string>
     <string name="Cancel_transaction">Cancel transaction</string>
@@ -1518,6 +1519,7 @@
     <string name="withdraw_all_of_token_warning">This app can withdraw all your %1$s.</string>
     <string name="Unlocking">Unlocking</string>
     <string name="decode_transaction_failed">Transaction decoding failed, making it impossible to estimate asset changes. Be cautious and only sign transactions for apps you trust.</string>
+    <string name="decode_transaction_failed_content">Transaction decoding failed</string>
     <string name="web3_ensure_trust">Please ensure you trust this app before proceeding with the request.</string>
     <string name="web3_transaction_request">Transaction Request</string>
     <string name="web3_message_request">Message Request</string>
@@ -1913,5 +1915,28 @@
     <string name="Exchanges_or_Wallets">Exchanges or Wallets</string>
     <string name="Exchanges_or_Wallets_desc">Receive from other exchange or on-chain wallet using a crypto network.</string>
     <string name="View_Document">View Document</string>
-    <string name="Total_assets">Total assets</string>
+    <string name="Total_Balance">Total Balance</string>
+    <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
+    <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
+    <string name="Web3_Transactions_Deleted">Web3 transaction data has been deleted and will be re-synchronized</string>
+    <string name="Delete_Failed">Delete failed: %1$s</string>
+    <string name="Whats_Privacy_Wallet">What\'s the Privacy Wallet?</string>
+    <string name="Privacy_Wallet_Description">A multi-chain wallet with private, free, and instant transactions to meet most of your needs.</string>
+    <string name="Whats_Common_Wallet">What\'s the Common Wallet?</string>
+    <string name="Common_Wallet_Description">A common multi-chain wallet that accesses decentralized applications and DeFi protocols.</string>
+    <string name="Approval">Approval</string>
+    <string name="Approved">Approved</string>
+    <string name="unlimited">unlimited</string>
+    <string name="Transaction_Pending_Confirmation">1 Pending Transaction</string>
+    <string name="Transactions_Pending_Confirmation">%1$d Pending Transactions</string>
+    <string name="Speed_Up">Speed Up</string>
+    <string name="Cancel_Transaction">Cancel Transaction</string>
+    <string name="Speed_Up_Transaction">Speed Up Transaction</string>
+    <string name="Insufficient_Funds_For_Rent">Insufficient Funds For Rent</string>
+    <string name="web3_transaction_cancel_warning">If the transaction is too far along cancellation may not be possible.</string>
+    <string name="web3_transaction_speed_up_warning">If the transaction is too far along this may not be possible.</string>
+    <string name="url_privacy_wallet">https://support.mixin.one/en/article/what-is-a-privacy-wallet-1ng5j8f/</string>
+    <string name="url_classic_wallet">https://support.mixin.one/en/article/what-is-a-common-wallet-y0rxkx/</string>
+    <string name="preauthorize_amount">PRE-AUTHORIZE AMOUNT</string>
+    <string name="approval_unlimited_warning">This app can withdraw all your %1$s</string>
 </resources>

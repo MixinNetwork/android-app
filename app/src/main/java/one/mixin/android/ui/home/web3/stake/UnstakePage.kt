@@ -52,64 +52,66 @@ fun UnstakePage(
     pop: () -> Unit,
 ) {
     val stakeState = stakeActivation.state
-    PageScaffold(
-        title = stringResource(id = R.string.Your_Stake),
-        verticalScrollable = true,
-        pop = pop,
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    MixinAppTheme {
+        PageScaffold(
+            title = stringResource(id = R.string.Your_Stake),
+            verticalScrollable = true,
+            pop = pop,
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .align(Alignment.CenterHorizontally),
-                text = stringResource(id = R.string.unstake_hint),
-                style =
-                TextStyle(
-                    fontWeight = FontWeight.W400,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 16.sp,
-                ),
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            StakeInfo(validator, stakeAccount, stakeActivation)
-            Spacer(modifier = Modifier.weight(1f))
-            if (!stakeState.isDeactivatingState()) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onClick.invoke()
-                    },
-                    colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.accent,
-                    ),
-                    shape = RoundedCornerShape(32.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = Color.White,
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(if (stakeState.isActiveState()) R.string.Unstake else R.string.Withdraw_Stake),
-                            color = Color.White,
-                        )
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .align(Alignment.CenterHorizontally),
+                    text = stringResource(id = R.string.unstake_hint),
+                    style =
+                        TextStyle(
+                            fontWeight = FontWeight.W400,
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 16.sp,
+                        ),
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                StakeInfo(validator, stakeAccount, stakeActivation)
+                Spacer(modifier = Modifier.weight(1f))
+                if (!stakeState.isDeactivatingState()) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            onClick.invoke()
+                        },
+                        colors =
+                            ButtonDefaults.outlinedButtonColors(
+                                backgroundColor = MixinAppTheme.colors.accent,
+                            ),
+                        shape = RoundedCornerShape(32.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
+                        elevation =
+                            ButtonDefaults.elevation(
+                                pressedElevation = 0.dp,
+                                defaultElevation = 0.dp,
+                                hoveredElevation = 0.dp,
+                                focusedElevation = 0.dp,
+                            ),
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = Color.White,
+                            )
+                        } else {
+                            Text(
+                                text = stringResource(if (stakeState.isActiveState()) R.string.Unstake else R.string.Withdraw_Stake),
+                                color = Color.White,
+                            )
+                        }
                     }
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
-                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }

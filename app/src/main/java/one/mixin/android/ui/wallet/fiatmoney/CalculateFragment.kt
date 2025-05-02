@@ -245,10 +245,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 if (v == "0" && value != ".") {
                                     v = value
                                 } else if (isTwoDecimal(v)) {
-                                    // do noting
+                                    // do nothing
                                     return
                                 } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(fiatMoneyViewModel.currency!!.name))) {
-                                    // do noting
+                                    // do nothing
                                     return
                                 } else if (AmountUtil.illegal(v, fiatMoneyViewModel.currency!!.name)) {
                                     binding.primaryTv.shaking()

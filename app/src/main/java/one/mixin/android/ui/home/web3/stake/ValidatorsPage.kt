@@ -55,34 +55,36 @@ fun ValidatorsPage(
     onInputChanged: ((String) -> Unit)? = null,
     pop: () -> Unit,
 ) {
-    PageScaffold(
-        title = stringResource(id = R.string.Select_Validator),
-        verticalScrollable = true,
-        pop = pop,
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    MixinAppTheme {
+        PageScaffold(
+            title = stringResource(id = R.string.Select_Validator),
+            verticalScrollable = true,
+            pop = pop,
         ) {
-            SearchInput(searchText, onInputChanged)
-            Spacer(modifier = Modifier.height(20.dp))
-            if (isLoading || validators.isNullOrEmpty()) {
-                Loading()
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxHeight(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    if (searchText.isNotBlank() && !filterValidators.isNullOrEmpty()) {
-                        items(filterValidators.size) { i ->
-                            ValidatorItem(filterValidators[i], onClick)
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    } else {
-                        items(validators.size) { i ->
-                            ValidatorItem(validators[i], onClick)
-                            Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                SearchInput(searchText, onInputChanged)
+                Spacer(modifier = Modifier.height(20.dp))
+                if (isLoading || validators.isNullOrEmpty()) {
+                    Loading()
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxHeight(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        if (searchText.isNotBlank() && !filterValidators.isNullOrEmpty()) {
+                            items(filterValidators.size) { i ->
+                                ValidatorItem(filterValidators[i], onClick)
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        } else {
+                            items(validators.size) { i ->
+                                ValidatorItem(validators[i], onClick)
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
                         }
                     }
                 }

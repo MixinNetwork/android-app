@@ -31,6 +31,8 @@ constructor(
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     suspend fun web3TokenItemById(assetId: String) = web3TokenDao.web3TokenItemById(assetId)
+    
+    suspend fun findWeb3TokenItemsByIds(assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(assetIds)
 
     fun web3Tokens() = web3TokenDao.web3TokenItems()
     
@@ -43,7 +45,7 @@ constructor(
         if (tokensExtra != null) {
             web3TokensExtraDao.updateHidden(tokenId, walletId, hidden)
         } else {
-            web3TokensExtraDao.insertSuspend(Web3TokensExtra(tokenId, walletId, hidden,))
+            web3TokensExtraDao.insertSuspend(Web3TokensExtra(walletId, tokenId, hidden))
         }
     }
 

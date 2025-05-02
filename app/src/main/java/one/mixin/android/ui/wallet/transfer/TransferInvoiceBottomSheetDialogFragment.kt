@@ -193,7 +193,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (transferViewModel.status.value == TransferStatus.IN_PROGRESS) {
-                    // do noting
+                    // do nothing
                 } else {
                     isEnabled = false
                     dismiss()

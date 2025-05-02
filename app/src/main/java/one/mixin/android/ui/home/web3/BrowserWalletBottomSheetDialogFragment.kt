@@ -31,7 +31,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
@@ -68,9 +67,9 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
-import org.sol4k.SignInInput
-import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
+import org.sol4kt.SignInInput
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -143,7 +142,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var tipGas: TipGas? by mutableStateOf(null)
     private var asset: Token? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
-    private var solanaTx: VersionedTransaction? by mutableStateOf(null)
+    private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
     private var parsedTx: ParsedTx? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
 
@@ -168,6 +167,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     toAddress,
                     signMessage.type,
                     step,
+                    signMessage.isCancelTx,
+                    signMessage.isSpeedUp,
                     tipGas,
                     solanaTx?.calcFee(),
                     parsedTx,
@@ -251,10 +252,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         val assetId = chain.getWeb3ChainId()
         val transaction = signMessage.wcEthereumTransaction ?: return
-        if (assetId == null) {
-            Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
-            return
-        }
         tickerFlow(15.seconds)
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
@@ -279,6 +276,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
+                    val hex = JsSigner.ethPreviewTransaction(
+                        JsSigner.evmAddress,
+                        transaction,
+                        tipGas!!,
+                        chain = token?.getChainFromName()
+                    ) { _ ->
+                        val nonce = rpc.nonceAt(currentChain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
+                        return@ethPreviewTransaction nonce
+                    }
+                    if (parsedTx == null) {
+                        parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress)
+                    }
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
@@ -292,22 +301,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                         val tx =
-                            solanaTx ?: VersionedTransaction.from(signMessage.data ?: "").apply {
+                            solanaTx ?: VersionedTransactionCompat.from(signMessage.data ?: "").apply {
                                 val txWithPriorityFee = updateTxPriorityFee(this, signMessage.solanaTxSource)
                                 solanaTx = txWithPriorityFee
                             }
                         if (parsedTx == null) {
-                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana)
-                        }
-                        val ptx = parsedTx
-                        if (ptx != null && ptx.tokens == null) {
-                            ptx.balanceChanges?.map { it.address }?.let { bc ->
-                                val tokens = viewModel.solanaWeb3Tokens(bc)
-                                if (tokens.isNotEmpty()) {
-                                    ptx.tokens = tokens.associateBy { it.address }
-                                    parsedTx = ptx
-                                }
-                            }
+                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, null)
                         }
                         tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
@@ -324,6 +323,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 step = Step.Loading
+                errorInfo = null
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -334,7 +334,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val hex = pair.first
                     val hash = Hash.sha3(hex)
-                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second)
+                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, token?.assetId)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -345,7 +345,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val sig = tx.signatures.first()
                     val rawTx = tx.serialize().base64Encode()
-                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58())
+                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana, JsSigner.solanaAddress, token?.assetId)
                     onTxhash?.invoke(sig, rawTx)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
@@ -367,20 +367,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
 
     override fun onDismiss(dialog: DialogInterface) {
-        parentFragmentManager.apply {
-            if (step == Step.Done) {
-                findFragmentByTag(TransferDestinationInputFragment.TAG)?.let {
-                    beginTransaction().remove(it).commit()
-                }
-                findFragmentByTag(InputFragment.TAG)?.let {
-                    beginTransaction().remove(it).commit()
-                }
-            }
-        }
         super.onDismiss(dialog)
         onDismissAction?.invoke()
     }
-    private suspend fun updateTxPriorityFee(tx: VersionedTransaction, solanaTxSource: SolanaTxSource): VersionedTransaction {
+    private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
         if (priorityFeeResp != null && priorityFeeResp.unitPrice != null && priorityFeeResp.unitLimit != null) {
             tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)

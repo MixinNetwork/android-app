@@ -15,6 +15,8 @@ class JsSignMessage(
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
     val solanaTxSource: SolanaTxSource = SolanaTxSource.InnerTransfer,
+    val isSpeedUp: Boolean = false,
+    val isCancelTx: Boolean = false
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0

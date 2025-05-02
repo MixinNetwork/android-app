@@ -15,7 +15,7 @@ import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
-import org.sol4k.VersionedTransaction
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
 import java.util.Base64
 import javax.inject.Inject
@@ -70,7 +70,7 @@ class WalletConnectBottomSheetViewModel
         ): String? {
             val signature: String
             val rawTx = if (chain == Chain.Solana) {
-                signedTransactionData as VersionedTransaction
+                signedTransactionData as VersionedTransactionCompat
                 signature = signedTransactionData.signatures.first()
                 Base64.getEncoder().encodeToString(signedTransactionData.serialize())
             } else {

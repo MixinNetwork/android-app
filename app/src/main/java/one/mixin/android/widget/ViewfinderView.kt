@@ -413,7 +413,7 @@ class ViewfinderView
                 FrameGravity.RIGHT -> leftOffsets = width - frameWidth + framePaddingRight
                 FrameGravity.BOTTOM -> topOffsets = height - frameHeight + framePaddingBottom
                 else -> {
-                    // do noting
+                    // do nothing
                 }
             }
             frame =
@@ -650,7 +650,7 @@ class ViewfinderView
                     LaserStyle.RADAR -> drawRadarScanner(canvas, frame)
                     LaserStyle.IMAGE -> drawImageScanner(canvas, frame)
                     else -> {
-                        // do noting
+                        // do nothing
                     }
                 }
                 paint.shader = null

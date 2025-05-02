@@ -3,16 +3,14 @@ package one.mixin.android.db.web3.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.vo.Fiats
-import one.mixin.android.web3.Web3ChainId
-import org.sol4k.VersionedTransaction
-import org.sol4k.lamportToSol
+import org.sol4k.Convert.lamportToSol
+import org.sol4kt.VersionedTransactionCompat
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -83,7 +81,7 @@ data class Web3Token(
     }
 
     override fun getUnique(): String {
-        return if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey
+        return assetId
     }
 
     fun fiat(): BigDecimal = try {
@@ -135,7 +133,7 @@ private fun Web3Token.getChainAssetKey(): String {
     }
 }
 
-fun Web3TokenItem.calcSolBalanceChange(balanceChange: VersionedTransaction.TokenBalanceChange): String {
+fun Web3TokenItem.calcSolBalanceChange(balanceChange: VersionedTransactionCompat.TokenBalanceChange): String {
     return if (isSolToken()) {
         lamportToSol(BigDecimal(balanceChange.change))
     } else {

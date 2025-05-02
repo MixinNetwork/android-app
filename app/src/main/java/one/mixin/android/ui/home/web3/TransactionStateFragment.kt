@@ -11,11 +11,9 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
@@ -32,7 +30,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.web3.Rpc
-import org.sol4k.VersionedTransaction
+import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -57,9 +55,9 @@ class TransactionStateFragment : BaseFragment() {
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
-    private val tx: VersionedTransaction by lazy {
+    private val tx: VersionedTransactionCompat by lazy {
         val serializedTx = requireArguments().getString(ARGS_TX)!!
-        VersionedTransaction.from(serializedTx)
+        VersionedTransactionCompat.from(serializedTx)
     }
     private val symbol: String? by lazy { requireArguments().getString(ARGS_TOKEN_SYMBOL) }
 
@@ -90,12 +88,19 @@ class TransactionStateFragment : BaseFragment() {
                             activity?.onBackPressedDispatcher?.onBackPressed()
                         } else {
                             closeAction?.invoke()
+                            closeAction = null
                         }
                     }
                 }
             }
             refreshTx()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        closeAction?.invoke()
+        closeAction = null
     }
 
     private var refreshTxJob: Job? = null

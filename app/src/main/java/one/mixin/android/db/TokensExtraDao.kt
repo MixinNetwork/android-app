@@ -26,6 +26,6 @@ interface TokensExtraDao : BaseDao<TokensExtra> {
         updatedAt: String,
     )
 
-    @Query("SELECT * FROM tokens_extra WHERE asset_id = :assetId")
-    fun tokenExtraFlow(assetId: String): Flow<TokensExtra?>
+    @Query("SELECT balance FROM tokens_extra WHERE asset_id = :assetId")
+    fun tokenExtraFlow(assetId: String): Flow<String?>
 }

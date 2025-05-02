@@ -113,7 +113,9 @@ import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
+import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
@@ -514,7 +516,7 @@ class MainActivity : BlazeBaseActivity() {
                 periodicWorkRequest
             )
             initWalletConnect()
-            if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) == false && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
+            if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
                         try {
@@ -938,6 +940,12 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
+                if (it.itemId == R.id.nav_wallet) {
+                    jobManager.addJobInBackground(RefreshTokensJob())
+                    jobManager.addJobInBackground(RefreshSnapshotsJob())
+                    jobManager.addJobInBackground(SyncOutputJob())
+                    jobManager.addJobInBackground(RefreshWeb3Job())
+                }
                 lifecycleScope.launch {
                     channel.send(it.itemId)
                 }

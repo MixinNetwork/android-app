@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -91,11 +92,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     var walletId: String = ""
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        jobManager.addJobInBackground(RefreshWeb3Job())
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -125,7 +121,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                     }
                                     val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
                                     Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
-                                    if (address != null) this@ClassicWalletFragment.navTo(TransferDestinationInputFragment.newInstance(address, token, chain), TransferDestinationInputFragment.TAG)
+                                    WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address, token, chain)
                                 }
                                 dismissNow()
                             }
@@ -146,13 +142,21 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
-                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = assets.filter { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }, inMixin = false), SwapFragment.TAG)
+                        navTo(SwapFragment.newInstance<Web3TokenItem>(tokens = assets, inMixin = false), SwapFragment.TAG)
                         sendReceiveView.badge.isVisible = false
                         defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
                     }
                 }
             _headBinding?.pendingView?.isVisible = false
+            _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
+            _headBinding?.web3PendingView?.setOnClickListener {
+                if (_headBinding?.web3PendingView?.getPendingCount() ?: 0 > 0) {
+                    val filterParams = Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING)
+                    val fragment = AllWeb3TransactionsFragment.newInstance(filterParams = filterParams)
+                    navTo(fragment, AllWeb3TransactionsFragment.TAG)
+                }
+            }
             assetsAdapter.headerView = _headBinding!!.root
             coinsRv.itemAnimator = null
             coinsRv.setHasFixedSize(true)
@@ -243,6 +247,17 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
         if (walletId.isEmpty().not()) {
             jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        jobManager.addJobInBackground(RefreshWeb3Job())
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        if (!hidden) {
+            jobManager.addJobInBackground(RefreshWeb3Job())
         }
     }
 

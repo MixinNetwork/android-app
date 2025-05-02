@@ -51,4 +51,10 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     
     @Query("UPDATE tokens SET amount = '0' WHERE wallet_id = :walletId")
     suspend fun updateAllBalancesToZero(walletId: String)
+
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.asset_id IN (:assetIds)")
+    suspend fun findWeb3TokenItemsByIds(assetIds: List<String>): List<Web3TokenItem>
+
+    @Query("SELECT amount FROM tokens WHERE asset_id = :assetId")
+    fun tokenExtraFlow(assetId: String): Flow<String?>
 }

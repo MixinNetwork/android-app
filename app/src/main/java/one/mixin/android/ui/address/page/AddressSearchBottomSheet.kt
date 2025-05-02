@@ -46,7 +46,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.address.component.SearchTextField
-import one.mixin.android.ui.wallet.Components.DropdownMenuNoPaddingVeitical
+import one.mixin.android.ui.wallet.components.DropdownMenuNoPaddingVeitical
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.displayAddress
 

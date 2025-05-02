@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
@@ -93,13 +94,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var distance = 0
     private var snackBar: Snackbar? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        jobManager.addJobInBackground(RefreshTokensJob())
-        jobManager.addJobInBackground(RefreshSnapshotsJob())
-        jobManager.addJobInBackground(SyncOutputJob())
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -121,8 +115,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
-                                navTo(TransferDestinationInputFragment.newInstance(it),
-                                    TransferDestinationInputFragment.TAG)
+                                WalletActivity.navigateToWalletActivity(this@PrivacyWalletFragment.requireActivity(), it)
                             }.setOnDepositClick {
                                 showReceiveAssetList()
                             }
@@ -268,7 +261,18 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onResume() {
         super.onResume()
+        jobManager.addJobInBackground(RefreshTokensJob())
+        jobManager.addJobInBackground(RefreshSnapshotsJob())
+        jobManager.addJobInBackground(SyncOutputJob())
         refreshAllPendingDeposit()
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        if (!hidden) {
+            jobManager.addJobInBackground(RefreshTokensJob())
+            jobManager.addJobInBackground(RefreshSnapshotsJob())
+            jobManager.addJobInBackground(SyncOutputJob())
+        }
     }
 
     private fun refreshAllPendingDeposit() =
@@ -294,6 +298,9 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
                             lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct()?.forEach {
+                                    walletViewModel.findOrSyncAsset(it)
+                                }
                                 walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
@@ -302,14 +309,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
     private var lastFiatCurrency :String? = null
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        if (!hidden) {
-            jobManager.addJobInBackground(RefreshTokensJob())
-            jobManager.addJobInBackground(RefreshSnapshotsJob())
-            jobManager.addJobInBackground(SyncOutputJob())
-        }
-    }
 
     override fun onStop() {
         super.onStop()
@@ -468,6 +467,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        WalletActivity.showWithToken(requireActivity(), item as TokenItem, WalletActivity.Destination.Transactions)
+        WalletActivity.navigateToWalletActivity(requireActivity(), item as TokenItem)
     }
 }

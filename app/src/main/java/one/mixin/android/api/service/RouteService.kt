@@ -9,7 +9,6 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
-import one.mixin.android.api.request.web3.ParseTxRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.StakeRequest
@@ -121,7 +120,7 @@ interface RouteService {
 
     @GET("web3/tokens")
     suspend fun web3Tokens(
-        @Query("source") source: String,
+        @Query("source") source: String = "web3",
         @Query("version") version: String = BuildConfig.VERSION_NAME,
     ): MixinResponse<List<SwapToken>>
 
@@ -130,13 +129,13 @@ interface RouteService {
         @Query("inputMint") inputMint: String,
         @Query("outputMint") outputMint: String,
         @Query("amount") amount: String,
-        @Query("slippage") slippage: String,
-        @Query("source") source: String,
+        @Query("source") source: String = "web3",
     ): MixinResponse<QuoteResult>
 
     @POST("web3/swap")
     suspend fun web3Swap(
         @Body swapRequest: SwapRequest,
+        @Query("source") source: String = "web3",
     ): MixinResponse<SwapResponse>
 
     @GET("web3/transactions/{txhash}")
@@ -151,7 +150,7 @@ interface RouteService {
 
     @POST("web3/transactions/simulate")
     suspend fun simulateWeb3Tx(
-        @Body parseTxRequest: ParseTxRequest,
+        @Body parseTxRequest: Web3RawTransactionRequest,
     ): MixinResponse<ParsedTx>
 
     @GET("web3/tokens/{address}")
@@ -162,7 +161,7 @@ interface RouteService {
     @GET("web3/tokens/search/{query}")
     suspend fun searchTokens(
         @Path("query") query: String,
-        @Query("source") source: String?
+        @Query("source") source: String = "web3"
     ): MixinResponse<List<SwapToken>>
 
     @POST("web3/stake")
@@ -284,11 +283,6 @@ interface RouteService {
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = 30
     ): MixinResponse<List<Web3Transaction>>
-
-    @GET("transactions/{id}")
-    suspend fun getTransaction(
-        @Path("id") id: String
-    ): MixinResponse<Web3Transaction>
 
     @GET("assets/{id}")
     suspend fun getAssetByAddress(

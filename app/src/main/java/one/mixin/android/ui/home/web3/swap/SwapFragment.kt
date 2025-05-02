@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
-import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -29,7 +28,6 @@ import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
@@ -40,6 +38,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.event.BadgeEvent
@@ -49,6 +48,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.getList
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
@@ -81,7 +81,7 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.ChainType
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
@@ -143,6 +143,9 @@ class SwapFragment : BaseFragment() {
         OrderDetail
     }
 
+    @Inject
+    lateinit var rpc: Rpc
+
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var tokenItems: List<TokenItem>? = null
     private val web3tokens: List<Web3TokenItem>? by lazy {
@@ -154,7 +157,6 @@ class SwapFragment : BaseFragment() {
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
     private var reviewing: Boolean by mutableStateOf(false)
-    private var slippage: Int by mutableIntStateOf(DefaultSlippage)
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -163,11 +165,6 @@ class SwapFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        slippage = defaultSharedPreferences.getInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
-        if (slippage > DefaultSlippage) {
-            slippage = DefaultSlippage
-            defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, DefaultSlippage)
-        }
         orderBadge = defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
     }
 
@@ -229,7 +226,6 @@ class SwapFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
-                                slippageBps = slippage,
                                 onSelectToken = { isReverse, type ->
                                     selectCallback(swapTokens, isReverse, type)
                                 },
@@ -239,19 +235,15 @@ class SwapFragment : BaseFragment() {
                                     }
                                 },
                                 source = getSource(),
-                                onShowSlippage = {
-                                    SwapSlippageBottomSheetDialogFragment.newInstance(slippage)
-                                        .setOnSlippage { bps ->
-                                            slippage = bps
-                                            defaultSharedPreferences.putInt(PREF_SWAP_SLIPPAGE, bps)
-                                        }
-                                        .showNow(parentFragmentManager, SwapSlippageBottomSheetDialogFragment.TAG)
-                                },
                                 onDeposit = { token ->
+                                    hideKeyboard()
                                     if (inMixin()) {
-                                        deposit(token.getUnique())
+                                        deposit(token.assetId)
                                     } else {
-                                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                                        navTo(
+                                            Web3AddressFragment.newInstance(if (token.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress),
+                                            Web3AddressFragment.TAG
+                                        )
                                     }
                                 },
                                 onOrderList = {
@@ -332,7 +324,7 @@ class SwapFragment : BaseFragment() {
                 }
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_SWAP,
-                    ArrayList(data), if (isReverse) toToken?.getUnique() else fromToken?.getUnique()
+                    ArrayList(data), if (isReverse) toToken?.assetId else fromToken?.assetId
                 ).apply {
                     if (data.isEmpty) {
                         setLoading(true)
@@ -354,7 +346,7 @@ class SwapFragment : BaseFragment() {
                     data
                 ).apply {
                     setOnDeposit {
-                        navTo(Web3AddressFragment(), Web3AddressFragment.TAG)
+                        navTo(Web3AddressFragment.newInstance(JsSigner.evmAddress), Web3AddressFragment.TAG)
                         dismissNow()
                     }
                     setOnClickListener { token, alert ->
@@ -378,7 +370,7 @@ class SwapFragment : BaseFragment() {
                         },
                     ),
                 if (inMixin()) {
-                    if (isReverse) fromToken?.getUnique() else toToken?.getUnique()
+                    if (isReverse) fromToken?.assetId else toToken?.assetId
                 } else null
             ).apply {
                 if (list.isEmpty()) {
@@ -594,30 +586,30 @@ class SwapFragment : BaseFragment() {
         if (inMixin()) {
             fromToken?.let { from ->
                 toToken?.let { to ->
-                    if (isReverse) defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${to.getUnique()} ${from.getUnique()}")
-                    else defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.getUnique()} ${to.getUnique()}")
+                    if (isReverse) defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${to.assetId} ${from.assetId}")
+                    else defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.assetId} ${to.assetId}")
                 }
             }
         }
     }
 
     private suspend fun handleReview(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
-        val inputMint = from.getUnique()
-        val outputMint = to.getUnique()
+        val inputMint = from.assetId
+        val outputMint = to.assetId
 
         val resp = handleMixinResponse(
             invokeNetwork = {
                 swapViewModel.web3Swap(
                     SwapRequest(
-                        if (inMixin()) Session.getAccountId()!! else JsSigner.solanaAddress,
+                        Session.getAccountId()!!,
                         inputMint,
-                        if (inMixin()) 0 else quote.inAmount.toLong(),
-                        if (inMixin()) quote.inAmount else "0",
+                        quote.inAmount,
                         outputMint,
-                        quote.slippage,
-                        quote.source,
                         quote.payload,
-                        quote.jupiterQuoteResponse
+                        getSource(),
+                        if (inMixin()) null else {
+                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                        },
                     )
                 )
             },
@@ -636,26 +628,11 @@ class SwapFragment : BaseFragment() {
             AnalyticsTracker.trackSwapPreview()
             openSwapTransfer(resp, from, to)
         } else {
-            val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = resp.tx, solanaTxSource = SolanaTxSource.InnerSwap)
-            JsSigner.useSolana()
-            reviewing = true
             AnalyticsTracker.trackSwapPreview()
-            showBrowserBottomSheetDialogFragment(requireActivity(), signMessage, onDismiss = {
-                reviewing = false
-            }, onTxhash = { hash, serializedTx ->
-                lifecycleScope.launch {
-                    val txStateFragment = TransactionStateFragment.newInstance(serializedTx, to.symbol).apply {
-                        setCloseAction {
-                            navigateUp(navController)
-                            parentFragmentManager.popBackStackImmediate()
-                            parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
-                                parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
-                            }
-                        }
-                    }
-                    navTo(txStateFragment, TransactionStateFragment.TAG)
-                }
-            })
+            val token = swapViewModel.web3TokenItemById(from.assetId) ?: return
+            val chainToken = swapViewModel.web3TokenItemById(from.chain.chainId) ?: return
+            val depositDestination = resp.depositDestination ?: return
+            openSwapTransfer(resp, from, to)
         }
     }
 
@@ -754,7 +731,7 @@ class SwapFragment : BaseFragment() {
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
-                toToken = swapTokens.firstOrNull { s -> s.getUnique() != fromToken?.getUnique() }
+                toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId }
             } else {
                 val remote = it.map { token ->
                     val t = tokenItems?.firstOrNull { tokenItem ->
@@ -803,7 +780,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
-    private fun getSource(): String = if (inMixin()) "mixin" else ""
+    private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

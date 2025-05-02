@@ -7,6 +7,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
@@ -55,8 +56,33 @@ class RefreshWeb3TransactionsJob(
                     web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }
-                syncAsset(destination, result?.map { it.assetId }?.distinct())
 
+                val assetIds = arraySetOf<String>()
+                val chainIds = arraySetOf<String>()
+                
+                result?.forEach { tx ->
+                    tx.chainId.let { chainIds.add(it) }
+                    when (tx.transactionType) {
+                        TransactionType.TRANSFER_IN.value -> {
+                            tx.receiveAssetId?.let { assetIds.add(it) }
+                        }
+                        TransactionType.TRANSFER_OUT.value -> {
+                            tx.sendAssetId?.let { assetIds.add(it) }
+                        }
+                        TransactionType.SWAP.value -> {
+                            tx.receiveAssetId?.let { assetIds.add(it) }
+                            tx.sendAssetId?.let { assetIds.add(it) }
+                        }
+                        TransactionType.APPROVAL.value -> {
+                            tx.sendAssetId?.let { assetIds.add(it) }
+                        }
+                    }
+                }
+                
+                if (assetIds.isNotEmpty()) {
+                    syncAssetBalance(destination, assetIds)
+                }
+                
                 result?.lastOrNull()?.createdAt?.let {
                     saveLastCreatedAt(destination, it)
                     if ((result?.size ?: 0) >= DEFAULT_LIMIT) {
@@ -85,41 +111,36 @@ class RefreshWeb3TransactionsJob(
         return Web3PropertyHelper.findValueByKey(destination, null)
     }
 
-    private suspend fun syncAsset(destination:String, ids: List<String>?) {
+    private suspend fun syncAssetBalance(destination:String, ids: Collection<String>?) {
         if (ids.isNullOrEmpty()) return
         
         Timber.d("Syncing ${ids.size} assets")
         val chainId = arraySetOf<String>()
         ids.forEach { assetId ->
             try {
-                val token = web3TokenDao.findTokenById(assetId)
-                if (token == null) {
-                    requestRouteAPI(
-                        invokeNetwork = {
-                            routeService.getAssetByAddress(assetId, destination)
-                        },
-                        successBlock = { response ->
-                            val asset = response.data
-                            if (asset != null) {
-                                web3TokenDao.insert(asset)
-                                chainId.add(asset.chainId)
-                                Timber.d("Inserted ${asset.symbol} into database")
-                            } else {
-                                Timber.d("No asset found for wallet $assetId ${destination}")
-                            }
-                        },
-                        failureBlock = { response ->
-                            Timber.e("Failed to fetch asset for address ${destination} ${assetId}: ${response.errorCode} - ${response.errorDescription}")
-                            false
-                        },
-                        requestSession = {
-                            userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-                        },
-                        defaultErrorHandle = {}
-                    )
-                } else {
-                    Timber.d("Token $assetId already exists in local database, skipping fetch")
-                }
+                requestRouteAPI(
+                    invokeNetwork = {
+                        routeService.getAssetByAddress(assetId, destination)
+                    },
+                    successBlock = { response ->
+                        val asset = response.data
+                        if (asset != null) {
+                            web3TokenDao.insert(asset)
+                            chainId.add(asset.chainId)
+                            Timber.d("Inserted ${asset.symbol} into database")
+                        } else {
+                            Timber.d("No asset found for wallet $assetId ${destination}")
+                        }
+                    },
+                    failureBlock = { response ->
+                        Timber.e("Failed to fetch asset for address ${destination} ${assetId}: ${response.errorCode} - ${response.errorDescription}")
+                        false
+                    },
+                    requestSession = {
+                        userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+                    },
+                    defaultErrorHandle = {}
+                )
             } catch (e: Exception) {
                 Timber.e(e, "Error syncing asset $assetId")
             }
@@ -130,7 +151,7 @@ class RefreshWeb3TransactionsJob(
     private suspend fun fetchChain(chainIds: List<String>) {
         chainIds.forEach { chainId ->
             try {
-                if (web3ChainDao.chainExists(chainId) == null) {
+                if (web3ChainDao.chainExists(chainId) == null) { // only chain, have not amount
                     val response = tokenService.getChainById(chainId)
                     if (response.isSuccess) {
                         val chain = response.data

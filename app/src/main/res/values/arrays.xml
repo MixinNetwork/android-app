@@ -112,7 +112,8 @@
         <item quantity="other">weeks</item>
     </plurals>
     <array name="database">
-        <item>Primary</item>
-        <item>Secondary</item>
+        <item>Mixin Database</item>
+        <item>Pending Database</item>
+        <item>Wallet Database</item>
     </array>
 </resources>

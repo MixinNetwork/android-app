@@ -30,14 +30,12 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import org.sol4k.Keypair
-import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
@@ -356,7 +354,7 @@ object WalletConnectV2 : WalletConnect() {
                 }
                 Method.SolanaSignTransaction.name -> {
                     val transaction = gson.fromJson<WcSolanaTransaction>(request.request.params)
-                    val tx = VersionedTransaction.from(transaction.transaction)
+                    val tx = VersionedTransactionCompat.from(transaction.transaction)
                     WCSignData.V2SignData(request.request.id, tx, request, solanaFee = tx.calcFee())
                 }
                 Method.SolanaSignMessage.name -> {
@@ -400,7 +398,7 @@ object WalletConnectV2 : WalletConnect() {
                     return ethSignTransaction(priv, chain, sessionRequest, signData, false, getNonce)
                 }
             }
-        } else if (signMessage is VersionedTransaction) {
+        } else if (signMessage is VersionedTransactionCompat) {
             val holder = Keypair.fromSecretKey(priv)
             // use latest blockhash should not break other signatures
             if (signMessage.signatures.size <= 1) {

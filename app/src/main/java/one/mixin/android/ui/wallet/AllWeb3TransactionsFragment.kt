@@ -25,16 +25,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
-import one.mixin.android.db.web3.vo.TransactionType
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.RefreshWeb3TransactionJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -48,10 +48,12 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_TOKEN = "args_token"
+        const val ARGS_FILTER_PARAMS = "filter_params"
 
-        fun newInstance(tokenItem: Web3TokenItem? = null): AllWeb3TransactionsFragment {
+        fun newInstance(tokenItem: Web3TokenItem? = null, filterParams: Web3FilterParams? = null): AllWeb3TransactionsFragment {
             return AllWeb3TransactionsFragment().withArgs {
                 putParcelable(ARGS_TOKEN, tokenItem)
+                putParcelable(ARGS_FILTER_PARAMS, filterParams)
             }
         }
     }
@@ -62,8 +64,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         setOnItemClickListener(object : Web3TransactionPagedAdapter.OnItemClickListener {
             override fun onItemClick(transaction: Web3TransactionItem) {
                 lifecycleScope.launch {
-                    val token =
-                        web3ViewModel.web3TokenItemById(transaction.assetId) ?: return@launch
+                    val token = web3ViewModel.web3TokenItemById(transaction.getMainAssetId()) ?: return@launch
                     navTo(
                         Web3TransactionFragment.newInstance(transaction, transaction.chainId, token),
                         Web3TransactionFragment.TAG
@@ -77,7 +78,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val filterParams by lazy {
-        Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
+        requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java) 
+            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
@@ -95,9 +97,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 rightAnimator.setOnClickListener {
                     menuAdapter.checkPosition = when (filterParams.order) {
                         SortOrder.Recent -> 0
-                        SortOrder.Oldest -> 1
-                        SortOrder.Value -> 2
-                        else -> 3
+                        else -> 1
                     }
                     sortMenu.show()
                 }
@@ -138,7 +138,9 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                     Web3TokenFilterType.ALL -> 0
                     Web3TokenFilterType.SEND -> 1
                     Web3TokenFilterType.RECEIVE -> 2
-                    Web3TokenFilterType.CONTRACT -> 3
+                    Web3TokenFilterType.APPROVAL -> 3
+                    Web3TokenFilterType.SWAP -> 4
+                    Web3TokenFilterType.PENDING -> 5
                 }
                 typeMenu.show()
             }
@@ -156,50 +158,17 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     override fun onResume() {
         super.onResume()
-        startRefreshData()
+        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+            fragment = this,
+            web3ViewModel = web3ViewModel,
+            jobManager = jobManager,
+            refreshJob = refreshJob
+        )
     }
 
     override fun onPause() {
         super.onPause()
-        cancelRefreshData()
-    }
-
-    private fun startRefreshData() {
-        cancelRefreshData()
-        refreshJob = lifecycleScope.launch {
-            refreshTransactionData()
-        }
-    }
-
-    private fun cancelRefreshData() {
-        refreshJob?.cancel()
-        refreshJob = null
-    }
-
-    private suspend fun refreshTransactionData() {
-        try {
-            while (true) {
-                val pendingRawTransaction = web3ViewModel.getPendingTransactions()
-                if (pendingRawTransaction.isEmpty()) {
-                    delay(10_000)
-                } else {
-                    pendingRawTransaction.forEach { transition ->
-                        val r = web3ViewModel.transaction(transition.hash, transition.chainId)
-                        if (r.isSuccess && (r.data?.state ==  TransactionType.TxSuccess.value || r.data?.state == TransactionType.TxFailed.value || r.data?.state == TransactionType.TxNotFound.value)) {
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
-                            web3ViewModel.insertRawTranscation(r.data!!)
-                            jobManager.addJobInBackground(RefreshWeb3TransactionJob(transition.hash))
-                        } else if (r.errorCode == 404) {
-                            web3ViewModel.deletePending(transition.hash, transition.chainId)
-                            web3ViewModel.updateWeb3RawTransaction(transition.hash, TransactionType.TxNotFound.value)
-                        }
-                    }
-                    delay(5_000)
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
+        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     private fun loadFilter() {
@@ -225,7 +194,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     override fun onApplyClick() {
         // Do noting
     }
-
 
     private fun bindLiveData() {
         bindLiveData(walletViewModel.allWeb3Transaction(initialLoadKey = initialLoadKey, filterParams))
@@ -303,9 +271,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             setOnItemClickListener { _, _, position, _ ->
                 filterParams.order = when (position) {
                     0 -> SortOrder.Recent
-                    1 -> SortOrder.Oldest
-                    2 -> SortOrder.Value
-                    else -> SortOrder.Amount
+                    else -> SortOrder.Oldest
                 }
                 loadFilter()
                 dismiss()
@@ -325,15 +291,11 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         val menuItems = listOf(
             SortMenuData(SortOrder.Recent, R.drawable.ic_menu_recent, R.string.Recent),
             SortMenuData(SortOrder.Oldest, R.drawable.ic_menu_oldest, R.string.Oldest),
-            SortMenuData(SortOrder.Value, R.drawable.ic_menu_value, R.string.Value_Descending),
-            SortMenuData(SortOrder.Amount, R.drawable.ic_menu_amount, R.string.Amount_Descending),
         )
         SortMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = when (filterParams.order) {
                 SortOrder.Recent -> 0
-                SortOrder.Oldest -> 1
-                SortOrder.Amount -> 2
-                else -> 3
+                else -> 1
             }
         }
     }
@@ -365,14 +327,18 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             Web3TypeMenuData(Web3TokenFilterType.ALL, null, Web3TokenFilterType.ALL.titleRes),
             Web3TypeMenuData(Web3TokenFilterType.SEND, R.drawable.ic_menu_type_withdrawal, Web3TokenFilterType.SEND.titleRes),
             Web3TypeMenuData(Web3TokenFilterType.RECEIVE, R.drawable.ic_menu_type_deoisit, Web3TokenFilterType.RECEIVE.titleRes),
-            Web3TypeMenuData(Web3TokenFilterType.CONTRACT, R.drawable.ic_menu_type_contract, Web3TokenFilterType.CONTRACT.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.APPROVAL, R.drawable.ic_menu_type_approval, Web3TokenFilterType.APPROVAL.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.SWAP, R.drawable.ic_menu_type_swap, Web3TokenFilterType.SWAP.titleRes),
+            Web3TypeMenuData(Web3TokenFilterType.PENDING, R.drawable.ic_menu_type_pending, Web3TokenFilterType.PENDING.titleRes)
         )
         Web3TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = when (filterParams.tokenFilterType) {
                 Web3TokenFilterType.ALL -> 0
                 Web3TokenFilterType.SEND -> 1
                 Web3TokenFilterType.RECEIVE -> 2
-                Web3TokenFilterType.CONTRACT -> 3
+                Web3TokenFilterType.APPROVAL -> 3
+                Web3TokenFilterType.SWAP -> 4
+                Web3TokenFilterType.PENDING -> 5
             }
         }
     }

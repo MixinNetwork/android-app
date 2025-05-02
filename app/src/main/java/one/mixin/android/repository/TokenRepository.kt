@@ -32,8 +32,6 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
-import one.mixin.android.api.request.web3.ParseTxRequest
-import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -69,8 +67,18 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.web3.Web3RawTransactionDao
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3RawTransaction
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.AssetChange
+import one.mixin.android.db.web3.vo.TransactionType
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -132,13 +140,9 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
-import one.mixin.android.db.web3.Web3TransactionDao
-import one.mixin.android.db.web3.Web3WalletDao
-import one.mixin.android.db.web3.vo.Web3RawTransaction
-import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.Web3Transaction
-import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.ui.wallet.Web3FilterParams
+import java.math.BigDecimal
 
 @Singleton
 class TokenRepository
@@ -176,6 +180,7 @@ class TokenRepository
         private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
         private val safeBox: DataStore<SafeBox>,
+        private val web3AddressDao: Web3AddressDao,
     ) {
         fun assets() = tokenService.assets()
 
@@ -515,6 +520,20 @@ class TokenRepository
             return web3TransactionDao.allTransactions(filterParams.buildQuery())
         }
 
+        suspend fun deleteAllWeb3Transactions() {
+            val addresses = web3AddressDao.getAddress()
+            web3TransactionDao.deleteAllTransactions()
+            addresses.forEach { address ->
+                Web3PropertyHelper.deleteKeyValue(address.destination)
+            }
+        }
+
+        suspend fun deleteWallets() {
+            web3WalletDao.deleteAllWallets()
+        }
+
+        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(hash, chainId)
+
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
@@ -626,6 +645,7 @@ class TokenRepository
                         result = safeSnapshotDao.findSnapshotById(snapshotId)
                     }
                 },
+                defaultErrorHandle = {}
             )
             return result
         }
@@ -791,15 +811,10 @@ class TokenRepository
             limit: Int,
             asset: String,
             inscriptionHash: String? = null,
-            ignoreZero: Boolean = false,
         ) = if (inscriptionHash != null) {
             outputDao.findUnspentInscriptionByAssetHash(limit, asset, inscriptionHash)
         } else {
-            if (ignoreZero) {
-                outputDao.findDeterminedOutputsByAsset(limit, asset)
-            } else {
-                outputDao.findUnspentOutputsByAsset(limit, asset)
-            }
+            outputDao.findUnspentOutputsByAsset(limit, asset)
         }
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
@@ -850,7 +865,7 @@ class TokenRepository
             inscriptionHash: String?,
         ) {
             val snapshotId = data.getSnapshotId
-            if (conversationId != "") {
+            if (conversationId != "" && data.userId.isUUID()) {
                 val category =
                     if (inscriptionHash != null) {
                         MessageCategory.SYSTEM_SAFE_INSCRIPTION.name
@@ -995,20 +1010,115 @@ class TokenRepository
             }
         }
 
-        suspend fun simulateWeb3Tx(parseTxRequest: ParseTxRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
+        suspend fun simulateWeb3Tx(parseTxRequest: Web3RawTransactionRequest): MixinResponse<ParsedTx> = routeService.simulateWeb3Tx(parseTxRequest)
 
-        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest): MixinResponse<Web3RawTransaction> {
+        suspend fun postRawTx(rawTxRequest: Web3RawTransactionRequest, assetId: String? = null): MixinResponse<Web3RawTransaction> {
             val r = routeService.postWeb3Tx(rawTxRequest)
             if (r.isSuccess) {
                 val raw = r.data!!
                 web3RawTransactionDao.insertSuspend(raw)
                 web3TransactionDao.deletePending(raw.hash, raw.chainId)
-                web3TransactionDao.insert(Web3Transaction(UUID.randomUUID().toString(), "send", raw.hash, 0, raw.account, "", "", raw.chainId, "", "0", raw.createdAt, raw.updatedAt, raw.updatedAt, "pending"))
+
+                val senders = mutableListOf<AssetChange>()
+                val receivers = mutableListOf<AssetChange>()
+                val approvals = mutableListOf<AssetChange>()
+
+                raw.simulateTx?.balanceChanges?.forEach { bc ->
+                    val amt = bc.amount.toBigDecimalOrNull()
+                    if (amt != null) {
+                        if (amt > BigDecimal.ZERO) {
+                            receivers.add(
+                                AssetChange(
+                                    assetId = bc.assetId,
+                                    amount = amt.toPlainString(),
+                                    from = null,
+                                    to = bc.address
+                                )
+                            )
+                        } else if (amt < BigDecimal.ZERO) {
+                            senders.add(
+                                AssetChange(
+                                    assetId = bc.assetId,
+                                    amount = amt.toPlainString(),
+                                    from = bc.address,
+                                    to = null
+                                )
+                            )
+                        }
+                    }
+                }
+
+                raw.simulateTx?.approves?.forEach { approve ->
+                    approvals.add(
+                        AssetChange(
+                            assetId = assetId ?: "",
+                            amount = approve.amount,
+                            from = raw.account,
+                            to = approve.spender
+                        )
+                    )
+                }
+
+                var sendAssetId: String? = null
+                var receiveAssetId: String? = null
+
+                val txType = when {
+                    raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
+                    (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
+                    raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
+                    else -> TransactionType.UNKNOWN.value
+                }
+
+                when (txType) {
+                    TransactionType.SWAP.value -> {
+                        raw.simulateTx?.balanceChanges?.forEach { bc ->
+                            val amt = bc.amount.toBigDecimalOrNull()
+                            if (amt != null) {
+                                if (amt < java.math.BigDecimal.ZERO) {
+                                    sendAssetId = bc.assetId
+                                } else if (amt > java.math.BigDecimal.ZERO) {
+                                    receiveAssetId = bc.assetId
+                                }
+                            }
+                        }
+                    }
+                    TransactionType.TRANSFER_OUT.value -> {
+                        raw.simulateTx?.balanceChanges?.firstOrNull {
+                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < java.math.BigDecimal.ZERO } == true
+                        }?.let {
+                            sendAssetId = it.assetId
+                            receiveAssetId = it.assetId
+                        }
+                    }
+                    else -> {
+                        sendAssetId = assetId
+                        receiveAssetId = assetId
+                    }
+                }
+
+                web3TransactionDao.insert(
+                    Web3Transaction(
+                        transactionHash = raw.hash,
+                        chainId = raw.chainId,
+                        address = raw.account,
+                        transactionType = txType,
+                        status = TransactionStatus.PENDING.value,
+                        blockNumber = 0,
+                        fee = "",
+                        senders = senders,
+                        receivers = receivers,
+                        approvals = approvals.ifEmpty { null },
+                        sendAssetId = sendAssetId,
+                        receiveAssetId = receiveAssetId,
+                        transactionAt = raw.updatedAt,
+                        createdAt = raw.createdAt,
+                        updatedAt = raw.updatedAt
+                    )
+                )
             }
             return r
         }
 
-        suspend fun rpc(chainId: String, request: RpcRequest) = routeService.rpc(chainId, request)
 
         suspend fun refreshInscription(inscriptionHash: String): String? {
             val inscriptionItem = syncInscription(inscriptionHash) ?: return null
@@ -1269,6 +1379,8 @@ class TokenRepository
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
+    fun web3TokenExtraFlow(asseId: String) = web3TokenDao.tokenExtraFlow(asseId)
+
     fun web3TokensFlow() = web3TokenDao.web3TokensFlow()
 
     suspend fun findWeb3TokenItems(): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems()
@@ -1281,14 +1393,18 @@ class TokenRepository
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
-    suspend fun getPendingTransactions() = web3RawTransactionDao.getPendingTransactions()
+    suspend fun getPendingRawTransactions() = web3RawTransactionDao.getPendingRawTransactions()
 
-    suspend fun getPendingTransactions(chainId: String) = web3RawTransactionDao.getPendingTransactions(chainId)
+    suspend fun getPendingTransactions() = web3TransactionDao.getPendingTransactions()
+
+    suspend fun getPendingRawTransactions(chainId: String) = web3RawTransactionDao.getPendingRawTransactions(chainId)
 
     suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
 
-    suspend fun updateWeb3RawTransaction(hash: String, type: String) = web3TransactionDao.updateRawTransaction(hash, type)
+    suspend fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
+
+    fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
 
 }

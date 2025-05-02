@@ -25,7 +25,7 @@ import one.mixin.android.ui.home.web3.stake.StakeFragment.Companion.ARGS_BALANCE
 class StakingFragment : BaseFragment() {
     companion object {
         const val TAG = "StakingFragment"
-        private const val ARGS_STAKE_ACCOUNTS = "args_stake_accounts"
+        const val ARGS_STAKE_ACCOUNTS = "args_stake_accounts"
 
         fun newInstance(
             stakeAccounts: ArrayList<StakeAccount>,

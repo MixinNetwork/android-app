@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -33,11 +34,14 @@ import one.mixin.android.api.request.buildGhostKeyRequest
 import one.mixin.android.api.request.buildKernelTransferGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalFeeGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalSubmitGhostKeyRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.response.signature.SignatureAction
+import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
@@ -60,10 +64,12 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
@@ -118,6 +124,7 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
+import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
@@ -133,6 +140,7 @@ class BottomSheetViewModel
         private val jobManager: MixinJobManager,
         private val userRepository: UserRepository,
         private val tokenRepository: TokenRepository,
+        private val web3Repository: Web3Repository,
         private val conversationRepo: ConversationRepository,
         private val cleanMessageHelper: CleanMessageHelper,
         private val pinCipher: PinCipher,
@@ -261,7 +269,7 @@ class BottomSheetViewModel
             } else if ((withdrawalRequestResponse.data?.size ?: 0) < 1) {
                 Timber.e("Kernel Withdrawal($traceId): request transaction, Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (withdrawalRequestResponse.data?.first()?.state != OutputState.unspent.name && withdrawalRequestResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Withdrawal($traceId): request transaction, Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -424,7 +432,7 @@ class BottomSheetViewModel
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
                 Timber.e("Kernel Address Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name && transactionResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Address Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -507,7 +515,7 @@ class BottomSheetViewModel
             } else if ((transactionResponse.data?.size ?: 0) > 1) {
                 Timber.e("Kernel Transaction($trace): Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name) {
+            } else if (transactionResponse.data?.first()?.state != OutputState.unspent.name && transactionResponse.data?.first()?.state != OutputState.pending.name) {
                 Timber.e("Kernel Transaction($trace): Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -596,31 +604,6 @@ class BottomSheetViewModel
             return transactionRsp
         }
 
-        private suspend fun requestTransactionWithRetry(
-            raw: String,
-            trace: String,
-            maxRetries: Int = 100
-        ): MixinResponse<List<TransactionResponse>> {
-            var retryCount = 1
-            while (retryCount < maxRetries) {
-                val response = tokenRepository.transactionRequest(
-                    listOf(TransactionRequest(raw, trace))
-                )
-
-                if (response.errorCode != ErrorHandler.INVALID_UTXO) {
-                    return response
-                }
-
-                Timber.e("Kernel Transaction($trace): INVALID_UTXO, delay and retry ${retryCount + 1}/$maxRetries")
-                delay(5000)
-                retryCount++
-            }
-
-            return tokenRepository.transactionRequest(
-                listOf(TransactionRequest(raw, trace))
-            )
-        }
-
         suspend fun invoiceDuplicateTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
             val context = MixinApplication.appContext
             val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
@@ -640,9 +623,33 @@ class BottomSheetViewModel
             val senderIds = listOf(Session.getAccountId()!!)
             val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
 
+            val traceIds = invoice.entries.map { it.traceId }
+            val completedTransactions = tokenRepository.transactionsFetch(traceIds)
+            
+            if (completedTransactions.isSuccess && completedTransactions.data != null && completedTransactions.data!!.isNotEmpty()) {
+                Timber.e("Found completed transactions: ${completedTransactions.data!!.map { it.requestId }.joinToString()}")
+
+                val verifiedTransactionList: Collection<VerifiedTransactionData> = completedTransactions.data!!.map {
+                    VerifiedTransactionData(it.requestId, "", it.transactionHash, UtxoWrapper(emptyList()), "", "", "", "", emptyList(), byteArrayOf(), "")
+                }
+                verifiedTransactions.addAll(verifiedTransactionList)
+
+                Timber.e("Added to verifiedTransactions: ${verifiedTransactions.map { it.trace }.joinToString()}")
+            } else {
+                Timber.e("No completed transactions found")
+            }
+
             Timber.e("Kernel Duplicate Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
-            for (index in invoice.entries.indices) {
-                val entry = invoice.entries[index]
+
+            invoice.entries.forEachIndexed { index, entry ->
+                Timber.e("Processing entry ${index}: ${entry.traceId}, verified traces: ${verifiedTransactions.map { it.trace }.joinToString()}")
+                val isCompleted = verifiedTransactions.any { it.trace == entry.traceId }
+                if (isCompleted) {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): already completed, skipping")
+                    return@forEachIndexed
+                } else {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): not completed, processing")
+                }
                 val amount = entry.amountString()
                 val assetId = entry.assetId
                 val asset = assetIdToAsset(assetId)
@@ -690,7 +697,7 @@ class BottomSheetViewModel
                 }
 
                 Timber.e("Kernel Duplicate Invoice Transaction UtxoWrapper: $amount $assetId $asset")
-                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input
                 val receiverKeys = data.first().keys.joinToString(",")
                 val receiverMask = data.first().mask
@@ -707,6 +714,11 @@ class BottomSheetViewModel
                         is Reference.HashValue -> {
                             reference.value
                         }
+
+                        else -> {
+                            throw IllegalArgumentException("Reference type not supported")
+                            ""
+                        }
                     }
                 }
 
@@ -720,15 +732,16 @@ class BottomSheetViewModel
 
                 val verifiedTransactionData = VerifiedTransactionData(trace, tx.raw, tx.hash, utxoWrapper, asset, assetId, amount, changeMask, data.last().keys, entry.extra, reference)
                 verifiedTransactions.add(verifiedTransactionData)
-                val verifyTransaction = requestTransactionWithRetry(verifiedTransactionData.raw, verifiedTransactionData.trace)
-
+                val verifyTransaction = tokenRepository.transactionRequest(
+                    listOf(TransactionRequest(verifiedTransactionData.raw, verifiedTransactionData.trace))
+                )
                 if (verifyTransaction.error != null) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): request transaction error ${verifyTransaction.errorDescription}")
                     return verifyTransaction
                 } else if ((verifyTransaction.data?.size ?: 0) != 1) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): Parameter exception")
                     throw IllegalArgumentException("Parameter exception")
-                } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+                } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name && it.state != OutputState.pending.name } == true) {
                     Timber.e("Kernel Duplicate Invoice Transaction($trace): Transfer is already paid")
                     throw IllegalArgumentException("Transfer is already paid")
                 }
@@ -773,14 +786,7 @@ class BottomSheetViewModel
                     }
                 }
 
-                val signedResponse = tokenRepository.transactions(
-                    listOf(
-                        TransactionRequest(
-                            signedTransaction.signResult.raw,
-                            signedTransaction.trace
-                        )
-                    )
-                )
+                val signedResponse = postTransactionWithRetry(signedTransaction.signResult.raw,signedTransaction.trace)
                 if (signedResponse.isSuccess) {
                     withContext(SINGLE_DB_THREAD) {
                         appDatabase.runInTransaction {
@@ -795,7 +801,7 @@ class BottomSheetViewModel
                         }
                     }
 
-                    if (recipient.uuidMembers.size == 1) {
+                    if (recipient.uuidMembers.size == 1 && entry.isStorage().not()) {
                         val receiverId = recipient.uuidMembers.first()
                         val user = tokenRepository.findUser(receiverId)
                         if (user != null && user.userId != Session.getAccountId() && !user.notMessengerUser()) {
@@ -823,6 +829,34 @@ class BottomSheetViewModel
             throw IllegalStateException()
         }
 
+        private suspend fun postTransactionWithRetry(
+            raw: String,
+            trace: String,
+            maxRetries: Int = 100
+        ): MixinResponse<List<TransactionResponse>> {
+            var retryCount = 1
+            while (retryCount < maxRetries) {
+                val response =  tokenRepository.transactions(
+                    listOf(
+                        TransactionRequest(
+                            raw, trace
+                        )
+                    )
+                )
+
+                if ((response.errorCode != ErrorHandler.INVALID_UTXO) || (response.errorCode < 500)) {
+                    return response
+                }
+
+                Timber.e("Kernel Transaction($trace): INVALID_UTXO, delay and retry ${retryCount + 1}/$maxRetries")
+                delay(5000)
+                retryCount++
+            }
+
+            return tokenRepository.transactionRequest(
+                listOf(TransactionRequest(raw, trace))
+            )
+        }
         suspend fun invoiceTransaction(pin: String, invoice: MixinInvoice): MixinResponse<*> {
             if (invoice.isDuplicateInvoiceEntries()) return invoiceDuplicateTransaction(pin, invoice)
             val context = MixinApplication.appContext
@@ -830,17 +864,34 @@ class BottomSheetViewModel
             tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, tipPriv)
             val recipient = invoice.recipient
-            val storageIndex = invoice.entries.indexOfFirst { it.isStorage() }
             val senderIds = listOf(Session.getAccountId()!!)
+
             val verifiedTransactions = mutableListOf<VerifiedTransactionData>()
             val signedTransactions = mutableListOf<SignedTransaction>()
+
+            val traceIds = invoice.entries.map { it.traceId }
+            val completedTransactions = tokenRepository.transactionsFetch(traceIds).data
+            if (completedTransactions != null && completedTransactions.isNotEmpty()) {
+                Timber.e("Completed transactions: ${completedTransactions.map { it.requestId }.joinToString()}")
+            } else {
+                Timber.e("No completed transactions found")
+            }
+
             Timber.e("Kernel Invoice Transaction(${invoice.entries.joinToString(",") { it.traceId }}): begin")
+
             invoice.entries.forEachIndexed { index, entry ->
+                val isCompleted = completedTransactions?.any { it.requestId == entry.traceId } == true
+                if (isCompleted) {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): already completed, skipping")
+                    return@forEachIndexed
+                } else {
+                    Timber.e("Kernel Duplicate Invoice Transaction(${entry.traceId}): not completed, processing")
+                }
                 val amount = entry.amountString()
                 val assetId = entry.assetId
                 val asset = assetIdToAsset(assetId)
                 val trace = entry.traceId
-                val data = if (storageIndex == index) {
+                val data = if (entry.isStorage()) {
                     val ghostKeyResponse = tokenRepository.ghostKey(buildKernelTransferGhostKeyRequest(senderIds.first(), trace))
                     if (ghostKeyResponse.error != null) {
                         Timber.e("Kernel Invoice Transaction($trace): request ghost key ${ghostKeyResponse.errorDescription}")
@@ -866,7 +917,7 @@ class BottomSheetViewModel
                     null
                 } ?: throw IllegalArgumentException("Transfer has no recipient")
                 Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
-                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null, false))
+                val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input
                 val receiverKeys = data.first().keys.joinToString(",")
                 val receiverMask = data.first().mask
@@ -874,16 +925,27 @@ class BottomSheetViewModel
                 val changeKeys = data.last().keys.joinToString(",")
                 val changeMask = data.last().mask
                 val reference = entry.references.joinToString(",") { reference ->
-                    if (reference is Reference.IndexValue) {
-                        verifiedTransactions.getOrNull(reference.value)?.hash ?: throw IllegalArgumentException("Reference not found")
-                    } else if (reference is Reference.HashValue) {
-                        reference.value
-                    } else {
-                        throw IllegalArgumentException("Reference type not supported")
-                        ""
+                    when (reference) {
+                        is Reference.IndexValue -> {
+                            if (completedTransactions != null && completedTransactions.isNotEmpty() && reference.value < completedTransactions.size) {
+                                Timber.e("Kernel Invoice Transaction: Reference found in completedTransactions at index ${reference.value}")
+                                completedTransactions[reference.value].transactionHash
+                            } else {
+                                val adjustedIndex = if (completedTransactions != null && completedTransactions.isNotEmpty())
+                                    reference.value - completedTransactions.size 
+                                else 
+                                    reference.value
+                                Timber.e("Kernel Invoice Transaction: Reference not found in completedTransactions, looking in verifiedTransactions at index $adjustedIndex")
+                                verifiedTransactions.getOrNull(adjustedIndex)?.hash ?: throw IllegalArgumentException("Reference not found")
+                            }
+                        }
+
+                        is Reference.HashValue -> {
+                            reference.value
+                        }
                     }
                 }
-                val tx = if (index == storageIndex) {
+                val tx = if (entry.isStorage()) {
                     Kernel.buildTxToKernelAddress(asset, amount, 64, MixAddress.newStorageRecipient().xinMembers.first().string(), input, changeKeys, changeMask, entry.extra.hexString(), reference )
                 } else if (recipient.xinMembers.isNotEmpty()){
                     Kernel.buildTxToKernelAddress(asset, amount, 1, recipient.xinMembers.first().string(), input, changeKeys, changeMask, entry.extra.hexString(), reference )
@@ -899,7 +961,7 @@ class BottomSheetViewModel
             } else if ((verifyTransaction.data?.size ?: 0) != verifiedTransactions.size) {
                 Timber.e("Kernel Invoice Transaction: Parameter exception")
                 throw IllegalArgumentException("Parameter exception")
-            } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name } == true) {
+            } else if (verifyTransaction.data?.any { it.state != OutputState.unspent.name && it.state != OutputState.pending.name } == true) {
                 Timber.e("Kernel Invoice Transaction: Transfer is already paid")
                 throw IllegalArgumentException("Transfer is already paid")
             }
@@ -999,10 +1061,9 @@ class BottomSheetViewModel
             asset: String,
             amount: String,
             inscriptionHash: String? = null,
-            ignoreZero: Boolean = true,
         ): List<Output> {
             val desiredAmount = BigDecimal(amount)
-            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash, ignoreZero)
+            val candidateOutputs = tokenRepository.findOutputs(maxUtxoCount, asset, inscriptionHash)
 
             if (candidateOutputs.isEmpty()) {
                 throw EmptyUtxoException
@@ -1043,21 +1104,12 @@ class BottomSheetViewModel
 
             val selectedOutputs = mutableListOf<Output>()
             var totalSelectedAmount = BigDecimal.ZERO
-            var anyNotConfirmed = false
             candidateOutputs.forEach { output ->
-                if (output.sequence == 0L) {
-                    anyNotConfirmed = true
-                }
                 val outputAmount = BigDecimal(output.amount)
                 selectedOutputs.add(output)
                 totalSelectedAmount += outputAmount
                 if (totalSelectedAmount >= desiredAmount) {
-                    if (anyNotConfirmed) {
-                        // Refresh when there is an undetermined UTXO
-                        jobManager.addJobInBackground(SyncOutputJob())
-                    }
-                    return if (anyNotConfirmed) ""
-                    else null
+                    return null
                 }
             }
 
@@ -1068,7 +1120,7 @@ class BottomSheetViewModel
             if (totalSelectedAmount < desiredAmount) {
                 // Refresh when balance is insufficient
                 jobManager.addJobInBackground(SyncOutputJob())
-                if (anyNotConfirmed) return ""
+                return null
             }
 
             throw Exception("Impossible")
@@ -1317,6 +1369,10 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
+        suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(assetId)
+        }
+
         suspend fun findAssetItemByCollectionHash(assetId: String): TokenItem? =
             tokenRepository.findAssetItemByCollectionHash(assetId)
 
@@ -1503,7 +1559,6 @@ class BottomSheetViewModel
                 )
             }
         }
-
         private fun refreshAppNotExist(appIds: List<String>) =
             viewModelScope.launch(Dispatchers.IO) {
                 accountRepository.refreshAppNotExist(appIds)
@@ -1613,10 +1668,11 @@ class BottomSheetViewModel
 
         suspend fun validateExternalAddress(
             assetId: String,
+            chain: String,
             destination: String,
             tag: String?,
         ) =
-            accountRepository.validateExternalAddress(assetId, destination, tag)
+            accountRepository.validateExternalAddress(assetId,  chain, destination, tag)
 
         suspend fun findAssetIdByAssetKey(assetKey: String): String? =
             tokenRepository.findAssetIdByAssetKey(assetKey)
@@ -1706,4 +1762,50 @@ class BottomSheetViewModel
         }
 
         fun web3TokenItems() = tokenRepository.web3TokenItems()
+
+        suspend fun getWeb3Priv(
+            context: Context,
+            pin: String,
+            chainId: String,
+        ): ByteArray {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            return tipPrivToPrivateKey(spendKey, chainId)
+        }
+
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, assetId: String? = null) {
+            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account), assetId)
+            if (!resp.isSuccess) {
+                val err = resp.error!!
+                // simulate RpcException
+                throw RpcException(err.code, err.description, err.toString())
+            }
+        }
+
+        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?): ParsedTx? {
+            var meet401 = false
+            var parsedTx: ParsedTx? = null
+            handleMixinResponse(
+                invokeNetwork = { tokenRepository.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx, from)) },
+                successBlock = { parsedTx = it.data },
+                failureBlock = {
+                    if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+                        parsedTx = ParsedTx(code = ErrorHandler.SIMULATE_TRANSACTION_FAILED)
+                        return@handleMixinResponse true
+                    } else if (it.errorCode == 401) {
+                        meet401 = true
+                        return@handleMixinResponse true
+                    }
+                    return@handleMixinResponse false
+                }
+            )
+            if (parsedTx == null && meet401) {
+                userRepository.getBotPublicKey(ROUTE_BOT_USER_ID, true)
+                return simulateWeb3Tx(tx, chainId, from)
+            } else {
+                return parsedTx
+            }
+        }
+
+        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
 }

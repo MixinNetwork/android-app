@@ -130,11 +130,11 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         adapter.onItemClickListener =
             object : SearchFragment.OnSearchClickListener {
                 override fun onTipClick() {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onUrlClick(url: String) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onAssetClick(tokenItem: TokenItem) {

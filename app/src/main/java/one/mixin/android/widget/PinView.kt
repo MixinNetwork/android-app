@@ -62,6 +62,7 @@ class PinView : LinearLayout {
             }
         }
         ta.recycle()
+        gravity = Gravity.CENTER
         orientation = VERTICAL
         for (i in 0 until count) {
             val item = createDotView()

@@ -7,9 +7,8 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
-import one.mixin.android.api.request.web3.ParseTxRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.repository.TokenRepository
@@ -17,6 +16,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.tipPrivToPrivateKey
+import one.mixin.android.util.ErrorHandler
 import org.sol4k.exception.RpcException
 import javax.inject.Inject
 
@@ -65,13 +65,17 @@ class BrowserWalletBottomSheetViewModel
             )
         }
 
-        suspend fun simulateWeb3Tx(tx: String, chainId: String): ParsedTx? {
+        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?): ParsedTx? {
             var meet401 = false
-            val parsedTx = handleMixinResponse(
-                invokeNetwork = { assetRepo.simulateWeb3Tx(ParseTxRequest(tx, chainId)) },
-                successBlock = { it.data },
+            var parsedTx: ParsedTx? = null
+            handleMixinResponse(
+                invokeNetwork = { assetRepo.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx,from)) },
+                successBlock = { parsedTx = it.data },
                 failureBlock = {
-                    if (it.errorCode == 401) {
+                    if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+                        parsedTx = ParsedTx(code = ErrorHandler.SIMULATE_TRANSACTION_FAILED)
+                        return@handleMixinResponse true
+                    } else if (it.errorCode == 401) {
                         meet401 = true
                         return@handleMixinResponse true
                     }
@@ -80,14 +84,14 @@ class BrowserWalletBottomSheetViewModel
             )
             if (parsedTx == null && meet401) {
                 userRepo.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                return simulateWeb3Tx(tx, chainId)
+                return simulateWeb3Tx(tx, chainId, from)
             } else {
                 return parsedTx
             }
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String) {
-            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account))
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, assetId: String? = null) {
+            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account), assetId)
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException

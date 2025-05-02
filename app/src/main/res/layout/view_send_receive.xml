@@ -26,7 +26,7 @@
             android:layout_marginTop="8dp"
             android:text="@string/Receive"
             android:textColor="?attr/text_primary"
-            android:textFontWeight="500"
+            android:textFontWeight="600"
             android:textSize="12sp"/>
     </LinearLayout>
 
@@ -50,7 +50,7 @@
             android:layout_marginTop="8dp"
             android:text="@string/Send_transfer"
             android:textColor="?attr/text_primary"
-            android:textFontWeight="500"
+            android:textFontWeight="600"
             android:textSize="12sp"/>
     </LinearLayout>
 
@@ -90,7 +90,7 @@
             android:layout_marginTop="8dp"
             android:text="@string/Swap"
             android:textColor="?attr/text_primary"
-            android:textFontWeight="500"
+            android:textFontWeight="600"
             android:textSize="12sp"/>
     </LinearLayout>
 

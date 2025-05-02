@@ -11,15 +11,16 @@ import java.math.BigDecimal
 
 internal suspend fun parseLightning(
     url: String,
-    validateAddress: suspend (String, String) -> AddressResponse?,
+    validateAddress: suspend (String, String, String) -> AddressResponse?,
     getFee: suspend (String, String) -> List<WithdrawalResponse>?,
     balanceCheck: suspend (String, BigDecimal, String?, BigDecimal?) -> Unit,
     parseLighting: suspend (String) -> PaymentResponse?
 ): ExternalTransfer? {
     val r = parseLighting(url) ?: return null
     val assetId = r.asset?.assetId ?:return null
+    val chainId = r.asset?.chainId ?:return null
     val destination = r.destination ?: return null
-    val addressResponse = validateAddress(assetId, destination) ?: return null
+    val addressResponse = validateAddress(assetId, chainId, destination) ?: return null
     
     val amount = r.amount
     if (amount.isNullOrEmpty() || amount == "0") {

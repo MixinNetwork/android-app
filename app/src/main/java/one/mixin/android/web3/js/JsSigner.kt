@@ -23,11 +23,11 @@ import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Constants
 import org.sol4k.Keypair
-import org.sol4k.SignInAccount
-import org.sol4k.SignInInput
-import org.sol4k.SignInOutput
-import org.sol4k.VersionedTransaction
-import org.sol4k.exception.MaliciousInstructionException
+import org.sol4kt.SignInAccount
+import org.sol4kt.SignInInput
+import org.sol4kt.SignInOutput
+import org.sol4kt.VersionedTransactionCompat
+import org.sol4kt.exception.MaliciousInstructionException
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -181,7 +181,7 @@ object JsSigner {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val nonce = getNonce(credential.address)
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
 
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
@@ -212,6 +212,35 @@ object JsSigner {
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
         return Pair(hexMessage, credential.address)
+    }
+
+    suspend fun ethPreviewTransaction(
+        address: String,
+        transaction: WCEthereumTransaction,
+        tipGas: TipGas,
+        chain: Chain?,
+        getNonce: suspend (String) -> BigInteger,
+    ): String {
+        val value = transaction.value ?: "0x0"
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(address)
+        val v = Numeric.decodeQuantity(value)
+
+        val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
+        val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
+        val gasLimit = tipGas.gasLimit
+
+        val rawTransaction =
+            RawTransaction.createTransaction(
+                (chain ?: currentChain).chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data ?: "",
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
+        return Numeric.toHexString(TransactionEncoder.encode(rawTransaction))
     }
 
     fun signMessage(
@@ -263,9 +292,9 @@ object JsSigner {
 
     suspend fun signSolanaTransaction(
         priv: ByteArray,
-        tx: VersionedTransaction,
+        tx: VersionedTransactionCompat,
         getBlockhash: suspend () -> String,
-    ): VersionedTransaction {
+    ): VersionedTransactionCompat {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
         if (tx.signatures.size <= 1) {
@@ -306,7 +335,7 @@ object JsSigner {
     }
 }
 
-fun VersionedTransaction.throwIfAnyMaliciousInstruction() {
+fun VersionedTransactionCompat.throwIfAnyMaliciousInstruction() {
     val accounts = message.accounts
     for (i in message.instructions) {
         val program = accounts[i.programIdIndex]

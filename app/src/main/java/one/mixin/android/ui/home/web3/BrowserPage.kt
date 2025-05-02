@@ -23,10 +23,13 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -50,13 +53,14 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.home.web3.components.MessagePreview
-import one.mixin.android.ui.home.web3.components.SolanaParsedTxPreview
+import one.mixin.android.ui.home.web3.components.ParsedTxPreview
 import one.mixin.android.ui.home.web3.components.TokenTransactionPreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
@@ -64,7 +68,6 @@ import one.mixin.android.web3.js.SolanaTxSource
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
-import java.math.BigInteger
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -76,6 +79,8 @@ fun BrowserPage(
     toAddress: String?,
     type: Int,
     step: WalletConnectBottomSheetDialogFragment.Step,
+    isCancel: Boolean,
+    isSpeedUp: Boolean,
     tipGas: TipGas?,
     solanaFee: BigDecimal?,
     parsedTx: ParsedTx?,
@@ -92,6 +97,12 @@ fun BrowserPage(
     onDismissRequest: () -> Unit,
     onRejectAction: () -> Unit,
 ) {
+    var showWarning by remember { mutableStateOf(false) }
+
+    LaunchedEffect (parsedTx) {
+        showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
+    }
+
     MixinAppTheme {
         Column(
             modifier =
@@ -146,7 +157,7 @@ fun BrowserPage(
                             modifier = Modifier.size(70.dp),
                             painter =
                                 painterResource(
-                                    id = if (token != null) R.drawable.ic_web3_transaction else R.drawable.ic_no_dapp,
+                                    id = if (isCancel) R.drawable.ic_web3_cancel else if (isSpeedUp) R.drawable.ic_web3_speed_up else if (token != null) R.drawable.ic_web3_transaction else R.drawable.ic_no_dapp,
                                 ),
                             contentDescription = null,
                             tint = Color.Unspecified,
@@ -170,7 +181,7 @@ fun BrowserPage(
                                     }
                                 } else {
                                     when (step) {
-                                        WalletConnectBottomSheetDialogFragment.Step.Loading -> R.string.web3_signing_confirmation
+                                        WalletConnectBottomSheetDialogFragment.Step.Loading -> if (isCancel) R.string.Cancel_Transaction else if (isSpeedUp) R.string.Speed_Up_Transaction else R.string.web3_signing_confirmation
                                         WalletConnectBottomSheetDialogFragment.Step.Done -> R.string.web3_sending_success
                                         WalletConnectBottomSheetDialogFragment.Step.Error -> if (insufficientGas) R.string.insufficient_balance else if (tipGas == null) R.string.Data_error else R.string.web3_signing_failed
                                         WalletConnectBottomSheetDialogFragment.Step.Sending -> R.string.Sending
@@ -214,7 +225,13 @@ fun BrowserPage(
                                         R.string.web3_signing_message_success
                                     }
                                 } else {
-                                    R.string.web3_ensure_trust
+                                    if (isCancel) {
+                                        R.string.web3_transaction_cancel_warning
+                                    } else if (isSpeedUp) {
+                                        R.string.web3_transaction_speed_up_warning
+                                    } else {
+                                        R.string.web3_ensure_trust
+                                    }
                                 },
                         ),
                     textAlign = TextAlign.Center,
@@ -235,14 +252,22 @@ fun BrowserPage(
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.backgroundWindow),
                 )
-                if (JsSignMessage.isSignMessage(type)) {
+                if (isCancel) {
+                  // empty
+                } else if (JsSignMessage.isSignMessage(type)) {
                     MessagePreview(content = data ?: "") {
                         onPreviewMessage.invoke(it)
                     }
+                    Box(modifier = Modifier.height(10.dp))
                 } else if (chain == Chain.Solana) {
-                    SolanaParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
+                    ParsedTxPreview(parsedTx = parsedTx, asset = asset, solanaTxSource = solanaTxSource)
+                    Box(modifier = Modifier.height(10.dp))
+                } else if (type == JsSignMessage.TYPE_TRANSACTION) {
+                    ParsedTxPreview(parsedTx = parsedTx, asset = asset)
+                    Box(modifier = Modifier.height(10.dp))
                 } else if (token != null && amount != null) {
                     TokenTransactionPreview(amount = amount, token = token)
+                    Box(modifier = Modifier.height(10.dp))
                 } else {
                     TransactionPreview(
                         balance =
@@ -253,8 +278,8 @@ fun BrowserPage(
                         chain,
                         asset,
                     )
+                    Box(modifier = Modifier.height(10.dp))
                 }
-                Box(modifier = Modifier.height(10.dp))
                 val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
@@ -283,7 +308,19 @@ fun BrowserPage(
                 Box(modifier = Modifier.height(20.dp))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
-                if ((tipGas == null && data == null && step != WalletConnectBottomSheetDialogFragment.Step.Error) || step == WalletConnectBottomSheetDialogFragment.Step.Loading || step == WalletConnectBottomSheetDialogFragment.Step.Sending) {
+                if (tipGas == null && data == null && step != WalletConnectBottomSheetDialogFragment.Step.Error) {
+                    Column(modifier = Modifier.align(Alignment.BottomCenter)) {
+                        Box(modifier = Modifier.height(20.dp))
+                        CircularProgressIndicator(
+                            modifier =
+                                Modifier
+                                    .size(40.dp)
+                                    .align(Alignment.CenterHorizontally),
+                            color = MixinAppTheme.colors.accent,
+                        )
+                        Box(modifier = Modifier.height(20.dp))
+                    }
+                } else if (step == WalletConnectBottomSheetDialogFragment.Step.Loading || step == WalletConnectBottomSheetDialogFragment.Step.Sending) {
                     Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                         Box(modifier = Modifier.height(80.dp))
                     }
@@ -320,7 +357,8 @@ fun BrowserPage(
                         confirmAction = showPin,
                     )
                 }
-                if (token == null && type == JsSignMessage.TYPE_TRANSACTION && (transaction?.value == null || Numeric.decodeQuantity(transaction.value) == BigInteger.ZERO)) {
+
+                if (showWarning) {
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
