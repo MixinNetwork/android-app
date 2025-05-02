@@ -558,13 +558,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             )
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
-                                    onDismiss = {
-                                        this@InputFragment.parentFragmentManager.apply {
-                                            if (backStackEntryCount > 0) {
-                                                popBackStack(
-                                                    null,
-                                                    FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                                )
+                                    onDismiss = { isDone->
+                                        if (isDone) {
+                                            this@InputFragment.parentFragmentManager.apply {
+                                                if (backStackEntryCount > 0) {
+                                                    popBackStack(
+                                                        null,
+                                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                                    )
+                                                }
                                             }
                                         }
                                     }
