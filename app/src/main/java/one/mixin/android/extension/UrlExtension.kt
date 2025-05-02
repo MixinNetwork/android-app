@@ -30,6 +30,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
@@ -94,7 +95,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
-        startsWith(Constants.Scheme.MIXIN_SWAP, true)
+        startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
+        startsWith(Constants.Scheme.DEBUG, true)
     ) {
         true
     } else {
@@ -142,6 +144,8 @@ fun String.openAsUrl(
                 Timber.e(IllegalStateException(err))
             },
         )
+    } else if (startsWith(Constants.Scheme.DEBUG, true)) {
+        SettingActivity.showDebug(context)
     } else if (startsWith(Constants.Scheme.INFO, true)) {
         val content = """
 Brand: ${Build.BRAND} 
