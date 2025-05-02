@@ -1481,8 +1481,8 @@
     <string name="unlimited_authorization_warning">这个应用可以提取你 %1$s 账号（%2$s）里所有的 %3$s 资产。</string>
     <string name="withdraw_all_of_token_warning">这个应用可以提取你所有的 %1$s。</string>
     <string name="Unlocking">正在解锁</string>
-    <string name="decode_transaction_failed">无法估计资产变化，注意只给您信任的应用程序签名。</string>
-    <string name="decode_transaction_failed_content">无法估计资产变化</string>
+    <string name="decode_transaction_failed">交易预览不可用，注意只给您信任的应用程序签名。</string>
+    <string name="decode_transaction_failed_content">交易预览不可用</string>
     <string name="web3_ensure_trust">请确保您信任此应用程序。</string>
     <string name="web3_transaction_request">交易签名</string>
     <string name="web3_message_request">消息签名</string>
@@ -1894,4 +1894,5 @@
     <string name="url_privacy_wallet">https://support.mixin.one/zh/article/5lua5lmi5piv6zqq56eb6zkx5yyf77yf-1s7o0e2/</string>
     <string name="url_classic_wallet">https://support.mixin.one/zh/article/5lua5lmi5piv5pmu6yca6zkx5yyf77yf-8308b1/</string>
     <string name="preauthorize_amount">预授权额度</string>
+    <string name="Unable_to_estimate_balance_changes">无法估计余额变化。</string>
 </resources>

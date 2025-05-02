@@ -240,12 +240,17 @@ fun ParsedTxPreview(
                     modifier = Modifier.alignByBaseline(),
                     text = stringResource(id = R.string.decode_transaction_failed_content),
                     color = MixinAppTheme.colors.red,
-                    fontFamily = FontFamily(Font(R.font.mixin_font)),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W600
                 )
                 Box(modifier = Modifier.weight(1f))
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(id = R.string.Unable_to_estimate_balance_changes),
+                color = MixinAppTheme.colors.red,
+                fontSize = 14.sp,
+            )
         } else if (parsedTx.balanceChanges.isNullOrEmpty() && parsedTx.approves.isNullOrEmpty()) {
             BalanceChangeHead()
             Row(

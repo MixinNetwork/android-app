@@ -558,13 +558,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             )
                                         navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
-                                    onDismiss = {
-                                        this@InputFragment.parentFragmentManager.apply {
-                                            if (backStackEntryCount > 0) {
-                                                popBackStack(
-                                                    null,
-                                                    FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                                )
+                                    onDismiss = { isDone->
+                                        if (isDone) {
+                                            this@InputFragment.parentFragmentManager.apply {
+                                                if (backStackEntryCount > 0) {
+                                                    popBackStack(
+                                                        null,
+                                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -708,6 +710,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         value
                     }
                 if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
+                    insufficientBalance.isVisible = false
+                    insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = false
+                    continueVa.isEnabled = false
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (BigDecimal(v) <= BigDecimal.ZERO){
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false

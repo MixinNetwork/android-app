@@ -290,13 +290,15 @@ internal constructor(
             val fee = tx.calcFee()
             return fee
         } else {
-            val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
-                EstimateFeeRequest(
-                    token.chainId,
-                    transaction.data,
+            val r = withContext(Dispatchers.IO) {
+                web3Repository.estimateFee(
+                    EstimateFeeRequest(
+                        token.chainId,
+                        transaction.data,
 
+                        )
                 )
-            )}
+            }
             if (r.isSuccess.not()) return BigDecimal.ZERO
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
