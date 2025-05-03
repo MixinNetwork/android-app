@@ -78,6 +78,10 @@ class VersionedTransactionCompat(
         return computeBudget(data)
     }
 
+    fun onlyOneSigner(): Boolean {
+        return message.header.numRequireSignatures == 1
+    }
+
     private fun parseSystemProgramData(data: ByteArray): Long? {
         val d = Buffer()
         d.write(data)

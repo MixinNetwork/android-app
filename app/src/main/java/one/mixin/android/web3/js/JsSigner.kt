@@ -297,7 +297,7 @@ object JsSigner {
     ): VersionedTransactionCompat {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
-        if (tx.signatures.size <= 1) {
+        if (tx.onlyOneSigner()) {
             tx.message.recentBlockhash = getBlockhash()
         }
         tx.sign(holder)
