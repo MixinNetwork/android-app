@@ -37,7 +37,6 @@ import one.mixin.android.ui.search.components.RecentSearchPage
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
