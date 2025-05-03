@@ -170,7 +170,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     signMessage.isCancelTx,
                     signMessage.isSpeedUp,
                     tipGas,
-                    solanaTx?.calcFee(),
+                    solanaTx?.calcFee(JsSigner.address),
                     parsedTx,
                     signMessage.solanaTxSource,
                     asset,

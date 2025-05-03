@@ -287,7 +287,7 @@ internal constructor(
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
             val tx = VersionedTransactionCompat.from(transaction.data ?: "")
-            val fee = tx.calcFee()
+            val fee = tx.calcFee(fromAddress)
             return fee
         } else {
             val r = withContext(Dispatchers.IO) {
