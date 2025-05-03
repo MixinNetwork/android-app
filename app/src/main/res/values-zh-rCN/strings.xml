@@ -639,6 +639,7 @@
     <string name="Mixin">Mixin</string>
     <string name="Mixin_Locked">Mixin 已锁定</string>
     <string name="Mixin_Messenger_Desktop">Mixin Messenger 桌面</string>
+    <string name="mixin_one">Mixin 大会员</string>
     <string name="Model">手机型号</string>
     <string name="Monday">星期一</string>
     <string name="More">更多</string>
@@ -1903,4 +1904,25 @@
     <string name="reputation_description">默认仅显示信誉度良好的交易。启用“高风险”可查看更多交易。</string>
     <string name="reputation_unknown_description">缺乏足够信息，或未被可信来源验证</string>
     <string name="reputation_spam_description">因可疑行为或欺诈迹象被标记为高风险交易</string>
+    <string name="View_Plan">查看套餐</string>
+    <string name="No_Invoices">无发票</string>
+    <string name="Invoices">发票</string>
+    <string name="Upgrade_to_Prosperity">升级至繁荣版</string>
+    <string name="Renew_Advance_Plan">续订进阶版套餐</string>
+    <string name="Plan">套餐</string>
+    <string name="Upgrade_Plan">升级套餐</string>
+    <string name="close">关闭</string>
+    <string name="upgrade_price">年费升级：100 美元</string>
+    <string name="member_desc_mixin_safe">创建 %d 个 Mixin Safe。</string>
+    <string name="member_desc_mixin_star">获得 %d 个 Mixin Star。</string>
+    <string name="member_desc_safe_members">每个Safe %1$d 会员，总共 %2$d 会员。</string>
+    <string name="member_title_recovery_free">免费恢复服务</string>
+    <string name="member_desc_recovery_free">免费使用恢复服务。</string>
+    <string name="member_title_recovery_paid">付费恢复服务</string>
+    <string name="member_desc_recovery_paid">使用恢复服务需支付 %d 个 Mixin Star。</string>
+    <string name="plan_advance_content">在多个设备上使用多个密钥，以避免单点故障，并在密钥丢失时获得分散恢复服务。</string>
+    <string name="plan_elite_content">与家人、朋友或同事一起在 Mixin Safe 管理大量财富，这样您就可以避免盗窃、事故和托管风险。</string>
+    <string name="plan_prosperity_content">提供24/7支持的专业加密解决方案，最适合家族办公室、大公司和金融机构。</string>
+    <string name="Profile_Badge">个人资料徽章</string>
+    <string name="Profile_Badge_description">您的名字旁边有一个专属徽章。</string>
 </resources>

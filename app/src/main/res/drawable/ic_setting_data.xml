@@ -2,5 +2,5 @@
     <path android:pathData="M4 13.15V19c0 2.21 4.03 4 9 4s9-1.79 9-4v-5.85" android:strokeWidth="2" android:strokeColor="?attr/icon_default" android:fillType="evenOdd"/>
     <path android:pathData="M4 7v6c0 2.21 4.03 4 9 4s9-1.79 9-4V7" android:strokeWidth="2" android:strokeColor="?attr/icon_default" android:fillType="evenOdd"/>
     <path android:pathData="M4 7a9 4 0 1 0 18 0A9 4 0 1 0 4 7z" android:strokeWidth="2" android:strokeColor="?attr/icon_default" android:fillType="evenOdd"/>
-    <path android:pathData="M1 1h24v24H1z" android:strokeAlpha="0.01" android:strokeWidth="1" android:strokeColor="#979797" android:fillType="evenOdd" android:fillAlpha="0.01"/>
+    <path android:pathData="M1 1h24v24H1z" android:strokeAlpha="0.01" android:strokeWidth="1" android:strokeColor="?attr/icon_default" android:fillType="evenOdd" android:fillAlpha="0.01"/>
 </vector>

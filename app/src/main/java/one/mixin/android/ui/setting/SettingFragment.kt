@@ -3,20 +3,29 @@ package one.mixin.android.ui.setting
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSettingBinding
+import one.mixin.android.event.RecallEvent
+import one.mixin.android.event.StarEvent
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.ui.setting.star.MixinStarInvoicesFragment
+import one.mixin.android.ui.setting.star.MixinStarUpgradeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.membershipIcon
 
 @AndroidEntryPoint
 class SettingFragment : BaseFragment(R.layout.fragment_setting) {
@@ -56,6 +65,26 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             appearanceRl.setOnClickListener {
                 navTo(AppearanceFragment.newInstance(), AppearanceFragment.TAG)
             }
+
+            mixinStarInvoicesRl.setOnClickListener {
+                if (Session.getAccount()?.membership?.isMembership() == true) {
+                    navTo(MixinStarInvoicesFragment.newInstance(), MixinStarInvoicesFragment.TAG)
+                } else {
+                    MixinStarUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                        parentFragmentManager, MixinStarUpgradeBottomSheetDialogFragment.TAG
+                    )
+                }
+            }
+            val icon = Session.getAccount()?.membership?.membershipIcon(true)
+            if (icon != null) {
+                mixinStartPlanIv.setImageResource(icon)
+                mixinStartPlanIv.isVisible = true
+                mixinStartPlanTv.isVisible = false
+            } else {
+                mixinStartPlanIv.isVisible = false
+                mixinStartPlanTv.isVisible = true
+            }
+
             notificationRl.setOnClickListener {
                 navTo(NotificationsFragment.newInstance(), NotificationsFragment.TAG)
             }
@@ -85,5 +114,21 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 }
             }
         }
+        RxBus.listen(StarEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(pauseScope)
+            .subscribe { _ ->
+                if (isAdded) {
+                    val icon = Session.getAccount()?.membership?.membershipIcon(true)
+                    if (icon != null) {
+                        binding.mixinStartPlanIv.setImageResource(icon)
+                        binding.mixinStartPlanIv.isVisible = true
+                        binding.mixinStartPlanTv.isVisible = false
+                    } else {
+                        binding.mixinStartPlanIv.isVisible = false
+                        binding.mixinStartPlanTv.isVisible = true
+                    }
+                }
+            }
     }
 }
