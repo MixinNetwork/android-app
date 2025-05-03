@@ -15,6 +15,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -47,6 +48,7 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -259,7 +261,9 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     }
 
     private fun fuzzySearch(keyword: String?) =
-        lifecycleScope.launch {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, e ->
+            Timber.e(e)
+        }) {
             if (viewDestroyed()) return@launch
             if (keyword.isNullOrBlank()) {
                 binding.va.displayedChild = 2
