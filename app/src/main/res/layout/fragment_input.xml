@@ -336,7 +336,7 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_color_error_tip"
                 android:textSize="14sp"
-                android:text="@string/Insufficient_Funds_For_Rent"
+                android:text="@string/send_sol_for_rent"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:gravity="center"
