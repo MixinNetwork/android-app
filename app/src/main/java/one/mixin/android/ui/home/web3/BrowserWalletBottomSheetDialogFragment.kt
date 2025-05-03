@@ -368,7 +368,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        onDismissAction?.invoke()
+        onDismissAction?.invoke(step == Step.Done)
     }
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
@@ -449,7 +449,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return this
     }
 
-    fun setOnDismiss(callback: () -> Unit): BrowserWalletBottomSheetDialogFragment {
+    fun setOnDismiss(callback: (Boolean) -> Unit): BrowserWalletBottomSheetDialogFragment {
         onDismissAction = callback
         return this
     }
@@ -461,7 +461,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var onDone: ((String?) -> Unit)? = null
     private var onRejectAction: (() -> Unit)? = null
-    private var onDismissAction: (() -> Unit)? = null
+    private var onDismissAction: ((Boolean) -> Unit)? = null
     private var onTxhash: ((String, String) -> Unit)? = null
 
     fun getBiometricInfo() =
@@ -499,7 +499,7 @@ fun showBrowserBottomSheetDialogFragment(
     currentTitle: String? = null,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
-    onDismiss: (() -> Unit)? = null,
+    onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
 ) {
     val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)

@@ -569,7 +569,7 @@
     <string name="Label">标题</string>
     <string name="landing_delete_content">您在 %1$s 申请了删除账号，账号将于 %2$s 被删除，如果您继续登录，删除您账户的请求将被取消。</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
-    <string name="landing_introduction">点击 "同意并继续" 接受 Mixin %1$s和%2$s</string>
+    <string name="landing_introduction">继续使用即表示你同意 %1$s和%2$s</string>
     <string name="landing_desc">带有端对端加密消息功能的开源加密钱包。</string>
     <string name="landing_invitation_dialog_content">我们将发送4位验证码到手机 %1$s, 请在下一个页面输入</string>
     <string name="landing_anonymous_dialog_content">我们将发送4位验证码到匿名号码 %1$s, 请在下一个页面输入</string>
@@ -1481,8 +1481,8 @@
     <string name="unlimited_authorization_warning">这个应用可以提取你 %1$s 账号（%2$s）里所有的 %3$s 资产。</string>
     <string name="withdraw_all_of_token_warning">这个应用可以提取你所有的 %1$s。</string>
     <string name="Unlocking">正在解锁</string>
-    <string name="decode_transaction_failed">无法估计资产变化，注意只给您信任的应用程序签名。</string>
-    <string name="decode_transaction_failed_content">无法估计资产变化</string>
+    <string name="decode_transaction_failed">交易预览不可用，注意只给您信任的应用程序签名。</string>
+    <string name="decode_transaction_failed_content">交易预览不可用</string>
     <string name="web3_ensure_trust">请确保您信任此应用程序。</string>
     <string name="web3_transaction_request">交易签名</string>
     <string name="web3_message_request">消息签名</string>
@@ -1894,4 +1894,6 @@
     <string name="url_privacy_wallet">https://support.mixin.one/zh/article/5lua5lmi5piv6zqq56eb6zkx5yyf77yf-1s7o0e2/</string>
     <string name="url_classic_wallet">https://support.mixin.one/zh/article/5lua5lmi5piv5pmu6yca6zkx5yyf77yf-8308b1/</string>
     <string name="preauthorize_amount">预授权额度</string>
+    <string name="Unable_to_estimate_balance_changes">无法估计余额变化。</string>
+    <string name="send_sol_for_rent">发送至少 %1$s SOL 以支付租金</string>
 </resources>
