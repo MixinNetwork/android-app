@@ -163,6 +163,7 @@ object Constants {
         const val HTTPS_CODES = "https://mixin.one/codes"
 
         const val WALLET_CONNECT_PREFIX = "wc:"
+        const val DEBUG = "mixin://debug"
     }
 
     object DataBase {
