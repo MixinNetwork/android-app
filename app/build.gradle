@@ -410,7 +410,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation "androidx.compose.foundation:foundation:${composeVersion}"
-    implementation platform('androidx.compose:compose-bom:2025.04.01')
+    implementation platform('androidx.compose:compose-bom:2025.05.00')
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
     implementation 'androidx.activity:activity-compose:1.10.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
