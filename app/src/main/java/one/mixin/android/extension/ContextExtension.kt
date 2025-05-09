@@ -423,6 +423,7 @@ private fun isInternetConnectivityValidated(connectivityManager: ConnectivityMan
     val activeNetwork = connectivityManager.activeNetwork ?: return false
     return try {
         val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true ||
         networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
     } catch (e: SecurityException) {
         // Workaround for https://issuetracker.google.com/issues/175055271.
