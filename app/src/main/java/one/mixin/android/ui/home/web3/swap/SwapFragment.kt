@@ -30,7 +30,6 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
@@ -71,6 +70,7 @@ import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -597,7 +597,7 @@ class SwapFragment : BaseFragment() {
         val inputMint = from.assetId
         val outputMint = to.assetId
 
-        val resp = handleMixinResponse(
+        val resp = requestRouteAPI(
             invokeNetwork = {
                 swapViewModel.web3Swap(
                     SwapRequest(
@@ -613,6 +613,7 @@ class SwapFragment : BaseFragment() {
                     )
                 )
             },
+            requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
             successBlock = { it.data },
             exceptionBlock = { t ->
                 Timber.e(t)
@@ -693,11 +694,12 @@ class SwapFragment : BaseFragment() {
     }
 
     private suspend fun refreshTokens() {
-        handleMixinResponse(
+        requestRouteAPI(
             invokeNetwork = { swapViewModel.web3Tokens(getSource()) },
             successBlock = { resp ->
                 resp.data
             },
+            requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
             failureBlock = { r ->
                 if (r.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
@@ -716,7 +718,7 @@ class SwapFragment : BaseFragment() {
                         }.setCancelable(false)
                         .create().show()
                 }
-                return@handleMixinResponse true
+                return@requestRouteAPI true
             },
         )?.let {
             if (!inMixin()) {

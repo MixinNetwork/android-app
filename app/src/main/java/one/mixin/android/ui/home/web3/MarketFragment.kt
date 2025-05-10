@@ -112,8 +112,10 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             watchlist.addItemDecoration(itemDecoration)
             radioGroupMarket.setOnCheckedChangeListener { _, id ->
                 type = if (id == R.id.radio_favorites) {
+                    watchlistAdapter.notifyDataSetChanged()
                     TYPE_FOV
                 } else {
+                    marketsAdapter.notifyDataSetChanged()
                     TYPE_ALL
                 }
             }
