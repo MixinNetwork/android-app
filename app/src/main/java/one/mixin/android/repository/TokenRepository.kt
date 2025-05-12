@@ -1031,8 +1031,8 @@ class TokenRepository
                                 AssetChange(
                                     assetId = bc.assetId,
                                     amount = amt.toPlainString(),
-                                    from = null,
-                                    to = bc.address
+                                    from = bc.from,
+                                    to = bc.to
                                 )
                             )
                         } else if (amt < BigDecimal.ZERO) {
@@ -1040,8 +1040,8 @@ class TokenRepository
                                 AssetChange(
                                     assetId = bc.assetId,
                                     amount = amt.toPlainString(),
-                                    from = bc.address,
-                                    to = null
+                                    from = bc.from,
+                                    to = bc.to,
                                 )
                             )
                         }

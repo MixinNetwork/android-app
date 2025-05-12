@@ -286,7 +286,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         return@ethPreviewTransaction nonce
                     }
                     if (parsedTx == null) {
-                        parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress)
+                        parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress, toAddress)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
@@ -310,7 +310,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 solanaTx = tx
                             }
                         if (parsedTx == null) {
-                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, null)
+                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, JsSigner.solanaAddress, toAddress)
                         }
                         tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
@@ -338,7 +338,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val hex = pair.first
                     val hash = Hash.sha3(hex)
-                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, token?.assetId)
+                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, toAddress, token?.assetId)
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -350,7 +350,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val sig = tx.signatures.first { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
                     val rawTx = tx.serialize().base64Encode()
                     if (tx.onlyOneSigner()) {
-                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, JsSigner.solanaAddress, token?.assetId)
+                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, JsSigner.solanaAddress,  toAddress,token?.assetId)
                         onTxhash?.invoke(sig, rawTx)
                     }
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
