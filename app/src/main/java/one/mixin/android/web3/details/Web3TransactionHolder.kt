@@ -17,7 +17,8 @@ import one.mixin.android.ui.home.web3.StakeAccountSummary
 
 class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : RecyclerView.ViewHolder(binding.root) {
 
-    private fun formatAmountWithSign(amount: String, positive: Boolean): String {
+    private fun formatAmountWithSign(amount: String?, positive: Boolean): String {
+        if (amount.isNullOrEmpty()) return "N/A"
         val formattedAmount = amount.numberFormat12()
         return if (positive) {
             if (formattedAmount.startsWith("+")) formattedAmount else "+$formattedAmount"
@@ -79,12 +80,11 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                         receiveValue.textColorResource = R.color.wallet_green
                         receiveValue.text = formatAmountWithSign(amount, true)
                         receiveSymbolTv.text = transaction.receiveAssetSymbol ?: ""
-                        
-                        val sendAmount = try {
-                            transaction.senders[0].amount.numberFormat12()
-                        } catch (e: Exception) {
-                            transaction.senders[0].amount
-                        }
+
+
+                        val sendAmount = transaction.senders.find {
+                            it.assetId == transaction.sendAssetId
+                        }?.amount ?: transaction.senders.lastOrNull()?.amount
                         sendValue.textColorResource = R.color.wallet_pink
                         sendValue.text = formatAmountWithSign(sendAmount, false)
                         sendSymbolTv.text = transaction.sendAssetSymbol ?: ""
