@@ -60,7 +60,10 @@ class VersionedTransactionCompat(
         return true
     }
 
-    fun calcFee(): BigDecimal {
+    fun calcFee(address: String): BigDecimal {
+        if (!onlyOneSigner() && message.accounts.first().toBase58() != address ) {
+            return BigDecimal.ZERO
+        }
         val sigFee = lamportToSol(BigDecimal(5000 * max(signatures.size, 1)))
         val priorityFee = calcPriorityFee()
         return sigFee.add(priorityFee).setScale(9, RoundingMode.CEILING)
@@ -76,6 +79,10 @@ class VersionedTransactionCompat(
             data.add(i.data)
         }
         return computeBudget(data)
+    }
+
+    fun onlyOneSigner(): Boolean {
+        return message.header.numRequireSignatures == 1
     }
 
     private fun parseSystemProgramData(data: ByteArray): Long? {

@@ -90,7 +90,6 @@ object Constants {
         const val PREF_GLOBAL_MARKET = "pref_global_market"
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
-        const val PREF_ASSET_LIST_ABOVE_LEVEL = "pref_asset_list_above_level"
 
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
@@ -164,6 +163,7 @@ object Constants {
         const val HTTPS_CODES = "https://mixin.one/codes"
 
         const val WALLET_CONNECT_PREFIX = "wc:"
+        const val DEBUG = "mixin://debug"
     }
 
     object DataBase {

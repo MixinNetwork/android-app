@@ -245,10 +245,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             }
         } catch (e: Exception) {
             if (isSearchingRemote) {
-                binding.rvVa.displayedChild = POS_EMPTY
+                if (isAdded) {
+                    binding.rvVa.displayedChild = POS_EMPTY
+                }
             }
         } finally {
-            binding.pb.isVisible = false
+            if (isAdded) {
+                binding.pb.isVisible = false
+            }
         }
     }
 

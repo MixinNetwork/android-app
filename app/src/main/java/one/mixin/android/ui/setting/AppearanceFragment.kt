@@ -145,47 +145,6 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
                 menuAdapter.notifyDataSetChanged()
                 sortMenu.show()
             }
-            val hideUnverifiedToken = requireContext().defaultSharedPreferences.getInt(
-                Constants.Account.PREF_ASSET_LIST_ABOVE_LEVEL,
-                Constants.AssetLevel.UNKNOWN
-            ) != Constants.AssetLevel.UNKNOWN
-
-            binding.hideUnverifiedTokenSwitch.isChecked = hideUnverifiedToken
-
-            binding.hideUnverifiedTokenRl.setOnClickListener {
-                binding.hideUnverifiedTokenSwitch.isChecked = !binding.hideUnverifiedTokenSwitch.isChecked
-                val level = if (binding.hideUnverifiedTokenSwitch.isChecked) {
-                    Constants.AssetLevel.VERIFIED
-                } else {
-                    Constants.AssetLevel.UNKNOWN
-                }
-                lifecycleScope.launch {
-                    handleMixinResponse(
-                        invokeNetwork = {
-                            viewModel.preferences(
-                                AccountUpdateRequest(
-                                    assetListAboveLevel = level,
-                                    transactionListAboveLevel = level
-                                )
-                            )
-                        },
-                        successBlock = {
-                            it.data?.let { account ->
-                                Session.storeAccount(account)
-                                requireContext().defaultSharedPreferences.edit().apply {
-                                    putInt(Constants.Account.PREF_ASSET_LIST_ABOVE_LEVEL, level)
-                                    apply()
-                                }
-                                toast(R.string.Save_success)
-                            }
-                        },
-                        exceptionBlock = {
-                            toast(R.string.Data_error)
-                            return@handleMixinResponse false
-                        }
-                    )
-                }
-            }
         }
     }
 

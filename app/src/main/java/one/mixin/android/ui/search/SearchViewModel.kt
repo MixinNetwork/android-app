@@ -352,7 +352,7 @@ internal constructor(
     fun saveRecentSearch(sp: SharedPreferences, recentSearch: RecentSearch) {
         viewModelScope.launch {
             val local = _recentSearches.value.toMutableList()
-            local.remove(recentSearch)
+            local.removeIf { it.title == recentSearch.title && it.subTitle == recentSearch.subTitle }
             local.add(0, recentSearch)
             sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(local.take(4)))
             _recentSearches.value = local.take(4)

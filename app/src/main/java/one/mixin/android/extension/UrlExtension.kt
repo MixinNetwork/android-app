@@ -30,6 +30,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
@@ -40,6 +41,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getShareCategory
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
 
@@ -93,7 +95,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
-        startsWith(Constants.Scheme.MIXIN_SWAP, true)
+        startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
+        startsWith(Constants.Scheme.DEBUG, true)
     ) {
         true
     } else {
@@ -141,6 +144,8 @@ fun String.openAsUrl(
                 Timber.e(IllegalStateException(err))
             },
         )
+    } else if (startsWith(Constants.Scheme.DEBUG, true)) {
+        SettingActivity.showDebug(context)
     } else if (startsWith(Constants.Scheme.INFO, true)) {
         val content = """
 Brand: ${Build.BRAND} 
@@ -155,6 +160,8 @@ Version Code: ${Build.VERSION.RELEASE}
 User ID: ${Session.getAccountId()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
+Solana Address: ${JsSigner.solanaAddress}
+EVM Address: ${JsSigner.address}
 """
         context.alert(content).setPositiveButton(android.R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(

@@ -12,13 +12,13 @@ plugins {
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
 
-    id 'io.sentry.android.gradle' version '5.4.0'
+    id 'io.sentry.android.gradle' version '5.5.0'
 }
 
-def versionMajor = 2
-def versionMinor = 3
-def versionPatch = 4
-def versionBuild = 0
+def versionMajor = 3
+def versionMinor = 0
+def versionPatch = 1
+def versionBuild = 2
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -410,7 +410,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation "androidx.compose.foundation:foundation:${composeVersion}"
-    implementation platform('androidx.compose:compose-bom:2025.04.01')
+    implementation platform('androidx.compose:compose-bom:2025.05.00')
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
     implementation 'androidx.activity:activity-compose:1.10.1'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"

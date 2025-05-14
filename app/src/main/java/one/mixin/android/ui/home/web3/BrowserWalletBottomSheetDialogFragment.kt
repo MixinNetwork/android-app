@@ -45,7 +45,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
-import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
@@ -56,7 +55,6 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
@@ -67,6 +65,8 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
+import org.sol4k.Base58
+import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4k.exception.RpcException
 import org.sol4kt.SignInInput
 import org.sol4kt.VersionedTransactionCompat
@@ -170,7 +170,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     signMessage.isCancelTx,
                     signMessage.isSpeedUp,
                     tipGas,
-                    solanaTx?.calcFee(),
+                    solanaTx?.calcFee(JsSigner.address),
                     parsedTx,
                     signMessage.solanaTxSource,
                     asset,
@@ -302,8 +302,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                         val tx =
                             solanaTx ?: VersionedTransactionCompat.from(signMessage.data ?: "").apply {
-                                val txWithPriorityFee = updateTxPriorityFee(this, signMessage.solanaTxSource)
-                                solanaTx = txWithPriorityFee
+                                val tx = if (this.onlyOneSigner()) {
+                                    updateTxPriorityFee(this, signMessage.solanaTxSource)
+                                } else {
+                                    this
+                                }
+                                solanaTx = tx
                             }
                         if (parsedTx == null) {
                             parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, null)
@@ -343,10 +347,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         return@signSolanaTransaction blockhash
                     }
                     step = Step.Sending
-                    val sig = tx.signatures.first()
+                    val sig = tx.signatures.first { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
                     val rawTx = tx.serialize().base64Encode()
-                    viewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), token?.assetId)
-                    onTxhash?.invoke(sig, rawTx)
+                    if (tx.onlyOneSigner()) {
+                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, JsSigner.solanaAddress, token?.assetId)
+                        onTxhash?.invoke(sig, rawTx)
+                    }
                     onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
@@ -368,7 +374,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        onDismissAction?.invoke()
+        onDismissAction?.invoke(step == Step.Done)
     }
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
@@ -449,7 +455,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return this
     }
 
-    fun setOnDismiss(callback: () -> Unit): BrowserWalletBottomSheetDialogFragment {
+    fun setOnDismiss(callback: (Boolean) -> Unit): BrowserWalletBottomSheetDialogFragment {
         onDismissAction = callback
         return this
     }
@@ -461,7 +467,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var onDone: ((String?) -> Unit)? = null
     private var onRejectAction: (() -> Unit)? = null
-    private var onDismissAction: (() -> Unit)? = null
+    private var onDismissAction: ((Boolean) -> Unit)? = null
     private var onTxhash: ((String, String) -> Unit)? = null
 
     fun getBiometricInfo() =
@@ -499,7 +505,7 @@ fun showBrowserBottomSheetDialogFragment(
     currentTitle: String? = null,
     onReject: (() -> Unit)? = null,
     onDone: ((String?) -> Unit)? = null,
-    onDismiss: (() -> Unit)? = null,
+    onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
 ) {
     val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)

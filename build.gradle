@@ -4,13 +4,13 @@ buildscript {
         ext.bitcoinVersion ='0.17'
         ext.fragmentVersion = '1.8.6'
         ext.activity_version = '1.10.1'
-        ext.lifecycleVersion = '2.8.7'
+        ext.lifecycleVersion = '2.9.0'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.6'
         ext.coilVersion = '3.1.0'
         ext.collectionx = '1.5.0'
         ext.roomVersion = '2.7.1'
-        ext.navigationVersion = '2.8.9'
+        ext.navigationVersion = '2.9.0'
         ext.workManagerVersion = '2.10.1'
         ext.constraintLayoutVersion = '2.2.1'
         ext.constraintLayoutComposeVersion = '1.1.1'
@@ -39,7 +39,7 @@ buildscript {
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
         ext.kotlinVersion = '2.1.20'
-        ext.libphonenumberVersion = '9.0.4'
+        ext.libphonenumberVersion = '9.0.5'
         ext.coroutinesVersion = '1.10.2'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
@@ -106,7 +106,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20250107'
-        ext.composeVersion = '1.8.0'
+        ext.composeVersion = '1.8.1'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
         ext.sol4kVersion = '0.5.13'
@@ -118,7 +118,7 @@ buildscript {
 
         ext.playWalletVersion = '19.4.0'
         ext.playPayVersion = '16.5.0'
-        ext.datastoreVersion = '1.1.5'
+        ext.datastoreVersion = '1.1.6'
         ext.protobufVersion = '3.11.0'
         ext.appsFlyerVersion ='6.16.2'
         ext.installreferrerVersion ='2.2'
@@ -131,7 +131,7 @@ buildscript {
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.9.2'
+        classpath 'com.android.tools.build:gradle:8.10.0'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.2'
@@ -141,8 +141,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.9.2' apply false
-    id 'com.android.library' version '8.9.2' apply false
+    id 'com.android.application' version '8.10.0' apply false
+    id 'com.android.library' version '8.10.0' apply false
     id 'org.jetbrains.kotlin.android' version "${kotlinVersion}" apply false
     id "org.jetbrains.kotlin.kapt" version "${kotlinVersion}" apply false
     id 'com.google.dagger.hilt.android' version '2.56.2' apply false
@@ -150,7 +150,7 @@ plugins {
     id "de.undercouch.download" version "5.5.0" apply false
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version "${kotlinVersion}" apply false
-    id "com.google.devtools.ksp" version "2.1.20-2.0.0" apply false
+    id "com.google.devtools.ksp" version "2.1.20-2.0.1" apply false
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}" apply false
     id 'com.google.firebase.firebase-perf' version '1.4.2' apply false
 }

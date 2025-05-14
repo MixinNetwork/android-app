@@ -49,6 +49,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.Approve
 import one.mixin.android.api.response.web3.BalanceChange
@@ -58,10 +60,10 @@ import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
@@ -199,13 +201,14 @@ fun ParsedTxPreview(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
-        BalanceChangeHead()
         if (parsedTx == null) {
+            BalanceChangeHead()
             CircularProgressIndicator(
                 modifier = Modifier.size(32.dp),
                 color = MixinAppTheme.colors.accent,
             )
         } else if (parsedTx.instructions?.isEmpty() == true) {
+            BalanceChangeHead()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
@@ -221,11 +224,14 @@ fun ParsedTxPreview(
                 Box(modifier = Modifier.weight(1f))
                 CoilImage(
                     model = asset?.iconUrl,
-                    modifier = Modifier.size(32.dp).clip(CircleShape),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
                     placeholder = R.drawable.ic_avatar_place_holder,
                 )
             }
         } else if (parsedTx.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
+            BalanceChangeHead()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
@@ -234,13 +240,19 @@ fun ParsedTxPreview(
                     modifier = Modifier.alignByBaseline(),
                     text = stringResource(id = R.string.decode_transaction_failed_content),
                     color = MixinAppTheme.colors.red,
-                    fontFamily = FontFamily(Font(R.font.mixin_font)),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W600
                 )
                 Box(modifier = Modifier.weight(1f))
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(id = R.string.Unable_to_estimate_balance_changes),
+                color = MixinAppTheme.colors.red,
+                fontSize = 14.sp,
+            )
         } else if (parsedTx.balanceChanges.isNullOrEmpty() && parsedTx.approves.isNullOrEmpty()) {
+            BalanceChangeHead()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
@@ -255,17 +267,35 @@ fun ParsedTxPreview(
                 )
                 Box(modifier = Modifier.weight(1f))
             }
-        } else if (parsedTx.approves.isNullOrEmpty().not()){
+        } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty().not()){
+            BalanceChangeHead(R.string.preauthorize_amount)
             parsedTx.approves.forEach { approve ->
                 ApproveChangeItem(approve)
                 Box(modifier = Modifier.height(10.dp))
             }
-        } else {
-            val viewDetails = remember { mutableStateOf(false) }
-            val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-            parsedTx.balanceChanges?.forEach { bc ->
+            BalanceChangeHead()
+            parsedTx.balanceChanges.forEach { bc ->
                 BalanceChangeItem(balanceChange = bc)
                 Box(modifier = Modifier.height(10.dp))
+            }
+        } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty()){
+            BalanceChangeHead(R.string.preauthorize_amount)
+            parsedTx.approves.firstOrNull()?.let { approve ->
+                ApproveChangeItem(approve)
+            }
+            Box(modifier = Modifier.height(10.dp))
+        } else {
+            BalanceChangeHead()
+            val viewDetails = remember { mutableStateOf(false) }
+            val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
+            if (parsedTx.balanceChanges?.size == 1) {
+                SingleBalanceChangeItem(bc = parsedTx.balanceChanges.first())
+                Box(modifier = Modifier.height(10.dp))
+            } else {
+                parsedTx.balanceChanges?.forEach { bc ->
+                    BalanceChangeItem(balanceChange = bc)
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
             if (solanaTxSource != null && !solanaTxSource.isInnerTx()) {
                 Row(
@@ -276,7 +306,9 @@ fun ParsedTxPreview(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_play_arrow),
-                        modifier = Modifier.size(24.dp, 24.dp).rotate(rotation),
+                        modifier = Modifier
+                            .size(24.dp, 24.dp)
+                            .rotate(rotation),
                         contentDescription = null,
                         tint = MixinAppTheme.colors.accent,
                     )
@@ -298,11 +330,11 @@ fun ParsedTxPreview(
 }
 
 @Composable
-fun BalanceChangeHead() {
+fun BalanceChangeHead(string: Int = R.string.Balance_Change) {
     Box(modifier = Modifier.height(16.dp))
     Text(
-        text = stringResource(id = R.string.Balance_Change),
-        color = MixinAppTheme.colors.textAssist,
+        text = stringResource(id = string),
+        color = MixinAppTheme.colors.textRemarks,
         fontSize = 14.sp,
     )
     Box(modifier = Modifier.height(8.dp))
@@ -418,27 +450,76 @@ private fun ApproveChangeItem(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        CoilImage(
-            model = approve.icon,
-            modifier = Modifier.size(32.dp).clip(CircleShape),
-            placeholder = R.drawable.ic_avatar_place_holder,
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = approve.name?:"",
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.W600,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-        )
-        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = "$amountValue ${approve.symbol}",
-            color = if ((approve.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            color = MixinAppTheme.colors.red,
+            maxLines = 1,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        CoilImage(
+            model = approve.icon,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape),
+            placeholder = R.drawable.ic_avatar_place_holder,
+        )
+    }
+    Spacer(modifier = Modifier.height(4.dp))
+    if (approve.amount.equals("unlimited", true)) {
+        Text(
+            text = stringResource(R.string.approval_unlimited_warning, approve.symbol ?: ""),
+            color = MixinAppTheme.colors.red,
+            maxLines = 1,
+            fontSize = 12.sp,
+        )
+    }
+}
+
+@Composable
+private fun SingleBalanceChangeItem(
+    bc: BalanceChange
+) {
+    val viewModel = hiltViewModel<Web3ViewModel>()
+    val priceUsd: String? by viewModel.getTokenPriceUsdFlow(bc.assetId)
+        .collectAsStateWithLifecycle(initialValue = null)
+    val fiatPrice = bc.formatPrice(priceUsd)
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        Text(
+            text = "${bc.amountString()}",
+            color = if ((bc.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            maxLines = 1,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = FontFamily(Font(R.font.mixin_font))
+        )
+        Spacer(modifier = Modifier.width(2.dp))
+        Text(
+            text = "${bc.symbol}",
+            color = MixinAppTheme.colors.textPrimary,
             maxLines = 1,
             fontSize = 14.sp,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        CoilImage(
+            model = bc.icon,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape),
+            placeholder = R.drawable.ic_avatar_place_holder
+        )
+    }
+    if (fiatPrice != null) {
+        Text(
+            text = fiatPrice,
+            color = MixinAppTheme.colors.textAssist,
+            maxLines = 1,
+            fontSize = 12.sp,
         )
     }
 }
@@ -447,32 +528,37 @@ private fun ApproveChangeItem(
 private fun BalanceChangeItem(
     balanceChange: BalanceChange,
 ) {
+    val viewModel = hiltViewModel<Web3ViewModel>()
+    val priceUsd: String? by viewModel.getTokenPriceUsdFlow(balanceChange.assetId)
+        .collectAsStateWithLifecycle(initialValue = null)
+    val fiatPrice = balanceChange.formatPrice(priceUsd)
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CoilImage(
             model = balanceChange.icon,
-            modifier = Modifier.size(32.dp).clip(CircleShape),
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape),
             placeholder = R.drawable.ic_avatar_place_holder,
         )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = if (balanceChange.address == wrappedSolTokenAssetKey) "Solana" else balanceChange.name,
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.W600,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-        )
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "${balanceChange.amountString()} ${balanceChange.symbol}",
             color = if ((balanceChange.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
             maxLines = 1,
             fontSize = 14.sp,
         )
+        Spacer(modifier = Modifier.weight(1f))
+        if (fiatPrice != null) {
+            Text(
+                text = fiatPrice,
+                color = MixinAppTheme.colors.textAssist,
+                maxLines = 1,
+                fontSize = 12.sp,
+            )
+        }
     }
 }
 

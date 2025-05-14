@@ -305,7 +305,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         fetchToken = { assetId ->
                             web3ViewModel.web3TokenItemById(assetId)
                         },
-                        approvals = transaction.approvals
+                        approvals = transaction.approvals,
                     )
                 }
             } else {

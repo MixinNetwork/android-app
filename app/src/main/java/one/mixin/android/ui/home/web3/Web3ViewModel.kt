@@ -8,6 +8,10 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -23,7 +27,6 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
-import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
@@ -78,7 +81,7 @@ internal constructor(
 ) : ViewModel() {
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    fun web3TokensExcludeHidden(minAssetLevel: Int = Constants.AssetLevel.VERIFIED) = web3Repository.web3TokensExcludeHidden(minAssetLevel)
+    fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()
     
     fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
 
@@ -88,6 +91,13 @@ internal constructor(
     suspend fun  web3TokenItemById(chainId: String) = withContext(Dispatchers.IO) {
         web3Repository.web3TokenItemById(chainId)
     }
+
+    fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
+        val item = tokenRepository.findAssetItemById(assetId)?.priceUsd
+        emit(item)
+    }.catch { e ->
+        emit(null)
+    }.flowOn(Dispatchers.IO)
 
     fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
 
@@ -278,16 +288,18 @@ internal constructor(
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
             val tx = VersionedTransactionCompat.from(transaction.data ?: "")
-            val fee = tx.calcFee()
+            val fee = tx.calcFee(fromAddress)
             return fee
         } else {
-            val r = withContext(Dispatchers.IO) {web3Repository.estimateFee(
-                EstimateFeeRequest(
-                    token.chainId,
-                    transaction.data,
+            val r = withContext(Dispatchers.IO) {
+                web3Repository.estimateFee(
+                    EstimateFeeRequest(
+                        token.chainId,
+                        transaction.data,
 
+                        )
                 )
-            )}
+            }
             if (r.isSuccess.not()) return BigDecimal.ZERO
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)

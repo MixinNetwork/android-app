@@ -123,6 +123,7 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                                 
                                 lifecycleScope.launch(Dispatchers.IO) {
                                     try {
+                                        viewModel.deleteWallets()
                                         viewModel.deleteAllWeb3Transactions()
                                         withContext(Dispatchers.Main) {
                                             progressDialog.dismiss()

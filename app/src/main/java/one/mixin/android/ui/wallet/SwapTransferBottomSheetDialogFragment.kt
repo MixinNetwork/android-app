@@ -834,8 +834,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val tx = solanaTx ?: VersionedTransactionCompat.from(web3Transaction?.data ?: "").apply {
                             solanaTx = this
                         }
-                        
-                        solanaFee = solanaTx?.calcFee()
+                        solanaFee = solanaTx?.calcFee(tx.message.accounts[0].toBase58())
                     }
                 } catch (e: Exception) {
                     handleException(e)

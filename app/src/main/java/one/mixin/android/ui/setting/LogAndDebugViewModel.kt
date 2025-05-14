@@ -13,4 +13,8 @@ class LogAndDebugViewModel @Inject constructor(
     suspend fun deleteAllWeb3Transactions() {
         tokenRepository.deleteAllWeb3Transactions()
     }
+
+    suspend fun deleteWallets() {
+        tokenRepository.deleteWallets()
+    }
 }

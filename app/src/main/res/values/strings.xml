@@ -102,8 +102,8 @@
     <string name="Asset_Key">Asset Key</string>
     <string name="Asset_not_found">Asset not found.</string>
     <string name="ASSETS">ASSETS</string>
-    <string name="ASSET_CHANGES">ASSET CHANGES</string>
-    <string name="TOKEN_ACCESS_APPROVAL">TOKEN ACCESS APPROVAL</string>
+    <string name="ASSET_CHANGES">BALANCE CHANGES</string>
+    <string name="TOKEN_ACCESS_APPROVAL">PRE-AUTHORIZE AMOUNT</string>
     <string name="MAO">MAO</string>
     <string name="DAPPS">APPS</string>
     <string name="Audio">Audio</string>
@@ -1286,7 +1286,7 @@
     <string name="normal">Normal</string>
     <string name="slow">Slow</string>
     <string name="Message">Message</string>
-    <string name="Balance_Change">Balance Changes (estimate)</string>
+    <string name="Balance_Change">BALANCE CHANGES(ESTIMATE)</string>
     <string name="Success">Success</string>
     <string name="TIP_Wallet">TIP Wallet</string>
     <string name="Cancel_transaction">Cancel transaction</string>
@@ -1518,8 +1518,8 @@
     <string name="unlimited_authorization_warning">This application can access all %3$s in your %1$s account (%2$s).</string>
     <string name="withdraw_all_of_token_warning">This app can withdraw all your %1$s.</string>
     <string name="Unlocking">Unlocking</string>
-    <string name="decode_transaction_failed">Transaction decoding failed, making it impossible to estimate asset changes. Be cautious and only sign transactions for apps you trust.</string>
-    <string name="decode_transaction_failed_content">Transaction decoding failed</string>
+    <string name="decode_transaction_failed">Transaction preview unavailable, making it impossible to estimate asset changes. Be cautious and only sign transactions for apps you trust.</string>
+    <string name="decode_transaction_failed_content">Transaction preview unavailable</string>
     <string name="web3_ensure_trust">Please ensure you trust this app before proceeding with the request.</string>
     <string name="web3_transaction_request">Transaction Request</string>
     <string name="web3_message_request">Message Request</string>
@@ -1932,10 +1932,12 @@
     <string name="Speed_Up">Speed Up</string>
     <string name="Cancel_Transaction">Cancel Transaction</string>
     <string name="Speed_Up_Transaction">Speed Up Transaction</string>
-    <string name="Insufficient_Funds_For_Rent">Insufficient Funds For Rent</string>
     <string name="web3_transaction_cancel_warning">If the transaction is too far along cancellation may not be possible.</string>
     <string name="web3_transaction_speed_up_warning">If the transaction is too far along this may not be possible.</string>
     <string name="url_privacy_wallet">https://support.mixin.one/en/article/what-is-a-privacy-wallet-1ng5j8f/</string>
     <string name="url_classic_wallet">https://support.mixin.one/en/article/what-is-a-common-wallet-y0rxkx/</string>
-    <string name="hide_unverified_token">Hide Unverified Tokens</string>
+    <string name="preauthorize_amount">PRE-AUTHORIZE AMOUNT</string>
+    <string name="approval_unlimited_warning">This app can withdraw all your %1$s</string>
+    <string name="Unable_to_estimate_balance_changes">Unable to estimate balance changes.</string>
+    <string name="send_sol_for_rent">Send at least %1$s SOL for the rent</string>
 </resources>

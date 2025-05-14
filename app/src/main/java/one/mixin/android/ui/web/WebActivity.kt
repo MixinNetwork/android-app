@@ -62,7 +62,7 @@ class WebActivity : BaseActivity() {
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
-                            putBoolean(WebFragment.ARGS_SAVE_NAME, saveName?:false)
+                            putBoolean(WebFragment.ARGS_SAVE_NAME, saveName ?: false)
                         },
                     )
                 },

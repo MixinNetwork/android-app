@@ -36,7 +36,7 @@ constructor(
 
     fun web3Tokens() = web3TokenDao.web3TokenItems()
     
-    fun web3TokensExcludeHidden(minAssetLevel: Int) = web3TokenDao.web3TokenItemsExcludeHidden(minAssetLevel)
+    fun web3TokensExcludeHidden() = web3TokenDao.web3TokenItemsExcludeHidden()
     
     fun hiddenAssetItems() = web3TokenDao.hiddenAssetItems()
     

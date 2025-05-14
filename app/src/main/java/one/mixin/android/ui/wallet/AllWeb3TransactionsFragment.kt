@@ -79,15 +79,9 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
     }
 
-    private val minAssetLevel: Int by lazy {
-        requireContext().defaultSharedPreferences.getInt(Constants.Account.PREF_ASSET_LIST_ABOVE_LEVEL, Constants.AssetLevel.UNKNOWN)
-    }
-
     private val filterParams by lazy {
         (requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java) 
-            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })).apply { 
-                minAssetLevel = this@AllWeb3TransactionsFragment.minAssetLevel 
-            }
+            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) }))
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
