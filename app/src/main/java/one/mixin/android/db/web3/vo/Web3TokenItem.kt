@@ -71,7 +71,9 @@ data class Web3TokenItem(
     @ColumnInfo(name = "chain_symbol")
     val chainSymbol: String?,
     @ColumnInfo(name = "hidden")
-    val hidden: Boolean?
+    val hidden: Boolean?,
+    @ColumnInfo(name = "level")
+    val level: Int,
 ) : Parcelable, Swappable {
     
     fun getChainDisplayName(): String {

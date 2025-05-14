@@ -224,7 +224,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                                 chainIcon = tokenItem.chainIconUrl,
                                                 chainName = tokenItem.chainName,
                                                 chainSymbol = tokenItem.chainSymbol,
-                                                hidden = false
+                                                hidden = false,
+                                                level = Constants.AssetLevel.UNKNOWN
                                             )
                                         }
                                     }
@@ -317,7 +318,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                     chainIcon = item.chainIconUrl,
                                     chainName = item.chainName,
                                     chainSymbol = item.chainSymbol,
-                                    hidden = item.hidden
+                                    hidden = item.hidden,
+                                    level = Constants.AssetLevel.UNKNOWN
                                 )
                         }
                     }

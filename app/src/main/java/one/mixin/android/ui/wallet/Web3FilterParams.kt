@@ -18,7 +18,7 @@ class Web3FilterParams(
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
-    var minAssetLevel: Int = Constants.AssetLevel.VERIFIED, // Default to Constants.AssetLevel.VERIFIED
+    var minAssetLevel: Int = Constants.AssetLevel.UNKNOWN, // Default to Constants.AssetLevel.VERIFIED
 ) : Parcelable {
     override fun toString(): String {
         return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
@@ -74,7 +74,7 @@ class Web3FilterParams(
             filters.add("w.transaction_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
         
-        filters.add("(s.asset_level >= $minAssetLevel OR s.asset_level IS NULL)")
+        filters.add("s.level >= $minAssetLevel")
 
         val whereSql = if (filters.isEmpty()) {
             ""

@@ -1940,4 +1940,5 @@
     <string name="approval_unlimited_warning">This app can withdraw all your %1$s</string>
     <string name="Unable_to_estimate_balance_changes">Unable to estimate balance changes.</string>
     <string name="send_sol_for_rent">Send at least %1$s SOL for the rent</string>
+    <string name="malicious_token_warning">This token has been flagged as malicious by Blocked.</string>
 </resources>

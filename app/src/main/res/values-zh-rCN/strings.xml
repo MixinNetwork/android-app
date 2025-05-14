@@ -1896,4 +1896,5 @@
     <string name="preauthorize_amount">预授权额度</string>
     <string name="Unable_to_estimate_balance_changes">无法估计余额变化。</string>
     <string name="send_sol_for_rent">发送至少 %1$s SOL 以支付租金</string>
+    <string name="malicious_token_warning">该代币已被标记为恶意代币</string>
 </resources>
