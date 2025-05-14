@@ -152,8 +152,8 @@
             app:argType="one.mixin.android.db.web3.vo.Web3Token" />
 
         <action
-            android:id="@+id/action_all_transactions_fragment_to_transaction_fragment"
-            app:destination="@id/transaction_fragment"
+            android:id="@+id/action_all_web3_transactions_fragment_to_web3_transaction_fragment"
+            app:destination="@id/web3_transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
