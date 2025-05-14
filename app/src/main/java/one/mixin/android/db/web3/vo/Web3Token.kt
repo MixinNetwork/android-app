@@ -20,7 +20,7 @@ import java.math.RoundingMode
     tableName = "tokens",
     primaryKeys = ["wallet_id", "asset_id"],
     indices = [
-        Index(value = arrayOf("asset_level")),
+        Index(value = arrayOf("level")),
     ]
 )
 @Parcelize
@@ -61,9 +61,9 @@ data class Web3Token(
     @ColumnInfo(name = "change_usd")
     @SerializedName("change_usd")
     val changeUsd: String,
-    @ColumnInfo(name = "asset_level")
-    @SerializedName("asset_level")
-    val assetLevel: Int = Constants.AssetLevel.UNKNOWN,
+    @ColumnInfo(name = "level")
+    @SerializedName("level")
+    val level: Int = Constants.AssetLevel.UNKNOWN,
 ) : Parcelable, Swappable {
 
     override fun toSwapToken(): SwapToken {

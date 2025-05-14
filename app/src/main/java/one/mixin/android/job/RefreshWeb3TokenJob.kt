@@ -2,8 +2,10 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
@@ -42,8 +44,21 @@ class RefreshWeb3TokenJob(
                     val assetIds = assets.map { it.assetId }
                     web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
                     Timber.d("Updated missing assets to zero balance for wallet ${walletId}")
-                    
                     web3TokenDao.insertList(assets)
+                    assets.forEach { asset ->
+                        if (asset.level < Constants.AssetLevel.UNKNOWN) {
+                            val extra = web3TokensExtraDao.findByAssetId(asset.assetId, walletId)
+                            if (extra == null || extra.hidden != false) {
+                                web3TokensExtraDao.insert(
+                                    Web3TokensExtra(
+                                        assetId = asset.assetId,
+                                        walletId = walletId,
+                                        hidden = true
+                                    )
+                                )
+                            }
+                        }
+                    }
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
