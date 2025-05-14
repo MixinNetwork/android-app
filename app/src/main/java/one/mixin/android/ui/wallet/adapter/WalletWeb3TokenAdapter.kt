@@ -111,8 +111,8 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
                     asset.balance.numberFormat()
                 }
             binding.symbolTv.text = asset.symbol
-            binding.icSpan.isVisible = asset.level < Constants.AssetLevel.UNKNOWN
-            if (asset.level < Constants.AssetLevel.UNKNOWN) {
+            binding.icSpam.isVisible = asset.level <= Constants.AssetLevel.SPAM
+            if (asset.level <= Constants.AssetLevel.SPAM) {
                 binding.balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginStart = 2.dp
                 }

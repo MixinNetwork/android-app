@@ -63,7 +63,7 @@ data class Web3Token(
     val changeUsd: String,
     @ColumnInfo(name = "level")
     @SerializedName("level")
-    val level: Int = Constants.AssetLevel.UNKNOWN,
+    val level: Int = Constants.AssetLevel.VERIFIED,
 ) : Parcelable, Swappable {
 
     override fun toSwapToken(): SwapToken {

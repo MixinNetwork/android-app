@@ -46,7 +46,7 @@ class RefreshWeb3TokenJob(
                     Timber.d("Updated missing assets to zero balance for wallet ${walletId}")
                     web3TokenDao.insertList(assets)
                     assets.forEach { asset ->
-                        if (asset.level < Constants.AssetLevel.UNKNOWN) {
+                        if (asset.level < Constants.AssetLevel.VERIFIED) {
                             val extra = web3TokensExtraDao.findByAssetId(asset.assetId, walletId)
                             if (extra == null || extra.hidden != false) {
                                 web3TokensExtraDao.insert(

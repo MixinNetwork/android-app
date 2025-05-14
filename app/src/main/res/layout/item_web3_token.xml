@@ -25,7 +25,7 @@
         android:layout_centerVertical="true" />
 
     <ImageView
-        android:id="@+id/ic_span"
+        android:id="@+id/ic_spam"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/avatar"
@@ -39,8 +39,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/avatar"
-        android:layout_toEndOf="@id/ic_span"
-        android:layout_marginStart="2dp"
+        android:layout_toEndOf="@id/ic_spam"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="2dp"
         android:layout_marginTop="2dp"
         android:ellipsize="end"

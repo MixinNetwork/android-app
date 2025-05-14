@@ -230,7 +230,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         chainName = tokenItem.chainName,
                         chainSymbol = tokenItem.chainSymbol,
                         hidden = false,
-                        level = Constants.AssetLevel.UNKNOWN
+                        level = Constants.AssetLevel.VERIFIED
                     )
                 }
                 

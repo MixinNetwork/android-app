@@ -1941,4 +1941,10 @@
     <string name="Unable_to_estimate_balance_changes">Unable to estimate balance changes.</string>
     <string name="send_sol_for_rent">Send at least %1$s SOL for the rent</string>
     <string name="malicious_token_warning">This token has been flagged as malicious by Blocked.</string>
+    <string name="Reputation">Reputation</string>
+    <string name="Spam">Spam</string>
+    <string name="Good">Good</string>
+    <string name="description_good">Verified by trusted third-party sources with healthy activity.</string>
+    <string name="description_unknown">No sufficient data or unverified by trusted sources.</string>
+    <string name="description_spam">Flagged token due to suspicious behavior or scam indicators.</string>
 </resources>

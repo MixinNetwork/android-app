@@ -1,10 +1,14 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.TextView
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
@@ -12,6 +16,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,6 +31,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
+import one.mixin.android.databinding.ViewReputationBottomBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -43,8 +49,8 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment
+import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
-
 @AndroidEntryPoint
 class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3TransactionItem>>(R.layout.fragment_all_transactions) {
     companion object {
@@ -150,6 +156,41 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 selectAsset()
             }
             filterUser.isVisible = false
+            filterReputation.setOnClickListener {
+                val builder = BottomSheet.Builder(requireActivity())
+                val viewBinding = ViewReputationBottomBinding.inflate(
+                    LayoutInflater.from(ContextThemeWrapper(requireActivity(), R.style.Custom)),
+                    null,
+                    false
+                )
+                builder.setCustomView(viewBinding.root)
+                val bottomSheet = builder.create()
+                viewBinding.rightIv.setOnClickListener {
+                    bottomSheet.dismiss()
+                }
+
+                val currentLevel = filterParams.minAssetLevel
+
+                viewBinding.optionGoodContainer.setOnClickListener {
+                    filterParams.minAssetLevel = Constants.AssetLevel.GOOD
+                    loadFilter()
+                    bottomSheet.dismiss()
+                }
+
+                viewBinding.optionUnknownContainer.setOnClickListener {
+                    filterParams.minAssetLevel = Constants.AssetLevel.UNKNOWN
+                    loadFilter()
+                    bottomSheet.dismiss()
+                }
+
+                viewBinding.optionSpamContainer.setOnClickListener {
+                    filterParams.minAssetLevel = Constants.AssetLevel.SPAM
+                    loadFilter()
+                    bottomSheet.dismiss()
+                }
+
+                bottomSheet.show()
+            }
             filterTime.setOnClickListener {
                 datePicker()
             }
@@ -160,12 +201,19 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "AllWeb3TransactionsFragment resumed.")
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
             jobManager = jobManager,
             refreshJob = refreshJob
         )
+        val navBackStackEntry = findNavController().getBackStackEntry(R.id.all_web3_transactions_fragment)
+        val savedStateHandle = navBackStackEntry.savedStateHandle
+        savedStateHandle.getLiveData<Int>("selectedReputationLevel").observe(viewLifecycleOwner) { selectedLevel ->
+            filterParams.minAssetLevel = selectedLevel
+            loadFilter()
+        }
     }
 
     override fun onPause() {
@@ -178,6 +226,14 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             filterType.updateWeb3TokenFilterType(filterParams.tokenFilterType)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
+            filterReputation.setTitle(
+                when (filterParams.minAssetLevel) {
+                    Constants.AssetLevel.GOOD -> getString(R.string.Good)
+                    Constants.AssetLevel.UNKNOWN -> getString(R.string.Unknown)
+                    Constants.AssetLevel.SPAM -> getString(R.string.Spam)
+                    else -> getString(R.string.Good)
+                }
+            )
             titleView.setSubTitle(
                 getString(R.string.All_Transactions), getString(
                     when (filterParams.order) {
@@ -364,3 +420,4 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             })
     }
 }
+

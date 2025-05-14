@@ -71,8 +71,8 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
     @SuppressLint("SetTextI18n")
     fun bind(token: Web3TokenItem) {
         binding.apply {
-            icSpan.isVisible = token.level < Constants.AssetLevel.UNKNOWN
-            if (token.level < Constants.AssetLevel.UNKNOWN) {
+            icSpam.isVisible = token.level <= Constants.AssetLevel.SPAM
+            if (token.level <= Constants.AssetLevel.SPAM) {
                 balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginStart = 2.dp
                 }
