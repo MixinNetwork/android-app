@@ -1773,8 +1773,8 @@ class BottomSheetViewModel
             return tipPrivToPrivateKey(spendKey, chainId)
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, assetId: String? = null) {
-            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account), assetId)
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String, assetId: String? = null) {
+            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to), assetId)
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException
@@ -1782,11 +1782,11 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?): ParsedTx? {
+        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?, to: String?): ParsedTx? {
             var meet401 = false
             var parsedTx: ParsedTx? = null
             handleMixinResponse(
-                invokeNetwork = { tokenRepository.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx, from)) },
+                invokeNetwork = { tokenRepository.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx, from, to)) },
                 successBlock = { parsedTx = it.data },
                 failureBlock = {
                     if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
@@ -1801,7 +1801,7 @@ class BottomSheetViewModel
             )
             if (parsedTx == null && meet401) {
                 userRepository.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                return simulateWeb3Tx(tx, chainId, from)
+                return simulateWeb3Tx(tx, chainId, from, to)
             } else {
                 return parsedTx
             }

@@ -24,7 +24,7 @@ data class ParsedTx(
 data class BalanceChange(
     @SerializedName("asset_id")
     val assetId: String,
-    @SerializedName("address")
+    @SerializedName("asset_key")
     val address: String,
     @SerializedName("amount")
     val amount: String,
@@ -36,6 +36,10 @@ data class BalanceChange(
     val symbol: String,
     @SerializedName("icon")
     val icon: String?,
+    @SerializedName("from")
+    val from: String?,
+    @SerializedName("to")
+    val to: String?,
 ) {
     fun amountString() = if ((amount.toBigDecimalOrNull()?: BigDecimal.ZERO) >= BigDecimal.ZERO) "+$amount" else amount
 

@@ -67,6 +67,7 @@ class WalletConnectBottomSheetViewModel
             chain: Chain,
             sessionRequest: Wallet.Model.SessionRequest,
             account: String,
+            to: String?,
         ): String? {
             val signature: String
             val rawTx = if (chain == Chain.Solana) {
@@ -79,7 +80,7 @@ class WalletConnectBottomSheetViewModel
                 signedTransactionData
             }
             try {
-                assetRepo.postRawTx(Web3RawTransactionRequest(chain.getWeb3ChainId(), rawTx, account))
+                assetRepo.postRawTx(Web3RawTransactionRequest(chain.getWeb3ChainId(), rawTx, account, to))
             } catch (e: Exception) {
                 WalletConnectV2.rejectRequest(e.message, sessionRequest)
                 throw e

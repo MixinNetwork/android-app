@@ -1026,25 +1026,22 @@ class TokenRepository
                 raw.simulateTx?.balanceChanges?.forEach { bc ->
                     val amt = bc.amount.toBigDecimalOrNull()
                     if (amt != null) {
-                        if (amt > BigDecimal.ZERO) {
-                            receivers.add(
-                                AssetChange(
-                                    assetId = bc.assetId,
-                                    amount = amt.toPlainString(),
-                                    from = null,
-                                    to = bc.address
-                                )
+                        receivers.add(
+                            AssetChange(
+                                assetId = bc.assetId,
+                                amount = amt.abs().toPlainString(),
+                                from = bc.from,
+                                to = bc.to
                             )
-                        } else if (amt < BigDecimal.ZERO) {
-                            senders.add(
-                                AssetChange(
-                                    assetId = bc.assetId,
-                                    amount = amt.toPlainString(),
-                                    from = bc.address,
-                                    to = null
-                                )
+                        )
+                        senders.add(
+                            AssetChange(
+                                assetId = bc.assetId,
+                                amount = amt.toPlainString(),
+                                from = bc.from,
+                                to = bc.to,
                             )
-                        }
+                        )
                     }
                 }
 

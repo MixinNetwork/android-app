@@ -9,4 +9,6 @@ data class Web3RawTransactionRequest(
     val rawTransaction: String,
     @SerializedName("from")
     val from: String?,
+    @SerializedName("to")
+    val to : String?,
 )
