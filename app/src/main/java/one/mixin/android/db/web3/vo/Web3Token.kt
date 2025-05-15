@@ -18,10 +18,7 @@ import java.math.RoundingMode
 
 @Entity(
     tableName = "tokens",
-    primaryKeys = ["wallet_id", "asset_id"],
-    indices = [
-        Index(value = arrayOf("level")),
-    ]
+    primaryKeys = ["wallet_id", "asset_id"]
 )
 @Parcelize
 data class Web3Token(

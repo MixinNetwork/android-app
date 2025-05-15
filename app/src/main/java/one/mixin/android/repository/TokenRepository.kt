@@ -1112,7 +1112,8 @@ class TokenRepository
                         receiveAssetId = receiveAssetId,
                         transactionAt = raw.updatedAt,
                         createdAt = raw.createdAt,
-                        updatedAt = raw.updatedAt
+                        updatedAt = raw.updatedAt,
+                        level = Constants.AssetLevel.GOOD,
                     )
                 )
             }

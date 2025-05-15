@@ -8,13 +8,14 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.db.converter.AssetChangeListConverter
 
 @Entity(
     tableName = "transactions",
     indices = [
         Index(value = arrayOf("address", "transaction_at")),
-        Index(value = arrayOf("transaction_type", "send_asset_id", "receive_asset_id", "transaction_at"))
+        Index(value = arrayOf("transaction_type", "send_asset_id", "receive_asset_id", "transaction_at", "level"))
     ],
     primaryKeys = ["transaction_hash", "chain_id", "address"]
 )
@@ -82,6 +83,10 @@ data class Web3Transaction(
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
     val updatedAt: String,
+
+    @ColumnInfo(name = "level")
+    @SerializedName("level")
+    val level: Int = Constants.AssetLevel.UNKNOWN,
 ) : Parcelable
 
 @Parcelize
