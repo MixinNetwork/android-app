@@ -8,6 +8,7 @@ import android.view.View.VISIBLE
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
@@ -154,6 +155,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 typeAdapter.checkPosition = filterParams.type.value
                 typeMenu.show()
             }
+            filterReputation.isVisible = false
             filterAsset.setOnClickListener {
                 selectAsset()
             }

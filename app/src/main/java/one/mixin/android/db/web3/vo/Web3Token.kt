@@ -111,6 +111,8 @@ data class Web3Token(
     fun realAmount(amount: Long): BigDecimal {
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(precision)).setScale(9, RoundingMode.CEILING)
     }
+
+    fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
 }
 
 fun Web3TokenItem.isSolToken(): Boolean {

@@ -161,6 +161,8 @@ data class Web3TokenItem(
     fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
         return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)
     }
+
+    fun isSpam() = level <= Constants.AssetLevel.SPAM
 }
 
 fun Web3TokenItem.getChainFromName(): Chain {

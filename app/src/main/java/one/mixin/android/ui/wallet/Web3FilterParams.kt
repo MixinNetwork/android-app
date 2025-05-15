@@ -18,7 +18,7 @@ class Web3FilterParams(
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
-    var minAssetLevel: Int = Constants.AssetLevel.VERIFIED, // Default to Constants.AssetLevel.VERIFIED
+    var minAssetLevel: Int = Constants.AssetLevel.GOOD, // Default to Constants.AssetLevel.VERIFIED
 ) : Parcelable {
     override fun toString(): String {
         return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
@@ -62,7 +62,7 @@ class Web3FilterParams(
                 Web3TokenFilterType.APPROVAL -> filters.add("w.transaction_type = 'approval'")
                 Web3TokenFilterType.SWAP -> filters.add("w.transaction_type = 'swap'")
                 Web3TokenFilterType.PENDING -> filters.add("w.status = '${TransactionStatus.PENDING.value}'")
-                Web3TokenFilterType.ALL -> filters.add("s.level >= ${Constants.AssetLevel.VERIFIED}")
+                Web3TokenFilterType.ALL -> {}
             }
         }
 
@@ -76,10 +76,10 @@ class Web3FilterParams(
         
         filters.add(
             when (minAssetLevel) {
-                Constants.AssetLevel.GOOD -> "s.level >= 11"
-                Constants.AssetLevel.UNKNOWN -> "s.level = 10"
-                Constants.AssetLevel.SPAM -> "s.level <= 1"
-                else -> "s.level = 10" 
+                Constants.AssetLevel.GOOD -> "(s.level >= 11 OR r.level >= 11)"
+                Constants.AssetLevel.UNKNOWN -> "(s.level = 10 OR r.level = 10)"
+                Constants.AssetLevel.SPAM -> "(s.level <= 1 OR r.level <= 1)"
+                else -> "(s.level = 10 OR r.level = 10)"
             }
         )
 

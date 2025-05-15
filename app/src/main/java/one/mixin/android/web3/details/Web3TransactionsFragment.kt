@@ -142,7 +142,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 } catch (ignored: NumberFormatException) {
                     "${Fiats.getSymbol()}${token.priceFiat().priceFormat()}"
                 }
-                spamLl.isVisible = token.level <= Constants.AssetLevel.SPAM
+                spamLl.isVisible = token.isSpam()
                 web3ViewModel.marketById(token.assetId).observe(viewLifecycleOwner) { market ->
                     if (market != null) {
                         val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
