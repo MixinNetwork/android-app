@@ -169,22 +169,26 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                     bottomSheet.dismiss()
                 }
 
-                val currentLevel = filterParams.minAssetLevel
+                val currentLevel = filterParams.level and 0b11
+                viewBinding.checkUnknown.isChecked = currentLevel and 0b10 != 0
+                viewBinding.checkSpam.isChecked = currentLevel and 0b01 != 0
 
-                viewBinding.optionGoodContainer.setOnClickListener {
-                    filterParams.minAssetLevel = Constants.AssetLevel.GOOD
-                    loadFilter()
-                    bottomSheet.dismiss()
+                viewBinding.checkUnknown.setOnCheckedChangeListener { _, isChecked ->
+                    val spamChecked = viewBinding.checkSpam.isChecked
+                    filterParams.level = (if (isChecked) 0b10 else 0) or (if (spamChecked) 0b01 else 0)
+                }
+                viewBinding.checkSpam.setOnCheckedChangeListener { _, isChecked ->
+                    val unknownChecked = viewBinding.checkUnknown.isChecked
+                    filterParams.level = (if (unknownChecked) 0b10 else 0) or (if (isChecked) 0b01 else 0)
                 }
 
-                viewBinding.optionUnknownContainer.setOnClickListener {
-                    filterParams.minAssetLevel = Constants.AssetLevel.UNKNOWN
-                    loadFilter()
-                    bottomSheet.dismiss()
+                viewBinding.resetButton.setOnClickListener {
+                    filterParams.level = 0b00 // Good
+                    viewBinding.checkUnknown.isChecked = false
+                    viewBinding.checkSpam.isChecked = false
                 }
 
-                viewBinding.optionSpamContainer.setOnClickListener {
-                    filterParams.minAssetLevel = Constants.AssetLevel.SPAM
+                viewBinding.applyButton.setOnClickListener {
                     loadFilter()
                     bottomSheet.dismiss()
                 }
@@ -208,12 +212,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             jobManager = jobManager,
             refreshJob = refreshJob
         )
-        val navBackStackEntry = findNavController().getBackStackEntry(R.id.all_web3_transactions_fragment)
-        val savedStateHandle = navBackStackEntry.savedStateHandle
-        savedStateHandle.getLiveData<Int>("selectedReputationLevel").observe(viewLifecycleOwner) { selectedLevel ->
-            filterParams.minAssetLevel = selectedLevel
-            loadFilter()
-        }
     }
 
     override fun onPause() {
@@ -226,14 +224,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             filterType.updateWeb3TokenFilterType(filterParams.tokenFilterType)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
-            filterReputation.setTitle(
-                when (filterParams.minAssetLevel) {
-                    Constants.AssetLevel.GOOD -> getString(R.string.Good)
-                    Constants.AssetLevel.UNKNOWN -> getString(R.string.Unknown)
-                    Constants.AssetLevel.SPAM -> getString(R.string.Spam)
-                    else -> getString(R.string.Good)
-                }
-            )
+            filterReputation.updateLevel(getString(R.string.Reputation), filterParams.level)
             titleView.setSubTitle(
                 getString(R.string.All_Transactions), getString(
                     when (filterParams.order) {

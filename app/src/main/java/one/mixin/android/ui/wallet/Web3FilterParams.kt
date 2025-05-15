@@ -18,13 +18,13 @@ class Web3FilterParams(
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
-    var minAssetLevel: Int = Constants.AssetLevel.GOOD, // Default to Constants.AssetLevel.VERIFIED
+    var level: Int = 0b00
 ) : Parcelable {
     override fun toString(): String {
         return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
             "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
             "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""} " +
-            "minAssetLevel:$minAssetLevel"
+            "level:$level"
     }
 
     val selectTime: String?
@@ -74,14 +74,12 @@ class Web3FilterParams(
             filters.add("w.transaction_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
         
-        filters.add(
-            when (minAssetLevel) {
-                Constants.AssetLevel.GOOD -> "(s.level >= 11 OR r.level >= 11)"
-                Constants.AssetLevel.UNKNOWN -> "(s.level = 10 OR r.level = 10)"
-                Constants.AssetLevel.SPAM -> "(s.level <= 1 OR r.level <= 1)"
-                else -> "(s.level = 10 OR r.level = 10)"
-            }
-        )
+        when (level and 0b11) {
+            0b00 -> filters.add("(s.level >= 11 OR r.level >= 11)") // Good
+            0b10 -> filters.add("(s.level >= 10 OR r.level >= 10)") // Good + Unknown
+            0b01 -> filters.add("(s.level >= 11 OR r.level >= 11 OR s.level <= 1 OR r.level <= 1)") // Good + Spam
+            0b11 -> { /* Good + Unknown + Spam*/ }
+        }
 
         val whereSql = if (filters.isEmpty()) {
             ""

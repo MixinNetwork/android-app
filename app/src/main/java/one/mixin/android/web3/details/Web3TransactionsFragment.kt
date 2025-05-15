@@ -448,13 +448,20 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
+        val bundle = Bundle().apply {
+            putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
+            putString(
+                Web3TransactionFragment.ARGS_CHAIN,
+                if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name
+            )
+            putParcelable(ARGS_TOKEN, token)
+            if (token.isSpam()) {
+                putInt("level", 0b01)
+            }
+        }
         findNavController().navigate(
             R.id.action_web3_transactions_to_web3_transaction,
-            Bundle().apply {
-                putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
-                putString(Web3TransactionFragment.ARGS_CHAIN, if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name)
-                putParcelable(ARGS_TOKEN, token)
-            }
+            bundle
         )
     }
 
@@ -470,3 +477,4 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         )
     }
 }
+

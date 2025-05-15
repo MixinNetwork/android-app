@@ -16,9 +16,9 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:text="@string/Reputation"
+            android:textColor="?attr/text_primary"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="?attr/text_primary"/>
+            android:textStyle="bold" />
 
         <ImageView
             android:id="@+id/right_iv"
@@ -28,45 +28,6 @@
             android:layout_centerVertical="true"
             android:background="@drawable/mixin_ripple"
             android:src="@drawable/ic_circle_close" />
-    </RelativeLayout>
-
-    <!-- Good Option -->
-    <RelativeLayout
-        android:id="@+id/optionGoodContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/ripple_round_white"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/optionGood"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="@string/Good"
-            android:textColor="?attr/text_primary"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/descriptionGood"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/optionGood"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="4dp"
-            android:text="@string/description_good"
-            android:textColor="?attr/text_assist"
-            android:textSize="14sp" />
-
-        <ImageView
-            android:id="@+id/checkGood"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_sticker_checked"
-            android:visibility="gone" />
     </RelativeLayout>
 
     <!-- Unknown Option -->
@@ -96,16 +57,16 @@
             android:layout_marginTop="4dp"
             android:text="@string/description_unknown"
             android:textColor="?attr/text_assist"
+            android:layout_toStartOf="@id/checkUnknown"
+            android:layout_marginEnd="16dp"
             android:textSize="14sp" />
 
-        <ImageView
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/checkUnknown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_sticker_checked"
-            android:visibility="gone" />
+            android:layout_centerVertical="true" />
     </RelativeLayout>
 
     <!-- Spam Option -->
@@ -134,16 +95,73 @@
             android:layout_alignParentStart="true"
             android:layout_marginTop="4dp"
             android:text="@string/description_spam"
+            android:layout_toStartOf="@id/checkSpam"
             android:textColor="?attr/text_assist"
+            android:layout_marginEnd="16dp"
             android:textSize="14sp" />
 
-        <ImageView
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/checkSpam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_sticker_checked"
-            android:visibility="gone" />
+            android:layout_centerVertical="true" />
+
+    </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/descriptionGood"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/description_good"
+        android:textColor="?attr/text_assist"
+        android:textSize="14sp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp">
+
+        <View
+            android:id="@+id/center"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_centerInParent="true" />
+
+        <Button
+            android:id="@+id/reset_button"
+            style="@style/AppTheme.MaterialGrayButton"
+            android:layout_width="128dp"
+            android:layout_height="40dp"
+            android:layout_below="@id/select_rv"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="16dp"
+            android:layout_toStartOf="@+id/center"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/Reset"
+            android:textAllCaps="false"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/apply_button"
+            style="@style/AppTheme.MaterialButton"
+            android:layout_width="128dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="16dp"
+            android:layout_toEndOf="@+id/center"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:paddingStart="36dp"
+            android:paddingEnd="36dp"
+            android:text="@string/Apply"
+            android:textAllCaps="false"
+            android:textSize="14sp" />
+
     </RelativeLayout>
 </LinearLayout>

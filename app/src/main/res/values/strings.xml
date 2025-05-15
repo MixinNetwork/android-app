@@ -1944,7 +1944,7 @@
     <string name="Reputation">Reputation</string>
     <string name="Spam">Spam</string>
     <string name="Good">Good</string>
-    <string name="description_good">Verified by trusted third-party sources with healthy activity.</string>
+    <string name="description_good">By default, only transactions with a Good reputation are shown. Enable ‘Unknown’ or ‘Spam’ to see more.</string>
     <string name="description_unknown">No sufficient data or unverified by trusted sources.</string>
     <string name="description_spam">Flagged token due to suspicious behavior or scam indicators.</string>
 </resources>
