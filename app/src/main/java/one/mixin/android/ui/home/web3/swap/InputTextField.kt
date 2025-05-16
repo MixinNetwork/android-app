@@ -165,7 +165,7 @@ fun InputContent(
                         AutoSizeText(
                             text = "0",
                             color = MixinAppTheme.colors.textRemarks,
-                            fontSize =  24.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.align(Alignment.CenterStart)
                         )
