@@ -55,7 +55,7 @@
             android:layout_below="@id/optionUnknown"
             android:layout_alignParentStart="true"
             android:layout_marginTop="4dp"
-            android:text="@string/description_unknown"
+            android:text="@string/reputation_unknown_description"
             android:textColor="?attr/text_assist"
             android:layout_toStartOf="@id/checkUnknown"
             android:layout_marginEnd="16dp"
@@ -83,7 +83,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:text="@string/Spam"
+            android:text="@string/reputation_spam"
             android:textColor="?attr/text_primary"
             android:textSize="16sp" />
 
@@ -94,7 +94,7 @@
             android:layout_below="@id/optionSpam"
             android:layout_alignParentStart="true"
             android:layout_marginTop="4dp"
-            android:text="@string/description_spam"
+            android:text="@string/reputation_spam_description"
             android:layout_toStartOf="@id/checkSpam"
             android:textColor="?attr/text_assist"
             android:layout_marginEnd="16dp"
@@ -116,7 +116,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
         android:layout_marginTop="4dp"
-        android:text="@string/description_good"
+        android:text="@string/reputation_description"
         android:textColor="?attr/text_assist"
         android:textSize="14sp" />
 

@@ -1940,11 +1940,11 @@
     <string name="approval_unlimited_warning">This app can withdraw all your %1$s</string>
     <string name="Unable_to_estimate_balance_changes">Unable to estimate balance changes.</string>
     <string name="send_sol_for_rent">Send at least %1$s SOL for the rent</string>
-    <string name="malicious_token_warning">This token has been flagged as malicious by Blocked.</string>
+    <string name="reputation_spam_warning">This token has been flagged as malicious</string>
     <string name="Reputation">Reputation</string>
-    <string name="Spam">Spam</string>
+    <string name="reputation_spam">Spam</string>
     <string name="Good">Good</string>
-    <string name="description_good">By default, only transactions with a Good reputation are shown. Enable ‘Unknown’ or ‘Spam’ to see more.</string>
-    <string name="description_unknown">No sufficient data or unverified by trusted sources.</string>
-    <string name="description_spam">Flagged token due to suspicious behavior or scam indicators.</string>
+    <string name="reputation_description">By default, only transactions with a Good reputation are shown. Enable ‘Unknown’ or ‘Spam’ to see more.</string>
+    <string name="reputation_unknown_description">No sufficient data or unverified by trusted sources.</string>
+    <string name="reputation_spam_description">Flagged transaction due to suspicious behavior or scam indicators</string>
 </resources>
