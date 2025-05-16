@@ -536,7 +536,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 val sig = tx.signatures.first()
                                 val rawTx = tx.serialize().base64Encode()
-                                val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58())
+                                val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58(), null)
                                 val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), inAsset.assetId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,

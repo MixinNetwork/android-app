@@ -20,6 +20,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -38,7 +39,6 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
@@ -73,9 +73,13 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             override fun onItemClick(transaction: Web3TransactionItem) {
                 lifecycleScope.launch {
                     val token = web3ViewModel.web3TokenItemById(transaction.getMainAssetId()) ?: return@launch
-                    navTo(
-                        Web3TransactionFragment.newInstance(transaction, transaction.chainId, token),
-                        Web3TransactionFragment.TAG
+                    findNavController().navigate(
+                        R.id.action_all_web3_transactions_fragment_to_web3_transaction_fragment,
+                        Bundle().apply {
+                            putParcelable("args_transaction", transaction)
+                            putString("args_chain", transaction.chainId)
+                            putParcelable("args_token", token)
+                        }
                     )
                 }
             }

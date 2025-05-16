@@ -65,11 +65,11 @@ class BrowserWalletBottomSheetViewModel
             )
         }
 
-        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?): ParsedTx? {
+        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?, to: String?): ParsedTx? {
             var meet401 = false
             var parsedTx: ParsedTx? = null
             handleMixinResponse(
-                invokeNetwork = { assetRepo.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx,from)) },
+                invokeNetwork = { assetRepo.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx, from, to)) },
                 successBlock = { parsedTx = it.data },
                 failureBlock = {
                     if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
@@ -84,14 +84,14 @@ class BrowserWalletBottomSheetViewModel
             )
             if (parsedTx == null && meet401) {
                 userRepo.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                return simulateWeb3Tx(tx, chainId, from)
+                return simulateWeb3Tx(tx, chainId, from, to)
             } else {
                 return parsedTx
             }
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, assetId: String? = null) {
-            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account), assetId)
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String?, assetId: String? = null) {
+            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to), assetId)
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException
