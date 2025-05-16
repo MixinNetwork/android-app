@@ -72,12 +72,10 @@ fun InputContent(
                     Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.fillMaxWidth()) {
                         AutoSizeText(
                             text = text,
-                            style = TextStyle(
-                                fontSize = 24.sp,
-                                color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
-                                fontWeight = FontWeight.Black,
-                                textAlign = TextAlign.Start,
-                            ),
+                            color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Start,
                         )
                     }
                 }

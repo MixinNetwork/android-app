@@ -684,7 +684,7 @@ class SwapFragment : BaseFragment() {
                 } else {
                     (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken()
                         ?: lastTo?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastTo } }
-                        ?: tokens.getOrNull(1)?.toSwapToken()
+                        ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID } ?: tokens.firstOrNull())?.toSwapToken()
                 }
                 if (toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
