@@ -86,8 +86,12 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val filterParams by lazy {
-        (requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java) 
-            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) }))
+        (requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java)
+            ?: Web3FilterParams(
+                tokenItems = tokenItem?.let { listOf(it) },
+                level = requireArguments().getInt("level", 0b00)
+            )
+        )
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()

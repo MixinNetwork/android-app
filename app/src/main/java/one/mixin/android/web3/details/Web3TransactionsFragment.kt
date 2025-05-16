@@ -235,6 +235,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         R.id.action_web3_transactions_to_all_web3_transactions,
                         Bundle().apply {
                             putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+                            if (token.isSpam()) {
+                                putInt("level", 0b01)
+                            }
                         }
                     )
                 }
@@ -455,9 +458,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name
             )
             putParcelable(ARGS_TOKEN, token)
-            if (token.isSpam()) {
-                putInt("level", 0b01)
-            }
         }
         findNavController().navigate(
             R.id.action_web3_transactions_to_web3_transaction,
@@ -473,6 +473,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             R.id.action_web3_transactions_to_all_web3_transactions,
             Bundle().apply {
                 putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+                if (token.isSpam()) {
+                    putInt("level", 0b01)
+                }
             }
         )
     }
