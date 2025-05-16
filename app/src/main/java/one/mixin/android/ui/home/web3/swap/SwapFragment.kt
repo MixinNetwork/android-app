@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
+import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -583,12 +584,16 @@ class SwapFragment : BaseFragment() {
             toToken = token
         }
 
-        if (inMixin()) {
-            fromToken?.let { from ->
-                toToken?.let { to ->
-                    if (isReverse) defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${to.assetId} ${from.assetId}")
-                    else defaultSharedPreferences.putString(PREF_SWAP_LAST_SELECTED_PAIR, "${from.assetId} ${to.assetId}")
-                }
+        fromToken?.let { from ->
+            toToken?.let { to ->
+                if (isReverse) defaultSharedPreferences.putString(
+                    preferenceKey,
+                    "${to.assetId} ${from.assetId}"
+                )
+                else defaultSharedPreferences.putString(
+                    preferenceKey,
+                    "${from.assetId} ${to.assetId}"
+                )
             }
         }
     }
@@ -665,7 +670,7 @@ class SwapFragment : BaseFragment() {
         swappable.let { tokens ->
             val input = requireArguments().getString(ARGS_INPUT)
             val output = requireArguments().getString(ARGS_OUTPUT)
-            val lastSelectedPair = defaultSharedPreferences.getString(PREF_SWAP_LAST_SELECTED_PAIR, null)?.split(" ")
+            val lastSelectedPair = defaultSharedPreferences.getString(preferenceKey, null)?.split(" ")
             val lastFrom = lastSelectedPair?.getOrNull(0)
             val lastTo = lastSelectedPair?.getOrNull(1)
             if (tokens.isNotEmpty()) {
@@ -679,7 +684,7 @@ class SwapFragment : BaseFragment() {
                 } else {
                     (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken()
                         ?: lastTo?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastTo } }
-                        ?: tokens.getOrNull(1)?.toSwapToken()
+                        ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID } ?: tokens.firstOrNull())?.toSwapToken()
                 }
                 if (toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
@@ -782,6 +787,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
+    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_SELECTED_PAIR else PREF_WEB3_SWAP_LAST_SELECTED_PAIR }
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
     private fun navigateUp(navController: NavHostController) {
