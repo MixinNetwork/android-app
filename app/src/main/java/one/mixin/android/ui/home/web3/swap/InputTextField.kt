@@ -49,6 +49,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
@@ -69,21 +70,12 @@ fun InputContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.fillMaxWidth()) {
-                        Text(
+                        AutoSizeText(
                             text = text,
-                            style = TextStyle(
-                                fontSize = when {
-                                    text.length <= 15 -> 24.sp
-                                    else -> {
-                                        val excess = text.length - 15
-                                        val reduction = (excess / 2) * 2
-                                        (24 - reduction).coerceAtLeast(16).sp
-                                    }
-                                },
-                                color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
-                                fontWeight = FontWeight.Black,
-                                textAlign = TextAlign.Start,
-                            ),
+                            color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Start,
                         )
                     }
                 }
@@ -154,7 +146,7 @@ fun InputContent(
                                 textFieldValue.text.length <= 15 -> 24.sp
                                 else -> {
                                     val excess = textFieldValue.text.length - 15
-                                    val reduction = (excess / 2) * 2
+                                    val reduction = excess * 2
                                     (24 - reduction).coerceAtLeast(16).sp
                                 }
                             },
@@ -168,17 +160,10 @@ fun InputContent(
                     )
 
                     if (text.isEmpty()) {
-                        Text(
+                        AutoSizeText(
                             text = "0",
                             color = MixinAppTheme.colors.textRemarks,
-                            fontSize = when {
-                                text.length <= 15 -> 24.sp
-                                else -> {
-                                    val excess = text.length - 15
-                                    val reduction = (excess / 2) * 2
-                                    (24 - reduction).coerceAtLeast(16).sp
-                                }
-                            },
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Black,
                             modifier = Modifier.align(Alignment.CenterStart)
                         )

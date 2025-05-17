@@ -79,6 +79,8 @@ internal constructor(
     private val web3Repository: Web3Repository,
     private val rpc: Rpc,
 ) : ViewModel() {
+    var scrollOffset: Int = 0
+
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
     fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()

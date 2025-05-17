@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.StakeAccount
@@ -24,7 +23,6 @@ import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.isSolToken
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
@@ -71,7 +69,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.ChainType
-import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
 import java.math.BigDecimal
@@ -269,10 +266,24 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             }
         }
 
+        var hasScrolled = false
+        val offset = web3ViewModel.scrollOffset
+
+        binding.scrollView.viewTreeObserver.addOnScrollChangedListener {
+            web3ViewModel.scrollOffset = binding.scrollView.scrollY
+        }
+
         web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list->
             binding.transactionsRv.isVisible = list.isNotEmpty()
             binding.bottomRl.isVisible = list.isEmpty()
             binding.transactionsRv.list = list
+
+            if (!hasScrolled) {
+                hasScrolled = true
+                binding.scrollView.post {
+                    binding.scrollView.scrollTo(0, offset)
+                }
+            }
         }
         updateHeader(token)
         lifecycleScope.launch {
@@ -285,7 +296,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             }
         }
     }
-
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
