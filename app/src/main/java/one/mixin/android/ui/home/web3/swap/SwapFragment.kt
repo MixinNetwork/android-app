@@ -343,9 +343,7 @@ class SwapFragment : BaseFragment() {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_WEB3_SWAP,
                     ArrayList(
-                        list.run {
-                            this
-                        },
+                        list,
                     ),
                     isFrom = true
                 ).apply {
