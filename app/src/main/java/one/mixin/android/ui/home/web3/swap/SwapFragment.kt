@@ -742,7 +742,7 @@ class SwapFragment : BaseFragment() {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
                 if (toToken == null) {
-                    toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId }
+                    toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
                 }
                 if (swapTokens.isNotEmpty()) {
                     (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
