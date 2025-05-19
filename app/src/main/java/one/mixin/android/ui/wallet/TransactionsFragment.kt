@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
@@ -136,7 +137,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         USDT_ASSET_ID
                     }
                     AnalyticsTracker.trackSwapStart("mixin", "market")
-                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
+                    navTo(SwapFragment.newInstance<TokenItem>(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }, input = asset.assetId, output = output), SwapFragment.TAG)
                 }
             }
             value.text = try {

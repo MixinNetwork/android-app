@@ -117,7 +117,7 @@ class SwapViewModel
         tokenRepository.syncAsset(assetId)
     }
 
-    suspend fun allAssetItems() = tokenRepository.allAssetItems()
+    suspend fun findAssetItemsWithBalance() = tokenRepository.findAssetItemsWithBalance()
 
     fun swapOrders() = tokenRepository.swapOrders()
 

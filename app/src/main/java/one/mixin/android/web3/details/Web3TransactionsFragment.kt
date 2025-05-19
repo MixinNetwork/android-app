@@ -218,7 +218,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
-                                putParcelableArrayList(SwapFragment.ARGS_WEB3_TOKENS, ArrayList(tokens))
+                                putParcelableArrayList(SwapFragment.ARGS_WEB3_TOKENS, ArrayList(tokens.filter { ((it as Web3TokenItem).balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }))
                                 putString(SwapFragment.ARGS_INPUT, token.assetId)
                                 putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
                             }
