@@ -41,6 +41,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -48,12 +49,19 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     companion object {
         const val ARGS_KEY = "args_key"
         const val ARGS_UNIQUE = "args_unique"
+        const val ARGS_IS_FROM = "args_is_from"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
-        fun newInstance(key: String, tokens: ArrayList<SwapToken>, selectUnique: String? = null) =
+        fun newInstance(
+            key: String,
+            tokens: ArrayList<SwapToken>,
+            selectUnique: String? = null,
+            isFrom: Boolean = true
+        ) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_KEY, key)
                 putString(ARGS_UNIQUE, selectUnique)
+                putBoolean(ARGS_IS_FROM, isFrom)
             }.also { fragment ->
                 fragment.setTokens(tokens)
             }
@@ -72,22 +80,33 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         requireArguments().getString(ARGS_UNIQUE)
     }
 
+    private val isFrom by lazy {
+        requireArguments().getBoolean(ARGS_IS_FROM, true)
+    }
+
     private val adapter by lazy {
         SwapTokenAdapter(selectUnique)
     }
 
     private var isLoading = false
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setTokens(newTokens: List<SwapToken>) {
         tokens = newTokens
+        adapter.notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setLoading(loading: Boolean, list: List<SwapToken>? = null) {
+    fun setLoading(loading: Boolean, list: List<SwapToken>? = null, remote: List<SwapToken>? = null) {
         if (isLoading == loading) return
         isLoading = loading
-        if (list != null) {
+        if (list != null && isFrom) {
             tokens = list
+            binding.radio.isVisible = !isLoading
+            initRadio()
+            filter(binding.searchEt.et.text?.toString() ?: "")
+        } else if (remote != null && !isFrom) {
+            tokens = remote
             binding.radio.isVisible = !isLoading
             initRadio()
             filter(binding.searchEt.et.text?.toString() ?: "")
