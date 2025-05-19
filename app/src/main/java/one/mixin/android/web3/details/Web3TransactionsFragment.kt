@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Bundle
 import android.view.View
+import android.view.ViewTreeObserver
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -264,9 +265,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         var hasScrolled = false
         val offset = web3ViewModel.scrollOffset
 
-        binding.scrollView.viewTreeObserver.addOnScrollChangedListener {
+        scrollListener = ViewTreeObserver.OnScrollChangedListener {
             web3ViewModel.scrollOffset = binding.scrollView.scrollY
         }
+        binding.scrollView.viewTreeObserver.addOnScrollChangedListener(scrollListener)
         updateHeader(token)
         lifecycleScope.launch {
             web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list ->
@@ -289,6 +291,17 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 }
             }
         }
+    }
+
+    private var scrollListener: ViewTreeObserver.OnScrollChangedListener? = null
+
+
+    override fun onDestroyView() {
+        scrollListener?.let {
+            binding.scrollView.viewTreeObserver.removeOnScrollChangedListener(it)
+        }
+        scrollListener = null
+        super.onDestroyView()
     }
 
     @SuppressLint("InflateParams")
