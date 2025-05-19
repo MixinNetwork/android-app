@@ -267,21 +267,20 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         binding.scrollView.viewTreeObserver.addOnScrollChangedListener {
             web3ViewModel.scrollOffset = binding.scrollView.scrollY
         }
-
-        web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list->
-            binding.transactionsRv.isVisible = list.isNotEmpty()
-            binding.bottomRl.isVisible = list.isEmpty()
-            binding.transactionsRv.list = list
-
-            if (!hasScrolled) {
-                hasScrolled = true
-                binding.scrollView.post {
-                    binding.scrollView.scrollTo(0, offset)
-                }
-            }
-        }
         updateHeader(token)
         lifecycleScope.launch {
+            web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list ->
+                binding.transactionsRv.isVisible = list.isNotEmpty()
+                binding.bottomRl.isVisible = list.isEmpty()
+                binding.transactionsRv.list = list
+
+                if (!hasScrolled) {
+                    hasScrolled = true
+                    binding.scrollView.post {
+                        binding.scrollView.scrollTo(0, offset)
+                    }
+                }
+            }
             web3ViewModel.web3TokenExtraFlow(token.assetId).flowOn(Dispatchers.Main).collect { balance ->
                 balance?.let {
                     if (isAdded) {
