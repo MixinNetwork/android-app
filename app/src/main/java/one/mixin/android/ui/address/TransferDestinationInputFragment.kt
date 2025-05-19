@@ -390,7 +390,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         navController.navigate("${TransferDestination.Label.name}?address=$address")
                                 },
                                 onScan = { startQrScan(ScanType.ADDRESS) },
-                                pop = { findNavController().popBackStack() }
+                                pop = { navController.popBackStack() }
                             )
                         }
 
