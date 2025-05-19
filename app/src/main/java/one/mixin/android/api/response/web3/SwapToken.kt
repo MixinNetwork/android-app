@@ -2,12 +2,12 @@ package one.mixin.android.api.response.web3
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Suppress("EqualsOrHashCode")
 @Parcelize
@@ -80,6 +80,15 @@ data class SwapToken(
         }
     }
 
+    @IgnoredOnParcel
+    val priceValue by lazy {
+        price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    }
+
+    @IgnoredOnParcel
+    val balanceValue by  lazy {
+        balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    }
 }
 
 interface Swappable : Parcelable {
@@ -102,11 +111,11 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 return@Comparator 1
             }
 
-            val priceFiat1 = runCatching { BigDecimal(o1.price) }.getOrDefault(BigDecimal.ZERO)
-            val priceFiat2 = runCatching { BigDecimal(o2.price) }.getOrDefault(BigDecimal.ZERO)
+            val priceFiat1 = o1.priceValue
+            val priceFiat2 = o2.priceValue
 
-            val balance1 = runCatching { BigDecimal(o1.balance) }.getOrDefault(BigDecimal.ZERO)
-            val balance2 =  runCatching { BigDecimal(o2.balance) }.getOrDefault(BigDecimal.ZERO)
+            val balance1 = o1.balanceValue
+            val balance2 =  o2.balanceValue
 
             val capitalization1 = priceFiat1 * balance1
             val capitalization2 = priceFiat2 * balance2
