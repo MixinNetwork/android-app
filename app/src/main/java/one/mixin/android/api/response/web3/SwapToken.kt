@@ -102,14 +102,26 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 return@Comparator 1
             }
 
-            val priceFiat1 = calculateTokenValue(o1)
-            val priceFiat2 = calculateTokenValue(o2)
-            val capitalization1 = priceFiat1 * runCatching { BigDecimal(o1.balance) }.getOrDefault(BigDecimal.ZERO)
-            val capitalization2 = priceFiat2 * runCatching { BigDecimal(o2.balance) }.getOrDefault(BigDecimal.ZERO)
+            val priceFiat1 = runCatching { BigDecimal(o1.price) }.getOrDefault(BigDecimal.ZERO)
+            val priceFiat2 = runCatching { BigDecimal(o2.price) }.getOrDefault(BigDecimal.ZERO)
+
+            val balance1 = runCatching { BigDecimal(o1.balance) }.getOrDefault(BigDecimal.ZERO)
+            val balance2 =  runCatching { BigDecimal(o2.balance) }.getOrDefault(BigDecimal.ZERO)
+
+            val capitalization1 = priceFiat1 * balance1
+            val capitalization2 = priceFiat2 * balance2
             if (capitalization1 != capitalization2) {
                 if (capitalization2 > capitalization1) {
                     return@Comparator 1
                 } else if (capitalization2 < capitalization1) {
+                    return@Comparator -1
+                }
+            }
+
+            if (balance1 != balance2){
+                if (balance2 > balance1) {
+                    return@Comparator 1
+                } else if (balance2 < balance1) {
                     return@Comparator -1
                 }
             }
@@ -134,14 +146,3 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
 }
 
 private const val defaultIcon = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
-
-private fun calculateTokenValue(token: SwapToken): BigDecimal {
-    if (token.balance.isNullOrBlank() || token.price.isNullOrBlank()) {
-        return BigDecimal.ZERO
-    }
-    return try {
-        BigDecimal(token.balance).multiply(BigDecimal(token.price))
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-}
