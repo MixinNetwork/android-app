@@ -127,12 +127,9 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 }
             }
 
-            if (balance1 != balance2){
-                if (balance2 > balance1) {
-                    return@Comparator 1
-                } else if (balance2 < balance1) {
-                    return@Comparator -1
-                }
+            val balanceComparison = balance2.compareTo(balance1)
+            if (balanceComparison != 0) {
+                return@Comparator balanceComparison
             }
 
             if (priceFiat1 == BigDecimal.ZERO && priceFiat2 != BigDecimal.ZERO) {
