@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
@@ -9,13 +8,11 @@ import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
-import one.mixin.android.ui.address.TransferDestinationInputFragment.Companion.ARGS_WEB3_TOKEN
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -83,7 +80,10 @@ class WalletActivity : BlazeBaseActivity() {
             }
             Destination.AllWeb3Transactions -> {
                 navGraph.setStartDestination(R.id.all_web3_transactions_fragment)
-                navController.setGraph(navGraph, null)
+                val pendingType = intent.getBooleanExtra(PENDING_TYPE, false)
+                navController.setGraph(navGraph, Bundle().apply {
+                    if (pendingType) putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING))
+                })
             }
             Destination.Hidden -> {
                 navGraph.setStartDestination(R.id.hidden_assets_fragment)

@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -49,13 +50,6 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         const val TAG = "AllTransactionsFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_FILTER_PARAMS = "filter_params"
-
-        fun newInstance(tokenItem: Web3TokenItem? = null, filterParams: Web3FilterParams? = null): AllWeb3TransactionsFragment {
-            return AllWeb3TransactionsFragment().withArgs {
-                putParcelable(ARGS_TOKEN, tokenItem)
-                putParcelable(ARGS_FILTER_PARAMS, filterParams)
-            }
-        }
     }
 
     private val binding by viewBinding(FragmentAllTransactionsBinding::bind)
@@ -65,7 +59,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             override fun onItemClick(transaction: Web3TransactionItem) {
                 lifecycleScope.launch {
                     val token = web3ViewModel.web3TokenItemById(transaction.getMainAssetId()) ?: return@launch
-                    findNavController().navigate(
+                    this@AllWeb3TransactionsFragment.view?.findNavController()?.navigate(
                         R.id.action_all_web3_transactions_fragment_to_web3_transaction_fragment,
                         Bundle().apply {
                             putParcelable("args_transaction", transaction)
