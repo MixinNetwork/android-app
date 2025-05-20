@@ -29,7 +29,6 @@ import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
