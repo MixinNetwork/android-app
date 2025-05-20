@@ -113,7 +113,7 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
             val priceFiat2 = o2.priceValue
 
             val balance1 = o1.balanceValue
-            val balance2 =  o2.balanceValue
+            val balance2 = o2.balanceValue
 
             val capitalization1 = priceFiat1 * balance1
             val capitalization2 = priceFiat2 * balance2
