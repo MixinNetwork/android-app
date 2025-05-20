@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
@@ -16,29 +15,24 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.databinding.ViewReputationBottomBinding
-import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.withArgs
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
@@ -47,9 +41,9 @@ import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
+
 @AndroidEntryPoint
 class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3TransactionItem>>(R.layout.fragment_all_transactions) {
     companion object {
