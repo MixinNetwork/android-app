@@ -53,6 +53,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
+import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
@@ -151,10 +152,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding?.pendingView?.isVisible = false
             _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
             _headBinding?.web3PendingView?.setOnClickListener {
-                if (_headBinding?.web3PendingView?.getPendingCount() ?: 0 > 0) {
-                    val filterParams = Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING)
-                    val fragment = AllWeb3TransactionsFragment.newInstance(filterParams = filterParams)
-                    navTo(fragment, AllWeb3TransactionsFragment.TAG)
+                if ((_headBinding?.web3PendingView?.getPendingCount() ?: 0) > 0) {
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions, pendingType = true)
                 }
             }
             assetsAdapter.headerView = _headBinding!!.root
