@@ -151,10 +151,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding?.pendingView?.isVisible = false
             _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
             _headBinding?.web3PendingView?.setOnClickListener {
-                if (_headBinding?.web3PendingView?.getPendingCount() ?: 0 > 0) {
+                if ((_headBinding?.web3PendingView?.getPendingCount() ?: 0) > 0) {
                     val filterParams = Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING)
-                    val fragment = AllWeb3TransactionsFragment.newInstance(filterParams = filterParams)
-                    navTo(fragment, AllWeb3TransactionsFragment.TAG)
+                    WalletActivity.showAllWeb3Transaction(requireActivity(), filterParams)
                 }
             }
             assetsAdapter.headerView = _headBinding!!.root

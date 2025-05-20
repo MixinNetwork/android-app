@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
@@ -9,13 +8,11 @@ import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
-import one.mixin.android.ui.address.TransferDestinationInputFragment.Companion.ARGS_WEB3_TOKEN
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -83,7 +80,10 @@ class WalletActivity : BlazeBaseActivity() {
             }
             Destination.AllWeb3Transactions -> {
                 navGraph.setStartDestination(R.id.all_web3_transactions_fragment)
-                navController.setGraph(navGraph, null)
+                val web3FilterParams = intent.getParcelableExtraCompat(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams::class.java)
+                navController.setGraph(navGraph, Bundle().apply {
+                    web3FilterParams?.let { putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, it) }
+                })
             }
             Destination.Hidden -> {
                 navGraph.setStartDestination(R.id.hidden_assets_fragment)
@@ -226,6 +226,18 @@ class WalletActivity : BlazeBaseActivity() {
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(PENDING_TYPE, pendingType)
+                },
+            )
+        }
+
+        fun showAllWeb3Transaction(
+            activity: Activity,
+            web3FilterParams: Web3FilterParams? = null
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, WalletActivity.Destination.AllWeb3Transactions)
+                    web3FilterParams?.let { putExtra(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, it) }
                 },
             )
         }
