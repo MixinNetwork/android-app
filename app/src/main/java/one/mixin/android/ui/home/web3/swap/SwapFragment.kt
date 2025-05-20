@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,7 +25,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_SELECTED_PAIR
-import one.mixin.android.Constants.Account.PREF_SWAP_SLIPPAGE
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
@@ -36,9 +34,9 @@ import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
+import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.event.BadgeEvent
@@ -67,8 +65,6 @@ import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.TransactionStateFragment
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -83,9 +79,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
-import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
-import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
@@ -128,7 +122,11 @@ class SwapFragment : BaseFragment() {
                     }
 
                     TokenItem::class -> {
-                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply { tokens?.let { addAll(it) } })
+                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply {
+                            if (tokens != null) {
+                                addAll(tokens)
+                            }
+                        })
                     }
                 }
                 input?.let { putString(ARGS_INPUT, it) }
@@ -148,6 +146,7 @@ class SwapFragment : BaseFragment() {
     lateinit var rpc: Rpc
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
+    private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var tokenItems: List<TokenItem>? = null
     private val web3tokens: List<Web3TokenItem>? by lazy {
         requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3TokenItem::class.java)
@@ -228,7 +227,11 @@ class SwapFragment : BaseFragment() {
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
                                 onSelectToken = { isReverse, type ->
-                                    selectCallback(swapTokens, isReverse, type)
+                                    if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
+                                        selectCallback(swapTokens, isReverse, type)
+                                    } else {
+                                        selectCallback(remoteSwapTokens, isReverse, type)
+                                    }
                                 },
                                 onReview = { quote, from, to, amount ->
                                     lifecycleScope.launch {
@@ -318,16 +321,12 @@ class SwapFragment : BaseFragment() {
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
-                val data = if (list.isEmpty()) {
-                    ArrayList(tokenItems?.map { it.toSwapToken() } ?: emptyList())
-                } else {
-                    ArrayList(list)
-                }
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_SWAP,
-                    ArrayList(data), if (isReverse) toToken?.assetId else fromToken?.assetId
+                    ArrayList(list), if (isReverse) toToken?.assetId else fromToken?.assetId,
+                    isFrom = true
                 ).apply {
-                    if (data.isEmpty) {
+                    if (list.isEmpty()) {
                         setLoading(true)
                     }
                     setOnDeposit {
@@ -341,10 +340,12 @@ class SwapFragment : BaseFragment() {
                     }
                 }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
             } else {
-                val data = ArrayList(web3tokens?.map { it.toSwapToken() } ?: emptyList())
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     Constants.Account.PREF_FROM_WEB3_SWAP,
-                    data
+                    ArrayList(
+                        list,
+                    ),
+                    isFrom = true
                 ).apply {
                     setOnDeposit {
                         navTo(Web3AddressFragment.newInstance(JsSigner.evmAddress), Web3AddressFragment.TAG)
@@ -372,7 +373,8 @@ class SwapFragment : BaseFragment() {
                     ),
                 if (inMixin()) {
                     if (isReverse) fromToken?.assetId else toToken?.assetId
-                } else null
+                } else null,
+                isFrom = false
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
@@ -661,7 +663,7 @@ class SwapFragment : BaseFragment() {
         if (web3tokens?.isEmpty() == true) { // Only supplement local data for local assets
             swappable = emptyList()
         } else if (swappable.isNullOrEmpty()) {
-            swappable = swapViewModel.allAssetItems()
+            swappable = swapViewModel.findAssetItemsWithBalance()
             tokenItems = swappable
         }
         swappable.map { it.toSwapToken() }.toList().let {
@@ -725,30 +727,34 @@ class SwapFragment : BaseFragment() {
                 }
                 return@requestRouteAPI true
             },
-        )?.let {
+        )?.let { remote ->
             if (!inMixin()) {
-                val remote = it.map { it.copy(isWeb3 = true) }.map { token ->
+                remoteSwapTokens = remote.map { it.copy(isWeb3 = true) }.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
                         web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                     } ?: return@map token
                     token.balance = t.balance
                     token
-                }
-                swapTokens = swapTokens.union(remote).toList()
+                }.sortByKeywordAndBalance()
+
+                swapTokens = swapTokens.union(remoteSwapTokens).toList().sortByKeywordAndBalance()
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
                 toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId }
+                if (swapTokens.isNotEmpty()) {
+                    (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
+                }
             } else {
-                val remote = it.map { token ->
+                remoteSwapTokens = remote.map { token ->
                     val t = tokenItems?.firstOrNull { tokenItem ->
                         tokenItem.assetId == token.assetId
                     } ?: return@map token
                     token.balance = t.balance
                     token.price = t.priceUsd
                     token
-                }
-                swapTokens = swapTokens.union(remote).toList()
+                }.sortByKeywordAndBalance()
+                swapTokens = swapTokens.union(remoteSwapTokens).toList().sortByKeywordAndBalance()
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
@@ -757,7 +763,7 @@ class SwapFragment : BaseFragment() {
                 }
             }
             if (swapTokens.isNotEmpty()) {
-                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens)
+                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
             }
             if (fromToken != null && toToken != null) {
                 refreshTokensPrice(listOf(fromToken!!, toToken!!))

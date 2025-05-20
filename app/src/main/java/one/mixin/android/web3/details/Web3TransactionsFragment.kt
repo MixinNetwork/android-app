@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Bundle
 import android.view.View
+import android.view.ViewTreeObserver
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -75,7 +76,7 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transactions), OnSnapshotListener {
+class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transactions), OnSnapshotListener, ViewTreeObserver.OnScrollChangedListener {
     companion object {
         const val TAG = "Web3TransactionsFragment"
         const val ARGS_TOKEN = "args_token"
@@ -219,7 +220,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
-                                putParcelableArrayList(SwapFragment.ARGS_WEB3_TOKENS, ArrayList(tokens))
+                                putParcelableArrayList(SwapFragment.ARGS_WEB3_TOKENS, ArrayList(tokens.filter { ((it as Web3TokenItem).balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }))
                                 putString(SwapFragment.ARGS_INPUT, token.assetId)
                                 putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
                             }
@@ -269,24 +270,21 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         var hasScrolled = false
         val offset = web3ViewModel.scrollOffset
 
-        binding.scrollView.viewTreeObserver.addOnScrollChangedListener {
-            web3ViewModel.scrollOffset = binding.scrollView.scrollY
-        }
-
-        web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list->
-            binding.transactionsRv.isVisible = list.isNotEmpty()
-            binding.bottomRl.isVisible = list.isEmpty()
-            binding.transactionsRv.list = list
-
-            if (!hasScrolled) {
-                hasScrolled = true
-                binding.scrollView.post {
-                    binding.scrollView.scrollTo(0, offset)
-                }
-            }
-        }
+        binding.scrollView.viewTreeObserver.addOnScrollChangedListener(this@Web3TransactionsFragment)
         updateHeader(token)
         lifecycleScope.launch {
+            web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list ->
+                binding.transactionsRv.isVisible = list.isNotEmpty()
+                binding.bottomRl.isVisible = list.isEmpty()
+                binding.transactionsRv.list = list
+
+                if (!hasScrolled && isAdded) {
+                    hasScrolled = true
+                    binding.scrollView.post {
+                        binding.scrollView.scrollTo(0, offset)
+                    }
+                }
+            }
             web3ViewModel.web3TokenExtraFlow(token.assetId).flowOn(Dispatchers.Main).collect { balance ->
                 balance?.let {
                     if (isAdded) {
@@ -488,6 +486,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 }
             }
         )
+    }
+
+    override fun onScrollChanged() {
+        if (isAdded) web3ViewModel.scrollOffset = binding.scrollView.scrollY
     }
 }
 

@@ -132,7 +132,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             Bundle().apply {
                                 putString(ARGS_INPUT, input)
                                 putString(ARGS_OUTPUT, nowTokens.first().assetId)
-                                putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
+                                putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }) })
                             })
                     } else {
                         ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
@@ -147,7 +147,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     Bundle().apply {
                                         putString(ARGS_INPUT, token.assetId)
                                         putString(ARGS_OUTPUT, output)
-                                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
+                                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }) })
                                     })
                             }
                         }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)

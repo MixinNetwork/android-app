@@ -87,7 +87,7 @@ interface Swappable : Parcelable {
     fun getUnique(): String
 }
 
-fun List<SwapToken>.sortByKeywordAndBalance(query: String?): List<SwapToken> {
+fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapToken> {
     return this.sortedWith(
         Comparator { o1, o2 ->
             if (o1 == null && o2 == null) return@Comparator 0
