@@ -2,12 +2,12 @@ package one.mixin.android.api.response.web3
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Suppress("EqualsOrHashCode")
 @Parcelize
@@ -80,6 +80,13 @@ data class SwapToken(
         }
     }
 
+    @IgnoredOnParcel
+    val priceValue: BigDecimal
+        get() = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+    @IgnoredOnParcel
+    val balanceValue: BigDecimal
+        get() = balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 }
 
 interface Swappable : Parcelable {
@@ -102,16 +109,25 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 return@Comparator 1
             }
 
-            val priceFiat1 = calculateTokenValue(o1)
-            val priceFiat2 = calculateTokenValue(o2)
-            val capitalization1 = priceFiat1 * runCatching { BigDecimal(o1.balance) }.getOrDefault(BigDecimal.ZERO)
-            val capitalization2 = priceFiat2 * runCatching { BigDecimal(o2.balance) }.getOrDefault(BigDecimal.ZERO)
+            val priceFiat1 = o1.priceValue
+            val priceFiat2 = o2.priceValue
+
+            val balance1 = o1.balanceValue
+            val balance2 = o2.balanceValue
+
+            val capitalization1 = priceFiat1 * balance1
+            val capitalization2 = priceFiat2 * balance2
             if (capitalization1 != capitalization2) {
                 if (capitalization2 > capitalization1) {
                     return@Comparator 1
                 } else if (capitalization2 < capitalization1) {
                     return@Comparator -1
                 }
+            }
+
+            val balanceComparison = balance2.compareTo(balance1)
+            if (balanceComparison != 0) {
+                return@Comparator balanceComparison
             }
 
             if (priceFiat1 == BigDecimal.ZERO && priceFiat2 != BigDecimal.ZERO) {
@@ -134,14 +150,3 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
 }
 
 private const val defaultIcon = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
-
-private fun calculateTokenValue(token: SwapToken): BigDecimal {
-    if (token.balance.isNullOrBlank() || token.price.isNullOrBlank()) {
-        return BigDecimal.ZERO
-    }
-    return try {
-        BigDecimal(token.balance).multiply(BigDecimal(token.price))
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
-}
