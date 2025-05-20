@@ -10,6 +10,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
@@ -158,7 +159,22 @@ class RefreshWeb3Job : BaseJob(
                     val assetIds = assets.map { it.assetId }
                     web3TokenDao.updateBalanceToZeroForMissingAssets(wallet.id, assetIds)
                     Timber.d("Updated missing assets to zero balance for wallet ${wallet.id}")
-                    
+                    val extrasToInsert = assets.filter { it.level < Constants.AssetLevel.VERIFIED }
+                        .mapNotNull { asset ->
+                            val extra = web3TokensExtraDao.findByAssetId(asset.assetId, wallet.id)
+                            if (extra == null) {
+                                Web3TokensExtra(
+                                    assetId = asset.assetId,
+                                    walletId = wallet.id,
+                                    hidden = true
+                                )
+                            } else {
+                                null
+                            }
+                        }
+                    if (extrasToInsert.isNotEmpty()) {
+                        web3TokensExtraDao.insertList(extrasToInsert)
+                    }
                     web3TokenDao.insertList(assets)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")

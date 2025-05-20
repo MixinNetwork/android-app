@@ -68,7 +68,7 @@ abstract class WalletDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE tokens ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.VERIFIED}")
                 database.execSQL("ALTER TABLE transactions ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.UNKNOWN}")
-                database.execSQL("DELETE FROM properties") // delete old offset
+                database.execSQL("DELETE FROM properties WHERE `key` IN (SELECT DISTINCT destination FROM addresses)") // delete old offset
                 database.execSQL("DROP INDEX IF EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at`")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at_level` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`, `level`)")
             }
