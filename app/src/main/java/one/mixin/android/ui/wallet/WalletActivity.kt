@@ -80,9 +80,9 @@ class WalletActivity : BlazeBaseActivity() {
             }
             Destination.AllWeb3Transactions -> {
                 navGraph.setStartDestination(R.id.all_web3_transactions_fragment)
-                val web3FilterParams = intent.getParcelableExtraCompat(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams::class.java)
+                val pendingType = intent.getBooleanExtra(PENDING_TYPE, false)
                 navController.setGraph(navGraph, Bundle().apply {
-                    web3FilterParams?.let { putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, it) }
+                    if (pendingType) putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING))
                 })
             }
             Destination.Hidden -> {
@@ -226,18 +226,6 @@ class WalletActivity : BlazeBaseActivity() {
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(PENDING_TYPE, pendingType)
-                },
-            )
-        }
-
-        fun showAllWeb3Transaction(
-            activity: Activity,
-            web3FilterParams: Web3FilterParams? = null
-        ) {
-            activity.startActivity(
-                Intent(activity, WalletActivity::class.java).apply {
-                    putExtra(DESTINATION, WalletActivity.Destination.AllWeb3Transactions)
-                    web3FilterParams?.let { putExtra(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, it) }
                 },
             )
         }
