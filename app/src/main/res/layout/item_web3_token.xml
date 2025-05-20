@@ -30,8 +30,10 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/avatar"
         android:src="@drawable/ic_spam_token"
-        android:layout_alignTop="@id/symbol_tv"
+        android:layout_alignTop="@id/balance"
+        android:layout_alignBottom="@id/balance"
         android:layout_marginStart="@dimen/margin16"
+        android:translationY="-1dp"
         android:visibility="gone"/>
 
     <TextView
@@ -56,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/balance"
         android:layout_toEndOf="@id/balance"
-        android:maxWidth="200dp"
+        android:maxWidth="120dp"
         android:minWidth="30dp"
         android:textColor="?attr/text_primary"
         android:textSize="12sp"
