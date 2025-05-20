@@ -63,6 +63,7 @@ import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
@@ -233,7 +234,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         Bundle().apply {
                             putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
                             if (token.isSpam()) {
-                                putInt("level", 0b01)
+                                putInt("level", FILTER_GOOD_AND_SPAM)
                             }
                         }
                     )
@@ -481,7 +482,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             Bundle().apply {
                 putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
                 if (token.isSpam()) {
-                    putInt("level", 0b01)
+                    putInt("level", FILTER_GOOD_AND_SPAM)
                 }
             }
         )

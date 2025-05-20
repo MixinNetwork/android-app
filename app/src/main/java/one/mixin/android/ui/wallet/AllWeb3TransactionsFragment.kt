@@ -39,6 +39,9 @@ import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_UNKNOWN
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
@@ -163,17 +166,17 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                     bottomSheet.dismiss()
                 }
 
-                val currentLevel = filterParams.level and 0b11
-                viewBinding.checkUnknown.isChecked = currentLevel and 0b10 != 0
-                viewBinding.checkSpam.isChecked = currentLevel and 0b01 != 0
+                val currentLevel = filterParams.level and FILTER_MASK
+                viewBinding.checkUnknown.isChecked = currentLevel and FILTER_GOOD_AND_UNKNOWN != 0
+                viewBinding.checkSpam.isChecked = currentLevel and FILTER_GOOD_AND_SPAM != 0
 
                 viewBinding.checkUnknown.setOnCheckedChangeListener { _, isChecked ->
                     val spamChecked = viewBinding.checkSpam.isChecked
-                    filterParams.level = (if (isChecked) 0b10 else 0) or (if (spamChecked) 0b01 else 0)
+                    filterParams.level = (if (isChecked) FILTER_GOOD_AND_UNKNOWN else 0) or (if (spamChecked) FILTER_GOOD_AND_SPAM else 0)
                 }
                 viewBinding.checkSpam.setOnCheckedChangeListener { _, isChecked ->
                     val unknownChecked = viewBinding.checkUnknown.isChecked
-                    filterParams.level = (if (unknownChecked) 0b10 else 0) or (if (isChecked) 0b01 else 0)
+                    filterParams.level = (if (unknownChecked) FILTER_GOOD_AND_UNKNOWN else 0) or (if (isChecked) FILTER_GOOD_AND_SPAM else 0)
                 }
 
                 viewBinding.resetButton.setOnClickListener {

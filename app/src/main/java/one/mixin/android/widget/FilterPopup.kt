@@ -8,12 +8,13 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewFilterPopupBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_ALL
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.Web3TokenFilterType
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
@@ -57,7 +58,7 @@ class FilterPopup @JvmOverloads constructor(
             binding.icon6, binding.icon7, binding.icon8, binding.icon9, binding.icon10
         )
         icons.forEach { it.isVisible = false }
-        if (level == 0b01 || level == 0b11) {
+        if (level == FILTER_GOOD_AND_SPAM || level == FILTER_ALL) {
             binding.icon1.setImageResource(R.drawable.ic_spam_token)
         } else {
             binding.icon1.setImageResource(R.drawable.ic_verified_token)

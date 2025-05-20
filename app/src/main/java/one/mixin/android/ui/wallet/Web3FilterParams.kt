@@ -20,6 +20,14 @@ class Web3FilterParams(
     var endTime: Long? = null,
     var level: Int = 0b00
 ) : Parcelable {
+    companion object {
+        const val FILTER_MASK = 0b11
+        const val FILTER_GOOD_ONLY = 0b00
+        const val FILTER_GOOD_AND_UNKNOWN = 0b10
+        const val FILTER_GOOD_AND_SPAM = 0b01
+        const val FILTER_ALL = 0b11
+    }
+
     override fun toString(): String {
         return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
             "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
@@ -73,12 +81,12 @@ class Web3FilterParams(
         endTime?.let {
             filters.add("w.transaction_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
-        
-        when (level and 0b11) {
-            0b00 -> filters.add("(s.level >= 11 OR r.level >= 11)") // Good
-            0b10 -> filters.add("(s.level >= 10 OR r.level >= 10)") // Good + Unknown
-            0b01 -> filters.add("(s.level >= 11 OR r.level >= 11 OR s.level <= 1 OR r.level <= 1)") // Good + Spam
-            0b11 -> { /* Good + Unknown + Spam*/ }
+
+        when (level and FILTER_MASK) {
+            FILTER_GOOD_ONLY -> filters.add("(s.level >= 11 OR r.level >= 11)") // Good
+            FILTER_GOOD_AND_UNKNOWN -> filters.add("(s.level >= 10 OR r.level >= 10)") // Good + Unknown
+            FILTER_GOOD_AND_SPAM -> filters.add("(s.level >= 11 OR r.level >= 11 OR s.level <= 1 OR r.level <= 1)") // Good + Spam
+            FILTER_ALL -> { /* Good + Unknown + Spam */ }
         }
 
         val whereSql = if (filters.isEmpty()) {
