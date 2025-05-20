@@ -81,14 +81,12 @@ data class SwapToken(
     }
 
     @IgnoredOnParcel
-    val priceValue by lazy {
-        price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    }
+    val priceValue: BigDecimal
+        get() = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
     @IgnoredOnParcel
-    val balanceValue by  lazy {
-        balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    }
+    val balanceValue: BigDecimal
+        get() = balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 }
 
 interface Swappable : Parcelable {

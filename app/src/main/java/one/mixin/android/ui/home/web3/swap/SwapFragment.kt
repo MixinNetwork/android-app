@@ -675,22 +675,23 @@ class SwapFragment : BaseFragment() {
             val lastSelectedPair = defaultSharedPreferences.getString(preferenceKey, null)?.split(" ")
             val lastFrom = lastSelectedPair?.getOrNull(0)
             val lastTo = lastSelectedPair?.getOrNull(1)
-            if (tokens.isNotEmpty()) {
-                fromToken = (input?.let { tokens.firstOrNull { t -> t.getUnique() == input } } ?: tokens.firstOrNull { t -> t.getUnique() == lastFrom })?.toSwapToken()
-                    ?: lastFrom?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastFrom } }
-                        ?: tokens.getOrNull(0)?.toSwapToken()
-                toToken = if (input != null && output == null) {
-                    tokens.firstOrNull { t -> t.getUnique() == USDT_ASSET_ID }?.toSwapToken() ?: tokens.firstOrNull { t -> t.getUnique() == lastTo }?.toSwapToken()
-                    ?: lastTo?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastTo } }
-                    ?: tokens.getOrNull(1)?.toSwapToken()
-                } else {
-                    (output?.let { tokens.firstOrNull { t -> t.getUnique() == output } } ?: tokens.firstOrNull { t -> t.getUnique() == lastTo })?.toSwapToken()
-                        ?: lastTo?.let { saveSwapTokens.firstOrNull { t -> t.assetId == lastTo } }
-                        ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID } ?: tokens.firstOrNull())?.toSwapToken()
-                }
-                if (toToken?.getUnique() == fromToken?.getUnique()) {
-                    toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
-                }
+            fromToken = if (input != null) { 
+                swapViewModel.findToken(input)?.toSwapToken()
+            } else if (lastFrom != null) {
+                swapViewModel.findToken(lastFrom)?.toSwapToken() ?: swapViewModel.web3TokenItemById(lastFrom)?.toSwapToken()
+            } else {
+                (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID }
+                    ?: tokens.firstOrNull())?.toSwapToken()
+            }
+            toToken = if (output != null) {
+                swapViewModel.findToken(output)?.toSwapToken()
+            } else if (lastTo != null) {
+                swapViewModel.findToken(lastTo)?.toSwapToken() ?: swapViewModel.web3TokenItemById(lastTo)?.toSwapToken()
+            } else {
+                tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
+            }
+            if (toToken?.getUnique() == fromToken?.getUnique()) {
+                toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
             }
         }
     }
