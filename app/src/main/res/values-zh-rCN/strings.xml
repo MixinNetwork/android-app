@@ -1900,7 +1900,7 @@
     <string name="Reputation">信誉度</string>
     <string name="reputation_spam">高风险</string>
     <string name="Good">良好</string>
-    <string name="reputation_description">默认仅显示信誉度良好的交易。启用“未知”或“高风险”可查看更多交易。</string>
+    <string name="reputation_description">默认仅显示信誉度良好的交易。启用“高风险”可查看更多交易。</string>
     <string name="reputation_unknown_description">缺乏足够信息，或未被可信来源验证</string>
     <string name="reputation_spam_description">因可疑行为或欺诈迹象被标记为高风险交易</string>
 </resources>
