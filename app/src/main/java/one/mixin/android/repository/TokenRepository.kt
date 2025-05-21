@@ -553,17 +553,21 @@ class TokenRepository
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
 
         suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> {
+            val localLike = if (web3) {
+                web3TokenDao.fuzzySearchAsset(query, query).map { t -> t.toTokenItem() }
+            } else emptyList()
+
             val response =
                 try {
                     queryAssets(query)
                 } catch (t: Throwable) {
                     ErrorHandler.handleError(t)
-                    return emptyList()
+                    return  localLike
                 }
             if (response.isSuccess) {
                 val assetList = response.data as List<Token>
                 if (assetList.isEmpty()) {
-                    return emptyList()
+                    return  localLike
                 }
                 val tokenItemList = arrayListOf<TokenItem>()
                 assetList.mapTo(tokenItemList) { asset ->
@@ -592,11 +596,14 @@ class TokenRepository
                 } else {
                     tokenItemList
                 }
-                val localLike = (tokenDao.fuzzySearchAssetIgnoreAmount(query, query) + web3TokenDao.fuzzySearchAsset(query, query).map { t -> t.toTokenItem() })
-                    .filter { t -> result.any { r -> r.assetId == t.assetId }.not() }
-                return result + localLike
+                return if (web3) {
+                    (result + localLike
+                        .filter { t -> result.any { r -> r.assetId == t.assetId }.not() })
+                } else {
+                    result
+                }
             }
-            return emptyList()
+            return localLike
         }
 
         private suspend fun fetchAsset(assetId: String) =

@@ -185,7 +185,8 @@ data class Web3TokenItem(
             assetKey = assetKey,
             dust = null,
             withdrawalMemoPossibility = null,
-            collectionHash = null
+            collectionHash = null,
+            level = level
         )
     }
 }
