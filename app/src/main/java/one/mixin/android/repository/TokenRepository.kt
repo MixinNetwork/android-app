@@ -577,7 +577,7 @@ class TokenRepository
                 val onlyRemoteItems = arrayListOf<TokenItem>()
                 val needUpdatePrice = arrayListOf<PriceAndChange>()
                 tokenItemList.forEach {
-                    val exists = if (web3) null else findAssetItemById(it.assetId)
+                    val exists = if (web3) null else findAssetItemById(it.assetId) // local
                     if (exists != null) {
                         needUpdatePrice.add(it.toPriceAndChange())
                         localExistsIds.add(exists.assetId)
@@ -585,12 +585,16 @@ class TokenRepository
                         onlyRemoteItems.add(it)
                     }
                 }
-                return if (needUpdatePrice.isNotEmpty()) {
+
+                val result = if (needUpdatePrice.isNotEmpty()) {
                     suspendUpdatePrices(needUpdatePrice)
                     onlyRemoteItems + findAssetsByIds(localExistsIds)
                 } else {
                     tokenItemList
                 }
+                val localLike = (tokenDao.fuzzySearchAssetIgnoreAmount(query, query) + web3TokenDao.fuzzySearchAsset(query, query).map { t -> t.toTokenItem() })
+                    .filter { t -> result.any { r -> r.assetId == t.assetId }.not() }
+                return result + localLike
             }
             return emptyList()
         }

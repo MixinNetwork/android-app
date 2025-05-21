@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.db.web3.vo.Web3Token
@@ -57,4 +58,16 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @Query("SELECT amount FROM tokens WHERE asset_id = :assetId")
     fun tokenExtraFlow(assetId: String): Flow<String?>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        WHERE (t.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR t.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
+        ORDER BY t.symbol = :symbol COLLATE NOCASE OR t.name = :name COLLATE NOCASE DESC
+        """,
+    )
+    suspend fun fuzzySearchAsset(
+        name: String,
+        symbol: String,
+    ): List<Web3TokenItem>
 }
