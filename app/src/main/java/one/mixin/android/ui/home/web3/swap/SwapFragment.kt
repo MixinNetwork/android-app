@@ -85,7 +85,8 @@ import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
-import com.google.gson.reflect.TypeToken 
+import com.google.gson.reflect.TypeToken
+import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -677,12 +678,23 @@ class SwapFragment : BaseFragment() {
             val lastTo = lastSelectedPair?.getOrNull(1)
 
             fromToken = if (input != null) {
-                swapViewModel.findToken(input)?.toSwapToken()
+                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(input)?.toSwapToken()
             } else lastFrom
                 ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID }
                     ?: tokens.firstOrNull())?.toSwapToken()
+
             toToken = if (output != null) {
-                swapViewModel.findToken(output)?.toSwapToken()
+                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(
+                    output
+                )?.toSwapToken()
+            } else if (input != null) {
+                val o = if (input == USDT_ASSET_ID) {
+                    XIN_ASSET_ID
+                } else {
+                    USDT_ASSET_ID
+                }
+                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(o)
+                    ?.toSwapToken()
             } else lastTo
                 ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }
                     ?.toSwapToken()
