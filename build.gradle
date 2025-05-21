@@ -2,7 +2,7 @@ buildscript {
 
     ext {
         ext.bitcoinVersion ='0.17'
-        ext.fragmentVersion = '1.8.6'
+        ext.fragmentVersion = '1.8.7'
         ext.activity_version = '1.10.1'
         ext.lifecycleVersion = '2.9.0'
         ext.appcompatVersion = '1.7.0'
@@ -17,7 +17,7 @@ buildscript {
         ext.supportLibVersion = '1.0.0'
         ext.recyclerViewVersion = '1.4.0'
         ext.browserVersion = '1.8.0'
-        ext.biometricVersion = '1.4.0-alpha03'
+        ext.biometricVersion = '1.4.0-alpha04'
         ext.mdcVersion = '1.12.0'
         ext.exifinterfaceVersion = '1.4.1'
         ext.preferenceVersion = '1.2.1'
@@ -79,7 +79,7 @@ buildscript {
 
         ext.junitVersion = '4.13.2'
         ext.testCoreVersion = '1.6.1'
-        ext.mockitoVersion = '5.17.0'
+        ext.mockitoVersion = '5.18.0'
         ext.androidxJunitVersion = '1.2.1'
         ext.leakcanaryVerison = '2.14'
         ext.mockitoVersion = '1.10.19'
@@ -106,7 +106,7 @@ buildscript {
 
         ext.bcVersion = '1.70'
         ext.jsonVersion = '20250517'
-        ext.composeVersion = '1.8.1'
+        ext.composeVersion = '1.8.2'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
         ext.sol4kVersion = '0.5.14'
@@ -118,7 +118,7 @@ buildscript {
 
         ext.playWalletVersion = '19.4.0'
         ext.playPayVersion = '16.5.0'
-        ext.datastoreVersion = '1.1.6'
+        ext.datastoreVersion = '1.1.7'
         ext.protobufVersion = '3.11.0'
         ext.appsFlyerVersion ='6.16.2'
         ext.installreferrerVersion ='2.2'
