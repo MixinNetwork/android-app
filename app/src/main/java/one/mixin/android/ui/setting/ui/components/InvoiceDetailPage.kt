@@ -25,14 +25,14 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
         PageScaffold(
             title = stringResource(R.string.Invoice),
             verticalScrollable = false,
-            pop = onPop // 调用传入的 onPop 参数
+            pop = onPop
         ) {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
-                HeaderSection(Plan.ADVANCE)
+                InvoiceHeaderSection(invoice)
                 Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     modifier = Modifier
@@ -104,6 +104,8 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                         color = MixinAppTheme.colors.textPrimary
                     )
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
