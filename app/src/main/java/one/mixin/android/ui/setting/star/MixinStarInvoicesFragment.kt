@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinStarInvoicesPage
@@ -155,6 +157,9 @@ class MixinStarInvoicesFragment : BaseFragment() {
                     onViewPlanClick = {
                         MixinStarUpgradeBottomSheetDialogFragment.newInstance()
                             .showNow(parentFragmentManager, MixinStarUpgradeBottomSheetDialogFragment.TAG)
+                    },
+                    onInvoiceClick = { invoice ->
+                        navTo(MixinInvoiceDetailFragment.newInstance(invoice), MixinInvoiceDetailFragment.TAG)
                     }
                 )
             }

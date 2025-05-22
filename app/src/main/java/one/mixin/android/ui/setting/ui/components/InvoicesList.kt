@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +29,10 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Plan
 
 @Composable
-fun InvoicesList(invoices: List<MemberInvoice>) {
+fun InvoicesList(
+    invoices: List<MemberInvoice>,
+    onInvoiceClick: (MemberInvoice) -> Unit
+) {
     val maxDisplayCount = 10
     val displayedInvoices = invoices.take(maxDisplayCount)
 
@@ -37,7 +41,8 @@ fun InvoicesList(invoices: List<MemberInvoice>) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 5.dp),
+                    .padding(vertical = 5.dp)
+                    .clickable { onInvoiceClick(invoice) },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -70,7 +75,7 @@ fun InvoicesList(invoices: List<MemberInvoice>) {
                     Text(
                         text = "+2 stars",
                         fontSize = 12.sp,
-                        color = MixinAppTheme.colors.accent
+                        color = MixinAppTheme.colors.walletGreen
                     )
                 }
             }

@@ -32,7 +32,8 @@ fun MixinStarInvoicesPage(
     membership: Membership,
     invoices: List<MemberInvoice>,
     onPop: () -> Unit,
-    onViewPlanClick: () -> Unit
+    onViewPlanClick: () -> Unit,
+    onInvoiceClick: (MemberInvoice) -> Unit
 ) {
     MixinAppTheme {
         PageScaffold(
@@ -59,7 +60,7 @@ fun MixinStarInvoicesPage(
                         .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.Plan), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
+                        Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_gray_right),
@@ -67,7 +68,12 @@ fun MixinStarInvoicesPage(
                             tint = Color.Unspecified
                         )
                     }
-                    InvoicesList(invoices = invoices)
+                    InvoicesList(
+                        invoices = invoices,
+                        onInvoiceClick = { invoice ->
+                            onInvoiceClick(invoice)
+                        }
+                    )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
             }

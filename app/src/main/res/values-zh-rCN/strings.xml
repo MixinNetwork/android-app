@@ -1907,6 +1907,7 @@
     <string name="View_Plan">查看套餐</string>
     <string name="No_Invoices">无发票</string>
     <string name="Invoices">发票</string>
+    <string name="Invoice">发票</string>
     <string name="Upgrade_to_Prosperity">升级至繁荣版</string>
     <string name="Renew_Advance_Plan">续订进阶版套餐</string>
     <string name="Plan">套餐</string>
