@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -25,16 +22,15 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.star.InvoiceType
 import one.mixin.android.ui.setting.star.MemberInvoice
-import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Plan
 
 @Composable
 fun InvoicesList(
     invoices: List<MemberInvoice>,
-    onInvoiceClick: (MemberInvoice) -> Unit
+    onInvoiceClick: (MemberInvoice) -> Unit,
+    maxDisplayCount: Int? = null
 ) {
-    val maxDisplayCount = 10
-    val displayedInvoices = invoices.take(maxDisplayCount)
+    val displayedInvoices = maxDisplayCount?.let { invoices.take(it) } ?: invoices
 
     Column {
         displayedInvoices.forEach { invoice ->
@@ -81,7 +77,7 @@ fun InvoicesList(
             }
         }
 
-        if (invoices.size > maxDisplayCount) {
+        if (maxDisplayCount != null && invoices.size > maxDisplayCount) {
             Spacer(modifier = Modifier.height(16.dp))
             Column(
                 modifier = Modifier

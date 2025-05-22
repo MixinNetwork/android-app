@@ -17,7 +17,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.star.MemberInvoice
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.Plan
 
 @Composable
 fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {

@@ -1,13 +1,11 @@
 package one.mixin.android.ui.setting.star
 
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import kotlinx.parcelize.Parcelize
 import one.mixin.android.ui.setting.ui.components.InvoiceDetailPage
 
 class MixinInvoiceDetailFragment : Fragment() {

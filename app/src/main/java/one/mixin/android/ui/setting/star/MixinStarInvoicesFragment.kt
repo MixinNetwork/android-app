@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.extension.navTo
@@ -160,6 +159,9 @@ class MixinStarInvoicesFragment : BaseFragment() {
                     },
                     onInvoiceClick = { invoice ->
                         navTo(MixinInvoiceDetailFragment.newInstance(invoice), MixinInvoiceDetailFragment.TAG)
+                    },
+                    onAll = {
+                        navTo(AllMixinStarInvoicesFragment.newInstance(invoices), AllMixinStarInvoicesFragment.TAG)
                     }
                 )
             }

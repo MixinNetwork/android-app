@@ -1,7 +1,12 @@
 package one.mixin.android.ui.setting.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -17,9 +22,8 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.star.InvoiceStatus
-import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.setting.star.MemberInvoice
-import one.mixin.android.vo.Membership
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Plan
 
 @Composable
@@ -71,7 +75,7 @@ fun InvoiceHeaderSection(invoice: MemberInvoice) {
                     color = statusColor.copy(alpha = 0.2f),
                     shape = RoundedCornerShape(4.dp)
                 )
-                .padding(horizontal = 8.dp, vertical = 2.5.dp) /
+                .padding(horizontal = 8.dp, vertical = 2.5.dp)
         )
     }
 }

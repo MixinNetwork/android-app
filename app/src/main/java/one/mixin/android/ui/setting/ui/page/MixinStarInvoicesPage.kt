@@ -1,6 +1,7 @@
 package one.mixin.android.ui.setting.ui.page
 
 import PageScaffold
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +34,7 @@ fun MixinStarInvoicesPage(
     invoices: List<MemberInvoice>,
     onPop: () -> Unit,
     onViewPlanClick: () -> Unit,
+    onAll: () -> Unit,
     onInvoiceClick: (MemberInvoice) -> Unit
 ) {
     MixinAppTheme {
@@ -59,7 +61,10 @@ fun MixinStarInvoicesPage(
                     )
                         .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.clickable{
+                        onAll.invoke()
+                    },
+                        verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(
@@ -72,7 +77,8 @@ fun MixinStarInvoicesPage(
                         invoices = invoices,
                         onInvoiceClick = { invoice ->
                             onInvoiceClick(invoice)
-                        }
+                        },
+                        maxDisplayCount = 10
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
