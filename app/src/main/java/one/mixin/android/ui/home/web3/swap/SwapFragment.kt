@@ -663,7 +663,7 @@ class SwapFragment : BaseFragment() {
             tokenItems = swappable
         }
         swappable.map { it.toSwapToken() }.toList().let {
-            swapTokens = it
+            swapTokens = it.sortByKeywordAndBalance()
         }
         swappable.let { tokens ->
             val input = requireArguments().getString(ARGS_INPUT)
