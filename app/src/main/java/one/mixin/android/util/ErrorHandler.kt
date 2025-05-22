@@ -11,8 +11,11 @@ import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toast
+import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.ui.common.biometric.UtxoException
+import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import org.chromium.net.CronetException
 import retrofit2.HttpException
 import java.io.IOException
@@ -63,6 +66,58 @@ open class ErrorHandler {
                     }
                     else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
                 }
+            }
+        }
+
+        fun getErrorMessage(throwable: Throwable): String {
+            val ctx = MixinApplication.appContext
+            return when (throwable) {
+                is IOException ->
+                    when (throwable) {
+                        is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)
+                        is UnknownHostException -> ctx.getString(R.string.No_network_connection)
+                        is NetworkException -> ctx.getString(R.string.No_network_connection)
+                        is DataErrorException -> ctx.getString(R.string.Data_error)
+                        is CronetException -> {
+                            val extra =
+                                if (throwable is org.chromium.net.NetworkException) {
+                                    val e = throwable
+                                    "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                                } else {
+                                    ""
+                                }
+                            "${ctx.getString(R.string.error_connection_error)} $extra"
+                        }
+
+                        is ServerErrorException -> ctx.getString(R.string.error_server_5xx_code, throwable.code)
+
+                        else -> ctx.getString(R.string.error_unknown_with_message, throwable.msg())
+                    }
+
+                is UtxoException -> {
+                    throwable.getUtxoExceptionMsg(ctx)
+                }
+
+                is TipNodeException -> {
+                    throwable.getTipExceptionMsg(ctx)
+                }
+
+                is ExecutionException -> {
+                    if (throwable.cause is CronetException) {
+                        val extra =
+                            if (throwable.cause is org.chromium.net.NetworkException) {
+                                val e = throwable.cause as org.chromium.net.NetworkException
+                                "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                            } else {
+                                ""
+                            }
+                        "${ctx.getString(R.string.error_connection_error)} $extra"
+                    } else {
+                        ctx.getString(R.string.error_connection_error)
+                    }
+                }
+
+                else -> ctx.getString(R.string.error_unknown_with_message, throwable.msg())
             }
         }
 
