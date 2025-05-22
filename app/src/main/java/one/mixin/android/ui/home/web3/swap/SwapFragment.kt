@@ -150,9 +150,7 @@ class SwapFragment : BaseFragment() {
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var tokenItems: List<TokenItem>? = null
-    private val web3tokens: List<Web3TokenItem>? by lazy {
-        requireArguments().getParcelableArrayListCompat(ARGS_WEB3_TOKENS, Web3TokenItem::class.java)
-    }
+    private var web3tokens: List<Web3TokenItem>? = null
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
 
@@ -657,8 +655,9 @@ class SwapFragment : BaseFragment() {
     private suspend fun initFromTo() {
         tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
-        if (web3tokens?.isEmpty() == true) { // Only supplement local data for local assets
-            swappable = emptyList()
+        if (!inMixin() && web3tokens.isNullOrEmpty()) {
+            swappable = swapViewModel.findWeb3AssetItemsWithBalance()
+            web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.findAssetItemsWithBalance()
             tokenItems = swappable
