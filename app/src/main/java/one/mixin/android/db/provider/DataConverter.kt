@@ -903,6 +903,7 @@ fun callableTokenItem(
                         tmpDust,
                         tmpDepositWithdrawalMemoPossibility,
                         tmpCollectionHash,
+                        null
                     )
                 result.add(item)
             }

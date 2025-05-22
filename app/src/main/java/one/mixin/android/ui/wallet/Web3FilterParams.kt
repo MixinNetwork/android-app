@@ -83,9 +83,9 @@ class Web3FilterParams(
         }
 
         when (level and FILTER_MASK) {
-            FILTER_GOOD_ONLY -> filters.add("(s.level >= 11 OR r.level >= 11)") // Good
-            FILTER_GOOD_AND_UNKNOWN -> filters.add("(s.level >= 10 OR r.level >= 10)") // Good + Unknown
-            FILTER_GOOD_AND_SPAM -> filters.add("(s.level >= 11 OR r.level >= 11 OR s.level <= 1 OR r.level <= 1)") // Good + Spam
+            FILTER_GOOD_ONLY -> filters.add("w.level >= 11") // Good
+            FILTER_GOOD_AND_UNKNOWN -> filters.add("w.level >= 10") // Good + Unknown
+            FILTER_GOOD_AND_SPAM -> filters.add("(w.level >= 11 OR w.level <= 1)") // Good + Spam
             FILTER_ALL -> { /* Good + Unknown + Spam */ }
         }
 

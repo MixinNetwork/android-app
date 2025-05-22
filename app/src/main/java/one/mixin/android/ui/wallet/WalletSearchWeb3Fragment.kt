@@ -204,7 +204,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         
         try {
             val remoteTokens = withContext(Dispatchers.IO) {
-                walletViewModel.queryAsset(query)
+                walletViewModel.queryAsset(query, true)
             }
 
             if (remoteTokens.isNotEmpty() && isSearchingRemote) {
@@ -230,7 +230,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         chainName = tokenItem.chainName,
                         chainSymbol = tokenItem.chainSymbol,
                         hidden = false,
-                        level = Constants.AssetLevel.VERIFIED
+                        level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
                 

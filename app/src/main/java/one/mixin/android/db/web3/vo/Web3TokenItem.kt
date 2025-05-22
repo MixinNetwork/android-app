@@ -36,6 +36,7 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.RoundingMode
+import one.mixin.android.vo.safe.TokenItem
 
 
 @Parcelize
@@ -163,6 +164,31 @@ data class Web3TokenItem(
     }
 
     fun isSpam() = level <= Constants.AssetLevel.SPAM
+
+    fun toTokenItem(): TokenItem {
+        return TokenItem(
+            assetId = assetId,
+            symbol = symbol,
+            name = name,
+            iconUrl = iconUrl,
+            balance = balance,
+            priceBtc = "0",
+            priceUsd = priceUsd,
+            chainId = chainId,
+            changeUsd = changeUsd,
+            changeBtc = "0",
+            hidden = hidden,
+            confirmations = 0,
+            chainIconUrl = chainIcon,
+            chainSymbol = chainSymbol,
+            chainName = chainName,
+            assetKey = assetKey,
+            dust = null,
+            withdrawalMemoPossibility = null,
+            collectionHash = null,
+            level = level
+        )
+    }
 }
 
 fun Web3TokenItem.getChainFromName(): Chain {
