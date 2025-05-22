@@ -23,8 +23,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
-import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
-import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_SELECTED_PAIR
+import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
+import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
@@ -85,6 +85,8 @@ import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
+import com.google.gson.reflect.TypeToken
+import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -588,14 +590,9 @@ class SwapFragment : BaseFragment() {
 
         fromToken?.let { from ->
             toToken?.let { to ->
-                if (isReverse) defaultSharedPreferences.putString(
-                    preferenceKey,
-                    "${to.assetId} ${from.assetId}"
-                )
-                else defaultSharedPreferences.putString(
-                    preferenceKey,
-                    "${from.assetId} ${to.assetId}"
-                )
+                val tokenPair = if (isReverse) listOf(to, from) else listOf(from, to)
+                val serializedPair = GsonHelper.customGson.toJson(tokenPair)
+                defaultSharedPreferences.putString(preferenceKey, serializedPair)
             }
         }
     }
@@ -672,24 +669,35 @@ class SwapFragment : BaseFragment() {
         swappable.let { tokens ->
             val input = requireArguments().getString(ARGS_INPUT)
             val output = requireArguments().getString(ARGS_OUTPUT)
-            val lastSelectedPair = defaultSharedPreferences.getString(preferenceKey, null)?.split(" ")
+            val lastSelectedPairJson = defaultSharedPreferences.getString(preferenceKey, null)
+            val lastSelectedPair: List<SwapToken>? = lastSelectedPairJson?.let {
+                val type = object : TypeToken<List<SwapToken>>() {}.type
+                GsonHelper.customGson.fromJson(it, type)
+            }
             val lastFrom = lastSelectedPair?.getOrNull(0)
             val lastTo = lastSelectedPair?.getOrNull(1)
-            fromToken = if (input != null) { 
-                swapViewModel.findToken(input)?.toSwapToken()
-            } else if (lastFrom != null) {
-                swapViewModel.findToken(lastFrom)?.toSwapToken() ?: swapViewModel.web3TokenItemById(lastFrom)?.toSwapToken()
-            } else {
-                (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID }
+
+            fromToken = if (input != null) {
+                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(input)?.toSwapToken()
+            } else lastFrom
+                ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID }
                     ?: tokens.firstOrNull())?.toSwapToken()
-            }
+
             toToken = if (output != null) {
-                swapViewModel.findToken(output)?.toSwapToken()
-            } else if (lastTo != null) {
-                swapViewModel.findToken(lastTo)?.toSwapToken() ?: swapViewModel.web3TokenItemById(lastTo)?.toSwapToken()
-            } else {
-                tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
-            }
+                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(
+                    output
+                )?.toSwapToken()
+            } else if (input != null) {
+                val o = if (input == USDT_ASSET_ID) {
+                    XIN_ASSET_ID
+                } else {
+                    USDT_ASSET_ID
+                }
+                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(o)
+                    ?.toSwapToken()
+            } else lastTo
+                ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }
+                    ?.toSwapToken()
             if (toToken?.getUnique() == fromToken?.getUnique()) {
                 toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
             }
@@ -742,7 +750,7 @@ class SwapFragment : BaseFragment() {
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
-                if (toToken == null) {
+                if (toToken == null || toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
                 }
                 if (swapTokens.isNotEmpty()) {
@@ -761,7 +769,7 @@ class SwapFragment : BaseFragment() {
                 if (fromToken == null) {
                     fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
                 }
-                if (toToken == null) {
+                if (toToken == null || toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId }
                 }
             }
@@ -796,7 +804,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
-    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_SELECTED_PAIR else PREF_WEB3_SWAP_LAST_SELECTED_PAIR }
+    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR }
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
     private fun navigateUp(navController: NavHostController) {

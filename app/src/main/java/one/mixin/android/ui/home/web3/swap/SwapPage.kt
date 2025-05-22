@@ -72,7 +72,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_SWAP_LAST_SELECTED_PAIR
+import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
+import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
@@ -81,13 +82,13 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -252,9 +253,16 @@ fun SwapPage(
                                             invalidFlag = !invalidFlag
                                             fromToken?.let { f ->
                                                 toToken?.let { t ->
+                                                    val tokenPair =
+                                                        if (isReverse) listOf(t, f) else listOf(
+                                                            f,
+                                                            t
+                                                        )
+                                                    val serializedPair =
+                                                        GsonHelper.customGson.toJson(tokenPair)
                                                     context.defaultSharedPreferences.putString(
-                                                        PREF_SWAP_LAST_SELECTED_PAIR,
-                                                        if (isReverse) "${t.assetId} ${f.assetId}" else "${f.assetId} ${t.assetId}"
+                                                        if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR,
+                                                        serializedPair
                                                     )
                                                 }
                                             }
