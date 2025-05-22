@@ -44,10 +44,6 @@ import one.mixin.android.ui.setting.ui.page.BiometricTimePage
 import one.mixin.android.ui.setting.ui.page.BlockedPage
 import one.mixin.android.ui.setting.ui.page.ConversationSettingPage
 import one.mixin.android.ui.setting.ui.page.EmergencyContactPage
-import one.mixin.android.ui.setting.ui.page.MixinStarInvoicesPage
-import one.mixin.android.ui.setting.ui.page.MixinStarReferralPage
-import one.mixin.android.ui.setting.ui.page.MixinStarUpgradePage
-import one.mixin.android.ui.setting.ui.page.MixinStarValidPage
 import one.mixin.android.ui.setting.ui.page.MobileContactPage
 import one.mixin.android.ui.setting.ui.page.NotificationsPage
 import one.mixin.android.ui.setting.ui.page.PermissionListPage

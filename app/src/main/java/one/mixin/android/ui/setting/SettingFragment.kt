@@ -14,7 +14,6 @@ import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSettingBinding
-import one.mixin.android.event.RecallEvent
 import one.mixin.android.event.StarEvent
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
@@ -23,7 +22,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.star.MixinStarInvoicesFragment
-import one.mixin.android.ui.setting.star.MixinStarUpgradeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.membershipIcon
 
@@ -67,13 +65,14 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             }
 
             mixinStarInvoicesRl.setOnClickListener {
-                if (Session.getAccount()?.membership?.isMembership() == true) {
+                // Todo member
+                // if (Session.getAccount()?.membership?.isMembership() == true) {
                     navTo(MixinStarInvoicesFragment.newInstance(), MixinStarInvoicesFragment.TAG)
-                } else {
-                    MixinStarUpgradeBottomSheetDialogFragment.newInstance().showNow(
-                        parentFragmentManager, MixinStarUpgradeBottomSheetDialogFragment.TAG
-                    )
-                }
+                // } else {
+                //     MixinStarUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                //         parentFragmentManager, MixinStarUpgradeBottomSheetDialogFragment.TAG
+                //     )
+                // }
             }
             val icon = Session.getAccount()?.membership?.membershipIcon(true)
             if (icon != null) {

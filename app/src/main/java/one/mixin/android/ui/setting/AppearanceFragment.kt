@@ -9,14 +9,10 @@ import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentAppearanceBinding
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -26,7 +22,6 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
-import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.TimeCache
