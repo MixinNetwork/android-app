@@ -24,6 +24,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
+import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteInstrumentRequest
@@ -39,6 +40,7 @@ import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.MemberService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
@@ -159,6 +161,7 @@ class TokenRepository
         private val safeSnapshotDao: SafeSnapshotDao,
         private val addressDao: AddressDao,
         private val addressService: AddressService,
+        private val memberService: MemberService,
         private val hotAssetDao: TopAssetDao,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
@@ -1417,5 +1420,9 @@ class TokenRepository
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
     fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
+
+    suspend fun createMemberOrder(request: MemberOrderRequest) = memberService.createOrder(request)
+
+    suspend fun getPlans() = memberService.getPlans()
 
 }
