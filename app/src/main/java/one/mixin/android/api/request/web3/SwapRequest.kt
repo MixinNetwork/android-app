@@ -10,4 +10,5 @@ data class SwapRequest(
     val payload: String,
     val source: String,
     val withdrawalDestination: String?,
+    val referral: String?,
 )
