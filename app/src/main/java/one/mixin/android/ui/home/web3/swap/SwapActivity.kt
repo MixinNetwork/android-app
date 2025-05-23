@@ -11,6 +11,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_REFERRAL
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 
@@ -22,12 +23,14 @@ class SwapActivity : BaseActivity(){
             input: String?,
             output: String?,
             amount: String?,
+            referral: String?,
         ) {
             context.startActivity(
                 Intent(context, SwapActivity::class.java).apply {
                     input?.let { putExtra(ARGS_INPUT, it) }
                     output?.let { putExtra(ARGS_OUTPUT, it) }
                     amount?.let { putExtra(ARGS_AMOUNT, it) }
+                    referral?.let { putExtra(ARGS_REFERRAL, it) }
                     setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 },
             )
@@ -44,6 +47,7 @@ class SwapActivity : BaseActivity(){
             intent.getStringExtra(ARGS_INPUT),
             intent.getStringExtra(ARGS_OUTPUT),
             intent.getStringExtra(ARGS_AMOUNT),
+            referral = intent.getStringExtra(ARGS_REFERRAL),
         )
         replaceFragment(swapFragment, R.id.container, SwapFragment.TAG)}
 }
