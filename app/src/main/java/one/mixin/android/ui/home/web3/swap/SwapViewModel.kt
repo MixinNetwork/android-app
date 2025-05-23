@@ -119,6 +119,8 @@ class SwapViewModel
 
     suspend fun findAssetItemsWithBalance() = tokenRepository.findAssetItemsWithBalance()
 
+    suspend fun findWeb3AssetItemsWithBalance() = tokenRepository.findWeb3AssetItemsWithBalance()
+
     fun swapOrders() = tokenRepository.swapOrders()
 
     fun getOrderById(orderId: String) = tokenRepository.getOrderById(orderId)

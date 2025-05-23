@@ -35,7 +35,7 @@ class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHold
             binding.apply {
                 badgeCircleIv.loadToken(token)
                 nameTv.text = token.name
-
+                icSpam.isVisible = token.isSpam()
                 val balance = runCatching { BigDecimal(token.balance) }.getOrDefault(BigDecimal.ZERO)
                 
                 balanceTv.text = "${balance.numberFormat8()} ${token.symbol}"

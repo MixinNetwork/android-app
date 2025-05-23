@@ -8,11 +8,15 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -107,6 +111,16 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
                     asset.balance.numberFormat()
                 }
             binding.symbolTv.text = asset.symbol
+            binding.icSpam.isVisible = asset.isSpam()
+            if (asset.isSpam()) {
+                binding.balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 2.dp
+                }
+            } else {
+                binding.balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 16.dp
+                }
+            }
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
                 binding.naTv.visibility = View.VISIBLE

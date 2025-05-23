@@ -101,12 +101,14 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
             if (o1 == null) return@Comparator 1
             if (o2 == null) return@Comparator -1
 
-            val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
-            val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
-            if (equal2Keyword1 && !equal2Keyword2) {
-                return@Comparator -1
-            } else if (!equal2Keyword1 && equal2Keyword2) {
-                return@Comparator 1
+            if (query.isNullOrBlank().not()) {
+                val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
+                val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
+                if (equal2Keyword1 && !equal2Keyword2) {
+                    return@Comparator -1
+                } else if (!equal2Keyword1 && equal2Keyword2) {
+                    return@Comparator 1
+                }
             }
 
             val priceFiat1 = o1.priceValue

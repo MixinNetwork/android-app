@@ -34,6 +34,7 @@ data class TokenItem(
     val dust: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
     val collectionHash: String?,
+    val level: Int?,
 ) : Parcelable, Swappable {
     fun fiat(): BigDecimal {
         return try {

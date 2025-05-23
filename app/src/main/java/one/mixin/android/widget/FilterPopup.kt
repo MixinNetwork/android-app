@@ -10,10 +10,11 @@ import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewFilterPopupBinding
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_ALL
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.Web3TokenFilterType
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
@@ -46,6 +47,22 @@ class FilterPopup @JvmOverloads constructor(
 
     fun setTitle(text: CharSequence?) {
         binding.title.text = text
+    }
+
+    fun updateLevel(text: CharSequence?, level: Int) {
+        binding.title.text = text
+        binding.iconGroup.isVisible = true
+        binding.icon1.isVisible = true
+        val icons = listOf(
+            binding.icon2, binding.icon3, binding.icon4, binding.icon5,
+            binding.icon6, binding.icon7, binding.icon8, binding.icon9, binding.icon10
+        )
+        icons.forEach { it.isVisible = false }
+        if (level == FILTER_GOOD_AND_SPAM || level == FILTER_ALL) {
+            binding.icon1.setImageResource(R.drawable.ic_spam_token)
+        } else {
+            binding.icon1.setImageResource(R.drawable.ic_verified_token)
+        }
     }
 
     fun updateWeb3Tokens(@StringRes strRes: Int, tokens: List<Web3TokenItem>?) {
@@ -144,10 +161,10 @@ class FilterPopup @JvmOverloads constructor(
         }
     }
 
-    private fun loadIcon(avatarView: AvatarView, recipient: Recipient){
-        if (recipient is UserItem){
+    private fun loadIcon(avatarView: AvatarView, recipient: Recipient) {
+        if (recipient is UserItem) {
             avatarView.setInfo(recipient.fullName, recipient.avatarUrl, recipient.id)
-        } else if (recipient is AddressItem){
+        } else if (recipient is AddressItem) {
             avatarView.loadUrl(recipient.iconUrl, R.drawable.ic_avatar_place_holder)
         }
     }

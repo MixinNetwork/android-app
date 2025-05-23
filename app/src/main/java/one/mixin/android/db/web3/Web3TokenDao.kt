@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.db.web3.vo.Web3Token
@@ -22,6 +23,9 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id")
     suspend fun findWeb3TokenItems(): List<Web3TokenItem>
+
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND t.amount > 0")
+    suspend fun findAssetItemsWithBalance(): List<Web3TokenItem>
     
     @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.hidden != 1 OR te.hidden IS NULL
         ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
@@ -57,4 +61,16 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @Query("SELECT amount FROM tokens WHERE asset_id = :assetId")
     fun tokenExtraFlow(assetId: String): Flow<String?>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        WHERE (t.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR t.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
+        ORDER BY t.symbol = :symbol COLLATE NOCASE OR t.name = :name COLLATE NOCASE DESC
+        """,
+    )
+    suspend fun fuzzySearchAsset(
+        name: String,
+        symbol: String,
+    ): List<Web3TokenItem>
 }

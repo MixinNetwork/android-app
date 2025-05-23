@@ -37,7 +37,7 @@ constructor(
     fun web3Tokens() = web3TokenDao.web3TokenItems()
     
     fun web3TokensExcludeHidden() = web3TokenDao.web3TokenItemsExcludeHidden()
-
+    
     fun hiddenAssetItems() = web3TokenDao.hiddenAssetItems()
     
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {

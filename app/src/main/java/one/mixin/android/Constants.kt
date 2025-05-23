@@ -255,6 +255,14 @@ object Constants {
         const val XIN_ASSET_ID = "c94ac88f-4671-3976-b60a-09064f1811e8"
     }
 
+    object AssetLevel {
+        const val GOOD = 12
+        const val VERIFIED = 11
+        const val UNKNOWN = 10
+        const val SPAM = 1
+        const val SCAM = 0
+    }
+
     object Mute {
         const val MUTE_1_HOUR = 1 * 60 * 60
         const val MUTE_8_HOURS = 8 * 60 * 60

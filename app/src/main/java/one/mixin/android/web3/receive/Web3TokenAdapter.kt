@@ -4,10 +4,14 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -67,6 +71,16 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
     @SuppressLint("SetTextI18n")
     fun bind(token: Web3TokenItem) {
         binding.apply {
+            icSpam.isVisible = token.isSpam()
+            if (token.isSpam()) {
+                balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 2.dp
+                }
+            } else {
+                balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginStart = 16.dp
+                }
+            }
             avatar.bg.loadImage(token.iconUrl, holder = R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chainIcon ?: "", holder = R.drawable.ic_avatar_place_holder)
 

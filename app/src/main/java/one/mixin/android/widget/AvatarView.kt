@@ -115,6 +115,12 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(R.drawable.ic_snapshot_anonymous)
     }
 
+    fun setImageResource(@DrawableRes resId: Int) {
+        displayedChild = POS_AVATAR
+        avatarSimple.clear()
+        avatarSimple.setImageResource(resId)
+    }
+
     fun setInfo(
         name: String?,
         url: String?,

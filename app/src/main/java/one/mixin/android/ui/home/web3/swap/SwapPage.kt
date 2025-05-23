@@ -88,6 +88,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import java.math.BigDecimal
@@ -168,7 +169,7 @@ fun SwapPage(
                                         quoteMin = exception.min
                                         quoteMax = exception.max
                                     }
-                                    errorInfo = exception.message
+                                    errorInfo = ErrorHandler.getErrorMessage(exception)
                                     quoteResult = null
                                     isLoading = false
                                 }

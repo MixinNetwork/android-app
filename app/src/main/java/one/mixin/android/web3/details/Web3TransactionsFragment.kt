@@ -63,6 +63,7 @@ import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
@@ -139,6 +140,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 } catch (ignored: NumberFormatException) {
                     "${Fiats.getSymbol()}${token.priceFiat().priceFormat()}"
                 }
+                spamLl.isVisible = token.isSpam()
                 web3ViewModel.marketById(token.assetId).observe(viewLifecycleOwner) { market ->
                     if (market != null) {
                         val priceChangePercentage24H = BigDecimal(market.priceChangePercentage24H)
@@ -218,7 +220,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
-                                putParcelableArrayList(SwapFragment.ARGS_WEB3_TOKENS, ArrayList(tokens.filter { ((it as Web3TokenItem).balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }))
                                 putString(SwapFragment.ARGS_INPUT, token.assetId)
                                 putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
                             }
@@ -231,6 +232,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         R.id.action_web3_transactions_to_all_web3_transactions,
                         Bundle().apply {
                             putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+                            if (token.isSpam()) {
+                                putInt("level", FILTER_GOOD_AND_SPAM)
+                            }
                         }
                     )
                 }
@@ -454,13 +458,17 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
+        val bundle = Bundle().apply {
+            putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
+            putString(
+                Web3TransactionFragment.ARGS_CHAIN,
+                if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name
+            )
+            putParcelable(ARGS_TOKEN, token)
+        }
         findNavController().navigate(
             R.id.action_web3_transactions_to_web3_transaction,
-            Bundle().apply {
-                putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
-                putString(Web3TransactionFragment.ARGS_CHAIN, if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name)
-                putParcelable(ARGS_TOKEN, token)
-            }
+            bundle
         )
     }
 
@@ -472,6 +480,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             R.id.action_web3_transactions_to_all_web3_transactions,
             Bundle().apply {
                 putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
+                if (token.isSpam()) {
+                    putInt("level", FILTER_GOOD_AND_SPAM)
+                }
             }
         )
     }

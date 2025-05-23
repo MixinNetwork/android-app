@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.Config
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
@@ -203,7 +204,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         
         try {
             val remoteTokens = withContext(Dispatchers.IO) {
-                walletViewModel.queryAsset(query)
+                walletViewModel.queryAsset(query, true)
             }
 
             if (remoteTokens.isNotEmpty() && isSearchingRemote) {
@@ -228,7 +229,8 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         chainIcon = tokenItem.chainIconUrl,
                         chainName = tokenItem.chainName,
                         chainSymbol = tokenItem.chainSymbol,
-                        hidden = false
+                        hidden = false,
+                        level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
                 

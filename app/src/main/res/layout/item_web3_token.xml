@@ -24,13 +24,25 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true" />
 
+    <ImageView
+        android:id="@+id/ic_spam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/avatar"
+        android:src="@drawable/ic_spam_token"
+        android:layout_alignTop="@id/balance"
+        android:layout_alignBottom="@id/balance"
+        android:layout_marginStart="@dimen/margin16"
+        android:translationY="-1dp"
+        android:visibility="gone"/>
+
     <TextView
         android:id="@+id/balance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/avatar"
-        android:layout_toEndOf="@id/avatar"
-        android:layout_marginStart="@dimen/margin16"
+        android:layout_toEndOf="@id/ic_spam"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="2dp"
         android:layout_marginTop="2dp"
         android:ellipsize="end"
@@ -46,11 +58,13 @@
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/balance"
         android:layout_toEndOf="@id/balance"
-        android:maxWidth="200dp"
+        android:maxWidth="120dp"
         android:minWidth="30dp"
         android:textColor="?attr/text_primary"
         android:textSize="12sp"
-        android:translationY="-1dp" />
+        android:translationY="-1dp"
+        android:lines="1"
+        android:ellipsize="end"/>
 
     <TextView
         android:id="@+id/balance_as"

@@ -83,7 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minWidth="20dp"
-                android:maxWidth="200dp"
+                android:maxWidth="120dp"
                 android:textSize="14sp"
                 android:textColor="?attr/text_primary" />
         </LinearLayout>

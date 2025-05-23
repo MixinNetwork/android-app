@@ -1,10 +1,13 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
@@ -16,32 +19,32 @@ import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
-import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.databinding.ViewReputationBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.withArgs
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_UNKNOWN
+import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.details.Web3TransactionFragment
+import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -76,8 +79,12 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val filterParams by lazy {
-        requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java) 
-            ?: Web3FilterParams(tokenItems = tokenItem?.let { listOf(it) })
+        (requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java)
+            ?: Web3FilterParams(
+                tokenItems = tokenItem?.let { listOf(it) },
+                level = requireArguments().getInt("level", 0b00)
+            )
+        )
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
@@ -146,6 +153,45 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                 selectAsset()
             }
             filterUser.isVisible = false
+            filterReputation.setOnClickListener {
+                val builder = BottomSheet.Builder(requireActivity())
+                val viewBinding = ViewReputationBottomBinding.inflate(
+                    LayoutInflater.from(ContextThemeWrapper(requireActivity(), R.style.Custom)),
+                    null,
+                    false
+                )
+                builder.setCustomView(viewBinding.root)
+                val bottomSheet = builder.create()
+                viewBinding.rightIv.setOnClickListener {
+                    bottomSheet.dismiss()
+                }
+
+                val currentLevel = filterParams.level and FILTER_MASK
+                viewBinding.checkUnknown.isChecked = currentLevel and FILTER_GOOD_AND_UNKNOWN != 0
+                viewBinding.checkSpam.isChecked = currentLevel and FILTER_GOOD_AND_SPAM != 0
+
+                viewBinding.checkUnknown.setOnCheckedChangeListener { _, isChecked ->
+                    val spamChecked = viewBinding.checkSpam.isChecked
+                    filterParams.level = (if (isChecked) FILTER_GOOD_AND_UNKNOWN else 0) or (if (spamChecked) FILTER_GOOD_AND_SPAM else 0)
+                }
+                viewBinding.checkSpam.setOnCheckedChangeListener { _, isChecked ->
+                    val unknownChecked = viewBinding.checkUnknown.isChecked
+                    filterParams.level = (if (unknownChecked) FILTER_GOOD_AND_UNKNOWN else 0) or (if (isChecked) FILTER_GOOD_AND_SPAM else 0)
+                }
+
+                viewBinding.resetButton.setOnClickListener {
+                    filterParams.level = 0b00 // Good
+                    viewBinding.checkUnknown.isChecked = false
+                    viewBinding.checkSpam.isChecked = false
+                }
+
+                viewBinding.applyButton.setOnClickListener {
+                    loadFilter()
+                    bottomSheet.dismiss()
+                }
+
+                bottomSheet.show()
+            }
             filterTime.setOnClickListener {
                 datePicker()
             }
@@ -156,6 +202,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     override fun onResume() {
         super.onResume()
+        Log.d(TAG, "AllWeb3TransactionsFragment resumed.")
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
@@ -174,6 +221,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             filterType.updateWeb3TokenFilterType(filterParams.tokenFilterType)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
+            filterReputation.updateLevel(getString(R.string.Reputation), filterParams.level)
             titleView.setSubTitle(
                 getString(R.string.All_Transactions), getString(
                     when (filterParams.order) {

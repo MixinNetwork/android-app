@@ -3,8 +3,10 @@ package one.mixin.android.db.web3.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
@@ -56,6 +58,9 @@ data class Web3Token(
     @ColumnInfo(name = "change_usd")
     @SerializedName("change_usd")
     val changeUsd: String,
+    @ColumnInfo(name = "level")
+    @SerializedName("level")
+    val level: Int = Constants.AssetLevel.VERIFIED,
 ) : Parcelable, Swappable {
 
     override fun toSwapToken(): SwapToken {
@@ -103,6 +108,8 @@ data class Web3Token(
     fun realAmount(amount: Long): BigDecimal {
         return BigDecimal(amount).divide(BigDecimal.TEN.pow(precision)).setScale(9, RoundingMode.CEILING)
     }
+
+    fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
 }
 
 fun Web3TokenItem.isSolToken(): Boolean {

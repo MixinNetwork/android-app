@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.os.Parcelable
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.tip.wc.SortOrder
@@ -17,11 +18,21 @@ class Web3FilterParams(
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
+    var level: Int = 0b00
 ) : Parcelable {
+    companion object {
+        const val FILTER_MASK = 0b11
+        const val FILTER_GOOD_ONLY = 0b00
+        const val FILTER_GOOD_AND_UNKNOWN = 0b10
+        const val FILTER_GOOD_AND_SPAM = 0b01
+        const val FILTER_ALL = 0b11
+    }
+
     override fun toString(): String {
         return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
             "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
-            "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
+            "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""} " +
+            "level:$level"
     }
 
     val selectTime: String?
@@ -59,7 +70,7 @@ class Web3FilterParams(
                 Web3TokenFilterType.APPROVAL -> filters.add("w.transaction_type = 'approval'")
                 Web3TokenFilterType.SWAP -> filters.add("w.transaction_type = 'swap'")
                 Web3TokenFilterType.PENDING -> filters.add("w.status = '${TransactionStatus.PENDING.value}'")
-                else ->  {}
+                Web3TokenFilterType.ALL -> {}
             }
         }
 
@@ -70,7 +81,14 @@ class Web3FilterParams(
         endTime?.let {
             filters.add("w.transaction_at <= '${Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000)}'")
         }
-        
+
+        when (level and FILTER_MASK) {
+            FILTER_GOOD_ONLY -> filters.add("w.level >= 11") // Good
+            FILTER_GOOD_AND_UNKNOWN -> filters.add("w.level >= 10") // Good + Unknown
+            FILTER_GOOD_AND_SPAM -> filters.add("(w.level >= 11 OR w.level <= 1)") // Good + Spam
+            FILTER_ALL -> { /* Good + Unknown + Spam */ }
+        }
+
         val whereSql = if (filters.isEmpty()) {
             ""
         } else {
@@ -101,3 +119,4 @@ class Web3FilterParams(
         )
     }
 }
+

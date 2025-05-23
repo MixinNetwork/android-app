@@ -479,6 +479,8 @@ class TokenRepository
 
         suspend fun findAssetItemsWithBalance(): List<TokenItem> = tokenDao.findAssetItemsWithBalance()
 
+        suspend fun findWeb3AssetItemsWithBalance(): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance()
+
         suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
         fun web3TokenItems(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems()
@@ -553,17 +555,21 @@ class TokenRepository
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
 
         suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> {
+            val localLike = if (web3) {
+                web3TokenDao.fuzzySearchAsset(query, query).map { t -> t.toTokenItem() }
+            } else emptyList()
+
             val response =
                 try {
                     queryAssets(query)
                 } catch (t: Throwable) {
                     ErrorHandler.handleError(t)
-                    return emptyList()
+                    return  localLike
                 }
             if (response.isSuccess) {
                 val assetList = response.data as List<Token>
                 if (assetList.isEmpty()) {
-                    return emptyList()
+                    return  localLike
                 }
                 val tokenItemList = arrayListOf<TokenItem>()
                 assetList.mapTo(tokenItemList) { asset ->
@@ -577,7 +583,7 @@ class TokenRepository
                 val onlyRemoteItems = arrayListOf<TokenItem>()
                 val needUpdatePrice = arrayListOf<PriceAndChange>()
                 tokenItemList.forEach {
-                    val exists = if (web3) null else findAssetItemById(it.assetId)
+                    val exists = if (web3) null else findAssetItemById(it.assetId) // local
                     if (exists != null) {
                         needUpdatePrice.add(it.toPriceAndChange())
                         localExistsIds.add(exists.assetId)
@@ -585,14 +591,21 @@ class TokenRepository
                         onlyRemoteItems.add(it)
                     }
                 }
-                return if (needUpdatePrice.isNotEmpty()) {
+
+                val result = if (needUpdatePrice.isNotEmpty()) {
                     suspendUpdatePrices(needUpdatePrice)
                     onlyRemoteItems + findAssetsByIds(localExistsIds)
                 } else {
                     tokenItemList
                 }
+                return if (web3) {
+                    (result + localLike
+                        .filter { t -> result.any { r -> r.assetId == t.assetId }.not() })
+                } else {
+                    result
+                }
             }
-            return emptyList()
+            return localLike
         }
 
         private suspend fun fetchAsset(assetId: String) =
@@ -1109,7 +1122,8 @@ class TokenRepository
                         receiveAssetId = receiveAssetId,
                         transactionAt = raw.updatedAt,
                         createdAt = raw.createdAt,
-                        updatedAt = raw.updatedAt
+                        updatedAt = raw.updatedAt,
+                        level = Constants.AssetLevel.GOOD,
                     )
                 )
             }
