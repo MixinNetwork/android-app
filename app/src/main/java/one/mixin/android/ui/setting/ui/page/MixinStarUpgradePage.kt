@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -29,19 +30,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.ui.components.HeaderSection
 import one.mixin.android.ui.setting.ui.components.MemberSection
 import one.mixin.android.ui.setting.ui.components.PlanSelector
 import one.mixin.android.ui.setting.ui.components.ProfileSection
+import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.vo.Plan
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun MixinStarUpgradePage() {
-    LocalSettingNav.current
+    val viewModel: MemberViewModel = hiltViewModel<MemberViewModel>()
     var selectedPlan by remember { mutableStateOf(Plan.ADVANCE) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -90,7 +98,17 @@ fun MixinStarUpgradePage() {
                 .fillMaxWidth()
                 .padding(16.dp)) {
             Button(
-                onClick = { /* Handle upgrade action */ },
+                onClick = {
+                    isLoading = true
+                    viewModel.viewModelScope.launch {
+                        try {
+                            viewModel.createOrder()
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -98,12 +116,22 @@ fun MixinStarUpgradePage() {
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF3478F6))
             ) {
-                Text(
-                    text = stringResource(id = R.string.upgrade_price),
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier
+                            .height(24.dp)
+                            .padding(end = 4.dp)
+                    )
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.upgrade_price),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }

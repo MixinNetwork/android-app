@@ -60,10 +60,10 @@ fun PlanSelector(
                     Text(
                         text = stringResource(
                             id = when (plan) {
-                                Plan.ADVANCE -> R.string.plan_advance
-                                Plan.ELITE -> R.string.plan_elite
-                                Plan.PROSPERITY -> R.string.plan_prosperity
-                                else -> R.string.plan_advance
+                                Plan.ADVANCE -> R.string.membership_advance
+                                Plan.ELITE -> R.string.membership_elite
+                                Plan.PROSPERITY -> R.string.membership_prosperity
+                                else -> R.string.membership_advance
                             }
                         ),
                         color = if (selectedPlan == plan) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,

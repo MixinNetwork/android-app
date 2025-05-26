@@ -9,9 +9,9 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface MemberService {
-    @GET("safe/plans")
+    @GET("safe/membership/plans")
     suspend fun getPlans(): MixinResponse<MemberPlan>
 
-    @POST("safe/orders")
+    @POST("safe/membership/orders")
     suspend fun createOrder(@Body request: MemberOrderRequest): MixinResponse<MemberOrder>
 }

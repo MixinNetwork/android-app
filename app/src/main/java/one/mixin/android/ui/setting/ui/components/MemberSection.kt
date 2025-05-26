@@ -55,11 +55,11 @@ fun MemberSection(plan: Plan) {
             val title = when (index) {
                 0 -> stringResource(id = R.string.member_title_mixin_safe)
                 1 -> stringResource(id = R.string.member_title_mixin_star)
-                2 -> stringResource(id = R.string.member_title_safe_members)
+                2 -> stringResource(id = R.string.safe_members)
                 3 -> if (plan == Plan.ADVANCE)
                     stringResource(id = R.string.member_title_recovery_paid)
                 else
-                    stringResource(id = R.string.member_title_recovery_free)
+                    stringResource(id = R.string.free_recovery_service)
 
                 else -> ""
             }

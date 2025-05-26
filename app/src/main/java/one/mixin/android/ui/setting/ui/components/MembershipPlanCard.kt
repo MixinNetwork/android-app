@@ -52,7 +52,7 @@ fun MembershipPlanCard(
             .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.Plan), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
+            Text(stringResource(R.string.membership_plan), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_gray_right),

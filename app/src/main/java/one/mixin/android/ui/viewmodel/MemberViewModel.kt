@@ -1,6 +1,7 @@
 package one.mixin.android.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import one.mixin.android.api.MixinResponse
@@ -10,6 +11,7 @@ import one.mixin.android.repository.TokenRepository
 import timber.log.Timber
 import javax.inject.Inject
 
+@HiltViewModel
 class MemberViewModel @Inject constructor(
     private val tokenRepository: TokenRepository
 ) : ViewModel() {

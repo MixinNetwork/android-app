@@ -12,6 +12,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
@@ -21,6 +22,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.setting.ui.page.MixinStarUpgradePage
 import one.mixin.android.util.SystemUIManager
 
+@AndroidEntryPoint
 class MixinStarUpgradeBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "MixinStarUpgradeBottomSheetDialogFragment"

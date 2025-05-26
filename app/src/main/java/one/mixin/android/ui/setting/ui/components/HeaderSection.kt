@@ -27,18 +27,18 @@ import one.mixin.android.vo.Plan
 fun HeaderSection(plan: Plan) {
     val (title, content, icon) = when (plan) {
         Plan.ADVANCE -> Triple(
-            stringResource(id = R.string.plan_advance),
-            stringResource(id = R.string.plan_advance_content),
+            stringResource(id = R.string.membership_advance),
+            stringResource(id = R.string.membership_advance_description),
             R.drawable.ic_membership_advance
         )
         Plan.ELITE -> Triple(
-            stringResource(id = R.string.plan_elite),
-            stringResource(id = R.string.plan_elite_content),
+            stringResource(id = R.string.membership_elite),
+            stringResource(id = R.string.membership_elite_description),
             R.drawable.ic_membership_elite
         )
         Plan.PROSPERITY -> Triple(
-            stringResource(id = R.string.plan_prosperity),
-            stringResource(id = R.string.plan_prosperity_content),
+            stringResource(id = R.string.membership_prosperity),
+            stringResource(id = R.string.membership_prosperity_description),
             R.drawable.ic_membership_prosperity
         )
         else -> throw IllegalStateException()
