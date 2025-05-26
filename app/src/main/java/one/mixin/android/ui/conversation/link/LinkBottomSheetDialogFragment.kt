@@ -1030,8 +1030,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (input != null && input.isUUID()) {
             checkToken(input)
         }
+        val referral = uri.getQueryParameter("referral")
         AnalyticsTracker.trackSwapStart("mixin", "url")
-        SwapActivity.show(requireContext(), input, output, amount)
+        SwapActivity.show(requireContext(), input, output, amount, referral)
         dismiss()
     }
 

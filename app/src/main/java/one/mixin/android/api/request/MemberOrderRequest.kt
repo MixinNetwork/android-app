@@ -6,5 +6,5 @@ class MemberOrderRequest(
     val category: String ="SUB",
     val plan: String,
     val asset: String,
-    val source: Strin="mixin"
+    val source: String = "mixin"
 )

@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -85,8 +87,6 @@ import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
-import com.google.gson.reflect.TypeToken
-import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 
 @AndroidEntryPoint
 class SwapFragment : BaseFragment() {
@@ -98,6 +98,7 @@ class SwapFragment : BaseFragment() {
         const val ARGS_OUTPUT = "args_output"
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_IN_MIXIN = "args_in_mixin"
+        const val ARGS_REFERRAL = "args_referral"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -112,6 +113,7 @@ class SwapFragment : BaseFragment() {
             output: String? = null,
             amount: String? = null,
             inMixin: Boolean = true,
+            referral: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
                 when (T::class) {
@@ -135,6 +137,7 @@ class SwapFragment : BaseFragment() {
                 output?.let { putString(ARGS_OUTPUT, it) }
                 amount?.let { putString(ARGS_AMOUNT, it) }
                 putBoolean(ARGS_IN_MIXIN, inMixin)
+                referral?.let { putString(ARGS_REFERRAL, it) }
             }
     }
 
@@ -612,6 +615,7 @@ class SwapFragment : BaseFragment() {
                         if (inMixin()) null else {
                             if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
                         },
+                        getReferral(),
                     )
                 )
             },
@@ -805,6 +809,8 @@ class SwapFragment : BaseFragment() {
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
     private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR }
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
+
+    private fun getReferral(): String? = arguments?.getString(ARGS_REFERRAL)
 
     private fun navigateUp(navController: NavHostController) {
         if (!navController.safeNavigateUp()) {

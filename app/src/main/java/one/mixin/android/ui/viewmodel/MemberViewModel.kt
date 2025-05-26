@@ -27,8 +27,8 @@ class MemberViewModel @Inject constructor(
         val plan = plans.find { it.name == "basic" } ?: return
         val order = createMemberOrder(
             MemberOrderRequest(
-                plan.plan,
-                "31d2ea9c-95eb-3355-b65b-ba096853bc18",
+                plan = plan.plan,
+                asset = "31d2ea9c-95eb-3355-b65b-ba096853bc18",
             )
         ).data?:return
         Timber.e("Order ${order.orderId}")

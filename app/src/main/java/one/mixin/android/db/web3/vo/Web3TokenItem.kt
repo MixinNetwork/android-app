@@ -175,7 +175,7 @@ data class Web3TokenItem(
             priceBtc = "0",
             priceUsd = priceUsd,
             chainId = chainId,
-            changeUsd = changeUsd,
+            changeUsd = changeUsd.toBigDecimalOrNull()?.divide(BigDecimal.TEN.pow(2), 16, RoundingMode.HALF_UP)?.toPlainString() ?: "0",
             changeBtc = "0",
             hidden = hidden,
             confirmations = 0,
