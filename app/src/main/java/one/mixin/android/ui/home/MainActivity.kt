@@ -767,8 +767,7 @@ class MainActivity : BlazeBaseActivity() {
                         .apply {
                             asyncOnAsset = { selectedAsset ->
                                 this@MainActivity.defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
-                                val inputFragment = InputFragment.newInstance(buildTransferBiometricItem(user, selectedAsset, "", null, null,null))
-                                this@MainActivity.addFragment(this, inputFragment, InputFragment.TAG)
+                                WalletActivity.navigateToWalletActivity(this@MainActivity, buildTransferBiometricItem(user, selectedAsset, "", null, null,null))
                             }
                         }
                     bottom.show(supportFragmentManager, AssetListBottomSheetDialogFragment.TAG)
