@@ -372,6 +372,7 @@ class NewSchemeParser(
             val amount = result.amount
             val destination = result.destination
             if (amount == null) {
+                // This only exists when processing External URL within the App
                 bottomSheet.navTo(InputFragment.newInstance(asset, destination, null), InputFragment.TAG)
                 bottomSheet.dismiss()
                 return
