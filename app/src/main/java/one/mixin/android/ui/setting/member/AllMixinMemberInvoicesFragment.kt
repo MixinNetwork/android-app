@@ -43,7 +43,6 @@ class AllMixinMemberInvoicesFragment : BaseFragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                // 从 ViewModel 收集订单数据流
                 val orders by memberViewModel.orders.collectAsState(initial = emptyList())
 
                 AllInvoicesPage(

@@ -95,7 +95,7 @@ fun StatusBadge(status: String) {
             color = when (status) {
                 "EXPIRED" -> Color.Red
                 "COMPLETED" -> Color.Green
-                else -> Color(0xFFCC9900)  // 黄色系
+                else -> Color(0xFFCC9900)
             },
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold

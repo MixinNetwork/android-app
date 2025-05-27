@@ -66,13 +66,14 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             }
 
             mixinMemberInvoicesRl.setOnClickListener {
-                if (Session.getAccount()?.membership?.isMembership() == true) {
+                // Todo remove member test code
+                // if (Session.getAccount()?.membership?.isMembership() == true) {
                     navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
-                } else {
-                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
-                        parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
-                    )
-                }
+                // } else {
+                //     MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                //         parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                //     )
+                // }
             }
             val icon = Session.getAccount()?.membership?.membershipIcon(true)
             if (icon != null) {

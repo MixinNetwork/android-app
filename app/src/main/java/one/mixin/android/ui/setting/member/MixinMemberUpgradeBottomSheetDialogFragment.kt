@@ -60,12 +60,15 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MixinMemberUpgradePage { url ->
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        Timber.e("MixinMemberUpgradeBottomSheetDialogFragment url: $url")
-                        newSchemeParser.parse(url, FROM_INTERNAL)
+                MixinMemberUpgradePage(
+                    onClose = { dismiss() },
+                    onUrlGenerated = { url ->
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            Timber.e("MixinMemberUpgradeBottomSheetDialogFragment url: $url")
+                            newSchemeParser.parse(url, FROM_INTERNAL)
+                        }
                     }
-                }
+                )
                 doOnPreDraw {
                     val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                     behavior = params?.behavior as? BottomSheetBehavior<*>
