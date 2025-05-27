@@ -1667,12 +1667,11 @@ class BottomSheetViewModel
         }
 
         suspend fun validateExternalAddress(
-            assetId: String,
             chain: String,
             destination: String,
             tag: String?,
         ) =
-            accountRepository.validateExternalAddress(assetId,  chain, destination, tag)
+            accountRepository.validateExternalAddress(chain, destination, tag)
 
         suspend fun findAssetIdByAssetKey(assetKey: String): String? =
             tokenRepository.findAssetIdByAssetKey(assetKey)

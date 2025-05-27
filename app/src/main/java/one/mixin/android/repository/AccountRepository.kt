@@ -433,12 +433,11 @@ class AccountRepository
         suspend fun getAllExploreApps() = appDao.getAllExploreApps()
 
         suspend fun validateExternalAddress(
-            assetId: String,
             chain: String,
             destination: String,
             tag: String?,
         ) =
-            accountService.validateExternalAddress(assetId, chain, destination, tag)
+            accountService.validateExternalAddress(chain, destination, tag)
 
         suspend fun refreshSticker(id: String): Sticker? {
             val sticker = stickerDao.findStickerById(id)

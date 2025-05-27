@@ -558,7 +558,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             dialog.show()
             try {
                 if (assetId.isNotEmpty() && destination.isNotEmpty()) {
-                    val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
+                    val response = viewModel.validateExternalAddress(chainId, destination, tag)
                     if (response.isSuccess) {
                         val addressLabel = withContext(Dispatchers.IO) {
                             if (toAccount == true) return@withContext null
