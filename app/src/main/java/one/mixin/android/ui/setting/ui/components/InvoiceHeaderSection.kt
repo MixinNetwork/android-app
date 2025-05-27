@@ -20,21 +20,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.member.InvoiceStatus
-import one.mixin.android.ui.setting.member.MemberInvoice
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.Plan
 
 @Composable
-fun InvoiceHeaderSection(invoice: MemberInvoice) {
-    val (title, icon) = when (invoice.plan) {
-        Plan.ADVANCE -> Pair("Advance Plan", R.drawable.ic_membership_advance)
-        Plan.ELITE -> Pair("Elite Plan", R.drawable.ic_membership_elite)
+fun InvoiceHeaderSection(order: MemberOrder) {
+    val (title, icon) = when (order.category) {
+        "ADVANCE" -> Pair("Advance Plan", R.drawable.ic_membership_advance)
+        "ELITE" -> Pair("Elite Plan", R.drawable.ic_membership_elite)
         else -> Pair("Prosperity Plan", R.drawable.ic_membership_prosperity)
     }
 
-    val statusColor = if (invoice.status == InvoiceStatus.EXPIRED) {
+    val statusColor = if (order.status == "EXPIRED") {
         MixinAppTheme.colors.walletRed
     } else {
         MixinAppTheme.colors.walletGreen
@@ -66,7 +64,7 @@ fun InvoiceHeaderSection(invoice: MemberInvoice) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = invoice.status.name,
+            text = order.status,
             fontSize = 14.sp,
             color = statusColor,
             textAlign = TextAlign.Center,

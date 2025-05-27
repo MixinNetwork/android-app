@@ -311,7 +311,9 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_39_40: Migration =
             object : Migration(39, 40) {
                 override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))")
+                    db.execSQL(
+                        "CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))",
+                    )
                 }
             }
 
@@ -559,6 +561,13 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("DROP TABLE IF EXISTS `addresses`")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `addresses` (`address_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `label` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `tag` TEXT, `dust` TEXT, PRIMARY KEY(`address_id`))")
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_addresses_chain_id_updated_at` ON `addresses` (`chain_id`, `updated_at`)")
+                }
+            }
+
+        val MIGRATION_65_66: Migration =
+            object : Migration(65, 66) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `member_orders` (`type` TEXT NOT NULL, `order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT, `asset_amount` TEXT, `status` TEXT NOT NULL, `before` TEXT NOT NULL, `after` TEXT NOT NULL, `quantity_accounts` INTEGER NOT NULL, `quantity_transactions` INTEGER NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reason` TEXT NOT NULL, `paid_at` TEXT, `expired_at` TEXT, `created_at` TEXT NOT NULL, `payment_url` TEXT, `fiat_order` TEXT, `checkout_user_id` TEXT, `checkout_memo` TEXT, PRIMARY KEY(`order_id`))")
                 }
             }
         // If you add a new table, be sure to add a clear method to the DatabaseUtil

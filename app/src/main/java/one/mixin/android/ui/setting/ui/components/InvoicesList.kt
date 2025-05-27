@@ -9,70 +9,100 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.dayTime
 import one.mixin.android.ui.setting.member.InvoiceType
-import one.mixin.android.ui.setting.member.MemberInvoice
 import one.mixin.android.vo.Plan
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun InvoicesList(
-    invoices: List<MemberInvoice>,
-    onInvoiceClick: (MemberInvoice) -> Unit,
+    invoices: List<MemberOrder>,
+    onInvoiceClick: (MemberOrder) -> Unit,
     maxDisplayCount: Int? = null
 ) {
-    val displayedInvoices = maxDisplayCount?.let { invoices.take(it) } ?: invoices
+    val groupedInvoices = remember(invoices) {
+        val displayedInvoices = maxDisplayCount?.let { invoices.take(it) } ?: invoices
+
+        displayedInvoices
+            .groupBy { order ->
+                order.createdAt.dayTime()
+            }
+    }
 
     Column {
-        displayedInvoices.forEach { invoice ->
+        groupedInvoices.forEach { (dateStr, dateOrders) ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                    .clickable { onInvoiceClick(invoice) },
+                    .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(
-                        when (invoice.plan) {
-                            Plan.ADVANCE -> R.drawable.ic_membership_advance
-                            Plan.ELITE -> R.drawable.ic_membership_elite
-                            else -> R.drawable.ic_membership_prosperity
-                        }
-                    ),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.Unspecified
+                Text(
+                    text = dateStr,
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(
-                    modifier = Modifier.weight(1f)
+            }
+
+            dateOrders.forEach { order ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp, horizontal = 5.dp)
+                        .clickable { onInvoiceClick(order) },
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = if (invoice.type == InvoiceType.UPGRADE) {
-                            "Upgrade to ${invoice.description}"
-                        } else {
-                            "Renew ${invoice.description}"
-                        },
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary
+                    Icon(
+                        painter = painterResource(
+                            when (order.category) {
+                                "ADVANCE" -> R.drawable.ic_membership_advance
+                                "ELITE" -> R.drawable.ic_membership_elite
+                                else -> R.drawable.ic_membership_prosperity
+                            }
+                        ),
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp),
+                        tint = Color.Unspecified
                     )
-                }
-                if (invoice.type == InvoiceType.PURCHASE) {
-                    Text(
-                        text = "+2 stars",
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.walletGreen
-                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = if (order.type == "UPGRADE") {
+                                "Upgrade to ${order.after}"
+                            } else {
+                                "Renew ${order.after}"
+                            },
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary
+                        )
+                    }
+                    if (order.type == "PURCHASE") {
+                        Text(
+                            text = "+2 stars",
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.walletGreen
+                        )
+                    }
                 }
             }
         }
@@ -86,7 +116,7 @@ fun InvoicesList(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "View All",
+                    text = stringResource(R.string.view_all),
                     color = MixinAppTheme.colors.accent,
                     fontSize = 14.sp
                 )

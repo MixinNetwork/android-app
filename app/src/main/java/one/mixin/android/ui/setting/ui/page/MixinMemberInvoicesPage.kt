@@ -21,21 +21,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.member.MemberInvoice
 import one.mixin.android.ui.setting.ui.components.InvoicesList
 import one.mixin.android.ui.setting.ui.components.MembershipPlanCard
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Membership
 
 @Composable
-fun MixinStarInvoicesPage(
+fun MixinMemberInvoicesPage(
     membership: Membership,
-    invoices: List<MemberInvoice>,
+    orders: List<MemberOrder>,
     onPop: () -> Unit,
     onViewPlanClick: () -> Unit,
     onAll: () -> Unit,
-    onInvoiceClick: (MemberInvoice) -> Unit
+    onOrderClick: (MemberOrder) -> Unit
 ) {
     MixinAppTheme {
         PageScaffold(
@@ -74,9 +74,9 @@ fun MixinStarInvoicesPage(
                         )
                     }
                     InvoicesList(
-                        invoices = invoices,
-                        onInvoiceClick = { invoice ->
-                            onInvoiceClick(invoice)
+                        invoices = orders,
+                        onInvoiceClick = { order ->
+                            onOrderClick(order)
                         },
                         maxDisplayCount = 10
                     )

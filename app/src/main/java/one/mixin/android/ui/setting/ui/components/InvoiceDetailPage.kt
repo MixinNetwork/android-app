@@ -14,12 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.mixin.android.R
+import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.member.MemberInvoice
+import one.mixin.android.ui.setting.member.getInvoiceStatus
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 @Composable
-fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
+fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Invoice),
@@ -31,7 +32,7 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
-                InvoiceHeaderSection(invoice)
+                InvoiceHeaderSection(order)
                 Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     modifier = Modifier
@@ -48,7 +49,7 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = invoice.transactionId,
+                        text = order.orderId,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
@@ -58,7 +59,7 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = invoice.description,
+                        text = order.reason,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
@@ -68,7 +69,7 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = invoice.amount,
+                        text = order.amount,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
@@ -78,7 +79,7 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = invoice.via,
+                        text = order.method,
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
@@ -88,7 +89,7 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = invoice.time,
+                        text = order.createdAt.toString(),
                         color = MixinAppTheme.colors.textPrimary,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
@@ -99,7 +100,7 @@ fun InvoiceDetailPage(invoice: MemberInvoice, onPop: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = invoice.status.name,
+                        text = order.getInvoiceStatus().name,
                         color = MixinAppTheme.colors.textPrimary
                     )
                 }

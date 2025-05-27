@@ -8,13 +8,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.member.MemberInvoice
 import one.mixin.android.ui.setting.ui.components.InvoicesList
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 @Composable
-fun AllInvoicesPage(invoices: List<MemberInvoice>, onPop: () -> Unit) {
+fun AllInvoicesPage(
+    orders: List<MemberOrder>,
+    onPop: () -> Unit,
+    onOrderClick: (MemberOrder) -> Unit = {}
+) {
     PageScaffold (
         title = "All Invoices",
         verticalScrollable = false,
@@ -31,10 +35,8 @@ fun AllInvoicesPage(invoices: List<MemberInvoice>, onPop: () -> Unit) {
                 .padding(horizontal = 16.dp)
         ) {
             InvoicesList(
-                invoices = invoices,
-                onInvoiceClick = { invoice ->
-                    // Handle invoice click, navigate to detail page
-                }
+                invoices = orders,
+                onInvoiceClick = onOrderClick
             )
         }
     }

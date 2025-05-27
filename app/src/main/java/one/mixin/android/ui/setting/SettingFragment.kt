@@ -22,6 +22,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.membershipIcon
 
@@ -64,24 +65,23 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 navTo(AppearanceFragment.newInstance(), AppearanceFragment.TAG)
             }
 
-            mixinStarInvoicesRl.setOnClickListener {
-                // Todo member
-                // if (Session.getAccount()?.membership?.isMembership() == true) {
+            mixinMemberInvoicesRl.setOnClickListener {
+                if (Session.getAccount()?.membership?.isMembership() == true) {
                     navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
-                // } else {
-                //     MixinStarUpgradeBottomSheetDialogFragment.newInstance().showNow(
-                //         parentFragmentManager, MixinStarUpgradeBottomSheetDialogFragment.TAG
-                //     )
-                // }
+                } else {
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                        parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                    )
+                }
             }
             val icon = Session.getAccount()?.membership?.membershipIcon(true)
             if (icon != null) {
-                mixinStartPlanIv.setImageResource(icon)
-                mixinStartPlanIv.isVisible = true
-                mixinStartPlanTv.isVisible = false
+                mixinMemberPlanIv.setImageResource(icon)
+                mixinMemberPlanIv.isVisible = true
+                mixinMemberPlanTv.isVisible = false
             } else {
-                mixinStartPlanIv.isVisible = false
-                mixinStartPlanTv.isVisible = true
+                mixinMemberPlanIv.isVisible = false
+                mixinMemberPlanTv.isVisible = true
             }
 
             notificationRl.setOnClickListener {
@@ -120,12 +120,12 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 if (isAdded) {
                     val icon = Session.getAccount()?.membership?.membershipIcon(true)
                     if (icon != null) {
-                        binding.mixinStartPlanIv.setImageResource(icon)
-                        binding.mixinStartPlanIv.isVisible = true
-                        binding.mixinStartPlanTv.isVisible = false
+                        binding.mixinMemberPlanIv.setImageResource(icon)
+                        binding.mixinMemberPlanIv.isVisible = true
+                        binding.mixinMemberPlanTv.isVisible = false
                     } else {
-                        binding.mixinStartPlanIv.isVisible = false
-                        binding.mixinStartPlanTv.isVisible = true
+                        binding.mixinMemberPlanIv.isVisible = false
+                        binding.mixinMemberPlanTv.isVisible = true
                     }
                 }
             }

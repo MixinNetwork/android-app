@@ -27,7 +27,7 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.FROM_INTERNAL
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
-import one.mixin.android.ui.setting.ui.page.MixinStarUpgradePage
+import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.util.SystemUIManager
 import timber.log.Timber
 import javax.inject.Inject
@@ -36,7 +36,7 @@ import kotlin.getValue
 @AndroidEntryPoint
 class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
     companion object {
-        const val TAG = "MixinStarUpgradeBottomSheetDialogFragment"
+        const val TAG = "MixinMemberUpgradeBottomSheetDialogFragment"
 
         fun newInstance() = MixinMemberUpgradeBottomSheetDialogFragment()
     }
@@ -60,9 +60,9 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MixinStarUpgradePage { url ->
+                MixinMemberUpgradePage { url ->
                     viewLifecycleOwner.lifecycleScope.launch {
-                        Timber.e("MixinStarUpgradeBottomSheetDialogFragment url: $url")
+                        Timber.e("MixinMemberUpgradeBottomSheetDialogFragment url: $url")
                         newSchemeParser.parse(url, FROM_INTERNAL)
                     }
                 }

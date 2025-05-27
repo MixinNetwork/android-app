@@ -22,12 +22,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.member.InvoiceStatus
-import one.mixin.android.ui.setting.member.MemberInvoice
 
 @Composable
-fun MemberInvoiceSection(invoice: MemberInvoice) {
+fun MemberInvoiceSection(order: MemberOrder) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -40,7 +39,11 @@ fun MemberInvoiceSection(invoice: MemberInvoice) {
     ) {
         Icon(
             painter = painterResource(
-                id = R.drawable.ic_membership_advance
+                id = when (order.category) {
+                    "ADVANCE" -> R.drawable.ic_membership_advance
+                    "ELITE" -> R.drawable.ic_membership_elite
+                    else -> R.drawable.ic_membership_prosperity
+                }
             ),
             contentDescription = null,
             tint = Color.Unspecified,
@@ -48,35 +51,36 @@ fun MemberInvoiceSection(invoice: MemberInvoice) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = invoice.description,
+            text = order.category,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "${invoice.amount} via ${invoice.via}",
+            text = "${order.amount} via ${order.method}",
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textMinor,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = invoice.time,
+            text = order.createdAt,
             fontSize = 12.sp,
             color = MixinAppTheme.colors.textMinor,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(16.dp))
-        StatusBadge(status = invoice.status)
+        StatusBadge(status = order.status)
     }
 }
 
 @Composable
-fun StatusBadge(status: InvoiceStatus) {
+fun StatusBadge(status: String) {
     val (text, backgroundColor) = when (status) {
-        InvoiceStatus.EXPIRED -> "Expired" to Color.Red.copy(alpha = 0.1f)
-        InvoiceStatus.COMPLETED -> "Completed" to Color.Green.copy(alpha = 0.1f)
+        "EXPIRED" -> "Expired" to Color.Red.copy(alpha = 0.1f)
+        "COMPLETED" -> "Completed" to Color.Green.copy(alpha = 0.1f)
+        else -> "Pending" to Color.Yellow.copy(alpha = 0.1f)
     }
 
     Row(
@@ -88,7 +92,11 @@ fun StatusBadge(status: InvoiceStatus) {
     ) {
         Text(
             text = text,
-            color = if (status == InvoiceStatus.EXPIRED) Color.Red else Color.Green,
+            color = when (status) {
+                "EXPIRED" -> Color.Red
+                "COMPLETED" -> Color.Green
+                else -> Color(0xFFCC9900)  // 黄色系
+            },
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )

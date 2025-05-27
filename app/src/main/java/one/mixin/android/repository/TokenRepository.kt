@@ -58,10 +58,10 @@ import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.MemberOrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
+import one.mixin.android.db.SwapOrderDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
@@ -175,7 +175,7 @@ class TokenRepository
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
-        private val orderDao: OrderDao,
+        private val swapOrderDao: SwapOrderDao,
         private val web3TokenDao: Web3TokenDao,
         private val web3TransactionDao: Web3TransactionDao,
         private val web3RawTransactionDao: Web3RawTransactionDao,
@@ -775,7 +775,7 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        fun swapOrders(): Flow<List<SwapOrderItem>> = orderDao.orders()
+        fun swapOrders(): Flow<List<SwapOrderItem>> = swapOrderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
@@ -1388,7 +1388,7 @@ class TokenRepository
 
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 
-    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
+    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = swapOrderDao.getOrderById(orderId)
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
@@ -1419,13 +1419,5 @@ class TokenRepository
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
     fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
-
-    suspend fun createMemberOrder(request: MemberOrderRequest) = memberService.createOrder(request)
-
-    suspend fun getPlans() = memberService.getPlans()
-
-    suspend fun getOrders() = memberService.getOrders()
-
-    suspend fun getOrder(id: String) = memberService.getOrder(id)
 
 }

@@ -1,56 +1,94 @@
 package one.mixin.android.api.response
 
+import android.os.Parcelable
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
-import java.util.Date
+import kotlinx.parcelize.Parcelize
+import one.mixin.android.db.converter.FiatOrderConverter
+
+@Parcelize
+@Entity(tableName = "member_orders")
+@TypeConverters(FiatOrderConverter::class)
 data class MemberOrder(
     @SerializedName("type")
+    @ColumnInfo(name = "type")
     val type: String,
     @SerializedName("order_id")
+    @PrimaryKey
+    @ColumnInfo(name = "order_id")
     val orderId: String,
     @SerializedName("user_id")
+    @ColumnInfo(name = "user_id")
     val userId: String,
     @SerializedName("category")
+    @ColumnInfo(name = "category")
     val category: String,
     @SerializedName("asset_id")
+    @ColumnInfo(name = "asset_id")
     val assetId: String,
     @SerializedName("amount_original")
+    @ColumnInfo(name = "amount_original")
     val amountOriginal: String,
     @SerializedName("amount")
+    @ColumnInfo(name = "amount")
     val amount: String,
     @SerializedName("amount_actual")
-    val amountActual: String,
+    @ColumnInfo(name = "amount_actual")
+    val amountActual: String?,
+    @SerializedName("asset_amount")
+    @ColumnInfo(name = "asset_amount")
+    val assetAmount: String?,
     @SerializedName("status")
+    @ColumnInfo(name = "status")
     val status: String,
     @SerializedName("before")
+    @ColumnInfo(name = "before")
     val before: String,
     @SerializedName("after")
+    @ColumnInfo(name = "after")
     val after: String,
     @SerializedName("quantity_accounts")
+    @ColumnInfo(name = "quantity_accounts")
     val quantityAccounts: Long,
     @SerializedName("quantity_transactions")
+    @ColumnInfo(name = "quantity_transactions")
     val quantityTransactions: Long,
     @SerializedName("method")
+    @ColumnInfo(name = "method")
     val method: String,
     @SerializedName("source")
+    @ColumnInfo(name = "source")
     val source: String,
     @SerializedName("reason")
+    @ColumnInfo(name = "reason")
     val reason: String,
     @SerializedName("paid_at")
-    val paidAt: Date,
+    @ColumnInfo(name = "paid_at")
+    val paidAt: String?,
     @SerializedName("expired_at")
-    val expiredAt: Date,
+    @ColumnInfo(name = "expired_at")
+    val expiredAt: String?,
     @SerializedName("created_at")
-    val createdAt: Date,
+    @ColumnInfo(name = "created_at")
+    val createdAt: String,
     @SerializedName("payment_url")
+    @ColumnInfo(name = "payment_url")
     val paymentUrl: String?,
     @SerializedName("fiat_order")
+    @ColumnInfo(name = "fiat_order")
     val fiatOrder: FiatOrderView?,
     @SerializedName("checkout_user_id")
-    val checkoutUserId: String,
+    @ColumnInfo(name = "checkout_user_id")
+    val checkoutUserId: String?,
     @SerializedName("checkout_memo")
-    val checkoutMemo: String
-)
+    @ColumnInfo(name = "checkout_memo")
+    val checkoutMemo: String?
+) : Parcelable
 
+@Parcelize
 data class FiatOrderView(
     @SerializedName("type")
     val type: String,
@@ -69,7 +107,7 @@ data class FiatOrderView(
     @SerializedName("status")
     val status: String,
     @SerializedName("paid_at")
-    val paidAt: Date,
+    val paidAt: String,
     @SerializedName("created_at")
-    val createdAt: Date
-)
+    val createdAt: String
+) : Parcelable

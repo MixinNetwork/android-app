@@ -83,10 +83,6 @@ enum class SettingDestination {
     BiometricTime,
     Wallpaper,
     LogAndDebug,
-    MixinStarValid,
-    MixinStarUpgrade,
-    MixinStarInvoices,
-    MixinStarReferral,
 }
 
 open class SettingNavigationController {

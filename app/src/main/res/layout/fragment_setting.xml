@@ -138,7 +138,7 @@
                 android:background="?attr/bg_window" />
 
             <RelativeLayout
-                android:id="@+id/mixin_star_invoices_rl"
+                android:id="@+id/mixin_member_invoices_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
@@ -158,7 +158,7 @@
                     app:drawableStartCompat="@drawable/ic_mixin_one" />
 
                 <ImageView
-                    android:id="@+id/mixin_start_plan_iv"
+                    android:id="@+id/mixin_member_plan_iv"
                     android:src="@drawable/ic_membership_advance"
                     android:layout_marginEnd="16dp"
                     android:layout_alignParentEnd="true"
@@ -167,7 +167,7 @@
                     android:layout_height="18dp"/>
 
                 <TextView
-                    android:id="@+id/mixin_start_plan_tv"
+                    android:id="@+id/mixin_member_plan_tv"
                     android:layout_marginEnd="16dp"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
