@@ -58,7 +58,7 @@ import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.OrderDao
+import one.mixin.android.db.MemberOrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
@@ -144,7 +144,6 @@ import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.ui.wallet.Web3FilterParams
-import java.math.BigDecimal
 
 @Singleton
 class TokenRepository
@@ -1424,5 +1423,9 @@ class TokenRepository
     suspend fun createMemberOrder(request: MemberOrderRequest) = memberService.createOrder(request)
 
     suspend fun getPlans() = memberService.getPlans()
+
+    suspend fun getOrders() = memberService.getOrders()
+
+    suspend fun getOrder(id: String) = memberService.getOrder(id)
 
 }

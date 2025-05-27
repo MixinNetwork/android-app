@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.star
+package one.mixin.android.ui.setting.member
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,13 +9,13 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import one.mixin.android.ui.setting.ui.page.AllInvoicesPage
 
-class AllMixinStarInvoicesFragment : Fragment() {
+class AllMixinMemberInvoicesFragment : Fragment() {
 
     companion object {
-        const val TAG = "AllMixinStarInvoicesFragment"
+        const val TAG = "AllMixinMemberInvoicesFragment"
 
-        fun newInstance(invoices: List<MemberInvoice>): AllMixinStarInvoicesFragment {
-            val fragment = AllMixinStarInvoicesFragment()
+        fun newInstance(invoices: List<MemberInvoice>): AllMixinMemberInvoicesFragment {
+            val fragment = AllMixinMemberInvoicesFragment()
             val args = Bundle()
             args.putParcelableArrayList("invoices", ArrayList(invoices))
             fragment.arguments = args

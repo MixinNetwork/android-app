@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.star
+package one.mixin.android.ui.setting.member
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,14 +8,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import one.mixin.android.ui.setting.ui.components.InvoiceDetailPage
 
-class MixinInvoiceDetailFragment : Fragment() {
+class MixinMemberOrderDetailFragment : Fragment() {
 
     companion object {
-        const val TAG = "MixinInvoiceDetailFragment"
+        const val TAG = "MixinMemberOrderDetailFragment"
         private const val ARG_INVOICE = "arg_invoice"
 
-        fun newInstance(invoice: MemberInvoice): MixinInvoiceDetailFragment {
-            val fragment = MixinInvoiceDetailFragment()
+        fun newInstance(invoice: MemberInvoice): MixinMemberOrderDetailFragment {
+            val fragment = MixinMemberOrderDetailFragment()
             val args = Bundle()
             args.putParcelable(ARG_INVOICE, invoice)
             fragment.arguments = args

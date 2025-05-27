@@ -46,7 +46,7 @@ import one.mixin.android.vo.Plan
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun MixinStarUpgradePage() {
+fun MixinStarUpgradePage(onUrlGenerated: (String) -> Unit) {
     val viewModel: MemberViewModel = hiltViewModel<MemberViewModel>()
     var selectedPlan by remember { mutableStateOf(Plan.ADVANCE) }
     var isLoading by remember { mutableStateOf(false) }
@@ -102,7 +102,9 @@ fun MixinStarUpgradePage() {
                     isLoading = true
                     viewModel.viewModelScope.launch {
                         try {
-                            viewModel.createOrder()
+                            viewModel.createOrder { url ->
+                                onUrlGenerated(url ?: "")
+                            }
                         } finally {
                             isLoading = false
                         }
@@ -141,6 +143,6 @@ fun MixinStarUpgradePage() {
 @Composable
 private fun MixinStarUpgradePagePreview() {
     MixinAppTheme {
-        MixinStarUpgradePage()
+        MixinStarUpgradePage {}
     }
 }

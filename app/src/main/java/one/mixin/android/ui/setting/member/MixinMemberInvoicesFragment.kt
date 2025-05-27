@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.star
+package one.mixin.android.ui.setting.member
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,10 +16,10 @@ import one.mixin.android.vo.Membership
 import one.mixin.android.vo.Plan
 
 @AndroidEntryPoint
-class MixinStarInvoicesFragment : BaseFragment() {
+class MixinMemberInvoicesFragment : BaseFragment() {
     companion object {
-        const val TAG = "MixinStarInvoicesFragment"
-        fun newInstance() = MixinStarInvoicesFragment()
+        const val TAG = "MixinMemberInvoicesFragment"
+        fun newInstance() = MixinMemberInvoicesFragment()
     }
 
     private val viewModel: SettingViewModel by viewModels({ requireActivity() })
@@ -154,14 +154,14 @@ class MixinStarInvoicesFragment : BaseFragment() {
                     invoices = invoices,
                     onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() },
                     onViewPlanClick = {
-                        MixinStarUpgradeBottomSheetDialogFragment.newInstance()
-                            .showNow(parentFragmentManager, MixinStarUpgradeBottomSheetDialogFragment.TAG)
+                        MixinMemberUpgradeBottomSheetDialogFragment.newInstance()
+                            .showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
                     },
                     onInvoiceClick = { invoice ->
-                        navTo(MixinInvoiceDetailFragment.newInstance(invoice), MixinInvoiceDetailFragment.TAG)
+                        navTo(MixinMemberOrderDetailFragment.newInstance(invoice), MixinMemberOrderDetailFragment.TAG)
                     },
                     onAll = {
-                        navTo(AllMixinStarInvoicesFragment.newInstance(invoices), AllMixinStarInvoicesFragment.TAG)
+                        navTo(AllMixinMemberInvoicesFragment.newInstance(invoices), AllMixinMemberInvoicesFragment.TAG)
                     }
                 )
             }

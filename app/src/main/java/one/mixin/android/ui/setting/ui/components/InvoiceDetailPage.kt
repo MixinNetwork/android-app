@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.star.MemberInvoice
+import one.mixin.android.ui.setting.member.MemberInvoice
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 @Composable

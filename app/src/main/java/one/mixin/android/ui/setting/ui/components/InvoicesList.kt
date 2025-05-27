@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.star.InvoiceType
-import one.mixin.android.ui.setting.star.MemberInvoice
+import one.mixin.android.ui.setting.member.InvoiceType
+import one.mixin.android.ui.setting.member.MemberInvoice
 import one.mixin.android.vo.Plan
 
 @Composable

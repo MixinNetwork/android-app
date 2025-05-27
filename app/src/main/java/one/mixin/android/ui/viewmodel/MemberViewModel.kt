@@ -23,16 +23,21 @@ class MemberViewModel @Inject constructor(
 
     suspend fun getPlans() = tokenRepository.getPlans()
 
-    // Todo remove
-    suspend fun createOrder() {
-        val plans = getPlans().data?.plans ?: return
-        val plan = plans.find { it.name == "basic" } ?: return
+    suspend fun getOrders() = tokenRepository.getOrders()
+
+    suspend fun getOrder(id: String) = tokenRepository.getOrder(id)
+
+    suspend fun createOrder(onResult: (String?) -> Unit) {
+        val plans = getPlans().data?.plans ?: return onResult(null)
+        val plan = plans.find { it.name == "basic" } ?: return onResult(null)
         val order = createMemberOrder(
             MemberOrderRequest(
                 plan = plan.plan,
-                asset = "31d2ea9c-95eb-3355-b65b-ba096853bc18",
+                asset = "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
             )
-        ).data?:return
+        ).data ?: return onResult(null)
+
         Timber.e("Order ${order.orderId}")
+        onResult(order.paymentUrl)
     }
 }

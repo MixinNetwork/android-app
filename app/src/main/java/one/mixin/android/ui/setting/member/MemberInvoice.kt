@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.star
+package one.mixin.android.ui.setting.member
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

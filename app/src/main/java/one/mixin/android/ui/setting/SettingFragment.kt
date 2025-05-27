@@ -21,7 +21,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
-import one.mixin.android.ui.setting.star.MixinStarInvoicesFragment
+import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.membershipIcon
 
@@ -67,7 +67,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             mixinStarInvoicesRl.setOnClickListener {
                 // Todo member
                 // if (Session.getAccount()?.membership?.isMembership() == true) {
-                    navTo(MixinStarInvoicesFragment.newInstance(), MixinStarInvoicesFragment.TAG)
+                    navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
                 // } else {
                 //     MixinStarUpgradeBottomSheetDialogFragment.newInstance().showNow(
                 //         parentFragmentManager, MixinStarUpgradeBottomSheetDialogFragment.TAG

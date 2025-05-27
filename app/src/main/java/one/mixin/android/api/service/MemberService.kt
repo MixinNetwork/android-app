@@ -7,6 +7,7 @@ import one.mixin.android.api.response.MemberPlan
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface MemberService {
     @GET("safe/membership/plans")
@@ -14,4 +15,10 @@ interface MemberService {
 
     @POST("safe/membership/orders")
     suspend fun createOrder(@Body request: MemberOrderRequest): MixinResponse<MemberOrder>
+
+    @GET("safe/membership/orders")
+    suspend fun getOrders(): MixinResponse<List<MemberOrder>>
+
+    @GET("safe/membership/orders/{id}")
+    suspend fun getOrder(@Path("id") id: String): MixinResponse<MemberOrder>
 }

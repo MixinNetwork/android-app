@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.star
+package one.mixin.android.ui.setting.member
 
 import android.app.Dialog
 import android.os.Bundle
@@ -10,29 +10,47 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.SchemeBottomSheet
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.FROM_INTERNAL
+import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.setting.ui.page.MixinStarUpgradePage
 import one.mixin.android.util.SystemUIManager
+import timber.log.Timber
+import javax.inject.Inject
+import kotlin.getValue
 
 @AndroidEntryPoint
-class MixinStarUpgradeBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
     companion object {
         const val TAG = "MixinStarUpgradeBottomSheetDialogFragment"
 
-        fun newInstance() = MixinStarUpgradeBottomSheetDialogFragment()
+        fun newInstance() = MixinMemberUpgradeBottomSheetDialogFragment()
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
 
+    private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this, linkViewModel) }
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     override fun getTheme() = R.style.AppTheme_Dialog
+
+    val linkViewModel by viewModels<BottomSheetViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,7 +60,12 @@ class MixinStarUpgradeBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MixinStarUpgradePage()
+                MixinStarUpgradePage { url ->
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        Timber.e("MixinStarUpgradeBottomSheetDialogFragment url: $url")
+                        newSchemeParser.parse(url, FROM_INTERNAL)
+                    }
+                }
                 doOnPreDraw {
                     val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                     behavior = params?.behavior as? BottomSheetBehavior<*>
@@ -101,4 +124,15 @@ class MixinStarUpgradeBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {
             }
         }
+
+    override fun showError(errorRes: Int) {
+        super.showError(errorRes)
+    }
+
+    override fun showError(error: String) {
+    }
+
+    override fun syncUtxo() {
+        jobManager.addJobInBackground(SyncOutputJob())
+    }
 }

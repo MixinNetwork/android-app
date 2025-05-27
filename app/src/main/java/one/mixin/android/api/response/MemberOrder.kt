@@ -2,7 +2,6 @@ package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
 import java.util.Date
-
 data class MemberOrder(
     @SerializedName("type")
     val type: String,
@@ -42,6 +41,8 @@ data class MemberOrder(
     val expiredAt: Date,
     @SerializedName("created_at")
     val createdAt: Date,
+    @SerializedName("payment_url")
+    val paymentUrl: String?,
     @SerializedName("fiat_order")
     val fiatOrder: FiatOrderView?,
     @SerializedName("checkout_user_id")

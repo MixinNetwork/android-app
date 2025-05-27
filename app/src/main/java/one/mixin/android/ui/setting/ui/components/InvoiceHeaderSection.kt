@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.star.InvoiceStatus
-import one.mixin.android.ui.setting.star.MemberInvoice
+import one.mixin.android.ui.setting.member.InvoiceStatus
+import one.mixin.android.ui.setting.member.MemberInvoice
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Plan
 
