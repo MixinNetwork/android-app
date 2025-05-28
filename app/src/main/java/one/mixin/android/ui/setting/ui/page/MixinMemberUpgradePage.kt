@@ -33,8 +33,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.api.response.Plan as ApiPlan
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.HeaderSection
@@ -42,6 +45,7 @@ import one.mixin.android.ui.setting.ui.components.MemberSection
 import one.mixin.android.ui.setting.ui.components.PlanSelector
 import one.mixin.android.ui.setting.ui.components.ProfileSection
 import one.mixin.android.ui.viewmodel.MemberViewModel
+import one.mixin.android.vo.MemberOrderStatus
 import one.mixin.android.vo.Plan
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.api.request.MemberOrderRequest
@@ -59,6 +63,50 @@ fun MixinMemberUpgradePage(
     var isLoadingPlans by remember { mutableStateOf(true) }
     var plansData by remember { mutableStateOf<List<ApiPlan>>(emptyList()) }
     var transactionAssetId by remember { mutableStateOf<String?>(null) }
+    var currentOrderId by remember { mutableStateOf<String?>(null) }
+    var isPollingOrder by remember { mutableStateOf(false) }
+    var currentOrderStatus by remember { mutableStateOf<MemberOrderStatus?>(null) }
+
+    LaunchedEffect(currentOrderId) {
+        if (currentOrderId != null && isPollingOrder) {
+            try {
+                while (isPollingOrder) {
+                    val orderResponse = viewModel.getOrder(currentOrderId!!)
+                    if (orderResponse.isSuccess && orderResponse.data != null) {
+                        val order = orderResponse.data!!
+                        val orderStatus = MemberOrderStatus.fromString(order.status)
+                        currentOrderStatus = orderStatus
+
+                        when (orderStatus) {
+                            MemberOrderStatus.PAID, MemberOrderStatus.COMPLETED -> {
+                                Timber.d("Order completed: ${order.orderId}, status: ${orderStatus.value}")
+                                isPollingOrder = false
+                                isLoading = false
+                                onClose()
+                            }
+                            MemberOrderStatus.FAILED, MemberOrderStatus.EXPIRED, MemberOrderStatus.CANCEL -> {
+                                Timber.d("Order failed: ${order.orderId}, status: ${orderStatus.value}")
+                                isPollingOrder = false
+                                isLoading = false
+                            }
+                            else -> {
+                                Timber.d("Order pending: ${order.orderId}, status: ${orderStatus.value}")
+                                delay(3000)
+                            }
+                        }
+                    } else {
+                        delay(3000)
+                    }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to poll order status")
+                isPollingOrder = false
+                isLoading = false
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         isLoadingPlans = true
@@ -145,14 +193,22 @@ fun MixinMemberUpgradePage(
 
                             val orderResponse = viewModel.createMemberOrder(orderRequest)
                             if (orderResponse.isSuccess && orderResponse.data != null) {
-                                onUrlGenerated(orderResponse.data!!.paymentUrl ?: "")
+                                val order = orderResponse.data!!
+                                currentOrderId = order.orderId
+                                currentOrderStatus = MemberOrderStatus.fromString(order.status)
+                                isPollingOrder = true
+
+                                onUrlGenerated(order.paymentUrl ?: "")
+                            } else {
+                                isLoading = false
                             }
-                        } finally {
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to create order")
                             isLoading = false
                         }
                     }
                 },
-                enabled = !isLoading && !isLoadingPlans && selectedPlanData != null,
+                enabled = !isLoading && !isLoadingPlans && !isPollingOrder && selectedPlanData != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -160,7 +216,7 @@ fun MixinMemberUpgradePage(
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF3478F6))
             ) {
-                if (isLoading || isLoadingPlans) {
+                if (isLoading || isLoadingPlans || isPollingOrder) {
                     CircularProgressIndicator(
                         color = Color.White,
                         strokeWidth = 2.dp,
