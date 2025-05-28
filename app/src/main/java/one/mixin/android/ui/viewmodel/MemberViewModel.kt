@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.repository.MemberRepository
@@ -24,13 +25,22 @@ class MemberViewModel @Inject constructor(
     private val _orders = MutableStateFlow<List<MemberOrder>>(emptyList())
     val orders: StateFlow<List<MemberOrder>> = _orders
 
-    suspend fun createMemberOrder(request: MemberOrderRequest) = memberRepository.createOrder(request)
+    suspend fun createMemberOrder(request: MemberOrderRequest) =
+        memberRepository.createOrder(request)
 
     suspend fun getPlans() = memberRepository.getPlans()
 
-    suspend fun getOrders() = memberRepository.getOrders()
+    suspend fun getOrders() =
+        handleMixinResponse(
+            invokeNetwork = { memberRepository.getOrders() },
+            successBlock = { r -> r },
+            defaultErrorHandle = {})
 
-    suspend fun getOrder(id: String) = memberRepository.getOrder(id)
+    suspend fun getOrder(id: String) = handleMixinResponse(invokeNetwork = {
+        memberRepository.getOrder(id)
+    }, successBlock = { r -> r }, defaultErrorHandle = {})
+
+    suspend fun getLatestPendingOrder(): MemberOrder? = memberRepository.getLatestPendingOrder()
 
     suspend fun loadOrders() {
         viewModelScope.launch {
@@ -43,29 +53,16 @@ class MemberViewModel @Inject constructor(
                 Timber.e(e, "Failed to load local orders")
             }
 
-            val response = memberRepository.getOrders()
-            if (response.isSuccess && response.data != null) {
-                val ordersList = response.data
-                if (ordersList != null) {
-                    memberRepository.insertOrders(ordersList)
-                    _orders.value = ordersList
-                }
-            }
+
+            handleMixinResponse(
+                invokeNetwork = { memberRepository.getOrders() },
+                successBlock = { resp ->
+                    resp.data?.let { ordersList ->
+                        memberRepository.insertOrders(ordersList)
+                        _orders.value = ordersList
+                    }
+                },
+                defaultErrorHandle = {})
         }
-    }
-
-    suspend fun createOrder(onResult: (String?) -> Unit) {
-        val plans = getPlans().data?.plans ?: return onResult(null)
-        val plan = plans.find { it.name == "basic" } ?: return onResult(null)
-        // Todo remove test code
-        val order = createMemberOrder(
-            MemberOrderRequest(
-                plan = plan.plan,
-                asset = "4d8c508b-91c5-375b-92b0-ee702ed2dac5",
-            )
-        ).data ?: return onResult(null)
-
-        Timber.e("Order ${order.orderId}")
-        onResult(order.paymentUrl)
     }
 }

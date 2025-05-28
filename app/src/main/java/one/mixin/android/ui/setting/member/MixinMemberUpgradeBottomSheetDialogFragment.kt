@@ -15,9 +15,11 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -25,9 +27,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.SchemeBottomSheet
+import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.FROM_INTERNAL
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
+import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.SystemUIManager
 import timber.log.Timber
 import javax.inject.Inject
@@ -65,7 +70,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                     onUrlGenerated = { url ->
                         viewLifecycleOwner.lifecycleScope.launch {
                             Timber.e("MixinMemberUpgradeBottomSheetDialogFragment url: $url")
-                            newSchemeParser.parse(url, FROM_INTERNAL)
+                            WebActivity.show(requireContext(), url, null)
                         }
                     }
                 )

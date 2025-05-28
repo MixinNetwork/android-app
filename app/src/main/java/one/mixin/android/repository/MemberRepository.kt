@@ -1,5 +1,7 @@
 package one.mixin.android.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.response.MemberOrder
@@ -17,7 +19,9 @@ class MemberRepository @Inject constructor(
         val response = memberService.createOrder(request)
         if (response.isSuccess) {
             response.data?.let { order ->
-                orderDao.insert(order)
+                withContext(Dispatchers.IO) {
+                    orderDao.insert(order)
+                }
             }
         }
         return response
@@ -37,5 +41,9 @@ class MemberRepository @Inject constructor(
     
     suspend fun getAllMemberOrders(): List<MemberOrder> {
         return orderDao.getAllOrders()
+    }
+
+    suspend fun getLatestPendingOrder(): MemberOrder? {
+        return orderDao.getLatestPendingOrder()
     }
 }

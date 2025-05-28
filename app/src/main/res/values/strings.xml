@@ -1980,4 +1980,5 @@
     <string name="View_Plan">View Plan</string>
     <string name="upgrading">Upgrading</string>
     <string name="reputation_description_updated">By default, only transactions with a Good or Unknown reputation are shown. Enable \'Spam\' to see more.</string>
+    <string name="no_invoices">No Invoices</string>
 </resources>

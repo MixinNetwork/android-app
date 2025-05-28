@@ -1,6 +1,7 @@
 package one.mixin.android.ui.setting.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,6 +49,22 @@ fun InvoicesList(
     }
 
     Column {
+        if (invoices.isEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(40.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.no_invoices),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textMinor
+                )
+            }
+            return@Column
+        }
         groupedInvoices.forEach { (dateStr, dateOrders) ->
             Row(
                 modifier = Modifier

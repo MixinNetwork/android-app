@@ -66,13 +66,48 @@ fun MixinMemberUpgradePage(
     var currentOrderId by remember { mutableStateOf<String?>(null) }
     var isPollingOrder by remember { mutableStateOf(false) }
     var currentOrderStatus by remember { mutableStateOf<MemberOrderStatus?>(null) }
+    var pendingOrder by remember { mutableStateOf<MemberOrder?>(null) }
+    var pendingOrderPlan by remember { mutableStateOf<Plan?>(null) }
+    var isCheckingPendingOrder by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        isCheckingPendingOrder = true
+        try {
+            val latestPending = viewModel.getLatestPendingOrder()
+            latestPending?.let {
+                pendingOrder = it
+                currentOrderId = it.orderId
+                currentOrderStatus = MemberOrderStatus.fromString(it.status)
+                isPollingOrder = true
+
+                pendingOrderPlan = when (it.category) {
+                    "basic" -> Plan.ADVANCE
+                    "standard" -> Plan.ELITE
+                    "premium" -> Plan.PROSPERITY
+                    else -> Plan.ADVANCE
+                }
+
+                selectedPlan = pendingOrderPlan!!
+
+                if (!it.paymentUrl.isNullOrEmpty()) {
+                    onUrlGenerated(it.paymentUrl)
+                }
+
+                Timber.d("Found pending order: ${it.orderId}, status: ${it.status}, plan: ${it.category}")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to check pending orders")
+        } finally {
+            isCheckingPendingOrder = false
+        }
+    }
 
     LaunchedEffect(currentOrderId) {
         if (currentOrderId != null && isPollingOrder) {
             try {
                 while (isPollingOrder) {
                     val orderResponse = viewModel.getOrder(currentOrderId!!)
-                    if (orderResponse.isSuccess && orderResponse.data != null) {
+                    if (orderResponse?.isSuccess == true && orderResponse?.data != null) {
                         val order = orderResponse.data!!
                         val orderStatus = MemberOrderStatus.fromString(order.status)
                         currentOrderStatus = orderStatus
@@ -82,12 +117,14 @@ fun MixinMemberUpgradePage(
                                 Timber.d("Order completed: ${order.orderId}, status: ${orderStatus.value}")
                                 isPollingOrder = false
                                 isLoading = false
+                                pendingOrder = null
                                 onClose()
                             }
                             MemberOrderStatus.FAILED, MemberOrderStatus.EXPIRED, MemberOrderStatus.CANCEL -> {
                                 Timber.d("Order failed: ${order.orderId}, status: ${orderStatus.value}")
                                 isPollingOrder = false
                                 isLoading = false
+                                pendingOrder = null
                             }
                             else -> {
                                 Timber.d("Order pending: ${order.orderId}, status: ${orderStatus.value}")
@@ -115,6 +152,10 @@ fun MixinMemberUpgradePage(
             if (response.isSuccess && response.data != null) {
                 plansData = response.data!!.plans
                 transactionAssetId = response.data!!.transaction.assetId
+
+                if (pendingOrderPlan != null) {
+                    selectedPlan = pendingOrderPlan!!
+                }
 
                 selectedPlanData = mapLocalPlanToApiPlan(selectedPlan, plansData)
                 Timber.d("Plans loaded: ${plansData.size}, selected: ${selectedPlanData?.name}")
@@ -176,26 +217,36 @@ fun MixinMemberUpgradePage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 30.dp)) {
+
+            val isPendingPlan = pendingOrderPlan != null && selectedPlan == pendingOrderPlan
+
             Button(
                 onClick = {
                     if (selectedPlanData == null) return@Button
+
+                    if (isPendingPlan && pendingOrder != null && !pendingOrder!!.paymentUrl.isNullOrEmpty()) {
+                        isPollingOrder = true
+                        onUrlGenerated(pendingOrder!!.paymentUrl!!)
+                        return@Button
+                    }
+
+                    if (pendingOrderPlan != null && selectedPlan != pendingOrderPlan) {
+                        return@Button
+                    }
 
                     isLoading = true
                     viewModel.viewModelScope.launch {
                         try {
                             val planId = selectedPlanData?.plan ?: return@launch
-                            val assetId = transactionAssetId ?: "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
-
-                            val orderRequest = MemberOrderRequest(
-                                plan = planId,
-                                asset = assetId
-                            )
+                            val orderRequest = MemberOrderRequest(plan = planId)
 
                             val orderResponse = viewModel.createMemberOrder(orderRequest)
                             if (orderResponse.isSuccess && orderResponse.data != null) {
                                 val order = orderResponse.data!!
                                 currentOrderId = order.orderId
                                 currentOrderStatus = MemberOrderStatus.fromString(order.status)
+                                pendingOrder = order
+                                pendingOrderPlan = selectedPlan
                                 isPollingOrder = true
 
                                 onUrlGenerated(order.paymentUrl ?: "")
@@ -208,15 +259,19 @@ fun MixinMemberUpgradePage(
                         }
                     }
                 },
-                enabled = !isLoading && !isLoadingPlans && !isPollingOrder && selectedPlanData != null,
+                enabled = (!isLoading && !isLoadingPlans && !isCheckingPendingOrder && selectedPlanData != null) &&
+                    (pendingOrderPlan == null || selectedPlan == pendingOrderPlan),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF3478F6))
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = if (pendingOrderPlan == null || selectedPlan == pendingOrderPlan)
+                        Color(0xFF3478F6) else Color.Gray
+                )
             ) {
-                if (isLoading || isLoadingPlans || isPollingOrder) {
+                if ((isLoading || isLoadingPlans || isCheckingPendingOrder) && (pendingOrderPlan == null || selectedPlan == pendingOrderPlan)) {
                     CircularProgressIndicator(
                         color = Color.White,
                         strokeWidth = 2.dp,
@@ -225,7 +280,13 @@ fun MixinMemberUpgradePage(
                             .padding(end = 4.dp)
                     )
                 } else {
-                    val priceText = selectedPlanData?.let { "${it.amountPayment} USDT" } ?: stringResource(id = R.string.Upgrade)
+                    val priceText = if (isPendingPlan && pendingOrder != null) {
+                        "${pendingOrder!!.amount} USDT"
+                    } else if (pendingOrderPlan != null && selectedPlan != pendingOrderPlan) {
+                        stringResource(id = R.string.upgrading)
+                    } else {
+                        selectedPlanData?.let { "${it.amountPayment} USDT" } ?: stringResource(id = R.string.upgrading)
+                    }
                     Text(
                         text = priceText,
                         color = Color.White,

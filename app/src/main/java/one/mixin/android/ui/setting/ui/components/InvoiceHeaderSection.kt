@@ -23,16 +23,17 @@ import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
 fun InvoiceHeaderSection(order: MemberOrder) {
-    val (title, icon) = when (order.category) {
-        "ADVANCE" -> Pair("Advance Plan", R.drawable.ic_membership_advance)
-        "ELITE" -> Pair("Elite Plan", R.drawable.ic_membership_elite)
+    val (title, icon) = when (order.after) {
+        "basic" -> Pair("Advance Plan", R.drawable.ic_membership_advance)
+        "standard" -> Pair("Elite Plan", R.drawable.ic_membership_elite)
         else -> Pair("Prosperity Plan", R.drawable.ic_membership_prosperity)
     }
 
-    val statusColor = if (order.status == "EXPIRED") {
+    val statusColor = if (order.status == MemberOrderStatus.EXPIRED.value || order.status == MemberOrderStatus.FAILED.value || order.status == MemberOrderStatus.CANCEL.value) {
         MixinAppTheme.colors.walletRed
     } else {
         MixinAppTheme.colors.walletGreen
