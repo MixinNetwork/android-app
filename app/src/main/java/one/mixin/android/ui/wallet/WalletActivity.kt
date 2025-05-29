@@ -14,6 +14,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
@@ -140,6 +141,13 @@ class WalletActivity : BlazeBaseActivity() {
                     chain?.let { chain -> putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain) }
                 })
             }
+            Destination.InputWithBiometricItem -> {
+                navGraph.setStartDestination(R.id.input_fragment)
+                val biometricItem = intent.getParcelableExtraCompat(InputFragment.ARGS_BIOMETRIC_ITEM, BiometricItem::class.java)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putParcelable(InputFragment.ARGS_BIOMETRIC_ITEM, biometricItem)
+                })
+            }
         }
     }
 
@@ -159,6 +167,7 @@ class WalletActivity : BlazeBaseActivity() {
         Address,
         Web3Transactions,
         Web3TransferDestinationInput,
+        InputWithBiometricItem,
     }
 
     companion object {
@@ -269,6 +278,14 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(ADDRESS, address)
                 },
             )
+        }
+
+        fun navigateToWalletActivity(activity: Activity, biometricItem: BiometricItem) {
+            val intent = Intent(activity, WalletActivity::class.java).apply {
+                putExtra(DESTINATION, Destination.InputWithBiometricItem)
+                putExtra(InputFragment.ARGS_BIOMETRIC_ITEM, biometricItem)
+            }
+            activity.startActivity(intent)
         }
     }
 }

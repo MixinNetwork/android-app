@@ -31,6 +31,7 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.NetworkFee
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferInvoiceBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -189,17 +190,17 @@ class NewSchemeParser(
                         .apply {
                             asyncOnAsset = { selectedAsset ->
                                 bottomSheet.requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
-                                val inputFragment = createInputFragment(selectedAsset, payType, urlQueryParser, amount, traceId, from)
-                                if (inputFragment != null) {
-                                    activity?.addFragment(this, inputFragment, InputFragment.TAG)
+                                val biometricItem = createBiometricItem(selectedAsset, payType, urlQueryParser, amount, traceId, from)
+                                if (biometricItem != null) {
+                                    WalletActivity.navigateToWalletActivity(this.requireActivity(), biometricItem)
                                 }
                             }
                         }
                     bottom.show(bottomSheet.parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 } else {
-                    val inputFragment = createInputFragment(token, payType, urlQueryParser, amount, traceId, from)
-                    if (inputFragment == null) return Result.failure(ParserError(FAILURE))
-                    bottomSheet.navTo(inputFragment, InputFragment.TAG)
+                    val biometricItem = createBiometricItem(token, payType, urlQueryParser, amount, traceId, from)
+                    if (biometricItem == null) return Result.failure(ParserError(FAILURE))
+                    WalletActivity.navigateToWalletActivity(bottomSheet.requireActivity(), biometricItem)
                 }
             }
             return Result.success(SUCCESS)
@@ -209,11 +210,11 @@ class NewSchemeParser(
         }
     }
 
-    private suspend fun createInputFragment(asset: TokenItem, payType:PayType, urlQueryParser: UrlQueryParser, amount: String? = null, traceId: String, from: Int): InputFragment? {
+    private suspend fun createBiometricItem(asset: TokenItem, payType:PayType, urlQueryParser: UrlQueryParser, amount: String? = null, traceId: String, from: Int): AssetBiometricItem? {
         return when (payType) {
             PayType.Uuid -> {
                 val user = linkViewModel.refreshUser(urlQueryParser.userId) ?: return null
-                InputFragment.newInstance(buildTransferBiometricItem(user, asset, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo, reference = urlQueryParser.reference))
+                buildTransferBiometricItem(user, asset, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo, reference = urlQueryParser.reference)
             }
             PayType.MixAddress -> {
                 val mixAddress = urlQueryParser.mixAddress
@@ -221,21 +222,20 @@ class NewSchemeParser(
                     mixAddress.uuidMembers.isNotEmpty() -> {
                         if (mixAddress.uuidMembers.size == 1) {
                             val user = linkViewModel.refreshUser(mixAddress.uuidMembers.first()) ?: return null
-                            InputFragment.newInstance(buildTransferBiometricItem(user, asset, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo, reference = urlQueryParser.reference))
+                            buildTransferBiometricItem(user, asset, amount ?: "", traceId, urlQueryParser.memo, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                         } else {
                             val users = linkViewModel.findOrRefreshUsers(mixAddress.uuidMembers)
                             if (users.isEmpty() || users.size < mixAddress.uuidMembers.size) return null
-                            val item = TransferBiometricItem(users, mixAddress.threshold, traceId, asset, amount ?: "", urlQueryParser.memo, PaymentStatus.pending.name, null, urlQueryParser.returnTo, reference = urlQueryParser.reference)
-                            InputFragment.newInstance(item)
+                            TransferBiometricItem(users, mixAddress.threshold, traceId, asset, amount ?: "", urlQueryParser.memo, PaymentStatus.pending.name, null, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                         }
                     }
                     mixAddress.xinMembers.size == 1 -> {
-                        InputFragment.newInstance(buildAddressBiometricItem(mixAddress.xinMembers.first().string(), traceId, asset, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference))
+                        buildAddressBiometricItem(mixAddress.xinMembers.first().string(), traceId, asset, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference)
                     }
                     else -> null
                 }
             }
-            else -> InputFragment.newInstance(buildAddressBiometricItem(urlQueryParser.lastPath, traceId, asset, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference))
+            else -> buildAddressBiometricItem(urlQueryParser.lastPath, traceId, asset, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference)
         }
     }
 
@@ -375,6 +375,7 @@ class NewSchemeParser(
             val amount = result.amount
             val destination = result.destination
             if (amount == null) {
+                // This only exists when processing External URL within the App
                 bottomSheet.navTo(InputFragment.newInstance(asset, destination, null), InputFragment.TAG)
                 bottomSheet.dismiss()
                 return
