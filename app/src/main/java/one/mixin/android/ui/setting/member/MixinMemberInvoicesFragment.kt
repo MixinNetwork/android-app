@@ -34,13 +34,9 @@ class MixinMemberInvoicesFragment : BaseFragment() {
 
     private val settingViewModel: SettingViewModel by viewModels({ requireActivity() })
     private val memberViewModel: MemberViewModel by viewModels()
-    private lateinit var billingManager: BillingManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        billingManager = BillingManager.getInstance(requireContext())
-        billingManager.initialize()
     }
 
     override fun onCreateView(
@@ -50,29 +46,6 @@ class MixinMemberInvoicesFragment : BaseFragment() {
     ): View {
         lifecycleScope.launch {
             memberViewModel.loadOrders()
-        }
-
-        lifecycleScope.launch {
-            billingManager.subscriptionStatus.collectLatest { status ->
-                Timber.d("Subscription status: $status")
-                when (status) {
-                    BillingManager.SubscriptionStatus.Basic -> {
-                        Timber.d("User has Basic subscription")
-                    }
-
-                    BillingManager.SubscriptionStatus.Standard -> {
-                        Timber.d("User has Standard subscription")
-                    }
-
-                    BillingManager.SubscriptionStatus.Premium -> {
-                        Timber.d("User has Premium subscription")
-                    }
-
-                    BillingManager.SubscriptionStatus.None -> {
-                        Timber.d("User has no subscription")
-                    }
-                }
-            }
         }
 
         return ComposeView(requireContext()).apply {
