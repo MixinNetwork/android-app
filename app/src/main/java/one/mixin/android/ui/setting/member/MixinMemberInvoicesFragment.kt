@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.extension.navTo
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
@@ -35,11 +36,6 @@ class MixinMemberInvoicesFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val member = Membership(
-            plan = Plan.ADVANCE,
-            expiredAt = "2025-12-31T23:59:59Z"
-        )
-
         lifecycleScope.launch {
             memberViewModel.loadOrders()
         }
@@ -50,7 +46,9 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                 val orders by memberViewModel.orders.collectAsState(initial = emptyList())
 
                 MixinMemberInvoicesPage(
-                    membership = member,
+                    membership = Session.getAccount()!!.membership ?: Membership(
+                        plan = Plan.None, expiredAt = "0-0-0 00:00:00"
+                    ),
                     orders = orders,
                     onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() },
                     onViewPlanClick = {

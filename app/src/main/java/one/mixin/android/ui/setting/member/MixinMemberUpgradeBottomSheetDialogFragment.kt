@@ -25,6 +25,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.Web3Fragment
@@ -34,6 +35,7 @@ import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.Plan
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.getValue
@@ -66,6 +68,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinMemberUpgradePage(
+                    Session.getAccount()!!.membership?.plan?: Plan.None,
                     onClose = { dismiss() },
                     onUrlGenerated = { url ->
                         viewLifecycleOwner.lifecycleScope.launch {

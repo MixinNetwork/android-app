@@ -1,58 +1,40 @@
 package one.mixin.android.ui.setting.ui.page
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.R
+import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.response.MemberOrder
-import one.mixin.android.api.response.Plan as ApiPlan
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.setting.ui.components.HeaderSection
-import one.mixin.android.ui.setting.ui.components.MemberSection
+import one.mixin.android.ui.setting.ui.components.MemberUpgradeContent
+import one.mixin.android.ui.setting.ui.components.MemberUpgradePaymentButton
+import one.mixin.android.ui.setting.ui.components.MemberUpgradeTopBar
 import one.mixin.android.ui.setting.ui.components.PlanSelector
-import one.mixin.android.ui.setting.ui.components.ProfileSection
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.vo.MemberOrderStatus
 import one.mixin.android.vo.Plan
-import androidx.hilt.navigation.compose.hiltViewModel
-import one.mixin.android.api.request.MemberOrderRequest
 import timber.log.Timber
+import one.mixin.android.api.response.Plan as ApiPlan
 
 @Composable
 fun MixinMemberUpgradePage(
+    currentUserPlan: Plan,
     onClose: () -> Unit,
     onUrlGenerated: (String) -> Unit
 ) {
@@ -171,131 +153,84 @@ fun MixinMemberUpgradePage(
         }
     }
 
+    val onPaymentClick = run {
+        {
+            if (selectedPlanData == null) return@run
+
+            val isPendingPlan = pendingOrderPlan != null && selectedPlan == pendingOrderPlan
+            if (isPendingPlan && pendingOrder != null) {
+                val paymentUrl = pendingOrder?.paymentUrl
+                if (!paymentUrl.isNullOrEmpty()) {
+                    isPollingOrder = true
+                    onUrlGenerated(paymentUrl)
+                    return@run
+                }
+            }
+
+            if (pendingOrderPlan != null && selectedPlan != pendingOrderPlan) {
+                return@run
+            }
+
+            isLoading = true
+            viewModel.viewModelScope.launch {
+                try {
+                    val planId = selectedPlanData?.plan ?: return@launch
+                    val orderRequest = MemberOrderRequest(plan = planId)
+
+                    val orderResponse = viewModel.createMemberOrder(orderRequest)
+                    if (orderResponse.isSuccess && orderResponse.data != null) {
+                        val order = orderResponse.data!!
+                        currentOrderId = order.orderId
+                        currentOrderStatus = MemberOrderStatus.fromString(order.status)
+                        pendingOrder = order
+                        pendingOrderPlan = selectedPlan
+                        isPollingOrder = true
+
+                        onUrlGenerated(order.paymentUrl ?: "")
+                    } else {
+                        isLoading = false
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to create order")
+                    isLoading = false
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(id = R.string.mixin_one),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.W700,
-                color = MixinAppTheme.colors.textPrimary
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            IconButton(onClick = onClose) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_circle_close),
-                    tint = Color.Unspecified,
-                    contentDescription = stringResource(id = R.string.close)
-                )
-            }
-        }
+        MemberUpgradeTopBar(onClose = onClose)
 
         PlanSelector(
             selectedPlan = selectedPlan,
             onPlanSelected = { plan ->
                 selectedPlan = plan
-            }
+            },
         )
+
         Spacer(modifier = Modifier.height(10.dp))
+
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
+            modifier = Modifier.weight(1f)
         ) {
-
-            HeaderSection(plan = selectedPlan)
-            Spacer(modifier = Modifier.height(10.dp))
-            ProfileSection(plan = selectedPlan)
-            Spacer(modifier = Modifier.height(10.dp))
-            MemberSection(plan = selectedPlan)
+            MemberUpgradeContent(selectedPlan = selectedPlan)
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 30.dp)) {
 
-            val isPendingPlan = pendingOrderPlan != null && selectedPlan == pendingOrderPlan
-
-            Button(
-                onClick = {
-                    if (selectedPlanData == null) return@Button
-
-                    if (isPendingPlan && pendingOrder != null && !pendingOrder!!.paymentUrl.isNullOrEmpty()) {
-                        isPollingOrder = true
-                        onUrlGenerated(pendingOrder!!.paymentUrl!!)
-                        return@Button
-                    }
-
-                    if (pendingOrderPlan != null && selectedPlan != pendingOrderPlan) {
-                        return@Button
-                    }
-
-                    isLoading = true
-                    viewModel.viewModelScope.launch {
-                        try {
-                            val planId = selectedPlanData?.plan ?: return@launch
-                            val orderRequest = MemberOrderRequest(plan = planId)
-
-                            val orderResponse = viewModel.createMemberOrder(orderRequest)
-                            if (orderResponse.isSuccess && orderResponse.data != null) {
-                                val order = orderResponse.data!!
-                                currentOrderId = order.orderId
-                                currentOrderStatus = MemberOrderStatus.fromString(order.status)
-                                pendingOrder = order
-                                pendingOrderPlan = selectedPlan
-                                isPollingOrder = true
-
-                                onUrlGenerated(order.paymentUrl ?: "")
-                            } else {
-                                isLoading = false
-                            }
-                        } catch (e: Exception) {
-                            Timber.e(e, "Failed to create order")
-                            isLoading = false
-                        }
-                    }
-                },
-                enabled = (!isLoading && !isLoadingPlans && !isCheckingPendingOrder && selectedPlanData != null) &&
-                    (pendingOrderPlan == null || selectedPlan == pendingOrderPlan),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .height(48.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (pendingOrderPlan == null || selectedPlan == pendingOrderPlan)
-                        Color(0xFF3478F6) else Color.Gray
-                )
-            ) {
-                if ((isLoading || isLoadingPlans || isCheckingPendingOrder) && (pendingOrderPlan == null || selectedPlan == pendingOrderPlan)) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(end = 4.dp)
-                    )
-                } else {
-                    val priceText = if (isPendingPlan && pendingOrder != null) {
-                        "${pendingOrder!!.amount} USDT"
-                    } else if (pendingOrderPlan != null && selectedPlan != pendingOrderPlan) {
-                        stringResource(id = R.string.upgrading)
-                    } else {
-                        selectedPlanData?.let { "${it.amountPayment} USDT" } ?: stringResource(id = R.string.upgrading)
-                    }
-                    Text(
-                        text = priceText,
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
+        MemberUpgradePaymentButton(
+            currentUserPlan = currentUserPlan,
+            selectedPlan = selectedPlan,
+            selectedPlanData = selectedPlanData,
+            isLoading = isLoading,
+            isLoadingPlans = isLoadingPlans,
+            isCheckingPendingOrder = isCheckingPendingOrder,
+            pendingOrderPlan = pendingOrderPlan,
+            pendingOrder = pendingOrder,
+            onPaymentClick = { onPaymentClick() }
+        )
     }
 }
 
@@ -312,6 +247,6 @@ private fun mapLocalPlanToApiPlan(localPlan: Plan, apiPlans: List<ApiPlan>): Api
 @Composable
 private fun MixinMemberUpgradePagePreview() {
     MixinAppTheme {
-        MixinMemberUpgradePage({}, {})
+        MixinMemberUpgradePage(Plan.ADVANCE, {}, {})
     }
 }
