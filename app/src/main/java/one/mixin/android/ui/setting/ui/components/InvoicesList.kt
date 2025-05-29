@@ -82,7 +82,7 @@ fun InvoicesList(
                 ) {
                     Icon(
                         painter = painterResource(
-                            when (order.category) {
+                            when (order.after) {
                                 "ADVANCE" -> R.drawable.ic_membership_advance
                                 "ELITE" -> R.drawable.ic_membership_elite
                                 else -> R.drawable.ic_membership_prosperity

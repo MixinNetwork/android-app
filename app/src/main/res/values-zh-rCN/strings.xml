@@ -1904,9 +1904,9 @@
     <string name="reputation_description">默认仅显示信誉度良好的交易。启用“高风险”可查看更多交易。</string>
     <string name="reputation_unknown_description">缺乏足够信息，或未被可信来源验证</string>
     <string name="View_Plan">查看会员</string>
-    <string name="No_Invoices">无发票</string>
-    <string name="Invoices">发票</string>
-    <string name="Invoice">发票</string>
+    <string name="No_Invoices">无账单</string>
+    <string name="Invoices">账单</string>
+    <string name="Invoice">账单</string>
     <string name="Upgrade_to_Prosperity">升级至传世版</string>
     <string name="Renew_Advance_Plan">续订会员</string>
     <string name="membership_plan">级别</string>

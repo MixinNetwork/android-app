@@ -499,6 +499,7 @@ dependencies {
         exclude group: 'com.squareup.leakcanary', module: 'leakcanary-android-process'
     }
     implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
+    implementation "com.android.billingclient:billing:6.1.0"
 }
 
 composeCompiler {

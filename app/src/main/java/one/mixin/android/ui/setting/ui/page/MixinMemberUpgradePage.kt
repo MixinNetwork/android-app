@@ -71,10 +71,6 @@ fun MixinMemberUpgradePage(
 
                 selectedPlan = pendingOrderPlan!!
 
-                if (!it.paymentUrl.isNullOrEmpty()) {
-                    onUrlGenerated(it.paymentUrl)
-                }
-
                 Timber.d("Found pending order: ${it.orderId}, status: ${it.status}, plan: ${it.category}")
             }
         } catch (e: Exception) {
@@ -185,8 +181,6 @@ fun MixinMemberUpgradePage(
                         pendingOrder = order
                         pendingOrderPlan = selectedPlan
                         isPollingOrder = true
-
-                        onUrlGenerated(order.paymentUrl ?: "")
                     } else {
                         isLoading = false
                     }

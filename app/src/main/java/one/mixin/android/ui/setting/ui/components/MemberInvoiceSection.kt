@@ -39,7 +39,7 @@ fun MemberInvoiceSection(order: MemberOrder) {
     ) {
         Icon(
             painter = painterResource(
-                id = when (order.category) {
+                id = when (order.after) {
                     "ADVANCE" -> R.drawable.ic_membership_advance
                     "ELITE" -> R.drawable.ic_membership_elite
                     else -> R.drawable.ic_membership_prosperity
@@ -51,7 +51,7 @@ fun MemberInvoiceSection(order: MemberOrder) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = order.category,
+            text = order.after,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium
