@@ -12,7 +12,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
 
-    id 'io.sentry.android.gradle' version '5.6.0'
+    id 'io.sentry.android.gradle' version '5.7.0'
 }
 
 def versionMajor = 3
@@ -464,7 +464,7 @@ dependencies {
     kspAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
     // ML Kit
-    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta5'
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta6'
 
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {
