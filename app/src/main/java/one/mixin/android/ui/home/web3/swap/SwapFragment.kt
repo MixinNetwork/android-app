@@ -168,7 +168,7 @@ class SwapFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        orderBadge = defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+        orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
@@ -255,8 +255,8 @@ class SwapFragment : BaseFragment() {
                                 },
                                 onOrderList = {
                                     navController.navigate(SwapDestination.OrderList.name)
-                                    if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
-                                        defaultSharedPreferences.putInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
+                                    if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
+                                        defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
                                         orderBadge = false
                                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
                                     }
@@ -325,7 +325,7 @@ class SwapFragment : BaseFragment() {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             if (inMixin()) {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
-                    Constants.Account.PREF_FROM_SWAP,
+                    Account.PREF_FROM_SWAP,
                     ArrayList(list), if (isReverse) toToken?.assetId else fromToken?.assetId,
                     isFrom = true
                 ).apply {
@@ -338,7 +338,7 @@ class SwapFragment : BaseFragment() {
                     }
                     setOnClickListener { t, _ ->
                         saveQuoteToken(t, isReverse, type)
-                        requireContext().defaultSharedPreferences.addToList(Constants.Account.PREF_FROM_SWAP, t, SwapToken::class.java)
+                        requireContext().defaultSharedPreferences.addToList(Account.PREF_FROM_SWAP, t, SwapToken::class.java)
                         dismissNow()
                     }
                 }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
@@ -367,7 +367,7 @@ class SwapFragment : BaseFragment() {
             }
         } else {
             SwapTokenListBottomSheetDialogFragment.newInstance(
-                if (inMixin()) Constants.Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP,
+                if (inMixin()) Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP,
                 tokens =
                     ArrayList(
                         list.run {
@@ -387,7 +387,7 @@ class SwapFragment : BaseFragment() {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                         return@setOnClickListener
                     }
-                    requireContext().defaultSharedPreferences.addToList(if (inMixin()) Constants.Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP, token, SwapToken::class.java)
+                    requireContext().defaultSharedPreferences.addToList(if (inMixin()) Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP, token, SwapToken::class.java)
                     saveQuoteToken(token, isReverse, type)
                     dismissNow()
                 }
@@ -467,7 +467,7 @@ class SwapFragment : BaseFragment() {
                 toast(R.string.Data_error)
                 return@runCatching
             }
-            ShareMessageBottomSheetDialogFragment.newInstance(forwardMessage, null)
+            ShareMessageBottomSheetDialogFragment.newInstance(forwardMessage!!, null)
                 .showNow(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
         }.onFailure { e ->
             ErrorHandler.handleError(e)
@@ -525,7 +525,7 @@ class SwapFragment : BaseFragment() {
         return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
     }
 
-    private fun buildForwardMessage(token: TokenItem, payId: String, receiveId: String):ForwardMessage {
+    private fun buildForwardMessage(token: TokenItem, payId: String, receiveId: String): ForwardMessage {
         val description = buildString {
             append("🔥 ${token.name} (${token.symbol})\n\n")
             append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).priceFormat()}\n")
@@ -542,12 +542,12 @@ class SwapFragment : BaseFragment() {
             ActionButtonData(
                 label = getString(R.string.buy_token, token.symbol),
                 color = "#50BD5C",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId&referral=${Session.getAccount()?.identityNumber}"
             ),
             ActionButtonData(
                 label = getString(R.string.sell_token, token.symbol),
                 color = "#DB454F",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId&referral=${Session.getAccount()?.identityNumber}"
             ),
             ActionButtonData(
                 label = "${token.symbol} ${getString(R.string.Market)}",
@@ -708,7 +708,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private val saveSwapTokens by lazy {
-        if (inMixin()) defaultSharedPreferences.getList(Constants.Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Constants.Account.PREF_TO_SWAP, SwapToken::class.java)
+        if (inMixin()) defaultSharedPreferences.getList(Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Account.PREF_TO_SWAP, SwapToken::class.java)
         else emptyList()
     }
 

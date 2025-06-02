@@ -438,7 +438,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         if (e is ParserError && e.symbol != null) {
                             showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                         } else if (e is ParserError && e.message != null) {
-                            showError(e.message)
+                            showError(e.message!!)
                         } else {
                             showError(getString(R.string.Invalid_payment_link))
                         }
