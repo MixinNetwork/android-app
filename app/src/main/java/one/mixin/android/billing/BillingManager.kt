@@ -308,7 +308,7 @@ class BillingManager private constructor(
     /**
      * Launch the billing flow for subscribing.
      */
-    fun launchSubscriptionFlow(activity: Activity, productId: String = PRODUCT_ID) {
+    fun launchSubscriptionFlow(activity: Activity, productId: String = PRODUCT_ID, planId: String? = null) {
         if (!billingClient.isReady) {
             Timber.e("launchSubscriptionFlow: BillingClient not ready.")
             _subscriptionStatus.value = SubscriptionProcessStatus.Error("Billing service not ready to launch flow.")
@@ -325,12 +325,16 @@ class BillingManager private constructor(
             return
         }
 
-        // Assuming you want the first (or only) base plan and offer.
-        // Adjust if you have multiple base plans or offers.
-        val offerToken = currentProductDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken
+        val offerDetails = if (planId != null) {
+            currentProductDetails.subscriptionOfferDetails?.find { it.basePlanId == planId }
+        } else {
+            currentProductDetails.subscriptionOfferDetails?.firstOrNull()
+        }
+
+        val offerToken = offerDetails?.offerToken
         if (offerToken == null) {
-            Timber.e("launchSubscriptionFlow: No offer token found for $productId")
-            _subscriptionStatus.value = SubscriptionProcessStatus.Error("No subscription offers found for $productId.")
+            Timber.e("launchSubscriptionFlow: No offer token found for $productId with planId $planId")
+            _subscriptionStatus.value = SubscriptionProcessStatus.Error("No subscription offers found for $productId with planId $planId.")
             return
         }
 
@@ -424,10 +428,12 @@ class BillingManager private constructor(
             billingClient.endConnection()
         }
         coroutineScope.cancel() // Cancel all coroutines started by this manager
+        INSTANCE = null
     }
 
     companion object {
         const val PRODUCT_ID = "one.mixin.messenger.membership" // Your subscription product ID
+        const val PLAN_ID_100 = "one-mixin-messenger-membership-100"
         private const val RECONNECT_TIMER_MILLISECONDS = 1000L * 5 // 5 seconds
 
         @Volatile
@@ -443,3 +449,4 @@ class BillingManager private constructor(
         }
     }
 }
+

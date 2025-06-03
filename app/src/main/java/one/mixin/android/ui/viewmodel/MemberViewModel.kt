@@ -40,6 +40,10 @@ class MemberViewModel @Inject constructor(
         billingManager.launchSubscriptionFlow(activity)
     }
 
+    fun subscribe100(activity: Activity) {
+        billingManager.launchSubscriptionFlow(activity, BillingManager.PRODUCT_ID, BillingManager.PLAN_ID_100)
+    }
+
     fun refreshSubscriptionStatus() {
         billingManager.refresh()
     }
@@ -89,15 +93,11 @@ class MemberViewModel @Inject constructor(
         }
     }
 
-    // 处理订阅购买完成后的操作
     fun handlePurchaseComplete(purchaseToken: String, productId: String) {
         viewModelScope.launch {
             try {
-                // TODO: 将购买令牌发送到后端进行验证
-                // 示例: memberRepository.verifyPurchase(purchaseToken, productId)
                 Timber.i("Purchase completed: Token=$purchaseToken, Product=$productId")
 
-                // 刷新订单状态
                 loadOrders()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to handle purchase completion")
@@ -105,7 +105,6 @@ class MemberViewModel @Inject constructor(
         }
     }
 
-    // 根据订阅状态判断用户权限
     fun hasActiveSubscription(): Boolean {
         return subscriptionStatus.value is SubscriptionProcessStatus.Subscribed
     }

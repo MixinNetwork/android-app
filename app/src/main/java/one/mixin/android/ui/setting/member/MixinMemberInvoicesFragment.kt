@@ -46,6 +46,7 @@ class MixinMemberInvoicesFragment : BaseFragment() {
     ): View {
         lifecycleScope.launch {
             memberViewModel.loadOrders()
+            memberViewModel.refreshSubscriptionStatus()
         }
 
         return ComposeView(requireContext()).apply {
@@ -60,11 +61,12 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                     orders = orders,
                     onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() },
                     onViewPlanClick = {
-                        MixinMemberUpgradeBottomSheetDialogFragment.newInstance()
-                            .showNow(
-                                parentFragmentManager,
-                                MixinMemberUpgradeBottomSheetDialogFragment.TAG
-                            )
+                        launchPurchase100Subscription()
+                        // MixinMemberUpgradeBottomSheetDialogFragment.newInstance()
+                        //     .showNow(
+                        //         parentFragmentManager,
+                        //         MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                        //     )
                     },
                     onOrderClick = { order ->
                         navTo(
@@ -84,5 +86,9 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                 )
             }
         }
+    }
+
+    private fun launchPurchase100Subscription() {
+        memberViewModel.subscribe100(requireActivity())
     }
 }
