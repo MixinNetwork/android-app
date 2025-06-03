@@ -159,37 +159,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             assetsAdapter.headerView = _headBinding!!.root
             coinsRv.itemAnimator = null
             coinsRv.setHasFixedSize(true)
-            ItemTouchHelper(
-                AssetItemCallback(
-                    object : AssetItemCallback.ItemCallbackListener {
-                        override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                            val hiddenPos = viewHolder.absoluteAdapterPosition
-                            val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
-                            val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                            lifecycleScope.launch {
-                                web3ViewModel.updateTokenHidden(asset.assetId, walletId, true)
-                                val anchorView = coinsRv
-
-                                snackBar =
-                                    Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), 3500)
-                                        .setAction(R.string.UNDO) {
-                                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                            lifecycleScope.launch {
-                                                web3ViewModel.updateTokenHidden(asset.assetId, walletId, false)
-                                            }
-                                        }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                            (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)!!)
-                                                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                        }.apply {
-                                            snackBar?.config(anchorView.context)
-                                        }
-                                snackBar?.show()
-                                distance = 0
-                            }
-                        }
-                    },
-                ),
-            ).apply { attachToRecyclerView(coinsRv) }
             assetsAdapter.onItemListener = this@ClassicWalletFragment
 
             coinsRv.adapter = assetsAdapter
