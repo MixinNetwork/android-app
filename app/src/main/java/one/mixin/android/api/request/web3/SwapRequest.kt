@@ -1,7 +1,5 @@
 package one.mixin.android.api.request.web3
 
-import one.mixin.android.api.response.web3.JupiterQuoteResponse
-
 data class SwapRequest(
     val payer: String,
     val inputMint: String,
