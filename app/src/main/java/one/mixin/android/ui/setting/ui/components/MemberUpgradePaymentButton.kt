@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.vo.Plan
+import timber.log.Timber
 import one.mixin.android.api.response.Plan as ApiPlan
 
 @Composable
@@ -43,7 +44,7 @@ fun MemberUpgradePaymentButton(
         Plan.PROSPERITY -> false
         else -> true
     }
-
+    Timber.e("$selectedPlan $pendingOrderPlan, $isLoading, $isLoadingPlans, $isCheckingPendingOrder, $pendingOrder")
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -65,7 +66,7 @@ fun MemberUpgradePaymentButton(
                         Color(0xFF3478F6) else Color.Gray
                 )
             ) {
-                if ((isLoading || isLoadingPlans || isCheckingPendingOrder) && (pendingOrderPlan == null || selectedPlan == pendingOrderPlan)) {
+                if (isLoading || isLoadingPlans || isCheckingPendingOrder || (pendingOrderPlan != null && selectedPlan == pendingOrderPlan)) {
                     CircularProgressIndicator(
                         color = Color.White,
                         strokeWidth = 2.dp,
@@ -75,11 +76,11 @@ fun MemberUpgradePaymentButton(
                     )
                 } else {
                     val priceText = if (isPendingPlan && pendingOrder != null) {
-                        "${pendingOrder.amount} USDT"
-                    } else if (pendingOrderPlan != null && selectedPlan != pendingOrderPlan) {
+                        "Upgrade for USD ${pendingOrder.amount}"
+                    } else if (pendingOrderPlan != null) {
                         stringResource(id = R.string.upgrading)
                     } else {
-                        selectedPlanData?.let { "${it.amountPayment} USDT" } ?: stringResource(id = R.string.upgrading)
+                        selectedPlanData?.let { "Upgrade for USD ${it.amountPayment}" } ?: stringResource(id = R.string.upgrading)
                     }
                     Text(
                         text = priceText,

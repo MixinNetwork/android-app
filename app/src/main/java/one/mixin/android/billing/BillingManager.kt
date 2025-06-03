@@ -37,6 +37,8 @@ class BillingManager private constructor(
         MutableStateFlow<SubscriptionProcessStatus>(SubscriptionProcessStatus.None)
     val subscriptionStatus: StateFlow<SubscriptionProcessStatus> = _subscriptionStatus.asStateFlow()
 
+    private var currentOrderId: String? = null
+
     private val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
         coroutineScope.launch {
             when (billingResult.responseCode) {
@@ -308,7 +310,7 @@ class BillingManager private constructor(
     /**
      * Launch the billing flow for subscribing.
      */
-    fun launchSubscriptionFlow(activity: Activity, productId: String = PRODUCT_ID, planId: String? = null) {
+    fun launchSubscriptionFlow(activity: Activity, productId: String = PRODUCT_ID, planId: String? = null, orderId: String? = null) {
         if (!billingClient.isReady) {
             Timber.e("launchSubscriptionFlow: BillingClient not ready.")
             _subscriptionStatus.value = SubscriptionProcessStatus.Error("Billing service not ready to launch flow.")
@@ -338,6 +340,8 @@ class BillingManager private constructor(
             return
         }
 
+        currentOrderId = orderId
+
         val productDetailsParamsList = listOf(
             BillingFlowParams.ProductDetailsParams.newBuilder()
                 .setProductDetails(currentProductDetails)
@@ -345,11 +349,19 @@ class BillingManager private constructor(
                 .build()
         )
 
-        val billingFlowParams = BillingFlowParams.newBuilder()
+        val billingFlowParamsBuilder = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(productDetailsParamsList)
-            .build()
 
-        Timber.d("Launching billing flow for $productId with offer token $offerToken")
+        if (orderId != null) {
+            Timber.d("Setting orderId $orderId as obfuscatedAccountId")
+            billingFlowParamsBuilder.setObfuscatedAccountId(orderId)
+            Timber.d("Setting orderId $orderId as setObfuscatedProfileId")
+            billingFlowParamsBuilder.setObfuscatedProfileId(orderId)
+        }
+
+        val billingFlowParams = billingFlowParamsBuilder.build()
+
+        Timber.d("Launching billing flow for $productId with offer token $offerToken and orderId $orderId")
         val billingResult = billingClient.launchBillingFlow(activity, billingFlowParams)
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
             Timber.e("Failed to launch billing flow: ${billingResult.debugMessage}")

@@ -25,12 +25,14 @@ import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dayTime
+import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
 fun InvoicesList(
     invoices: List<MemberOrder>,
     onInvoiceClick: (MemberOrder) -> Unit,
-    maxDisplayCount: Int? = null
+    maxDisplayCount: Int? = null,
+    onShowMoreClick: (() -> Unit)? = null,
 ) {
     val groupedInvoices = remember(invoices) {
         val displayedInvoices = maxDisplayCount?.let { invoices.take(it) } ?: invoices
@@ -83,13 +85,13 @@ fun InvoicesList(
                     Icon(
                         painter = painterResource(
                             when (order.after) {
-                                "ADVANCE" -> R.drawable.ic_membership_advance
-                                "ELITE" -> R.drawable.ic_membership_elite
+                                "basic" -> R.drawable.ic_membership_advance
+                                "standard" -> R.drawable.ic_membership_elite
                                 else -> R.drawable.ic_membership_prosperity
                             }
                         ),
                         contentDescription = null,
-                        modifier = Modifier.size(30.dp),
+                        modifier = Modifier.size(32.dp),
                         tint = Color.Unspecified
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -100,15 +102,25 @@ fun InvoicesList(
                             text = if (order.type == "UPGRADE") {
                                 "Upgrade to ${order.after}"
                             } else {
-                                "Renew ${order.after}"
+                                "Renew ${order.after} Plan"
                             },
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textPrimary
                         )
-                    }
-                    if (order.type == "PURCHASE") {
                         Text(
-                            text = "+2 stars",
+                            text = order.status,
+                            fontSize = 12.sp,
+                            color = when (order.status.lowercase()) {
+                                MemberOrderStatus.COMPLETED.value, MemberOrderStatus.PAID.value -> MixinAppTheme.colors.walletGreen
+                                MemberOrderStatus.EXPIRED.value, MemberOrderStatus.FAILED.value -> MixinAppTheme.colors.walletRed
+                                else -> MixinAppTheme.colors.textRemarks
+                            }
+                        )
+                    }
+
+                    if (order.stars >= 0) {
+                        Text(
+                            text = "+${order.stars} stars",
                             fontSize = 12.sp,
                             color = MixinAppTheme.colors.walletGreen
                         )
@@ -122,7 +134,8 @@ fun InvoicesList(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
+                    .padding(8.dp)
+                    .clickable { onShowMoreClick?.invoke() },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(

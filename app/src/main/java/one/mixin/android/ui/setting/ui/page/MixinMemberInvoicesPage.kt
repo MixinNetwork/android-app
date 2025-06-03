@@ -78,10 +78,12 @@ fun MixinMemberInvoicesPage(
                         onInvoiceClick = { order ->
                             onOrderClick(order)
                         },
-                        maxDisplayCount = 10
+                        maxDisplayCount = 10, {
+                            onAll.invoke()
+                        }
                     )
                 }
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

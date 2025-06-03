@@ -181,6 +181,7 @@ fun MixinMemberUpgradePage(
                         pendingOrder = order
                         pendingOrderPlan = selectedPlan
                         isPollingOrder = true
+                        onUrlGenerated(order.paymentUrl!!)
                     } else {
                         isLoading = false
                     }

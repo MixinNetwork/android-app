@@ -6,21 +6,31 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.Constants.RouteConfig.SAFE_BOT_USER_ID
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
+import one.mixin.android.api.request.RelationshipAction
+import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.billing.BillingManager
 import one.mixin.android.billing.SubscriptionProcessStatus
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.MemberRepository
+import one.mixin.android.repository.UserRepository
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class MemberViewModel @Inject constructor(
+    private val jobManager: MixinJobManager,
+    private val userRepository: UserRepository,
     private val memberRepository: MemberRepository,
     application: Application
 ) : ViewModel() {
@@ -40,8 +50,8 @@ class MemberViewModel @Inject constructor(
         billingManager.launchSubscriptionFlow(activity)
     }
 
-    fun subscribe100(activity: Activity) {
-        billingManager.launchSubscriptionFlow(activity, BillingManager.PRODUCT_ID, BillingManager.PLAN_ID_100)
+    fun subscribe100(activity: Activity, orderId: String? = null) {
+        billingManager.launchSubscriptionFlow(activity, BillingManager.PRODUCT_ID, BillingManager.PLAN_ID_100, orderId)
     }
 
     fun refreshSubscriptionStatus() {
@@ -53,8 +63,15 @@ class MemberViewModel @Inject constructor(
         billingManager.destroy()
     }
 
-    suspend fun createMemberOrder(request: MemberOrderRequest) =
-        memberRepository.createOrder(request)
+    suspend fun createMemberOrder(request: MemberOrderRequest): MixinResponse<MemberOrder> {
+        viewModelScope.launch(Dispatchers.IO) {
+            val bot = userRepository.getUserById(SAFE_BOT_USER_ID)
+            if (bot == null || bot.relationship != "FRIEND") {
+                jobManager.addJobInBackground(UpdateRelationshipJob(RelationshipRequest(SAFE_BOT_USER_ID, RelationshipAction.ADD.name)))
+            }
+        }
+        return memberRepository.createOrder(request)
+    }
 
     suspend fun getPlans() = memberRepository.getPlans()
 

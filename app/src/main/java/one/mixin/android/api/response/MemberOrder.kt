@@ -65,6 +65,9 @@ data class MemberOrder(
     @SerializedName("reason")
     @ColumnInfo(name = "reason")
     val reason: String,
+    @SerializedName("stars")
+    @ColumnInfo(name = "stars")
+    val stars: Long,
     @SerializedName("paid_at")
     @ColumnInfo(name = "paid_at")
     val paidAt: String?,
@@ -85,7 +88,7 @@ data class MemberOrder(
     val checkoutUserId: String?,
     @SerializedName("checkout_memo")
     @ColumnInfo(name = "checkout_memo")
-    val checkoutMemo: String?
+    val checkoutMemo: String?,
 ) : Parcelable
 
 @Parcelize

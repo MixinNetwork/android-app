@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 66,
-    "identityHash": "0f97a2fb513eb9a781a52e2d498a5f23",
+    "identityHash": "70433348f6fc1c74d38c57b9f5c4f7b1",
     "entities": [
       {
         "tableName": "users",
@@ -3318,7 +3318,7 @@
       },
       {
         "tableName": "member_orders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT, `asset_amount` TEXT, `status` TEXT NOT NULL, `before` TEXT NOT NULL, `after` TEXT NOT NULL, `quantity_accounts` INTEGER NOT NULL, `quantity_transactions` INTEGER NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reason` TEXT NOT NULL, `paid_at` TEXT, `expired_at` TEXT, `created_at` TEXT NOT NULL, `payment_url` TEXT, `fiat_order` TEXT, `checkout_user_id` TEXT, `checkout_memo` TEXT, PRIMARY KEY(`order_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT, `asset_amount` TEXT, `status` TEXT NOT NULL, `before` TEXT NOT NULL, `after` TEXT NOT NULL, `quantity_accounts` INTEGER NOT NULL, `quantity_transactions` INTEGER NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reason` TEXT NOT NULL, `stars` INTEGER NOT NULL, `paid_at` TEXT, `expired_at` TEXT, `created_at` TEXT NOT NULL, `payment_url` TEXT, `fiat_order` TEXT, `checkout_user_id` TEXT, `checkout_memo` TEXT, PRIMARY KEY(`order_id`))",
         "fields": [
           {
             "fieldPath": "type",
@@ -3421,6 +3421,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "stars",
+            "columnName": "stars",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "paidAt",
             "columnName": "paid_at",
             "affinity": "TEXT"
@@ -3467,7 +3473,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0f97a2fb513eb9a781a52e2d498a5f23')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '70433348f6fc1c74d38c57b9f5c4f7b1')"
     ]
   }
 }

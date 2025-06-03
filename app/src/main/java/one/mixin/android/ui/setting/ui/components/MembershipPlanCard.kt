@@ -2,6 +2,7 @@ package one.mixin.android.ui.setting.ui.components
 
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,7 +52,9 @@ fun MembershipPlanCard(
             )
             .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
+            onViewPlanClick.invoke()
+        }) {
             Text(stringResource(R.string.membership_plan), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
             Spacer(modifier = Modifier.weight(1f))
             Icon(
