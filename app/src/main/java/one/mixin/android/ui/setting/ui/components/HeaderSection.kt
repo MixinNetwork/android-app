@@ -18,6 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -25,23 +29,18 @@ import one.mixin.android.vo.Plan
 
 @Composable
 fun HeaderSection(plan: Plan) {
-    val (title, content, icon) = when (plan) {
-        Plan.ADVANCE -> Triple(
-            stringResource(id = R.string.membership_advance),
-            stringResource(id = R.string.membership_advance_description),
-            R.drawable.ic_membership_advance
-        )
-        Plan.ELITE -> Triple(
-            stringResource(id = R.string.membership_elite),
-            stringResource(id = R.string.membership_elite_description),
-            R.drawable.ic_membership_elite
-        )
-        Plan.PROSPERITY -> Triple(
-            stringResource(id = R.string.membership_prosperity),
-            stringResource(id = R.string.membership_prosperity_description),
-            R.drawable.ic_membership_prosperity
-        )
-        else -> throw IllegalStateException()
+    val title = when (plan) {
+        Plan.ADVANCE -> stringResource(id = R.string.membership_advance)
+        Plan.ELITE -> stringResource(id = R.string.membership_elite)
+        Plan.PROSPERITY -> stringResource(id = R.string.membership_prosperity)
+        else -> ""
+    }
+
+    val content = when (plan) {
+        Plan.ADVANCE -> stringResource(id = R.string.membership_advance_description)
+        Plan.ELITE -> stringResource(id = R.string.membership_elite_description)
+        Plan.PROSPERITY -> stringResource(id = R.string.membership_prosperity_description)
+        else -> ""
     }
 
     Column(
@@ -55,12 +54,8 @@ fun HeaderSection(plan: Plan) {
             .padding(top = 24.dp, bottom = 34.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(70.dp)
-        )
+        MembershipIcon(plan = plan, modifier = Modifier.size(70.dp))
+
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = title,

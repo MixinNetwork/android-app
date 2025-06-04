@@ -72,16 +72,8 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                             color = MixinAppTheme.colors.textPrimary,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            painter = painterResource(
-                                id = when (order.after) {
-                                    "basic" -> R.drawable.ic_membership_advance
-                                    "standard" -> R.drawable.ic_membership_elite
-                                    else -> R.drawable.ic_membership_prosperity
-                                }
-                            ),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
+                        MembershipIcon(
+                            order.after,
                             modifier = Modifier.size(18.dp)
                         )
                     }

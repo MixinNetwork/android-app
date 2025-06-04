@@ -70,17 +70,8 @@ fun PlanSelector(
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(
-                            id = when (plan) {
-                                Plan.ADVANCE -> R.drawable.ic_membership_advance
-                                Plan.ELITE -> R.drawable.ic_membership_elite
-                                Plan.PROSPERITY -> R.drawable.ic_membership_prosperity
-                                else -> R.drawable.ic_membership_advance
-                            }
-                        ),
-                        contentDescription = null,
-                        tint = Color.Unspecified,
+                    MembershipIcon(
+                        plan,
                         modifier = Modifier.size(20.dp)
                     )
                 }

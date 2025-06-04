@@ -37,16 +37,8 @@ fun MemberInvoiceSection(order: MemberOrder) {
             .padding(horizontal = 16.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            painter = painterResource(
-                id = when (order.after) {
-                    "ADVANCE" -> R.drawable.ic_membership_advance
-                    "ELITE" -> R.drawable.ic_membership_elite
-                    else -> R.drawable.ic_membership_prosperity
-                }
-            ),
-            contentDescription = null,
-            tint = Color.Unspecified,
+        MembershipIcon(
+            order.after,
             modifier = Modifier.size(70.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))

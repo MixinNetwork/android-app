@@ -82,18 +82,11 @@ fun InvoicesList(
                         .clickable { onInvoiceClick(order) },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(
-                            when (order.after) {
-                                "basic" -> R.drawable.ic_membership_advance
-                                "standard" -> R.drawable.ic_membership_elite
-                                else -> R.drawable.ic_membership_prosperity
-                            }
-                        ),
-                        contentDescription = null,
+                    MembershipIcon(
+                        order.after,
                         modifier = Modifier.size(32.dp),
-                        tint = Color.Unspecified
                     )
+
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(
                         modifier = Modifier.weight(1f)

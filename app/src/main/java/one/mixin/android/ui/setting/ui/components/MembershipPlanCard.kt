@@ -75,20 +75,12 @@ fun MembershipPlanCard(
                 color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                painter = painterResource(
-                    when (membership.plan) {
-                        Plan.ADVANCE -> R.drawable.ic_membership_advance
-                        Plan.ELITE -> R.drawable.ic_membership_elite
-                        else -> R.drawable.ic_membership_prosperity
-                    }
-                ),
-                contentDescription = null,
+            MembershipIcon(
+                membership.plan,
                 modifier = Modifier
                     .size(24.dp)
                     .clip(CircleShape)
                     .background(MixinAppTheme.colors.background),
-                tint = Color.Unspecified
             )
         }
         Spacer(modifier = Modifier.height(12.dp))

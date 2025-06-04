@@ -27,17 +27,18 @@ import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
 fun InvoiceHeaderSection(order: MemberOrder) {
-    val (title, icon) = when (order.after) {
-        "basic" -> Pair("Advance Plan", R.drawable.ic_membership_advance)
-        "standard" -> Pair("Elite Plan", R.drawable.ic_membership_elite)
-        else -> Pair("Prosperity Plan", R.drawable.ic_membership_prosperity)
+    val title = when (order.after) {
+        "basic" -> "Advance Plan"
+        "standard" -> "Elite Plan"
+        else -> "Prosperity Plan"
     }
 
-    val statusColor = if (order.status == MemberOrderStatus.EXPIRED.value || order.status == MemberOrderStatus.FAILED.value || order.status == MemberOrderStatus.CANCEL.value) {
-        MixinAppTheme.colors.walletRed
-    } else {
-        MixinAppTheme.colors.walletGreen
-    }
+    val statusColor =
+        if (order.status == MemberOrderStatus.EXPIRED.value || order.status == MemberOrderStatus.FAILED.value || order.status == MemberOrderStatus.CANCEL.value) {
+            MixinAppTheme.colors.walletRed
+        } else {
+            MixinAppTheme.colors.walletGreen
+        }
 
     Column(
         modifier = Modifier
@@ -50,12 +51,11 @@ fun InvoiceHeaderSection(order: MemberOrder) {
             .padding(top = 24.dp, bottom = 34.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            tint = Color.Unspecified,
+        MembershipIcon(
+            order.after,
             modifier = Modifier.size(70.dp)
         )
+
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = title,

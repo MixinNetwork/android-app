@@ -26,17 +26,6 @@ import one.mixin.android.vo.Plan
 
 @Composable
 fun ProfileSection(plan: Plan) {
-    val icon = when (plan) {
-        Plan.ADVANCE ->
-            R.drawable.ic_membership_advance
-
-        Plan.ELITE ->
-            R.drawable.ic_membership_elite
-
-        else ->
-            R.drawable.ic_membership_prosperity
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,10 +36,8 @@ fun ProfileSection(plan: Plan) {
             .padding(vertical = 24.dp, horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            tint = Color.Unspecified,
+        MembershipIcon(
+            plan,
             modifier = Modifier.size(24.dp)
         )
 

@@ -353,8 +353,6 @@ class BillingManager private constructor(
             .setProductDetailsParamsList(productDetailsParamsList)
 
         if (orderId != null) {
-            Timber.d("Setting orderId $orderId as obfuscatedAccountId")
-            billingFlowParamsBuilder.setObfuscatedAccountId(orderId)
             Timber.d("Setting orderId $orderId as setObfuscatedProfileId")
             billingFlowParamsBuilder.setObfuscatedProfileId(orderId)
         }
