@@ -495,12 +495,12 @@ class SwapFragment : BaseFragment() {
             ActionButtonData(
                 label = getString(R.string.buy_token, marketItem.symbol),
                 color = "#50BD5C",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId&referral=${Session.getAccount()?.identityNumber}"
             ),
             ActionButtonData(
                 label = getString(R.string.sell_token, marketItem.symbol),
                 color = "#DB454F",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId"
+                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId&referral=${Session.getAccount()?.identityNumber}"
             ),
             ActionButtonData(
                 label = "${marketItem.symbol} ${getString(R.string.Market)}",
