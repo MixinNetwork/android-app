@@ -6,6 +6,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -15,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
@@ -32,6 +35,7 @@ import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.FROM_INTERNAL
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
+import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.SystemUIManager
@@ -55,9 +59,10 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    override fun getTheme() = R.style.AppTheme_Dialog
-
     val linkViewModel by viewModels<BottomSheetViewModel>()
+    private val memberViewModel by viewModels<MemberViewModel>()
+
+    override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,8 +72,13 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
+                val isGoogleBillingReady by memberViewModel.isGoogleBillingReady.collectAsState(
+                    initial = !BuildConfig.IS_GOOGLE_PLAY // If not Google Play build, assume Google billing is ready
+                )
+
                 MixinMemberUpgradePage(
-                    Session.getAccount()!!.membership?.plan?: Plan.None,
+                    currentUserPlan = Session.getAccount()!!.membership?.plan ?: Plan.None,
+                    isGoogleBillingReady = isGoogleBillingReady,
                     onClose = { dismiss() },
                     onUrlGenerated = { url ->
                         viewLifecycleOwner.lifecycleScope.launch {

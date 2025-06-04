@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.SAFE_BOT_USER_ID
@@ -49,6 +50,10 @@ class MemberViewModel @Inject constructor(
 
     val subscriptionStatus: StateFlow<SubscriptionProcessStatus> = billingManager.subscriptionStatus
     val productDetails: StateFlow<ProductDetails?> = billingManager.productDetails
+
+    val isGoogleBillingReady = subscriptionStatus.map { status ->
+        status != SubscriptionProcessStatus.Loading
+    }
 
     fun subscribe(activity: Activity) {
         billingManager.launchSubscriptionFlow(activity)

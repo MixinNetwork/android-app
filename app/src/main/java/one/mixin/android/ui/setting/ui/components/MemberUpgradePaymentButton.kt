@@ -30,8 +30,6 @@ fun MemberUpgradePaymentButton(
     selectedPlan: Plan,
     selectedPlanData: ApiPlan?,
     isLoading: Boolean,
-    isLoadingPlans: Boolean,
-    isCheckingPendingOrder: Boolean,
     pendingOrderPlan: Plan?,
     pendingOrder: MemberOrder?,
     onPaymentClick: () -> Unit
@@ -44,7 +42,6 @@ fun MemberUpgradePaymentButton(
         Plan.PROSPERITY -> false
         else -> true
     }
-    Timber.e("$selectedPlan $pendingOrderPlan, $isLoading, $isLoadingPlans, $isCheckingPendingOrder, $pendingOrder")
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -54,7 +51,7 @@ fun MemberUpgradePaymentButton(
         if (shouldShowButton) {
             Button(
                 onClick = onPaymentClick,
-                enabled = (!isLoading && !isLoadingPlans && !isCheckingPendingOrder && selectedPlanData != null) &&
+                enabled = !isLoading &&
                     (pendingOrderPlan == null || selectedPlan == pendingOrderPlan),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -66,7 +63,7 @@ fun MemberUpgradePaymentButton(
                         Color(0xFF3478F6) else Color.Gray
                 )
             ) {
-                if (isLoading || isLoadingPlans || isCheckingPendingOrder || (pendingOrderPlan != null && selectedPlan == pendingOrderPlan)) {
+                if (isLoading ||(pendingOrderPlan != null && selectedPlan == pendingOrderPlan)) {
                     CircularProgressIndicator(
                         color = Color.White,
                         strokeWidth = 2.dp,

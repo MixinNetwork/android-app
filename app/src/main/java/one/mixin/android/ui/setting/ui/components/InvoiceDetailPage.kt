@@ -108,18 +108,7 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                         color = MixinAppTheme.colors.textPrimary,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        text = "Status",
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = order.getInvoiceStatus().name,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
                 }
-
                 if (order.status == MemberOrderStatus.COMPLETED.value || order.status == MemberOrderStatus.PAID.value) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Column(
@@ -143,7 +132,7 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                                 tint = Color.Unspecified,
                                 modifier = Modifier.size(32.dp)
                             )
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Mixin Star",
                                 color = MixinAppTheme.colors.textAssist
