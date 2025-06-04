@@ -1,3 +1,3 @@
 package one.mixin.android.event
 
-class StarEvent()
+class MembershipEvent()

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.SAFE_BOT_USER_ID
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
@@ -20,10 +21,13 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.billing.BillingManager
 import one.mixin.android.billing.SubscriptionProcessStatus
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.MemberRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.vo.MemberOrderStatus
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -83,7 +87,10 @@ class MemberViewModel @Inject constructor(
 
     suspend fun getOrder(id: String) = handleMixinResponse(invokeNetwork = {
         memberRepository.getOrder(id)
-    }, successBlock = { r -> r }, defaultErrorHandle = {})
+    }, successBlock = { r ->
+        jobManager.addJobInBackground(RefreshAccountJob())
+        r
+    }, defaultErrorHandle = {})
 
     suspend fun getLatestPendingOrder(): MemberOrder? = memberRepository.getLatestPendingOrder()
 

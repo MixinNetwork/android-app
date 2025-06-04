@@ -14,7 +14,7 @@ import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSettingBinding
-import one.mixin.android.event.StarEvent
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -113,7 +113,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 }
             }
         }
-        RxBus.listen(StarEvent::class.java)
+        RxBus.listen(MembershipEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(pauseScope)
             .subscribe { _ ->
