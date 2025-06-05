@@ -6,6 +6,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
@@ -85,12 +87,16 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                             Timber.e("MixinMemberUpgradeBottomSheetDialogFragment url: $url")
                             WebActivity.show(requireContext(), url, null)
                         }
+                    },
+                    onGooglePlay = { orderId->
+                        launchPurchase100Subscription(orderId)
                     }
                 )
                 doOnPreDraw {
                     val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                     behavior = params?.behavior as? BottomSheetBehavior<*>
-                    behavior?.peekHeight = requireContext().realSize().y - requireContext().statusBarHeight() - requireContext().navigationBarHeight()
+                    behavior?.peekHeight =
+                        requireContext().realSize().y - requireContext().statusBarHeight() - requireContext().navigationBarHeight()
                     behavior?.isDraggable = false
                     behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
                 }
@@ -155,5 +161,12 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
 
     override fun syncUtxo() {
         jobManager.addJobInBackground(SyncOutputJob())
+    }
+
+    // Todo remove test code
+    private fun launchPurchase100Subscription(orderId: String) {
+        lifecycleScope.launch {
+            memberViewModel.subscribe100(requireActivity(), orderId)
+        }
     }
 }

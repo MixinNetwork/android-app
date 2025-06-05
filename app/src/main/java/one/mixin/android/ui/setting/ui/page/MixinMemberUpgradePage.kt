@@ -19,6 +19,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -58,7 +59,8 @@ fun MixinMemberUpgradePage(
     currentUserPlan: Plan,
     isGoogleBillingReady: Boolean,
     onClose: () -> Unit,
-    onUrlGenerated: (String) -> Unit
+    onUrlGenerated: (String) -> Unit,
+    onGooglePlay: (String) -> Unit
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
 
@@ -95,7 +97,6 @@ fun MixinMemberUpgradePage(
 
                 Timber.d("Found pending order: ${order.orderId}, plan: ${order.category}")
             }
-
         } catch (e: Exception) {
             Timber.e(e, "Failed to check pending orders")
             initState = initState.copy(isCheckingPendingOrder = false)
@@ -135,17 +136,21 @@ fun MixinMemberUpgradePage(
                         when (status) {
                             MemberOrderStatus.PAID, MemberOrderStatus.COMPLETED -> {
                                 Timber.d("Order completed: ${order.orderId}")
-                                orderState = orderState.copy(isPolling = false, isProcessing = false)
+                                orderState =
+                                    orderState.copy(isPolling = false, isProcessing = false)
                                 initState = initState.copy(pendingOrder = null)
                                 onClose()
                                 break
                             }
+
                             MemberOrderStatus.FAILED, MemberOrderStatus.EXPIRED, MemberOrderStatus.CANCEL -> {
                                 Timber.d("Order failed: ${order.orderId}")
-                                orderState = orderState.copy(isPolling = false, isProcessing = false)
+                                orderState =
+                                    orderState.copy(isPolling = false, isProcessing = false)
                                 initState = initState.copy(pendingOrder = null)
                                 break
                             }
+
                             else -> {
                                 Timber.d("Order pending: ${order.orderId}")
                                 delay(3000)
@@ -178,9 +183,14 @@ fun MixinMemberUpgradePage(
             val isPendingSamePlan = pendingOrder != null &&
                 selectedPlan == getPlanFromOrderAfter(pendingOrder.after)
 
+
             if (isPendingSamePlan && !pendingOrder?.paymentUrl.isNullOrEmpty()) {
                 orderState = orderState.copy(isPolling = true)
-                onUrlGenerated(pendingOrder!!.paymentUrl)
+                if (BuildConfig.IS_GOOGLE_PLAY) {
+                    onGooglePlay(pendingOrder.orderId)
+                } else {
+                    onUrlGenerated(pendingOrder!!.paymentUrl)
+                }
                 return@run
             }
 
@@ -192,7 +202,8 @@ fun MixinMemberUpgradePage(
             viewModel.viewModelScope.launch {
                 try {
                     val planId = selectedPlanData?.plan ?: return@launch
-                    val orderRequest = MemberOrderRequest(plan = planId)
+                    // todo remove test code
+                    val orderRequest = MemberOrderRequest(plan = "basic")
 
                     val orderResponse = viewModel.createMemberOrder(orderRequest)
                     if (orderResponse.isSuccess && orderResponse.data != null) {
@@ -204,7 +215,11 @@ fun MixinMemberUpgradePage(
                             isProcessing = false
                         )
                         initState = initState.copy(pendingOrder = order)
-                        onUrlGenerated(order.paymentUrl!!)
+                        if (BuildConfig.IS_GOOGLE_PLAY) {
+                            onGooglePlay(order.orderId)
+                        } else {
+                            onUrlGenerated(order.paymentUrl!!)
+                        }
                     } else {
                         orderState = orderState.copy(isProcessing = false)
                     }
@@ -276,7 +291,8 @@ private fun MixinMemberUpgradePagePreview() {
             currentUserPlan = Plan.ADVANCE,
             isGoogleBillingReady = true,
             onClose = {},
-            onUrlGenerated = {}
+            onUrlGenerated = {},
+            onGooglePlay = {}
         )
     }
 }

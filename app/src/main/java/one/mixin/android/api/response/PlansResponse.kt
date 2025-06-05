@@ -27,7 +27,9 @@ data class Plan(
     @SerializedName("amount_discount")
     val amountDiscount: String,
     @SerializedName("amount_payment")
-    val amountPayment: String
+    val amountPayment: String,
+    @SerializedName("play_store_subscription_id")
+    val playStoreSubscriptionId: String?
 )
 
 data class Transaction(

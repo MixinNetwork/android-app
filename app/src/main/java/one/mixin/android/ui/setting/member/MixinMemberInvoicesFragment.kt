@@ -82,23 +82,4 @@ class MixinMemberInvoicesFragment : BaseFragment() {
             }
         }
     }
-
-    // Todo remove test code
-    private fun launchPurchase100Subscription() {
-        lifecycleScope.launch {
-            try {
-                val orderRequest = MemberOrderRequest(plan = "basic")
-                val orderResponse = memberViewModel.createMemberOrder(orderRequest)
-
-                if (orderResponse.isSuccess && orderResponse.data != null) {
-                    val order = orderResponse.data
-                    memberViewModel.subscribe100(requireActivity(), order!!.orderId)
-                } else {
-                    Toast.makeText(requireContext(), "创建订单失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "创建订单时发生错误: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 }

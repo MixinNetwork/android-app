@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import timber.log.Timber
 import com.android.billingclient.api.ProductDetails.PricingPhase
+import one.mixin.android.session.Session
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -353,6 +354,9 @@ class BillingManager private constructor(
             .setProductDetailsParamsList(productDetailsParamsList)
 
         if (orderId != null) {
+            val selfId = Session.getAccount()!!.userId
+            Timber.d("Setting orderId $selfId as obfuscatedAccountId")
+            billingFlowParamsBuilder.setObfuscatedAccountId(selfId)
             Timber.d("Setting orderId $orderId as setObfuscatedProfileId")
             billingFlowParamsBuilder.setObfuscatedProfileId(orderId)
         }

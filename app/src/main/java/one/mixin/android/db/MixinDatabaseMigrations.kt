@@ -565,11 +565,13 @@ class MixinDatabaseMigrations private constructor() {
             }
 
         val MIGRATION_65_66: Migration =
-            object : Migration(65, 66) {
+            object : Migration(67, 66) {
                 override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `member_orders` (`type` TEXT NOT NULL, `order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT, `asset_amount` TEXT, `status` TEXT NOT NULL, `before` TEXT NOT NULL, `after` TEXT NOT NULL, `quantity_accounts` INTEGER NOT NULL, `quantity_transactions` INTEGER NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reason` TEXT NOT NULL, `stars` INTEGER NOT NULL, `paid_at` TEXT, `expired_at` TEXT, `created_at` TEXT NOT NULL, `payment_url` TEXT, `fiat_order` TEXT, `checkout_user_id` TEXT, `checkout_memo` TEXT, `play_store_subscription_id` TEXT, PRIMARY KEY(`order_id`))")
+                    db.execSQL("DROP TABLE `member_orders`")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `member_orders` (`type` TEXT NOT NULL, `order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT, `asset_amount` TEXT, `status` TEXT NOT NULL, `before` TEXT NOT NULL, `after` TEXT NOT NULL, `quantity_accounts` INTEGER NOT NULL, `quantity_transactions` INTEGER NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reason` TEXT NOT NULL, `stars` INTEGER NOT NULL, `paid_at` TEXT, `expired_at` TEXT, `created_at` TEXT NOT NULL, `payment_url` TEXT, `fiat_order` TEXT, `checkout_user_id` TEXT, `checkout_memo` TEXT, PRIMARY KEY(`order_id`))")
                 }
             }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

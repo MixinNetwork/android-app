@@ -89,9 +89,6 @@ data class MemberOrder(
     @SerializedName("checkout_memo")
     @ColumnInfo(name = "checkout_memo")
     val checkoutMemo: String?,
-    @SerializedName("play_store_subscription_id")
-    @ColumnInfo(name = "play_store_subscription_id")
-    val playStoreSubscriptionId: String? = null,
 ) : Parcelable
 
 @Parcelize
