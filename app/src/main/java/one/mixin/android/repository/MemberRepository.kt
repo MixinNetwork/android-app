@@ -1,6 +1,7 @@
 package one.mixin.android.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
@@ -38,12 +39,16 @@ class MemberRepository @Inject constructor(
     suspend fun insertOrders(orders: List<MemberOrder>) {
         orderDao.insertListSuspend(orders)
     }
+
+    suspend fun insertOrder(order: MemberOrder) {
+        orderDao.insertSuspend(order)
+    }
     
     suspend fun getAllMemberOrders(): List<MemberOrder> {
         return orderDao.getAllOrders()
     }
 
-    suspend fun getLatestPendingOrder(): MemberOrder? {
-        return orderDao.getLatestPendingOrder()
+    fun getLatestPendingOrderFlow(): Flow<MemberOrder?> {
+        return orderDao.getLatestPendingOrderFlow()
     }
 }

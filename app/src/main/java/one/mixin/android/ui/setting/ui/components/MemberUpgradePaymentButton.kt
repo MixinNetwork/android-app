@@ -21,49 +21,40 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.vo.Plan
-import timber.log.Timber
-import one.mixin.android.api.response.Plan as ApiPlan
+import one.mixin.android.api.response.MemberOrderPlan
+import one.mixin.android.ui.setting.ui.page.PlanPurchaseState
+import one.mixin.android.ui.setting.ui.page.getPlanFromOrderAfter
+import one.mixin.android.ui.setting.ui.page.mapLocalPlanToMemberOrderPlan
 
 @Composable
 fun MemberUpgradePaymentButton(
-    currentUserPlan: Plan,
-    selectedPlan: Plan,
-    selectedPlanData: ApiPlan?,
-    isLoading: Boolean,
-    pendingOrderPlan: Plan?,
+    currentUserPlan :Plan,
+    selectedPlan :Plan,
     pendingOrder: MemberOrder?,
+    purchaseState: PlanPurchaseState,
     onPaymentClick: () -> Unit
 ) {
-    val isPendingPlan = pendingOrderPlan != null && selectedPlan == pendingOrderPlan
-
-    val shouldShowButton = when (currentUserPlan) {
-        Plan.ADVANCE -> selectedPlan == Plan.ELITE || selectedPlan == Plan.PROSPERITY
-        Plan.ELITE -> selectedPlan == Plan.PROSPERITY
-        Plan.PROSPERITY -> false
-        else -> true
-    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 30.dp)
     ) {
-        if (shouldShowButton) {
+        if (selectedPlan != currentUserPlan) {
             Button(
                 onClick = onPaymentClick,
-                enabled = !isLoading &&
-                    (pendingOrderPlan == null || selectedPlan == pendingOrderPlan),
+                enabled = pendingOrder == null && purchaseState.isLoading.not(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = if (pendingOrderPlan == null || selectedPlan == pendingOrderPlan)
+                    backgroundColor = if (pendingOrder == null)
                         Color(0xFF3478F6) else Color.Gray
                 )
             ) {
-                if (isLoading ||(pendingOrderPlan != null && selectedPlan == pendingOrderPlan)) {
+                if (purchaseState.isLoading) {
                     CircularProgressIndicator(
                         color = Color.White,
                         strokeWidth = 2.dp,
@@ -71,16 +62,29 @@ fun MemberUpgradePaymentButton(
                             .size(20.dp)
                             .padding(end = 4.dp)
                     )
-                } else {
-                    val priceText = if (isPendingPlan && pendingOrder != null) {
-                        "Upgrade for USD ${pendingOrder.amount}"
-                    } else if (pendingOrderPlan != null) {
-                        stringResource(id = R.string.Upgrading_Plan)
-                    } else {
-                        selectedPlanData?.let { "Upgrade for USD ${it.amountPayment}" } ?: stringResource(id = R.string.Upgrading_Plan)
-                    }
+                }else if (pendingOrder!= null  && getPlanFromOrderAfter(pendingOrder.after) != selectedPlan){
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(end = 4.dp)
+                    )
+                }else if (pendingOrder!= null ){
                     Text(
-                        text = priceText,
+                        text = stringResource(id = R.string.Upgrading_Plan),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                } else {
+                    val plan = mapLocalPlanToMemberOrderPlan(
+                        selectedPlan,
+                        purchaseState.availablePlans
+                    )
+                    Text(
+                        text = plan?.let { "Upgrade for USD ${it.amountPayment}" } //todo currency
+                            ?: stringResource(id = R.string.Upgrading_Plan),
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium

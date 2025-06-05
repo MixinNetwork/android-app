@@ -6,7 +6,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
@@ -19,12 +18,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -33,13 +29,10 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.SchemeBottomSheet
-import one.mixin.android.ui.common.Web3Fragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.FROM_INTERNAL
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Plan
 import timber.log.Timber
@@ -80,7 +73,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
 
                 MixinMemberUpgradePage(
                     currentUserPlan = Session.getAccount()!!.membership?.plan ?: Plan.None,
-                    isGoogleBillingReady = isGoogleBillingReady,
+                    isBillingManagerInitialized = isGoogleBillingReady,
                     onClose = { dismiss() },
                     onUrlGenerated = { url ->
                         viewLifecycleOwner.lifecycleScope.launch {

@@ -96,7 +96,16 @@ class MemberViewModel @Inject constructor(
         r
     }, defaultErrorHandle = {})
 
-    suspend fun getLatestPendingOrder(): MemberOrder? = memberRepository.getLatestPendingOrder()
+    private val _pendingOrder = MutableStateFlow<MemberOrder?>(null)
+    val pendingOrder: StateFlow<MemberOrder?> = _pendingOrder
+
+    init {
+        viewModelScope.launch {
+            memberRepository.getLatestPendingOrderFlow().collect { order ->
+                _pendingOrder.value = order
+            }
+        }
+    }
 
     suspend fun loadOrders() {
         viewModelScope.launch {
@@ -118,6 +127,12 @@ class MemberViewModel @Inject constructor(
                     }
                 },
                 defaultErrorHandle = {})
+        }
+    }
+
+    fun insertOrders(order: MemberOrder) {
+        viewModelScope.launch {
+            memberRepository.insertOrder(order)
         }
     }
 }

@@ -4,12 +4,12 @@ import com.google.gson.annotations.SerializedName
 
 data class MemberPlan(
     @SerializedName("plans")
-    val plans: List<Plan>,
+    val plans: List<MemberOrderPlan>,
     @SerializedName("transaction")
     val transaction: Transaction
 )
 
-data class Plan(
+data class MemberOrderPlan(
     @SerializedName("name")
     val name: String,
     @SerializedName("plan")

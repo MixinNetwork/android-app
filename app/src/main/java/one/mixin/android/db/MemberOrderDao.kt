@@ -14,5 +14,5 @@ interface MemberOrderDao : BaseDao<MemberOrder> {
     suspend fun getAllOrders(): List<MemberOrder>
 
     @Query("SELECT * FROM member_orders WHERE status = 'initial' ORDER BY created_at DESC LIMIT 1")
-    suspend fun getLatestPendingOrder(): MemberOrder?
+    fun getLatestPendingOrderFlow(): Flow<MemberOrder?>
 }
