@@ -39,14 +39,10 @@ class AllMixinMemberInvoicesFragment : BaseFragment() {
         lifecycleScope.launch {
             memberViewModel.loadOrders()
         }
-
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val orders by memberViewModel.orders.collectAsState(initial = emptyList())
-
                 AllInvoicesPage(
-                    orders = orders,
                     onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() },
                     onOrderClick = { order ->
                         navTo(MixinMemberOrderDetailFragment.newInstance(order), MixinMemberOrderDetailFragment.TAG)

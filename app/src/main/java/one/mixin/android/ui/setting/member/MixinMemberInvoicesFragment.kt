@@ -51,13 +51,10 @@ class MixinMemberInvoicesFragment : BaseFragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val orders by memberViewModel.orders.collectAsState(initial = emptyList())
-
                 MixinMemberInvoicesPage(
                     membership = Session.getAccount()?.membership ?: Membership(
                         plan = Plan.None, expiredAt = "0-0-0 00:00:00"
                     ),
-                    orders = orders,
                     onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() },
                     onViewPlanClick = {
                         MixinMemberUpgradeBottomSheetDialogFragment.newInstance()

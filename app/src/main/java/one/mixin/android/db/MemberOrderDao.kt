@@ -15,4 +15,7 @@ interface MemberOrderDao : BaseDao<MemberOrder> {
 
     @Query("SELECT * FROM member_orders WHERE status = 'initial' ORDER BY created_at DESC LIMIT 1")
     fun getLatestPendingOrderFlow(): Flow<MemberOrder?>
+
+    @Query("SELECT * FROM member_orders ORDER BY created_at DESC")
+    fun getAllOrdersFlow(): Flow<List<MemberOrder>>
 }

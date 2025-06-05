@@ -44,9 +44,7 @@ class MemberRepository @Inject constructor(
         orderDao.insertSuspend(order)
     }
     
-    suspend fun getAllMemberOrders(): List<MemberOrder> {
-        return orderDao.getAllOrders()
-    }
+    fun getAllMemberOrders() = orderDao.getAllOrdersFlow()
 
     fun getLatestPendingOrderFlow(): Flow<MemberOrder?> {
         return orderDao.getLatestPendingOrderFlow()

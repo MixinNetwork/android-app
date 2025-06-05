@@ -8,22 +8,26 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.InvoicesList
+import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 @Composable
 fun AllInvoicesPage(
-    orders: List<MemberOrder>,
     onPop: () -> Unit,
     onOrderClick: (MemberOrder) -> Unit = {}
 ) {
+    val viewModel = hiltViewModel<MemberViewModel>()
+    val orders = viewModel.getAllMemberOrders().collectAsState(initial = emptyList())
     MixinAppTheme {
     PageScaffold (
         title = "All Invoices",
@@ -45,7 +49,7 @@ fun AllInvoicesPage(
             Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)}
 
             InvoicesList(
-                invoices = orders,
+                invoices = orders.value,
                 onInvoiceClick = onOrderClick
             )
         }

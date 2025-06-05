@@ -2,6 +2,7 @@ package one.mixin.android.ui.viewmodel
 
 import android.app.Activity
 import android.app.Application
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.billingclient.api.ProductDetails
@@ -42,9 +43,6 @@ class MemberViewModel @Inject constructor(
 
     private val _orderState = MutableStateFlow<MixinResponse<MemberOrder>?>(null)
     val orderState: StateFlow<MixinResponse<MemberOrder>?> = _orderState
-
-    private val _orders = MutableStateFlow<List<MemberOrder>>(emptyList())
-    val orders: StateFlow<List<MemberOrder>> = _orders
 
     private val billingManager = BillingManager.getInstance(application, viewModelScope)
 
@@ -109,26 +107,18 @@ class MemberViewModel @Inject constructor(
 
     suspend fun loadOrders() {
         viewModelScope.launch {
-            try {
-                val localOrders = memberRepository.getAllMemberOrders()
-                if (localOrders.isNotEmpty()) {
-                    _orders.value = localOrders
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to load local orders")
-            }
-
             handleMixinResponse(
                 invokeNetwork = { memberRepository.getOrders() },
                 successBlock = { resp ->
                     resp.data?.let { ordersList ->
                         memberRepository.insertOrders(ordersList)
-                        _orders.value = ordersList
                     }
                 },
                 defaultErrorHandle = {})
         }
     }
+
+    fun getAllMemberOrders() = memberRepository.getAllMemberOrders()
 
     fun insertOrders(order: MemberOrder) {
         viewModelScope.launch {
