@@ -4,7 +4,7 @@ buildscript {
         ext.bitcoinVersion ='0.17'
         ext.fragmentVersion = '1.8.8'
         ext.activity_version = '1.10.1'
-        ext.lifecycleVersion = '2.9.0'
+        ext.lifecycleVersion = '2.9.1'
         ext.appcompatVersion = '1.7.0'
         ext.pagingVersion = '3.3.6'
         ext.coilVersion = '3.2.0'
