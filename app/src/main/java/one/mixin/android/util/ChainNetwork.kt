@@ -8,7 +8,7 @@ private val chainNetworks by lazy {
         Constants.ChainId.ETHEREUM_CHAIN_ID to "ERC-20",
         Constants.ChainId.BinanceBeaconChain to "BEP-2",
         Constants.ChainId.BinanceSmartChain to "BEP-20",
-        Constants.ChainId.EOS_CHAIN_ID to "EOS",
+        Constants.ChainId.EOS_CHAIN_ID to "Vaulta",
         Constants.ChainId.Polygon to "Polygon",
         Constants.ChainId.Solana to "Solana",
         Constants.ChainId.Base to "Base",
