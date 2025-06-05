@@ -5,7 +5,7 @@ buildscript {
         ext.fragmentVersion = '1.8.8'
         ext.activity_version = '1.10.1'
         ext.lifecycleVersion = '2.9.1'
-        ext.appcompatVersion = '1.7.0'
+        ext.appcompatVersion = '1.7.1'
         ext.pagingVersion = '3.3.6'
         ext.coilVersion = '3.2.0'
         ext.collectionx = '1.5.0'
@@ -113,7 +113,7 @@ buildscript {
 
         ext.sumsubVersion = '1.35.1'
         ext.checkoutFramesVersion = '4.2.3'
-        ext.checkoutSecureVersion = '3.2.5'
+        ext.checkoutSecureVersion = '3.2.6'
         ext.checkoutRiskVersion = '1.0.6'
 
         ext.playWalletVersion = '19.4.0'
