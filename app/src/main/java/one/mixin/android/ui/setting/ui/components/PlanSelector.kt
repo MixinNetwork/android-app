@@ -43,6 +43,7 @@ fun PlanSelector(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(24.dp))
+                    .weight(1f)
                     .background(MixinAppTheme.colors.background)
                     .border(
                         width = 1.dp,

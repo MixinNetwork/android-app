@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -53,7 +54,7 @@ fun InvoicesList(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = stringResource(R.string.no_invoices),
+                    text = stringResource(R.string.No_Invoices),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textMinor
                 )
@@ -92,16 +93,35 @@ fun InvoicesList(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = if (order.type == "UPGRADE") {
-                                "Upgrade to ${order.after}"
+                            text = if (order.after == order.before) {
+                                stringResource(R.string.invoice_renew_plan,
+                                    when (order.after) {
+                                        "basic" -> stringResource(R.string.membership_advance)
+                                        "standard" -> stringResource(R.string.membership_elite)
+                                        else -> stringResource(R.string.membership_prosperity)
+                                    }
+                                )
                             } else {
-                                "Renew ${order.after} Plan"
+                                stringResource(R.string.invoice_upgrade_plan,
+                                    when (order.after) {
+                                        "basic" -> stringResource(R.string.membership_advance)
+                                        "standard" -> stringResource(R.string.membership_elite)
+                                        else -> stringResource(R.string.membership_prosperity)
+                                    }
+                                )
                             },
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.textPrimary
                         )
                         Text(
-                            text = order.status,
+                            text = when(order.status) {
+                                MemberOrderStatus.COMPLETED.value -> stringResource(R.string.Completed)
+                                MemberOrderStatus.PAID.value -> stringResource(R.string.Paid)
+                                MemberOrderStatus.EXPIRED.value -> stringResource(R.string.Expired)
+                                MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
+                                MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
+                                else -> stringResource(R.string.Unknown)
+                            },
                             fontSize = 12.sp,
                             color = when (order.status.lowercase()) {
                                 MemberOrderStatus.COMPLETED.value, MemberOrderStatus.PAID.value -> MixinAppTheme.colors.walletGreen
@@ -112,11 +132,21 @@ fun InvoicesList(
                     }
 
                     if (order.stars >= 0) {
-                        Text(
-                            text = "+${order.stars} stars",
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.walletGreen
-                        )
+                        Row(
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            Text(
+                                text = "+${order.stars}",
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MixinAppTheme.colors.walletGreen
+                            )
+                            Text(
+                                text = " stars",
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textPrimary
+                            )
+                        }
                     }
                 }
             }

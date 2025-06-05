@@ -18,24 +18,24 @@ import one.mixin.android.vo.Plan
 fun MemberSection(plan: Plan) {
     val features = when (plan) {
         Plan.ADVANCE -> listOf(
-            stringResource(id = R.string.member_desc_mixin_safe, 5),
-            stringResource(id = R.string.member_desc_mixin_star, 5),
-            stringResource(id = R.string.member_desc_safe_members, 5, 10),
-            stringResource(id = R.string.member_desc_recovery_paid, 2)
+            stringResource(id = R.string.membership_benefit_create_safe, 2),
+            stringResource(id = R.string.membership_benefit_get_stars, 2),
+            stringResource(id = R.string.membership_benefit_safe_members, 3, 3),
+            stringResource(id = R.string.membership_benefit_paid_recovery_service, 2)
         )
 
         Plan.ELITE -> listOf(
-            stringResource(id = R.string.member_desc_mixin_safe, 5),
-            stringResource(id = R.string.member_desc_mixin_star, 5),
-            stringResource(id = R.string.member_desc_safe_members, 5, 10),
-            stringResource(id = R.string.member_desc_recovery_free)
+            stringResource(id = R.string.membership_benefit_create_safe, 5),
+            stringResource(id = R.string.membership_benefit_get_stars, 5),
+            stringResource(id = R.string.membership_benefit_safe_members, 5, 10),
+            stringResource(id = R.string.membership_benefit_free_recovery_service)
         )
 
         Plan.PROSPERITY -> listOf(
-            stringResource(id = R.string.member_desc_mixin_safe, 100),
-            stringResource(id = R.string.member_desc_mixin_star, 2),
-            stringResource(id = R.string.member_desc_safe_members, 10, 100),
-            stringResource(id = R.string.member_desc_recovery_free)
+            stringResource(id = R.string.membership_benefit_create_safe, 100),
+            stringResource(id = R.string.membership_benefit_get_stars, 2),
+            stringResource(id = R.string.membership_benefit_safe_members, 10, 100),
+            stringResource(id = R.string.membership_benefit_free_recovery_service)
         )
 
         else -> listOf()
@@ -57,7 +57,7 @@ fun MemberSection(plan: Plan) {
                 1 -> stringResource(id = R.string.member_title_mixin_star)
                 2 -> stringResource(id = R.string.safe_members)
                 3 -> if (plan == Plan.ADVANCE)
-                    stringResource(id = R.string.member_title_recovery_paid)
+                    stringResource(id = R.string.paid_recovery_service)
                 else
                     stringResource(id = R.string.free_recovery_service)
 

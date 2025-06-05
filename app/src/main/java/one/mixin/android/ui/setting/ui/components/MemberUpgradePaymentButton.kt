@@ -75,9 +75,9 @@ fun MemberUpgradePaymentButton(
                     val priceText = if (isPendingPlan && pendingOrder != null) {
                         "Upgrade for USD ${pendingOrder.amount}"
                     } else if (pendingOrderPlan != null) {
-                        stringResource(id = R.string.upgrading)
+                        stringResource(id = R.string.Upgrading_Plan)
                     } else {
-                        selectedPlanData?.let { "Upgrade for USD ${it.amountPayment}" } ?: stringResource(id = R.string.upgrading)
+                        selectedPlanData?.let { "Upgrade for USD ${it.amountPayment}" } ?: stringResource(id = R.string.Upgrading_Plan)
                     }
                     Text(
                         text = priceText,

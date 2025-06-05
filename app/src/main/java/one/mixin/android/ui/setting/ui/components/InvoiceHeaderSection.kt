@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,16 +29,15 @@ import one.mixin.android.vo.MemberOrderStatus
 @Composable
 fun InvoiceHeaderSection(order: MemberOrder) {
     val title = when (order.after) {
-        "basic" -> "Advance Plan"
-        "standard" -> "Elite Plan"
-        else -> "Prosperity Plan"
+        "basic" -> stringResource(R.string.membership_advance)
+        "standard" -> stringResource(R.string.membership_elite)
+        else -> stringResource(R.string.membership_prosperity)
     }
 
-    val statusColor =
-        if (order.status == MemberOrderStatus.EXPIRED.value || order.status == MemberOrderStatus.FAILED.value || order.status == MemberOrderStatus.CANCEL.value) {
-            MixinAppTheme.colors.walletRed
-        } else {
-            MixinAppTheme.colors.walletGreen
+    val statusColor = when (order.status.lowercase()) {
+            MemberOrderStatus.COMPLETED.value, MemberOrderStatus.PAID.value -> MixinAppTheme.colors.walletGreen
+            MemberOrderStatus.EXPIRED.value, MemberOrderStatus.FAILED.value -> MixinAppTheme.colors.walletRed
+            else -> MixinAppTheme.colors.textRemarks
         }
 
     Column(
@@ -65,7 +65,14 @@ fun InvoiceHeaderSection(order: MemberOrder) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = order.status,
+            text = when(order.status) {
+                MemberOrderStatus.COMPLETED.value -> stringResource(R.string.Completed)
+                MemberOrderStatus.PAID.value -> stringResource(R.string.Paid)
+                MemberOrderStatus.EXPIRED.value -> stringResource(R.string.Expired)
+                MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
+                MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
+                else -> stringResource(R.string.Unknown)
+            },
             fontSize = 14.sp,
             color = statusColor,
             textAlign = TextAlign.Center,

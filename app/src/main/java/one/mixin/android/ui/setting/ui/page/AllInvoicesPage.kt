@@ -24,6 +24,7 @@ fun AllInvoicesPage(
     onPop: () -> Unit,
     onOrderClick: (MemberOrder) -> Unit = {}
 ) {
+    MixinAppTheme {
     PageScaffold (
         title = "All Invoices",
         verticalScrollable = false,
@@ -48,5 +49,5 @@ fun AllInvoicesPage(
                 onInvoiceClick = onOrderClick
             )
         }
-    }
+    }}
 }

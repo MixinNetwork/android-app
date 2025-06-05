@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.components
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -55,7 +54,11 @@ fun MembershipPlanCard(
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
             onViewPlanClick.invoke()
         }) {
-            Text(stringResource(R.string.membership_plan), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
+            Text(
+                stringResource(R.string.membership_plan),
+                color = MixinAppTheme.colors.textMinor,
+                fontSize = 14.sp
+            )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_gray_right),
@@ -68,8 +71,11 @@ fun MembershipPlanCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = membership.plan?.value?.replaceFirstChar { it.uppercase() }
-                    ?: "",
+                text = when (membership.plan) {
+                    Plan.ADVANCE -> stringResource(R.string.membership_advance)
+                    Plan.ELITE -> stringResource(R.string.membership_elite)
+                    else -> stringResource(R.string.membership_prosperity)
+                },
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MixinAppTheme.colors.textPrimary
@@ -85,7 +91,10 @@ fun MembershipPlanCard(
         }
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Expires on ${membership.expiredAt?.substringBefore("T") ?: "Unknown"}",
+            text = stringResource(
+                R.string.expires_on,
+                membership.expiredAt.substringBefore("T") ?: "Unknown"
+            ),
             color = if (isExpired) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,
             textAlign = TextAlign.Center

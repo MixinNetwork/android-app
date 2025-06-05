@@ -1,7 +1,11 @@
 package one.mixin.android.ui.setting.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -12,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -20,7 +25,9 @@ import one.mixin.android.compose.theme.MixinAppTheme
 fun MemberUpgradeTopBar(
     onClose: () -> Unit
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(
             text = stringResource(id = R.string.mixin_one),
             fontSize = 18.sp,
@@ -28,12 +35,13 @@ fun MemberUpgradeTopBar(
             color = MixinAppTheme.colors.textPrimary
         )
         Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = onClose) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_circle_close),
-                tint = Color.Unspecified,
-                contentDescription = stringResource(id = R.string.close)
-            )
-        }
+        Icon(
+            modifier = Modifier.clickable {
+                onClose()
+            },
+            painter = painterResource(id = R.drawable.ic_circle_close),
+            tint = Color.Unspecified,
+            contentDescription = stringResource(id = R.string.close)
+        )
     }
 }

@@ -19,13 +19,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.timeFormat
 import one.mixin.android.ui.setting.member.getInvoiceStatus
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.MemberOrderStatus
+import one.mixin.android.vo.Plan
 
 @Composable
 fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
@@ -52,24 +56,46 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                         .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
                     Text(
-                        text = "Transaction ID",
-                        color = MixinAppTheme.colors.textAssist
+                        text = stringResource(R.string.Transaction_Id).uppercase(),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = order.orderId,
                         color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 16.sp
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Plan",
-                        color = MixinAppTheme.colors.textAssist
+                        text = stringResource(R.string.buy_via).uppercase(),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = order.method,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.membership_plan).uppercase(),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = order.after,
                             color = MixinAppTheme.colors.textPrimary,
+                            text = stringResource(
+                                when (order.after) {
+                                    "basic" -> R.string.membership_advance
+                                    "standard" -> R.string.membership_elite
+                                    else -> R.string.membership_prosperity
+                                }
+                            ),
+                            fontSize = 16.sp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         MembershipIcon(
@@ -77,36 +103,57 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                             modifier = Modifier.size(18.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Amount",
-                        color = MixinAppTheme.colors.textAssist
+                        text = stringResource(R.string.Amount).uppercase(),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = order.amount,
                         color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 16.sp
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Via",
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = order.method,
-                        color = MixinAppTheme.colors.textPrimary,
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        text = "Time",
-                        color = MixinAppTheme.colors.textAssist
+                        text = stringResource(R.string.Description),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = order.createdAt.toString(),
+                        text = if (order.after == order.before) {
+                            stringResource(R.string.invoice_renew_plan,
+                                when (order.after) {
+                                    "basic" -> stringResource(R.string.membership_advance)
+                                    "standard" -> stringResource(R.string.membership_elite)
+                                    else -> stringResource(R.string.membership_prosperity)
+                                }
+                            )
+                        } else {
+                            stringResource(R.string.invoice_upgrade_plan,
+                                when (order.after) {
+                                    "basic" -> stringResource(R.string.membership_advance)
+                                    "standard" -> stringResource(R.string.membership_elite)
+                                    else -> stringResource(R.string.membership_prosperity)
+                                }
+                            )
+                        },
                         color = MixinAppTheme.colors.textPrimary,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.Time),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = order.createdAt.timeFormat(),
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 16.sp
                     )
                 }
                 if (order.status == MemberOrderStatus.COMPLETED.value || order.status == MemberOrderStatus.PAID.value) {
@@ -118,11 +165,12 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                                 MixinAppTheme.colors.background,
                                 MixinAppTheme.colors.borderColor
                             )
-                            .padding(horizontal = 16.dp, vertical = 20.dp)
+                            .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
                         Text(
-                            text = "Rewards",
-                            color = MixinAppTheme.colors.textAssist
+                            text = stringResource(R.string.Rewards),
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 14.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -135,16 +183,29 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Mixin Star",
-                                color = MixinAppTheme.colors.textAssist
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp
                             )
-                            Text(
-                                text = "+${order.stars} stars",
-                                color = MixinAppTheme.colors.textAssist
-                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Row(
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Text(
+                                    text = "+${order.stars}",
+                                    fontSize = 19.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MixinAppTheme.colors.walletGreen
+                                )
+                                Text(
+                                    text = " Stars",
+                                    fontSize = 14.sp,
+                                    color = MixinAppTheme.colors.textPrimary
+                                )
+                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

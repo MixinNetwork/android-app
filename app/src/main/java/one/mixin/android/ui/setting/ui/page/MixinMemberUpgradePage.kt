@@ -201,7 +201,7 @@ fun MixinMemberUpgradePage(
             orderState = orderState.copy(isProcessing = true)
             viewModel.viewModelScope.launch {
                 try {
-                    val planId = selectedPlanData?.plan ?: return@launch
+                    selectedPlanData?.plan ?: return@launch
                     // todo remove test code
                     val orderRequest = MemberOrderRequest(plan = "basic")
 
@@ -231,37 +231,40 @@ fun MixinMemberUpgradePage(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp)
-    ) {
-        MemberUpgradeTopBar(onClose = onClose)
+    MixinAppTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp))
+        {
+            MemberUpgradeTopBar(onClose = onClose)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        PlanSelector(
-            selectedPlan = selectedPlan,
-            onPlanSelected = { plan ->
-                selectedPlan = plan
+            PlanSelector(
+                selectedPlan = selectedPlan,
+                onPlanSelected = { plan ->
+                    selectedPlan = plan
+                }
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                MemberUpgradeContent(selectedPlan = selectedPlan)
             }
-        )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            MemberUpgradeContent(selectedPlan = selectedPlan)
+            MemberUpgradePaymentButton(
+                currentUserPlan = currentUserPlan,
+                selectedPlan = selectedPlan,
+                selectedPlanData = selectedPlanData,
+                isLoading = initState.shouldShowLoading(isGoogleBillingReady) || orderState.isProcessing,
+                pendingOrder = initState.pendingOrder,
+                pendingOrderPlan = initState.pendingOrder?.let {
+                    getPlanFromOrderAfter(it.after)
+                },
+                onPaymentClick = onPaymentClick
+            )
         }
-
-        MemberUpgradePaymentButton(
-            currentUserPlan = currentUserPlan,
-            selectedPlan = selectedPlan,
-            selectedPlanData = selectedPlanData,
-            isLoading = initState.shouldShowLoading(isGoogleBillingReady) || orderState.isProcessing,
-            pendingOrder = initState.pendingOrder,
-            pendingOrderPlan = initState.pendingOrder?.let {
-                getPlanFromOrderAfter(it.after)
-            },
-            onPaymentClick = onPaymentClick
-        )
     }
 }
 
