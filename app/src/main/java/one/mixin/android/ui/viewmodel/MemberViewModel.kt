@@ -49,7 +49,6 @@ class MemberViewModel @Inject constructor(
     private val billingManager = BillingManager.getInstance(application, viewModelScope)
 
     val subscriptionStatus: StateFlow<SubscriptionProcessStatus> = billingManager.subscriptionStatus
-    val productDetails: StateFlow<ProductDetails?> = billingManager.productDetails
 
     val isGoogleBillingReady = subscriptionStatus.map { status ->
         status != SubscriptionProcessStatus.Loading
@@ -120,21 +119,5 @@ class MemberViewModel @Inject constructor(
                 },
                 defaultErrorHandle = {})
         }
-    }
-
-    fun handlePurchaseComplete(purchaseToken: String, productId: String) {
-        viewModelScope.launch {
-            try {
-                Timber.i("Purchase completed: Token=$purchaseToken, Product=$productId")
-
-                loadOrders()
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to handle purchase completion")
-            }
-        }
-    }
-
-    fun hasActiveSubscription(): Boolean {
-        return subscriptionStatus.value is SubscriptionProcessStatus.Subscribed
     }
 }

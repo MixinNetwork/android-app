@@ -219,28 +219,11 @@ class BillingManager private constructor(
         }
     }
 
-    /**
-     * Process purchases that are newly made by the user through the billing flow.
-     * These purchases should be validated with the backend.
-     */
     private suspend fun processNewPurchases(purchases: List<Purchase>) {
         for (purchase in purchases) {
             if (purchase.products.contains(PRODUCT_ID) && purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
                 Timber.i("Processing new purchase for ${purchase.products.joinToString()}: Token: ${purchase.purchaseToken}")
-
-                // 1. (IMPORTANT) Send `purchase.purchaseToken` to your backend for validation and entitlement.
-                //    Your backend will use the Google Play Developer API to verify the token.
-                //    val backendValidationSuccessful = YourBackendApi.verifyPurchase(purchase.purchaseToken, purchase.orderId)
-                //    if (backendValidationSuccessful) {
-                //        // 2. Acknowledge the purchase if backend validation is successful
-                //        acknowledgePurchaseIfNeeded(purchase)
-                //        _subscriptionStatus.value = SubscriptionProcessStatus.Subscribed(PRODUCT_ID, purchase.purchaseToken)
-                //    } else {
-                //        _subscriptionStatus.value = SubscriptionProcessStatus.Error("Backend validation failed for new purchase.")
-                //        // Optionally consume if it's a fraudulent or problematic purchase, or handle as per your policy.
-                //    }
                 Timber.w("TODO: Send new purchase token to backend: ${purchase.purchaseToken} for product ${purchase.products.firstOrNull()}")
-                // For now, acknowledge directly for testing client-side flow
                 acknowledgePurchaseIfNeeded(purchase) // This will update status upon successful acknowledgement
             } else if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
                 Timber.i("New purchase is PENDING for ${purchase.products.joinToString()}. User needs to complete the payment.")
@@ -251,21 +234,13 @@ class BillingManager private constructor(
         }
     }
 
-    /**
-     * Process purchases that were already owned by the user (queried on app start/refresh).
-     * These are generally assumed to be valid if Google Play returns them,
-     * but periodic backend validation is still a good practice.
-     */
     private suspend fun processExistingPurchases(purchases: List<Purchase>) {
         var isActiveSubscriptionFound = false
         for (purchase in purchases) {
             if (purchase.products.contains(PRODUCT_ID) && purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
                 Timber.i("Found existing active subscription for ${purchase.products.joinToString()}: Token: ${purchase.purchaseToken}")
                 isActiveSubscriptionFound = true
-                // For existing purchases, we primarily ensure they are acknowledged.
-                // Backend might have already validated this.
                 acknowledgePurchaseIfNeeded(purchase) // This will update status
-                // We take the first active one. If multiple, your logic might differ.
                 break
             }
         }
@@ -302,7 +277,6 @@ class BillingManager private constructor(
             }
         } else {
             Timber.i("Purchase already acknowledged: ${purchase.orderId}")
-            // If already acknowledged and state is PURCHASED, it's an active subscription.
             _subscriptionStatus.value = SubscriptionProcessStatus.Subscribed(PRODUCT_ID, purchase.purchaseToken)
         }
     }
@@ -414,9 +388,8 @@ class BillingManager private constructor(
                 Timber.d("      Price Currency Code: ${phase.priceCurrencyCode}")
                 Timber.d("      Billing Period: ${phase.billingPeriod}")
 
-                // 获取原始的 recurrenceMode 整数值
                 val recurrenceModeInt = phase.recurrenceMode
-                Timber.d("      Raw Recurrence Mode Value: $recurrenceModeInt") // 打印原始值以供调试
+                Timber.d("      Raw Recurrence Mode Value: $recurrenceModeInt")
 
                 val recurrenceModeString = when (recurrenceModeInt) {
                     0 -> "UNKNOWN_RECURRENCE_MODE (0)"
