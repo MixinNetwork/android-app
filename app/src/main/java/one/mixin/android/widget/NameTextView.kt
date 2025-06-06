@@ -22,7 +22,6 @@ import one.mixin.android.databinding.ViewNameTextBinding
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.highLight
-import one.mixin.android.extension.highLightMao
 import one.mixin.android.extension.spToPx
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.CallUser
@@ -51,6 +50,9 @@ class NameTextView : LinearLayoutCompat {
     private val binding = ViewNameTextBinding.inflate(LayoutInflater.from(context), this)
     val textView get() = binding.nameText
     private val iconView get() = binding.nameIcon
+    private val iconContainer get() = binding.iconContainer
+
+    private var iconClickListener: OnClickListener? = null
 
     constructor(context: Context) : this(context, null)
 
@@ -67,6 +69,7 @@ class NameTextView : LinearLayoutCompat {
             height = badgeSize
             marginStart = badgePadding
         }
+
         val textSize = a.getDimension(R.styleable.NameTextView_textSize, sp14)
         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
 
@@ -970,5 +973,15 @@ class NameTextView : LinearLayoutCompat {
 
     fun setMaxWidth(maxWidth: Int) {
         this.textView.maxWidth = maxWidth
+    }
+
+    fun setOnIconClickListener(listener: OnClickListener) {
+        this.iconContainer.apply {
+            setOnClickListener(listener)
+        }
+    }
+
+    override fun setOnClickListener(l: OnClickListener?) {
+        this.textView.setOnClickListener(l)
     }
 }

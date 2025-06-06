@@ -49,6 +49,7 @@ data class PlanPurchaseState(
 @Composable
 fun MixinMemberUpgradePage(
     currentUserPlan: Plan,
+    selectedPlanOverride: Plan? = null,
     onClose: () -> Unit,
     onUrlGenerated: (String) -> Unit,
     onGooglePlay: (orderId: String, playStoreSubscriptionId: String) -> Unit
@@ -56,7 +57,17 @@ fun MixinMemberUpgradePage(
     val viewModel: MemberViewModel = hiltViewModel()
 
     var purchaseState by remember { mutableStateOf(PlanPurchaseState()) }
-    var selectedPlan by remember { mutableStateOf(Plan.ADVANCE) }
+
+    var selectedPlan by remember {
+        mutableStateOf(
+            selectedPlanOverride ?: when (currentUserPlan) {
+                Plan.None -> Plan.ADVANCE
+                Plan.ADVANCE -> Plan.ELITE
+                Plan.ELITE -> Plan.PROSPERITY
+                Plan.PROSPERITY -> Plan.PROSPERITY
+            }
+        )
+    }
 
     val pendingOrderState by viewModel.pendingOrder.collectAsState()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
@@ -174,7 +185,11 @@ fun MixinMemberUpgradePage(
                             error = ErrorHandler.getErrorMessage(error)
                         )
                     }) {
-                        val orderRequest = MemberOrderRequest(plan = plan.plan)
+                        val orderRequest = if (isGooglePlayChannel) {
+                            MemberOrderRequest(plan = plan.plan, fiatSource = "play_store", subscriptionId = plan.playStoreSubscriptionId)
+                        } else {
+                            MemberOrderRequest(plan = plan.plan)
+                        }
                         val orderResponse = viewModel.createMemberOrder(orderRequest)
 
                         if (orderResponse.isSuccess && orderResponse.data != null) {
@@ -199,6 +214,7 @@ private fun MixinMemberUpgradePagePreview() {
     MixinAppTheme {
         MixinMemberUpgradePage(
             currentUserPlan = Plan.ADVANCE,
+            selectedPlanOverride = null,
             onClose = {},
             onUrlGenerated = {},
             onGooglePlay = { _, _ -> }

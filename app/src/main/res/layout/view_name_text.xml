@@ -12,9 +12,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <one.mixin.android.widget.lottie.RLottieImageView
-        android:id="@+id/name_icon"
-        android:layout_width="14dp"
-        android:layout_height="14dp"
-        android:layout_gravity="center_vertical" />
+    <FrameLayout
+        android:id="@+id/icon_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true">
+
+        <one.mixin.android.widget.lottie.RLottieImageView
+            android:id="@+id/name_icon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
 </merge>
+

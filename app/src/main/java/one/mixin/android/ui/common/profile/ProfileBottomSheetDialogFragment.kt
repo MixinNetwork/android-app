@@ -51,6 +51,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
@@ -192,6 +193,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
 
             name.setName(account)
+            name.setOnClickListener {
+                account.membership?.plan?.let { plan ->
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+                }
+            }
             avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
             idTv.text = getString(R.string.contact_mixin_id, account.identityNumber)
             detailTv.originalText = account.biography ?: ""

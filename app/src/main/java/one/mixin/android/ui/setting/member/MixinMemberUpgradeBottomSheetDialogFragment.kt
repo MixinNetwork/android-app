@@ -43,11 +43,21 @@ import kotlin.getValue
 class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
     companion object {
         const val TAG = "MixinMemberUpgradeBottomSheetDialogFragment"
+        private const val ARG_DEFAULT_PLAN = "arg_default_plan"
 
-        fun newInstance() = MixinMemberUpgradeBottomSheetDialogFragment()
+        fun newInstance(defaultPlan: Plan? = null): MixinMemberUpgradeBottomSheetDialogFragment {
+            return MixinMemberUpgradeBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    if (defaultPlan != null) {
+                        putString(ARG_DEFAULT_PLAN, defaultPlan.name)
+                    }
+                }
+            }
+        }
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
+    private var defaultPlan: Plan? = null
 
     private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this, linkViewModel) }
 
@@ -57,6 +67,17 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
     val linkViewModel by viewModels<BottomSheetViewModel>()
     private val memberViewModel by viewModels<MemberViewModel>()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.getString(ARG_DEFAULT_PLAN)?.let {
+            try {
+                defaultPlan = Plan.valueOf(it)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to parse default plan")
+            }
+        }
+    }
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onCreateView(
@@ -64,11 +85,15 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        lifecycleScope.launch {
+            memberViewModel.refreshSubscriptionStatus()
+        }
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinMemberUpgradePage(
                     currentUserPlan = Session.getAccount()!!.membership?.plan ?: Plan.None,
+                    selectedPlanOverride = defaultPlan,
                     onClose = { dismiss() },
                     onUrlGenerated = { url ->
                         viewLifecycleOwner.lifecycleScope.launch {

@@ -156,6 +156,7 @@ class HyperlinkHolder constructor(val binding: ItemChatHyperlinkBinding) : BaseV
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.setMessageName(messageItem)
+            binding.chatName.setOnIconClickListener { messageItem.membership?.plan?.let { onItemListener.onMemberIconClick(it) } }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {

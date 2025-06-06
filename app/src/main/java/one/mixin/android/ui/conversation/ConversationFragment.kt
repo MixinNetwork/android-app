@@ -199,6 +199,7 @@ import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WallpaperManager
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
@@ -236,6 +237,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.PinMessageData
+import one.mixin.android.vo.Plan
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.TranscriptMessage
@@ -950,6 +952,10 @@ class ConversationFragment() :
 
             override fun onTextDoubleClick(messageItem: MessageItem) {
                 TextPreviewActivity.show(requireContext(), messageItem)
+            }
+
+            override fun onMemberIconClick(plan: Plan) {
+                MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
             }
         }
     }
