@@ -11,11 +11,13 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.drawable.ColorDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.appcompat.view.ContextThemeWrapper
@@ -130,16 +132,20 @@ class InscriptionActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
         super.onCreate(savedInstanceState)
+        SystemUIManager.lightUI(window, false)
+        window.setBackgroundDrawable(ColorDrawable(Color.BLACK))
+        binding = ActivityInscriptionBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        window.decorView.setOnApplyWindowInsetsListener { view, windowInsets ->
+            view.setBackgroundColor(Color.BLACK)
+            windowInsets
+        }
         getSendResult =
             registerForActivityResult(
                 InscriptionSendActivity.SendContract(),
                 activityResultRegistry,
                 ::callbackSend,
             )
-        SystemUIManager.lightUI(window, false)
-        window.statusBarColor = Color.TRANSPARENT
-        binding = ActivityInscriptionBinding.inflate(layoutInflater)
-        setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
         binding.compose.setContent {
             InscriptionPage(inscriptionHash, { finish() }, { inscriptionState ->
