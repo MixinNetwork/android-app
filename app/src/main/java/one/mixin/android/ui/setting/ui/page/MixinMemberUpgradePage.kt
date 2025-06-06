@@ -15,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.view.isVisible
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -40,7 +39,8 @@ data class PlanPurchaseState(
     val currentPlan: Plan? = null,
     val isBillingManagerInitialized: Boolean = BuildConfig.IS_GOOGLE_PLAY.not(),
     val availablePlans: List<MemberOrderPlan> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val availablePlayStorePlans: Set<String> = emptySet()
 ) {
     val isLoading: Boolean
         get() = error == null && availablePlans.isEmpty() && isBillingManagerInitialized
@@ -49,25 +49,46 @@ data class PlanPurchaseState(
 @Composable
 fun MixinMemberUpgradePage(
     currentUserPlan: Plan,
-    isBillingManagerInitialized: Boolean,
     onClose: () -> Unit,
     onUrlGenerated: (String) -> Unit,
-    onGooglePlay: (String) -> Unit
+    onGooglePlay: (orderId: String, playStoreSubscriptionId: String) -> Unit
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
 
     var purchaseState by remember { mutableStateOf(PlanPurchaseState()) }
     var selectedPlan by remember { mutableStateOf(Plan.ADVANCE) }
+
     val pendingOrderState by viewModel.pendingOrder.collectAsState()
+    val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
 
     LaunchedEffect(Unit) {
         try {
             val response = viewModel.getPlans()
             if (response.isSuccess && response.data != null) {
+                val availablePlayStorePlans = if (BuildConfig.IS_GOOGLE_PLAY) {
+                    val billingPlanIds = subscriptionPlans.map { it.planId }.toSet()
+                    response.data!!.plans
+                        .mapNotNull { it.playStoreSubscriptionId }
+                        .filter { billingPlanIds.contains(it) }
+                        .toSet()
+                } else {
+                    emptySet()
+                }
+
                 purchaseState = purchaseState.copy(
                     availablePlans = response.data!!.plans,
+                    availablePlayStorePlans = availablePlayStorePlans
                 )
-                Timber.d("Plans loaded: ${response.data!!.plans.size}")
+                Timber.d("Plans loaded: ${response.data!!.plans.size}, Valid Google Play plans: ${availablePlayStorePlans.size}")
+
+                if (BuildConfig.IS_GOOGLE_PLAY) {
+                    val billingPlanIds = subscriptionPlans.map { it.planId }
+                    val backendPlayStoreIds = response.data!!.plans.mapNotNull { it.playStoreSubscriptionId }
+
+                    Timber.d("Billing library plan IDs: $billingPlanIds")
+                    Timber.d("Backend Play Store subscription IDs: $backendPlayStoreIds")
+                    Timber.d("Matched plan IDs: $availablePlayStorePlans")
+                }
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to load plans")
@@ -158,7 +179,9 @@ fun MixinMemberUpgradePage(
 
                         if (orderResponse.isSuccess && orderResponse.data != null) {
                             if (isGooglePlayChannel) {
-                                onGooglePlay(orderResponse.data!!.orderId!!)
+                                plan.playStoreSubscriptionId?.let { playStoreId ->
+                                    onGooglePlay(orderResponse.data!!.orderId!!, playStoreId)
+                                }
                             } else {
                                 onUrlGenerated(orderResponse.data!!.paymentUrl!!)
                             }
@@ -170,37 +193,15 @@ fun MixinMemberUpgradePage(
     }
 }
 
-fun mapLocalPlanToMemberOrderPlan(
-    localPlan: Plan,
-    memberOrderPlans: List<MemberOrderPlan>
-): MemberOrderPlan? {
-    return when (localPlan) {
-        Plan.ADVANCE -> memberOrderPlans.find { it.name == "basic" }
-        Plan.ELITE -> memberOrderPlans.find { it.name == "standard" }
-        Plan.PROSPERITY -> memberOrderPlans.find { it.name == "premium" }
-        else -> memberOrderPlans.find { it.name == "basic" }
-    }
-}
-
-fun getPlanFromOrderAfter(after: String?): Plan? {
-    return when (after) {
-        "basic" -> Plan.ADVANCE
-        "standard" -> Plan.ELITE
-        "premium" -> Plan.PROSPERITY
-        else -> null
-    }
-}
-
 @Preview
 @Composable
 private fun MixinMemberUpgradePagePreview() {
     MixinAppTheme {
         MixinMemberUpgradePage(
             currentUserPlan = Plan.ADVANCE,
-            isBillingManagerInitialized = true,
             onClose = {},
             onUrlGenerated = {},
-            onGooglePlay = {}
+            onGooglePlay = { _, _ -> }
         )
     }
 }

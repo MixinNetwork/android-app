@@ -67,13 +67,8 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val isGoogleBillingReady by memberViewModel.isGoogleBillingReady.collectAsState(
-                    initial = !BuildConfig.IS_GOOGLE_PLAY // If not Google Play build, assume Google billing is ready
-                )
-
                 MixinMemberUpgradePage(
                     currentUserPlan = Session.getAccount()!!.membership?.plan ?: Plan.None,
-                    isBillingManagerInitialized = isGoogleBillingReady,
                     onClose = { dismiss() },
                     onUrlGenerated = { url ->
                         viewLifecycleOwner.lifecycleScope.launch {
@@ -81,8 +76,8 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                             WebActivity.show(requireContext(), url, null)
                         }
                     },
-                    onGooglePlay = { orderId->
-                        launchPurchase100Subscription(orderId)
+                    onGooglePlay = { orderId, playStoreSubscriptionId ->
+                        launchPurchaseSubscription(orderId, playStoreSubscriptionId)
                     }
                 )
                 doOnPreDraw {
@@ -156,10 +151,9 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
         jobManager.addJobInBackground(SyncOutputJob())
     }
 
-    // Todo remove test code
-    private fun launchPurchase100Subscription(orderId: String) {
+    private fun launchPurchaseSubscription(orderId: String, playStoreSubscriptionId: String) {
         lifecycleScope.launch {
-            memberViewModel.subscribe100(requireActivity(), orderId)
+            memberViewModel.subscribeWithPlanId(requireActivity(), orderId, playStoreSubscriptionId)
         }
     }
 }

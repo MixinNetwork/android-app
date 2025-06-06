@@ -22,6 +22,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.billing.BillingManager
+import one.mixin.android.billing.SubscriptionPlanInfo
 import one.mixin.android.billing.SubscriptionProcessStatus
 import one.mixin.android.event.MembershipEvent
 import one.mixin.android.job.MixinJobManager
@@ -46,6 +47,8 @@ class MemberViewModel @Inject constructor(
 
     private val billingManager = BillingManager.getInstance(application, viewModelScope)
 
+    val subscriptionPlans: StateFlow<List<SubscriptionPlanInfo>> = billingManager.subscriptionPlans
+
     val subscriptionStatus: StateFlow<SubscriptionProcessStatus> = billingManager.subscriptionStatus
 
     val isGoogleBillingReady = subscriptionStatus.map { status ->
@@ -56,8 +59,9 @@ class MemberViewModel @Inject constructor(
         billingManager.launchSubscriptionFlow(activity)
     }
 
-    fun subscribe100(activity: Activity, orderId: String? = null) {
-        billingManager.launchSubscriptionFlow(activity, BillingManager.PRODUCT_ID, BillingManager.PLAN_ID_100, orderId)
+    fun subscribeWithPlanId(activity: Activity, orderId: String, planId: String) {
+        Timber.d("Launching subscription with planId: $planId, orderId: $orderId")
+        billingManager.launchSubscriptionFlow(activity, BillingManager.PRODUCT_ID, planId, orderId)
     }
 
     fun refreshSubscriptionStatus() {

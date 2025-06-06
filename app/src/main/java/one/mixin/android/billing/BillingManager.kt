@@ -33,6 +33,10 @@ class BillingManager private constructor(
     private val _productDetails = MutableStateFlow<ProductDetails?>(null)
     val productDetails: StateFlow<ProductDetails?> = _productDetails.asStateFlow()
 
+    // StateFlow for subscription plans
+    private val _subscriptionPlans = MutableStateFlow<List<SubscriptionPlanInfo>>(emptyList())
+    val subscriptionPlans: StateFlow<List<SubscriptionPlanInfo>> = _subscriptionPlans.asStateFlow()
+
     // StateFlow for subscription status
     private val _subscriptionStatus =
         MutableStateFlow<SubscriptionProcessStatus>(SubscriptionProcessStatus.None)
@@ -149,6 +153,8 @@ class BillingManager private constructor(
                 val foundDetails = result.productDetailsList?.find { it.productId == productId }
                 if (foundDetails != null) {
                     _productDetails.value = foundDetails
+                    _subscriptionPlans.value = SubscriptionPlanInfo.fromProductDetails(foundDetails)
+
                     Timber.i("Product details loaded for: ${foundDetails.productId}")
                     logProductDetails(foundDetails)
                     // If not already subscribed, set to None, otherwise queryAndProcessExistingPurchases will update it
@@ -161,6 +167,7 @@ class BillingManager private constructor(
                 } else {
                     Timber.w("Product details not found for $productId in the response.")
                     _productDetails.value = null
+                    _subscriptionPlans.value = emptyList()
                     if (_subscriptionStatus.value !is SubscriptionProcessStatus.Subscribed) {
                         _subscriptionStatus.value = SubscriptionProcessStatus.Error("Product $productId not found.")
                     }
@@ -168,6 +175,7 @@ class BillingManager private constructor(
             } else {
                 Timber.e("Failed to query product details: ${result.billingResult.debugMessage}")
                 _productDetails.value = null
+                _subscriptionPlans.value = emptyList()
                 if (_subscriptionStatus.value !is SubscriptionProcessStatus.Subscribed) {
                     _subscriptionStatus.value = SubscriptionProcessStatus.Error(
                         "Failed to query product details: ${result.billingResult.debugMessage}",
@@ -178,12 +186,12 @@ class BillingManager private constructor(
         } catch (e: Exception) {
             Timber.e(e, "Exception while querying product details.")
             _productDetails.value = null
+            _subscriptionPlans.value = emptyList()
             if (_subscriptionStatus.value !is SubscriptionProcessStatus.Subscribed) {
                 _subscriptionStatus.value = SubscriptionProcessStatus.Error("Exception querying products: ${e.localizedMessage}")
             }
         }
     }
-
 
     /**
      * Queries active subscriptions the user might already own.
@@ -281,7 +289,6 @@ class BillingManager private constructor(
         }
     }
 
-
     /**
      * Launch the billing flow for subscribing.
      */
@@ -302,13 +309,12 @@ class BillingManager private constructor(
             return
         }
 
-        val offerDetails = if (planId != null) {
-            currentProductDetails.subscriptionOfferDetails?.find { it.basePlanId == planId }
+        val offerToken = if (planId != null) {
+            _subscriptionPlans.value.find { it.planId == planId }?.offerToken
         } else {
-            currentProductDetails.subscriptionOfferDetails?.firstOrNull()
+            _subscriptionPlans.value.firstOrNull()?.offerToken
         }
 
-        val offerToken = offerDetails?.offerToken
         if (offerToken == null) {
             Timber.e("launchSubscriptionFlow: No offer token found for $productId with planId $planId")
             _subscriptionStatus.value = SubscriptionProcessStatus.Error("No subscription offers found for $productId with planId $planId.")
@@ -375,6 +381,9 @@ class BillingManager private constructor(
         Timber.d("Description: ${productDetails.description}")
         Timber.d("Type: ${productDetails.productType}")
 
+        val offerCount = productDetails.subscriptionOfferDetails?.size ?: 0
+        Timber.d("Total Subscription Offers: $offerCount")
+
         productDetails.subscriptionOfferDetails?.forEachIndexed { index, offerDetails ->
             Timber.d("  Offer #${index + 1}:")
             Timber.d("    Offer ID: ${offerDetails.offerId ?: "N/A (Default Base Plan)"}")
@@ -420,7 +429,7 @@ class BillingManager private constructor(
 
     companion object {
         const val PRODUCT_ID = "one.mixin.messenger.membership" // Your subscription product ID
-        const val PLAN_ID_100 = "one-mixin-messenger-membership-100"
+        const val PLAN_ID_100 = "one-mixin-messenger-membership-1000"
         private const val RECONNECT_TIMER_MILLISECONDS = 1000L * 5 // 5 seconds
 
         @Volatile

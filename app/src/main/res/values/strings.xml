@@ -1994,6 +1994,7 @@
     <string name="not_paid">Not Paid?</string>
     <string name="not_paid_description">If you haven\'t paid, you can give up waiting to create and pay next order.</string>
     <string name="Cancel_Waiting">Cancel Waiting</string>
+    <string name="Coming_soon">Coming soon</string>
     <string name="Keep_Waiting">Keep Waiting</string>
     <string name="Rewards">Rewards</string>
     <string name="Description">Description</string>
