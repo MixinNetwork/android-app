@@ -122,7 +122,7 @@ fun MemberUpgradePaymentButton(
                         val basePhase = subscriptionPlanInfo.pricingPhaseList.firstOrNull()
                         if (basePhase != null) {
                             Text(
-                                text = "${basePhase.getPriceAmount()} ${basePhase.priceCurrencyCode}",
+                                text = stringResource(R.string.Upgrade_Plan_for, "${basePhase.getPriceAmount()} ${basePhase.priceCurrencyCode}"),
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
@@ -130,7 +130,7 @@ fun MemberUpgradePaymentButton(
                         } else {
                             Text(
                                 text = if (plan != null) {
-                                    "Upgrade for USD ${plan.amountPayment}"
+                                    stringResource(R.string.Upgrade_Plan_for, "${plan.amountPayment} USD")
                                 } else {
                                     stringResource(id = R.string.Upgrading_Plan)
                                 },
@@ -142,7 +142,7 @@ fun MemberUpgradePaymentButton(
                     }
                     else -> {
                         val priceText = if (plan != null) {
-                            "Upgrade for USD ${plan.amountPayment}"
+                            stringResource(R.string.Upgrade_Plan_for, "${plan.amountPayment} USD")
                         } else {
                             stringResource(id = R.string.Upgrading_Plan)
                         }

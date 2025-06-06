@@ -39,5 +39,5 @@ data class PricingPhaseInfo(
     val recurrenceMode: Int,
     val isIntroductoryPrice: Boolean = false
 ) {
-    fun getPriceAmount(): Double = priceAmountMicros / 1_000_000.0
+    fun getPriceAmount(): Double = priceAmountMicros / 1_000_000.00
 }
