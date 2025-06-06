@@ -1138,7 +1138,6 @@ class MessageAdapter(
 
         open fun onTranscriptClick(messageItem: MessageItem) {}
 
-        open fun onMemberIconClick(plan: Plan) {}
     }
 
     companion object {

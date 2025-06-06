@@ -66,7 +66,6 @@ class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(b
         if (isFirst && !isMe) {
             binding.chatName.visibility = View.VISIBLE
             binding.chatName.setMessageName(messageItem)
-            binding.chatName.setOnIconClickListener { messageItem.membership?.plan?.let { onItemListener.onMemberIconClick(it) } }
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {

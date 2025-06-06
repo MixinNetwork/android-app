@@ -954,9 +954,6 @@ class ConversationFragment() :
                 TextPreviewActivity.show(requireContext(), messageItem)
             }
 
-            override fun onMemberIconClick(plan: Plan) {
-                MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
-            }
         }
     }
 
@@ -2490,7 +2487,12 @@ class ConversationFragment() :
         }
 
     private fun renderUserInfo(user: User) {
-        binding.actionBar.setUser(user)
+        binding.actionBar.setUser(user) {
+            user.membership?.plan?.let { plan ->
+                MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan)
+                    .showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+            }
+        }
         binding.actionBar.avatarIv.visibility = VISIBLE
         binding.actionBar.avatarIv.setTextSize(16f)
         binding.actionBar.avatarIv.setInfo(user.fullName, user.avatarUrl, user.userId)

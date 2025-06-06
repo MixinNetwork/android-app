@@ -86,7 +86,6 @@ class WaitingHolder constructor(
         if (isFirst) {
             binding.chatName.isVisible = !isMe
             binding.chatName.setMessageName(messageItem)
-            binding.chatName.setOnIconClickListener { messageItem.membership?.plan?.let { onItemListener.onMemberIconClick(it) } }
             binding.chatName.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             binding.chatName.setTextColor(getColorById(messageItem.userId))
         } else {

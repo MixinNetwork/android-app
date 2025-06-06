@@ -193,7 +193,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
 
             name.setName(account)
-            name.setOnClickListener {
+            name.setOnIconClickListener {
                 account.membership?.plan?.let { plan ->
                     MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
                 }

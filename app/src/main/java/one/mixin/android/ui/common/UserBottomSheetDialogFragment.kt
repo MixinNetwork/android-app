@@ -790,7 +790,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             binding.name.setName(user)
-            binding.name.setOnClickListener {
+            binding.name.setOnIconClickListener {
                 user.membership?.plan?.let { plan ->
                     MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(
                         parentFragmentManager,

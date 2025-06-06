@@ -34,16 +34,18 @@ import timber.log.Timber
 import one.mixin.android.api.response.MemberOrderPlan
 import one.mixin.android.ui.setting.ui.components.MemberUpgradePaymentButton
 import one.mixin.android.util.ErrorHandler
+import org.web3j.abi.datatypes.Bool
 
 data class PlanPurchaseState(
     val currentPlan: Plan? = null,
     val isBillingManagerInitialized: Boolean = BuildConfig.IS_GOOGLE_PLAY.not(),
     val availablePlans: List<MemberOrderPlan> = emptyList(),
     val error: String? = null,
-    val availablePlayStorePlans: Set<String> = emptySet()
+    val availablePlayStorePlans: Set<String> = emptySet(),
+    val loading: Boolean = false
 ) {
     val isLoading: Boolean
-        get() = error == null && availablePlans.isEmpty() && isBillingManagerInitialized
+        get() = (error == null && availablePlans.isEmpty() && isBillingManagerInitialized) || loading
 }
 
 @Composable
@@ -181,10 +183,12 @@ fun MixinMemberUpgradePage(
                         mapLocalPlanToMemberOrderPlan(selectedPlan, purchaseState.availablePlans)
                             ?: return@MemberUpgradePaymentButton
                     viewModel.viewModelScope.launch(CoroutineExceptionHandler { _, error ->
+                        purchaseState = purchaseState.copy(loading = false)
                         purchaseState = purchaseState.copy(
                             error = ErrorHandler.getErrorMessage(error)
                         )
                     }) {
+                        purchaseState = purchaseState.copy(loading = true)
                         val orderRequest = if (isGooglePlayChannel) {
                             MemberOrderRequest(plan = plan.plan, fiatSource = "play_store", subscriptionId = plan.playStoreSubscriptionId)
                         } else {
@@ -201,6 +205,7 @@ fun MixinMemberUpgradePage(
                                 onUrlGenerated(orderResponse.data!!.paymentUrl!!)
                             }
                         }
+                        purchaseState = purchaseState.copy(loading = false)
                     }
                 }
             )

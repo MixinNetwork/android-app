@@ -131,7 +131,7 @@ fun InvoicesList(
                         )
                     }
 
-                    if (order.stars >= 0) {
+                    if (order.stars >= 0 && (order.status == MemberOrderStatus.COMPLETED.value || order.status == MemberOrderStatus.PAID.value)) {
                         Row(
                             verticalAlignment = Alignment.Bottom
                         ) {

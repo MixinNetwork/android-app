@@ -71,6 +71,7 @@ fun InvoiceHeaderSection(order: MemberOrder) {
                 MemberOrderStatus.EXPIRED.value -> stringResource(R.string.Expired)
                 MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
                 MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
+                MemberOrderStatus.CANCEL.value -> stringResource(R.string.Cancel)
                 else -> stringResource(R.string.Unknown)
             },
             fontSize = 14.sp,

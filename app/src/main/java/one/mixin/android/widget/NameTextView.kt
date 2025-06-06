@@ -67,6 +67,8 @@ class NameTextView : LinearLayoutCompat {
         iconView.updateLayoutParams<MarginLayoutParams> {
             width = badgeSize
             height = badgeSize
+        }
+        iconContainer.updateLayoutParams<MarginLayoutParams> {
             marginStart = badgePadding
         }
 
@@ -169,10 +171,15 @@ class NameTextView : LinearLayoutCompat {
                 },
             )
         } else {
-            iconView.isVisible = false
+            val badge = getBadge(user)
+            if (badge != null) {
+                iconView.isVisible = true
+                iconView.setImageDrawable(badge)
+            } else {
+                iconView.isVisible = false
+            }
             iconView.stopAnimation()
         }
-        this.textView.setCompoundDrawables(null, null, getBadge(user), null)
     }
 
     fun setName(user: MaoUser) {
@@ -289,10 +296,15 @@ class NameTextView : LinearLayoutCompat {
                 },
             )
         } else {
-            iconView.isVisible = false
+            val badge = getBadge(account)
+            if (badge != null) {
+                iconView.isVisible = true
+                iconView.setImageDrawable(badge)
+            } else {
+                iconView.isVisible = false
+            }
             iconView.stopAnimation()
         }
-        this.textView.setCompoundDrawables(null, null, getBadge(account), null)
     }
 
     fun setName(user: ParticipantItem) {

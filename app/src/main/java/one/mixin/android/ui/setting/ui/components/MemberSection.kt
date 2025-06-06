@@ -33,7 +33,7 @@ fun MemberSection(plan: Plan) {
 
         Plan.PROSPERITY -> listOf(
             stringResource(id = R.string.membership_benefit_create_safe, 100),
-            stringResource(id = R.string.membership_benefit_get_stars, 2),
+            stringResource(id = R.string.membership_benefit_get_stars, 20),
             stringResource(id = R.string.membership_benefit_safe_members, 10, 100),
             stringResource(id = R.string.membership_benefit_free_recovery_service)
         )

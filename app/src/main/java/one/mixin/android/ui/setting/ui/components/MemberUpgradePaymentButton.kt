@@ -1,6 +1,7 @@
 package one.mixin.android.ui.setting.ui.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,14 +42,13 @@ fun MemberUpgradePaymentButton(
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 30.dp)
-    ) {
-        if (selectedPlan != currentUserPlan) {
+    if (selectedPlan != currentUserPlan) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 30.dp)
+        ) {
             val isPlanAvailable = isPlanAvailableInGooglePlay(
                 selectedPlan,
                 purchaseState.availablePlans,
@@ -57,19 +57,20 @@ fun MemberUpgradePaymentButton(
 
             val plan = mapLocalPlanToMemberOrderPlan(selectedPlan, purchaseState.availablePlans)
 
-            val subscriptionPlanInfo = if (BuildConfig.IS_GOOGLE_PLAY && plan?.playStoreSubscriptionId != null) {
-                subscriptionPlans.find { it.planId == plan.playStoreSubscriptionId }
-            } else {
-                null
-            }
+            val subscriptionPlanInfo =
+                if (BuildConfig.IS_GOOGLE_PLAY && plan?.playStoreSubscriptionId != null) {
+                    subscriptionPlans.find { it.planId == plan.playStoreSubscriptionId }
+                } else {
+                    null
+                }
 
             val isGooglePlayUnavailable = BuildConfig.IS_GOOGLE_PLAY && !isPlanAvailable
 
             Button(
                 onClick = onPaymentClick,
                 enabled = pendingOrder == null &&
-                          purchaseState.isLoading.not() &&
-                          !isGooglePlayUnavailable,
+                    purchaseState.isLoading.not() &&
+                    !isGooglePlayUnavailable,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -93,6 +94,7 @@ fun MemberUpgradePaymentButton(
                                 .padding(end = 4.dp)
                         )
                     }
+
                     pendingOrder != null && getPlanFromOrderAfter(pendingOrder.after) != selectedPlan -> {
                         CircularProgressIndicator(
                             color = Color.White,
@@ -102,6 +104,7 @@ fun MemberUpgradePaymentButton(
                                 .padding(end = 4.dp)
                         )
                     }
+
                     pendingOrder != null -> {
                         Text(
                             text = stringResource(id = R.string.Upgrading_Plan),
@@ -110,6 +113,7 @@ fun MemberUpgradePaymentButton(
                             fontWeight = FontWeight.Medium
                         )
                     }
+
                     isGooglePlayUnavailable -> {
                         Text(
                             text = stringResource(R.string.Coming_soon),
@@ -118,11 +122,15 @@ fun MemberUpgradePaymentButton(
                             fontWeight = FontWeight.Medium
                         )
                     }
+
                     subscriptionPlanInfo != null -> {
                         val basePhase = subscriptionPlanInfo.pricingPhaseList.firstOrNull()
                         if (basePhase != null) {
                             Text(
-                                text = stringResource(R.string.Upgrade_Plan_for, "${basePhase.getPriceAmount()} ${basePhase.priceCurrencyCode}"),
+                                text = stringResource(
+                                    R.string.Upgrade_Plan_for,
+                                    "${basePhase.priceCurrencyCode} ${basePhase.getPriceAmount()}"
+                                ),
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
@@ -130,7 +138,10 @@ fun MemberUpgradePaymentButton(
                         } else {
                             Text(
                                 text = if (plan != null) {
-                                    stringResource(R.string.Upgrade_Plan_for, "${plan.amountPayment} USD")
+                                    stringResource(
+                                        R.string.Upgrade_Plan_for,
+                                        "USD ${plan.amountPayment}"
+                                    )
                                 } else {
                                     stringResource(id = R.string.Upgrading_Plan)
                                 },
@@ -140,9 +151,10 @@ fun MemberUpgradePaymentButton(
                             )
                         }
                     }
+
                     else -> {
                         val priceText = if (plan != null) {
-                            stringResource(R.string.Upgrade_Plan_for, "${plan.amountPayment} USD")
+                            stringResource(R.string.Upgrade_Plan_for, "USD ${plan.amountPayment}")
                         } else {
                             stringResource(id = R.string.Upgrading_Plan)
                         }
@@ -156,5 +168,7 @@ fun MemberUpgradePaymentButton(
                 }
             }
         }
+    } else {
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
