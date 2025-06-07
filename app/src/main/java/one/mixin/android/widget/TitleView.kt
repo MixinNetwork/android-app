@@ -163,8 +163,9 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         }
     }
 
-    fun setUser(user: User) {
+    fun setUser(user: User, onClickListener: OnClickListener) {
         binding.titleTv.setName(user)
+        binding.titleTv.setOnIconClickListener(onClickListener)
         binding.subTitleTv.visibility = View.VISIBLE
         binding.subTitleTv.setTextOnly(user.identityNumber)
     }

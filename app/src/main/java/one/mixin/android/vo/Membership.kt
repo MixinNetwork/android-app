@@ -38,11 +38,11 @@ data class Membership(
 }
 
 @DrawableRes
-fun Membership?.membershipIcon() = when {
+fun Membership?.membershipIcon(force: Boolean = false) = when {
     this == null -> View.NO_ID
     plan == Plan.ADVANCE -> R.drawable.ic_membership_advance
     plan == Plan.ELITE -> R.drawable.ic_membership_elite
-    // PROSPERITY is animation icon
+    force && plan == Plan.PROSPERITY -> R.drawable.ic_membership_prosperity
     else -> null
 }
 

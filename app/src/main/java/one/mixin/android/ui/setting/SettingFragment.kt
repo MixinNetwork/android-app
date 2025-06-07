@@ -3,20 +3,30 @@ package one.mixin.android.ui.setting
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSettingBinding
+import one.mixin.android.event.MembershipEvent
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.membershipIcon
+import one.mixin.android.widget.lottie.RLottieDrawable
 
 @AndroidEntryPoint
 class SettingFragment : BaseFragment(R.layout.fragment_setting) {
@@ -56,6 +66,19 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             appearanceRl.setOnClickListener {
                 navTo(AppearanceFragment.newInstance(), AppearanceFragment.TAG)
             }
+
+            mixinMemberInvoicesRl.setOnClickListener {
+                if (Session.getAccount()?.membership?.isMembership() == true) {
+                    navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
+                } else {
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                        parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                    )
+                }
+            }
+
+            updateMembershipIcon()
+
             notificationRl.setOnClickListener {
                 navTo(NotificationsFragment.newInstance(), NotificationsFragment.TAG)
             }
@@ -85,5 +108,44 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 }
             }
         }
+        RxBus.listen(MembershipEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(pauseScope)
+            .subscribe { _ ->
+                if (isAdded) {
+                    updateMembershipIcon()
+                }
+            }
     }
+
+    private fun updateMembershipIcon() {
+        val icon = Session.getAccount()?.membership?.membershipIcon(true)
+        if (icon != null) {
+            binding.mixinMemberPlanIv.isVisible = true
+            binding.mixinMemberPlanTv.isVisible = false
+
+            if (Session.getAccount()?.membership?.isProsperity() == true) {
+                binding.mixinMemberPlanIv.setImageDrawable(
+                    RLottieDrawable(
+                        R.raw.prosperity,
+                        "prosperity",
+                        18.dp,
+                        18.dp
+                    ).apply {
+                        setAllowDecodeSingleFrame(true)
+                        setAutoRepeat(1)
+                        setAutoRepeatCount(Int.MAX_VALUE)
+                        start()
+                    }
+                )
+            } else {
+                binding.mixinMemberPlanIv.setImageResource(icon)
+            }
+        } else {
+            binding.mixinMemberPlanIv.isVisible = false
+            binding.mixinMemberPlanTv.isVisible = true
+            binding.mixinMemberPlanIv.clearAnimation()
+        }
+    }
+
 }

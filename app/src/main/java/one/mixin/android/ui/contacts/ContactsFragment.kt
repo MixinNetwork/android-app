@@ -15,9 +15,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentContactsBinding
 import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
@@ -128,6 +130,14 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 contactAdapter.notifyDataSetChanged()
             }
         }
+        RxBus.listen(MembershipEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(pauseScope)
+            .subscribe { _ ->
+                if (isAdded) {
+                    contactAdapter.notifyDataSetChanged()
+                }
+            }
     }
 
     private fun hasContactPermission() =

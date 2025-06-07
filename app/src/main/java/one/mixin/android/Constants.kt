@@ -170,7 +170,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 65
+        const val CURRENT_VERSION = 66
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -413,6 +413,8 @@ object Constants {
         val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
 
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
+
+        const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
 
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 

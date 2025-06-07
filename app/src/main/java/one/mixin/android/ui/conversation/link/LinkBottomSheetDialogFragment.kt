@@ -68,6 +68,7 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
+import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.showUserBottom
@@ -123,7 +124,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
         const val CODE = "code"
@@ -165,7 +166,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private lateinit var url: String
     private val from: Int by lazy { requireArguments().getInt(FROM, FROM_EXTERNAL) }
 
-    private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this) }
+    private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this, linkViewModel) }
 
     override fun onStart() {
         try {
@@ -1209,8 +1210,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    fun showError(
-        @StringRes errorRes: Int = R.string.Invalid_Link,
+    override fun showError(
+        @StringRes errorRes: Int
     ) {
         if (!isAdded) return
 
@@ -1226,7 +1227,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    fun showError(error: String) {
+    override fun showError(error: String) {
         if (!isAdded) return
 
         binding.apply {
@@ -1257,7 +1258,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {}
         }
 
-    fun syncUtxo() {
+    override fun syncUtxo() {
         jobManager.addJobInBackground(SyncOutputJob())
     }
 

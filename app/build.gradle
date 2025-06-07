@@ -432,6 +432,8 @@ dependencies {
 
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
+    implementation "com.airbnb.android:lottie-compose:6.0.1"
+
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
@@ -500,6 +502,8 @@ dependencies {
         exclude group: 'com.squareup.leakcanary', module: 'leakcanary-android-process'
     }
     implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
+    implementation "com.android.billingclient:billing:$billingVersion"
+    implementation "com.android.billingclient:billing-ktx:$billingVersion"
 }
 
 composeCompiler {

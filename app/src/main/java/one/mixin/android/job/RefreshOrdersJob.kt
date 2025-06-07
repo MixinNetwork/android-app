@@ -19,7 +19,7 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
 
     override fun onRun(): Unit =
         runBlocking {
-            val lastCreate = orderDao.lastOrderCreatedAt()
+            val lastCreate = swapOrderDao.lastOrderCreatedAt()
             if (lastCreate != null && MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == -1){
                 MixinApplication.appContext.defaultSharedPreferences.putInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, 0)
                 RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
@@ -30,7 +30,7 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
     private suspend fun refreshOrders(offset: String?) {
         val response = routeService.orders(limit = LIMIT, offset = offset)
         if (response.isSuccess && response.data != null) {
-            orderDao.insertListSuspend(response.data!!)
+            swapOrderDao.insertListSuspend(response.data!!)
             if (response.data!!.size >= LIMIT) {
                 val lastCreate = response.data?.last()?.createdAt ?: return
                 refreshOrders(lastCreate)
