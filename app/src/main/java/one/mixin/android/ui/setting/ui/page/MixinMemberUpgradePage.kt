@@ -55,7 +55,8 @@ fun MixinMemberUpgradePage(
     onClose: () -> Unit,
     onUrlGenerated: (String) -> Unit,
     onGooglePlay: (orderId: String, playStoreSubscriptionId: String) -> Unit,
-    onContactTeamMixin: () -> Unit = {}
+    onContactTeamMixin: () -> Unit = {},
+    onViewInvoice: (MemberOrder) -> Unit = {}
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
 
@@ -209,7 +210,8 @@ fun MixinMemberUpgradePage(
                         purchaseState = purchaseState.copy(loading = false)
                     }
                 },
-                onContactSupport = onContactTeamMixin
+                onContactSupport = onContactTeamMixin,
+                onViewInvoice = onViewInvoice
             )
         }
     }

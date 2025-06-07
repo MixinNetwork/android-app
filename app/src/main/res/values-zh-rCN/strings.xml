@@ -1938,4 +1938,6 @@
     <string name="Rewards">奖励</string>
     <string name="Description">说明</string>
     <string name="Rechange_Stars">充值 Mixin Stars</string>
+    <string name="View_Invoice">显示账单</string>
+    <string name="verifying_payment">支付验证中…</string>
 </resources>

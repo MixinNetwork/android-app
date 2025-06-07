@@ -40,7 +40,8 @@ fun MemberUpgradePaymentButton(
     pendingOrder: MemberOrder?,
     purchaseState: PlanPurchaseState,
     onPaymentClick: () -> Unit,
-    onContactSupport: () -> Unit
+    onContactSupport: () -> Unit,
+    onViewInvoice: (MemberOrder) -> Unit = {}
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
@@ -72,11 +73,15 @@ fun MemberUpgradePaymentButton(
                 onClick = {
                     if (selectedPlan == Plan.PROSPERITY) {
                         onContactSupport()
+                    } else if (pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) {
+                        onViewInvoice(pendingOrder)
                     } else {
                         onPaymentClick()
                     }
                 },
-                enabled = selectedPlan == Plan.PROSPERITY || (pendingOrder == null &&
+                enabled = selectedPlan == Plan.PROSPERITY ||
+                    (pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) ||
+                    (pendingOrder == null &&
                     purchaseState.isLoading.not() &&
                     !isGooglePlayUnavailable),
                 modifier = Modifier
@@ -87,13 +92,21 @@ fun MemberUpgradePaymentButton(
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = when {
                         selectedPlan == Plan.PROSPERITY -> MixinAppTheme.colors.accent
-                        isGooglePlayUnavailable -> MixinAppTheme.colors.backgroundGray
+                        pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after) -> MixinAppTheme.colors.accent
                         pendingOrder == null -> MixinAppTheme.colors.accent
                         else -> MixinAppTheme.colors.backgroundGray
                     }
                 )
             ) {
                 when {
+                    pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after) -> {
+                        Text(
+                            text = stringResource(id = R.string.View_Invoice),
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                     selectedPlan == Plan.PROSPERITY -> {
                         Text(
                             text = stringResource(id = R.string.Contact_Support),
@@ -183,6 +196,12 @@ fun MemberUpgradePaymentButton(
                         )
                     }
                 }
+            }
+            if (pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) {
+                Text(
+                    text = stringResource(id = R.string.verifying_payment),
+                    color = MixinAppTheme.colors.textAssist,
+                )
             }
         }
     } else {
