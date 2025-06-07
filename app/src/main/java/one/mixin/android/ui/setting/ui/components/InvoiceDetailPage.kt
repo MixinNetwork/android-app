@@ -78,43 +78,45 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                         color = MixinAppTheme.colors.textPrimary,
                         fontSize = 16.sp
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.membership_plan).uppercase(),
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (order.category != "TRANS") {
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
+                            text = stringResource(R.string.membership_plan).uppercase(),
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                color = MixinAppTheme.colors.textPrimary,
+                                text = stringResource(
+                                    when (order.after) {
+                                        "basic" -> R.string.membership_advance
+                                        "standard" -> R.string.membership_elite
+                                        else -> R.string.membership_prosperity
+                                    }
+                                ),
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            MembershipIcon(
+                                order.after,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.Amount).uppercase(),
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = order.amount,
                             color = MixinAppTheme.colors.textPrimary,
-                            text = stringResource(
-                                when (order.after) {
-                                    "basic" -> R.string.membership_advance
-                                    "standard" -> R.string.membership_elite
-                                    else -> R.string.membership_prosperity
-                                }
-                            ),
                             fontSize = 16.sp
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        MembershipIcon(
-                            order.after,
-                            modifier = Modifier.size(18.dp)
-                        )
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.Amount).uppercase(),
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = order.amount,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 16.sp
-                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = stringResource(R.string.Description),
@@ -123,7 +125,9 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = if (order.after == order.before) {
+                        text = if (order.category == "TRANS") {
+                            stringResource(R.string.Rechange_Stars)
+                        } else if (order.after == order.before) {
                             stringResource(R.string.invoice_renew_plan,
                                 when (order.after) {
                                     "basic" -> stringResource(R.string.membership_advance)
@@ -156,7 +160,7 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                         fontSize = 16.sp
                     )
                 }
-                if (order.status == MemberOrderStatus.COMPLETED.value || order.status == MemberOrderStatus.PAID.value) {
+                if (order.category != "TRANS" && (order.status == MemberOrderStatus.COMPLETED.value || order.status == MemberOrderStatus.PAID.value)) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Column(
                         modifier = Modifier
@@ -175,7 +179,7 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_member_star),
+                                painter = painterResource(id = R.drawable.ic_membership_star),
                                 contentDescription = null,
                                 tint = Color.Unspecified,
                                 modifier = Modifier.size(32.dp)
