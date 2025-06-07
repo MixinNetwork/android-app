@@ -26,12 +26,12 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.vo.Plan
 import one.mixin.android.ui.setting.ui.page.PlanPurchaseState
 import one.mixin.android.ui.setting.ui.page.getPlanFromOrderAfter
 import one.mixin.android.ui.setting.ui.page.isPlanAvailableInGooglePlay
 import one.mixin.android.ui.setting.ui.page.mapLocalPlanToMemberOrderPlan
 import one.mixin.android.ui.viewmodel.MemberViewModel
+import one.mixin.android.vo.Plan
 
 @Composable
 fun MemberUpgradePaymentButton(
@@ -39,6 +39,7 @@ fun MemberUpgradePaymentButton(
     selectedPlan: Plan,
     pendingOrder: MemberOrder?,
     purchaseState: PlanPurchaseState,
+    savedOrderId: String? = null,
     onPaymentClick: () -> Unit,
     onContactSupport: () -> Unit,
     onViewInvoice: (MemberOrder) -> Unit = {}
@@ -73,14 +74,14 @@ fun MemberUpgradePaymentButton(
                 onClick = {
                     if (selectedPlan == Plan.PROSPERITY) {
                         onContactSupport()
-                    } else if (pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) {
+                    } else if (savedOrderId == null && pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) {
                         onViewInvoice(pendingOrder)
                     } else {
                         onPaymentClick()
                     }
                 },
                 enabled = selectedPlan == Plan.PROSPERITY ||
-                    (pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) ||
+                    (savedOrderId == null && pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) ||
                     (pendingOrder == null &&
                     purchaseState.isLoading.not() &&
                     !isGooglePlayUnavailable),
@@ -92,14 +93,14 @@ fun MemberUpgradePaymentButton(
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = when {
                         selectedPlan == Plan.PROSPERITY -> MixinAppTheme.colors.accent
-                        pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after) -> MixinAppTheme.colors.accent
+                        savedOrderId == null && pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after) -> MixinAppTheme.colors.accent
                         pendingOrder == null -> MixinAppTheme.colors.accent
                         else -> MixinAppTheme.colors.backgroundGray
                     }
                 )
             ) {
                 when {
-                    pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after) -> {
+                    savedOrderId == null && pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after) -> {
                         Text(
                             text = stringResource(id = R.string.View_Invoice),
                             color = Color.White,
@@ -197,7 +198,7 @@ fun MemberUpgradePaymentButton(
                     }
                 }
             }
-            if (pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) {
+            if (savedOrderId == null && pendingOrder != null && selectedPlan == getPlanFromOrderAfter(pendingOrder.after)) {
                 Text(
                     text = stringResource(id = R.string.verifying_payment),
                     color = MixinAppTheme.colors.textAssist,

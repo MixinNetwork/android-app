@@ -1940,4 +1940,5 @@
     <string name="Rechange_Stars">充值 Mixin Stars</string>
     <string name="View_Invoice">显示账单</string>
     <string name="verifying_payment">支付验证中…</string>
+    <string name="verifying_payment_description">支付检测中，请耐心等待</string>
 </resources>

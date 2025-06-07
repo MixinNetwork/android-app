@@ -137,6 +137,7 @@ fun InvoicesList(
                                     MemberOrderStatus.EXPIRED.value -> stringResource(R.string.Expired)
                                     MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
                                     MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
+                                    MemberOrderStatus.CANCEL.value -> stringResource(R.string.Canceled)
                                     else -> stringResource(R.string.Unknown)
                                 },
                                 fontSize = 12.sp,

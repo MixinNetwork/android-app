@@ -23,18 +23,17 @@ import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MemberOrderPlan
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.MemberUpgradeContent
+import one.mixin.android.ui.setting.ui.components.MemberUpgradePaymentButton
 import one.mixin.android.ui.setting.ui.components.MemberUpgradeTopBar
 import one.mixin.android.ui.setting.ui.components.PlanSelector
 import one.mixin.android.ui.viewmodel.MemberViewModel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.MemberOrderStatus
 import one.mixin.android.vo.Plan
 import timber.log.Timber
-import one.mixin.android.api.response.MemberOrderPlan
-import one.mixin.android.ui.setting.ui.components.MemberUpgradePaymentButton
-import one.mixin.android.util.ErrorHandler
-import org.web3j.abi.datatypes.Bool
 
 data class PlanPurchaseState(
     val currentPlan: Plan? = null,
@@ -61,6 +60,7 @@ fun MixinMemberUpgradePage(
     val viewModel: MemberViewModel = hiltViewModel()
 
     var purchaseState by remember { mutableStateOf(PlanPurchaseState()) }
+    var savedOrderId by remember { mutableStateOf<String?>(null) }
 
     var selectedPlan by remember {
         mutableStateOf(
@@ -179,6 +179,7 @@ fun MixinMemberUpgradePage(
                 selectedPlan = selectedPlan,
                 pendingOrder = pendingOrderState,
                 purchaseState = purchaseState,
+                savedOrderId = savedOrderId,
                 onPaymentClick = {
                     val isGooglePlayChannel = BuildConfig.IS_GOOGLE_PLAY
                     val plan =
@@ -199,6 +200,10 @@ fun MixinMemberUpgradePage(
                         val orderResponse = viewModel.createMemberOrder(orderRequest)
 
                         if (orderResponse.isSuccess && orderResponse.data != null) {
+                            orderResponse.data?.orderId?.let { orderId ->
+                                savedOrderId = orderId
+                            }
+
                             if (isGooglePlayChannel) {
                                 plan.playStoreSubscriptionId?.let { playStoreId ->
                                     onGooglePlay(orderResponse.data!!.orderId!!, playStoreId)

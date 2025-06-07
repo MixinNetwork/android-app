@@ -26,13 +26,11 @@ import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.timeFormat
-import one.mixin.android.ui.setting.member.getInvoiceStatus
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.MemberOrderStatus
-import one.mixin.android.vo.Plan
 
 @Composable
-fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
+fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit, onCancel: (MemberOrder) -> Unit) {
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Invoice),
@@ -44,7 +42,7 @@ fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit) {
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
-                InvoiceHeaderSection(order)
+                InvoiceHeaderSection(order, onCancel)
                 Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     modifier = Modifier

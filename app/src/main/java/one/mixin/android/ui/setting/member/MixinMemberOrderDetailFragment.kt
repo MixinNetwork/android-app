@@ -37,7 +37,11 @@ class MixinMemberOrderDetailFragment : Fragment() {
             setContent {
                 InvoiceDetailPage(
                     order = order,
-                    onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() }
+                    onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() },
+                    onCancel = { order ->
+                        MixinMemberCancelBottomSheetDialogFragment.newInstance(order).showNow(parentFragmentManager,
+                            MixinMemberCancelBottomSheetDialogFragment.TAG)
+                    }
                 )
             }
         }

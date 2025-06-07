@@ -131,4 +131,6 @@ class MemberViewModel @Inject constructor(
             memberRepository.insertOrder(order)
         }
     }
+
+    suspend fun cancelOrder(orderId: String) = memberRepository.cancelOrder(orderId)
 }

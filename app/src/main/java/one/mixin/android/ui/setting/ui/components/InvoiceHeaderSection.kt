@@ -1,6 +1,7 @@
 package one.mixin.android.ui.setting.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,7 +29,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
-fun InvoiceHeaderSection(order: MemberOrder) {
+fun InvoiceHeaderSection(order: MemberOrder, onCancel:(MemberOrder) -> Unit) {
     val title = when (order.after) {
         "basic" -> stringResource(R.string.membership_advance)
         "standard" -> stringResource(R.string.membership_elite)
@@ -98,7 +99,7 @@ fun InvoiceHeaderSection(order: MemberOrder) {
                 MemberOrderStatus.EXPIRED.value -> stringResource(R.string.Expired)
                 MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
                 MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
-                MemberOrderStatus.CANCEL.value -> stringResource(R.string.Cancel)
+                MemberOrderStatus.CANCEL.value -> stringResource(R.string.Canceled)
                 else -> stringResource(R.string.Unknown)
             },
             fontSize = 14.sp,
@@ -111,5 +112,22 @@ fun InvoiceHeaderSection(order: MemberOrder) {
                 )
                 .padding(horizontal = 8.dp, vertical = 2.5.dp)
         )
+        if (order.status == MemberOrderStatus.INITIAL.value) {
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = stringResource(R.string.verifying_payment_description),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                modifier = Modifier.clickable { onCancel(order) },
+                text = stringResource(R.string.not_paid),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.accent,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }

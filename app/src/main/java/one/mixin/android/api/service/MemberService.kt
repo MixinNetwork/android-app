@@ -21,4 +21,7 @@ interface MemberService {
 
     @GET("safe/membership/orders/{id}")
     suspend fun getOrder(@Path("id") id: String): MixinResponse<MemberOrder>
+
+    @POST("safe/membership/orders/{id}/cancel")
+    suspend fun cancelOrder(@Path("id") id: String): MixinResponse<MemberOrder>
 }

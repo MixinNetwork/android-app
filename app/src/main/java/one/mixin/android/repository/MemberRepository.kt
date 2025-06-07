@@ -8,6 +8,8 @@ import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.api.service.MemberService
 import one.mixin.android.db.MemberOrderDao
+import retrofit2.http.POST
+import retrofit2.http.Path
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,5 +50,9 @@ class MemberRepository @Inject constructor(
 
     fun getLatestPendingOrderFlow(): Flow<MemberOrder?> {
         return orderDao.getLatestPendingOrderFlow()
+    }
+
+    suspend fun cancelOrder(id: String): MixinResponse<MemberOrder> {
+        return memberService.cancelOrder(id)
     }
 }
