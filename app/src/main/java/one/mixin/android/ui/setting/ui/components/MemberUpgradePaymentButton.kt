@@ -25,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Plan
 import one.mixin.android.ui.setting.ui.page.PlanPurchaseState
 import one.mixin.android.ui.setting.ui.page.getPlanFromOrderAfter
@@ -38,7 +39,8 @@ fun MemberUpgradePaymentButton(
     selectedPlan: Plan,
     pendingOrder: MemberOrder?,
     purchaseState: PlanPurchaseState,
-    onPaymentClick: () -> Unit
+    onPaymentClick: () -> Unit,
+    onContactSupport: () -> Unit
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
@@ -67,10 +69,16 @@ fun MemberUpgradePaymentButton(
             val isGooglePlayUnavailable = BuildConfig.IS_GOOGLE_PLAY && !isPlanAvailable
 
             Button(
-                onClick = onPaymentClick,
-                enabled = pendingOrder == null &&
+                onClick = {
+                    if (selectedPlan == Plan.PROSPERITY) {
+                        onContactSupport()
+                    } else {
+                        onPaymentClick()
+                    }
+                },
+                enabled = selectedPlan == Plan.PROSPERITY || (pendingOrder == null &&
                     purchaseState.isLoading.not() &&
-                    !isGooglePlayUnavailable,
+                    !isGooglePlayUnavailable),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -78,13 +86,22 @@ fun MemberUpgradePaymentButton(
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = when {
-                        isGooglePlayUnavailable -> Color.Gray
-                        pendingOrder == null -> Color(0xFF3478F6)
-                        else -> Color.Gray
+                        selectedPlan == Plan.PROSPERITY -> MixinAppTheme.colors.accent
+                        isGooglePlayUnavailable -> MixinAppTheme.colors.backgroundGray
+                        pendingOrder == null -> MixinAppTheme.colors.accent
+                        else -> MixinAppTheme.colors.backgroundGray
                     }
                 )
             ) {
                 when {
+                    selectedPlan == Plan.PROSPERITY -> {
+                        Text(
+                            text = stringResource(id = R.string.Contact_Support),
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                     purchaseState.isLoading -> {
                         CircularProgressIndicator(
                             color = Color.White,
@@ -115,11 +132,11 @@ fun MemberUpgradePaymentButton(
                     }
 
                     isGooglePlayUnavailable -> {
-                        Text(
-                            text = stringResource(R.string.Coming_soon),
+                        CircularProgressIndicator(
                             color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            strokeWidth = 2.dp,
+                            modifier = Modifier
+                                .size(20.dp)
                         )
                     }
 

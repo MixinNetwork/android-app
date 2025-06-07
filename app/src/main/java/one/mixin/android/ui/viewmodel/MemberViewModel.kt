@@ -68,6 +68,8 @@ class MemberViewModel @Inject constructor(
         billingManager.refresh()
     }
 
+    suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
     override fun onCleared() {
         super.onCleared()
         billingManager.destroy()

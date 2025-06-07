@@ -54,7 +54,8 @@ fun MixinMemberUpgradePage(
     selectedPlanOverride: Plan? = null,
     onClose: () -> Unit,
     onUrlGenerated: (String) -> Unit,
-    onGooglePlay: (orderId: String, playStoreSubscriptionId: String) -> Unit
+    onGooglePlay: (orderId: String, playStoreSubscriptionId: String) -> Unit,
+    onContactTeamMixin: () -> Unit = {}
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
 
@@ -207,7 +208,8 @@ fun MixinMemberUpgradePage(
                         }
                         purchaseState = purchaseState.copy(loading = false)
                     }
-                }
+                },
+                onContactSupport = onContactTeamMixin
             )
         }
     }
@@ -222,7 +224,8 @@ private fun MixinMemberUpgradePagePreview() {
             selectedPlanOverride = null,
             onClose = {},
             onUrlGenerated = {},
-            onGooglePlay = { _, _ -> }
+            onGooglePlay = { _, _ -> },
+            onContactTeamMixin = {}
         )
     }
 }

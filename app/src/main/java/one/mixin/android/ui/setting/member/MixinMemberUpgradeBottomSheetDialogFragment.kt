@@ -18,17 +18,20 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.SchemeBottomSheet
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -103,6 +106,17 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                     },
                     onGooglePlay = { orderId, playStoreSubscriptionId ->
                         launchPurchaseSubscription(orderId, playStoreSubscriptionId)
+                    },
+                    onContactTeamMixin = {
+                        lifecycleScope.launch {
+                            val userTeamMixin = memberViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                            if (userTeamMixin == null) {
+                                toast(R.string.Data_error)
+                            } else {
+                                ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                                dismiss()
+                            }
+                        }
                     }
                 )
                 doOnPreDraw {
