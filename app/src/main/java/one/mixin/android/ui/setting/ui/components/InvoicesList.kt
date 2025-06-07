@@ -101,55 +101,48 @@ fun InvoicesList(
                     Column(
                         modifier = Modifier.weight(1f)
                     ) {
-                        if (order.category == "TRANS") {
-                            Text(
-                                stringResource(R.string.Buy_Stars), fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textPrimary
-                            )
-                        } else {
-                            Text(
-                                text = if (order.after == order.before) {
-                                    stringResource(
-                                        R.string.invoice_renew_plan,
-                                        when (order.after) {
-                                            "basic" -> stringResource(R.string.membership_advance)
-                                            "standard" -> stringResource(R.string.membership_elite)
-                                            else -> stringResource(R.string.membership_prosperity)
-                                        }
-                                    )
-                                } else {
-                                    stringResource(
-                                        R.string.invoice_upgrade_plan,
-                                        when (order.after) {
-                                            "basic" -> stringResource(R.string.membership_advance)
-                                            "standard" -> stringResource(R.string.membership_elite)
-                                            else -> stringResource(R.string.membership_prosperity)
-                                        }
-                                    )
-                                },
-                                fontSize = 14.sp,
-                                color = MixinAppTheme.colors.textPrimary
-                            )
-                            Text(
-                                text = when (order.status) {
-                                    MemberOrderStatus.COMPLETED.value -> stringResource(R.string.Completed)
-                                    MemberOrderStatus.PAID.value -> stringResource(R.string.Paid)
-                                    MemberOrderStatus.EXPIRED.value -> stringResource(R.string.Expired)
-                                    MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
-                                    MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
-                                    MemberOrderStatus.CANCEL.value -> stringResource(R.string.Canceled)
-                                    else -> stringResource(R.string.Unknown)
-                                },
-                                fontSize = 12.sp,
-                                color = when (order.status.lowercase()) {
-                                    MemberOrderStatus.COMPLETED.value, MemberOrderStatus.PAID.value -> MixinAppTheme.colors.walletGreen
-                                    MemberOrderStatus.EXPIRED.value, MemberOrderStatus.FAILED.value -> MixinAppTheme.colors.walletRed
-                                    else -> MixinAppTheme.colors.textRemarks
-                                }
-                            )
-                        }
+                        Text(
+                            text = if (order.category == "TRANS") stringResource(R.string.Buy_Stars) else if (order.after == order.before) {
+                                stringResource(
+                                    R.string.invoice_renew_plan,
+                                    when (order.after) {
+                                        "basic" -> stringResource(R.string.membership_advance)
+                                        "standard" -> stringResource(R.string.membership_elite)
+                                        else -> stringResource(R.string.membership_prosperity)
+                                    }
+                                )
+                            } else {
+                                stringResource(
+                                    R.string.invoice_upgrade_plan,
+                                    when (order.after) {
+                                        "basic" -> stringResource(R.string.membership_advance)
+                                        "standard" -> stringResource(R.string.membership_elite)
+                                        else -> stringResource(R.string.membership_prosperity)
+                                    }
+                                )
+                            },
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textPrimary
+                        )
+                        Text(
+                            text = when (order.status) {
+                                MemberOrderStatus.COMPLETED.value -> stringResource(R.string.Completed)
+                                MemberOrderStatus.PAID.value -> stringResource(R.string.Paid)
+                                MemberOrderStatus.EXPIRED.value -> stringResource(R.string.Expired)
+                                MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
+                                MemberOrderStatus.REFUNDED.value -> stringResource(R.string.Refunded)
+                                MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
+                                MemberOrderStatus.CANCEL.value -> stringResource(R.string.Canceled)
+                                else -> stringResource(R.string.Unknown)
+                            },
+                            fontSize = 12.sp,
+                            color = when (order.status.lowercase()) {
+                                MemberOrderStatus.COMPLETED.value, MemberOrderStatus.PAID.value -> MixinAppTheme.colors.walletGreen
+                                MemberOrderStatus.CANCEL.value, MemberOrderStatus.REFUNDED.value, MemberOrderStatus.EXPIRED.value, MemberOrderStatus.FAILED.value -> MixinAppTheme.colors.walletRed
+                                else -> MixinAppTheme.colors.textRemarks
+                            }
+                        )
                     }
-
                     if (order.stars >= 0 && (order.status == MemberOrderStatus.COMPLETED.value || order.status == MemberOrderStatus.PAID.value)) {
                         Row(
                             verticalAlignment = Alignment.Bottom

@@ -48,6 +48,8 @@ class MemberRepository @Inject constructor(
     
     fun getAllMemberOrders() = orderDao.getAllOrdersFlow()
 
+    fun getOrdersFlow(orderId:String) = orderDao.getOrdersFlow(orderId)
+
     fun getLatestPendingOrderFlow(): Flow<MemberOrder?> {
         return orderDao.getLatestPendingOrderFlow()
     }

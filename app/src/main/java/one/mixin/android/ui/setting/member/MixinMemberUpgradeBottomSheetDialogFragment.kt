@@ -24,6 +24,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
@@ -109,15 +110,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                         launchPurchaseSubscription(orderId, playStoreSubscriptionId)
                     },
                     onContactTeamMixin = {
-                        lifecycleScope.launch {
-                            val userTeamMixin = memberViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                            if (userTeamMixin == null) {
-                                toast(R.string.Data_error)
-                            } else {
-                                ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                                dismiss()
-                            }
-                        }
+                        requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                     },
                     onViewInvoice = { order ->
                         dismiss()

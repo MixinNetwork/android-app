@@ -36,7 +36,7 @@ class MixinMemberOrderDetailFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 InvoiceDetailPage(
-                    order = order,
+                    orderId = order.orderId,
                     onPop = { requireActivity().onBackPressedDispatcher.onBackPressed() },
                     onCancel = { order ->
                         MixinMemberCancelBottomSheetDialogFragment.newInstance(order).showNow(parentFragmentManager,

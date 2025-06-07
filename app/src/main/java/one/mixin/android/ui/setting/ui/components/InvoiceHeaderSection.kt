@@ -38,7 +38,7 @@ fun InvoiceHeaderSection(order: MemberOrder, onCancel:(MemberOrder) -> Unit) {
 
     val statusColor = when (order.status.lowercase()) {
         MemberOrderStatus.COMPLETED.value, MemberOrderStatus.PAID.value -> MixinAppTheme.colors.walletGreen
-        MemberOrderStatus.EXPIRED.value, MemberOrderStatus.FAILED.value -> MixinAppTheme.colors.walletRed
+        MemberOrderStatus.CANCEL.value, MemberOrderStatus.REFUNDED.value, MemberOrderStatus.EXPIRED.value, MemberOrderStatus.FAILED.value -> MixinAppTheme.colors.walletRed
         else -> MixinAppTheme.colors.textRemarks
     }
 
@@ -100,6 +100,7 @@ fun InvoiceHeaderSection(order: MemberOrder, onCancel:(MemberOrder) -> Unit) {
                 MemberOrderStatus.FAILED.value -> stringResource(R.string.Failed)
                 MemberOrderStatus.INITIAL.value -> stringResource(R.string.Pending)
                 MemberOrderStatus.CANCEL.value -> stringResource(R.string.Canceled)
+                MemberOrderStatus.REFUNDED.value -> stringResource(R.string.Refunded)
                 else -> stringResource(R.string.Unknown)
             },
             fontSize = 14.sp,

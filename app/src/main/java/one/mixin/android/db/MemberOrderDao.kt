@@ -18,4 +18,8 @@ interface MemberOrderDao : BaseDao<MemberOrder> {
 
     @Query("SELECT * FROM member_orders ORDER BY created_at DESC")
     fun getAllOrdersFlow(): Flow<List<MemberOrder>>
+
+    @Query("SELECT * FROM member_orders WHERE order_id = :orderId")
+    fun getOrdersFlow(orderId: String): Flow<MemberOrder?>
+
 }

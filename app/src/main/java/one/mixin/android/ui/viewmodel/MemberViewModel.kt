@@ -126,6 +126,8 @@ class MemberViewModel @Inject constructor(
 
     fun getAllMemberOrders() = memberRepository.getAllMemberOrders()
 
+    fun getOrdersFlow(orderId: String) = memberRepository.getOrdersFlow(orderId)
+
     fun insertOrders(order: MemberOrder) {
         viewModelScope.launch {
             memberRepository.insertOrder(order)

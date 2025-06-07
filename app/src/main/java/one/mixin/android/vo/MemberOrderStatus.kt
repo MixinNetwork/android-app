@@ -6,6 +6,7 @@ enum class MemberOrderStatus(val value: String) {
     COMPLETED("completed"),
     CANCEL("cancel"),
     EXPIRED("expired"),
+    REFUNDED("refunded"),
     FAILED("failed");
 
     companion object {

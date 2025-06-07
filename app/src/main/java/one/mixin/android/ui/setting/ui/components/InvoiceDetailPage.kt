@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,21 +23,26 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.timeFormat
+import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
-fun InvoiceDetailPage(order: MemberOrder, onPop: () -> Unit, onCancel: (MemberOrder) -> Unit) {
+fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MemberOrder) -> Unit) {
+    val viewModel = hiltViewModel<MemberViewModel>()
+    val orderState = viewModel.getOrdersFlow(orderId).collectAsState(null)
     MixinAppTheme {
         PageScaffold(
             title = stringResource(R.string.Invoice),
             verticalScrollable = false,
             pop = onPop
         ) {
+            val order = orderState.value ?: return@PageScaffold
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
