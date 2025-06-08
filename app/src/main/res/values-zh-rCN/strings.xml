@@ -1935,7 +1935,11 @@
     <string name="Upgrading_Plan">正在升级会员</string>
     <string name="Profile_Badge">个人资料徽章</string>
     <string name="Profile_Badge_description">您名字旁边的专属徽章</string>
-    <string name="Rewards">奖励</string>
+    <string name="Rewards">礼遇</string>
+    <string name="not_paid">未付款？</string>
+    <string name="not_paid_description">如果您尚未付款，可以放弃等待，重新创建并支付新的订单。</string>
+    <string name="Cancel_Waiting">取消订单</string>
+    <string name="Keep_Waiting">继续等待</string>
     <string name="Description">说明</string>
     <string name="Rechange_Stars">充值 Mixin Stars</string>
     <string name="View_Invoice">显示账单</string>

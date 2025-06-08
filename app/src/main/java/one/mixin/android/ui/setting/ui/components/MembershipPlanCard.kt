@@ -117,7 +117,8 @@ fun MembershipPlanCard(
             ),
         ) {
             Text(
-                text = stringResource(R.string.View_Plan),
+                text = if (isExpired) stringResource(R.string.Renew_Plan) else
+                    stringResource(R.string.View_Plan),
                 color = Color.White,
             )
         }

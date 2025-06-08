@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,9 +25,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.timeFormat
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -40,7 +44,18 @@ fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MemberOrder
         PageScaffold(
             title = stringResource(R.string.Invoice),
             verticalScrollable = false,
-            pop = onPop
+            pop = onPop,
+            actions = {
+                IconButton(onClick = {
+                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_support),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            }
         ) {
             val order = orderState.value ?: return@PageScaffold
             Column(
@@ -116,7 +131,7 @@ fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MemberOrder
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = order.amount,
+                            text = "USD ${order.amount.numberFormat()}",
                             color = MixinAppTheme.colors.textPrimary,
                             fontSize = 16.sp
                         )
