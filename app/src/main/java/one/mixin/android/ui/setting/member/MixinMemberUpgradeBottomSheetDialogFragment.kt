@@ -25,6 +25,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -68,6 +69,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        jobManager.addJobInBackground(RefreshAccountJob())
         arguments?.getString(ARG_DEFAULT_PLAN)?.let {
             try {
                 defaultPlan = Plan.valueOf(it)

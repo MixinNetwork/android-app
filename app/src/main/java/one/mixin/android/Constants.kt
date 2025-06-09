@@ -154,6 +154,7 @@ object Constants {
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
         const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
         const val HTTPS_SWAP = "https://mixin.one/swap"
+        const val HTTPS_MEMBERSHIP = "https://mixin.one/membership"
 
         // web3
         const val HTTPS_MIXIN_WC = "https://mixin.one/wc"

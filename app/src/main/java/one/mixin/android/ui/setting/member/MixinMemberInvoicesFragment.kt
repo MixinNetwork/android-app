@@ -11,6 +11,8 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.extension.navTo
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.SettingViewModel
@@ -18,6 +20,7 @@ import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.vo.Membership
 import one.mixin.android.vo.Plan
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MixinMemberInvoicesFragment : BaseFragment() {
@@ -29,8 +32,12 @@ class MixinMemberInvoicesFragment : BaseFragment() {
     private val settingViewModel: SettingViewModel by viewModels({ requireActivity() })
     private val memberViewModel: MemberViewModel by viewModels()
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        jobManager.addJobInBackground(RefreshAccountJob())
     }
 
     override fun onCreateView(

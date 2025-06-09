@@ -18,6 +18,8 @@ import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -27,6 +29,7 @@ import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFr
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.lottie.RLottieDrawable
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingFragment : BaseFragment(R.layout.fragment_setting) {
@@ -38,6 +41,14 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
 
     private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentSettingBinding::bind)
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        jobManager.addJobInBackground(RefreshAccountJob())
+    }
 
     override fun onViewCreated(
         view: View,
