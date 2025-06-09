@@ -195,6 +195,11 @@ interface RouteService {
         @Query("limit") limit: Int
     ) : MixinResponse<List<SwapOrder>>
 
+    @GET("web3/swap/orders/{id}")
+    suspend fun ordersById(
+        @Path("id") id: String,
+    ) : MixinResponse<SwapOrder>
+
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(
         @Path("id") assetId: String,

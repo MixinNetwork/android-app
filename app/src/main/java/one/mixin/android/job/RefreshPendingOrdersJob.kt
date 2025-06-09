@@ -7,7 +7,7 @@ import kotlinx.coroutines.runBlocking
 class RefreshPendingOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
         private const val serialVersionUID = 2L
-        const val GROUP = "RefreshOrdersJob"
+        const val GROUP = "RefreshPendingOrdersJob"
     }
 
     override fun onRun(): Unit =
@@ -16,16 +16,16 @@ class RefreshPendingOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstan
             if (pendingOrders.isNotEmpty()) {
                 pendingOrders.forEach {
                     launch {
-                        refreshPendingOrders(it.createdAt)
+                        refreshPendingOrders(it.orderId)
                     }
                 }
             }
         }
 
-    private suspend fun refreshPendingOrders(offset: String) {
-        val response = routeService.orders(limit = 1, offset = offset)
+    private suspend fun refreshPendingOrders(orderId: String) {
+        val response = routeService.ordersById(orderId)
         if (response.isSuccess && response.data != null) {
-            orderDao.insertListSuspend(response.data!!)
+            orderDao.insertSuspend(response.data!!)
         }
     }
 }
