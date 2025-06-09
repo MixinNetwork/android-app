@@ -46,7 +46,10 @@ fun MemberUpgradePaymentButton(
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
-    if (selectedPlan != currentUserPlan) {
+    if (selectedPlan.ordinal < currentUserPlan.ordinal) {
+        Spacer(modifier = Modifier.height(24.dp))
+        return
+    } else if (selectedPlan != currentUserPlan) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier

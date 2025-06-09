@@ -79,12 +79,14 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             }
 
             mixinMemberInvoicesRl.setOnClickListener {
-                if (Session.getAccount()?.membership?.isMembership() == true) {
-                    navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
-                } else {
-                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
-                        parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
-                    )
+                lifecycleScope.launch {
+                    if (Session.getAccount()?.membership != null) {
+                        navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
+                    } else {
+                        MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                        )
+                    }
                 }
             }
 
@@ -121,7 +123,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
         }
         RxBus.listen(MembershipEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(pauseScope)
+            .autoDispose(destroyScope)
             .subscribe { _ ->
                 if (isAdded) {
                     updateMembershipIcon()

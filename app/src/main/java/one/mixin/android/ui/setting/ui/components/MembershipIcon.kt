@@ -18,7 +18,12 @@ fun MembershipIcon(plan: Plan, modifier: Modifier = Modifier) {
         Plan.ADVANCE -> AdvanceIcon(modifier)
         Plan.ELITE -> EliteIcon(modifier)
         Plan.PROSPERITY -> ProsperityAnimation(modifier)
-        else -> {}
+        else -> Icon(
+            painter = painterResource(id = R.drawable.ic_avatar_place_holder),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = modifier
+        )
     }
 }
 

@@ -19,5 +19,4 @@ interface MembershipOrderDao : BaseDao<MembershipOrder> {
 
     @Query("SELECT * FROM membership_orders WHERE order_id = :orderId")
     fun getOrdersFlow(orderId: String): Flow<MembershipOrder?>
-
 }

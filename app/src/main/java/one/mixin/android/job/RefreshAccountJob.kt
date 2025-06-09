@@ -33,10 +33,10 @@ class RefreshAccountJob(
             val response = accountService.getMe().execute().body()
             if (response != null && response.isSuccess && response.data != null) {
                 val account = response.data ?: return@runBlocking
+                updateAccount(account)
                 if (account.membership?.isMembership() == true) {
                     RxBus.publish(MembershipEvent())
                 }
-                updateAccount(account)
                 if (checkTip) { // from home page
                     AnalyticsTracker.setHasEmergencyContact(account)
                     AnalyticsTracker.setMembership(account)

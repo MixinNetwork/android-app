@@ -6,17 +6,27 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
@@ -67,6 +77,8 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
     val linkViewModel by viewModels<BottomSheetViewModel>()
     private val memberViewModel by viewModels<MemberViewModel>()
 
+    private var currentUserPlan: Plan by mutableStateOf(Plan.None)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshAccountJob())
@@ -77,6 +89,12 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                 Timber.e(e, "Failed to parse default plan")
             }
         }
+        RxBus.listen(MembershipEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(scope(Lifecycle.Event.ON_DESTROY))
+            .subscribe { _ ->
+                currentUserPlan = Session.getAccount()!!.membership?.plan ?: Plan.None
+            }
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -93,7 +111,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinMemberUpgradePage(
-                    currentUserPlan = Session.getAccount()!!.membership?.plan ?: Plan.None,
+                    currentUserPlan = currentUserPlan,
                     selectedPlanOverride = defaultPlan,
                     onClose = { dismiss() },
                     onUrlGenerated = { url ->

@@ -74,7 +74,8 @@ fun MembershipPlanCard(
                 text = when (membership.plan) {
                     Plan.ADVANCE -> stringResource(R.string.membership_advance)
                     Plan.ELITE -> stringResource(R.string.membership_elite)
-                    else -> stringResource(R.string.membership_prosperity)
+                    Plan.PROSPERITY -> stringResource(R.string.membership_prosperity)
+                    Plan.None -> stringResource(R.string.None)
                 },
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
@@ -90,15 +91,17 @@ fun MembershipPlanCard(
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(
-                R.string.expires_on,
-                membership.expiredAt.substringBefore("T") ?: "Unknown"
-            ),
-            color = if (isExpired) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.textMinor,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center
-        )
+        if (membership.expiredAt != "0000-00-00T00:00:00.0000Z") {
+            Text(
+                text = stringResource(
+                    R.string.expires_on,
+                    membership.expiredAt.substringBefore("T") ?: "Unknown"
+                ),
+                color = if (isExpired) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.textMinor,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
+        }
         Spacer(modifier = Modifier.height(20.dp))
         Button(
             modifier = Modifier
