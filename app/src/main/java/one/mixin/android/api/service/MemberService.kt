@@ -2,7 +2,7 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.api.response.MemberPlan
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -14,14 +14,14 @@ interface MemberService {
     suspend fun getPlans(): MixinResponse<MemberPlan>
 
     @POST("safe/membership/orders")
-    suspend fun createOrder(@Body request: MemberOrderRequest): MixinResponse<MemberOrder>
+    suspend fun createOrder(@Body request: MemberOrderRequest): MixinResponse<MembershipOrder>
 
     @GET("safe/membership/orders")
-    suspend fun getOrders(): MixinResponse<List<MemberOrder>>
+    suspend fun getOrders(): MixinResponse<List<MembershipOrder>>
 
     @GET("safe/membership/orders/{id}")
-    suspend fun getOrder(@Path("id") id: String): MixinResponse<MemberOrder>
+    suspend fun getOrder(@Path("id") id: String): MixinResponse<MembershipOrder>
 
     @POST("safe/membership/orders/{id}/cancel")
-    suspend fun cancelOrder(@Path("id") id: String): MixinResponse<MemberOrder>
+    suspend fun cancelOrder(@Path("id") id: String): MixinResponse<MembershipOrder>
 }

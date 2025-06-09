@@ -23,15 +23,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dayTime
 import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
 fun InvoicesList(
-    invoices: List<MemberOrder>,
-    onInvoiceClick: (MemberOrder) -> Unit,
+    invoices: List<MembershipOrder>,
+    onInvoiceClick: (MembershipOrder) -> Unit,
     maxDisplayCount: Int? = null,
     onShowMoreClick: (() -> Unit)? = null,
 ) {

@@ -15,14 +15,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.setting.ui.page.MixinMemberCancelPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -33,7 +30,7 @@ class MixinMemberCancelBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "MixinMemberCancelBottomSheetDialogFragment"
 
-        fun newInstance(order: MemberOrder): MixinMemberCancelBottomSheetDialogFragment {
+        fun newInstance(order: MembershipOrder): MixinMemberCancelBottomSheetDialogFragment {
             return MixinMemberCancelBottomSheetDialogFragment().apply {
                 withArgs {
                     putParcelable("order", order)
@@ -57,7 +54,7 @@ class MixinMemberCancelBottomSheetDialogFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val order = requireArguments().getParcelableCompat("order", MemberOrder::class.java)
+        val order = requireArguments().getParcelableCompat("order", MembershipOrder::class.java)
             ?: throw IllegalArgumentException("Member order is required")
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)

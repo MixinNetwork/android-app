@@ -33,14 +33,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.MembershipIcon
 import one.mixin.android.ui.viewmodel.MemberViewModel
 
 @Composable
 fun MixinMemberCancelPage(
-    order: MemberOrder,
+    order: MembershipOrder,
     onClose: () -> Unit,
 ) {
     val viewModel: MemberViewModel = hiltViewModel()

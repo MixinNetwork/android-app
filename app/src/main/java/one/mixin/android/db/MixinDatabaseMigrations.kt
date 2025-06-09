@@ -565,10 +565,10 @@ class MixinDatabaseMigrations private constructor() {
             }
 
         val MIGRATION_65_66: Migration =
-            object : Migration(67, 66) {
+            object : Migration(65, 66) {
                 override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("DROP TABLE `member_orders`")
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `member_orders` (`type` TEXT NOT NULL, `order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT, `asset_amount` TEXT, `status` TEXT NOT NULL, `before` TEXT NOT NULL, `after` TEXT NOT NULL, `quantity_accounts` INTEGER NOT NULL, `quantity_transactions` INTEGER NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reason` TEXT NOT NULL, `stars` INTEGER NOT NULL, `paid_at` TEXT, `expired_at` TEXT, `created_at` TEXT NOT NULL, `payment_url` TEXT, `fiat_order` TEXT, `checkout_user_id` TEXT, `checkout_memo` TEXT, PRIMARY KEY(`order_id`))")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `membership_orders` (`order_id` TEXT NOT NULL, `category` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `after` TEXT NOT NULL, `before` TEXT NOT NULL, `created_at` TEXT NOT NULL, `fiat_order` TEXT, `stars` INTEGER NOT NULL, `payment_url` TEXT, `status` TEXT NOT NULL, PRIMARY KEY(`order_id`))")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_membership_orders_created_at` ON `membership_orders` (`created_at`)")
                 }
             }
 

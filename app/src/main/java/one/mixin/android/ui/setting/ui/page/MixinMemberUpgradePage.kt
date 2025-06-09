@@ -22,8 +22,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.api.request.MemberOrderRequest
-import one.mixin.android.api.response.MemberOrder
 import one.mixin.android.api.response.MemberOrderPlan
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.MemberUpgradeContent
 import one.mixin.android.ui.setting.ui.components.MemberUpgradePaymentButton
@@ -55,7 +55,7 @@ fun MixinMemberUpgradePage(
     onUrlGenerated: (String) -> Unit,
     onGooglePlay: (orderId: String, playStoreSubscriptionId: String) -> Unit,
     onContactTeamMixin: () -> Unit = {},
-    onViewInvoice: (MemberOrder) -> Unit = {}
+    onViewInvoice: (MembershipOrder) -> Unit = {}
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
 

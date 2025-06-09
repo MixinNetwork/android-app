@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openUrl
@@ -37,7 +38,8 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
-fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MemberOrder) -> Unit) {
+fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MembershipOrder) -> Unit) {
+    val context = LocalContext.current
     val viewModel = hiltViewModel<MemberViewModel>()
     val orderState = viewModel.getOrdersFlow(orderId).collectAsState(null)
     MixinAppTheme {
@@ -82,18 +84,6 @@ fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MemberOrder
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = order.orderId,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.buy_via).uppercase(),
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = order.method,
                         color = MixinAppTheme.colors.textPrimary,
                         fontSize = 16.sp
                     )

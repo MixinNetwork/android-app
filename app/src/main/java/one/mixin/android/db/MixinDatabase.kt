@@ -14,7 +14,7 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
@@ -187,7 +187,7 @@ import kotlin.math.min
         (Alert::class),
         (MarketCapRank::class),
         (SwapOrder::class),
-        (MemberOrder::class)
+        (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
 )
@@ -297,7 +297,7 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun swapOrderDao(): SwapOrderDao
 
-    abstract fun memberOrderDao(): MemberOrderDao
+    abstract fun memberOrderDao(): MembershipOrderDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null

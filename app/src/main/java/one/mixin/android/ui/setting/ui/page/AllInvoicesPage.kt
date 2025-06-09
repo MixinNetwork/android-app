@@ -12,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -19,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.setting.ui.components.InvoicesList
@@ -29,8 +30,9 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 @Composable
 fun AllInvoicesPage(
     onPop: () -> Unit,
-    onOrderClick: (MemberOrder) -> Unit = {}
+    onOrderClick: (MembershipOrder) -> Unit = {}
 ) {
+    val context = LocalContext.current
     val viewModel = hiltViewModel<MemberViewModel>()
     val orders = viewModel.getAllMemberOrders().collectAsState(initial = emptyList())
     MixinAppTheme {

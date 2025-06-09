@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 66,
-    "identityHash": "70433348f6fc1c74d38c57b9f5c4f7b1",
+    "identityHash": "fc15117c1177a178e1cff3bde53c8aaa",
     "entities": [
       {
         "tableName": "users",
@@ -3317,15 +3317,9 @@
         ]
       },
       {
-        "tableName": "member_orders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `category` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT, `asset_amount` TEXT, `status` TEXT NOT NULL, `before` TEXT NOT NULL, `after` TEXT NOT NULL, `quantity_accounts` INTEGER NOT NULL, `quantity_transactions` INTEGER NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reason` TEXT NOT NULL, `stars` INTEGER NOT NULL, `paid_at` TEXT, `expired_at` TEXT, `created_at` TEXT NOT NULL, `payment_url` TEXT, `fiat_order` TEXT, `checkout_user_id` TEXT, `checkout_memo` TEXT, PRIMARY KEY(`order_id`))",
+        "tableName": "membership_orders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `category` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `after` TEXT NOT NULL, `before` TEXT NOT NULL, `created_at` TEXT NOT NULL, `fiat_order` TEXT, `stars` INTEGER NOT NULL, `payment_url` TEXT, `status` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
         "fields": [
-          {
-            "fieldPath": "type",
-            "columnName": "type",
-            "affinity": "TEXT",
-            "notNull": true
-          },
           {
             "fieldPath": "orderId",
             "columnName": "order_id",
@@ -3333,26 +3327,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "userId",
-            "columnName": "user_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
             "fieldPath": "category",
             "columnName": "category",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "amountOriginal",
-            "columnName": "amount_original",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3365,22 +3341,12 @@
           {
             "fieldPath": "amountActual",
             "columnName": "amount_actual",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "assetAmount",
-            "columnName": "asset_amount",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "status",
-            "columnName": "status",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "before",
-            "columnName": "before",
+            "fieldPath": "amountOriginal",
+            "columnName": "amount_original",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3391,50 +3357,10 @@
             "notNull": true
           },
           {
-            "fieldPath": "quantityAccounts",
-            "columnName": "quantity_accounts",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "quantityTransactions",
-            "columnName": "quantity_transactions",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "method",
-            "columnName": "method",
+            "fieldPath": "before",
+            "columnName": "before",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "source",
-            "columnName": "source",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "reason",
-            "columnName": "reason",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "stars",
-            "columnName": "stars",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "paidAt",
-            "columnName": "paid_at",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "expiredAt",
-            "columnName": "expired_at",
-            "affinity": "TEXT"
           },
           {
             "fieldPath": "createdAt",
@@ -3443,24 +3369,26 @@
             "notNull": true
           },
           {
-            "fieldPath": "paymentUrl",
-            "columnName": "payment_url",
-            "affinity": "TEXT"
-          },
-          {
             "fieldPath": "fiatOrder",
             "columnName": "fiat_order",
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "checkoutUserId",
-            "columnName": "checkout_user_id",
+            "fieldPath": "stars",
+            "columnName": "stars",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paymentUrl",
+            "columnName": "payment_url",
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "checkoutMemo",
-            "columnName": "checkout_memo",
-            "affinity": "TEXT"
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -3468,12 +3396,23 @@
           "columnNames": [
             "order_id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_membership_orders_created_at",
+            "unique": false,
+            "columnNames": [
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_membership_orders_created_at` ON `${TABLE_NAME}` (`created_at`)"
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '70433348f6fc1c74d38c57b9f5c4f7b1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fc15117c1177a178e1cff3bde53c8aaa')"
     ]
   }
 }

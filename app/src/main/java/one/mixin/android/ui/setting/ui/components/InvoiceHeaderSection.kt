@@ -23,13 +23,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.MemberOrderStatus
 
 @Composable
-fun InvoiceHeaderSection(order: MemberOrder, onCancel:(MemberOrder) -> Unit) {
+fun InvoiceHeaderSection(order: MembershipOrder, onCancel:(MembershipOrder) -> Unit) {
     val title = when (order.after) {
         "basic" -> stringResource(R.string.membership_advance)
         "standard" -> stringResource(R.string.membership_elite)

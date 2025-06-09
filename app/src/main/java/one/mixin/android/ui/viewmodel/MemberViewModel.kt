@@ -2,35 +2,29 @@ package one.mixin.android.ui.viewmodel
 
 import android.app.Activity
 import android.app.Application
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.billingclient.api.ProductDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.SAFE_BOT_USER_ID
-import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.billing.BillingManager
 import one.mixin.android.billing.SubscriptionPlanInfo
 import one.mixin.android.billing.SubscriptionProcessStatus
-import one.mixin.android.event.MembershipEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.MemberRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.vo.MemberOrderStatus
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -42,8 +36,8 @@ class MemberViewModel @Inject constructor(
     application: Application
 ) : ViewModel() {
 
-    private val _orderState = MutableStateFlow<MixinResponse<MemberOrder>?>(null)
-    val orderState: StateFlow<MixinResponse<MemberOrder>?> = _orderState
+    private val _orderState = MutableStateFlow<MixinResponse<MembershipOrder>?>(null)
+    val orderState: StateFlow<MixinResponse<MembershipOrder>?> = _orderState
 
     private val billingManager = BillingManager.getInstance(application, viewModelScope)
 
@@ -75,7 +69,7 @@ class MemberViewModel @Inject constructor(
         billingManager.destroy()
     }
 
-    suspend fun createMemberOrder(request: MemberOrderRequest): MixinResponse<MemberOrder> {
+    suspend fun createMemberOrder(request: MemberOrderRequest): MixinResponse<MembershipOrder> {
         viewModelScope.launch(Dispatchers.IO) {
             val bot = userRepository.getUserById(SAFE_BOT_USER_ID)
             if (bot == null || bot.relationship != "FRIEND") {
@@ -100,8 +94,8 @@ class MemberViewModel @Inject constructor(
         r
     }, defaultErrorHandle = {})
 
-    private val _pendingOrder = MutableStateFlow<MemberOrder?>(null)
-    val pendingOrder: StateFlow<MemberOrder?> = _pendingOrder
+    private val _pendingOrder = MutableStateFlow<MembershipOrder?>(null)
+    val pendingOrder: StateFlow<MembershipOrder?> = _pendingOrder
 
     init {
         viewModelScope.launch {
@@ -128,7 +122,7 @@ class MemberViewModel @Inject constructor(
 
     fun getOrdersFlow(orderId: String) = memberRepository.getOrdersFlow(orderId)
 
-    fun insertOrders(order: MemberOrder) {
+    fun insertOrders(order: MembershipOrder) {
         viewModelScope.launch {
             memberRepository.insertOrder(order)
         }

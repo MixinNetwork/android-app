@@ -5,20 +5,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.MemberOrderRequest
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.api.service.MemberService
-import one.mixin.android.db.MemberOrderDao
-import retrofit2.http.POST
-import retrofit2.http.Path
+import one.mixin.android.db.MembershipOrderDao
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class MemberRepository @Inject constructor(
     private val memberService: MemberService,
-    private val orderDao: MemberOrderDao
+    private val orderDao: MembershipOrderDao
 ) {
-    suspend fun createOrder(request: MemberOrderRequest): MixinResponse<MemberOrder> {
+    suspend fun createOrder(request: MemberOrderRequest): MixinResponse<MembershipOrder> {
         val response = memberService.createOrder(request)
         if (response.isSuccess) {
             response.data?.let { order ->
@@ -38,11 +36,11 @@ class MemberRepository @Inject constructor(
 
     suspend fun getOrder(id: String) = memberService.getOrder(id)
 
-    suspend fun insertOrders(orders: List<MemberOrder>) {
+    suspend fun insertOrders(orders: List<MembershipOrder>) {
         orderDao.insertListSuspend(orders)
     }
 
-    suspend fun insertOrder(order: MemberOrder) {
+    suspend fun insertOrder(order: MembershipOrder) {
         orderDao.insertSuspend(order)
     }
     
@@ -50,11 +48,11 @@ class MemberRepository @Inject constructor(
 
     fun getOrdersFlow(orderId:String) = orderDao.getOrdersFlow(orderId)
 
-    fun getLatestPendingOrderFlow(): Flow<MemberOrder?> {
+    fun getLatestPendingOrderFlow(): Flow<MembershipOrder?> {
         return orderDao.getLatestPendingOrderFlow()
     }
 
-    suspend fun cancelOrder(id: String): MixinResponse<MemberOrder> {
+    suspend fun cancelOrder(id: String): MixinResponse<MembershipOrder> {
         return memberService.cancelOrder(id)
     }
 }

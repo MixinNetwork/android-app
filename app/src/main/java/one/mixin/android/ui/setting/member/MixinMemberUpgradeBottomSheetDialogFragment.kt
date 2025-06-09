@@ -6,8 +6,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -17,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
@@ -27,13 +24,11 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.SchemeBottomSheet
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -42,7 +37,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Plan
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.getValue
 
 @AndroidEntryPoint
 class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {

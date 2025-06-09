@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
-import one.mixin.android.api.response.MemberOrder
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.page.PlanPurchaseState
 import one.mixin.android.ui.setting.ui.page.getPlanFromOrderAfter
@@ -37,12 +37,12 @@ import one.mixin.android.vo.Plan
 fun MemberUpgradePaymentButton(
     currentUserPlan: Plan,
     selectedPlan: Plan,
-    pendingOrder: MemberOrder?,
+    pendingOrder: MembershipOrder?,
     purchaseState: PlanPurchaseState,
     savedOrderId: String? = null,
     onPaymentClick: () -> Unit,
     onContactSupport: () -> Unit,
-    onViewInvoice: (MemberOrder) -> Unit = {}
+    onViewInvoice: (MembershipOrder) -> Unit = {}
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
