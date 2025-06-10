@@ -34,7 +34,7 @@ interface SwapOrderDao : BaseDao<SwapOrder> {
     )
     fun getOrderById(orderId: String): Flow<SwapOrderItem?>
 
-    @Query("SELECT * FROM swap_orders WHERE state = 'pending'")
+    @Query("SELECT * FROM swap_orders WHERE state = 'pending' ORDER BY created_at ASC")
     suspend fun getPendingOrders(): List<SwapOrder>
 
     @Query(

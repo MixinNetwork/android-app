@@ -1400,10 +1400,10 @@
     <string name="choose_network_fee">Choose an asset to pay network fee</string>
     <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
     <string name="FREE">FREE</string>
-    <string name="Send_crypto_to_contact">Send crypto to my Mixin contact using the mixin Network.</string>
-    <string name="Send_to_web3_wallet_description">Send to my other wallet using a crypto network. </string>
-    <string name="send_to_address_description">Send to a known crypto address using a crypto network.</string>
-    <string name="Send_to_Contact_description">Send to my Mixin wallet using a crypto network.</string>
+    <string name="send_to_address_description">Send to an address in your Address Book, PIN-protected to prevent phishing.</string>
+    <string name="send_to_common_wallet_description">Send to your Common Wallet for use with decentralized apps and DeFi protocols.</string>
+    <string name="send_to_contact_description">Send to your Mixin friends with privacy, zero fees, and instant delivery.</string>
+    <string name="send_to_privacy_wallet_description">Send to your Privacy Wallet to keep your assets safe and hidden from potential risks.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
     <string name="Contact_Support">Contact Support</string>

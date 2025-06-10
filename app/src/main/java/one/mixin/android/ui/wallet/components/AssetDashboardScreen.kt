@@ -46,7 +46,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import androidx.core.content.edit
 
-private const val PREF_NAME = "wallet_info_card"
+const val PREF_NAME = "wallet_info_card"
 private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
 private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 
@@ -134,7 +134,6 @@ fun WalletInfoCard(
     onPrivacyClose: () -> Unit,
     onCommonClose: () -> Unit
 ) {
-    // 确定初始页面：如果隐私钱包信息卡被隐藏，默认显示普通钱包信息卡
     val initialPage = if (hidePrivacyWalletInfo && !hideCommonWalletInfo) 0 else 0
     val pageCount = if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) 2 else 1
     
