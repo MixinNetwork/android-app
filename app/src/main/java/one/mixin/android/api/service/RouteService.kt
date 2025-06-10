@@ -196,7 +196,7 @@ interface RouteService {
     ) : MixinResponse<List<SwapOrder>>
 
     @GET("web3/swap/orders/{id}")
-    suspend fun ordersById(
+    suspend fun orderById(
         @Path("id") id: String,
     ) : MixinResponse<SwapOrder>
 

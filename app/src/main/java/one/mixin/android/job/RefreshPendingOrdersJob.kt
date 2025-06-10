@@ -16,14 +16,14 @@ class RefreshPendingOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstan
             if (pendingOrders.isNotEmpty()) {
                 pendingOrders.forEach {
                     launch {
-                        refreshPendingOrders(it.orderId)
+                        refreshPendingOrder(it.orderId)
                     }
                 }
             }
         }
 
-    private suspend fun refreshPendingOrders(orderId: String) {
-        val response = routeService.ordersById(orderId)
+    private suspend fun refreshPendingOrder(orderId: String) {
+        val response = routeService.orderById(orderId)
         if (response.isSuccess && response.data != null) {
             orderDao.insertSuspend(response.data!!)
         }
