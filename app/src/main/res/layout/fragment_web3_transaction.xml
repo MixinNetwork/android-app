@@ -61,7 +61,7 @@
                         <ImageView
                             android:id="@+id/ic_spam"
                             android:layout_width="wrap_content"
-                            android:layout_height="14sp"
+                            android:layout_height="wrap_content"
                             android:src="@drawable/ic_spam_token"
                             android:layout_gravity="center"/>
 
