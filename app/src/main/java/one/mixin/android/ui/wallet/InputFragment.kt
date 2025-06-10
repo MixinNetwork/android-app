@@ -1061,6 +1061,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                         FragmentManager.POP_BACK_STACK_INCLUSIVE
                                     )
                                 }
+                                val activity = requireActivity()
+                                if (backStackEntryCount == 0 && activity is WalletActivity) { // Only pop if no other fragments in back stack
+                                    activity.onBackPressedDispatcher.onBackPressed()
+                                }
                             }
                         }
                     }
