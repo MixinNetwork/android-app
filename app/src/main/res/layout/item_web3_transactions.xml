@@ -34,12 +34,22 @@
 
     </FrameLayout>
 
+    <ImageView
+        android:id="@+id/ic_spam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_spam_token"
+        android:layout_toEndOf="@id/avatar_fl"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="4dp"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@id/avatar_fl"
+        android:layout_toEndOf="@id/ic_spam"
         android:layout_toStartOf="@id/amount_animator"
         android:breakStrategy="simple"
         android:hyphenationFrequency="none"

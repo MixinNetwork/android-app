@@ -45,18 +45,19 @@
                 <ImageView
                     android:id="@+id/ic_spam"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:src="@drawable/ic_spam_token"/>
+                    android:layout_height="14sp"
+                    android:src="@drawable/ic_spam_token"
+                    android:layout_gravity="center"/>
 
                 <TextView
                     android:id="@+id/total_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/reputation_spam_warning"
-                    android:textColor="@color/wallet_pink"
                     android:layout_marginStart="8dp"
-                    android:textSize="14sp" />
+                    android:text="@string/reputation_spam_warning"
+                    android:textColor="#DB454F"
+                    android:textSize="14sp"
+                    android:drawableStart="@drawable/ic_spam_token"/>
             </LinearLayout>
 
             <FrameLayout
@@ -64,8 +65,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
@@ -84,10 +85,10 @@
                             android:id="@+id/avatar"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_marginEnd="26dp"
-                            android:layout_marginTop="20dp"
-                            android:layout_marginBottom="16dp"
                             android:layout_alignParentEnd="true"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="26dp"
+                            android:layout_marginBottom="16dp"
                             tools:ignore="ContentDescription" />
 
                         <TextView
@@ -95,23 +96,23 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignTop="@+id/avatar"
-                            android:layout_marginStart="@dimen/margin16"
                             android:layout_alignParentStart="true"
-                            android:textSize="14sp"
-                            android:textColor="?attr/text_minor"
+                            android:layout_marginStart="@dimen/margin16"
                             android:text="@string/Balance"
+                            android:textColor="?attr/text_minor"
+                            android:textSize="14sp"
                             tools:ignore="RelativeOverlap" />
 
                         <TextView
                             android:id="@+id/balance"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
                             android:layout_below="@+id/title"
-                            android:layout_marginStart="@dimen/margin16"
-                            android:layout_toStartOf="@id/avatar"
                             android:layout_alignParentStart="true"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_marginTop="10dp"
                             android:layout_marginEnd="12dp"
+                            android:layout_toStartOf="@id/avatar"
                             android:textIsSelectable="true"
                             android:textSize="14sp"
                             tools:ignore="RelativeOverlap" />
@@ -121,10 +122,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_below="@+id/balance"
-                            android:layout_marginStart="@dimen/margin16"
-                            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                            android:layout_marginTop="4dp"
                             android:layout_alignParentStart="true"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginEnd="@dimen/activity_horizontal_margin"
                             android:textColor="?attr/text_assist" />
 
                     </RelativeLayout>
@@ -133,10 +134,10 @@
                         android:id="@+id/send_receive_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="24dp"
-                        android:layout_marginTop="30dp"
                         android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"/>
+                        android:layout_marginTop="30dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="24dp" />
 
                 </LinearLayout>
             </FrameLayout>
@@ -146,8 +147,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="2dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="2dp"
                 android:background="?attr/bg_market_card">
 
@@ -160,8 +161,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:layout_marginEnd="@dimen/margin16"
                         android:layout_marginTop="20dp"
+                        android:layout_marginEnd="@dimen/margin16"
                         android:src="@drawable/ic_arrow_gray_right"
                         tools:ignore="ContentDescription" />
 
@@ -170,26 +171,26 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignTop="@+id/contract_iv"
-                        android:layout_marginStart="@dimen/margin16"
                         android:layout_alignParentStart="true"
-                        android:textSize="14sp"
+                        android:layout_marginStart="@dimen/margin16"
                         android:text="@string/Market"
                         android:textColor="?attr/text_minor"
+                        android:textSize="14sp"
                         tools:ignore="RelativeOverlap" />
 
                     <TextView
                         android:id="@+id/value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
                         android:layout_below="@+id/market_title"
-                        android:layout_marginStart="@dimen/margin16"
                         android:layout_alignParentStart="true"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_marginTop="10dp"
                         android:layout_marginEnd="12dp"
-                        android:textFontWeight="600"
-                        android:textSize="18sp"
                         android:text="@string/N_A"
                         android:textColor="?attr/text_primary"
+                        android:textFontWeight="600"
+                        android:textSize="18sp"
                         tools:ignore="RelativeOverlap" />
 
                     <TextView
@@ -197,58 +198,58 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/value"
-                        android:layout_marginStart="@dimen/margin16"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="@dimen/margin16"
                         android:layout_alignParentStart="true"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginBottom="@dimen/margin16"
                         android:text="@string/N_A"
                         android:textColor="@color/wallet_green" />
 
                     <androidx.compose.ui.platform.ComposeView
                         android:id="@+id/market_view"
-                        android:layout_below="@id/contract_iv"
-                        android:layout_marginTop="10dp"
-                        android:layout_alignEnd="@id/contract_iv"
                         android:layout_width="150dp"
-                        android:layout_height="48dp" />
+                        android:layout_height="48dp"
+                        android:layout_below="@id/contract_iv"
+                        android:layout_alignEnd="@id/contract_iv"
+                        android:layout_marginTop="10dp" />
 
                 </RelativeLayout>
             </FrameLayout>
 
             <include
                 android:id="@+id/stake"
+                layout="@layout/view_web3_sol_stake"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                layout="@layout/view_web3_sol_stake" />
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="10dp" />
 
             <FrameLayout
                 android:id="@+id/bottom_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
                 <LinearLayout
-                    android:layout_height="wrap_content"
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <RelativeLayout
                         android:id="@+id/transactions_title_ll"
-                        android:layout_marginTop="10dp"
-                        android:paddingTop="10dp"
-                        android:paddingBottom="10dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:foreground="?android:attr/selectableItemBackground">
+                        android:layout_marginTop="10dp"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
 
                         <ImageView
                             android:id="@+id/transactions_iv"
@@ -264,11 +265,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignTop="@+id/transactions_iv"
-                            android:layout_marginStart="@dimen/margin16"
                             android:layout_alignParentStart="true"
-                            android:textSize="14sp"
+                            android:layout_marginStart="@dimen/margin16"
                             android:text="@string/Transactions"
                             android:textColor="?attr/text_minor"
+                            android:textSize="14sp"
                             tools:ignore="RelativeOverlap" />
                     </RelativeLayout>
 
@@ -293,8 +294,8 @@
                         android:layout_centerHorizontal="true"
                         android:layout_centerVertical="true"
                         android:layout_marginTop="-18dp"
-                        android:src="@drawable/ic_empty_transaction"
-                        android:contentDescription="@null" />
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_empty_transaction" />
 
                     <TextView
                         android:id="@+id/wallet_transactions_empty"

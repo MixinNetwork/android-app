@@ -14,7 +14,7 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @Query("""
-        SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, 
+        SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level, 
             c.symbol as chain_symbol,
             c.icon_url as chain_icon_url,
             s.icon_url as send_asset_icon_url,
