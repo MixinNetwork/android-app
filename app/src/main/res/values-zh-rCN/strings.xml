@@ -1898,6 +1898,8 @@
     <string name="Unable_to_estimate_balance_changes">无法估计余额变化。</string>
     <string name="send_sol_for_rent">发送至少 %1$s SOL 以支付租金</string>
     <string name="reputation_spam_warning">该代币已被标记为高风险代币</string>
+    <string name="reputation_spam_description">因可疑行为或欺诈迹象被标记为高风险交易</string>
+    <string name="reputation_transaction_warning">该交易已被标记为高风险交易</string>
     <string name="Reputation">信誉度</string>
     <string name="reputation_spam">高风险</string>
     <string name="Good">良好</string>
