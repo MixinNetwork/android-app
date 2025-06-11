@@ -132,6 +132,11 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
             }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateMembershipIcon()
+    }
+
     private fun updateMembershipIcon() {
         val icon = Session.getAccount()?.membership?.membershipIcon(true)
         if (icon != null) {
