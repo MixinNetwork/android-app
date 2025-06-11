@@ -54,7 +54,7 @@ fun HeaderSection(plan: Plan) {
             text = title,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.W600
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(

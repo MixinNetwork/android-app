@@ -27,6 +27,7 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Plan
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.lottie.RLottieDrawable
 import javax.inject.Inject
@@ -80,7 +81,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
 
             mixinMemberInvoicesRl.setOnClickListener {
                 lifecycleScope.launch {
-                    if (Session.getAccount()?.membership != null) {
+                    if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
                         navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
                     } else {
                         MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
