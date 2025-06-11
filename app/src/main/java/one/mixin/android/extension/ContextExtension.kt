@@ -79,6 +79,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -1050,10 +1051,8 @@ fun Context.isFirebaseDecodeAvailable() =
 fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
-        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
-        Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.deposit_tip_eos)
         Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
-        else -> getString(R.string.deposit_tip_common, asset.symbol)
+        else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey?:""))
     }
 
 fun Context.showConfirmDialog(
