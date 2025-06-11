@@ -2,6 +2,7 @@ package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
 import android.util.TypedValue
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
@@ -36,7 +37,7 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
             } else {
                 hash
             }
-
+            icSpam.isVisible = transaction.isNotVerified()
             val amount = transaction.getFormattedAmount()
             when {
                 transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value -> {
