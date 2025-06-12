@@ -65,4 +65,6 @@ internal constructor(
             return@withContext users
         }
 
+    suspend fun findTopUsdBalanceAsset(excludeId: String) =
+        tokenRepository.findTopUsdBalanceAsset(excludeId)
 }

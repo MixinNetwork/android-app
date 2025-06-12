@@ -8,8 +8,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import com.checkout.threedsobfuscation.fe
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +17,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.databinding.FragmentAddFeeBottomSheetBinding
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
@@ -46,7 +43,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
-import one.mixin.android.ui.address.ReceiveSelectionBottom
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
@@ -76,7 +72,6 @@ import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSigner
-import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.widget.Keyboard
 import org.sol4k.PublicKey
 import timber.log.Timber
@@ -435,7 +430,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         .apply {
                             onAction = { type, t ->
                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
-                                    SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ID, output = t.assetId, null, null)
+                                    SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ETH_ID, output = t.assetId, null, null)
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                     onAddressClick()
                                 }

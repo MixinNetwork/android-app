@@ -25,7 +25,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -683,7 +683,7 @@ class SwapFragment : BaseFragment() {
             fromToken = if (input != null) {
                 swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(input)?.toSwapToken()
             } else lastFrom
-                ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID }
+                ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ETH_ID }
                     ?: tokens.firstOrNull())?.toSwapToken()
 
             toToken = if (output != null) {
@@ -691,10 +691,10 @@ class SwapFragment : BaseFragment() {
                     output
                 )?.toSwapToken()
             } else if (input != null) {
-                val o = if (input == USDT_ASSET_ID) {
+                val o = if (input == USDT_ASSET_ETH_ID) {
                     XIN_ASSET_ID
                 } else {
-                    USDT_ASSET_ID
+                    USDT_ASSET_ETH_ID
                 }
                 swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(o)
                     ?.toSwapToken()

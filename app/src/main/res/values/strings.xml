@@ -1955,4 +1955,5 @@
     <string name="fee_deposit">Deposit %1$s</string>
     <string name="fee_swap_other_coin_to">Swap other coin to %1$s</string>
     <string name="fee_deposit_from_other_exchanges">Deposit from other exchanges or wallets</string>
+    <string name="usd_cross_chain_detected">Detected %1$s on other chains in your current wallet. Exchange now?</string>
 </resources>

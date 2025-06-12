@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,7 +42,6 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         requireArguments().getParcelableCompat(TransferBottomSheetDialogFragment.Companion.ARGS_TRANSFER, AssetBiometricItem::class.java)!!
     }
 
-
     private val transferViewModel by viewModels<TransferViewModel>()
 
     @SuppressLint("RestrictedApi")
@@ -59,6 +59,22 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         lifecycleScope.launch {
             val asset = t.asset?:return@launch
             val tokenExtra = transferViewModel.findTokensExtra(asset.assetId)
+            if (asset.assetId in Constants.usdIds) {
+                val u = transferViewModel.findTopUsdBalanceAsset(asset.assetId)
+                if (u != null) {
+                    binding.errorLayout.isVisible = true
+                    binding.bottom.isVisible = false
+                    binding.contentTv.text = getString(R.string.usd_cross_chain_detected, u.symbol)
+                    binding.positive.setOnClickListener {
+                        SwapActivity.show(requireActivity(), input = u.assetId, output = asset.assetId, null, null)
+                        dismiss()
+                    }
+                    binding.negative.setOnClickListener {
+                        binding.bottom.isVisible = true
+                        binding.errorLayout.isVisible = false
+                    }
+                }
+            }
             binding.header.balanceError(asset, t.amount, tokenExtra)
             binding.content.renderAsset(t, tokenExtra)
             binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
@@ -69,7 +85,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     .apply {
                         onAction = { type, fee->
                             if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
-                                SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ID, output = asset.assetId, null, null)
+                                SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ETH_ID, output = asset.assetId, null, null)
                             } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                 navTo(DepositFragment.newInstance(asset), DepositFragment.TAG)
                             }
