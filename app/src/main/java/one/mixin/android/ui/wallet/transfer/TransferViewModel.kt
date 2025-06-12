@@ -33,6 +33,7 @@ internal constructor(
 
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
 
+    suspend fun findTokensExtra(asset: String) = tokenRepository.findTokensExtra(asset)
 
     suspend fun findMultiUsers(
         userIds: List<String>,

@@ -9,11 +9,13 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferHeaderBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokensExtra
 
 class TransferHeader : LinearLayout {
     private val _binding: ViewTransferHeaderBinding
@@ -292,6 +294,20 @@ class TransferHeader : LinearLayout {
             }
             subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             assetIcon.loadToken(asset)
+        }
+    }
+
+    fun balanceError(asset: TokenItem, amount: String, extra: TokensExtra?) {
+        _binding.apply {
+            assetIcon.loadToken(asset)
+            subTitle.setTextColor(context.getColor(R.color.wallet_red))
+            title.setTextColor(context.getColor(R.color.wallet_red))
+            title.text = context.getString(R.string.error_insufficient_balance_title, asset.symbol)
+            subTitle.text = context.getString(
+                R.string.error_insufficient_balance_desc,
+                "${amount.numberFormat8()} ${asset.symbol}",
+                "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
+            )
         }
     }
 }

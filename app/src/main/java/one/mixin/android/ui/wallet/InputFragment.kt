@@ -431,11 +431,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     white = true,
                 )
                 binding.addTv.setOnClickListener {
-                    AddFeeBottomSheetDialogFragment.newInstance(currentFee!!)
+                    AddFeeBottomSheetDialogFragment.newInstance(currentFee!!.token)
                         .apply {
-                            onAction = { type, fee->
+                            onAction = { type, t ->
                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
-                                    SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ID, output = fee.token.assetId, null, null)
+                                    SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ID, output = t.assetId, null, null)
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                     onAddressClick()
                                 }

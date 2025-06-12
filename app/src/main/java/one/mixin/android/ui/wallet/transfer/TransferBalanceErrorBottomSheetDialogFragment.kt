@@ -1,0 +1,83 @@
+package one.mixin.android.ui.wallet.transfer
+
+import android.annotation.SuppressLint
+import android.app.Dialog
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.databinding.FragmentTransferBalanceErrorBottomSheetBinding
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.visibleDisplayHeight
+import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
+import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.BottomSheet
+import kotlin.getValue
+import one.mixin.android.R
+import one.mixin.android.extension.navTo
+import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.DepositFragment
+
+@AndroidEntryPoint
+class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    private val binding by viewBinding(FragmentTransferBalanceErrorBottomSheetBinding::inflate)
+
+    companion object {
+        const val TAG = "TransferBalanceErrorBottomSheetDialogFragment"
+        const val ARGS_TRANSFER = "args_transfer"
+
+        inline fun <reified T : BiometricItem> newInstance(t: T) =
+            TransferBalanceErrorBottomSheetDialogFragment().withArgs {
+                putParcelable(ARGS_TRANSFER, t)
+            }
+    }
+
+    private val t: AssetBiometricItem by lazy {
+        requireArguments().getParcelableCompat(TransferBottomSheetDialogFragment.Companion.ARGS_TRANSFER, AssetBiometricItem::class.java)!!
+    }
+
+
+    private val transferViewModel by viewModels<TransferViewModel>()
+
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
+        super.setupDialog(dialog, style)
+        contentView = binding.root
+        dialog.setCanceledOnTouchOutside(false)
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+            setCustomViewHeight(requireActivity().visibleDisplayHeight())
+        }
+        lifecycleScope.launch {
+            val asset = t.asset?:return@launch
+            val tokenExtra = transferViewModel.findTokensExtra(asset.assetId)
+            binding.header.balanceError(asset, t.amount, tokenExtra)
+            binding.content.renderAsset(t, tokenExtra)
+            binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
+            binding.bottom.setOnClickListener({
+                dismiss()
+            },{
+                AddFeeBottomSheetDialogFragment.newInstance(asset)
+                    .apply {
+                        onAction = { type, fee->
+                            if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ID, output = asset.assetId, null, null)
+                            } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                navTo(DepositFragment.newInstance(asset), DepositFragment.TAG)
+                            }
+                        }
+                    }.showNow(parentFragmentManager,
+                        AddFeeBottomSheetDialogFragment.TAG)
+                dismiss()
+            },{})
+        }
+    }
+}
