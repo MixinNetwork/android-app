@@ -77,10 +77,12 @@ class NewSchemeParser(
                 if (urlQueryParser.inscription == null && urlQueryParser.inscriptionCollection == null) {
                     token = checkAsset(asset!!) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
                     val tokensExtra = linkViewModel.findTokensExtra(asset)
-                    if (tokensExtra == null) {
+                    if (urlQueryParser.inscription != null || urlQueryParser.inscriptionCollection != null) {
                         return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                    } else if (tokensExtra == null) {
+                        return Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount ?: "0", urlQueryParser.memo, status, urlQueryParser.reference)))
                     } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
-                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                        return Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount ?: "0", urlQueryParser.memo, status, urlQueryParser.reference)))
                     }
                 } else {
                     token = null
@@ -159,10 +161,10 @@ class NewSchemeParser(
                         
                         val tokensExtra = linkViewModel.findTokensExtra(assetId)
                         if (tokensExtra == null) {
-                            result = Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                            result = Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount, urlQueryParser.memo, PaymentStatus.pending.name, urlQueryParser.reference)))
                             continue
                         } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
-                            result = Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                            result = Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount, urlQueryParser.memo, PaymentStatus.pending.name, urlQueryParser.reference)))
                             continue
                         }
                         

@@ -250,10 +250,23 @@ object Constants {
         const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
         const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
-        const val USDT_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
-        const val USDC_ASSET_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
         const val XIN_ASSET_ID = "c94ac88f-4671-3976-b60a-09064f1811e8"
+
+        const val USDT_ASSET_ETH_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+        const val USDT_ASSET_TRX_ID = "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b"
+        const val USDT_ASSET_BNB_ID = "94213408-4ee7-3150-a9c4-9c5cce421c78"
+        const val USDT_ASSET_SOL_ID = "cb54aed4-1893-3977-b739-ec7b2e04f0c5"
+        const val USDT_ASSET_POS_ID = "218bc6f4-7927-3f8e-8568-3a3725b74361"
+
+        const val USDC_ASSET_ID_ETH = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
+        const val USDC_ASSET_TRX_ID = "fe26b981-29e9-3032-a0e9-b24d619e987e"
+        const val USDC_ASSET_BNB_ID = "3d3d69f1-6742-34cf-95fe-3f8964e6d307"
+        const val USDC_ASSET_SOL_ID = "de6fa523-c596-398e-b12f-6d6980544b59"
+        const val USDC_ASSET_POS_ID = "80b65786-7c75-3523-bc03-fb25378eae41"
     }
+
+    val usdIds = listOf(AssetId.USDT_ASSET_ETH_ID, AssetId.USDT_ASSET_TRX_ID, AssetId.USDT_ASSET_BNB_ID, AssetId.USDT_ASSET_SOL_ID, AssetId.USDT_ASSET_POS_ID,
+        AssetId.USDC_ASSET_ID_ETH, AssetId.USDC_ASSET_TRX_ID, AssetId.USDC_ASSET_BNB_ID, AssetId.USDC_ASSET_SOL_ID, AssetId.USDC_ASSET_POS_ID)
 
     object AssetLevel {
         const val GOOD = 12

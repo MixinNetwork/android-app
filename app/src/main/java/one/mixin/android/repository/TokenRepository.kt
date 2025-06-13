@@ -1418,4 +1418,7 @@ class TokenRepository
 
     fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
 
+    suspend fun findTopUsdBalanceAsset(excludeId: String) =
+        tokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
+
 }

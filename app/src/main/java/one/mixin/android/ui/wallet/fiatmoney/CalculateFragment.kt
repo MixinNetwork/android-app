@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -101,7 +101,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val assetId =
             requireContext().defaultSharedPreferences.getString(
                 CURRENT_ASSET_ID,
-                USDT_ASSET_ID,
+                USDT_ASSET_ETH_ID,
             )
 
         fiatMoneyViewModel.currency = supportCurrencies.find {
@@ -725,7 +725,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 val assetId =
                     requireContext().defaultSharedPreferences.getString(
                         CURRENT_ASSET_ID,
-                        USDT_ASSET_ID,
+                        USDT_ASSET_ETH_ID,
                     ) ?: routeProfile.supportAssetIds.first()
                 val currency = getDefaultCurrency(requireContext(), routeProfile.supportCurrencies)
                 val tickerResponse =
