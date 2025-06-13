@@ -279,7 +279,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
-                                    if (address.isExternalTransferUrl() || address.isLightningUrl()) {
+                                    if (token != null && (address.isExternalTransferUrl() || address.isLightningUrl())) {
                                         LinkBottomSheetDialogFragment.newInstance(address).show(
                                             parentFragmentManager,
                                             LinkBottomSheetDialogFragment.TAG
@@ -495,7 +495,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         if (data == null) return
 
         data.getStringExtra(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT)?.let { result ->
-            if (result.isLightningUrl() || result.isExternalTransferUrl()) {
+            if (token != null && (result.isLightningUrl() || result.isExternalTransferUrl())) {
                 LinkBottomSheetDialogFragment.newInstance(result).show(
                     parentFragmentManager,
                     LinkBottomSheetDialogFragment.TAG
