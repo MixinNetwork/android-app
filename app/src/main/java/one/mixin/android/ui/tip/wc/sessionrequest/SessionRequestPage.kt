@@ -42,6 +42,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.currencyFormat
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
@@ -280,7 +281,7 @@ fun SessionRequestPage(
                             } else {
                                 null
                             }
-                        )?.toPlainString(),
+                        )?.numberFormat12()
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
