@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -22,7 +21,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import coil3.asDrawable
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -65,7 +63,6 @@ import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -77,6 +74,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
@@ -792,6 +790,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             binding.name.setName(user)
+            binding.name.setOnIconClickListener {
+                user.membership?.plan?.let { plan ->
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(
+                        parentFragmentManager,
+                        MixinMemberUpgradeBottomSheetDialogFragment.TAG,
+                    )
+                }
+            }
             binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
             binding.idTv.setOnLongClickListener {
                 context?.getClipboardManager()

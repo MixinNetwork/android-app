@@ -14,6 +14,7 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
@@ -64,7 +65,9 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_61_62
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_62_63
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_63_64
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_64_65
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_65_66
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.FiatOrderConverter
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
@@ -184,10 +187,23 @@ import kotlin.math.min
         (Alert::class),
         (MarketCapRank::class),
         (SwapOrder::class),
+        (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class, PriceListConverter::class, MembershipConverter::class)
+@TypeConverters(
+    MessageStatusConverter::class,
+    DepositEntryListConverter::class,
+    WithdrawalMemoPossibilityConverter::class,
+    SafeDepositConverter::class,
+    SafeWithdrawalConverter::class,
+    RawTransactionTypeConverter::class,
+    OutputStateConverter::class,
+    TreasuryConverter::class,
+    PriceListConverter::class,
+    MembershipConverter::class,
+    FiatOrderConverter::class
+)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
 
@@ -279,7 +295,9 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
-    abstract fun orderDao(): OrderDao
+    abstract fun swapOrderDao(): SwapOrderDao
+
+    abstract fun memberOrderDao(): MembershipOrderDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -362,6 +380,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_62_63,
                                 MIGRATION_63_64,
                                 MIGRATION_64_65,
+                                MIGRATION_65_66,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Bundle
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

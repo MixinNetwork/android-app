@@ -7,7 +7,7 @@ import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.route.SwapOrderItem
 
 @Dao
-interface OrderDao : BaseDao<SwapOrder> {
+interface SwapOrderDao : BaseDao<SwapOrder> {
 
     @Query(
         """

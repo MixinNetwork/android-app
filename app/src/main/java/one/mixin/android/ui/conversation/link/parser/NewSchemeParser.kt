@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.link.parser
 import androidx.core.net.toUri
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -45,9 +46,12 @@ import java.util.UUID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.SchemeBottomSheet
 
 class NewSchemeParser(
-    private val bottomSheet: LinkBottomSheetDialogFragment,
+    private val bottomSheet: SchemeBottomSheet,
+    private val linkViewModel : BottomSheetViewModel
 ) {
     companion object {
         const val INSCRIPTION_NOT_FOUND = -2
@@ -56,7 +60,6 @@ class NewSchemeParser(
         const val SUCCESS = 1
     }
 
-    private val linkViewModel = bottomSheet.linkViewModel
 
     suspend fun parse(
         text: String,
