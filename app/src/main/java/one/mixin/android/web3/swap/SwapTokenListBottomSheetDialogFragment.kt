@@ -286,6 +286,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             } else {
                 binding.rvVa.displayedChild = 0
             }
+            binding.assetRv.scrollToPosition(0)
             binding.pb.isVisible = false
         }
 
