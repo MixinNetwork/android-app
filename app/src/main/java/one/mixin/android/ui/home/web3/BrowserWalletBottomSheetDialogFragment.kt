@@ -508,7 +508,7 @@ fun showBrowserBottomSheetDialogFragment(
     onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
+    val wcBottomSheet = GasCheckBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
     onDismiss?.let {
         wcBottomSheet.setOnDismiss(onDismiss)
     }
@@ -523,6 +523,6 @@ fun showBrowserBottomSheetDialogFragment(
     }
     wcBottomSheet.showNow(
         fragmentActivity.supportFragmentManager,
-        BrowserWalletBottomSheetDialogFragment.TAG,
+        GasCheckBottomSheetDialogFragment.TAG,
     )
 }

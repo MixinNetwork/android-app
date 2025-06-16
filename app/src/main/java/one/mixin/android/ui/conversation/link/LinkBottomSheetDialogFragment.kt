@@ -79,6 +79,7 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
@@ -1015,7 +1016,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return true
         }
         val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
-        BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
+        GasCheckBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
             .setOnTxhash { sig, _ ->
                 val cid = MixinApplication.conversationId
@@ -1026,7 +1027,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     linkViewModel.sendTextMessage(cid, self, linkSigData.base64Encode())
                 }
             }
-            .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
+            .showNow(childFragmentManager, GasCheckBottomSheetDialogFragment.TAG)
         return true
     }
 

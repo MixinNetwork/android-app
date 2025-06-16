@@ -426,17 +426,54 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     white = true,
                 )
                 binding.addTv.setOnClickListener {
-                    AddFeeBottomSheetDialogFragment.newInstance(currentFee!!.token)
-                        .apply {
-                            onAction = { type, t ->
-                                if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
-                                    SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ETH_ID, output = t.assetId, null, null)
-                                } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                    onAddressClick()
+                    if (gas != null && chainToken!= null) {
+                        AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
+                            .apply {
+                                onWeb3Action = { type, t ->
+                                    if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                        SwapActivity.show(
+                                            requireActivity(),
+                                            input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                            output = t.assetId,
+                                            null,
+                                            null,
+                                            inMixin = false
+                                        )
+                                    } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                        val address = if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                                        this@InputFragment.view?.navigate(
+                                            R.id.action_input_fragment_to_web3_address_fragment,
+                                            Bundle().apply {
+                                                putString("address", address)
+                                            }
+                                        )
+                                    }
                                 }
-                            }
-                        }.showNow(parentFragmentManager,
-                        AddFeeBottomSheetDialogFragment.TAG)
+                            }.showNow(
+                                parentFragmentManager,
+                                AddFeeBottomSheetDialogFragment.TAG
+                            )
+                    } else if (currentFee != null) {
+                        AddFeeBottomSheetDialogFragment.newInstance(currentFee!!.token)
+                            .apply {
+                                onAction = { type, t ->
+                                    if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                        SwapActivity.show(
+                                            requireActivity(),
+                                            input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                            output = t.assetId,
+                                            null,
+                                            null
+                                        )
+                                    } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                        onAddressClick()
+                                    }
+                                }
+                            }.showNow(
+                                parentFragmentManager,
+                                AddFeeBottomSheetDialogFragment.TAG
+                            )
+                    }
                 }
                 when(transferType) {
                     TransferType.USER, TransferType.BIOMETRIC_ITEM -> {
@@ -747,6 +784,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
                     insufficientFeeBalance.isVisible = gas != null
+                    addTv.text = "${getString(R.string.Add)} ${chainToken?.symbol ?: ""}"
                     insufficientBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
