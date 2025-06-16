@@ -67,6 +67,7 @@ import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -644,15 +645,30 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
-            setOnDone {
-                initialAmount = null
-                lastOrderTime = System.currentTimeMillis()
-            }
-            setOnDestroy {
-                reviewing = false
-            }
-        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+        if (from.chain.chainId == Constants.ChainId.Solana) {
+            SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
+                setOnDone {
+                    initialAmount = null
+                    lastOrderTime = System.currentTimeMillis()
+                }
+                setOnDestroy {
+                    reviewing = false
+                }
+            }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+        } else {
+            GasCheckBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
+                setOnDone {
+                    initialAmount = null
+                    lastOrderTime = System.currentTimeMillis()
+                }
+                setOnDestroy {
+                    reviewing = false
+                }
+            }.showNow(
+                parentFragmentManager,
+                GasCheckBottomSheetDialogFragment.TAG
+            )
+        }
         reviewing = true
     }
 

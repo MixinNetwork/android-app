@@ -39,7 +39,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     }
 
     private val t: AssetBiometricItem by lazy {
-        requireArguments().getParcelableCompat(TransferBottomSheetDialogFragment.Companion.ARGS_TRANSFER, AssetBiometricItem::class.java)!!
+        requireArguments().getParcelableCompat(ARGS_TRANSFER, AssetBiometricItem::class.java)!!
     }
 
     private val transferViewModel by viewModels<TransferViewModel>()

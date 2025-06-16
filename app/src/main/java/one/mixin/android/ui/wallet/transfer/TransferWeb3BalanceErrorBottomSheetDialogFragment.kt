@@ -26,8 +26,10 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressFragment
+import timber.log.Timber
 
 @AndroidEntryPoint
 class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {

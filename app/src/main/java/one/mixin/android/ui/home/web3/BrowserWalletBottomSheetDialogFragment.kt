@@ -510,7 +510,7 @@ fun showGasCheckAndBrowserBottomSheetDialogFragment(
 ) {
     val wcBottomSheet = GasCheckBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
     onDismiss?.let {
-        wcBottomSheet.setOnDismiss(onDismiss)
+        wcBottomSheet.setOnDismiss(it)
     }
     onDone?.let {
         wcBottomSheet.setOnDone(onDone)

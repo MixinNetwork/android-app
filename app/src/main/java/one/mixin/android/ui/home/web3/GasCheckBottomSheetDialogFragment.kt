@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -21,29 +20,33 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.response.web3.SwapResponse
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.FragmentBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.buildTipGas
-import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.transfer.TransferBalanceErrorBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
-import kotlin.getValue
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -76,11 +79,27 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
             }
         }
+
+        private const val ARGS_SWAP_RESULT = "args_result"
+        private const val ARGS_FROM = "args_from"
+        private const val ARGS_TO = "args_to"
+
+        fun newInstance(swapResult: SwapResponse, inAsset: SwapToken, outAssetItem: SwapToken) =
+            GasCheckBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putParcelable(ARGS_SWAP_RESULT, swapResult)
+                    putParcelable(ARGS_FROM, inAsset)
+                    putParcelable(ARGS_TO, outAssetItem)
+                }
+            }
     }
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
     private lateinit var contentView: View
+
+    @Inject
+    lateinit var rpc: Rpc
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -90,17 +109,59 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         contentView = binding.root
         dialog.setContentView(contentView)
-        val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
+        val behavior =
+            ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
             behavior.peekHeight = requireContext().dpToPx(300f)
             behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
+            dialog.window?.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                requireContext().dpToPx(300f)
+            )
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
         binding.linkLoadingInfo.text = ""
         lifecycleScope.launch {
-            refreshEstimatedGasAndAsset(currentChain)
+            if (swapResult != null) {
+                val web3TokenItem = viewModel.web3TokenItemById(fromToken.assetId)
+                val chainTokenItem = viewModel.web3TokenItemById(fromToken.chain.chainId)
+                if (web3TokenItem != null) {
+                    val jsSignMessage = web3TokenItem.buildTransaction(
+                        rpc, JsSigner.evmAddress,
+                        swapResult!!.depositDestination!!,
+                        swapResult!!.quote.inAmount
+                    )
+                    val transaction = jsSignMessage.wcEthereumTransaction
+                    val chain = web3TokenItem.getChainFromName()
+                    refreshEstimatedGasAndAsset(transaction, chain, web3TokenItem, chainTokenItem)
+                } else {
+                    showError("Token not found")
+                }
+            } else {
+                refreshEstimatedGasAndAsset(signMessage.wcEthereumTransaction, currentChain, token, chainToken)
+            }
         }
+    }
+
+    private val swapResult: SwapResponse? by lazy {
+        requireArguments().getParcelableCompat(
+            ARGS_SWAP_RESULT,
+            SwapResponse::class.java
+        )
+    }
+
+    private val fromToken: SwapToken by lazy {
+        requireArguments().getParcelableCompat(
+            ARGS_FROM,
+            SwapToken::class.java
+        )!!
+    }
+
+    private val toToken: SwapToken by lazy {
+        requireArguments().getParcelableCompat(
+            ARGS_TO,
+            SwapToken::class.java
+        )!!
     }
 
     private val signMessage: JsSignMessage by lazy {
@@ -132,40 +193,56 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
 
     private fun showBrowserWalletBottomSheet() {
-        val fragment = BrowserWalletBottomSheetDialogFragment.newInstance(
-            signMessage,
-            url,
-            title,
-            amount,
-            token,
-            chainToken,
-            toAddress
-        )
-        onDismiss?.let { it ->
-            fragment.setOnDismiss(it)
+        if (swapResult != null) {
+            SwapTransferBottomSheetDialogFragment.newInstance(swapResult!!, fromToken, toToken)
+                .apply {
+                    onDone?.let {
+                        setOnDone(it)
+                    }
+                    onDestroy?.let {
+                        setOnDestroy(it)
+                    }
+                }
+                .showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+        } else {
+            val fragment = BrowserWalletBottomSheetDialogFragment.newInstance(
+                signMessage,
+                url,
+                title,
+                amount,
+                token,
+                chainToken,
+                toAddress
+            )
+            onDismiss?.let { it ->
+                fragment.setOnDismiss(it)
+            }
+            onDone?.let { it ->
+                fragment.setOnDone(it)
+            }
+            onReject?.let { it ->
+                fragment.setOnReject(it)
+            }
+            onTxhash?.let { it ->
+                fragment.setOnTxhash(it)
+            }
+            fragment.showNow(parentFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
         }
-        onDone?.let { it ->
-            fragment.setOnDone(it)
-        }
-        onReject?.let { it ->
-            fragment.setOnReject(it)
-        }
-        onTxhash?.let { it ->
-            fragment.setOnTxhash(it)
-        }
-        fragment.showNow(parentFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
         dismissAllowingStateLoss()
     }
 
-    private suspend fun refreshEstimatedGasAndAsset(chain: Chain) {
+    private suspend fun refreshEstimatedGasAndAsset(
+        transaction: WCEthereumTransaction?,
+        chain: Chain,
+        token: Web3TokenItem?,
+        chainToken: Web3TokenItem?,
+    ) {
         if (chain == Chain.Solana) {
-            // Todo
             dismiss()
             showBrowserWalletBottomSheet()
             return
         }
         val assetId = chain.getWeb3ChainId()
-        val transaction = signMessage.wcEthereumTransaction
         if (transaction == null) {
             Timber.e("Transaction is null")
             dismiss()
@@ -195,7 +272,8 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showBrowserWalletBottomSheet()
                 return
             }
-            val insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
+            val insufficientGas =
+                checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
             if (insufficientGas) {
                 if (chainToken == null) {
                     Timber.e("Insufficient gas for chain: ${chain.chainId}")
@@ -205,7 +283,16 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 } else {
                     val fee = tipGas.displayValue(transaction.maxFeePerGas) ?: BigDecimal.ZERO
                     val amount = transaction.getMainTokenAmount()
-                    TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(Web3TokenFeeItem(chainToken!!, amount, fee)).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
+                    TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
+                        Web3TokenFeeItem(
+                            chainToken!!,
+                            amount,
+                            fee
+                        )
+                    ).showNow(
+                        parentFragmentManager,
+                        TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG
+                    )
                     dismiss()
                 }
             } else {
@@ -274,12 +361,18 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     var onReject: (() -> Unit)? = null
+    var onDestroy: (() -> Unit)? = null
     var onDone: ((String?) -> Unit)? = null
     var onDismiss: ((Boolean) -> Unit)? = null
     var onTxhash: ((String, String) -> Unit)? = null
 
     fun setOnDone(callback: (String?) -> Unit): GasCheckBottomSheetDialogFragment {
         onDone = callback
+        return this
+    }
+
+    fun setOnDestroy(callback: () -> Unit): GasCheckBottomSheetDialogFragment {
+        onDestroy = callback
         return this
     }
 
@@ -320,10 +413,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             override fun onSlide(
                 bottomSheet: View,
                 slideOffset: Float,
-            ) {}
+            ) {
+            }
         }
-
 }
-
-
-
