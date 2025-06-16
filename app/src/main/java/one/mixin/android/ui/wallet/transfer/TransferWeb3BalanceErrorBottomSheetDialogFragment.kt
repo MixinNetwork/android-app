@@ -21,13 +21,16 @@ import one.mixin.android.widget.BottomSheet
 import kotlin.getValue
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenFeeItem
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.receive.Web3AddressActivity
 import one.mixin.android.web3.receive.Web3AddressFragment
 import timber.log.Timber
 
@@ -93,7 +96,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                             if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
                                 SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ETH_ID, output = asset.assetId, null, null, inMixin = false)
                             } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                this@TransferWeb3BalanceErrorBottomSheetDialogFragment.navTo(Web3AddressFragment.newInstance(JsSigner.evmAddress), Web3AddressFragment.TAG)
+                                Web3AddressActivity.show(requireActivity(), JsSigner.evmAddress)
                             }
                         }
                     }.showNow(parentFragmentManager, AddFeeBottomSheetDialogFragment.TAG)

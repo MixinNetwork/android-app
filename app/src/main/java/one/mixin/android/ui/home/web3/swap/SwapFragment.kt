@@ -655,6 +655,7 @@ class SwapFragment : BaseFragment() {
                     reviewing = false
                 }
             }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+            reviewing = true
         } else {
             GasCheckBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
                 setOnDone {
@@ -669,7 +670,6 @@ class SwapFragment : BaseFragment() {
                 GasCheckBottomSheetDialogFragment.TAG
             )
         }
-        reviewing = true
     }
 
     private suspend fun initFromTo() {
