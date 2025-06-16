@@ -15,6 +15,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.MemberRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LogResponse
@@ -30,6 +31,7 @@ class SettingViewModel
         private val userRepository: UserRepository,
         private val contactService: ContactService,
         private val tokenRepository: TokenRepository,
+        private val memberRepository: MemberRepository,
     ) : ViewModel() {
         suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
             accountRepository.verification(request)
@@ -73,4 +75,5 @@ class SettingViewModel
         suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
 
         suspend fun findAllAssetIdSuspend() = tokenRepository.findAllAssetIdSuspend()
+
 }

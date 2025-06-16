@@ -60,6 +60,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.MemberService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.api.service.RouteService
@@ -677,4 +678,9 @@ object AppModule {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
         )
     }
+
+    @Singleton
+    @Provides
+    fun provideMemberService(retrofit: Retrofit): MemberService =
+        retrofit.create(MemberService::class.java)
 }

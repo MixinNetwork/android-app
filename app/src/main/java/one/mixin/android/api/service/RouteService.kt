@@ -135,7 +135,6 @@ interface RouteService {
     @POST("web3/swap")
     suspend fun web3Swap(
         @Body swapRequest: SwapRequest,
-        @Query("source") source: String = "web3",
     ): MixinResponse<SwapResponse>
 
     @GET("web3/transactions/{txhash}")

@@ -24,6 +24,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
+import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteInstrumentRequest
@@ -39,6 +40,7 @@ import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.MemberService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
@@ -56,10 +58,10 @@ import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.OrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
+import one.mixin.android.db.SwapOrderDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
@@ -142,7 +144,6 @@ import javax.inject.Singleton
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.ui.wallet.Web3FilterParams
-import java.math.BigDecimal
 
 @Singleton
 class TokenRepository
@@ -159,6 +160,7 @@ class TokenRepository
         private val safeSnapshotDao: SafeSnapshotDao,
         private val addressDao: AddressDao,
         private val addressService: AddressService,
+        private val memberService: MemberService,
         private val hotAssetDao: TopAssetDao,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
@@ -173,7 +175,7 @@ class TokenRepository
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
-        private val orderDao: OrderDao,
+        private val swapOrderDao: SwapOrderDao,
         private val web3TokenDao: Web3TokenDao,
         private val web3TransactionDao: Web3TransactionDao,
         private val web3RawTransactionDao: Web3RawTransactionDao,
@@ -773,7 +775,7 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        fun swapOrders(): Flow<List<SwapOrderItem>> = orderDao.orders()
+        fun swapOrders(): Flow<List<SwapOrderItem>> = swapOrderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
@@ -1386,7 +1388,7 @@ class TokenRepository
 
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 
-    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
+    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = swapOrderDao.getOrderById(orderId)
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
