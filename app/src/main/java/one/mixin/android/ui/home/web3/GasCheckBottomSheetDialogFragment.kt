@@ -22,14 +22,21 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.databinding.FragmentBottomSheetBinding
+import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.transfer.TransferBalanceErrorBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Convert
@@ -71,37 +78,25 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private var _binding: FragmentBottomSheetBinding? = null
-    private val binding get() = _binding!!
+    private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentBottomSheetBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    private lateinit var contentView: View
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        dialog.window?.setGravity(Gravity.BOTTOM)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
-        val params = (binding.root.parent as? View)?.layoutParams as? CoordinatorLayout.LayoutParams
-        val behavior = params?.behavior as? BottomSheetBehavior<*>
-        behavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    dismissAllowingStateLoss()
-                }
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-        })
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().isNightMode())
+        }
+        contentView = binding.root
+        dialog.setContentView(contentView)
+        val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
+        if (behavior != null && behavior is BottomSheetBehavior<*>) {
+            behavior.peekHeight = requireContext().dpToPx(300f)
+            behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
+            dialog.window?.setGravity(Gravity.BOTTOM)
+        }
         binding.linkLoadingInfo.text = ""
         lifecycleScope.launch {
             refreshEstimatedGasAndAsset(currentChain)
@@ -200,18 +195,19 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 showBrowserWalletBottomSheet()
                 return
             }
-            val insufficientGas =
-                checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
+            val insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
             if (insufficientGas) {
                 if (chainToken == null) {
                     Timber.e("Insufficient gas for chain: ${chain.chainId}")
                     dismiss()
                     showBrowserWalletBottomSheet()
                     return
+                } else {
+                    val fee = tipGas.displayValue(transaction.maxFeePerGas) ?: BigDecimal.ZERO
+                    val amount = transaction.getMainTokenAmount()
+                    TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(Web3TokenFeeItem(chainToken!!, amount, fee)).showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
+                    dismiss()
                 }
-                AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
-                    .showNow(parentFragmentManager, AddFeeBottomSheetDialogFragment.TAG)
-                dismiss()
             } else {
                 dismiss()
                 showBrowserWalletBottomSheet()
@@ -302,14 +298,31 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return this
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
     fun close() {
         dismissAllowingStateLoss()
     }
+
+    private val mBottomSheetBehaviorCallback =
+        object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int,
+            ) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    try {
+                        dismissAllowingStateLoss()
+                    } catch (e: IllegalStateException) {
+                        Timber.w(e)
+                    }
+                }
+            }
+
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float,
+            ) {}
+        }
+
 }
 
 

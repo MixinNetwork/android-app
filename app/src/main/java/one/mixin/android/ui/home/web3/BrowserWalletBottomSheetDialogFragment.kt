@@ -494,7 +494,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 }
 
-fun showBrowserBottomSheetDialogFragment(
+fun showGasCheckAndBrowserBottomSheetDialogFragment(
     fragmentActivity: FragmentActivity,
     signMessage: JsSignMessage,
     amount: String? = null,
@@ -526,3 +526,37 @@ fun showBrowserBottomSheetDialogFragment(
         GasCheckBottomSheetDialogFragment.TAG,
     )
 }
+
+fun showBrowserBottomSheetDialogFragment(
+    fragmentActivity: FragmentActivity,
+    signMessage: JsSignMessage,
+    amount: String? = null,
+    token: Web3TokenItem? = null,
+    chainToken: Web3TokenItem? = null,
+    toAddress: String? = null,
+    currentUrl: String? = null,
+    currentTitle: String? = null,
+    onReject: (() -> Unit)? = null,
+    onDone: ((String?) -> Unit)? = null,
+    onDismiss: ((Boolean) -> Unit)? = null,
+    onTxhash: ((String, String) -> Unit)? = null,
+) {
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
+    onDismiss?.let {
+        wcBottomSheet.setOnDismiss(onDismiss)
+    }
+    onDone?.let {
+        wcBottomSheet.setOnDone(onDone)
+    }
+    onReject?.let {
+        wcBottomSheet.setOnReject(onReject)
+    }
+    onTxhash?.let {
+        wcBottomSheet.setOnTxhash(onTxhash)
+    }
+    wcBottomSheet.showNow(
+        fragmentActivity.supportFragmentManager,
+        BrowserWalletBottomSheetDialogFragment.TAG,
+    )
+}
+

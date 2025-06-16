@@ -9,6 +9,8 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewTransferContentBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.session.Session
@@ -28,6 +30,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
 import java.math.BigDecimal
 
 class TransferContent : LinearLayout {
@@ -402,28 +406,6 @@ class TransferContent : LinearLayout {
 
             val tokenItem = withdrawBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
-        }
-    }
-
-    fun renderAsset(assetBiometricItem: AssetBiometricItem, extra: TokensExtra?) {
-        _binding.apply {
-            amount.setContent(R.string.Amount, "${assetBiometricItem.amount} ${assetBiometricItem.asset?.symbol}", amountAs(assetBiometricItem.amount, assetBiometricItem.asset!!))
-            network.setContent(R.string.network, getChainName(assetBiometricItem.asset!!.chainId, assetBiometricItem.asset!!.chainName, assetBiometricItem.asset!!.assetKey) ?: "")
-            balance.isVisible = true
-            balance.setContent(R.string.Available_Balance, "${extra?.balance?.numberFormat8() ?: "0"} ${assetBiometricItem.asset?.symbol ?: ""}", amountAs(extra?.balance ?: "0", assetBiometricItem.asset!!))
-            address.isVisible = false
-            receive.isVisible = false
-            sender.isVisible = false
-            total.isVisible = false
-            networkFee.isVisible = false
-            memo.isVisible = false
-            name.isVisible = false
-            token.isVisible = false
-            assetContainer.isVisible = false
-            hash.isVisible = false
-            safeReceives.isVisible = false
-            safeSender.isVisible = false
-            safe.isVisible = false
         }
     }
 }

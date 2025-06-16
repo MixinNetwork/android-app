@@ -139,7 +139,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
@@ -933,7 +933,7 @@ class WebFragment : BaseFragment() {
                         lifecycleScope.launch {
                             if (viewDestroyed()) return@launch
 
-                            showBrowserBottomSheetDialogFragment(
+                            showGasCheckAndBrowserBottomSheetDialogFragment(
                                 requireActivity(),
                                 message,
                                 currentUrl = currentUrl,

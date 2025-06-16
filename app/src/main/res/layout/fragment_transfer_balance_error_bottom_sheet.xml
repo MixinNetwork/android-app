@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <one.mixin.android.ui.wallet.transfer.widget.TransferContent
+            <one.mixin.android.ui.wallet.transfer.widget.TransferErrorContent
                 android:id="@+id/content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
