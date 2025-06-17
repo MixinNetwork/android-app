@@ -1276,6 +1276,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private val errorHandler =
         CoroutineExceptionHandler { _, error ->
             when (error) {
+                is BalanceError -> {
+                    TransferBalanceErrorBottomSheetDialogFragment.newInstance(error.assetBiometricItem).showNow(parentFragmentManager,
+                        TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
                 is SocketTimeoutException -> showError(R.string.error_connection_timeout)
                 is UnknownHostException -> showError(R.string.No_network_connection)
                 is IOException -> showError(R.string.No_network_connection)

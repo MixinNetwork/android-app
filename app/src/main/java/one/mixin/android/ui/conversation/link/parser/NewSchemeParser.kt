@@ -293,6 +293,7 @@ class NewSchemeParser(
 
     suspend fun parseExternalTransferUrl(url: String) {
         var errorMsg: String? = null
+        var insufficientId: String? = null
         val result =
             parseExternalTransferUri(url, { assetId, chainId, destination ->
                 handleMixinResponse(
@@ -332,17 +333,22 @@ class NewSchemeParser(
                     val tokensExtra = linkViewModel.findTokensExtra(feeAssetId)
                     if (tokensExtra == null) {
                         errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                        insufficientId = feeAssetId
                     } else if (BigDecimal(tokensExtra.balance ?: "0") < feeAmount) {
                         errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                        insufficientId = feeAssetId
                     }
                 }
 
                 val tokensExtra = linkViewModel.findTokensExtra(assetId)
                 if (tokensExtra == null) {
                     errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                    insufficientId = assetId
                 } else if (BigDecimal(tokensExtra.balance ?: "0") < amount) {
                     errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                    insufficientId = assetId
                 }
+
             }, { url ->
                 linkViewModel.paySuspend(
                     TransferRequest(
@@ -351,9 +357,11 @@ class NewSchemeParser(
                 ).data
             })
 
-        errorMsg?.let {
-            bottomSheet.showError(it)
-            return
+        if (insufficientId == null) {
+            errorMsg?.let {
+                bottomSheet.showError(it)
+                return
+            }
         }
 
         if (result == null) {
@@ -394,6 +402,9 @@ class NewSchemeParser(
             val fee = NetworkFee(feeAsset, result.fee!!.toPlainString())
 
             val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
+            if (insufficientId != null) {
+                throw BalanceError(withdrawBiometricItem, errorMsg ?: "")
+            }
             checkRawTransaction(withdrawBiometricItem)
         }
         bottomSheet.dismiss()
