@@ -432,7 +432,7 @@ dependencies {
 
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
-    implementation "com.airbnb.android:lottie-compose:6.6.6"
+    implementation "com.airbnb.android:lottie-compose:6.6.7"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
