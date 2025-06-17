@@ -16,8 +16,8 @@ plugins {
 }
 
 def versionMajor = 3
-def versionMinor = 0
-def versionPatch = 4
+def versionMinor = 1
+def versionPatch = 0
 def versionBuild = 1
 
 apply plugin: 'com.google.gms.google-services'
@@ -432,7 +432,7 @@ dependencies {
 
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
-    implementation "com.airbnb.android:lottie-compose:6.0.1"
+    implementation "com.airbnb.android:lottie-compose:6.6.6"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
