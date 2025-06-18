@@ -56,12 +56,14 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.sumsub.KycState
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 import java.math.BigDecimal
@@ -170,11 +172,15 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
                 titleView.rightIb.setOnClickListener {
                     lifecycleScope.launch {
-                        val userTeamMixin = fiatMoneyViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
+                        val userTeamMixin =
+                            fiatMoneyViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
                         if (userTeamMixin == null) {
                             toast(R.string.Data_error)
                         } else {
-                            ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
+                            ConversationActivity.show(
+                                requireContext(),
+                                recipientId = Constants.TEAM_MIXIN_USER_ID
+                            )
                         }
                     }
                 }
@@ -189,10 +195,16 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         this@CalculateFragment.lifecycleScope.launch {
                             val oldAsset = fiatMoneyViewModel.asset
                             fiatMoneyViewModel.asset = asset
-                            requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
+                            requireContext().defaultSharedPreferences.putString(
+                                CURRENT_ASSET_ID,
+                                asset.assetId
+                            )
                             refresh {
                                 fiatMoneyViewModel.asset = oldAsset
-                                requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, oldAsset!!.assetId)
+                                requireContext().defaultSharedPreferences.putString(
+                                    CURRENT_ASSET_ID,
+                                    oldAsset!!.assetId
+                                )
                                 updateUI()
                             }
                             updateUI()
@@ -201,8 +213,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
                 fiatRl.setOnClickListener {
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile
-                    val supportCurrencies = routeProfile?.supportCurrencies ?: return@setOnClickListener
-                    FiatListBottomSheetDialogFragment.newInstance(fiatMoneyViewModel.currency!!, supportCurrencies).apply {
+                    val supportCurrencies =
+                        routeProfile?.supportCurrencies ?: return@setOnClickListener
+                    FiatListBottomSheetDialogFragment.newInstance(
+                        fiatMoneyViewModel.currency!!,
+                        supportCurrencies
+                    ).apply {
                         callback =
                             object : FiatListBottomSheetDialogFragment.Callback {
                                 override fun onCurrencyClick(currency: Currency) {
@@ -210,11 +226,17 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                         val oldCurrency = fiatMoneyViewModel.currency
                                         fiatMoneyViewModel.currency = currency
                                         v = "0"
-                                        requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, currency.name)
+                                        requireContext().defaultSharedPreferences.putString(
+                                            CURRENT_CURRENCY,
+                                            currency.name
+                                        )
                                         refresh {
                                             fiatMoneyViewModel.currency = oldCurrency!!
                                             v = "0"
-                                            requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, oldCurrency.name)
+                                            requireContext().defaultSharedPreferences.putString(
+                                                CURRENT_CURRENCY,
+                                                oldCurrency.name
+                                            )
                                             updateUI()
                                         }
                                         updateUI()
@@ -247,10 +269,17 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 } else if (isTwoDecimal(v)) {
                                     // do nothing
                                     return
-                                } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(fiatMoneyViewModel.currency!!.name))) {
+                                } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(
+                                        fiatMoneyViewModel.currency!!.name
+                                    ))
+                                ) {
                                     // do nothing
                                     return
-                                } else if (AmountUtil.illegal(v, fiatMoneyViewModel.currency!!.name)) {
+                                } else if (AmountUtil.illegal(
+                                        v,
+                                        fiatMoneyViewModel.currency!!.name
+                                    )
+                                ) {
                                     binding.primaryTv.shaking()
                                     return
                                 } else {
@@ -275,45 +304,44 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    checkKyc {
-                        val value =
-                            if (v.endsWith(".")) {
-                                v.substring(0, v.length)
-                            } else {
-                                v
-                            }
-                        val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
-                        val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
-                        val amount =
-                            if (fiatMoneyViewModel.isReverse) {
-                                getPayAmount(value.toFloat(), assetPrice, feePercent)
-                            } else {
-                                value
-                            }
-                        if (amount == null) {
-                            toast("number error")
+                    val value =
+                        if (v.endsWith(".")) {
+                            v.substring(0, v.length)
                         } else {
-                            lifecycleScope.launch inner@{
-                                if (viewDestroyed()) return@inner
-                                try {
-                                    binding.continueVa.displayedChild = 1
-                                    initSafeBox()
-                                    binding.continueVa.displayedChild = 0
-                                    view.navigate(
-                                        R.id.action_wallet_calculate_to_payment,
-                                        Bundle().apply {
-                                            putParcelable(ARGS_ASSET, fiatMoneyViewModel.asset)
-                                            putParcelable(
-                                                ARGS_CURRENCY,
-                                                fiatMoneyViewModel.currency,
-                                            )
-                                            // Todo
-                                            putLong(ARGS_AMOUNT, amount.toLongOrNull() ?: 0L)
-                                        },
+                            v
+                        }
+                    val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
+                    val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
+                    val amount =
+                        if (fiatMoneyViewModel.isReverse) {
+                            getPayAmount(value.toFloat(), assetPrice, feePercent)
+                        } else {
+                            value
+                        }
+                    if (amount == null) {
+                        toast("number error")
+                    } else {
+                        lifecycleScope.launch inner@{
+                            if (viewDestroyed()) return@inner
+                            try {
+                                binding.continueVa.displayedChild = 1
+                                val response = fiatMoneyViewModel.rampWebUrl(
+                                    amount,
+                                    "4d8c508b-91c5-375b-92b0-ee702ed2dac5",// todo replace real asset id
+                                    fiatMoneyViewModel.currency?.name ?: return@inner,
+                                    JsSigner.evmAddress
+                                )
+                                if (response.isSuccess) {
+                                    WebActivity.show(
+                                        requireActivity(),
+                                        response.data?.url ?: "",
+                                        null
                                     )
-                                } catch (e: Exception) {
-                                    ErrorHandler.handleError(e)
                                 }
+                                binding.continueVa.displayedChild = 0
+                            } catch (e: Exception) {
+                                binding.continueVa.displayedChild = 0
+                                ErrorHandler.handleError(e)
                             }
                         }
                     }
@@ -419,7 +447,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${getNumberFormat(String.format("%.2f", currentValue))} ${currency.name}"
                 }
-                continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
+                continueVa.isEnabled =
+                    currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
                 if (currentValue > state.maximum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
@@ -436,7 +465,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).numberFormat8()} ${asset.symbol}"
                 }
-                continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
+                continueVa.isEnabled =
+                    currentValue >= state.minimum && currentValue <= state.maximum
                 continueTv.isEnabled = continueVa.isEnabled
                 if (currentValue > state.maximum) {
                     info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
@@ -445,7 +475,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
             }
             updatePrimarySize()
-            binding.info.text = getString(R.string.Value_info, state.minimum, currency.name, state.maximum, currency.name)
+            binding.info.text = getString(
+                R.string.Value_info,
+                state.minimum,
+                currency.name,
+                state.maximum,
+                currency.name
+            )
         }
     }
 
@@ -477,170 +513,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
-    private fun checkKyc(onSuccess: () -> Unit) =
-        lifecycleScope.launch {
-            val kycState = (requireActivity() as WalletActivity).routeProfile?.kycState ?: return@launch
-            if (kycState == KycState.SUCCESS.value || kycState == KycState.IGNORE.value) {
-                onSuccess.invoke()
-                return@launch
-            }
-            if (viewDestroyed()) return@launch
-            binding.continueVa.displayedChild = 1
-            requestRouteAPI(
-                invokeNetwork = {
-                    fiatMoneyViewModel.token()
-                },
-                endBlock = {
-                    if (viewDestroyed()) return@requestRouteAPI
-                    binding.continueVa.displayedChild = 0
-                },
-                successBlock = { resp ->
-                    val tokenResponse = requireNotNull(resp.data)
-                    when (tokenResponse.state) {
-                        KycState.INITIAL.value -> {
-                            val token = requireNotNull(tokenResponse.token) { "required token can not be null" }
-                            presentSDK(token)
-                        }
-
-                        KycState.PENDING.value, KycState.RETRY.value, KycState.BLOCKED.value -> {
-                            val token =
-                                requireNotNull(tokenResponse.token) { "required token can not be null" }
-                            view?.navigate(
-                                R.id.action_wallet_calculate_to_identity,
-                                Bundle().apply {
-                                    putString(ARGS_TOKEN, token)
-                                    putString(ARGS_KYC_STATE, tokenResponse.state)
-                                },
-                            )
-                        }
-
-                        KycState.SUCCESS.value -> {
-                            onSuccess()
-                        }
-
-                        else -> {
-                            toast("Unknown kyc state: ${tokenResponse.state}")
-                        }
-                    }
-                },
-                requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-            )
-        }
-
-    private fun presentSDK(accessToken: String) {
-        val tokenExpirationHandler =
-            object : TokenExpirationHandler {
-                override fun onTokenExpired(): String? {
-                    return try {
-                        fiatMoneyViewModel.callSumsubToken().execute().body()?.data?.token
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
-            }
-        val onSDKStateChangedHandler: (SNSSDKState, SNSSDKState) -> Unit = { newState, prevState ->
-            Timber.e("onSDKStateChangedHandler: $prevState -> $newState")
-
-            when (newState) {
-                is SNSSDKState.Ready -> Timber.e("SDK is ready")
-                is SNSSDKState.Failed -> {
-                    when (newState) {
-                        is SNSSDKState.Failed.ApplicantNotFound -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.ApplicantMisconfigured -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.InitialLoadingFailed ->
-                            Timber.e(
-                                newState.exception,
-                                "Initial loading error",
-                            )
-
-                        is SNSSDKState.Failed.InvalidParameters -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.NetworkError ->
-                            Timber.e(
-                                newState.exception,
-                                newState.message,
-                            )
-
-                        is SNSSDKState.Failed.Unauthorized ->
-                            Timber.e(
-                                newState.exception,
-                                "Invalid token or a token can't be refreshed by the SDK. Please, check your token expiration handler",
-                            )
-
-                        is SNSSDKState.Failed.Unknown ->
-                            Timber.e(
-                                newState.exception,
-                                "Unknown error",
-                            )
-                    }
-                }
-
-                is SNSSDKState.Initial -> Timber.e("No verification steps are passed yet")
-                is SNSSDKState.Incomplete -> Timber.e("Some but not all verification steps are passed over")
-                is SNSSDKState.Pending -> Timber.e("Verification is in pending state")
-                is SNSSDKState.FinallyRejected -> Timber.e("Applicant has been finally rejected")
-                is SNSSDKState.TemporarilyDeclined -> Timber.e("Applicant has been declined temporarily")
-                is SNSSDKState.Approved -> Timber.e("Applicant has been approved")
-                else -> Timber.e("Unknown")
-            }
-        }
-
-        val onSDKErrorHandler: (SNSException) -> Unit = { exception ->
-            Timber.e("The SDK throws an exception. Exception: $exception")
-
-            when (exception) {
-                is SNSException.Api -> Timber.e("Api exception. ${exception.description}")
-                is SNSException.Network -> Timber.e(exception, "Network exception.")
-                is SNSException.Unknown -> Timber.e(exception, "Unknown exception.")
-            }
-        }
-
-        val onSDKCompletedHandler: (SNSCompletionResult, SNSSDKState) -> Unit = { result, _ ->
-            when (result) {
-                is SNSCompletionResult.SuccessTermination -> Timber.e("The SDK finished successfully")
-                is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
-                else -> Timber.e("Unknown")
-            }
-        }
-
-        val snsSdk =
-            SNSMobileSDK.Builder(requireActivity())
-                .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
-                .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
-                .withLocale(
-                    if (isFollowSystem()) {
-                        Locale.getDefault()
-                    } else {
-                        val languagePos = getLanguagePos()
-                        val selectedLang =
-                            when (languagePos) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
-                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
-                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
-                                else -> Locale.US.language
-                            }
-                        val selectedCountry =
-                            when (languagePos) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
-                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
-                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
-                                else -> Locale.US.country
-                            }
-                        Locale(selectedLang, selectedCountry)
-                    },
-                )
-                .build()
-
-        snsSdk.launch()
-    }
-
     private fun getPayAmount(
         assetAmount: Float,
         assetPrice: Float,
@@ -650,7 +522,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val total = merchant / (1 - feePercent)
         val fee = total - merchant
         val roundedFee = BigDecimal(fee.toDouble()).setScale(2, RoundingMode.UP)
-        val payingAmount = roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
+        val payingAmount =
+            roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
         return payingAmount.toPlainString()
     }
 
@@ -670,7 +543,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         botId,
                     )
                 if (!key.isNullOrEmpty()) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
+                    MixinApplication.appContext.defaultSharedPreferences.putString(
+                        PREF_ROUTE_BOT_PK,
+                        key
+                    )
                 } else {
                     val sessionResponse =
                         fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
@@ -687,7 +563,10 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 publicKey = sessionData.publicKey,
                             ),
                         )
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
+                        MixinApplication.appContext.defaultSharedPreferences.putString(
+                            PREF_ROUTE_BOT_PK,
+                            sessionData.publicKey
+                        )
                     } else {
                         throw MixinResponseException(
                             sessionResponse.errorCode,
@@ -709,7 +588,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     val hideGooglePay =
                         profileResponse.data!!.supportPayments.contains(Constants.RouteConfig.GOOGLE_PAY)
                             .not()
-                    val routeProfile = RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
+                    val routeProfile =
+                        RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
                     (requireActivity() as WalletActivity).routeProfile = routeProfile
                     routeProfile
                 } else {
