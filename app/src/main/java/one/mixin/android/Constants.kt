@@ -259,7 +259,7 @@ object Constants {
         const val USDT_ASSET_SOL_ID = "cb54aed4-1893-3977-b739-ec7b2e04f0c5"
         const val USDT_ASSET_POS_ID = "218bc6f4-7927-3f8e-8568-3a3725b74361"
 
-        const val USDC_ASSET_ID_ETH = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
+        const val USDC_ASSET_ETH_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
         const val USDC_ASSET_TRX_ID = "fe26b981-29e9-3032-a0e9-b24d619e987e"
         const val USDC_ASSET_BNB_ID = "3d3d69f1-6742-34cf-95fe-3f8964e6d307"
         const val USDC_ASSET_SOL_ID = "de6fa523-c596-398e-b12f-6d6980544b59"
@@ -267,7 +267,7 @@ object Constants {
     }
 
     val usdIds = listOf(AssetId.USDT_ASSET_ETH_ID, AssetId.USDT_ASSET_TRX_ID, AssetId.USDT_ASSET_BNB_ID, AssetId.USDT_ASSET_SOL_ID, AssetId.USDT_ASSET_POS_ID,
-        AssetId.USDC_ASSET_ID_ETH, AssetId.USDC_ASSET_TRX_ID, AssetId.USDC_ASSET_BNB_ID, AssetId.USDC_ASSET_SOL_ID, AssetId.USDC_ASSET_POS_ID)
+        AssetId.USDC_ASSET_ETH_ID, AssetId.USDC_ASSET_TRX_ID, AssetId.USDC_ASSET_BNB_ID, AssetId.USDC_ASSET_SOL_ID, AssetId.USDC_ASSET_POS_ID)
 
     object AssetLevel {
         const val GOOD = 12
