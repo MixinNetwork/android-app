@@ -26,9 +26,11 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OrderRequest
+import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -205,4 +207,19 @@ class FiatMoneyViewModel
                     }
                 }
             }
+
+        suspend fun rampWebUrl(
+            amount: String,
+            assetId: String,
+            currency: String,
+            destination: String
+        ): MixinResponse<RampWebUrlResponse> =
+            tokenRepository.rampWebUrl(
+                RampWebUrlRequest(
+                    amount = amount,
+                    asset_id = assetId,
+                    currency = currency,
+                    destination = destination
+                )
+            )
     }

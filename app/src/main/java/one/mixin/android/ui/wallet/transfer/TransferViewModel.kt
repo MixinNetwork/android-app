@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
