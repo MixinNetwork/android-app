@@ -427,7 +427,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     white = true,
                 )
                 binding.addTv.setOnClickListener {
-                    if (gas != null && chainToken!= null) {
+                    if (gas != null && chainToken != null) {
                         AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
                             .apply {
                                 onWeb3Action = { type, t ->
@@ -768,6 +768,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientBalance.isVisible = true
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
+                    if (currentFee != null && currentFee?.token?.assetId == token?.assetId) {
+                        addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
+                    } else if (chainToken != null && web3Token?.assetId == chainToken?.assetId) {
+                        addTv.text = "${getString(R.string.Add)} ${chainToken?.symbol ?: ""}"
+                    } else {
+                        addTv.text = ""
+                    }
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (transferType != TransferType.WEB3 && (currentFee != null && feeTokensExtra == null ||

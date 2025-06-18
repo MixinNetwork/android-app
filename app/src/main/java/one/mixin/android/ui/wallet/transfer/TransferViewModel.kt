@@ -67,4 +67,7 @@ internal constructor(
 
     suspend fun findTopUsdBalanceAsset(excludeId: String) =
         tokenRepository.findTopUsdBalanceAsset(excludeId)
+
+    suspend fun findTopWeb3UsdBalanceAsset(excludeId: String) =
+        tokenRepository.findTopWeb3UsdBalanceAsset(excludeId)
 }

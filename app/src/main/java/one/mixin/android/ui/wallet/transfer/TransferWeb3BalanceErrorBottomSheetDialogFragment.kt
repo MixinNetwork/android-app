@@ -69,7 +69,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
         lifecycleScope.launch {
             val asset = t.token ?: return@launch
             if (asset.assetId in Constants.usdIds) {
-                val u = transferViewModel.findTopUsdBalanceAsset(asset.assetId)
+                val u = transferViewModel.findTopWeb3UsdBalanceAsset(asset.assetId)
                 if (u != null) {
                     binding.errorLayout.isVisible = true
                     binding.bottom.isVisible = false

@@ -51,7 +51,7 @@
             android:id="@+id/error_icon"
             android:layout_width="26dp"
             android:layout_height="26dp"
-            android:src="@drawable/ic_transfer_warning"
+            android:src="@drawable/ic_transfer_usd_warning"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_margin="20dp"

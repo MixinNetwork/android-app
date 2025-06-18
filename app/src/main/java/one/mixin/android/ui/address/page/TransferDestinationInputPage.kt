@@ -370,7 +370,7 @@ fun TransferDestinationInputPage(
                             )
                         }
                     }
-                    if (web3Token != null && hideCommonWalletInfo.value.not()) {
+                    if (token != null && hideCommonWalletInfo.value.not()) {
                         Spacer(modifier = Modifier.weight(1f))
                         CommonWalletInfo(
                             onLearnMoreClick = {
@@ -381,7 +381,7 @@ fun TransferDestinationInputPage(
                             }
                         )
                         Spacer(modifier = Modifier.height(20.dp))
-                    } else if (token != null && hidePrivacyWalletInfo.value.not()) {
+                    } else if (web3Token != null && hidePrivacyWalletInfo.value.not()) {
                         Spacer(modifier = Modifier.weight(1f))
                         PrivacyWalletInfo(
                             onLearnMoreClick = {

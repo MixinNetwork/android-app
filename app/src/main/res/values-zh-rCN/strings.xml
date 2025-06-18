@@ -1909,7 +1909,11 @@
     <string name="Good">良好</string>
     <string name="reputation_description">默认仅显示信誉度良好的交易。启用“高风险”可查看更多交易。</string>
     <string name="reputation_unknown_description">缺乏足够信息，或未被可信来源验证</string>
-    <string name="usd_cross_chain_detected">检测到当前钱包有其他链的 %1$s，是否马上兑换？</string>
+    <string name="fee_swap">兑换 %1$s</string>
+    <string name="fee_deposit">充值 %1$s</string>
+    <string name="fee_swap_other_coin_to">其他币兑换为 %1$s</string>
+    <string name="fee_deposit_from_other_exchanges">从其他交易所或钱包充值</string>
+    <string name="usd_cross_chain_detected">当前钱包有其他链的 %1$s，是否马上兑换？</string>
     <string name="membership_plan">级别</string>
     <string name="membership_advance">进阶版</string>
     <string name="membership_elite">精英版</string>
