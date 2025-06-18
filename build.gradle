@@ -124,7 +124,7 @@ buildscript {
         ext.installreferrerVersion ='2.2'
         ext.billingVersion ='7.1.1'
 
-        ext.lottieComposeVersion = '6.6.6'
+        ext.lottieComposeVersion = '6.6.7'
         ext.composeBomVersion = '2025.06.00'
         ext.activityComposeVersion = '1.10.1'
         ext.web3jCoreVersion = '4.11.0'
