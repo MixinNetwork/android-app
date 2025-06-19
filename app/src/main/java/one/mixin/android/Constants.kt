@@ -269,7 +269,7 @@ object Constants {
     val usdIds = listOf(AssetId.USDT_ASSET_ETH_ID, AssetId.USDT_ASSET_TRX_ID, AssetId.USDT_ASSET_BNB_ID, AssetId.USDT_ASSET_SOL_ID, AssetId.USDT_ASSET_POS_ID,
         AssetId.USDC_ASSET_ETH_ID, AssetId.USDC_ASSET_TRX_ID, AssetId.USDC_ASSET_BNB_ID, AssetId.USDC_ASSET_SOL_ID, AssetId.USDC_ASSET_POS_ID)
 
-    val web3UsdIds = listOf(AssetId.USDT_ASSET_ETH_ID, AssetId.USDT_ASSET_TRX_ID, AssetId.USDC_ASSET_ETH_ID, AssetId.USDC_ASSET_TRX_ID)
+    val web3UsdIds = listOf(AssetId.USDT_ASSET_ETH_ID, AssetId.USDC_ASSET_ETH_ID)
 
     object AssetLevel {
         const val GOOD = 12
