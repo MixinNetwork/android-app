@@ -1429,4 +1429,7 @@ class TokenRepository
         web3TokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
 
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
+
+    suspend fun getAddressById(chainId: String) = addressDao.getAddressById(chainId)
+
 }

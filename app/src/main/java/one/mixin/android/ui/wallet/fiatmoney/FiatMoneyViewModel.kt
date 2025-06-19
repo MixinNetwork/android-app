@@ -222,4 +222,8 @@ class FiatMoneyViewModel
                     destination = destination
                 )
             )
+
+        suspend fun getAddressById(chainId: String) = withContext(Dispatchers.IO) {
+            tokenRepository.getAddressById(chainId)
+        }
     }

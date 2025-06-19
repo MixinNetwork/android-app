@@ -113,7 +113,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
-                        WalletActivity.showBuy(requireActivity(), null, null)
+                        WalletActivity.showBuy(requireActivity(), true, null, null)
                     }
                     sendReceiveView.send.setOnClickListener {
                         Web3TokenListBottomSheetDialogFragment.newInstance().apply {
