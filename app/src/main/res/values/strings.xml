@@ -426,7 +426,9 @@
     <string name="error_insufficient_balance">ERROR 20117: Insufficient balance</string>
     <string name="error_insufficient_balance_title">%1$s insufficient balance</string>
     <string name="error_insufficient_balance_desc">Error 20117: Transfer amount %1$s, wallet available balance %2$s.</string>
+    <string name="error_withdraw_insufficient_balance_desc">Withdrawal amount %1$s, fee %2$s, wallet balance %3$s.</string>
     <string name="error_insufficient_web3_main_balance_desc">Transfer amount %1$s, broadcasting the transaction requires %2$s, wallet balance %3$s.</string>
+    <string name="error_insufficient_withdraw_balance_desc">Withdraw amount %1$s, broadcasting the transaction requires %2$s, wallet balance %3$s.</string>
     <string name="error_insufficient_web3_balance_desc">ERROR 20117: Broadcasting the transaction requires %1$s, but the wallet only has %2$s available.</string>
     <string name="error_legacy_pin">ERROR 20118: To enhance the security of the Mixin network, Mixin API has temporarily suspended the upgrading from D3M-PIN to TIP. Please refer to the documentation for details and register for processing.</string>
     <string name="error_insufficient_transaction_fee_with_amount">ERROR 20124: Insufficient transaction fee. Please make sure your wallet has %1$s as fee</string>

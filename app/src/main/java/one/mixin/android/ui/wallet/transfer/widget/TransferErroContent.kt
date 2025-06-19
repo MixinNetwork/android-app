@@ -49,26 +49,24 @@ class TransferErrorContent : LinearLayout {
         _binding.apply {
             amount.isVisible = true
             amount.setContent(R.string.Amount, "${assetBiometricItem.amount} ${assetBiometricItem.asset?.symbol}", amountAs(assetBiometricItem.amount, assetBiometricItem.asset!!))
-            total.isVisible = true
 
             network.setContent(R.string.network, getChainName(assetBiometricItem.asset!!.chainId, assetBiometricItem.asset!!.chainName, assetBiometricItem.asset!!.assetKey) ?: "")
-            networkFee.isVisible = true
-            if (assetBiometricItem is WithdrawBiometricItem) {
+            if (assetBiometricItem is WithdrawBiometricItem && assetBiometricItem.fee?.token != null && assetBiometricItem.asset?.assetId == assetBiometricItem.fee?.token?.assetId) {
                 val (totalAmount, totalPrice) = formatWithdrawBiometricItem(assetBiometricItem)
+                total.isVisible = true
                 total.setContent(R.string.Total, totalAmount, totalPrice)
 
                 val fee = assetBiometricItem.fee!!
                 networkFee.isVisible = true
                 networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
             } else {
-                networkFee.setContent(R.string.Fee, "0 ${assetBiometricItem.asset?.symbol}", amountAs("0", assetBiometricItem.asset!!))
-                total.setContent(R.string.Total, "${assetBiometricItem.amount} ${assetBiometricItem.asset?.symbol}", amountAs(assetBiometricItem.amount, assetBiometricItem.asset!!))
+                networkFee.isVisible = false
+                total.isVisible = false
             }
 
             sender.isVisible = false
             balance.isVisible = true
             balance.setContent(R.string.Available_Balance, "${extra?.balance?.numberFormat8() ?: "0"} ${assetBiometricItem.asset?.symbol ?: ""}", amountAs(extra?.balance ?: "0", assetBiometricItem.asset!!))
-
         }
     }
 

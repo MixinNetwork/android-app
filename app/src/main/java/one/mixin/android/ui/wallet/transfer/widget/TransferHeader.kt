@@ -14,6 +14,8 @@ import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
@@ -300,17 +302,27 @@ class TransferHeader : LinearLayout {
         }
     }
 
-    fun balanceError(asset: TokenItem, amount: String, extra: TokensExtra?) {
+    fun balanceError(t: AssetBiometricItem, extra: TokensExtra?) {
+        val asset = t.asset?:return
         _binding.apply {
-            assetIcon.loadToken(asset)
+            assetIcon.loadToken(assetBiometricItem.asset!!)
             subTitle.setTextColor(context.getColor(R.color.wallet_red))
             title.setTextColor(context.getColor(R.color.wallet_red))
             title.text = context.getString(R.string.error_insufficient_balance_title, asset.symbol)
-            subTitle.text = context.getString(
+            if (t is WithdrawBiometricItem && t.fee?.token != null && t.asset?.assetId == t.fee?.token?.assetId) {
+                subTitle.text = context.getString(
+                    R.string.error_insufficient_withdraw_balance_desc,
+                    "${t.fee?.fee?.numberFormat8()} ${t.fee?.token?.symbol}",
+                    "${t.amount.numberFormat8()} ${asset.symbol}",
+                    "${extra?.balance?.numberFormat8()} ${asset.symbol}",
+                )
+            } else {
+                subTitle.text = context.getString(
                 R.string.error_insufficient_balance_desc,
-                "${amount.numberFormat8()} ${asset.symbol}",
+                "${t.amount.numberFormat8()} ${asset.symbol}",
                 "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
             )
+            }
         }
     }
 
