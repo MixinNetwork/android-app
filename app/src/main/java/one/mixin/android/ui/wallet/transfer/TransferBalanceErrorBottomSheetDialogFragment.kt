@@ -75,7 +75,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     }
                 }
             }
-            binding.header.balanceError(asset, t.amount, tokenExtra)
+            binding.header.balanceError(t, tokenExtra)
             binding.content.renderAsset(t, tokenExtra)
             binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
             binding.bottom.setOnClickListener({
