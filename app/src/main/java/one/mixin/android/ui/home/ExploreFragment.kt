@@ -276,10 +276,6 @@ class ExploreFragment : BaseFragment() {
                     }
                 }
 
-                INTERNAL_BUY_ID -> {
-                    WalletActivity.showBuy(requireActivity(), null, null)
-                }
-
                 INTERNAL_LINK_DESKTOP_ID -> {
                     DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
                 }

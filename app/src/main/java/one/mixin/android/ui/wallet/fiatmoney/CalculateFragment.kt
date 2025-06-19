@@ -77,12 +77,15 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val CALCULATE_STATE = "calculate_state"
         const val CURRENT_CURRENCY = "current_currency"
         const val CURRENT_ASSET_ID = "current_asset_id"
+        const val ARGS_IS_WEB3 = "args_is_web3"
 
         fun newInstance() = CalculateFragment()
     }
 
     private val binding by viewBinding(FragmentCalculateBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+
+    private val isWeb3 by lazy { requireArguments().getBoolean(ARGS_IS_WEB3, false) }
 
     private suspend fun initData() {
         val routeProfile = (requireActivity() as WalletActivity).routeProfile
@@ -171,21 +174,15 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    lifecycleScope.launch {
-                        val userTeamMixin =
-                            fiatMoneyViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                        if (userTeamMixin == null) {
-                            toast(R.string.Data_error)
-                        } else {
-                            ConversationActivity.show(
-                                requireContext(),
-                                recipientId = Constants.TEAM_MIXIN_USER_ID
-                            )
-                        }
-                    }
+                    context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
-                titleView.setSubTitle(getString(R.string.Buy), "")
-                titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
+                titleView.setSubTitle(
+                    getString(R.string.Buy), if (isWeb3) {
+                        getString(R.string.Common_Wallet)
+                    } else {
+                        getString(R.string.Privacy_Wallet)
+                    }
+                )
                 assetRl.setOnClickListener {
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile
                     val supportAssetIds = routeProfile?.supportAssetIds ?: return@setOnClickListener
@@ -323,13 +320,22 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     } else {
                         lifecycleScope.launch inner@{
                             if (viewDestroyed()) return@inner
+                            val asset = fiatMoneyViewModel.asset ?: return@inner
+                            val destination = if (isWeb3) {
+                                if (asset.chainId == Constants.ChainId.Solana) {
+                                    JsSigner.solanaAddress
+                                } else {
+                                    JsSigner.evmAddress
+                                }
+                            } else
+                                fiatMoneyViewModel.getAddressById(asset.chainId)?.destination ?: return@inner
                             try {
                                 binding.continueVa.displayedChild = 1
                                 val response = fiatMoneyViewModel.rampWebUrl(
                                     amount,
-                                    "4d8c508b-91c5-375b-92b0-ee702ed2dac5",// todo replace real asset id
+                                    asset.assetId,
                                     fiatMoneyViewModel.currency?.name ?: return@inner,
-                                    JsSigner.evmAddress
+                                    destination
                                 )
                                 if (response.isSuccess) {
                                     WebActivity.show(
