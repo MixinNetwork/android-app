@@ -469,7 +469,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 null
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                            onAddressClick()
+                                            view.navigate(
+                                                R.id.action_input_fragment_to_deposit_fragment,
+                                                Bundle().apply {
+                                                    putParcelable("args_asset", token!!)
+                                                }
+                                            )
                                         }
                                     }
                                 }.showNow(
