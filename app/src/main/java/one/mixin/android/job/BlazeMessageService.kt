@@ -192,10 +192,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         webSocket.connect()
         lifecycleScope.launch(Dispatchers.IO) {
             hedwig.takeOff()
+            startObserveAck()
+            startObserveStatus()
+            startObserveExpired()
         }
-        startObserveAck()
-        startObserveStatus()
-        startObserveExpired()
         runExpiredJob()
         networkUtil.setListener(this)
         if (disposable == null) {

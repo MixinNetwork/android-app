@@ -303,8 +303,6 @@
     <string name="deposit_notice">И памятка, и адрес необходимы для внесения %1$s в ваш аккаунт.</string>
     <string name="deposit_tip_btc">Этот адрес поддерживает только BTC.</string>
     <string name="deposit_tip_common">Этот адрес поддерживает только %1$s.</string>
-    <string name="deposit_tip_eos">Этот адрес поддерживает всю базу токенов EOS.</string>
-    <string name="deposit_tip_eth">Этот адрес поддерживает все токены ERC-20, такие как ETH, XIN и т. д.</string>
     <string name="deposit_tip_trx">Этот адрес поддерживает все токены TRC-10 и TRC-20.</string>
     <string name="desktop">рабочий стол</string>
     <string name="desktop_login_no_pin">В целях безопасности вашей учетной записи установите PIN-код перед входом в настольное приложение.</string>

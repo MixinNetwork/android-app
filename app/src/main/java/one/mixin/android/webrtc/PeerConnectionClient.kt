@@ -1,6 +1,7 @@
 package one.mixin.android.webrtc
 
 import android.content.Context
+import android.util.Log
 import androidx.collection.arrayMapOf
 import kotlinx.coroutines.delay
 import one.mixin.android.RxBus
@@ -25,11 +26,17 @@ import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
+import org.webrtc.audio.AudioDeviceModule
+import org.webrtc.audio.JavaAudioDeviceModule
+import org.webrtc.audio.JavaAudioDeviceModule.AudioRecordErrorCallback
+import org.webrtc.audio.JavaAudioDeviceModule.AudioTrackErrorCallback
+import org.webrtc.audio.JavaAudioDeviceModule.AudioTrackStateCallback
 import timber.log.Timber
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-class PeerConnectionClient(context: Context) {
+
+class PeerConnectionClient(private var context: Context) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
 
@@ -121,7 +128,7 @@ class PeerConnectionClient(context: Context) {
             reportError("PeerConnectionFactory has already been constructed")
             return
         }
-        createPeerConnectionFactoryInternal(options)
+        createPeerConnectionFactoryInternal(this.context, options)
     }
 
     fun createOffer(
@@ -484,11 +491,14 @@ class PeerConnectionClient(context: Context) {
         }
     }
 
-    private fun createPeerConnectionFactoryInternal(options: PeerConnectionFactory.Options) {
+    private fun createPeerConnectionFactoryInternal(context: Context, options: PeerConnectionFactory.Options) {
+        val adm = createJavaAudioDevice(context)
         factory =
             PeerConnectionFactory.builder()
                 .setOptions(options)
+                .setAudioDeviceModule(adm)
                 .createPeerConnectionFactory()
+        adm.release()
     }
 
     private fun createAudioTrack(): AudioTrack {
@@ -690,5 +700,60 @@ class PeerConnectionClient(context: Context) {
         const val TAG = "PeerConnectionClient"
 
         private const val AUDIO_TRACK_ID = "ARDAMSa0"
+    }
+
+    private fun createJavaAudioDevice(context: Context): AudioDeviceModule {
+        // Set audio record error callbacks.
+        val audioRecordErrorCallback: AudioRecordErrorCallback = object : AudioRecordErrorCallback {
+            override fun onWebRtcAudioRecordInitError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioRecordInitError: $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioRecordStartError(
+                errorCode: JavaAudioDeviceModule.AudioRecordStartErrorCode, errorMessage: String,
+            ) {
+                Log.e(TAG, "onWebRtcAudioRecordStartError: $errorCode. $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioRecordError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioRecordError: $errorMessage")
+                reportError(errorMessage)
+            }
+        }
+        val audioTrackErrorCallback: AudioTrackErrorCallback = object : AudioTrackErrorCallback {
+            override fun onWebRtcAudioTrackInitError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioTrackInitError: $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioTrackStartError(
+                errorCode: JavaAudioDeviceModule.AudioTrackStartErrorCode, errorMessage: String,
+            ) {
+                Log.e(TAG, "onWebRtcAudioTrackStartError: $errorCode. $errorMessage")
+                reportError(errorMessage)
+            }
+
+            override fun onWebRtcAudioTrackError(errorMessage: String) {
+                Log.e(TAG, "onWebRtcAudioTrackError: $errorMessage")
+                reportError(errorMessage)
+            }
+        }
+        // Set audio track state callbacks.
+        val audioTrackStateCallback: AudioTrackStateCallback = object : AudioTrackStateCallback {
+            override fun onWebRtcAudioTrackStart() {
+                Log.i(TAG, "Audio playout starts")
+            }
+
+            override fun onWebRtcAudioTrackStop() {
+                Log.i(TAG, "Audio playout stops")
+            }
+        }
+        return JavaAudioDeviceModule.builder(context)
+            .setAudioRecordErrorCallback(audioRecordErrorCallback)
+            .setAudioTrackErrorCallback(audioTrackErrorCallback)
+            .setAudioTrackStateCallback(audioTrackStateCallback)
+            .createAudioDeviceModule()
     }
 }

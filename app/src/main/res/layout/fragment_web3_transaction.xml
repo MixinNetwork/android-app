@@ -42,6 +42,40 @@
                     android:layout_height="wrap_content"
                     tools:ignore="UselessParent">
 
+                    <LinearLayout
+                        android:id="@+id/spam_ll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="@drawable/bg_token_spam"
+                        android:orientation="horizontal"
+                        android:paddingStart="12dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="12dp"
+                        android:paddingBottom="18dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/ic_spam"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_spam_token"
+                            android:layout_gravity="center"/>
+
+                        <TextView
+                            android:id="@+id/total_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/reputation_transaction_warning"
+                            android:textColor="#DB454F"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+
                     <one.mixin.android.widget.BadgeCircleImageView
                         android:id="@+id/avatar"
                         android:layout_width="70dp"
@@ -49,6 +83,7 @@
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp"
+                        android:layout_below="@id/spam_ll"
                         tools:ignore="ContentDescription" />
 
                     <TextView

@@ -10,7 +10,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.db.pending.PendingDatabaseImp
-import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.fts.FtsDatabase
 import javax.inject.Singleton
 
@@ -231,7 +230,11 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideOrderDao(db: MixinDatabase) = db.orderDao()
+    fun provideSwapOrderDao(db: MixinDatabase) = db.swapOrderDao()
+
+    @Singleton
+    @Provides
+    fun provideMemberOrderDao(db: MixinDatabase) = db.memberOrderDao()
 
     @Singleton
     @Provides

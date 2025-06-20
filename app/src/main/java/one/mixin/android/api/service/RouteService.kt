@@ -135,7 +135,6 @@ interface RouteService {
     @POST("web3/swap")
     suspend fun web3Swap(
         @Body swapRequest: SwapRequest,
-        @Query("source") source: String = "web3",
     ): MixinResponse<SwapResponse>
 
     @GET("web3/transactions/{txhash}")
@@ -194,6 +193,11 @@ interface RouteService {
         @Query("offset") offset: String?,
         @Query("limit") limit: Int
     ) : MixinResponse<List<SwapOrder>>
+
+    @GET("web3/swap/orders/{id}")
+    suspend fun orderById(
+        @Path("id") id: String,
+    ) : MixinResponse<SwapOrder>
 
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(

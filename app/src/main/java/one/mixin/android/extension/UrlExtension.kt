@@ -31,6 +31,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
@@ -177,6 +178,9 @@ EVM Address: ${JsSigner.address}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
+    } else if (isMembershipScheme()) {
+        MixinMemberUpgradeBottomSheetDialogFragment.newInstance(Session.getAccount()?.membership?.plan).showNow(supportFragmentManager,
+            MixinMemberUpgradeBottomSheetDialogFragment.TAG)
     } else if (isConversationScheme()) {
         checkConversation(context, scope) {
             if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl() || isLightningUrl()) {
@@ -299,6 +303,9 @@ fun String.isLightningUrl() = startsWith("lnbc", true)  || startsWith("lnurl", t
 private fun String.isUserScheme() =
     startsWith(Constants.Scheme.USERS, true) ||
         startsWith(Constants.Scheme.HTTPS_USERS, true)
+
+private fun String.isMembershipScheme() =
+    startsWith(Constants.Scheme.HTTPS_MEMBERSHIP, true)
 
 private fun String.isInscriptionScheme() = startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true)
 

@@ -112,6 +112,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         binding.root.isClickable = true
         binding.apply {
+            spamLl.isVisible = transaction.isNotVerified()
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
                 requireContext().colorFromAttribute(R.attr.text_assist)

@@ -311,7 +311,9 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_39_40: Migration =
             object : Migration(39, 40) {
                 override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))")
+                    db.execSQL(
+                        "CREATE TABLE IF NOT EXISTS `properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))",
+                    )
                 }
             }
 
@@ -561,6 +563,15 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_addresses_chain_id_updated_at` ON `addresses` (`chain_id`, `updated_at`)")
                 }
             }
+
+        val MIGRATION_65_66: Migration =
+            object : Migration(65, 66) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `membership_orders` (`order_id` TEXT NOT NULL, `category` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `after` TEXT NOT NULL, `before` TEXT NOT NULL, `created_at` TEXT NOT NULL, `fiat_order` TEXT, `stars` INTEGER NOT NULL, `payment_url` TEXT, `status` TEXT NOT NULL, PRIMARY KEY(`order_id`))")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_membership_orders_created_at` ON `membership_orders` (`created_at`)")
+                }
+            }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

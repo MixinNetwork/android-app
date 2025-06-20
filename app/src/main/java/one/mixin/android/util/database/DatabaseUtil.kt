@@ -49,25 +49,50 @@ suspend fun getLastUserId(context: Context): String? =
 
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearDatabase(context: Context) {
-        try {
-            clearFts(context)
-            clearPending(context)
-            val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-            if (!dbFile.exists()) {
-                return
-            }
-            dbFile.parent?.let {
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
-            }
-            do {
-                dbFile.delete()
-            } while (dbFile.exists())
-        } catch (e: Exception) {
-            Timber.e(e)
+    try {
+        clearFts(context)
+        clearPending(context)
+        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+        if (!dbFile.exists()) {
+            return
         }
+        dbFile.parent?.let {
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
+        }
+        do {
+            dbFile.delete()
+        } while (dbFile.exists())
+    } catch (e: Exception) {
+        Timber.e(e)
     }
+
+    try {
+        if (Build.VERSION.SDK_INT >= 28) {
+            context.getDatabasePath(Constants.DataBase.DB_NAME).delete()
+            context.getDatabasePath(Constants.DataBase.DB_NAME + "-shm").delete()
+            context.getDatabasePath(Constants.DataBase.DB_NAME + "-wal").delete()
+        } else {
+            SQLiteDatabase.deleteDatabase(context.getDatabasePath(Constants.DataBase.DB_NAME))
+        }
+    } catch (e: Exception) {
+        reportException(e)
+    }
+
+    var db: SupportSQLiteDatabase? = null
+    try {
+        // Init database
+        MixinDatabase.getDatabase(context)
+        db = MixinDatabase.getWritableDatabase() ?: return
+        db.execSQL("DELETE FROM orders")
+    } catch (e: Exception) {
+        Timber.e(e)
+        reportException(e)
+    } finally {
+        db?.close()
+    }
+}
 
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearPending(context: Context) =

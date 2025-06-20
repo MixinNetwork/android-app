@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.TypeConverters
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat8
@@ -73,7 +74,10 @@ data class Web3TransactionItem(
     val receiveAssetIconUrl: String? = null,
 
     @ColumnInfo(name = "receive_asset_symbol")
-    val receiveAssetSymbol: String? = null
+    val receiveAssetSymbol: String? = null,
+
+    @ColumnInfo(name = "level")
+    val level: Int,
 ) : Parcelable {
 
     companion object {
@@ -92,6 +96,8 @@ data class Web3TransactionItem(
                     oldItem == newItem
             }
     }
+
+    fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
 
     fun getMainAmount(): String {
         return when (transactionType) {

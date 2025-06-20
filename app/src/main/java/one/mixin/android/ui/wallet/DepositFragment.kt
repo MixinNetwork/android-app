@@ -415,5 +415,26 @@ class DepositFragment : BaseFragment() {
                 }
             }
         }
+        val dustTip =
+            if (asset.hasDust()) {
+                getString(R.string.deposit_dust, asset.dust, asset.symbol)
+                    .highLight(requireContext(), "${asset.dust} ${asset.symbol}")
+            } else {
+                SpannableStringBuilder()
+            }
+        val confirmation =
+            requireContext().resources.getQuantityString(
+                R.plurals.deposit_confirmation,
+                asset.confirmations,
+                asset.confirmations,
+            )
+                .highLight(requireContext(), asset.confirmations.toString())
+        binding.tipTv.text =
+            buildBulletLines(
+                requireContext(),
+                SpannableStringBuilder(getTipsByAsset(asset)),
+                confirmation,
+                dustTip,
+            )
     }
 }

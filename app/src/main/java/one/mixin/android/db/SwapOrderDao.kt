@@ -7,7 +7,7 @@ import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.route.SwapOrderItem
 
 @Dao
-interface OrderDao : BaseDao<SwapOrder> {
+interface SwapOrderDao : BaseDao<SwapOrder> {
 
     @Query(
         """
@@ -34,7 +34,7 @@ interface OrderDao : BaseDao<SwapOrder> {
     )
     fun getOrderById(orderId: String): Flow<SwapOrderItem?>
 
-    @Query("SELECT * FROM swap_orders WHERE state = 'pending'")
+    @Query("SELECT * FROM swap_orders WHERE state = 'pending' ORDER BY created_at ASC")
     suspend fun getPendingOrders(): List<SwapOrder>
 
     @Query(
