@@ -77,7 +77,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
     val linkViewModel by viewModels<BottomSheetViewModel>()
     private val memberViewModel by viewModels<MemberViewModel>()
 
-    private var currentUserPlan: Plan by mutableStateOf(Plan.None)
+    private var currentUserPlan: Plan by mutableStateOf(Session.getAccount()?.membership?.plan ?: Plan.None)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,7 +112,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
             setContent {
                 MixinMemberUpgradePage(
                     currentUserPlan = currentUserPlan,
-                    selectedPlanOverride = defaultPlan,
+                    selectedPlanOverride = defaultPlan ?: currentUserPlan,
                     onClose = { dismiss() },
                     onUrlGenerated = { url ->
                         viewLifecycleOwner.lifecycleScope.launch {
