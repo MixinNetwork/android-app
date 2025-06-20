@@ -45,28 +45,75 @@ class TransferErrorContent : LinearLayout {
         _binding = ViewTransferErrorContenBinding.inflate(LayoutInflater.from(context), this)
     }
 
-    fun renderAsset(assetBiometricItem: AssetBiometricItem, extra: TokensExtra?) {
+    fun renderAsset(assetBiometricItem: AssetBiometricItem, extra: TokensExtra?, feeExtra: TokensExtra? = null) {
         _binding.apply {
-            amount.isVisible = true
-            amount.setContent(R.string.Amount, "${assetBiometricItem.amount} ${assetBiometricItem.asset?.symbol}", amountAs(assetBiometricItem.amount, assetBiometricItem.asset!!))
-
-            network.setContent(R.string.network, getChainName(assetBiometricItem.asset!!.chainId, assetBiometricItem.asset!!.chainName, assetBiometricItem.asset!!.assetKey) ?: "")
-            if (assetBiometricItem is WithdrawBiometricItem && assetBiometricItem.fee?.token != null && assetBiometricItem.asset?.assetId == assetBiometricItem.fee?.token?.assetId) {
-                val (totalAmount, totalPrice) = formatWithdrawBiometricItem(assetBiometricItem)
-                total.isVisible = true
-                total.setContent(R.string.Total, totalAmount, totalPrice)
-
-                val fee = assetBiometricItem.fee!!
-                networkFee.isVisible = true
-                networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
+            if (assetBiometricItem is WithdrawBiometricItem && assetBiometricItem.isBalanceEnough(
+                    extra?.balance,
+                    feeExtra?.balance
+                ) == 3
+            ) {
+                val fee = assetBiometricItem.fee?.token ?: return
+                amount.isVisible = true
+                amount.setContent(
+                    R.string.Fee,
+                    "${assetBiometricItem.fee?.fee?.numberFormat8()} ${fee.symbol}",
+                    amountAs(assetBiometricItem.fee?.fee ?: "0", fee)
+                )
+                network.setContent(
+                    R.string.network,
+                    getChainName(
+                        fee.chainId,
+                        fee.chainName,
+                        fee.assetKey
+                    ) ?: ""
+                )
+                balance.isVisible = true
+                balance.setContent(
+                    R.string.Balance,
+                    "${feeExtra?.balance?.numberFormat8() ?: "0"} ${fee.symbol ?: ""}",
+                    amountAs(feeExtra?.balance ?: "0", fee)
+                )
             } else {
-                networkFee.isVisible = false
-                total.isVisible = false
-            }
+                val asset = assetBiometricItem.asset?:return
+                amount.isVisible = true
+                amount.setContent(
+                    R.string.Amount,
+                    "${assetBiometricItem.amount} ${asset?.symbol}",
+                    amountAs(assetBiometricItem.amount, asset!!)
+                )
+                network.setContent(
+                    R.string.network,
+                    getChainName(
+                        asset!!.chainId,
+                        asset!!.chainName,
+                        asset!!.assetKey
+                    ) ?: ""
+                )
+                if (assetBiometricItem is WithdrawBiometricItem && assetBiometricItem.fee?.token != null && asset?.assetId == assetBiometricItem.fee?.token?.assetId) {
+                    val (totalAmount, totalPrice) = formatWithdrawBiometricItem(assetBiometricItem)
+                    total.isVisible = true
+                    total.setContent(R.string.Total, totalAmount, totalPrice)
 
-            sender.isVisible = false
-            balance.isVisible = true
-            balance.setContent(R.string.Available_Balance, "${extra?.balance?.numberFormat8() ?: "0"} ${assetBiometricItem.asset?.symbol ?: ""}", amountAs(extra?.balance ?: "0", assetBiometricItem.asset!!))
+                    val fee = assetBiometricItem.fee!!
+                    networkFee.isVisible = true
+                    networkFee.setContent(
+                        R.string.Fee,
+                        "${fee.fee} ${fee.token.symbol}",
+                        amountAs(fee.fee, fee.token)
+                    )
+                } else {
+                    networkFee.isVisible = false
+                    total.isVisible = false
+                }
+
+                sender.isVisible = false
+                balance.isVisible = true
+                balance.setContent(
+                    R.string.Balance,
+                    "${extra?.balance?.numberFormat8() ?: "0"} ${asset?.symbol ?: ""}",
+                    amountAs(extra?.balance ?: "0", asset!!)
+                )
+            }
         }
     }
 
@@ -113,7 +160,7 @@ class TransferErrorContent : LinearLayout {
     fun renderAsset(asset: Web3TokenItem, amount: BigDecimal,fee: BigDecimal) {
         _binding.apply {
             balance.isVisible = true
-            balance.setContent(R.string.Available_Balance, "${asset.balance.numberFormat12()} ${asset.symbol}", amountAs(asset.balance, asset))
+            balance.setContent(R.string.Balance, "${asset.balance.numberFormat12()} ${asset.symbol}", amountAs(asset.balance, asset))
             networkFee.isVisible = true
             networkFee.setContent(R.string.Network_Fee, "${fee.numberFormat12()} ${asset.symbol}", amountAs(fee.toPlainString(), asset))
             sender.isVisible = true

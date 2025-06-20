@@ -427,7 +427,57 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     white = true,
                 )
                 binding.addTv.setOnClickListener {
-                    if (gas != null && chainToken != null) {
+                    if (insufficientBalance.isVisible) {
+                        if (web3Token != null) {
+                            AddFeeBottomSheetDialogFragment.newInstance(web3Token!!)
+                                .apply {
+                                    onWeb3Action = { type, t ->
+                                        if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                            SwapActivity.show(
+                                                requireActivity(),
+                                                input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                                output = t.assetId,
+                                                null,
+                                                null,
+                                                inMixin = false
+                                            )
+                                        } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                            val address =
+                                                if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                                            this@InputFragment.view?.navigate(
+                                                R.id.action_input_fragment_to_web3_address_fragment,
+                                                Bundle().apply {
+                                                    putString("address", address)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }.showNow(
+                                    parentFragmentManager,
+                                    AddFeeBottomSheetDialogFragment.TAG
+                                )
+                        } else if (token != null) {
+                            AddFeeBottomSheetDialogFragment.newInstance(token!!)
+                                .apply {
+                                    onAction = { type, t ->
+                                        if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                            SwapActivity.show(
+                                                requireActivity(),
+                                                input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                                output = t.assetId,
+                                                null,
+                                                null
+                                            )
+                                        } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                            onAddressClick()
+                                        }
+                                    }
+                                }.showNow(
+                                    parentFragmentManager,
+                                    AddFeeBottomSheetDialogFragment.TAG
+                                )
+                        }
+                    } else if (gas != null && chainToken != null) {
                         AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
                             .apply {
                                 onWeb3Action = { type, t ->
@@ -441,7 +491,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             inMixin = false
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                        val address = if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                                        val address =
+                                            if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
                                         this@InputFragment.view?.navigate(
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
@@ -745,6 +796,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 insufficientFunds.isVisible = false
                 continueVa.isEnabled = false
                 continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                addTv.text = ""
             } else {
                 val v =
                     if (isReverse) {
@@ -758,23 +810,19 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                    addTv.text = ""
                 } else if (BigDecimal(v) <= BigDecimal.ZERO){
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                    addTv.text = ""
                 } else if (BigDecimal(v) > BigDecimal(tokenBalance) && v != "0") {
                     insufficientBalance.isVisible = true
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
-                    if (currentFee != null && currentFee?.token?.assetId == token?.assetId) {
-                        addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
-                    } else if (chainToken != null && web3Token?.assetId == chainToken?.assetId) {
-                        addTv.text = "${getString(R.string.Add)} ${chainToken?.symbol ?: ""}"
-                    } else {
-                        addTv.text = ""
-                    }
+                    addTv.text = "${getString(R.string.Add)} ${token?.symbol ?: web3Token?.symbol ?: ""}"
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (transferType != TransferType.WEB3 && (currentFee != null && feeTokensExtra == null ||
@@ -802,12 +850,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientBalance.isVisible = false
                     insufficientFunds.isVisible = true
                     continueTv.isEnabled = false
+                    addTv.text = ""
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = true
+                    addTv.text = ""
                     continueTv.textColor = requireContext().getColor(R.color.white)
                 }
             }
@@ -1040,6 +1090,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
             fees.firstOrNull()?.let {
                 currentFee = it
+                updateUI()
                 binding.contentTextView.text = "${it.fee.numberFormat8()} ${it.token.symbol}"
             }
         }

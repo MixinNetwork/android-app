@@ -20,9 +20,11 @@ import one.mixin.android.widget.BottomSheet
 import kotlin.getValue
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -59,6 +61,13 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         lifecycleScope.launch {
             val asset = t.asset?:return@launch
             val tokenExtra = transferViewModel.findTokensExtra(asset.assetId)
+            val feeExtra = if (t is WithdrawBiometricItem) {
+                (t as WithdrawBiometricItem).fee?.token?.assetId?.let {
+                    transferViewModel.findTokensExtra(it)
+                }
+            } else {
+                null
+            }
             if (asset.assetId in Constants.usdIds) {
                 val u = transferViewModel.findTopUsdBalanceAsset(asset.assetId)
                 if (u != null) {
@@ -75,7 +84,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     }
                 }
             }
-            binding.header.balanceError(t, tokenExtra)
+            binding.header.balanceError(t, tokenExtra, feeExtra)
             binding.content.renderAsset(t, tokenExtra)
             binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
             binding.bottom.setOnClickListener({

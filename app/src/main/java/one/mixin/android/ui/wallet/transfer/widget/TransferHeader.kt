@@ -302,26 +302,42 @@ class TransferHeader : LinearLayout {
         }
     }
 
-    fun balanceError(t: AssetBiometricItem, extra: TokensExtra?) {
-        val asset = t.asset?:return
+    fun balanceError(t: AssetBiometricItem, extra: TokensExtra?, feeExtra: TokensExtra?) {
+        val asset = t.asset ?: return
         _binding.apply {
-            assetIcon.loadToken(t.asset!!)
             subTitle.setTextColor(context.getColor(R.color.wallet_red))
             title.setTextColor(context.getColor(R.color.wallet_red))
-            title.text = context.getString(R.string.error_insufficient_balance_title, asset.symbol)
-            if (t is WithdrawBiometricItem && t.fee?.token != null && t.asset?.assetId == t.fee?.token?.assetId) {
-                subTitle.text = context.getString(
-                    R.string.error_insufficient_withdraw_balance_desc,
-                    "${t.fee?.fee?.numberFormat8()} ${t.fee?.token?.symbol}",
-                    "${t.amount.numberFormat8()} ${asset.symbol}",
-                    "${extra?.balance?.numberFormat8()} ${asset.symbol}",
-                )
+            if (t is WithdrawBiometricItem) {
+                if (t.isBalanceEnough(extra?.balance, feeExtra?.balance) == 2) {
+                    assetIcon.loadToken(t.asset!!)
+                    subTitle.text = context.getString(
+                        R.string.error_insufficient_withdraw_balance_desc,
+                        "${t.fee?.fee?.numberFormat8()} ${t.fee?.token?.symbol}",
+                        "${t.amount.numberFormat8()} ${asset.symbol}",
+                        "${extra?.balance?.numberFormat8()} ${asset.symbol}",
+                    )
+                    title.text =
+                        context.getString(R.string.error_insufficient_balance_title, asset.symbol)
+                } else if (t.isBalanceEnough(extra?.balance, feeExtra?.balance) == 3) {
+                    val fee = t.fee!!.token
+                    assetIcon.loadToken(fee)
+                    title.text =
+                        context.getString(R.string.error_insufficient_balance_title, fee.symbol)
+                    subTitle.text = context.getString(
+                        R.string.error_insufficient_fee_balance_desc,
+                        "${t.fee?.fee?.numberFormat8()} ${fee.symbol}",
+                        "${feeExtra?.balance?.numberFormat8() ?: "0"} ${fee.symbol}"
+                    )
+                }
             } else {
+                assetIcon.loadToken(t.asset!!)
+                title.text =
+                    context.getString(R.string.error_insufficient_balance_title, asset.symbol)
                 subTitle.text = context.getString(
-                R.string.error_insufficient_balance_desc,
-                "${t.amount.numberFormat8()} ${asset.symbol}",
-                "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
-            )
+                    R.string.error_insufficient_balance_desc,
+                    "${t.amount.numberFormat8()} ${asset.symbol}",
+                    "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
+                )
             }
         }
     }
