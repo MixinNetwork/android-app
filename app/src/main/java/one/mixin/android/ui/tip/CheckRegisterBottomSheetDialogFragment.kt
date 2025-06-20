@@ -34,6 +34,7 @@ import one.mixin.android.tip.exception.TipException
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -68,6 +69,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         style: Int,
     ) {
         super.setupDialog(dialog, style)
+        AnalyticsTracker.trackLoginPinVerify("pin_verify")
         contentView = binding.root
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
@@ -95,6 +97,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                         updateAccount(account)
                     }
                     if (account.hasSafe) {
+                        AnalyticsTracker.trackLoginEnd()
                         dismiss()
                         return@handleMixinResponse
                     }
@@ -160,6 +163,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 Session.storeAccount(account)
                 if (account.hasSafe) {
                     dismiss()
+                    AnalyticsTracker.trackLoginEnd()
                     toast(R.string.Successful)
                     return
                 }
@@ -203,6 +207,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 resp.data?.let { account ->
                     Session.storeAccount(account)
                     dismiss()
+                    AnalyticsTracker.trackLoginEnd()
                     toast(R.string.Successful)
                 }
             } else {
