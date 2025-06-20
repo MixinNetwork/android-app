@@ -84,25 +84,60 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     }
                 }
             }
+            if (t is WithdrawBiometricItem && (t as WithdrawBiometricItem).isBalanceEnough(tokenExtra?.balance, feeExtra?.balance) == 3) {
+                val fee = (t as WithdrawBiometricItem).fee?.token!!
+                binding.bottom.setText("${getString(R.string.Add)} ${fee.symbol}")
+                binding.bottom.setOnClickListener({
+                    dismiss()
+                },{
+                    AddFeeBottomSheetDialogFragment.newInstance(fee)
+                        .apply {
+                            onAction = { type, fee ->
+                                if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                    SwapActivity.show(
+                                        requireActivity(),
+                                        input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                        output = fee.assetId,
+                                        null,
+                                        null
+                                    )
+                                } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                    navTo(DepositFragment.newInstance(fee), DepositFragment.TAG)
+                                }
+                            }
+                        }.showNow(
+                            parentFragmentManager,
+                            AddFeeBottomSheetDialogFragment.TAG
+                        )
+                    dismiss()
+                },{})
+            } else {
+                binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
+                binding.bottom.setOnClickListener({
+                    dismiss()
+                },{
+                    AddFeeBottomSheetDialogFragment.newInstance(asset)
+                        .apply {
+                            onAction = { type, asset ->
+                                if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                    SwapActivity.show(
+                                        requireActivity(),
+                                        input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                        output = asset.assetId,
+                                        null,
+                                        null
+                                    )
+                                } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
+                                    navTo(DepositFragment.newInstance(asset), DepositFragment.TAG)
+                                }
+                            }
+                        }.showNow(parentFragmentManager,
+                            AddFeeBottomSheetDialogFragment.TAG)
+                    dismiss()
+                },{})
+            }
             binding.header.balanceError(t, tokenExtra, feeExtra)
             binding.content.renderAsset(t, tokenExtra)
-            binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
-            binding.bottom.setOnClickListener({
-                dismiss()
-            },{
-                AddFeeBottomSheetDialogFragment.newInstance(asset)
-                    .apply {
-                        onAction = { type, fee->
-                            if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
-                                SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ETH_ID, output = asset.assetId, null, null)
-                            } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                navTo(DepositFragment.newInstance(asset), DepositFragment.TAG)
-                            }
-                        }
-                    }.showNow(parentFragmentManager,
-                        AddFeeBottomSheetDialogFragment.TAG)
-                dismiss()
-            },{})
         }
     }
 }
