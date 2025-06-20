@@ -305,7 +305,7 @@ class TransferHeader : LinearLayout {
     fun balanceError(t: AssetBiometricItem, extra: TokensExtra?) {
         val asset = t.asset?:return
         _binding.apply {
-            assetIcon.loadToken(assetBiometricItem.asset!!)
+            assetIcon.loadToken(t.asset!!)
             subTitle.setTextColor(context.getColor(R.color.wallet_red))
             title.setTextColor(context.getColor(R.color.wallet_red))
             title.text = context.getString(R.string.error_insufficient_balance_title, asset.symbol)
