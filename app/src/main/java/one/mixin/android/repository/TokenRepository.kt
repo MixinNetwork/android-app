@@ -27,6 +27,7 @@ import one.mixin.android.api.request.GhostKeyRequest
 import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
+import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
@@ -34,6 +35,7 @@ import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
+import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
@@ -1419,5 +1421,15 @@ class TokenRepository
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
     fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
+
+    suspend fun findTopUsdBalanceAsset(excludeId: String) =
+        tokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
+
+    suspend fun findTopWeb3UsdBalanceAsset(excludeId: String) =
+        web3TokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
+
+    suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
+
+    suspend fun getAddressById(chainId: String) = addressDao.getAddressById(chainId)
 
 }

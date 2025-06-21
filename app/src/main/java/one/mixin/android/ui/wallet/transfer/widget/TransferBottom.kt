@@ -34,8 +34,12 @@ class TransferBottom : ViewAnimator {
         _binding.retry.setOnClickListener(confirmClickListener)
     }
 
-    fun setText(@StringRes res:Int) {
+    fun setText(@StringRes res: Int) {
         _binding.confirmButton.setText(res)
+    }
+
+    fun setText(text: String) {
+        _binding.confirmButton.text = text
     }
 
     fun updateStatus(
@@ -53,7 +57,7 @@ class TransferBottom : ViewAnimator {
                 displayedChild = 0
             }
 
-            TransferStatus.SUCCESSFUL, TransferStatus.SIGNED  -> {
+            TransferStatus.SUCCESSFUL, TransferStatus.SIGNED -> {
                 isInvisible = false
                 displayedChild = 1
                 _binding.doneBtn.setText(R.string.Done)

@@ -80,10 +80,12 @@ class NewSchemeParser(
                 if (urlQueryParser.inscription == null && urlQueryParser.inscriptionCollection == null) {
                     token = checkAsset(asset!!) ?: return Result.failure(ParserError(FAILURE)) // TODO 404?
                     val tokensExtra = linkViewModel.findTokensExtra(asset)
-                    if (tokensExtra == null) {
+                    if (urlQueryParser.inscription != null || urlQueryParser.inscriptionCollection != null) {
                         return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                    } else if (tokensExtra == null) {
+                        return Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount ?: "0", urlQueryParser.memo, status, urlQueryParser.reference)))
                     } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
-                        return Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                        return Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount ?: "0", urlQueryParser.memo, status, urlQueryParser.reference)))
                     }
                 } else {
                     token = null
@@ -162,10 +164,10 @@ class NewSchemeParser(
                         
                         val tokensExtra = linkViewModel.findTokensExtra(assetId)
                         if (tokensExtra == null) {
-                            result = Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                            result = Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount, urlQueryParser.memo, PaymentStatus.pending.name, urlQueryParser.reference)))
                             continue
                         } else if (BigDecimal(tokensExtra.balance ?: "0") < BigDecimal(amount)) {
-                            result = Result.failure(ParserError(INSUFFICIENT_BALANCE, token.symbol))
+                            result = Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount, urlQueryParser.memo, PaymentStatus.pending.name, urlQueryParser.reference)))
                             continue
                         }
                         
@@ -291,6 +293,7 @@ class NewSchemeParser(
 
     suspend fun parseExternalTransferUrl(url: String) {
         var errorMsg: String? = null
+        var insufficientId: String? = null
         val result =
             parseExternalTransferUri(url, { assetId, chainId, destination ->
                 handleMixinResponse(
@@ -330,17 +333,22 @@ class NewSchemeParser(
                     val tokensExtra = linkViewModel.findTokensExtra(feeAssetId)
                     if (tokensExtra == null) {
                         errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                        insufficientId = feeAssetId
                     } else if (BigDecimal(tokensExtra.balance ?: "0") < feeAmount) {
                         errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                        insufficientId = feeAssetId
                     }
                 }
 
                 val tokensExtra = linkViewModel.findTokensExtra(assetId)
                 if (tokensExtra == null) {
                     errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                    insufficientId = assetId
                 } else if (BigDecimal(tokensExtra.balance ?: "0") < amount) {
                     errorMsg = bottomSheet.getString(R.string.insufficient_balance)
+                    insufficientId = assetId
                 }
+
             }, { url ->
                 linkViewModel.paySuspend(
                     TransferRequest(
@@ -349,9 +357,11 @@ class NewSchemeParser(
                 ).data
             })
 
-        errorMsg?.let {
-            bottomSheet.showError(it)
-            return
+        if (insufficientId == null) {
+            errorMsg?.let {
+                bottomSheet.showError(it)
+                return
+            }
         }
 
         if (result == null) {
@@ -392,6 +402,9 @@ class NewSchemeParser(
             val fee = NetworkFee(feeAsset, result.fee!!.toPlainString())
 
             val withdrawBiometricItem = WithdrawBiometricItem(address, fee, null, traceId, asset, amount, result.memo, status, null)
+            if (insufficientId != null) {
+                throw BalanceError(withdrawBiometricItem, errorMsg ?: "")
+            }
             checkRawTransaction(withdrawBiometricItem)
         }
         bottomSheet.dismiss()

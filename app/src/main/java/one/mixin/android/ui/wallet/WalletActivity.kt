@@ -103,7 +103,14 @@ class WalletActivity : BlazeBaseActivity() {
                 navGraph.setStartDestination(R.id.wallet_calculate)
                 val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
                 routeProfile = intent.getParcelableExtraCompat(ARGS_ROUTE_PROFILE, RouteProfile::class.java)
-                navController.setGraph(navGraph, Bundle().apply { state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) } })
+                navController.setGraph(navGraph, Bundle().apply {
+                    state?.let { s -> putParcelable(CalculateFragment.CALCULATE_STATE, s) }
+                    putBoolean(
+                        CalculateFragment.ARGS_IS_WEB3,
+                        intent.getBooleanExtra(CalculateFragment.ARGS_IS_WEB3, false)
+                    )
+                }
+                )
             }
             Destination.Market -> {
                 navGraph.setStartDestination(R.id.market_fragment_details)
@@ -214,6 +221,7 @@ class WalletActivity : BlazeBaseActivity() {
 
         fun showBuy(
             activity: Activity,
+            isWeb3: Boolean,
             state: FiatMoneyViewModel.CalculateState?,
             routeProfile: RouteProfile?,
         ) {
@@ -222,6 +230,7 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(DESTINATION, Destination.Buy)
                     state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
                     routeProfile?.let { putExtra(ARGS_ROUTE_PROFILE, it) }
+                    putExtra(CalculateFragment.ARGS_IS_WEB3, isWeb3)
                 },
             )
         }

@@ -123,6 +123,23 @@ buildscript {
         ext.appsFlyerVersion ='6.16.2'
         ext.installreferrerVersion ='2.2'
         ext.billingVersion ='7.1.1'
+
+        ext.lottieComposeVersion = '6.6.7'
+        ext.composeBomVersion = '2025.06.01'
+        ext.activityComposeVersion = '1.10.1'
+        ext.web3jCoreVersion = '4.11.0'
+        ext.web3jCryptoVersion = '4.11.0'
+        ext.reownBomVersion = '1.4.1'
+        ext.kotsonVersion = '2.5.0'
+        ext.playServicesMapsVersion = '19.2.0'
+        ext.playServicesLocationVersion = '21.3.0'
+        firebaseBomVersion = "33.15.0"
+        billingKtxVersion = "7.1.1"
+        webpdecoderVersion = "2.7.4.16.0"
+
+        ext.tweetnaclVersion = '0.1.6'
+        ext.sol4kUtilitiesVersion = '0.1.0'
+        ext.desugarJdkLibsVersion = '2.1.5'
     }
 
     repositories {

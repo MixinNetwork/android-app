@@ -7,13 +7,20 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferHeaderBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.numberFormat12
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.round
 import one.mixin.android.extension.textColorResource
+import one.mixin.android.ui.common.biometric.AssetBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokensExtra
+import java.math.BigDecimal
 
 class TransferHeader : LinearLayout {
     private val _binding: ViewTransferHeaderBinding
@@ -292,6 +299,54 @@ class TransferHeader : LinearLayout {
             }
             subTitle.setTextColor(context.colorAttr(R.attr.text_minor))
             assetIcon.loadToken(asset)
+        }
+    }
+
+    fun balanceError(t: AssetBiometricItem, extra: TokensExtra?) {
+        val asset = t.asset?:return
+        _binding.apply {
+            assetIcon.loadToken(asset)
+            subTitle.setTextColor(context.getColor(R.color.wallet_red))
+            title.setTextColor(context.getColor(R.color.wallet_red))
+            title.text = context.getString(R.string.error_insufficient_balance_title, asset.symbol)
+            if (t is WithdrawBiometricItem && t.fee?.token != null && t.asset?.assetId == t.fee?.token?.assetId) {
+                subTitle.text = context.getString(
+                    R.string.error_insufficient_withdraw_balance_desc,
+                    "${t.fee?.fee?.numberFormat8()} ${t.fee?.token?.symbol}",
+                    "${t.amount.numberFormat8()} ${asset.symbol}",
+                    "${extra?.balance?.numberFormat8()} ${asset.symbol}",
+                )
+            } else {
+                subTitle.text = context.getString(
+                R.string.error_insufficient_balance_desc,
+                "${t.amount.numberFormat8()} ${asset.symbol}",
+                "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
+            )
+            }
+        }
+    }
+
+    fun balanceError(asset: Web3TokenItem, amount: BigDecimal, fee: BigDecimal) {
+        _binding.apply {
+            assetIcon.loadToken(asset)
+            subTitle.setTextColor(context.getColor(R.color.wallet_red))
+            title.setTextColor(context.getColor(R.color.wallet_red))
+            title.text = context.getString(R.string.error_insufficient_balance_title, asset.symbol)
+            if (amount != BigDecimal.ZERO) {
+                subTitle.text = context.getString(
+                    R.string.error_insufficient_web3_main_balance_desc,
+                    "${amount.numberFormat12()} ${asset.symbol}",
+                    "${fee.numberFormat12()} ${asset.symbol}",
+                    "${asset.balance.numberFormat12()} ${asset.symbol}",
+                )
+            } else {
+                subTitle.text = context.getString(
+                    R.string.error_insufficient_web3_balance_desc,
+                    "${fee.numberFormat12()} ${asset.symbol}",
+                    "${asset.balance.numberFormat12()} ${asset.symbol}",
+                )
+
+            }
         }
     }
 }

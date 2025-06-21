@@ -14,7 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
@@ -122,10 +122,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                     val assets = walletViewModel.allAssetItems()
                     if (nowTokens.size == 1) {
-                        val input = if (nowTokens.first().assetId == USDT_ASSET_ID) {
+                        val input = if (nowTokens.first().assetId == USDT_ASSET_ETH_ID) {
                             XIN_ASSET_ID
                         } else {
-                            USDT_ASSET_ID
+                            USDT_ASSET_ETH_ID
                         }
 
                         view.navigate(R.id.action_market_details_to_swap,
@@ -137,10 +137,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     } else {
                         ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
                             callback = { token ->
-                                val output = if (token.assetId == USDT_ASSET_ID) {
+                                val output = if (token.assetId == USDT_ASSET_ETH_ID) {
                                     XIN_ASSET_ID
                                 } else {
-                                    USDT_ASSET_ID
+                                    USDT_ASSET_ETH_ID
                                 }
 
                                 view.navigate(R.id.action_market_details_to_swap,

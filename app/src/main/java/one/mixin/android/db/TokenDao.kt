@@ -179,4 +179,13 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("SELECT count(1) FROM tokens WHERE rowid > :rowId")
     fun countTokens(rowId: Long): Long
+
+    @Query(
+        """SELECT a1.* FROM tokens a1 
+           LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
+           WHERE a1.asset_id IN (:usdIds) AND a1.asset_id != :excludeId 
+           ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC 
+           LIMIT 1"""
+    )
+    suspend fun findTopUsdBalanceAsset(usdIds: List<String>, excludeId: String): Token?
 }

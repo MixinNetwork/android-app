@@ -19,5 +19,10 @@ class SendReceiveView : LinearLayoutCompat {
     val receive get() = binding.receive
     val swap get() = binding.swap
     val badge get() = binding.badge
+    val buy get() = binding.buy
 
+    fun enableBuy() {
+        this.weightSum = 4f
+        binding.buy.visibility = VISIBLE
+    }
 }

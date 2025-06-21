@@ -15,6 +15,7 @@ import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
@@ -28,6 +29,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.Web3WalletResponse
+import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
@@ -299,4 +301,9 @@ interface RouteService {
 
     @GET("web3/transactions/{hash}")
     suspend fun transaction(@Path("hash") hash: String, @Query("chain_id") chainId: String): MixinResponse<Web3RawTransaction>
+
+    @POST("ramp/weburl")
+    suspend fun rampWebUrl(
+        @Body request: RampWebUrlRequest
+    ): MixinResponse<RampWebUrlResponse>
 }

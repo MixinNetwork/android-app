@@ -33,7 +33,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
@@ -427,7 +427,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         lifecycleScope.launch {
             val jsSignMessage = createSpeedUpMessage(rawTransaction)
             
-            showBrowserBottomSheetDialogFragment(
+            showGasCheckAndBrowserBottomSheetDialogFragment(
                 requireActivity(),
                 jsSignMessage,
                 token = token,
@@ -444,7 +444,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         lifecycleScope.launch {
             val jsSignMessage = createCancelMessage(rawTransaction)
             
-            showBrowserBottomSheetDialogFragment(
+            showGasCheckAndBrowserBottomSheetDialogFragment(
                 requireActivity(),
                 jsSignMessage,
                 token = token,

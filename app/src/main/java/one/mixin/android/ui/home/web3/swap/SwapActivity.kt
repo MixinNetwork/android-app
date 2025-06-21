@@ -10,6 +10,7 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
+import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_IN_MIXIN
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_REFERRAL
 import one.mixin.android.util.viewBinding
@@ -24,6 +25,7 @@ class SwapActivity : BaseActivity(){
             output: String?,
             amount: String?,
             referral: String?,
+            inMixin: Boolean = true
         ) {
             context.startActivity(
                 Intent(context, SwapActivity::class.java).apply {
@@ -31,6 +33,7 @@ class SwapActivity : BaseActivity(){
                     output?.let { putExtra(ARGS_OUTPUT, it) }
                     amount?.let { putExtra(ARGS_AMOUNT, it) }
                     referral?.let { putExtra(ARGS_REFERRAL, it) }
+                    putExtra(ARGS_IN_MIXIN, inMixin)
                     setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 },
             )
@@ -47,6 +50,7 @@ class SwapActivity : BaseActivity(){
             intent.getStringExtra(ARGS_INPUT),
             intent.getStringExtra(ARGS_OUTPUT),
             intent.getStringExtra(ARGS_AMOUNT),
+            inMixin =  intent.getBooleanExtra(ARGS_IN_MIXIN, true),
             referral = intent.getStringExtra(ARGS_REFERRAL),
         )
         replaceFragment(swapFragment, R.id.container, SwapFragment.TAG)}

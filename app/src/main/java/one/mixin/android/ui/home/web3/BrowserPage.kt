@@ -362,7 +362,7 @@ fun BrowserPage(
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
-            Box(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.height(40.dp))
         }
     }
 }
