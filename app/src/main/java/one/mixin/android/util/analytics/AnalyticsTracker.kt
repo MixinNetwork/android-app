@@ -11,37 +11,79 @@ import one.mixin.android.vo.Plan
 object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
 
-    fun trackSignUpStart(method: String) {
+    fun trackSignUpStart(type: String) {
         val params = Bundle().apply {
-            putString("method", method)
+            putString("type", type)
         }
         firebaseAnalytics.logEvent("sign_up_start", params)
+    }
+
+    fun trackSignUpCaptcha(type: String) {
+        val params = Bundle().apply {
+            putString("type", type)
+        }
+        firebaseAnalytics.logEvent("sign_up_captcha", params)
+    }
+
+    fun trackSignUpSmsVerify() {
+        firebaseAnalytics.logEvent("sign_up_sms_verify", null)
     }
 
     fun trackSignUpFullName() {
         firebaseAnalytics.logEvent("sign_up_fullname", null)
     }
 
-    fun trackSignUpSetPin() {
-        firebaseAnalytics.logEvent("sign_up_set_pin", null)
+    fun trackSignUpSignalInit() {
+        firebaseAnalytics.logEvent("sign_up_signal_init", null)
+    }
+
+    fun trackSignUpPinSet() {
+        firebaseAnalytics.logEvent("sign_up_pin_set", null)
+    }
+
+    fun trackSignUpEnd() {
+        firebaseAnalytics.logEvent("sign_up_end", null)
     }
 
     fun trackLoginStart() {
         firebaseAnalytics.logEvent("login_start", null)
     }
 
-    fun trackLoginRestore(method: String) {
+    fun trackLoginMnemonicPhrase() {
+        firebaseAnalytics.logEvent("login_mnemonic_phrase", null)
+    }
+
+    fun trackLoginCaptcha(type: String) {
         val params = Bundle().apply {
-            putString("method", method)
+            putString("type", type)
+        }
+        firebaseAnalytics.logEvent("login_captcha", params)
+    }
+
+    fun trackLoginSmsVerify() {
+        firebaseAnalytics.logEvent("login_sms_verify", null)
+    }
+
+    fun trackLoginRestore(type: String) {
+        val params = Bundle().apply {
+            putString("type", type)
         }
         firebaseAnalytics.logEvent("login_restore", params)
     }
 
-    fun trackLoginVerifyPin(method: String) {
+    fun trackLoginSignalInit() {
+        firebaseAnalytics.logEvent("login_signal_init", null)
+    }
+
+    fun trackLoginPinVerify(type: String) {
         val params = Bundle().apply {
-            putString("method", method)
+            putString("type", type)
         }
-        firebaseAnalytics.logEvent("login_verify_pin", params)
+        firebaseAnalytics.logEvent("login_pin_verify", params)
+    }
+
+    fun trackLoginEnd() {
+        firebaseAnalytics.logEvent("login_end", null)
     }
 
     fun trackSwapStart(source: String, entrance: String) {
@@ -51,7 +93,6 @@ object AnalyticsTracker {
         }
         firebaseAnalytics.logEvent("swap_start", params)
     }
-
 
     fun trackSwapCoinSwitch(method: String) {
         val params = Bundle().apply {

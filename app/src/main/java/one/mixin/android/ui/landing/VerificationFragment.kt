@@ -48,10 +48,12 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
+import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING_CREATE
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -116,6 +118,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         binding.pinVerificationTitleTv.text = getString(R.string.landing_validation_title, phoneNum)
         binding.verificationResendTv.setOnClickListener { sendVerification() }
         binding.verificationNeedHelpTv.setOnClickListener { showBottom() }
+
+        if (from == FROM_LANDING_CREATE) {
+            AnalyticsTracker.trackSignUpSmsVerify()
+        } else if (from == FROM_LOGIN) {
+            AnalyticsTracker.trackLoginSmsVerify()
+        }
 
         startCountDown()
     }

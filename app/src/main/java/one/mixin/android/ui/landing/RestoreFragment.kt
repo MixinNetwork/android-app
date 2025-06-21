@@ -41,6 +41,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             fromAnotherCl.setOnClickListener {
+                AnalyticsTracker.trackLoginRestore("another_phone")
                 RxPermissions(requireActivity())
                     .request(
                         *mutableListOf(Manifest.permission.CAMERA).apply {
@@ -58,6 +59,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     }
             }
             fromLocalCl.setOnClickListener {
+                AnalyticsTracker.trackLoginRestore("local")
                 lifecycleScope.launch {
                     val localData = getLocalDataInfo()
                     val count = localData?.first

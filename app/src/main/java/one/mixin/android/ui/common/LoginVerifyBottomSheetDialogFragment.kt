@@ -26,6 +26,7 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
@@ -130,6 +131,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
             PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
             JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, evmAddress)
+            AnalyticsTracker.trackLoginEnd()
         }
         return r
     }
