@@ -30,9 +30,7 @@ open class BaseActivity : AppCompatActivity() {
         } else {
             setTheme(getDefaultThemeId())
         }
-        if (!skipSystemUi) {
-            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
-        }
+        window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
     }
 
     override fun setContentView(layoutResID: Int) {
