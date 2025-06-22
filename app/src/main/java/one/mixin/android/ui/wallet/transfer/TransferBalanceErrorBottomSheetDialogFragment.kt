@@ -101,15 +101,16 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                                         null,
                                         null
                                     )
+                                    this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                     navTo(DepositFragment.newInstance(fee), DepositFragment.TAG)
+                                    this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 }
                             }
                         }.showNow(
                             parentFragmentManager,
                             AddFeeBottomSheetDialogFragment.TAG
                         )
-                    dismiss()
                 },{})
             } else {
                 binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
@@ -127,13 +128,15 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                                         null,
                                         null
                                     )
+                                    this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                     navTo(DepositFragment.newInstance(asset), DepositFragment.TAG)
+                                    this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 }
                             }
                         }.showNow(parentFragmentManager,
                             AddFeeBottomSheetDialogFragment.TAG)
-                    dismiss()
+
                 },{})
             }
             binding.header.balanceError(t, tokenExtra, feeExtra)

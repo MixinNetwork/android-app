@@ -75,7 +75,14 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                     binding.bottom.isVisible = false
                     binding.contentTv.text = getString(R.string.usd_cross_chain_detected, u.symbol)
                     binding.positive.setOnClickListener {
-                        SwapActivity.show(requireActivity(), input = u.assetId, output = asset.assetId, null, null, inMixin = false)
+                        SwapActivity.show(
+                            requireActivity(),
+                            input = u.assetId,
+                            output = asset.assetId,
+                            null,
+                            null,
+                            inMixin = false
+                        )
                         dismiss()
                     }
                     binding.negative.setOnClickListener {
@@ -84,24 +91,32 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                     }
                 }
             }
-            binding.header.balanceError(asset,t.amount, t.fee)
+            binding.header.balanceError(asset, t.amount, t.fee)
             binding.content.renderAsset(asset, t.amount, t.fee)
             binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
             binding.bottom.setOnClickListener({
                 dismiss()
-            },{
+            }, {
                 AddFeeBottomSheetDialogFragment.newInstance(asset)
                     .apply {
                         onWeb3Action = { type, fee ->
                             if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
-                                SwapActivity.show(requireActivity(), input = Constants.AssetId.USDT_ASSET_ETH_ID, output = asset.assetId, null, null, inMixin = false)
+                                SwapActivity.show(
+                                    requireActivity(),
+                                    input = Constants.AssetId.USDT_ASSET_ETH_ID,
+                                    output = asset.assetId,
+                                    null,
+                                    null,
+                                    inMixin = false
+                                )
+                                this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
                             } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                 Web3AddressActivity.show(requireActivity(), JsSigner.evmAddress)
+                                this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
                             }
                         }
                     }.showNow(parentFragmentManager, AddFeeBottomSheetDialogFragment.TAG)
-                dismiss()
-            },{})
+            }, {})
         }
     }
 }

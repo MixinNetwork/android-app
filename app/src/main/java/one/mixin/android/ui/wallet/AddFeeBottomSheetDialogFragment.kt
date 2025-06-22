@@ -52,6 +52,9 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val tokenItem = requireArguments().getParcelable<TokenItem?>(ARGS_TOKEN)
         val web3TokenItem = requireArguments().getParcelable<Web3TokenItem?>(ARGS_WEB3_TOKEN)
         binding.apply {
+            rightIv.setOnClickListener {
+                dismiss()
+            }
             if (tokenItem != null) {
                 swapTv.text = getString(R.string.fee_swap, tokenItem.symbol ?: "-")
                 swapDescTv.text = getString(R.string.fee_swap_other_coin_to, tokenItem.symbol ?: "-")

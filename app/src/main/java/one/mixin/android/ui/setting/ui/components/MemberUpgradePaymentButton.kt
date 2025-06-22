@@ -46,7 +46,31 @@ fun MemberUpgradePaymentButton(
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
-    if (selectedPlan.ordinal < currentUserPlan.ordinal) {
+    if (selectedPlan == currentUserPlan) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 30.dp)
+        ) {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(48.dp),
+                shape = RoundedCornerShape(24.dp),
+                onClick = {},
+                enabled = false,
+                colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundGray),
+            ) {
+                Text(
+                    text = stringResource(id = R.string.Current_Plan),
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }}
+    } else if (selectedPlan.ordinal < currentUserPlan.ordinal) {
         Spacer(modifier = Modifier.height(24.dp))
         return
     } else if (selectedPlan != currentUserPlan) {
