@@ -806,7 +806,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 insufficientFunds.isVisible = false
                 continueVa.isEnabled = false
                 continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                addTv.text = ""
+                updateAddText()
             } else {
                 val v =
                     if (isReverse) {
@@ -820,14 +820,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                    addTv.text = ""
+                    updateAddText()
                 } else if (BigDecimal(v) <= BigDecimal.ZERO){
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                    addTv.text = ""
+                    updateAddText()
                 } else if (BigDecimal(v) > BigDecimal(tokenBalance) && v != "0") {
                     insufficientBalance.isVisible = true
                     insufficientFeeBalance.isVisible = false
@@ -874,6 +874,24 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
 
         updatePrimarySize()
+    }
+
+    private fun updateAddText() {
+        if (gas != null && chainToken != null) {
+            if ((chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < gas) {
+                binding.addTv.text = "${getString(R.string.Add)} ${chainToken?.symbol ?: ""}"
+            } else {
+                binding.addTv.text = ""
+            }
+        } else if (currentFee != null) {
+            if ((feeTokensExtra?.balance?.toBigDecimalOrNull()
+                    ?: BigDecimal.ZERO) < (currentFee?.fee?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+            ) {
+                binding.addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
+            } else {
+                binding.addTv.text = ""
+            }
+        }
     }
 
     override
@@ -1255,6 +1273,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     } $tokenSymbol"
                 )
             }
+            updateUI()
             binding.insufficientFeeBalance.text =
                 getString(R.string.insufficient_gas, chainToken?.symbol)
 
