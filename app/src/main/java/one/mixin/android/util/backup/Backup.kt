@@ -228,6 +228,7 @@ suspend fun backupApi29(
                 db.execSQL("DELETE FROM jobs")
                 db.execSQL("DELETE FROM flood_messages")
                 db.execSQL("DELETE FROM offsets")
+                db.execSQL("DELETE FROM outputs")
             } catch (ignored: Exception) {
             } finally {
                 db.close()
