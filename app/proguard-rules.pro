@@ -16,6 +16,9 @@
 -dontwarn android.net.Network
 -keep class org.webrtc.** { *; }
 
+-keep class org.jni_zero.** { *; }
+-dontwarn org.jni_zero.**
+
 # androidx paging
 -keep class androidx.paging.PagedListAdapter.** { *; }
 -keep class androidx.paging.AsyncPagedListDiffer.** { *; }

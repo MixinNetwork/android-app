@@ -100,6 +100,8 @@ suspend fun backup(
         db.execSQL("DELETE FROM jobs")
         db.execSQL("DELETE FROM flood_messages")
         db.execSQL("DELETE FROM offsets")
+        db.execSQL("DELETE FROM outputs")
+        db.execSQL("DELETE FROM tokens_extra")
     } catch (ignored: Exception) {
         Timber.e(ignored)
     } finally {
@@ -228,6 +230,8 @@ suspend fun backupApi29(
                 db.execSQL("DELETE FROM jobs")
                 db.execSQL("DELETE FROM flood_messages")
                 db.execSQL("DELETE FROM offsets")
+                db.execSQL("DELETE FROM outputs")
+                db.execSQL("DELETE FROM tokens_extra")
             } catch (ignored: Exception) {
             } finally {
                 db.close()
