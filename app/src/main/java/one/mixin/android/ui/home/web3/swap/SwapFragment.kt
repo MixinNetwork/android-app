@@ -645,7 +645,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        if (from.chain.chainId == Constants.ChainId.Solana) {
+        if (from.chain.chainId == Constants.ChainId.Solana || inMixin()) {
             SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
                 setOnDone {
                     initialAmount = null
