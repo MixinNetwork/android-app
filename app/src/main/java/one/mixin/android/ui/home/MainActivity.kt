@@ -751,6 +751,13 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url, LinkBottomSheetDialogFragment.FROM_SCAN)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             clearCodeAfterConsume(intent, URL)
+        } else if (intent.hasExtra(WALLET)) {
+            binding.bottomNav.selectedItemId = R.id.nav_wallet
+            if (intent.getBooleanExtra(BUY, false)) {
+                WalletActivity.showBuy(this, false, null, null)
+                clearCodeAfterConsume(intent, BUY)
+            }
+            clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
             if (Session.getAccount()?.hasPin == true) {

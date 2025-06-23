@@ -18,14 +18,17 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
+import one.mixin.android.event.GlobalMarketEvent
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -58,6 +61,7 @@ import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS
 import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
@@ -152,7 +156,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     fiatMoneyViewModel.calculateState =
                         FiatMoneyViewModel.CalculateState(
                             minimum = it.data?.minimum?.toIntOrNull() ?: 0,
-                            maximum = it.data?.maximum?.toIntOrNull() ?: 0,
                             assetPrice = it.data?.assetPrice?.toFloatOrNull() ?: 0f,
                             feePercent = it.data?.feePercent?.toFloatOrNull() ?: 0f,
                         )
@@ -367,14 +370,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
-    private suspend fun initSafeBox() {
-        fiatMoneyViewModel.instruments().data?.let { cards ->
-            if (cards.isNotEmpty()) {
-                fiatMoneyViewModel.initSafeBox(cards)
-            }
-        }
-    }
-
     private fun isTwoDecimal(string: String): Boolean {
         return string.matches(Regex("\\d+\\.\\d{2}"))
     }
@@ -454,13 +449,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         "≈ ${getNumberFormat(String.format("%.2f", currentValue))} ${currency.name}"
                 }
                 continueVa.isEnabled =
-                    currentValue >= state.minimum && currentValue <= state.maximum
+                    currentValue >= state.minimum
                 continueTv.isEnabled = continueVa.isEnabled
-                if (currentValue > state.maximum) {
-                    info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
-                } else {
-                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                }
+                info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
             } else {
                 val currentValue = value.toFloat()
                 if (value == "0") {
@@ -472,21 +463,15 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).numberFormat8()} ${asset.symbol}"
                 }
                 continueVa.isEnabled =
-                    currentValue >= state.minimum && currentValue <= state.maximum
+                    currentValue >= state.minimum
                 continueTv.isEnabled = continueVa.isEnabled
-                if (currentValue > state.maximum) {
-                    info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
-                } else {
-                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                }
+                info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
             }
             updatePrimarySize()
             binding.info.text = getString(
                 R.string.Value_info,
                 state.minimum,
                 currency.name,
-                state.maximum,
-                currency.name
             )
         }
     }
@@ -583,8 +568,16 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 botId
             }.map { _ ->
                 val profileResponse =
-                    fiatMoneyViewModel.profile()
-                if (profileResponse.isSuccess) {
+                    requestRouteAPI(
+                        invokeNetwork = { fiatMoneyViewModel.profile() },
+                        defaultErrorHandle = {},
+                        defaultExceptionHandle = {},
+                        successBlock = { response ->
+                           response
+                        },
+                        requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+                    )
+                if (profileResponse != null && profileResponse.isSuccess) {
                     val supportCurrencies =
                         getCurrencyData(requireContext().resources).filter {
                             profileResponse.data!!.currencies.contains(it.name)
@@ -598,11 +591,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
                     (requireActivity() as WalletActivity).routeProfile = routeProfile
                     routeProfile
-                } else {
+                } else if (profileResponse != null) {
                     throw MixinResponseException(
                         profileResponse.errorCode,
                         profileResponse.errorDescription,
                     )
+                } else {
+                    throw IllegalStateException()
                 }
             }.map { routeProfile ->
                 fiatMoneyViewModel.syncNoExistAsset(routeProfile.supportAssetIds)
@@ -626,9 +621,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         FiatMoneyViewModel.CalculateState(
                             minimum =
                                 tickerResponse.data!!.minimum.toIntOrNull()
-                                    ?: 0,
-                            maximum =
-                                tickerResponse.data!!.maximum.toIntOrNull()
                                     ?: 0,
                             assetPrice =
                                 tickerResponse.data!!.assetPrice.toFloatOrNull()
