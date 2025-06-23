@@ -275,7 +275,8 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val insufficientGas =
                 checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
             if (insufficientGas) {
-                if (chainToken == null) {
+                val c = chainToken ?: viewModel.web3TokenItemById(assetId)
+                if (c == null) {
                     Timber.e("Insufficient gas for chain: ${chain.chainId}")
                     dismiss()
                     showBrowserWalletBottomSheet()
@@ -285,7 +286,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val amount = transaction.getMainTokenAmount()
                     TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
                         Web3TokenFeeItem(
-                            chainToken!!,
+                            c,
                             amount,
                             fee
                         )
@@ -332,28 +333,25 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun checkGas(
+    private suspend fun checkGas(
         web3Token: Web3TokenItem?,
         chainToken: Web3TokenItem?,
         tipGas: TipGas?,
         value: String?,
         maxFeePerGas: String?
     ): Boolean {
-        return if (web3Token != null) {
-            if (chainToken == null) {
-                true
-            } else if (tipGas != null) {
-                val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
-                if (web3Token.assetId == chainToken.assetId && web3Token.chainId == chainToken.chainId) {
-                    Convert.fromWei(
-                        Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(),
-                        Convert.Unit.ETHER
-                    ) + maxGas > BigDecimal(chainToken.balance)
-                } else {
-                    maxGas > BigDecimal(chainToken.balance)
-                }
+        val assetId = web3Token?.assetId ?: tipGas?.assetId ?: return false
+        val w = viewModel.web3TokenItemById(assetId) ?: return false
+        val c = viewModel.web3TokenItemById(w.chainId) ?: return true
+        return if (tipGas != null) {
+            val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
+            if (w.assetId == c.assetId && w.chainId == c.chainId) {
+                Convert.fromWei(
+                    Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(),
+                    Convert.Unit.ETHER
+                ) + maxGas > BigDecimal(c.balance)
             } else {
-                false
+                maxGas > BigDecimal(c.balance)
             }
         } else {
             false
