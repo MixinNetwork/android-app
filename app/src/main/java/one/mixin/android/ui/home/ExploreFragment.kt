@@ -29,6 +29,7 @@ import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -56,6 +57,7 @@ import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -64,6 +66,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.Plan
 import one.mixin.android.widget.SegmentationItemDecoration
 import javax.inject.Inject
 
@@ -283,8 +286,13 @@ class ExploreFragment : BaseFragment() {
     private fun updateFavoriteDot() {
         val clickedIds = getClickedBotIds()
         val needShow = SHOW_DOT_BOT_IDS.any { !clickedIds.contains(it) }
-        val dotView = view?.findViewById<View>(R.id.dot_favorite)
-        dotView?.visibility = if (needShow) View.VISIBLE else View.GONE
+        binding.radioFavorite.setBackgroundResource(
+            if (needShow) {
+                R.drawable.selector_radio_badge
+            } else {
+                R.drawable.selector_radio
+            }
+        )
     }
 
     private val clickAction: (BotInterface) -> Unit = { app ->
@@ -310,7 +318,13 @@ class ExploreFragment : BaseFragment() {
                     SwapActivity.show(requireActivity(), null, null, null, null, true)
                 }
                 INTERNAL_MEMBER_ID -> {
-                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+                    if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                        navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
+                    } else {
+                        MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                            parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                        )
+                    }
                 }
                 INTERNAL_SUPPORT_ID -> {
                     lifecycleScope.launch {

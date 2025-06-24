@@ -24,7 +24,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
-import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RampWebUrlRequest
@@ -73,16 +72,18 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3RawTransactionDao
+import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.AssetChange
+import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3TransactionItem
-import one.mixin.android.db.web3.vo.AssetChange
-import one.mixin.android.db.web3.vo.TransactionType
-import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -94,6 +95,7 @@ import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
+import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
@@ -143,9 +145,6 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import one.mixin.android.db.web3.Web3TokenDao
-import one.mixin.android.db.web3.Web3AddressDao
-import one.mixin.android.ui.wallet.Web3FilterParams
 
 @Singleton
 class TokenRepository

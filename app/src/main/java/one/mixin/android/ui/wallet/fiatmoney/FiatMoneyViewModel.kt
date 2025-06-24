@@ -58,6 +58,8 @@ class FiatMoneyViewModel
     ) : ViewModel() {
         suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
 
+        suspend fun findAssetsById(id: String) = tokenRepository.findAssetItemById(id)
+
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
         suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
