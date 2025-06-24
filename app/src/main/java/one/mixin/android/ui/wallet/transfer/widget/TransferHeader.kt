@@ -317,14 +317,14 @@ class TransferHeader : LinearLayout {
                         "${extra?.balance?.numberFormat8()} ${asset.symbol}",
                     )
                     title.text =
-                        context.getString(R.string.error_insufficient_balance_title, asset.symbol)
+                        context.getString(R.string.insufficient_balance_symbol, asset.symbol)
                 } else if (t.isBalanceEnough(extra?.balance, feeExtra?.balance) == 3) {
                     val fee = t.fee!!.token
                     assetIcon.loadToken(fee)
                     title.text =
-                        context.getString(R.string.error_insufficient_balance_title, fee.symbol)
+                        context.getString(R.string.insufficient_balance_symbol, fee.symbol)
                     subTitle.text = context.getString(
-                        R.string.error_insufficient_fee_balance_desc,
+                        R.string.withdraw_insufficient_fee_count,
                         "${t.fee?.fee?.numberFormat8()} ${fee.symbol}",
                         "${feeExtra?.balance?.numberFormat8() ?: "0"} ${fee.symbol}"
                     )
@@ -332,9 +332,9 @@ class TransferHeader : LinearLayout {
             } else {
                 assetIcon.loadToken(t.asset!!)
                 title.text =
-                    context.getString(R.string.error_insufficient_balance_title, asset.symbol)
+                    context.getString(R.string.insufficient_balance_symbol, asset.symbol)
                 subTitle.text = context.getString(
-                    R.string.error_insufficient_balance_desc,
+                    R.string.transfer_insufficient_balance_count,
                     "${t.amount.numberFormat8()} ${asset.symbol}",
                     "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
                 )
@@ -347,17 +347,17 @@ class TransferHeader : LinearLayout {
             assetIcon.loadToken(asset)
             subTitle.setTextColor(context.getColor(R.color.wallet_red))
             title.setTextColor(context.getColor(R.color.wallet_red))
-            title.text = context.getString(R.string.error_insufficient_balance_title, asset.symbol)
+            title.text = context.getString(R.string.insufficient_balance_symbol, asset.symbol)
             if (amount != BigDecimal.ZERO) {
                 subTitle.text = context.getString(
-                    R.string.error_insufficient_web3_main_balance_desc,
+                    R.string.transfer_aggregated_insufficient_balance_count,
                     "${amount.numberFormat12()} ${asset.symbol}",
                     "${fee.numberFormat12()} ${asset.symbol}",
                     "${asset.balance.numberFormat12()} ${asset.symbol}",
                 )
             } else {
                 subTitle.text = context.getString(
-                    R.string.error_insufficient_web3_balance_desc,
+                    R.string.web3_transfer_insufficient_fee_count,
                     "${fee.numberFormat12()} ${asset.symbol}",
                     "${asset.balance.numberFormat12()} ${asset.symbol}",
                 )

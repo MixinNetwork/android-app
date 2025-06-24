@@ -57,9 +57,9 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
             }
             if (tokenItem != null) {
-                swapTv.text = getString(R.string.fee_swap, tokenItem.symbol ?: "-")
-                swapDescTv.text = getString(R.string.fee_swap_other_coin_to, tokenItem.symbol ?: "-")
-                depositTv.text = getString(R.string.fee_deposit, tokenItem.symbol ?: "-")
+                swapTv.text = getString(R.string.swap_token, tokenItem.symbol ?: "-")
+                swapDescTv.text = getString(R.string.swap_token_description, tokenItem.symbol ?: "-")
+                depositTv.text = getString(R.string.deposit_token, tokenItem.symbol ?: "-")
                 swapLayout.setOnClickListener {
                     onAction?.invoke(ActionType.SWAP, tokenItem)
                     dismiss()
@@ -69,9 +69,9 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     dismiss()
                 }
             } else if (web3TokenItem != null) {
-                swapTv.text = getString(R.string.fee_swap, web3TokenItem.symbol ?: "-")
-                swapDescTv.text = getString(R.string.fee_swap_other_coin_to, web3TokenItem.symbol ?: "-")
-                depositTv.text = getString(R.string.fee_deposit, web3TokenItem.symbol ?: "-")
+                swapTv.text = getString(R.string.swap_token, web3TokenItem.symbol ?: "-")
+                swapDescTv.text = getString(R.string.swap_token_description, web3TokenItem.symbol ?: "-")
+                depositTv.text = getString(R.string.deposit_token, web3TokenItem.symbol ?: "-")
                 swapLayout.setOnClickListener {
                     onWeb3Action?.invoke(ActionType.SWAP, web3TokenItem)
                     dismiss()

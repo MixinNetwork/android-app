@@ -67,7 +67,7 @@
             android:gravity="start"
             android:textColor="?attr/text_primary"
             android:lineSpacingExtra="7sp"
-            android:text="@string/usd_cross_chain_detected"
+            android:text="@string/swap_usdt_hint"
             app:layout_constraintStart_toEndOf="@id/error_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/error_icon" />

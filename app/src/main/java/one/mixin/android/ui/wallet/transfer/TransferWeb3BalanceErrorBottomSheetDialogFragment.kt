@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -14,25 +13,15 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.AssetBiometricItem
-import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import kotlin.getValue
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenFeeItem
-import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.navTo
-import one.mixin.android.extension.navigate
 import one.mixin.android.ui.home.web3.swap.SwapActivity
-import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.DepositFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressActivity
-import one.mixin.android.web3.receive.Web3AddressFragment
-import timber.log.Timber
 
 @AndroidEntryPoint
 class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -73,7 +62,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                 if (u != null) {
                     binding.errorLayout.isVisible = true
                     binding.bottom.isVisible = false
-                    binding.contentTv.text = getString(R.string.usd_cross_chain_detected, u.symbol)
+                    binding.contentTv.text = getString(R.string.swap_usdt_hint, u.symbol)
                     binding.positive.setOnClickListener {
                         SwapActivity.show(
                             requireActivity(),

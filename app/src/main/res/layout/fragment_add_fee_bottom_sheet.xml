@@ -73,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_toEndOf="@id/swap_asset_icon"
-                android:text="@string/fee_swap"
+                android:text="@string/swap_token"
                 android:textColor="?attr/text_primary"
                 android:textSize="16sp" />
 
@@ -84,7 +84,7 @@
                 android:layout_below="@id/swap_tv"
                 android:layout_marginTop="4dp"
                 android:layout_toEndOf="@id/swap_asset_icon"
-                android:text="@string/fee_swap_other_coin_to"
+                android:text="@string/swap_token_description"
                 android:textColor="?attr/text_assist"
                 android:textSize="13sp" />
 
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_toEndOf="@id/deposit_asset_icon"
-                android:text="@string/fee_deposit"
+                android:text="@string/deposit_token"
                 android:textColor="?attr/text_primary"
                 android:textSize="16sp" />
 
@@ -125,7 +125,7 @@
                 android:layout_below="@id/deposit_tv"
                 android:layout_marginTop="4dp"
                 android:layout_toEndOf="@id/deposit_asset_icon"
-                android:text="@string/fee_deposit_from_other_exchanges"
+                android:text="@string/deposit_token_description"
                 android:textColor="?attr/text_assist"
                 android:textSize="13sp" />
 

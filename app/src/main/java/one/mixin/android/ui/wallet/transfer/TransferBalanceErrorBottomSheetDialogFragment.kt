@@ -24,7 +24,6 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
-import java.math.BigDecimal
 
 @AndroidEntryPoint
 class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -73,7 +72,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 if (u != null) {
                     binding.errorLayout.isVisible = true
                     binding.bottom.isVisible = false
-                    binding.contentTv.text = getString(R.string.usd_cross_chain_detected, u.symbol)
+                    binding.contentTv.text = getString(R.string.swap_usdt_hint, u.symbol)
                     binding.positive.setOnClickListener {
                         SwapActivity.show(requireActivity(), input = u.assetId, output = asset.assetId, null, null)
                         dismiss()
