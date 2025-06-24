@@ -984,7 +984,9 @@ class BottomSheetViewModel
                             tokenRepository.insertOutput(changeOutput)
                         }
                         val transactionHash = t.transactionHash
-                        val opponentId = invoice.recipient.uuidMembers.firstOrNull() ?: invoice.recipient.xinMembers.firstOrNull()?.string() ?: ""
+                        val opponentId = invoice.recipient.uuidMembers.singleOrNull()
+                            ?: invoice.recipient.xinMembers.singleOrNull()?.string()
+                            ?: ""
                         Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert snapshot, memo${t.memo}")
                         tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, t.trace, t.assetId, t.amount, t.memo, SafeSnapshotType.snapshot, reference = t.reference)
                         Timber.e("Kernel Invoice Transaction(${t.trace}): sign db insert raw transaction")
