@@ -1391,7 +1391,8 @@
     <string name="take_a_photo">拍摄照片</string>
     <string name="leave_message_to_team_mixin">给 Mixin 客服留言</string>
     <string name="link_desktop">链接桌面端</string>
-    <string name="buy_crypto_with_card">用信用卡或借记卡买币</string>
+    <string name="buy_crypto_with_cash">用现金购买加密货币</string>
+    <string name="trade_native_tokens">交易数千种原生代币</string>
     <string name="link_desktop_description">通过二维码链接桌面端</string>
     <string name="Logined">已登录</string>
     <string name="Transfer_confirmation">转账确认</string>
@@ -1926,6 +1927,7 @@
     <string name="All_Invoices">全部账单</string>
     <string name="buy_via">付款方式</string>
     <string name="Mixin_One">Mixin 大会员</string>
+    <string name="mixin_one_desc">Mixin 的所有精彩尽在其中</string>
     <string name="expires_on">有效期至 %1$s</string>
     <string name="expired_on">%1$s 过期</string>
     <string name="View_Plan">查看会员</string>

@@ -1421,7 +1421,8 @@
     <string name="take_a_photo">Take a photo\n</string>
     <string name="leave_message_to_team_mixin">Leave a message to Team Mixin</string>
     <string name="link_desktop">Link Desktop</string>
-    <string name="buy_crypto_with_card">Buy crypto with credit or debit card</string>
+    <string name="buy_crypto_with_cash">Purchase crypto with cash</string>
+    <string name="trade_native_tokens">Trade thousands of native tokens</string>
     <string name="link_desktop_description">Link Mixin Messenger Desktop by QR code</string>
     <string name="Logined">Logged in</string>
     <string name="Transfer_confirmation">Transfer confirmation</string>
@@ -1985,6 +1986,7 @@
     <string name="invoice_upgrade_plan">Upgrade to %1$s</string>
     <string name="buy_via">Via</string>
     <string name="Mixin_One">Mixin One</string>
+    <string name="mixin_one_desc">All the best of Mixin in one place</string>
     <string name="Star">Star</string>
     <string name="Stars">Stars</string>
     <string name="Buy_Stars">Buy Stars</string>

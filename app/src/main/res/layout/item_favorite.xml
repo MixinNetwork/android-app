@@ -19,6 +19,15 @@
         android:layout_height="50dp"
         android:layout_centerInParent="true" />
 
+    <ImageView
+        android:id="@+id/dot"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:src="@drawable/ic_dot_red_border"
+        android:layout_alignTop="@id/avatar"
+        android:layout_alignEnd="@id/avatar"
+        android:visibility="gone"/>
+
     <Space
         android:id="@+id/center"
         android:layout_width="wrap_content"

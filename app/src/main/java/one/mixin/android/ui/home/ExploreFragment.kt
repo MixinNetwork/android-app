@@ -33,6 +33,7 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
@@ -44,15 +45,18 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.bot.INTERNAL_BUY_ID
-import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
+import one.mixin.android.ui.home.bot.INTERNAL_MEMBER_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.web3.MarketFragment
+import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
@@ -67,7 +71,8 @@ import javax.inject.Inject
 class ExploreFragment : BaseFragment() {
     companion object {
         const val TAG = "ExploreFragment"
-
+        private const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
+        private val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID)
         fun newInstance() = ExploreFragment()
     }
 
@@ -162,15 +167,19 @@ class ExploreFragment : BaseFragment() {
         loadData()
         loadBotData()
         refresh()
+        updateFavoriteDot()
 
         RxBus.listen(BotEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             loadBotData()
+            updateFavoriteDot()
         }
         RxBus.listen(FavoriteEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             loadData()
+            updateFavoriteDot()
         }
         RxBus.listen(SessionEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             adapter.isDesktopLogin = Session.getExtensionSessionId() != null
+            updateFavoriteDot()
         }
         lifecycleScope.launch {
             val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
@@ -257,6 +266,27 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
+    private fun getClickedBotIds(): Set<String> {
+        return requireContext().defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+    }
+
+    private fun setClickedBotId(id: String) {
+        val sp = requireContext().defaultSharedPreferences
+        val old = getClickedBotIds().toMutableSet()
+        if (old.add(id)) {
+            sp.edit().putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")).apply()
+            updateFavoriteDot()
+        }
+    }
+
+    private fun updateFavoriteDot() {
+        val clickedIds = getClickedBotIds()
+        val needShow = SHOW_DOT_BOT_IDS.any { !clickedIds.contains(it) }
+        val dotView = view?.findViewById<View>(R.id.dot_favorite)
+        dotView?.visibility = if (needShow) View.VISIBLE else View.GONE
+    }
+
     private val clickAction: (BotInterface) -> Unit = { app ->
         if (app is ExploreApp) {
             lifecycleScope.launch {
@@ -265,21 +295,23 @@ class ExploreFragment : BaseFragment() {
                 }
             }
         } else if (app is Bot) {
+            if (SHOW_DOT_BOT_IDS.contains(app.id)) {
+                setClickedBotId(app.id)
+                adapter.notifyDataSetChanged()
+            }
             when (app.id) {
-                INTERNAL_CAMERA_ID -> {
-                    RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
-                        if (granted) {
-                            (requireActivity() as? MainActivity)?.showCapture(false)
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    }
-                }
-
                 INTERNAL_LINK_DESKTOP_ID -> {
                     DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
                 }
-
+                INTERNAL_BUY_ID -> {
+                    WalletActivity.showBuy(requireActivity(), false, null, null)
+                }
+                INTERNAL_SWAP_ID -> {
+                    SwapActivity.show(requireActivity(), null, null, null, null, true)
+                }
+                INTERNAL_MEMBER_ID -> {
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+                }
                 INTERNAL_SUPPORT_ID -> {
                     lifecycleScope.launch {
                         val userTeamMixin = botManagerViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
@@ -444,6 +476,19 @@ class ExploreFragment : BaseFragment() {
                     name.setTextOnly(a.name)
                     mixinIdTv.setText(a.description)
                     name.setTextOnly(a.name)
+                    val context = itemView.context
+                    val clickedIds =
+                        try {
+                            context.defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+                                ?.split(",")?.toSet() ?: emptySet()
+                        } catch (e: Exception) {
+                            emptySet()
+                        }
+                    if (SHOW_DOT_BOT_IDS.contains(a.id) && !clickedIds.contains(a.id)) {
+                        dot.visibility = View.VISIBLE
+                    } else {
+                        dot.visibility = View.GONE
+                    }
                 }
             } else if (app is ExploreApp) {
                 itemBinding.apply {
@@ -451,6 +496,7 @@ class ExploreFragment : BaseFragment() {
                     name.setTextOnly(app.name)
                     mixinIdTv.text = app.appNumber
                     name.setName(app)
+                    dot.visibility = View.GONE
                 }
             }
         }

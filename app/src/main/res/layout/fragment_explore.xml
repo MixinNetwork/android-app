@@ -80,17 +80,29 @@
             android:paddingEnd="16dp"
             android:paddingBottom="12dp">
 
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_favorite"
+            <FrameLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:checked="true"
-                android:text="@string/Explore"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:textSize="14sp" />
+                android:layout_height="wrap_content">
+                <androidx.appcompat.widget.AppCompatRadioButton
+                    android:id="@+id/radio_favorite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/selector_radio"
+                    android:button="@null"
+                    android:checked="true"
+                    android:text="@string/Explore"
+                    android:textColor="@drawable/radio_button_text_selector"
+                    android:textSize="14sp" />
+                <ImageView
+                    android:id="@+id/dot_favorite"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_gravity="end|top"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_dot_red_border"
+                    />
+            </FrameLayout>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_market"
@@ -127,4 +139,3 @@
     </ViewAnimator>
 
 </LinearLayout>
-
