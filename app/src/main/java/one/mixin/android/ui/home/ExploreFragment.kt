@@ -315,7 +315,7 @@ class ExploreFragment : BaseFragment() {
                     WalletActivity.showBuy(requireActivity(), false, null, null)
                 }
                 INTERNAL_SWAP_ID -> {
-                    SwapActivity.show(requireActivity(), null, null, null, null, true)
+                    SwapActivity.show(requireActivity(), null, null, null, null)
                 }
                 INTERNAL_MEMBER_ID -> {
                     if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {

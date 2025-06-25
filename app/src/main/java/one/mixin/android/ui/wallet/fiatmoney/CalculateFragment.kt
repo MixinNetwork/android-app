@@ -31,6 +31,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
@@ -74,11 +75,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private suspend fun initData() {
         var currencyName = getDefaultCurrency(requireContext(), getCurrencyData(requireContext().resources))
-        val assetId =
-            requireContext().defaultSharedPreferences.getString(
-                CURRENT_ASSET_ID,
-                USDT_ASSET_ETH_ID,
-            )
+        val assetId = requireContext().defaultSharedPreferences.getString(CURRENT_ASSET_ID, null)
 
         if (assetId != null) {
             val currency = getCurrencyData(requireContext().resources).find { it.name == currencyName }
@@ -109,17 +106,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val supportCurrencies = routeProfile.supportCurrencies
         currencyName = getDefaultCurrency(requireContext(), supportCurrencies)
 
-        val assetId =
-            requireContext().defaultSharedPreferences.getString(
-                CURRENT_ASSET_ID,
-                USDT_ASSET_ID,
-            )
-
         fiatMoneyViewModel.currency = supportCurrencies.find {
             it.name == currencyName
         } ?: supportCurrencies.lastOrNull()
         fiatMoneyViewModel.asset =
             fiatMoneyViewModel.findAssetsByIds(routeProfile.supportAssetIds).let { list ->
+                if (assetId == null) {
+                    requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, list.firstOrNull()?.assetId)
+                }
                 list.find { it.assetId == assetId } ?: list.firstOrNull()
             }
 
@@ -432,15 +426,21 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         binding.fiatName.text = currency.name
         binding.assetName.text = asset.symbol
         binding.continueTv.text = "${getString(R.string.Buy)} ${asset.symbol}"
-        updateValue()
+        updateValue(currency, asset)
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateValue() {
+    private fun updateValue(currency: Currency? = null, asset: TokenItem? = null) {
         if (viewDestroyed()) return
-        val currency = fiatMoneyViewModel.currency ?: return
-        val asset = fiatMoneyViewModel.asset ?: return
-        val state = fiatMoneyViewModel.calculateState ?: return
+        val currency = currency ?: fiatMoneyViewModel.currency ?: return
+        val asset = asset ?: fiatMoneyViewModel.asset ?: return
+        val state = fiatMoneyViewModel.calculateState
+        if (state == null) {
+            // Default state
+            binding.primaryTv.text = "0"
+            binding.minorTv.text = "0 ${asset.symbol}"
+            return
+        }
         val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
         if (!isAdded) return
         binding.apply {
