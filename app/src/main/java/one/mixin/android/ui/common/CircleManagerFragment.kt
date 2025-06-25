@@ -11,7 +11,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
@@ -20,6 +22,7 @@ import one.mixin.android.databinding.ItemCircleManagerBinding
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -27,6 +30,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleManagerItem
+import one.mixin.android.vo.Participant
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getCircleColor
 import one.mixin.android.widget.SegmentationItemDecoration
@@ -111,8 +115,14 @@ class CircleManagerFragment : BaseFragment() {
         loadData()
     }
 
+    private var localMe: Participant? = null
     private fun loadData() {
         lifecycleScope.launch {
+            localMe = withContext(Dispatchers.IO) {
+                bottomViewModel.findParticipantById(
+                    conversationId ?: "", Session.getAccountId()!!
+                )
+            }
             val includeCircleItem =
                 bottomViewModel.getIncludeCircleItem(
                     conversationId ?: generateConversationId(
@@ -135,6 +145,10 @@ class CircleManagerFragment : BaseFragment() {
 
     private val onAddCircle: (item: ConversationCircleManagerItem) -> Unit = { item ->
         lifecycleScope.launch {
+            if (localMe == null && conversationId != null) {
+                toast(R.string.no_longer_member)
+                return@launch
+            }
             val dialog =
                 indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                     setCancelable(false)
