@@ -448,7 +448,7 @@ class SwapFragment : BaseFragment() {
         runCatching {
             var payId = payAssetId
             var receiveId =
-                if (receiveAssetId in DepositFragment.usdcAssets || receiveAssetId in DepositFragment.usdtAssets) {
+                if (receiveAssetId in Constants.AssetId.usdcAssets || receiveAssetId in Constants.AssetId.usdtAssets) {
                     payId = receiveAssetId
                     payAssetId
                 } else {
