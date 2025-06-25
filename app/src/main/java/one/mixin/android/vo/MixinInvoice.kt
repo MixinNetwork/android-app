@@ -28,6 +28,9 @@ data class MixinInvoice(
     val recipient: MixAddress,
     val entries: MutableList<InvoiceEntry> = mutableListOf(),
 ) {
+
+    val opponentId = recipient.uuidMembers.singleOrNull() ?: recipient.xinMembers.singleOrNull()?.string() ?: ""
+
     fun addEntry(
         traceId: String,
         assetId: String,
