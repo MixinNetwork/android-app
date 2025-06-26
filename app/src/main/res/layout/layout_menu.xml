@@ -61,6 +61,16 @@
         android:visibility="gone"/>
 
     <TextView
+        android:id="@+id/mixin_member_plan_tv"
+        android:text="@string/Upgrade_Plan"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <TextView
         android:id="@+id/subtitle_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

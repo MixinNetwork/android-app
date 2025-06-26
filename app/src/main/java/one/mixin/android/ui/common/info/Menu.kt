@@ -159,6 +159,7 @@ fun MenuList.createMenuLayout(
                 val icon = Session.getAccount()?.membership?.membershipIcon(true)
                 if (icon != null) {
                     menuBinding.mixinMemberPlanIv.isVisible = true
+                    menuBinding.mixinMemberPlanTv.isVisible = false
                     if (Session.getAccount()?.membership?.isProsperity() == true) {
                         menuBinding.mixinMemberPlanIv.setImageDrawable(
                             RLottieDrawable(
@@ -178,10 +179,12 @@ fun MenuList.createMenuLayout(
                     }
                 } else {
                     menuBinding.mixinMemberPlanIv.isVisible = false
+                    menuBinding.mixinMemberPlanTv.isVisible = true
                     menuBinding.mixinMemberPlanIv.clearAnimation()
                 }
             } else {
                 menuBinding.mixinMemberPlanIv.isVisible = false
+                menuBinding.mixinMemberPlanTv.isVisible = menu.isMembership != null
             }
             val top = index == 0
             val bottom = index == group.menus.size - 1

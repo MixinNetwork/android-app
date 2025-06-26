@@ -229,7 +229,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                             }
                             dismiss()
                         }
-                        isMembership = Session.getAccount()?.membership?.isMembership()
+                        isMembership = Session.getAccount()?.membership?.isMembership() ?: false
                     }
                 }
                 menuGroup {
