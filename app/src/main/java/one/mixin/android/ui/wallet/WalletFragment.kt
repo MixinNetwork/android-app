@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
@@ -27,6 +28,7 @@ import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
@@ -137,7 +139,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             compose.setContent {
                 AssetDashboardScreen(
-                    onWalletCardClick = ::handleWalletCardClick
+                    onWalletCardClick = ::handleWalletCardClick,
+                    onAddWalletClick = ::handleAddWalletClick
                 )
             }
 
@@ -182,6 +185,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private var migrateEnable = false
+
+    private fun handleAddWalletClick() {
+        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+        dialog.callback = {
+            startActivity(Intent(requireContext(), AddWalletActivity::class.java))
+        }
+        dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+    }
 
     private fun handleWalletCardClick(destination: WalletDestination, walletId: String?) {
         when (destination) {

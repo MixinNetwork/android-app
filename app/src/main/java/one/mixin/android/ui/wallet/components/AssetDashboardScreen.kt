@@ -22,6 +22,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +55,7 @@ private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 @Composable
 fun AssetDashboardScreen(
     onWalletCardClick: (destination: WalletDestination, walletId: String?) -> Unit,
+    onAddWalletClick: () -> Unit,
     viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
     val tokenDistribution by viewModel.tokenDistribution.collectAsState(initial = emptyList())
@@ -75,15 +77,28 @@ fun AssetDashboardScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                text = stringResource(R.string.Wallets),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MixinAppTheme.colors.textPrimary,
-                modifier = Modifier
-                    .height(56.dp)
-                    .wrapContentHeight(Alignment.CenterVertically)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.Wallets),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier
+                        .height(56.dp)
+                        .wrapContentHeight(Alignment.CenterVertically)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(R.drawable.ic_add_black_24dp),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            onAddWalletClick()
+                        }
+                )
+            }
             TotalAssetsCard()
             Spacer(modifier = Modifier.height(20.dp))
             
@@ -103,8 +118,8 @@ fun AssetDashboardScreen(
                     destination = WalletDestination.Classic,
                     onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
                 )
+                Spacer(modifier = Modifier.height(10.dp))
             }
-
 
             if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -212,7 +227,8 @@ fun PrivacyWalletInfo(
     onLearnMoreClick: () -> Unit,
     onClose: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier
+        .fillMaxWidth()
         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
         .padding(16.dp)) {
         Row(
@@ -277,7 +293,8 @@ fun CommonWalletInfo(
     onLearnMoreClick: () -> Unit,
     onClose: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier
+        .fillMaxWidth()
         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
         .padding(16.dp)) {
         Row(

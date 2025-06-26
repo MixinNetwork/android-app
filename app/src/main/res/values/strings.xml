@@ -2001,4 +2001,7 @@
     <string name="membership_congratulation_description">🎉 Thank you for using Mixin and renewing your Elite membership! Your membership is valid until %1$s, and you will receive %2$d Mixin Stars, with free access to the recovery service.</string>
     <string name="Upgrade_Success">Upgrade Successful</string>
     <string name="Renew_Success">Renewal Successful</string>
+    <string name="add_wallet">Add Wallet</string>
+    <string name="Import_Mnemonic_Phrase">Import Mnemonic Phrase</string>
+    <string name="Import_wallets_from_another_wallet">Import wallets from another wallet.</string>
 </resources>
