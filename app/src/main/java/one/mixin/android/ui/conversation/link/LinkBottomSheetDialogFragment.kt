@@ -73,12 +73,14 @@ import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.link.parser.BalanceError
 import one.mixin.android.ui.conversation.link.parser.NewSchemeParser
 import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
@@ -97,6 +99,7 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.ui.wallet.transfer.TransferBalanceErrorBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
@@ -411,7 +414,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     dismiss()
                 } else {
                     val e = r.exceptionOrNull()
-                    if (e is ParserError && e.symbol != null) {
+                    if (e is BalanceError) {
+                        TransferBalanceErrorBottomSheetDialogFragment.newInstance(e.assetBiometricItem).showNow(parentFragmentManager,
+                            TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                        dismiss()
+                    } else if (e is ParserError && e.symbol != null) {
                         showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                     } else if (e is ParserError && e.message != null) {
                         showError(e.message!!)
@@ -436,7 +443,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         dismiss()
                     } else {
                         val e = r.exceptionOrNull()
-                        if (e is ParserError && e.symbol != null) {
+                        if (e is BalanceError) {
+                            TransferBalanceErrorBottomSheetDialogFragment.newInstance(e.assetBiometricItem).showNow(parentFragmentManager,
+                                TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                            dismiss()
+                        } else if (e is ParserError && e.symbol != null) {
                             showError("${e.symbol} ${getString(R.string.insufficient_balance)}")
                         } else if (e is ParserError && e.message != null) {
                             showError(e.message!!)
@@ -1006,7 +1017,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             return true
         }
         val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = data, solanaTxSource = SolanaTxSource.Link)
-        BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, null, null)
+        GasCheckBottomSheetDialogFragment.newInstance(signMessage, null, null)
             .setOnDismiss { dismiss() }
             .setOnTxhash { sig, _ ->
                 val cid = MixinApplication.conversationId
@@ -1017,7 +1028,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     linkViewModel.sendTextMessage(cid, self, linkSigData.base64Encode())
                 }
             }
-            .showNow(childFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
+            .showNow(childFragmentManager, GasCheckBottomSheetDialogFragment.TAG)
         return true
     }
 
@@ -1265,6 +1276,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private val errorHandler =
         CoroutineExceptionHandler { _, error ->
             when (error) {
+                is BalanceError -> {
+                    TransferBalanceErrorBottomSheetDialogFragment.newInstance(error.assetBiometricItem).showNow(parentFragmentManager,
+                        TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
                 is SocketTimeoutException -> showError(R.string.error_connection_timeout)
                 is UnknownHostException -> showError(R.string.No_network_connection)
                 is IOException -> showError(R.string.No_network_connection)

@@ -14,13 +14,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
@@ -43,7 +42,6 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.job.RefreshPriceJob
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -131,10 +129,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
                     val assets = walletViewModel.allAssetItems()
-                    val output = if (asset.assetId == USDT_ASSET_ID) {
+                    val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {
-                        USDT_ASSET_ID
+                        USDT_ASSET_ETH_ID
                     }
                     AnalyticsTracker.trackSwapStart("mixin", "market")
                     navTo(SwapFragment.newInstance<TokenItem>(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }, input = asset.assetId, output = output), SwapFragment.TAG)

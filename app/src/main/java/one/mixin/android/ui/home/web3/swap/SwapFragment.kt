@@ -26,7 +26,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
@@ -67,6 +67,7 @@ import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -447,7 +448,7 @@ class SwapFragment : BaseFragment() {
         runCatching {
             var payId = payAssetId
             var receiveId =
-                if (receiveAssetId in DepositFragment.usdcAssets || receiveAssetId in DepositFragment.usdtAssets) {
+                if (receiveAssetId in Constants.AssetId.usdcAssets || receiveAssetId in Constants.AssetId.usdtAssets) {
                     payId = receiveAssetId
                     payAssetId
                 } else {
@@ -644,16 +645,31 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
-            setOnDone {
-                initialAmount = null
-                lastOrderTime = System.currentTimeMillis()
-            }
-            setOnDestroy {
-                reviewing = false
-            }
-        }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
-        reviewing = true
+        if (from.chain.chainId == Constants.ChainId.Solana || inMixin()) {
+            SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
+                setOnDone {
+                    initialAmount = null
+                    lastOrderTime = System.currentTimeMillis()
+                }
+                setOnDestroy {
+                    reviewing = false
+                }
+            }.showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+            reviewing = true
+        } else {
+            GasCheckBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
+                setOnDone {
+                    initialAmount = null
+                    lastOrderTime = System.currentTimeMillis()
+                }
+                setOnDestroy {
+                    reviewing = false
+                }
+            }.showNow(
+                parentFragmentManager,
+                GasCheckBottomSheetDialogFragment.TAG
+            )
+        }
     }
 
     private suspend fun initFromTo() {
@@ -683,7 +699,7 @@ class SwapFragment : BaseFragment() {
             fromToken = if (input != null) {
                 swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(input)?.toSwapToken()
             } else lastFrom
-                ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ID }
+                ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ETH_ID }
                     ?: tokens.firstOrNull())?.toSwapToken()
 
             toToken = if (output != null) {
@@ -691,10 +707,10 @@ class SwapFragment : BaseFragment() {
                     output
                 )?.toSwapToken()
             } else if (input != null) {
-                val o = if (input == USDT_ASSET_ID) {
+                val o = if (input == USDT_ASSET_ETH_ID) {
                     XIN_ASSET_ID
                 } else {
-                    USDT_ASSET_ID
+                    USDT_ASSET_ETH_ID
                 }
                 swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(o)
                     ?.toSwapToken()

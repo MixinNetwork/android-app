@@ -3,6 +3,8 @@ package one.mixin.android.ui.home.web3
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.handleMixinResponse
@@ -100,4 +102,8 @@ class BrowserWalletBottomSheetViewModel
         }
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+
+        suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(assetId)
+        }
     }
