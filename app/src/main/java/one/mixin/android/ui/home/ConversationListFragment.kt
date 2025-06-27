@@ -1254,7 +1254,7 @@ class ConversationListFragment : LinkFragment() {
                 getString(R.string.one_year),
             )
         var duration = MUTE_8_HOURS
-        var whichItem = 0
+        var whichItem = 1 // default choice
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.Cancel) { dialog, _ ->
@@ -1305,7 +1305,7 @@ class ConversationListFragment : LinkFragment() {
 
                 dialog.dismiss()
             }
-            .setSingleChoiceItems(choices, 1) { _, which ->
+            .setSingleChoiceItems(choices, whichItem) { _, which ->
                 whichItem = which
                 when (which) {
                     0 -> duration = MUTE_1_HOUR
