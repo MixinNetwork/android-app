@@ -8,7 +8,7 @@ import one.mixin.android.ui.landing.components.MnemonicState
 @Composable
 fun AddWalletPage() {
     MixinAppTheme {
-        MnemonicPhraseInput(MnemonicState.Input, onComplete = {
+        MnemonicPhraseInput(MnemonicState.Import, onComplete = {
 
         })
     }
