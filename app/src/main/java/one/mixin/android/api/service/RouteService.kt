@@ -7,6 +7,7 @@ import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
@@ -18,6 +19,7 @@ import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.AddressAssetsView
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
@@ -293,6 +295,11 @@ interface RouteService {
         @Path("id") id: String,
         @Query("address") address: String,
     ): MixinResponse<Web3Token>
+
+    @POST("assets/search/address")
+    suspend fun searchAssetsByAddresses(
+        @Body request: AddressSearchRequest
+    ): MixinResponse<List<AddressAssetsView>>
 
     @GET("web3/dapps")
     suspend fun dapps(): MixinResponse<List<ChainDapp>>

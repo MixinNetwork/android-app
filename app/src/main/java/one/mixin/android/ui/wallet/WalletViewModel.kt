@@ -437,4 +437,5 @@ class WalletViewModel
         pin: String,
     ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
 
+    suspend fun searchAssetsByAddresses(addresses: List<String>) = web3Repository.searchAssetsByAddresses(addresses)
 }

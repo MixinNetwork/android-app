@@ -1,6 +1,7 @@
 package one.mixin.android.repository
 
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.Web3TokenDao
@@ -56,4 +57,8 @@ constructor(
     }
 
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()
+
+    suspend fun searchAssetsByAddresses(addresses: List<String>) = routeService.searchAssetsByAddresses(
+        AddressSearchRequest(addresses)
+    )
 }
