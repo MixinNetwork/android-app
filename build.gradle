@@ -89,7 +89,7 @@ buildscript {
         ext.robolectricVersion = '4.15.1'
 
         ext.gsonVersion = '2.13.1'
-        ext.serializationVersion = '1.8.1'
+        ext.serializationVersion = '1.9.0'
         ext.autodisposeVersion = '1.4.1'
         ext.jsoupVersion = '1.13.1'
         ext.isoparserVersion = '1.0.6'
@@ -123,6 +123,23 @@ buildscript {
         ext.appsFlyerVersion ='6.16.2'
         ext.installreferrerVersion ='2.2'
         ext.billingVersion ='7.1.1'
+
+        ext.lottieComposeVersion = '6.6.7'
+        ext.composeBomVersion = '2025.06.01'
+        ext.activityComposeVersion = '1.10.1'
+        ext.web3jCoreVersion = '4.11.0'
+        ext.web3jCryptoVersion = '4.11.0'
+        ext.reownBomVersion = '1.4.2'
+        ext.kotsonVersion = '2.5.0'
+        ext.playServicesMapsVersion = '19.2.0'
+        ext.playServicesLocationVersion = '21.3.0'
+        firebaseBomVersion = "33.16.0"
+        billingKtxVersion = "7.1.1"
+        webpdecoderVersion = "2.7.4.16.0"
+
+        ext.tweetnaclVersion = '0.1.6'
+        ext.sol4kUtilitiesVersion = '0.1.0'
+        ext.desugarJdkLibsVersion = '2.1.5'
     }
 
     repositories {
@@ -135,7 +152,7 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.11.0'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
-        classpath 'com.google.gms:google-services:4.4.2'
+        classpath 'com.google.gms:google-services:4.4.3'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.4'
         classpath 'com.google.firebase:perf-plugin:1.4.2'
     }

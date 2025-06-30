@@ -33,6 +33,7 @@ internal constructor(
 
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
 
+    suspend fun findTokensExtra(asset: String) = tokenRepository.findTokensExtra(asset)
 
     suspend fun findMultiUsers(
         userIds: List<String>,
@@ -64,4 +65,9 @@ internal constructor(
             return@withContext users
         }
 
+    suspend fun findTopUsdBalanceAsset(excludeId: String) =
+        tokenRepository.findTopUsdBalanceAsset(excludeId)
+
+    suspend fun findTopWeb3UsdBalanceAsset(excludeId: String) =
+        tokenRepository.findTopWeb3UsdBalanceAsset(excludeId)
 }
