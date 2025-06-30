@@ -575,7 +575,7 @@ private fun PriceInfo(
     var quoteCountDown by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}") {
-        isPriceReverse = fromToken.assetId in DepositFragment.usdcAssets || fromToken.assetId in DepositFragment.usdtAssets
+        isPriceReverse = fromToken.assetId in Constants.AssetId.usdcAssets || fromToken.assetId in Constants.AssetId.usdtAssets
     }
 
     LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}-${exchangeRate}") {

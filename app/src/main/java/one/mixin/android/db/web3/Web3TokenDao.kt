@@ -11,6 +11,7 @@ import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 
 @Dao
@@ -73,4 +74,12 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         name: String,
         symbol: String,
     ): List<Web3TokenItem>
+
+    @Query(
+        """SELECT * FROM tokens  
+           WHERE asset_id IN (:usdIds) AND asset_id != :excludeId 
+           ORDER BY COALESCE(amount * price_usd, 0) DESC 
+           LIMIT 1"""
+    )
+    suspend fun findTopUsdBalanceAsset(usdIds: List<String>, excludeId: String): Web3Token?
 }

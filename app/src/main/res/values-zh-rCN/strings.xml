@@ -411,6 +411,13 @@
     <string name="error_expired_authorization_code">错误 20121：授权码已过期</string>
     <string name="error_full_group">错误 20116：群组已满</string>
     <string name="error_insufficient_balance">错误 20117：余额不足</string>
+    <string name="insufficient_balance_symbol">%1$s 余额不足</string>
+    <string name="transfer_insufficient_balance_count">错误 20117：转账金额 %1$s，钱包可用余额 %2$s。</string>
+    <string name="withdraw_insufficient_fee_count">错误 20118：提现手续费 %1$s，钱包可用余额 %2$s。</string>
+    <string name="withdraw_aggregated_insufficient_balance_count">提现金额 %1$s，手续费 %2$s，钱包余额 %3$s。</string>
+    <string name="web3_transfer_insufficient_fee_count">错误 20118：广播交易需要 %1$s，钱包可用余额 %2$s。</string>
+    <string name="transfer_aggregated_insufficient_balance_count">转账金额 %1$s，广播交易需要 %2$s，钱包余额 %3$s。</string>
+    <string name="error_insufficient_withdraw_balance_desc">提现金额 %1$s，广播交易需要 %2$s，钱包余额 %3$s。</string>
     <string name="error_legacy_pin">错误 20118：为了加强 Mixin 网络的安全，Mixin API 现已暂停 D3M-PIN 升级到 TIP，详情请查看文档并登记等待处理。</string>
     <string name="error_insufficient_transaction_fee_with_amount">错误 20124：手续费不足。请确保钱包至少有 %1$s 当作手续费。</string>
     <string name="error_invalid_address">错误 30102：地址格式错误。请输入正确的 %1$s %2$s 的地址！</string>
@@ -815,6 +822,7 @@
     <string name="Receive_Money">我的收款码</string>
     <string name="Receiver">至</string>
     <string name="Receivers">交易接收人</string>
+    <string name="Available_Balance">可用余额</string>
     <plurals name="Receiver_title" tools:ignore="UnusedQuantity">
         <item quantity="one">交易接收人</item>
         <item quantity="other">交易接收人</item>
@@ -1905,6 +1913,11 @@
     <string name="Good">良好</string>
     <string name="reputation_description">默认仅显示信誉度良好的交易。启用“高风险”可查看更多交易。</string>
     <string name="reputation_unknown_description">缺乏足够信息，或未被可信来源验证</string>
+    <string name="swap_token">兑换 %1$s</string>
+    <string name="deposit_token">充值 %1$s</string>
+    <string name="swap_token_description">将其他币种兑换为 %1$s</string>
+    <string name="deposit_token_description">从其他交易所或钱包转入</string>
+    <string name="swap_usdt_hint">当前钱包有其他链的 %1$s，是否马上兑换？</string>
     <string name="membership_plan">级别</string>
     <string name="membership_advance">进阶版</string>
     <string name="membership_elite">精英版</string>

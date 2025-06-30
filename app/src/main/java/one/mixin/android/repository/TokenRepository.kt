@@ -1425,4 +1425,9 @@ class TokenRepository
 
     suspend fun getAddressById(chainId: String) = addressDao.getAddressById(chainId)
 
+    suspend fun findTopUsdBalanceAsset(excludeId: String) =
+        tokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
+
+    suspend fun findTopWeb3UsdBalanceAsset(excludeId: String) =
+        web3TokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
 }

@@ -1,22 +1,36 @@
 package one.mixin.android.ui.setting.ui.components
 
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.repeatable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,7 +60,66 @@ fun MemberUpgradePaymentButton(
 ) {
     val viewModel: MemberViewModel = hiltViewModel()
     val subscriptionPlans by viewModel.subscriptionPlans.collectAsState()
-    if (selectedPlan.ordinal < currentUserPlan.ordinal) {
+    if (selectedPlan == currentUserPlan) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 30.dp)
+        ) {
+            var buttonOffset by remember { mutableFloatStateOf(0f) }
+            val interactionSource = remember { MutableInteractionSource() }
+            LaunchedEffect (interactionSource) {
+                interactionSource.interactions.collect{ interaction ->
+                    if (interaction is PressInteraction.Press) {
+                        animate(
+                            initialValue = 0f,
+                            targetValue = 1f,
+                            animationSpec = repeatable(
+                                iterations = 1,
+                                animation = keyframes {
+                                    durationMillis = 300
+                                    0f at 0
+                                    -10f at 50
+                                    10f at 100
+                                    -10f at 150
+                                    10f at 200
+                                    0f at 300
+                                }
+                            )
+                        ) { value, _ ->
+                            buttonOffset = value
+                        }
+                    }
+                }
+            }
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(48.dp)
+                    .offset(x = buttonOffset.dp),
+                shape = RoundedCornerShape(24.dp),
+                onClick = {},
+                interactionSource = interactionSource,
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF50BD5C)),
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_smile),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(id = R.string.Current_Plan),
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    } else if (selectedPlan.ordinal < currentUserPlan.ordinal) {
         Spacer(modifier = Modifier.height(24.dp))
         return
     } else if (selectedPlan != currentUserPlan) {

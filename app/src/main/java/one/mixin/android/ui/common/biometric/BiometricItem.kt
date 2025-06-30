@@ -13,6 +13,7 @@ import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 import java.util.UUID
 
 @Parcelize
@@ -139,7 +140,26 @@ class WithdrawBiometricItem(
     override var memo: String?,
     override var state: String,
     var trace: Trace?,
-) : AssetBiometricItem(asset, traceId, amount, memo, state, null)
+) : AssetBiometricItem(asset, traceId, amount, memo, state, null) {
+    // Check if the asset and fee balances are sufficient for withdrawal
+    // Return 1 if sufficient, 2 if asset is insufficient, 3 if fee is insufficient
+    fun isBalanceEnough(assetBalance: String?, feeBalance: String?): Int {
+        if (asset?.assetId == fee?.token?.assetId) {
+            val totalRequired = BigDecimal(amount).add(BigDecimal(fee?.fee ?: "0"))
+            return if (assetBalance != null && BigDecimal(assetBalance) >= totalRequired) {
+                1 // Sufficient
+            } else {
+                2 // Insufficient asset + fee
+            }
+        } else {
+            val assetBalanceEnough = assetBalance != null && BigDecimal(assetBalance) >= BigDecimal(amount)
+            if (!assetBalanceEnough) return 2 // Insufficient asset
+            val feeBalanceEnough = feeBalance != null && BigDecimal(feeBalance) >= BigDecimal(fee?.fee ?: "0")
+            if (!feeBalanceEnough) return 3 // Insufficient fee
+            return 1 // Sufficient
+        }
+    }
+}
 
 fun WithdrawBiometricItem.displayAddress(): String {
     return if (!address.tag.isNullOrEmpty()) {

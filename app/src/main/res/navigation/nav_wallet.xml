@@ -343,6 +343,21 @@
             android:name="args_to_account"
             app:argType="boolean" />
 
+        <action
+            android:id="@+id/action_input_fragment_to_deposit_fragment"
+            app:destination="@id/deposit_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+
+        <action
+            android:id="@+id/action_input_fragment_to_web3_address_fragment"
+            app:destination="@id/web3_address_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
     </fragment>
 
     <fragment
