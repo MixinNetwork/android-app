@@ -1,21 +1,43 @@
 package one.mixin.android.crypto.mnemonic
 
 import com.lambdapioneer.argon2kt.Argon2Kt
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.mnemonicChecksumWord
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
-import one.mixin.android.extension.toHex
 import org.bitcoinj.crypto.MnemonicCode
 import org.junit.Test
 import org.web3j.crypto.Bip32ECKeyPair
+import org.web3j.crypto.Keys
 import timber.log.Timber
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class MnemonicTest {
+
+    @Test
+    fun printMnemonicKeyAndEthAddress() {
+        val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+
+        try {
+            val wallet = CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic)
+
+            println("Mnemonic: ${wallet.mnemonic}")
+            println("Private Key: ${wallet.privateKey}")
+            println("Address: ${wallet.address}")
+            assertEquals("0x58A57ed9d8d624cBD12e2C467D34787555bB1b25".lowercase(), wallet.address.lowercase())
+            println("Checksum Address: ${Keys.toChecksumAddress(wallet.address.removePrefix("0x"))}")
+
+            println("Address Valid: ${CryptoWalletHelper.isValidEthereumAddress(wallet.address)}")
+
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
 
     @Test
     fun mnemonicTest() {
