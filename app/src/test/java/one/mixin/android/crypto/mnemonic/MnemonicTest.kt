@@ -20,7 +20,7 @@ class MnemonicTest {
 
     @Test
     fun printMnemonicKeyAndEthAddress() {
-        val mnemonic = "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail"
+        val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
 
         try {
             // val wallet = CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic)
