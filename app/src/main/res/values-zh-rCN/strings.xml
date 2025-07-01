@@ -1964,4 +1964,5 @@
     <string name="membership_congratulation_description">🎉 感谢您使用 Mixin 并续费精英版会员！会员有效期至 %1$s，同时获赠 %2$d Mixin Stars，可免费使用恢复服务。</string>
     <string name="Upgrade_Success">升级成功</string>
     <string name="Renew_Success">续费成功</string>
+    <string name="no_longer_member">你已不再是此群组的成员。</string>
 </resources>

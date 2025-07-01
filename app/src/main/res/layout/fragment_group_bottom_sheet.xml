@@ -70,6 +70,19 @@
                 app:expandAction="@string/More"
                 app:expandActionColor="?attr/text_blue"/>
 
+            <TextView
+                android:id="@+id/member_tv"
+                android:layout_marginStart="22dp"
+                android:layout_marginEnd="22dp"
+                android:layout_marginBottom="24dp"
+                android:gravity="center"
+                android:padding="14dp"
+                android:textColor="@color/wallet_pink"
+                android:text="@string/no_longer_member"
+                android:background="@drawable/bg_round_gray_14dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
             <LinearLayout
                 android:id="@+id/ops_ll"
                 android:layout_width="match_parent"
@@ -85,6 +98,7 @@
                     android:layout_weight="1">
 
                     <ImageView
+                        android:id="@+id/member_iv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
