@@ -754,7 +754,7 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(WALLET)) {
             binding.bottomNav.selectedItemId = R.id.nav_wallet
             if (intent.getBooleanExtra(BUY, false)) {
-                WalletActivity.showBuy(this, null, null)
+                WalletActivity.showBuy(this, false, null, null)
                 clearCodeAfterConsume(intent, BUY)
             }
             clearCodeAfterConsume(intent, WALLET)

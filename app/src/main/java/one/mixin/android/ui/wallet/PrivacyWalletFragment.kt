@@ -112,6 +112,10 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
+                    sendReceiveView.enableBuy()
+                    sendReceiveView.buy.setOnClickListener {
+                        WalletActivity.showBuy(requireActivity(), false, null, null)
+                    }
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {

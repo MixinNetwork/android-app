@@ -23,6 +23,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -37,6 +38,7 @@ import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
@@ -51,6 +53,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
@@ -58,6 +61,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Plan
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
 import timber.log.Timber
@@ -210,6 +214,24 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     ) {
         val list =
             menuList {
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Mixin_One)
+                        action = {
+                            lifecycleScope.launch {
+                                if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                                    navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
+                                } else {
+                                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                                        parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                                    )
+                                }
+                            }
+                            dismiss()
+                        }
+                        isMembership = Session.getAccount()?.membership?.isMembership() ?: false
+                    }
+                }
                 menuGroup {
                     menu {
                         title = getString(R.string.My_favorite_bots)

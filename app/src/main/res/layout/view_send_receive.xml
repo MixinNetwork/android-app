@@ -7,6 +7,31 @@
     android:orientation="horizontal">
 
     <LinearLayout
+        android:id="@+id/buy"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foreground="@drawable/mixin_ripple_24"
+            android:src="@drawable/ic_wallet_buy" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/Buy"
+            android:textColor="?attr/text_primary"
+            android:textFontWeight="600"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/receive"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

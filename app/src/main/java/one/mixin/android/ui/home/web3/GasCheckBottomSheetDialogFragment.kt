@@ -193,6 +193,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
 
     private fun showBrowserWalletBottomSheet() {
+        if (!isAdded) return
         if (swapResult != null) {
             SwapTransferBottomSheetDialogFragment.newInstance(swapResult!!, fromToken, toToken)
                 .apply {
@@ -203,7 +204,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         setOnDestroy(it)
                     }
                 }
-                .showNow(parentFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
+                .show(requireActivity().supportFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
         } else {
             val fragment = BrowserWalletBottomSheetDialogFragment.newInstance(
                 signMessage,
@@ -226,7 +227,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             onTxhash?.let { it ->
                 fragment.setOnTxhash(it)
             }
-            fragment.showNow(parentFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
+            fragment.show(requireActivity().supportFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
         }
         dismissAllowingStateLoss()
     }
@@ -238,14 +239,12 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3TokenItem?,
     ) {
         if (chain == Chain.Solana) {
-            dismiss()
             showBrowserWalletBottomSheet()
             return
         }
         val chainId = chain.getWeb3ChainId()
         if (transaction == null) {
             Timber.e("Transaction is null")
-            dismiss()
             showBrowserWalletBottomSheet()
             return
         }
@@ -268,7 +267,6 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             if (tipGas == null) {
                 Timber.e("Failed to estimate gas for chain: ${chain.chainId}")
-                dismiss()
                 showBrowserWalletBottomSheet()
                 return
             }
@@ -278,7 +276,6 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val c = chainToken ?: viewModel.web3TokenItemById(chainId)
                 if (c == null) {
                     Timber.e("Insufficient gas for chain: ${chain.chainId}")
-                    dismiss()
                     showBrowserWalletBottomSheet()
                     return
                 } else {
@@ -297,7 +294,6 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             } else {
-                dismiss()
                 showBrowserWalletBottomSheet()
             }
         } catch (e: Exception) {

@@ -411,6 +411,10 @@
         android:id="@+id/wallet_calculate"
         android:name="one.mixin.android.ui.wallet.fiatmoney.CalculateFragment">
 
+        <argument
+            android:name="args_is_web3"
+            app:argType="boolean" />
+
         <action
             android:id="@+id/action_wallet_calculate_to_payment"
             app:destination="@id/wallet_select_payment"
