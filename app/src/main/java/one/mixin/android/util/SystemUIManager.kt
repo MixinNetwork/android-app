@@ -1,12 +1,17 @@
 package one.mixin.android.util
 
 import android.annotation.SuppressLint
+import android.graphics.Color
+import android.os.Build
 import android.view.Window
+import android.view.WindowInsets
 import androidx.annotation.ColorInt
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import one.mixin.android.extension.supportsPie
+import one.mixin.android.extension.supportsVanillaIceCream
 
 @SuppressLint("InlinedApi")
 object SystemUIManager {
@@ -16,11 +21,7 @@ object SystemUIManager {
     ) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        window.statusBarColor = color
-        window.navigationBarColor = color
-        supportsPie {
-            window.navigationBarDividerColor = color
-        }
+        setSystemUiColor(window, color)
     }
 
     fun clearStyle(window: Window) {
@@ -66,8 +67,22 @@ object SystemUIManager {
         window: Window,
         color: Int,
     ) {
-        window.navigationBarColor = color
-        window.statusBarColor = color
+        supportsVanillaIceCream({
+            window.decorView.setOnApplyWindowInsetsListener { view, insets ->
+                val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
+                val navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars())
+                view.setPadding(
+                    0,
+                    statusBarInsets.top,
+                    0,
+                    navBarInsets.bottom
+                )
+                insets
+            }
+        }, {
+            window.statusBarColor = color
+            window.navigationBarColor = color
+        })
     }
 
     fun hasCutOut(window: Window): Boolean {

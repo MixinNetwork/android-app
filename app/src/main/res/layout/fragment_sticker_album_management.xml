@@ -6,7 +6,8 @@
     android:orientation="vertical"
     android:background="?attr/bg_white"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:fitsSystemWindows="true">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title"

@@ -2,7 +2,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_translucence">
+    android:background="?attr/bg_translucence"
+    android:fitsSystemWindows="true">
 
     <one.mixin.android.widget.linktext.GestureAutoLinkTextView
         android:id="@+id/text"
