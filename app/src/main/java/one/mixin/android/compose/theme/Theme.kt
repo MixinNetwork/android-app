@@ -1,6 +1,9 @@
 package one.mixin.android.compose.theme
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.ExperimentalMaterialApi
@@ -13,9 +16,11 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
@@ -178,9 +183,12 @@ fun MixinAppTheme(
         CompositionLocalProvider(
             LocalColors provides colors,
             LocalTextSelectionColors provides textSelectionColors,
-            LocalRippleConfiguration provides rippleConfiguration,
-            content = content,
-        )
+            LocalRippleConfiguration provides rippleConfiguration
+        ) {
+            Box(modifier = Modifier.background(colors.background).systemBarsPadding()) {
+                content()
+            }
+        }
     }
 }
 
