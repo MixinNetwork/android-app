@@ -113,7 +113,7 @@ fun MnemonicPhraseInput(
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
     var maxInput by remember {
-        mutableStateOf(
+        mutableIntStateOf(
             if (state == MnemonicState.Import) {
                 if (legacy) 25 else 12
             } else {
@@ -270,41 +270,16 @@ fun MnemonicPhraseInput(
                                         },
                                         onDone = {
                                             val words = inputs.map { it.trim() }
-                                            Timber.e("11111110")
                                             when (state) {
                                                 MnemonicState.Input -> onComplete.invoke(words)
                                                 MnemonicState.Import -> {
-                                                    coroutineScope.launch {
-                                                        runCatching {
-                                                            loading = true
-                                                            val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
-                                                                    (legacy && words.size == 24 && isMnemonicValid(words))
-                                                            if (!valid) {
-                                                                errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
-                                                            } else {
-                                                                val multiWallets = (0 until 10).map { index ->
-                                                                    CryptoWalletHelper.mnemonicToEthereumWallet(
-                                                                        words.joinToString(" "), index = index
-                                                                    )
-                                                                }
-                                                                val addresses = multiWallets.map { it.address }
-                                                                val response = walletViewModel.searchAssetsByAddresses(addresses)
-                                                                if (response.isSuccess) {
-                                                                    response.data?.let { addressAssetsList ->
-                                                                        println("Found assets for ${addressAssetsList.size} addresses")
-                                                                        addressAssetsList.forEach { addressAssets ->
-                                                                            println("Address: ${addressAssets.address}, Assets: ${addressAssets.assets.size}")
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }.onSuccess {
-                                                            loading = false
-                                                            if (errorInfo.isBlank()) onComplete.invoke(words)
-                                                        }.onFailure {
-                                                            errorInfo = it.message ?: "Failed to process mnemonic"
-                                                            loading = false
-                                                        }
+                                                    val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
+                                                        (legacy && words.size == 24 && isMnemonicValid(words))
+                                                    if (!valid) {
+                                                        errorInfo =
+                                                            context.getString(R.string.invalid_mnemonic_phrase)
+                                                    } else {
+                                                        onComplete.invoke(words)
                                                     }
                                                 }
                                                 MnemonicState.Verify -> {
@@ -514,43 +489,16 @@ fun MnemonicPhraseInput(
                         when (state) {
                             MnemonicState.Input -> onComplete.invoke(words)
                             MnemonicState.Import -> {
-                                coroutineScope.launch {
-                                    runCatching {
-                                        loading = true
-                                        val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
-                                            (legacy && words.size == 24 && isMnemonicValid(words))
-                                        if (!valid) {
-                                            Timber.e("1111111")
-                                            errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
-                                        } else {
-                                            val multiWallets = (0 until 10).map { index ->
-                                                CryptoWalletHelper.mnemonicToEthereumWallet(
-                                                    words.joinToString(" "), index = index
-                                                )
-                                            }
-                                            val addresses = multiWallets.map { it.address }
-                                            val response = walletViewModel.searchAssetsByAddresses(addresses)
-                                            if (response.isSuccess) {
-                                                response.data?.let { addressAssetsList ->
-                                                    println("Found assets for ${addressAssetsList.size} addresses")
-                                                    addressAssetsList.forEach { addressAssets ->
-                                                        println("Address: ${addressAssets.address}, Assets: ${addressAssets.assets.size}")
-                                                    }
-                                                    Timber.e("2222$addressAssetsList")
-                                                }
-                                            }
-                                            Timber.e("1111111 end")
-                                        }
-                                    }.onSuccess {
-                                        loading = false
-                                        if (errorInfo.isBlank()) onComplete.invoke(words)
-                                    }.onFailure {
-                                        errorInfo = it.message ?: "Failed to process mnemonic"
-                                        loading = false
-                                    }
+                                val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
+                                    (legacy && words.size == 24 && isMnemonicValid(words))
+                                if (!valid) {
+                                    errorInfo =
+                                        context.getString(R.string.invalid_mnemonic_phrase)
+                                } else {
+                                    onComplete.invoke(words)
                                 }
                             }
-                            MnemonicState.Verify, MnemonicState.Import -> {
+                            MnemonicState.Verify -> {
                                 coroutineScope.launch {
                                     runCatching {
                                         loading = true

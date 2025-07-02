@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.View
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.wallet.components.AddWalletPage
 import one.mixin.android.util.viewBinding
 
@@ -23,8 +23,17 @@ class AddWalletFragment : BaseFragment(R.layout.fragment_compose) {
             requireActivity().finish()
         }
         binding.compose.setContent {
-            AddWalletPage()
+            AddWalletPage { mnemonicList->
+                navigateToFetchWallet(mnemonicList)
+            }
         }
     }
-}
 
+    private fun navigateToFetchWallet(mnemonicList: List<String>) {
+        val mnemonic = mnemonicList.joinToString(separator = " ")
+        navTo(FetchingWalletFragment.newInstance(mnemonic), FetchingWalletFragment.TAG)
+        requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
+    }
+
+
+}

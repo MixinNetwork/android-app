@@ -23,5 +23,10 @@ class AddWalletActivity : BlazeBaseActivity() {
             activity.startActivity(android.content.Intent(activity, AddWalletActivity::class.java))
         }
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
+    }
 }
 
