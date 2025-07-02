@@ -5,6 +5,9 @@ import com.github.salomonbrys.kotson.jsonDeserializer
 import kotlinx.parcelize.Parcelize
 import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.utils.Numeric
+import java.math.BigDecimal
+import java.math.BigInteger
+import org.web3j.utils.Convert
 
 @Parcelize
 data class WCEthereumTransaction(
@@ -18,7 +21,18 @@ data class WCEthereumTransaction(
     val gasLimit: String?,
     val value: String?,
     val data: String?,
-) : Parcelable
+) : Parcelable {
+    fun getMainTokenAmount(): BigDecimal {
+        return value?.let {
+            try {
+                val wei = BigInteger(it.removePrefix("0x"), 16)
+                Convert.fromWei(wei.toString(), Convert.Unit.ETHER)
+            } catch (e: Exception) {
+                BigDecimal.ZERO
+            }
+        } ?: BigDecimal.ZERO
+    }
+}
 
 val ethTransactionSerializer =
     jsonDeserializer<List<WCEthereumTransaction>> {

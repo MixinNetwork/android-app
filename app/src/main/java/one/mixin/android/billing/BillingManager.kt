@@ -80,7 +80,7 @@ class BillingManager private constructor(
         _subscriptionStatus.value = SubscriptionProcessStatus.Loading
         billingClient = BillingClient.newBuilder(context)
             .setListener(purchasesUpdatedListener)
-            .enablePendingPurchases() // Recommended
+            .enablePendingPurchases(PendingPurchasesParams.newBuilder().enablePrepaidPlans().enableOneTimeProducts().build())
             .build()
 
         connectToBillingService()
@@ -445,4 +445,3 @@ class BillingManager private constructor(
         }
     }
 }
-

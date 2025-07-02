@@ -2,13 +2,13 @@ package one.mixin.android.repository
 
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.service.RouteService
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
-import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import javax.inject.Inject
 import javax.inject.Singleton

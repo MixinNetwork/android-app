@@ -64,10 +64,12 @@ fun MixinMemberUpgradePage(
 
     var selectedPlan by remember {
         mutableStateOf(
-            selectedPlanOverride ?: when (currentUserPlan) {
+            selectedPlanOverride?.let { p ->
+                if (p != Plan.None) p else Plan.ADVANCE
+            } ?: when (currentUserPlan) {
                 Plan.None -> Plan.ADVANCE
-                Plan.ADVANCE -> Plan.ELITE
-                Plan.ELITE -> Plan.PROSPERITY
+                Plan.ADVANCE -> Plan.ADVANCE
+                Plan.ELITE -> Plan.ELITE
                 Plan.PROSPERITY -> Plan.PROSPERITY
             }
         )

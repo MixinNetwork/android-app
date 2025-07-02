@@ -9,15 +9,21 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
+import com.sumsub.sns.internal.features.data.model.common.remote.B
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutMenuBinding
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.textColor
+import one.mixin.android.session.Session
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Plan
+import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.FlowLayout
+import one.mixin.android.widget.lottie.RLottieDrawable
 
 @DslMarker
 annotation class MenuDsl
@@ -63,8 +69,9 @@ class MenuBuilder {
     var icon: Int? = null
     var apps: List<App>? = null
     var circleNames: List<String>? = null
+    var isMembership: Boolean? = null
 
-    fun build() = Menu(title, subtitle, style, action, icon, apps, circleNames)
+    fun build() = Menu(title, subtitle, style, action, icon, apps, circleNames, isMembership)
 }
 
 data class MenuList(
@@ -83,6 +90,7 @@ data class Menu(
     val icon: Int? = null,
     val apps: List<App>? = null,
     val circleNames: List<String>? = null,
+    val isMembership: Boolean? = null
 )
 
 enum class MenuStyle {
@@ -146,6 +154,37 @@ fun MenuList.createMenuLayout(
                 addCirclesLayout(context, circleNames, menuBinding.flowLayout)
             } else {
                 menuBinding.flowLayout.isVisible = false
+            }
+            if (menu.isMembership == true) {
+                val icon = Session.getAccount()?.membership?.membershipIcon(true)
+                if (icon != null) {
+                    menuBinding.mixinMemberPlanIv.isVisible = true
+                    menuBinding.mixinMemberPlanTv.isVisible = false
+                    if (Session.getAccount()?.membership?.isProsperity() == true) {
+                        menuBinding.mixinMemberPlanIv.setImageDrawable(
+                            RLottieDrawable(
+                                R.raw.prosperity,
+                                "prosperity",
+                                18.dp,
+                                18.dp
+                            ).apply {
+                                setAllowDecodeSingleFrame(true)
+                                setAutoRepeat(1)
+                                setAutoRepeatCount(Int.MAX_VALUE)
+                                start()
+                            }
+                        )
+                    } else {
+                        menuBinding.mixinMemberPlanIv.setImageResource(icon)
+                    }
+                } else {
+                    menuBinding.mixinMemberPlanIv.isVisible = false
+                    menuBinding.mixinMemberPlanTv.isVisible = true
+                    menuBinding.mixinMemberPlanIv.clearAnimation()
+                }
+            } else {
+                menuBinding.mixinMemberPlanIv.isVisible = false
+                menuBinding.mixinMemberPlanTv.isVisible = menu.isMembership != null
             }
             val top = index == 0
             val bottom = index == group.menus.size - 1

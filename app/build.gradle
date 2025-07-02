@@ -228,8 +228,8 @@ dependencies {
     implementation("org.bitcoinj:bitcoinj-core:${bitcoinVersion}") {
         exclude group: 'net.jcip', module: 'jcip-annotations'
     }
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
-    implementation platform("com.google.firebase:firebase-bom:33.15.0")
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:${desugarJdkLibsVersion}"
+    implementation platform("com.google.firebase:firebase-bom:${firebaseBomVersion}")
     implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
@@ -250,8 +250,8 @@ dependencies {
     implementation "androidx.biometric:biometric:${biometricVersion}"
     implementation "androidx.security:security-crypto:1.0.0"
 
-    implementation 'org.sol4k:tweetnacl:0.1.6'
-    implementation 'org.sol4k:utilities:0.1.0'
+    implementation "org.sol4k:tweetnacl:${tweetnaclVersion}"
+    implementation "org.sol4k:utilities:${sol4kUtilitiesVersion}"
 
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
@@ -346,11 +346,11 @@ dependencies {
         }
     }
 
-    implementation "com.android.billingclient:billing-ktx:7.1.1"
+    implementation "com.android.billingclient:billing-ktx:${billingKtxVersion}"
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:app-update-ktx:${playVersion}"
-    implementation "com.google.android.gms:play-services-maps:19.2.0"
-    implementation "com.google.android.gms:play-services-location:21.3.0"
+    implementation "com.google.android.gms:play-services-maps:${playServicesMapsVersion}"
+    implementation "com.google.android.gms:play-services-location:${playServicesLocationVersion}"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
@@ -358,7 +358,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
-    implementation "com.github.zjupure:webpdecoder:2.7.4.16.0"
+    implementation "com.github.zjupure:webpdecoder:${webpdecoderVersion}"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
     ksp "com.github.bumptech.glide:ksp:$glideVersion"
@@ -411,9 +411,9 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
     implementation "androidx.compose.foundation:foundation:${composeVersion}"
-    implementation platform('androidx.compose:compose-bom:2025.06.01')
+    implementation platform("androidx.compose:compose-bom:${composeBomVersion}")
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
-    implementation 'androidx.activity:activity-compose:1.10.1'
+    implementation "androidx.activity:activity-compose:${activityComposeVersion}"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     
     // accompanist
@@ -422,17 +422,17 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager-indicators:${accompanistVersion}"
 
     // wallet connect && web3j
-    implementation "org.web3j:core:4.11.0" // ⚠️ dependabot unexpected behavior update to version 5.0.0
-    implementation "org.web3j:crypto:4.11.0"
-    implementation platform("com.reown:android-bom:1.4.1")
+    implementation "org.web3j:core:${web3jCoreVersion}" // ⚠️ dependabot unexpected behavior update to version 5.0.0
+    implementation "org.web3j:crypto:${web3jCryptoVersion}"
+    implementation platform("com.reown:android-bom:${reownBomVersion}")
     implementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
     implementation "org.sol4k:sol4k:${sol4kVersion}"
 
-    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
+    implementation "com.github.salomonbrys.kotson:kotson:${kotsonVersion}"
 
-    implementation "com.airbnb.android:lottie-compose:6.6.7"
+    implementation "com.airbnb.android:lottie-compose:${lottieComposeVersion}"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
@@ -467,7 +467,7 @@ dependencies {
     kspAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
     // ML Kit
-    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta5'
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta6'
 
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {

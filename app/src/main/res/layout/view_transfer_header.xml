@@ -89,8 +89,8 @@
             android:layout_gravity="center_horizontal"
             android:textColor="?attr/text_minor"
             android:gravity="center_horizontal"
-            android:maxLines="2"
-            android:lines="2"
+            android:maxLines="3"
+            android:lines="3"
             android:ellipsize="end"
             android:textSize="14sp" />
 

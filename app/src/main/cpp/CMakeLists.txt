@@ -17,6 +17,10 @@ set_target_properties(lib_opusenc PROPERTIES IMPORTED_LOCATION
 
 add_library(mixin SHARED
             audio.c)
+target_link_options(mixin PRIVATE
+        -Wl,-z,max-page-size=16384
+        -Wl,-z,common-page-size=16384
+)
 
 target_include_directories(mixin PRIVATE
         ${distribution_OPUS_DIR}/include)
@@ -41,6 +45,10 @@ add_library(rlottie
         SHARED
         ${CMAKE_SOURCE_DIR}/lottie.cpp
         )
+target_link_options(rlottie PRIVATE
+        -Wl,-z,max-page-size=16384
+        -Wl,-z,common-page-size=16384
+)
 
 target_include_directories(rlottie PRIVATE
         ${CMAKE_SOURCE_DIR}/rlottie/inc
