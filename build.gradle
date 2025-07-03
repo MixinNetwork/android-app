@@ -10,7 +10,7 @@ buildscript {
         ext.coilVersion = '3.2.0'
         ext.collectionx = '1.5.0'
         ext.roomVersion = '2.7.2'
-        ext.navigationVersion = '2.9.0'
+        ext.navigationVersion = '2.9.1'
         ext.workManagerVersion = '2.10.2'
         ext.constraintLayoutVersion = '2.2.1'
         ext.constraintLayoutComposeVersion = '1.1.1'
@@ -134,7 +134,7 @@ buildscript {
         ext.playServicesMapsVersion = '19.2.0'
         ext.playServicesLocationVersion = '21.3.0'
         firebaseBomVersion = "33.16.0"
-        billingKtxVersion = "7.1.1"
+        billingKtxVersion = "8.0.0"
         webpdecoderVersion = "2.7.4.16.0"
 
         ext.tweetnaclVersion = '0.1.6'
