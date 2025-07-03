@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:clickable="true"
     android:orientation="vertical"
     android:focusable="true"

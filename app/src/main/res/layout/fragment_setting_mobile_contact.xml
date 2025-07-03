@@ -4,9 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_below="@id/ph"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:orientation="vertical"
     android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/bg_window"
+        android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -80,4 +86,5 @@
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>
+</LinearLayout>
 </LinearLayout>
