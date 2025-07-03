@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="one.mixin.android.ui.device.DeviceFragment"
-    android:fitsSystemWindows="true">
+    tools:context="one.mixin.android.ui.device.DeviceFragment">
 
     <View
         android:id="@+id/ph"
