@@ -54,6 +54,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
@@ -140,7 +141,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
-                        navTo(SwapFragment.newInstance<TokenItem>(), SwapFragment.TAG)
+                        SwapActivity.show(requireActivity(), inMixin = true)
                         if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 0) {
                             sendReceiveView.badge.isVisible = false
                             RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))

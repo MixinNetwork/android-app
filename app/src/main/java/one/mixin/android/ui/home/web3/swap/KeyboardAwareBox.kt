@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.swap
 
+import android.graphics.Rect
 import android.view.ViewTreeObserver
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -18,13 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import one.mixin.android.extension.supportsVanillaIceCream
 import timber.log.Timber
 
 @Composable
 fun KeyboardAwareBox(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
-    floating: @Composable BoxScope.() -> Unit
+    floating: @Composable BoxScope.() -> Unit,
 ) {
     var isKeyboardVisible by remember { mutableStateOf(false) }
     val view = LocalView.current
@@ -33,7 +35,6 @@ fun KeyboardAwareBox(
         val listener = ViewTreeObserver.OnGlobalLayoutListener {
             val insets = ViewCompat.getRootWindowInsets(view)
             isKeyboardVisible = insets?.isVisible(WindowInsetsCompat.Type.ime()) == true
-
             Timber.e("isKeyboardVisible: $isKeyboardVisible")
         }
 
@@ -53,7 +54,13 @@ fun KeyboardAwareBox(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .align(Alignment.BottomCenter)
-                    .imePadding(),
+                    .apply {
+                        supportsVanillaIceCream({
+                            // Skip imePadding if skip is true
+                        }, {
+                            this@apply.imePadding()
+                        })
+                    },
             ) {
                 floating()
             }

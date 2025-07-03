@@ -103,7 +103,7 @@ fun MnemonicPhraseInput(
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         KeyboardAwareBox(
             modifier = Modifier
                 .fillMaxSize(), content = {
