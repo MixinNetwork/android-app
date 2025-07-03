@@ -32,7 +32,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
         binding.compose.setContent {
-            FetchingContent(onCancel = { requireActivity().finish() })
+            FetchingContent()
         }
         viewModel.setMnemonic(mnemonic.orEmpty())
         viewLifecycleOwner.lifecycleScope.launch {

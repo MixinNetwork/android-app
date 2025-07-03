@@ -4,6 +4,8 @@ import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
 import org.bitcoinj.crypto.MnemonicCode
+import org.kethereum.bip39.model.MnemonicWords
+import org.kethereum.bip39.toSeed
 import org.sol4k.Keypair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
@@ -13,14 +15,6 @@ object CryptoWalletHelper {
 
     private const val ETH_DERIVATION_PATH = "m/44'/60'/0'/0/0"
     private const val SOL_DERIVATION_PATH = "m/44'/501'/0'/0'"
-
-    private fun mnemonicToSeed(mnemonic: String, passphrase: String = ""): ByteArray {
-        val mnemonicWords = mnemonic.split(" ")
-
-        MnemonicCode.INSTANCE.check(mnemonicWords)
-
-        return MnemonicCode.toSeed(mnemonicWords, passphrase)
-    }
 
     private fun deriveEthereumPrivateKeyAtIndex(masterKey: DeterministicKey, index: Int): ByteArray {
         val derivationPath = listOf(
@@ -63,7 +57,10 @@ object CryptoWalletHelper {
     // Complete process: mnemonic -> private key -> address
     fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): EthereumWallet {
         try {
-            val seed = mnemonicToSeed(mnemonic, passphrase)
+            val mnemonicWords = mnemonic.split(" ")
+            MnemonicCode.INSTANCE.check(mnemonicWords)
+            val seed = MnemonicCode.toSeed(mnemonicWords, passphrase)
+
             val masterKey = HDKeyDerivation.createMasterPrivateKey(seed)
             val privateKey = deriveEthereumPrivateKeyAtIndex(masterKey, index)
             val address = privateKeyToAddress(privateKey)
@@ -83,7 +80,7 @@ object CryptoWalletHelper {
     // Complete process: mnemonic -> private key -> address for Solana
     fun mnemonicToSolanaWallet(mnemonic: String, passphrase: String = "", index: Int = 0): SolanaWallet {
         try {
-            val seed = mnemonicToSeed(mnemonic, passphrase)
+            val seed = MnemonicWords(mnemonic).toSeed(passphrase).seed
             val masterKey = HDKeyDerivation.createMasterPrivateKey(seed)
             val privateKey = deriveSolPrivateKeyAtIndex(masterKey, index)
             val address = Keypair.fromSecretKey(privateKey).publicKey.toBase58()

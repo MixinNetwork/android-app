@@ -5,7 +5,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.ripple.rememberRipple
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -20,9 +19,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
+import java.text.NumberFormat
+import one.mixin.android.ui.wallet.components.classicChain
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 
 enum class FetchWalletState {
     FETCHING,
@@ -30,10 +34,17 @@ enum class FetchWalletState {
     IMPORTING
 }
 
+data class AssetInfo(
+    val symbol: String,
+    val iconUrl: String,
+    val value: Double
+)
+
 data class WalletInfo(
     val index: Int,
     val address: String,
     val balance: String = "0",
+    val assets: List<AssetInfo> = emptyList()
 )
 
 @Composable
@@ -44,8 +55,7 @@ fun FetchWalletPage(
 ) {
     val state by viewModel.state.collectAsState()
     val wallets by viewModel.wallets.collectAsState()
-    val selectedWallets by viewModel.selectedWallets.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    var selectedWalletInfos by remember { mutableStateOf(emptySet<WalletInfo>()) }
 
     LaunchedEffect(mnemonic) {
         if (!mnemonic.isNullOrEmpty()) {
@@ -61,27 +71,30 @@ fun FetchWalletPage(
         ) {
             when (state) {
                 FetchWalletState.FETCHING -> {
-                    FetchingContent(
-                        onCancel = onBackPressed
-                    )
+                    FetchingContent()
                 }
 
                 FetchWalletState.SELECT -> {
                     SelectContent(
                         wallets = wallets,
-                        selectedWallets = selectedWallets,
-                        onWalletToggle = viewModel::toggleWalletSelection,
-                        onContinue = viewModel::startImporting,
-                        onBackPressed = onBackPressed
+                        selectedWalletInfos = selectedWalletInfos,
+                        onWalletToggle = { wallet ->
+                            selectedWalletInfos = if (selectedWalletInfos.contains(wallet)) {
+                                selectedWalletInfos - wallet
+                            } else {
+                                selectedWalletInfos + wallet
+                            }
+                        },
+                        onContinue = { viewModel.startImporting(selectedWalletInfos) },
+                        onBackPressed = onBackPressed,
+                        onSelectAll = {
+                            selectedWalletInfos = wallets.toSet()
+                        }
                     )
                 }
 
                 FetchWalletState.IMPORTING -> {
-                    ImportingContent(
-                        selectedWallets = selectedWallets,
-                        isLoading = isLoading,
-                        onComplete = onBackPressed
-                    )
+                    ImportingContent()
                 }
             }
         }
@@ -89,52 +102,48 @@ fun FetchWalletPage(
 }
 
 @Composable
-fun FetchingContent(
-    onCancel: () -> Unit
-) {
+private fun LoadingState(title: String, subtitle: String) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Spacer(modifier = Modifier.height(120.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.ic_wallet_fetching),
-            contentDescription = null,
-            tint = Color.Unspecified,
+        CircularProgressIndicator(
+            modifier = Modifier.size(48.dp),
+            color = MixinAppTheme.colors.accent
         )
+        Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = stringResource(R.string.fetching_into_wallet),
+            text = title,
             fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Medium,
             color = MixinAppTheme.colors.textPrimary
         )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = stringResource(R.string.fetching_shouldnt_take_long),
+            text = subtitle,
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
-
-
-        Spacer(modifier = Modifier.weight(1f))
-        CircularProgressIndicator(
-            modifier = Modifier.size(30.dp),
-            color = MixinAppTheme.colors.backgroundGray
-        )
-        Spacer(modifier = Modifier.height(70.dp))
     }
+}
+
+@Composable
+fun FetchingContent() {
+    LoadingState(
+        title = stringResource(R.string.fetching_into_wallet),
+        subtitle = stringResource(R.string.fetching_shouldnt_take_long)
+    )
 }
 
 @Composable
 fun SelectContent(
     wallets: List<WalletInfo>,
-    selectedWallets: Set<Int>,
-    onWalletToggle: (Int) -> Unit,
-    onContinue: () -> Unit,
-    onBackPressed: () -> Unit
+    selectedWalletInfos: Set<WalletInfo>,
+    onWalletToggle: (WalletInfo) -> Unit,
+    onContinue: (Set<WalletInfo>) -> Unit,
+    onBackPressed: () -> Unit,
+    onSelectAll: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -144,9 +153,9 @@ fun SelectContent(
         Row {
             Text(
                 text = pluralStringResource(
-                    R.plurals.wallets_selected,
-                    selectedWallets.size,
-                    selectedWallets.size
+                    R.plurals.items_selected,
+                    selectedWalletInfos.size,
+                    selectedWalletInfos.size
                 ),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist
@@ -157,10 +166,10 @@ fun SelectContent(
             Text(
                 text = stringResource(R.string.Select_all),
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.accent
+                color = MixinAppTheme.colors.accent,
+                modifier = Modifier.clickable { onSelectAll() }
             )
         }
-
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -168,11 +177,11 @@ fun SelectContent(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(wallets) { wallet ->
+            items(items = wallets, key = { it.index }) { wallet ->
                 WalletItem(
                     wallet = wallet,
-                    isSelected = selectedWallets.contains(wallet.index),
-                    onToggle = { onWalletToggle(wallet.index) }
+                    isSelected = selectedWalletInfos.contains(wallet),
+                    onToggle = { onWalletToggle(wallet) }
                 )
             }
         }
@@ -185,30 +194,28 @@ fun SelectContent(
                 .padding(horizontal = 15.dp)
         ) {
             Button(
-                onClick = {
-
-                },
+                onClick = { onContinue(selectedWalletInfos) },
                 colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (selectedWallets.isNotEmpty()) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                    ),
+                ButtonDefaults.outlinedButtonColors(
+                    backgroundColor = if (selectedWalletInfos.isNotEmpty()) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                ),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(20.dp),
                 contentPadding = PaddingValues(vertical = 12.dp),
-                enabled = selectedWallets.isNotEmpty(),
+                enabled = selectedWalletInfos.isNotEmpty(),
                 elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
+                ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
             ) {
                 Text(
                     text = pluralStringResource(
-                        R.plurals.import_wallets,
-                        selectedWallets.size,
-                        selectedWallets.size
+                        R.plurals.items_selected,
+                        selectedWalletInfos.size,
+                        selectedWalletInfos.size
                     ),
                     color = Color.White
                 )
@@ -220,68 +227,11 @@ fun SelectContent(
 
 @Composable
 fun ImportingContent(
-    selectedWallets: Set<Int>,
-    isLoading: Boolean,
-    onComplete: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
-                color = MixinAppTheme.colors.accent
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Importing wallets...",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Importing ${selectedWallets.size} wallet addresses",
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
-        } else {
-            Text(
-                text = "Import Complete!",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MixinAppTheme.colors.accent
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Successfully imported ${selectedWallets.size} wallet addresses",
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = onComplete,
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MixinAppTheme.colors.accent
-                )
-            ) {
-                Text(
-                    text = "Done",
-                    color = Color.White
-                )
-            }
-        }
-    }
+    LoadingState(
+        title = stringResource(R.string.importing_into_wallet),
+        subtitle = stringResource(R.string.fetching_shouldnt_take_long)
+    )
 }
 
 @Composable
@@ -290,7 +240,6 @@ fun WalletItem(
     isSelected: Boolean,
     onToggle: () -> Unit
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -300,8 +249,8 @@ fun WalletItem(
             )
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(color = MixinAppTheme.colors.accent)
-            ) { onToggle() }
+                indication = null,
+                onClick = onToggle)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -322,25 +271,64 @@ fun WalletItem(
 
         }
 
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(verticalAlignment = Alignment.Bottom) {
             Text(
-                text = wallet.address,
+                text = wallet.balance,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.W400,
+                fontFamily = FontFamily(Font(R.font.mixin_font))
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("USD", color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (wallet.assets.isEmpty()) {
+                Row {
+                    classicChain.forEachIndexed { index, iconRes ->
+                        Icon(
+                            painter = painterResource(id = iconRes),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .offset(x = (-8 * index).dp)
+                        )
+                    }
+                }
+            } else {
+                val totalValue = wallet.assets.sumOf { it.value }
+                wallet.assets.take(2).forEach { asset ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CoilImage(
+                            model = asset.iconUrl,
+                            placeholder = R.drawable.ic_avatar_place_holder,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        if (totalValue > 0) {
+                            val percentage = (asset.value / totalValue) * 100
+                            Text(
+                                text = "${NumberFormat.getPercentInstance().format(percentage / 100)}",
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textMinor
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = wallet.balance,
                 fontSize = 12.sp,
                 color = MixinAppTheme.colors.textMinor,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
             )
-
-            if (wallet.hasTransactions) {
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "Balance: ${wallet.balance} SOL",
-                    fontSize = 12.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-            }
         }
     }
 }

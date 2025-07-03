@@ -26,11 +26,12 @@ class FetchWalletViewModel @Inject constructor(
     private val _wallets = MutableStateFlow<List<WalletInfo>>(emptyList())
     val wallets: StateFlow<List<WalletInfo>> = _wallets.asStateFlow()
 
-    private val _selectedWallets = MutableStateFlow<Set<Int>>(emptySet())
-    val selectedWallets: StateFlow<Set<Int>> = _selectedWallets.asStateFlow()
+    // Track selected WalletInfo objects
+    private val _selectedWalletInfos = MutableStateFlow<Set<WalletInfo>>(emptySet())
+    val selectedWalletInfos: StateFlow<Set<WalletInfo>> = _selectedWalletInfos.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _selectedAddresses = MutableStateFlow<Set<String>>(emptySet())
+    val selectedAddresses: StateFlow<Set<String>> = _selectedAddresses.asStateFlow()
 
     private var mnemonic: String = ""
 
@@ -45,7 +46,6 @@ class FetchWalletViewModel @Inject constructor(
 
     private fun startFetching() {
         viewModelScope.launch {
-            _isLoading.value = true
             _state.value = FetchWalletState.FETCHING
             try {
                 if (mnemonic.isNotBlank()) {
@@ -56,7 +56,7 @@ class FetchWalletViewModel @Inject constructor(
                     val addresses = multiWallets.map { it.address }
                     val a = mutableListOf<String>()
                     a.addAll(addresses)
-                    a.add("BLeUXTx9thHGT7VJUtF9vHEmfMDgW1nnKZ9UVer2CoLX")
+                    a.add("8hfoNZCd2bK9aqCBkhg8f2L1AoL7qfHwd9tMv7x64qui")
                     val response = web3Repository.searchAssetsByAddresses(a)
                     if (response.isSuccess && response.data != null) {
                         val assetsList = response.data!!
@@ -76,50 +76,36 @@ class FetchWalletViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Failed to fetch wallet info")
                 _state.value = FetchWalletState.SELECT
-            } finally {
-                _isLoading.value = false
             }
         }
     }
 
-    fun toggleWalletSelection(index: Int) {
-        val current = _selectedWallets.value.toMutableSet()
-        if (current.contains(index)) {
-            current.remove(index)
-        } else {
-            current.add(index)
-        }
-        _selectedWallets.value = current
-    }
-
-    /** Select all wallets available */
-    fun selectAll() {
-        _selectedWallets.value = _wallets.value.map { it.index }.toSet()
-    }
-
-    /** Clear all selected wallets */
-    fun clearAll() {
-        _selectedWallets.value = emptySet()
-    }
-
-    fun startImporting() {
+    // Start importing selected wallet infos
+    fun startImporting(selectedWalletInfos: Set<WalletInfo>) {
         viewModelScope.launch {
             _state.value = FetchWalletState.IMPORTING
-            _isLoading.value = true
-
             try {
                 delay(2000)
 
-                Timber.d("Successfully imported \\${_selectedWallets.value.size} wallets")
+                Timber.d("Successfully imported \\${selectedWalletInfos.size} wallets")
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallets")
-            } finally {
-                _isLoading.value = false
             }
         }
     }
 
     fun retry() {
         startFetching()
+    }
+
+    // Toggle selection of a WalletInfo object
+    fun toggleWalletSelection(wallet: WalletInfo) {
+        val current = _selectedWalletInfos.value
+        _selectedWalletInfos.value = if (current.contains(wallet)) current - wallet else current + wallet
+    }
+
+    // Select all WalletInfo objects
+    fun selectAll() {
+        _selectedWalletInfos.value = _wallets.value.toSet()
     }
 }

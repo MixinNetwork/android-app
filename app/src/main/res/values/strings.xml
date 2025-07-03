@@ -2021,6 +2021,7 @@
     <string name="Import_Mnemonic_Phrase">Import Mnemonic Phrase</string>
     <string name="Import_wallets_from_another_wallet">Import wallets from another wallet.</string>
     <string name="fetching_into_wallet">Fetching in to your wallet…</string>
+    <string name="importing_into_wallet">Importing in to your wallet…</string>
     <string name="fetching_shouldnt_take_long">This shouldn’t take long.</string>
     <plurals name="wallets_selected">
         <item quantity="one">%1$d wallet selected</item>

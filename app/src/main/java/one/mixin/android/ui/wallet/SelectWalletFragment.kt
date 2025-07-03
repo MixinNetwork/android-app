@@ -33,7 +33,8 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 selectedWallets = viewModel.selectedWallets.value,
                 onWalletToggle = viewModel::toggleWalletSelection,
                 onContinue = viewModel::startImporting,
-                onBackPressed = { requireActivity().finish() }
+                onBackPressed = { requireActivity().finish() },
+                onSelectAll = viewModel::selectAll
             )
         }
         viewLifecycleOwner.lifecycleScope.launch {

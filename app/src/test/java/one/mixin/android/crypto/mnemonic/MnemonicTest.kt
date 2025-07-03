@@ -36,11 +36,11 @@ class MnemonicTest {
             //
             // println("Address Valid: ${CryptoWalletHelper.isValidEthereumAddress(wallet.address)}")
             repeat(20) {
-                val e = CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = it)
-                val w = CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = it)
-                println(e.address)
+                val w = CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, "", it)
                 println(w.address)
             }
+            val a = CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, "", 0)
+            assertEquals(a.address, "4f1JkUKpJURKG7Xn6Nzqxe594QyZER664J3S7ceEXi1mn")
         } catch (e: Exception) {
             println("Error: ${e.message}")
             e.printStackTrace()

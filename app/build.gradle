@@ -179,6 +179,7 @@ android {
         staging {
             initWith debug
             applicationIdSuffix ".test"
+            matchingFallbacks = ['debug']
         }
     }
 
@@ -427,6 +428,7 @@ dependencies {
     implementation platform("com.reown:android-bom:${reownBomVersion}")
     implementation "com.reown:android-core"
     implementation "com.reown:walletkit"
+    implementation "com.github.komputing.kethereum:bip39:0.85.7"
 
     implementation "org.sol4k:sol4k:${sol4kVersion}"
 
