@@ -4,8 +4,11 @@ import android.graphics.Rect
 import android.view.ViewTreeObserver
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
@@ -16,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -49,18 +53,14 @@ fun KeyboardAwareBox(
         content()
 
         if (isKeyboardVisible) {
+            val density = LocalDensity.current
+            val imeBottom = with(density) { WindowInsets.ime.getBottom(density).toDp() }
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .align(Alignment.BottomCenter)
-                    .apply {
-                        supportsVanillaIceCream({
-                            // Skip imePadding if skip is true
-                        }, {
-                            this@apply.imePadding()
-                        })
-                    },
+                    .padding(bottom = imeBottom)
             ) {
                 floating()
             }
