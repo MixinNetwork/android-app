@@ -150,7 +150,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         if (!loading) {
             updateUI()
             runCatching {
-                loadingDialog.dismiss()
+                if (loadingDialog.isAdded) {
+                    loadingDialog.dismiss()
+                }
             }.onFailure {
                 Timber.e(it)
             }
