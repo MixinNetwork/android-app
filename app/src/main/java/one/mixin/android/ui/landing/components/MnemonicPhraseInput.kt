@@ -121,7 +121,7 @@ fun MnemonicPhraseInput(
             }
         )
     }
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         KeyboardAwareBox(
             modifier = Modifier
                 .fillMaxSize(), content = {

@@ -6,7 +6,8 @@
     android:clickable="true"
     android:focusable="true"
     android:background="?attr/bg_white"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
     <ImageView
         android:id="@+id/close_iv"
