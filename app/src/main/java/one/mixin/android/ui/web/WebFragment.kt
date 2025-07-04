@@ -1649,7 +1649,7 @@ class WebFragment : BaseFragment() {
 
         requireActivity().window.statusBarColor = color
         requireActivity().window?.let {
-            SystemUIManager.setAppearanceLightStatusBars(it, !dark)
+            SystemUIManager.lightUI(it, !dark)
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
