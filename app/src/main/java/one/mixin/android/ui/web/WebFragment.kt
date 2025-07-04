@@ -465,6 +465,10 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
+        activity?.window?.let { window->
+            SystemUIManager.setSystemUiColor(requireActivity().window, requireContext().colorFromAttribute(R.color.bgWhite))
+            SystemUIManager.lightUI(window , requireContext().isNightMode().not())
+        }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
                 override fun onBackClick() {
