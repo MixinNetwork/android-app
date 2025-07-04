@@ -1,6 +1,7 @@
 package one.mixin.android.crypto
 
 import blockchain.Blockchain
+import org.bitcoinj.core.BlockChain
 import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
@@ -64,12 +65,13 @@ object CryptoWalletHelper {
 
             val masterKey = HDKeyDerivation.createMasterPrivateKey(seed)
             val privateKey = deriveEthereumPrivateKeyAtIndex(masterKey, index)
-            val address = privateKeyToAddress(privateKey)
-
+            val address = "0x${privateKeyToAddress(privateKey)}"
+            val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, "m/44'/60'/0'/0/$index")
+            assert(addressFromGo.lowercase() == address.lowercase()) { "Address mismatch: $addressFromGo != $address" }
             return EthereumWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
-                address = "0x$address",
+                address = address,
                 index = index
             )
 
