@@ -14,6 +14,8 @@ import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.SelectContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
@@ -28,9 +30,11 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
         binding.compose.setContent {
+            val wallets by viewModel.wallets.collectAsState()
+            val selectedWalletInfos by viewModel.selectedWalletInfos.collectAsState()
             SelectContent(
-                wallets = viewModel.wallets.value,
-                selectedWallets = viewModel.selectedWallets.value,
+                wallets = wallets,
+                selectedWalletInfos = selectedWalletInfos,
                 onWalletToggle = viewModel::toggleWalletSelection,
                 onContinue = viewModel::startImporting,
                 onBackPressed = { requireActivity().finish() },

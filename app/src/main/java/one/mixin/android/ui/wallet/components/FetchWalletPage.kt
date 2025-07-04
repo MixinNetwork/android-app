@@ -108,23 +108,34 @@ private fun LoadingState(title: String, subtitle: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(48.dp),
-            color = MixinAppTheme.colors.accent
+        Spacer(modifier = Modifier.height(120.dp))
+        Icon(
+            painter = painterResource(id = R.drawable.ic_wallet_fetching),
+            contentDescription = null,
+            tint = Color.Unspecified,
         )
-        Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = title,
             fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             color = MixinAppTheme.colors.textPrimary
         )
-        Spacer(modifier = Modifier.height(8.dp))
+
+        Spacer(modifier = Modifier.height(20.dp))
+
         Text(
             text = subtitle,
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textAssist
         )
+
+
+        Spacer(modifier = Modifier.weight(1f))
+        CircularProgressIndicator(
+            modifier = Modifier.size(30.dp),
+            color = MixinAppTheme.colors.backgroundGray
+        )
+        Spacer(modifier = Modifier.height(70.dp))
     }
 }
 

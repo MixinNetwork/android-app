@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.EthereumWallet
+import one.mixin.android.crypto.SolanaWallet
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.WalletInfo
@@ -49,14 +51,22 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.FETCHING
             try {
                 if (mnemonic.isNotBlank()) {
-                    // Generate wallets from mnemonic
-                    val multiWallets = (0 until 10).map { index ->
-                        CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
-                    }
+                    data class IndexedWallet(val index: Int, val wallet: Any, val address: String)
+
+                    val multiWallets = (0 until 10).flatMap { index ->
+                        listOf(
+                            CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)?.let {
+                                IndexedWallet(index, it, it.address)
+                            },
+                            CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index).let {
+                                IndexedWallet(index, it, it.address)
+                            }
+                        )
+                    }.filterNotNull()
+
                     val addresses = multiWallets.map { it.address }
                     val a = mutableListOf<String>()
                     a.addAll(addresses)
-                    a.add("8hfoNZCd2bK9aqCBkhg8f2L1AoL7qfHwd9tMv7x64qui")
                     val response = web3Repository.searchAssetsByAddresses(a)
                     if (response.isSuccess && response.data != null) {
                         val assetsList = response.data!!

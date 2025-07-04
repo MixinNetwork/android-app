@@ -1,5 +1,6 @@
 package one.mixin.android.crypto
 
+import blockchain.Blockchain
 import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
@@ -83,12 +84,13 @@ object CryptoWalletHelper {
             val seed = MnemonicWords(mnemonic).toSeed(passphrase).seed
             val masterKey = HDKeyDerivation.createMasterPrivateKey(seed)
             val privateKey = deriveSolPrivateKeyAtIndex(masterKey, index)
-            val address = Keypair.fromSecretKey(privateKey).publicKey.toBase58()
+            // val address = Keypair.fromSecretKey(privateKey).publicKey.toBase58()
+            val addressFromGo = Blockchain.generateSolanaAddressFromMnemonic(mnemonic, "m/44'/501'/$index'/0'")
 
             return SolanaWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
-                address = address,
+                address = addressFromGo,
                 index = index
             )
 
