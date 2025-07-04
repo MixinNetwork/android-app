@@ -67,7 +67,7 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> U
         viewModel.getRecentSearch(context.defaultSharedPreferences)
     }
     val dapps = viewModel.getAllDapps()
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

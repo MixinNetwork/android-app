@@ -4,8 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
-    android:orientation="vertical">
+    android:background="?attr/bg_white"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/bg_window"
+        android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -20,7 +27,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="?attr/bg_window">
 
             <RelativeLayout
                 android:id="@+id/account_rl"
@@ -281,4 +289,5 @@
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>
+    </LinearLayout>
 </LinearLayout>

@@ -46,6 +46,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
@@ -135,7 +136,15 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         USDT_ASSET_ETH_ID
                     }
                     AnalyticsTracker.trackSwapStart("mixin", "market")
-                    navTo(SwapFragment.newInstance<TokenItem>(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }, input = asset.assetId, output = output), SwapFragment.TAG)
+                    SwapActivity.show(
+                        requireActivity(),
+                        inMixin = true,
+                        tokens = assets.filter {
+                            (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
+                        },
+                        input = asset.assetId,
+                        output = output
+                    )
                 }
             }
             value.text = try {

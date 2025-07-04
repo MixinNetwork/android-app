@@ -3,7 +3,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_upper_round">
+    android:background="@drawable/bg_upper_round"
+    android:fitsSystemWindows="true">
 
     <one.mixin.android.ui.tip.wc.UnlockHeader
         android:id="@+id/header"

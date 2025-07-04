@@ -34,7 +34,7 @@ import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 @Composable
 fun RecoveryKitPage(pop:()->Unit, phoneClick: () -> Unit, mnemonicPhraseClick: () -> Unit, recoveryClick: () -> Unit) {
     val context = LocalContext.current
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         PageScaffold(
             title = stringResource(R.string.Recovery_Kit),
             verticalScrollable = false,

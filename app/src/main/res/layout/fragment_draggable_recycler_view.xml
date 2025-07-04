@@ -5,4 +5,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:over_direction="1"
-    android:background="?attr/bg_white"/>
+    android:background="?attr/bg_white"
+    android:fitsSystemWindows="true"/>
