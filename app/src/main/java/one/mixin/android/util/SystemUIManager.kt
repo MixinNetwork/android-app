@@ -77,6 +77,7 @@ object SystemUIManager {
                     0,
                     navBarInsets.bottom
                 )
+                view.setBackgroundColor(color)
                 insets
             }
         }, {

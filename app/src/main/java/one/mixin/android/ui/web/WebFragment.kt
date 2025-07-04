@@ -1647,8 +1647,8 @@ class WebFragment : BaseFragment() {
     ) {
         if (viewDestroyed()) return
 
-        requireActivity().window.statusBarColor = color
         requireActivity().window?.let {
+            SystemUIManager.setSystemUiColor(it, color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
