@@ -1061,9 +1061,13 @@ class WebFragment : BaseFragment() {
         callbackFunction: String,
     ) {
         if (viewDestroyed()) return
-        app ?: return
 
         lifecycleScope.launch {
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+
             val sameHost =
                 try {
                     Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
