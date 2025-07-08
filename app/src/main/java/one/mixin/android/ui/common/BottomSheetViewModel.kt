@@ -1753,7 +1753,7 @@ class BottomSheetViewModel
             return privateKeyToAddress(spendKey, chainId)
         }
 
-        fun web3TokenItems() = tokenRepository.web3TokenItems()
+        fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
 
         suspend fun getWeb3Priv(
             context: Context,

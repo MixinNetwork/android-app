@@ -17,30 +17,33 @@ import one.mixin.android.vo.safe.TokenItem
 @Dao
 interface Web3TokenDao : BaseDao<Web3Token> {
 
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id
+    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id
+        WHERE t.wallet_id = :walletId 
         ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
     """)
-    fun web3TokenItems(): LiveData<List<Web3TokenItem>>
+    fun web3TokenItems(walletId: String): LiveData<List<Web3TokenItem>>
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id")
-    suspend fun findWeb3TokenItems(): List<Web3TokenItem>
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.wallet_id = :walletId")
+    suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem>
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND t.amount > 0")
-    suspend fun findAssetItemsWithBalance(): List<Web3TokenItem>
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND t.amount > 0 WHERE t.wallet_id = :walletId")
+    suspend fun findAssetItemsWithBalance(walletId: String): List<Web3TokenItem>
     
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.hidden != 1 OR te.hidden IS NULL
+    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.hidden != 1 OR te.hidden IS NULL AND t.wallet_id = :walletId
         ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
     """)
-    fun web3TokenItemsExcludeHidden(): LiveData<List<Web3TokenItem>>
+    fun web3TokenItemsExcludeHidden(walletId: String): LiveData<List<Web3TokenItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.hidden = 1
+    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE te.hidden = 1 
+        AND t.wallet_id = :walletId
         ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
     """)
-    fun hiddenAssetItems(): LiveData<List<Web3TokenItem>>
+    fun hiddenAssetItems(walletId: String): LiveData<List<Web3TokenItem>>
 
-    @Query("SELECT * FROM tokens WHERE amount * price_usd > 0 ORDER BY amount * price_usd")
-    fun web3TokensFlow(): Flow<List<Web3Token>>
+    @Query("SELECT * FROM tokens WHERE amount * price_usd > 0 AND wallet_id = :walletId ORDER BY amount * price_usd")
+    fun web3TokensFlow(walletId: String): Flow<List<Web3Token>>
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.asset_id = :assetId")
     fun web3TokenItemById(assetId: String): Web3TokenItem?
@@ -48,8 +51,8 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.asset_key = :address")
     suspend fun web3TokenItemByAddress(address: String): Web3TokenItem?
 
-    @Query("SELECT * FROM tokens WHERE asset_id = :assetId")
-    fun findTokenById(assetId: String): Web3Token?
+    @Query("SELECT * FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
+    fun findTokenById(walletId: String, assetId: String): Web3Token?
 
     @Query("UPDATE tokens SET amount = '0' WHERE wallet_id = :walletId AND asset_id NOT IN (:assetIds)")
     suspend fun updateBalanceToZeroForMissingAssets(walletId: String, assetIds: List<String>)
@@ -60,8 +63,8 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.asset_id IN (:assetIds)")
     suspend fun findWeb3TokenItemsByIds(assetIds: List<String>): List<Web3TokenItem>
 
-    @Query("SELECT amount FROM tokens WHERE asset_id = :assetId")
-    fun tokenExtraFlow(assetId: String): Flow<String?>
+    @Query("SELECT amount FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
+    fun tokenExtraFlow(walletId: String, assetId: String): Flow<String?>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(

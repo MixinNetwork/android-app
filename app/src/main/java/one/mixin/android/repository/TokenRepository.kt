@@ -482,11 +482,11 @@ class TokenRepository
 
         suspend fun findAssetItemsWithBalance(): List<TokenItem> = tokenDao.findAssetItemsWithBalance()
 
-        suspend fun findWeb3AssetItemsWithBalance(): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance()
+        suspend fun findWeb3AssetItemsWithBalance(walletId: String): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance(walletId)
 
         suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
-        fun web3TokenItems(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems()
+        fun web3TokenItems(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId)
 
         suspend fun fuzzySearchToken(
             query: String,
@@ -1393,11 +1393,11 @@ class TokenRepository
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
-    fun web3TokenExtraFlow(asseId: String) = web3TokenDao.tokenExtraFlow(asseId)
+    fun web3TokenExtraFlow(walletId: String, asseId: String) = web3TokenDao.tokenExtraFlow(walletId, asseId)
 
-    fun web3TokensFlow() = web3TokenDao.web3TokensFlow()
+    fun web3TokensFlow(walletId: String) = web3TokenDao.web3TokensFlow(walletId)
 
-    suspend fun findWeb3TokenItems(): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems()
+    suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems(walletId)
 
     fun assetFlow() = tokenDao.assetFlow()
 

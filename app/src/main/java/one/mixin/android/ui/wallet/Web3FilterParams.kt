@@ -3,9 +3,8 @@ package one.mixin.android.ui.wallet
 import android.os.Parcelable
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.Constants
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId

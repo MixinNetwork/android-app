@@ -9,14 +9,11 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewTransferContentBinding
-import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
-import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
@@ -28,10 +25,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
-import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
 import java.math.BigDecimal
 
 class TransferContent : LinearLayout {

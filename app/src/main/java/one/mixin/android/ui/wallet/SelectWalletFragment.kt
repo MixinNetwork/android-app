@@ -2,9 +2,10 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
@@ -14,8 +15,6 @@ import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.SelectContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 
 class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {

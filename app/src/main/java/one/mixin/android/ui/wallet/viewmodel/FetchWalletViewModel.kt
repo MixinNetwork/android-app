@@ -3,14 +3,14 @@ package one.mixin.android.ui.wallet.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EthereumWallet
-import one.mixin.android.crypto.SolanaWallet
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.WalletInfo
@@ -36,6 +36,9 @@ class FetchWalletViewModel @Inject constructor(
     val selectedAddresses: StateFlow<Set<String>> = _selectedAddresses.asStateFlow()
 
     private var mnemonic: String = ""
+
+    private val _importSuccess = MutableStateFlow(false)
+    val importSuccess: StateFlow<Boolean> = _importSuccess.asStateFlow()
 
     init {
         startFetching()
@@ -75,11 +78,22 @@ class FetchWalletViewModel @Inject constructor(
                             val balance = assetsView.assets
                                 .sumOf { it.amount.toBigDecimal() }
                                 .toPlainString()
-                            WalletInfo(wallet?.index ?: -1, assetsView.address, balance)
+                            WalletInfo(
+                                wallet?.index ?: -1,
+                                if (wallet?.wallet is EthereumWallet) Constants.ChainId.ETHEREUM_CHAIN_ID else Constants.ChainId.Solana,
+                                assetsView.address,
+                                balance
+                            )
                         }
                         _wallets.value = walletInfos
                     } else {
-                        _wallets.value = multiWallets.map { WalletInfo(it.index, it.address) }
+                        _wallets.value = multiWallets.map {
+                            WalletInfo(
+                                it.index,
+                                if (it.wallet is EthereumWallet) Constants.ChainId.ETHEREUM_CHAIN_ID else Constants.ChainId.Solana,
+                                it.address
+                            )
+                        }
                     }
                 }
                 _state.value = FetchWalletState.SELECT
@@ -94,10 +108,23 @@ class FetchWalletViewModel @Inject constructor(
     fun startImporting(selectedWalletInfos: Set<WalletInfo>) {
         viewModelScope.launch {
             _state.value = FetchWalletState.IMPORTING
+            _importSuccess.value = false
             try {
-                delay(2000)
-
-                Timber.d("Successfully imported \\${selectedWalletInfos.size} wallets")
+                // Create address records for each selected wallet
+                selectedWalletInfos.forEach { wallet ->
+                    val addressRequest = Web3AddressRequest(
+                        destination = wallet.address,
+                        chainId = wallet.chainId
+                    )
+                    val response = web3Repository.createAddress(addressRequest)
+                    if (response.isSuccess) {
+                        Timber.d("Created address for ${'$'}{wallet.address}")
+                    } else {
+                        Timber.e("Failed to create address for ${'$'}{wallet.address}")
+                    }
+                }
+                Timber.d("Successfully imported ${'$'}{selectedWalletInfos.size} wallets")
+                _importSuccess.value = true
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallets")
             }

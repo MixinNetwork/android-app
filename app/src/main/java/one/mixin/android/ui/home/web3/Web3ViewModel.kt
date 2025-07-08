@@ -82,9 +82,10 @@ internal constructor(
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()
-    
-    fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
+    fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
+
+    // todo
+    fun hiddenAssetItems() = web3Repository.hiddenAssetItems("0195adf7-1d55-7163-9186-111845025a6c")
 
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
         web3Repository.updateTokenHidden(tokenId, walletId, hidden)
@@ -100,10 +101,11 @@ internal constructor(
         emit(null)
     }.flowOn(Dispatchers.IO)
 
-    fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
+    fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
 
+    // todo replace
     fun web3TokenExtraFlow(assetId: String) =
-        tokenRepository.web3TokenExtraFlow(assetId)
+        tokenRepository.web3TokenExtraFlow("0195adf7-1d55-7163-9186-111845025a6c",assetId)
 
     suspend fun findOrSyncAsset(
         assetId: String,
@@ -202,8 +204,9 @@ internal constructor(
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
         tokenRepository.findTokenItems(ids)
 
+    // todo replace
     suspend fun findWeb3TokenItems(): List<Web3TokenItem> =
-        tokenRepository.findWeb3TokenItems()
+        tokenRepository.findWeb3TokenItems("0195adf7-1d55-7163-9186-111845025a6c")
 
     suspend fun findTokensExtra(assetId: String) =
         withContext(Dispatchers.IO) {

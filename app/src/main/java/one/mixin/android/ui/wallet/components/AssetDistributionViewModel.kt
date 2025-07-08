@@ -17,10 +17,8 @@ import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
-import kotlin.collections.map
 
 @HiltViewModel
 class AssetDistributionViewModel @Inject constructor(
@@ -39,7 +37,8 @@ class AssetDistributionViewModel @Inject constructor(
 
     private val tokenFlow = tokenRepository.assetFlow()
 
-    private val web3TokenFlow = web3TokenDao.web3TokensFlow()
+    // Todo replace
+    private val web3TokenFlow = web3TokenDao.web3TokensFlow("0195adf7-1d55-7163-9186-111845025a6c")
 
     val wallets: Flow<List<Web3Wallet>> = tokenRepository.getWallets()
 
@@ -213,6 +212,62 @@ class AssetDistributionViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    // Provide per-wallet flows
+    fun web3TokenTotalBalanceFlow(walletId: String) =
+        web3TokenDao.web3TokensFlow(walletId)
+            .map { tokens -> tokens.sumOf { calculateWeb3TokenValue(it) } }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = BigDecimal.ZERO
+            )
+
+    fun web3TokenDistributionFlow(walletId: String): Flow<List<AssetDistribution>> =
+        web3TokenDao.web3TokensFlow(walletId)
+            .map { tokens ->
+                val tokensWithValue = tokens
+                    .filter { calculateWeb3TokenValue(it) > BigDecimal.ZERO }
+                    .sortedByDescending { calculateWeb3TokenValue(it) }
+                val totalWeb3Value = tokensWithValue.sumOf { calculateWeb3TokenValue(it) }
+                if (totalWeb3Value == BigDecimal.ZERO || tokensWithValue.isEmpty()) return@map emptyList()
+                when {
+                    tokensWithValue.size == 1 -> tokensWithValue.map { token ->
+                        AssetDistribution(token.symbol, 1f, listOf(token.iconUrl), count = 1)
+                    }
+                    tokensWithValue.size == 2 -> {
+                        val (t1, t2) = tokensWithValue
+                        val p1 = calculateWeb3TokenValue(t1).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                        val p2 = (1f - p1).coerceIn(0f, 1f)
+                        listOf(
+                            AssetDistribution(t1.symbol, p1, listOf(t1.iconUrl), count = 1),
+                            AssetDistribution(t2.symbol, p2, listOf(t2.iconUrl), count = 1)
+                        )
+                    }
+                    else -> {
+                        val top2 = tokensWithValue.take(2)
+                        val others = tokensWithValue.drop(2)
+                        val top2Dist = top2.map { token ->
+                            val percentage = calculateWeb3TokenValue(token).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                            AssetDistribution(token.symbol, percentage, listOf(token.iconUrl), count = 1)
+                        }
+                        val othersPercentage = 1f - top2Dist[0].percentage - top2Dist[1].percentage
+                        val othersIcons = others.take(3).map { it.iconUrl }
+                        top2Dist + AssetDistribution(
+                            symbol = MixinApplication.appContext.getString(R.string.Other),
+                            percentage = othersPercentage,
+                            icons = othersIcons,
+                            count = others.size,
+                            isOthers = true
+                        )
+                    }
+                }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
     val combinedAssetDistribution: Flow<List<AssetDistribution>> = tokenFlow.combine(web3TokenFlow) { tokens, web3Tokens ->
         val tokenValues = tokens

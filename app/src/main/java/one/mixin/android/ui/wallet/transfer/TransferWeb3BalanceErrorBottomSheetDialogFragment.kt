@@ -8,20 +8,19 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferBalanceErrorBottomSheetBinding
+import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.util.viewBinding
-import one.mixin.android.widget.BottomSheet
-import kotlin.getValue
-import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
+import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressActivity
+import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {

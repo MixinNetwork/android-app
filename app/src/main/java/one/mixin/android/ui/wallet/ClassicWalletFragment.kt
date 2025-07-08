@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,13 +8,11 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
@@ -31,12 +28,10 @@ import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
-import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putBoolean
@@ -46,15 +41,11 @@ import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
-import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
-import one.mixin.android.ui.home.web3.swap.SwapFragment
-import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
-import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
@@ -92,7 +83,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var snackBar: Snackbar? = null
     private var lastFiatCurrency :String? = null
 
+    private val _walletId = MutableLiveData<String>()
     var walletId: String = ""
+        set(value) {
+            field = value
+            _walletId.value = value
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -184,26 +180,39 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
-        web3ViewModel.web3TokensExcludeHidden().observe(viewLifecycleOwner) {
-            if (it.isEmpty()) {
-                setEmpty()
-                assets = it
-                assetsAdapter.setAssetList(it)
-                if (lastFiatCurrency != Session.getFiatCurrency()) {
-                    lastFiatCurrency = Session.getFiatCurrency()
-                    assetsAdapter.notifyDataSetChanged()
-                }
-            } else {
-                assets = it
-                assetsAdapter.setAssetList(it)
-                if (lastFiatCurrency != Session.getFiatCurrency()) {
-                    lastFiatCurrency = Session.getFiatCurrency()
-                    assetsAdapter.notifyDataSetChanged()
-                }
-                lifecycleScope.launch {
-                    val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-                    renderPie(assets, bitcoin)
-                }
+        // Initialize _walletId
+        lifecycleScope.launch {
+            if (walletId.isEmpty()) {
+                walletId = web3ViewModel.getClassicWalletId() ?: ""
+            }
+        }
+
+        _walletId.observe(viewLifecycleOwner) { id ->
+            Timber.e("walletId $id")
+            if (id.isNotEmpty()) {
+                web3ViewModel.web3TokensExcludeHidden(id)
+                    .observe(viewLifecycleOwner) {
+                        if (it.isEmpty()) {
+                            setEmpty()
+                            assets = it
+                            assetsAdapter.setAssetList(it)
+                            if (lastFiatCurrency != Session.getFiatCurrency()) {
+                                lastFiatCurrency = Session.getFiatCurrency()
+                                assetsAdapter.notifyDataSetChanged()
+                            }
+                        } else {
+                            assets = it
+                            assetsAdapter.setAssetList(it)
+                            if (lastFiatCurrency != Session.getFiatCurrency()) {
+                                lastFiatCurrency = Session.getFiatCurrency()
+                                assetsAdapter.notifyDataSetChanged()
+                            }
+                            lifecycleScope.launch {
+                                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                                renderPie(assets, bitcoin)
+                            }
+                        }
+                    }
             }
         }
 

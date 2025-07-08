@@ -2,9 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import one.mixin.android.databinding.FragmentAddWalletBottomSheetBinding
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet

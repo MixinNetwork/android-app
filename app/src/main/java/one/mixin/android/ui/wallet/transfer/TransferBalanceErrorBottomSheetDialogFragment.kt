@@ -8,22 +8,21 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferBalanceErrorBottomSheetBinding
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
-import one.mixin.android.util.viewBinding
-import one.mixin.android.widget.BottomSheet
-import kotlin.getValue
-import one.mixin.android.R
-import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {

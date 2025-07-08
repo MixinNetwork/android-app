@@ -25,11 +25,11 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
         LEFT JOIN tokens c ON c.asset_id = w.chain_id
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id
-        WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
+        WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND (s.wallet_id = :walletId OR c.wallet_id = :walletId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
         ORDER BY w.transaction_at DESC 
         LIMIT 21
     """)
-    fun web3Transactions(assetId: String): LiveData<List<Web3TransactionItem>>
+    fun web3Transactions(walletId: String, assetId: String): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3TransactionItem>

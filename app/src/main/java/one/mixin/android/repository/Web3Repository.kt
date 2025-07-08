@@ -2,6 +2,8 @@ package one.mixin.android.repository
 
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.AddressSearchRequest
+import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -35,11 +37,11 @@ constructor(
     
     suspend fun findWeb3TokenItemsByIds(assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(assetIds)
 
-    fun web3Tokens() = web3TokenDao.web3TokenItems()
+    fun web3Tokens(walletId: String) = web3TokenDao.web3TokenItems(walletId)
     
-    fun web3TokensExcludeHidden() = web3TokenDao.web3TokenItemsExcludeHidden()
+    fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
     
-    fun hiddenAssetItems() = web3TokenDao.hiddenAssetItems()
+    fun hiddenAssetItems(walletId: String) = web3TokenDao.hiddenAssetItems(walletId)
     
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {
         val tokensExtra = web3TokensExtraDao.findByAssetId(tokenId,  walletId)
@@ -50,7 +52,7 @@ constructor(
         }
     }
 
-    fun web3Transactions(assetId: String) = web3TransactionDao.web3Transactions(assetId)
+    fun web3Transactions(walletId:String, assetId: String) = web3TransactionDao.web3Transactions(walletId, assetId)
     
     suspend fun getAddressesByChainId(walletId: String): Web3Address? {
         return web3AddressDao.getAddressesByChainId(walletId)
@@ -61,4 +63,8 @@ constructor(
     suspend fun searchAssetsByAddresses(addresses: List<String>) = routeService.searchAssetsByAddresses(
         AddressSearchRequest(addresses)
     )
+
+    suspend fun createWallet(request: WalletRequest) = routeService.createWallet(request)
+
+    suspend fun createAddress(request: Web3AddressRequest) = routeService.createAddress(request)
 }

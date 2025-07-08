@@ -119,7 +119,8 @@ class SwapViewModel
 
     suspend fun findAssetItemsWithBalance() = tokenRepository.findAssetItemsWithBalance()
 
-    suspend fun findWeb3AssetItemsWithBalance() = tokenRepository.findWeb3AssetItemsWithBalance()
+    // todo replace
+    suspend fun findWeb3AssetItemsWithBalance() = tokenRepository.findWeb3AssetItemsWithBalance("0195adf7-1d55-7163-9186-111845025a6c")
 
     fun swapOrders() = tokenRepository.swapOrders()
 
@@ -138,9 +139,10 @@ class SwapViewModel
         return@withContext tokenRepository.checkMarketById(assetId, true)
     }
 
+    // todo replace
     fun tokenExtraFlow(token: SwapToken, inMixin: Boolean): Flow<String?> {
         return if (!inMixin) {
-            tokenRepository.web3TokenExtraFlow(token.assetId)
+            tokenRepository.web3TokenExtraFlow("0195adf7-1d55-7163-9186-111845025a6c",token.assetId)
         } else {
             tokenRepository.tokenExtraFlow(token.assetId)
         }

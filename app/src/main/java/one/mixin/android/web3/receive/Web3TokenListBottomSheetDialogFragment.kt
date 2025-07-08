@@ -175,7 +175,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     )
         }
 
-        bottomViewModel.web3TokenItems().observe(this) { items ->
+        // todo replace
+        bottomViewModel.web3TokenItems("0195adf7-1d55-7163-9186-111845025a6c").observe(this) { items ->
             defaultAssets = items
             if (binding.searchEt.et.text.isNullOrBlank()) {
                 adapter.tokens = ArrayList(defaultAssets.filter { item ->

@@ -272,7 +272,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         binding.scrollView.viewTreeObserver.addOnScrollChangedListener(this@Web3TransactionsFragment)
         updateHeader(token)
         lifecycleScope.launch {
-            web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list ->
+            web3ViewModel.web3Transactions(token.walletId, token.assetId)
+                .observe(viewLifecycleOwner) { list ->
                 binding.transactionsRv.isVisible = list.isNotEmpty()
                 binding.bottomRl.isVisible = list.isEmpty()
                 binding.transactionsRv.list = list

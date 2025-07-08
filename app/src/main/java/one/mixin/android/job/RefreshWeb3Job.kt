@@ -40,7 +40,7 @@ class RefreshWeb3Job : BaseJob(
                 "ClassicWallet", WALLET_CATEGORY_CLASSIC, listOf(
                     Web3AddressRequest(
                         destination = erc20Address,
-                        chainId = Constants.ChainId.Polygon
+                        chainId = Constants.ChainId.ETHEREUM_CHAIN_ID
                     ),
                     Web3AddressRequest(
                         destination = solAddress,

@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.Config
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
@@ -35,7 +34,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -133,8 +131,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             if (viewDestroyed()) return@launch
             
             binding.pb.isVisible = true
+            val walletId = viewModel.getClassicWalletId() ?: ""
+            if (walletId.isEmpty()) {
+                binding.rvVa.displayedChild = POS_EMPTY
+                binding.pb.isVisible = false
+                return@launch
+            }
             val tokens = withContext(Dispatchers.IO) { 
-                val allTokens = viewModel.web3TokensExcludeHidden().value ?: emptyList()
+                val allTokens = viewModel.web3TokensExcludeHidden(walletId).value ?: emptyList()
                 allTokens.sortedByDescending {
                     runCatching { it.balance.toBigDecimal() * it.priceUsd.toBigDecimal() }.getOrDefault(0.toBigDecimal())
                 }
@@ -176,8 +180,15 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             binding.pb.isVisible = true
             isSearchingRemote = false
 
+            val walletId = viewModel.getClassicWalletId() ?: ""
+            if (walletId.isEmpty()) {
+                binding.rvVa.displayedChild = POS_EMPTY
+                binding.pb.isVisible = false
+                return@launch
+            }
+
             val localTokens = withContext(Dispatchers.IO) {
-                viewModel.web3TokensExcludeHidden().value?.filter { token ->
+                viewModel.web3TokensExcludeHidden(walletId).value?.filter { token ->
                     token.name.contains(query, ignoreCase = true) ||
                         token.symbol.contains(query, ignoreCase = true) ||
                         token.chainName?.contains(query, ignoreCase = true) == true

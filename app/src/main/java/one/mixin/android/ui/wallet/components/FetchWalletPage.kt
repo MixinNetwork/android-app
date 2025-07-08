@@ -2,18 +2,41 @@ package one.mixin.android.ui.wallet.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,9 +47,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import java.text.NumberFormat
-import one.mixin.android.ui.wallet.components.classicChain
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 
 enum class FetchWalletState {
     FETCHING,
@@ -42,6 +62,7 @@ data class AssetInfo(
 
 data class WalletInfo(
     val index: Int,
+    val chainId: String,
     val address: String,
     val balance: String = "0",
     val assets: List<AssetInfo> = emptyList()
@@ -55,11 +76,17 @@ fun FetchWalletPage(
 ) {
     val state by viewModel.state.collectAsState()
     val wallets by viewModel.wallets.collectAsState()
+    val importSuccess by viewModel.importSuccess.collectAsState()
     var selectedWalletInfos by remember { mutableStateOf(emptySet<WalletInfo>()) }
 
     LaunchedEffect(mnemonic) {
         if (!mnemonic.isNullOrEmpty()) {
             viewModel.setMnemonic(mnemonic)
+        }
+    }
+    LaunchedEffect(importSuccess) {
+        if (importSuccess) {
+            onBackPressed()
         }
     }
 
@@ -188,7 +215,7 @@ fun SelectContent(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(items = wallets, key = { it.index }) { wallet ->
+            items(items = wallets, key = { it.address }) { wallet ->
                 WalletItem(
                     wallet = wallet,
                     isSelected = selectedWalletInfos.contains(wallet),

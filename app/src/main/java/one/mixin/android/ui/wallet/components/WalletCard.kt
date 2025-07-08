@@ -39,6 +39,7 @@ import java.math.BigDecimal
 
 @Composable
 fun WalletCard(
+    name: String? = null,
     balance: BigDecimal,
     assets: List<AssetDistribution>,
     destination: WalletDestination?,
@@ -60,7 +61,8 @@ fun WalletCard(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    if (destination == WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
+                    name
+                        ?: if (destination == WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
                         R.string.Common_Wallet
                     ),
                     fontSize = 16.sp,

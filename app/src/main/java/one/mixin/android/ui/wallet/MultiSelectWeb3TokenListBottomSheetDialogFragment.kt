@@ -136,7 +136,8 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                     )
         }
 
-        bottomViewModel.web3TokenItems()
+        // todo replace
+        bottomViewModel.web3TokenItems("0195adf7-1d55-7163-9186-111845025a6c")
             .observe(this) { tokens ->
                 defaultAssets = tokens
                 if (binding.searchEt.et.text.isNullOrBlank()) {

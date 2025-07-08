@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet.components
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,12 +24,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,12 +37,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import androidx.core.content.edit
 
 const val PREF_NAME = "wallet_info_card"
 private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
@@ -59,12 +57,9 @@ fun AssetDashboardScreen(
     viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
     val tokenDistribution by viewModel.tokenDistribution.collectAsState(initial = emptyList())
-    val web3TokenDistribution by viewModel.web3TokenDistribution.collectAsState(initial = emptyList())
     val wallets by viewModel.wallets.collectAsState(initial = emptyList())
 
     val tokenTotalBalance by viewModel.tokenTotalBalance.collectAsState()
-    val web3TokenTotalBalance by viewModel.web3TokenTotalBalance.collectAsState()
-    
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
@@ -112,12 +107,26 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             wallets.forEach { wallet ->
-                WalletCard(
-                    balance = web3TokenTotalBalance,
-                    assets = web3TokenDistribution,
-                    destination = WalletDestination.Classic,
-                    onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
-                )
+                if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
+                    val web3TokenTotalBalance by viewModel.web3TokenTotalBalanceFlow(wallet.id).collectAsState()
+                    val web3TokenDistribution by viewModel.web3TokenDistributionFlow(wallet.id).collectAsState(initial = emptyList())
+                    WalletCard(
+                        name = wallet.name,
+                        balance = web3TokenTotalBalance,
+                        assets = web3TokenDistribution,
+                        destination = WalletDestination.Classic,
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
+                    )
+                } else {
+                    val web3TokenTotalBalance by viewModel.web3TokenTotalBalanceFlow(wallet.id).collectAsState()
+                    val web3TokenDistribution by viewModel.web3TokenDistributionFlow(wallet.id).collectAsState(initial = emptyList())
+                    WalletCard(
+                        balance = web3TokenTotalBalance,
+                        assets = web3TokenDistribution,
+                        destination = WalletDestination.Classic,
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
