@@ -63,7 +63,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
         viewModel.getRecentTokenItems(context.defaultSharedPreferences, key)
     }
     if (recentToken.isEmpty()) return
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier
                 .background(MixinAppTheme.colors.background)
