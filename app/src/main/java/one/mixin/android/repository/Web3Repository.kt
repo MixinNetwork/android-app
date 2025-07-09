@@ -70,7 +70,11 @@ constructor(
 
     suspend fun createWallet(request: WalletRequest) = routeService.createWallet(request)
 
+    suspend fun updateWallet(walletId: String, request: WalletRequest) = routeService.updateWallet(walletId, request)
+
     suspend fun insertWallet(wallet: Web3Wallet) = web3WalletDao.insertSuspend(wallet)
+
+    suspend fun updateWalletName(walletId: String, newName: String) = web3WalletDao.updateWalletName(walletId, newName)
 
     suspend fun insertAddress(address: Web3Address) = web3AddressDao.insertSuspend(address)
 

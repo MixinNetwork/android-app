@@ -270,6 +270,12 @@ interface RouteService {
         @Path("id") id: String
     ): MixinResponse<Unit>
 
+    @POST("wallets/{id}")
+    suspend fun updateWallet(
+        @Path("id") id: String,
+        @Body request: WalletRequest
+    ): MixinResponse<Web3Wallet>
+
     @GET("wallets/{id}/assets")
     suspend fun getWalletAssets(
         @Path("id") id: String

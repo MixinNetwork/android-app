@@ -39,6 +39,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
@@ -318,7 +319,17 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             bottomSheet.dismiss()
         }
         importBottomBinding.rename.setOnClickListener {
-            // Todo
+            editDialog {
+                titleText = this@WalletFragment.getString(R.string.Rename)
+                editText = "" // todo
+                maxTextCount = 20
+                allowEmpty = false
+                rightAction = { newName ->
+                    this@WalletFragment.lifecycleScope.launch {
+                        walletViewModel.renameWallet(classicWalletId ?: "", newName)
+                    }
+                }
+            }
             bottomSheet.dismiss()
         }
         bottomSheet.show()

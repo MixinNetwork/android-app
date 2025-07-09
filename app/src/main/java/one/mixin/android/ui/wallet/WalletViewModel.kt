@@ -24,6 +24,7 @@ import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
+import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.PinCipher
@@ -439,6 +440,24 @@ class WalletViewModel
     ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
 
     suspend fun searchAssetsByAddresses(addresses: List<String>) = web3Repository.searchAssetsByAddresses(addresses)
+
+    suspend fun renameWallet(walletId: String, newName: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val request = WalletRequest(name = newName, category = null, addresses = null)
+                val response = web3Repository.updateWallet(walletId, request)
+                if (response.isSuccess && response.data != null) {
+                    // Update local database
+                    web3Repository.updateWalletName(walletId, newName)
+                    Timber.d("Successfully renamed wallet $walletId to $newName")
+                } else {
+                    Timber.e("Failed to rename wallet: ${response.errorCode} - ${response.errorDescription}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to rename wallet $walletId")
+            }
+        }
+    }
 
     suspend fun deleteWallet(walletId: String) {
         withContext(Dispatchers.IO) {

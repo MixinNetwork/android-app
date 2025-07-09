@@ -29,6 +29,9 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("DELETE FROM wallets WHERE wallet_id = :walletId")
     suspend fun deleteWallet(walletId: String)
 
+    @Query("UPDATE wallets SET name = :newName WHERE wallet_id = :walletId")
+    suspend fun updateWalletName(walletId: String, newName: String)
+
     @Query("SELECT COUNT(*) FROM wallets WHERE category = 'private'")
     suspend fun countPrivateWallets(): Int
 
