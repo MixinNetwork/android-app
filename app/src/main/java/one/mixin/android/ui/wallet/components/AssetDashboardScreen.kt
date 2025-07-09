@@ -65,7 +65,7 @@ fun AssetDashboardScreen(
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
 
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
