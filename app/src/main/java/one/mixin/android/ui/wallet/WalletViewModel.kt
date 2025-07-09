@@ -4,7 +4,10 @@ package one.mixin.android.ui.wallet
 
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LivePagedListBuilder
@@ -16,6 +19,9 @@ import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -43,6 +49,7 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SnapshotItem
@@ -73,7 +80,74 @@ class WalletViewModel
         private val assetRepository: AssetRepository,
         private val jobManager: MixinJobManager,
         private val pinCipher: PinCipher,
+        private val defaultSharedPreferences: SharedPreferences,
     ) : ViewModel() {
+
+    private val _selectedWalletId = MutableStateFlow<String?>(null)
+    val selectedWalletId: StateFlow<String?> = _selectedWalletId.asStateFlow()
+
+    private val _selectedWalletDestination = MutableLiveData<WalletDestination>()
+    val selectedWalletDestination: LiveData<WalletDestination> = _selectedWalletDestination
+
+    private val _hasUsedWallet = MutableLiveData<Boolean>()
+    val hasUsedWallet: LiveData<Boolean> = _hasUsedWallet
+
+    val selectedWallet: LiveData<TokenItem?> = _selectedWalletDestination.switchMap { dest ->
+        liveData {
+            emit(loadWalletAsset(dest))
+        }
+    }
+
+    init {
+        initializeWallet()
+    }
+
+    private fun initializeWallet() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val walletPref =
+                defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
+            withContext(Dispatchers.Main) {
+                _hasUsedWallet.value = walletPref != null
+            }
+            val walletDestination = WalletDestination.fromString(walletPref)
+            withContext(Dispatchers.Main) {
+                _selectedWalletDestination.value = walletDestination
+            }
+        }
+    }
+
+    fun selectWallet(walletDestination: WalletDestination) {
+        viewModelScope.launch(Dispatchers.IO) {
+            defaultSharedPreferences.edit()
+                .putString(Constants.Account.PREF_HAS_USED_WALLET, walletDestination.toString())
+                .apply()
+            withContext(Dispatchers.Main) {
+                _hasUsedWallet.value = true
+                _selectedWalletDestination.value = walletDestination
+            }
+        }
+    }
+
+    private suspend fun loadWalletAsset(walletDestination: WalletDestination): TokenItem? {
+        return when (walletDestination) {
+            is WalletDestination.Privacy -> null
+            is WalletDestination.Classic -> tokenRepository.simpleAssetItem(walletDestination.walletId)
+            is WalletDestination.Import -> tokenRepository.simpleAssetItem(walletDestination.walletId)
+        }
+    }
+
+    fun setSelectedWallet(walletId: String?) {
+        _selectedWalletId.value = walletId
+        Timber.d("Selected wallet changed to: $walletId")
+    }
+
+    fun getCurrentSelectedWalletId(): String? {
+        return _selectedWalletId.value
+    }
+
+    fun clearSelectedWallet() {
+        setSelectedWallet(null)
+    }
 
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {

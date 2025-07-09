@@ -52,7 +52,7 @@ private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AssetDashboardScreen(
-    onWalletCardClick: (destination: WalletDestination, walletId: String?) -> Unit,
+    onWalletCardClick: (destination: WalletDestination) -> Unit,
     onAddWalletClick: () -> Unit,
     viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
@@ -101,7 +101,7 @@ fun AssetDashboardScreen(
                 balance = tokenTotalBalance,
                 assets = tokenDistribution,
                 destination = WalletDestination.Privacy,
-                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy, WalletDestination.Privacy.name) }
+                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy) }
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -114,8 +114,8 @@ fun AssetDashboardScreen(
                         name = wallet.name,
                         balance = web3TokenTotalBalance,
                         assets = web3TokenDistribution,
-                        destination = WalletDestination.Import,
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Import, wallet.id) }
+                        destination = WalletDestination.Import(wallet.id),
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id)) }
                     )
                 } else {
                     val web3TokenTotalBalance by viewModel.web3TokenTotalBalanceFlow(wallet.id).collectAsState()
@@ -123,8 +123,8 @@ fun AssetDashboardScreen(
                     WalletCard(
                         balance = web3TokenTotalBalance,
                         assets = web3TokenDistribution,
-                        destination = WalletDestination.Classic,
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
+                        destination = WalletDestination.Classic(wallet.id),
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
@@ -683,4 +684,8 @@ object AppModule {
     @Provides
     fun provideMemberService(retrofit: Retrofit): MemberService =
         retrofit.create(MemberService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(app: Application): SharedPreferences = app.defaultSharedPreferences
 }
