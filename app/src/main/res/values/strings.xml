@@ -2031,4 +2031,7 @@
         <item quantity="one">Import %1$d wallet</item>
         <item quantity="other">Import %1$d wallets</item>
     </plurals>
+    <string name="Rename">Rename</string>
+    <string name="remove_wallet_pin_hint">Enter your Pin to remove wallet</string>
+    <string name="Remove_Wallet">Remove Wallet</string>
 </resources>

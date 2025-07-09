@@ -85,4 +85,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
            LIMIT 1"""
     )
     suspend fun findTopUsdBalanceAsset(usdIds: List<String>, excludeId: String): Web3Token?
+
+    @Query("DELETE FROM tokens WHERE wallet_id = :walletId")
+    suspend fun deleteByWalletId(walletId: String)
 }

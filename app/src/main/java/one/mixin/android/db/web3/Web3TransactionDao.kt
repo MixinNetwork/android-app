@@ -55,4 +55,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @Query("SELECT * FROM transactions WHERE status = 'pending'")
     suspend fun getPendingTransactions(): List<Web3Transaction>
+
+    @Query("DELETE FROM transactions WHERE address IN (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
+    suspend fun deleteByWalletId(walletId: String)
 }

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.viewmodel
 
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -8,29 +9,41 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApp
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EthereumWallet
+import one.mixin.android.crypto.SolanaWallet
+import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.job.RefreshWeb3Job
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.wallet.components.FetchWalletState
-import one.mixin.android.ui.wallet.components.WalletInfo
+import one.mixin.android.ui.wallet.components.IndexedWallet
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class FetchWalletViewModel @Inject constructor(
-    private val web3Repository: Web3Repository
+    private val web3Repository: Web3Repository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FetchWalletState.FETCHING)
     val state: StateFlow<FetchWalletState> = _state.asStateFlow()
 
-    private val _wallets = MutableStateFlow<List<WalletInfo>>(emptyList())
-    val wallets: StateFlow<List<WalletInfo>> = _wallets.asStateFlow()
+    private val _wallets = MutableStateFlow<List<IndexedWallet>>(emptyList())
+    val wallets: StateFlow<List<IndexedWallet>> = _wallets.asStateFlow()
 
     // Track selected WalletInfo objects
-    private val _selectedWalletInfos = MutableStateFlow<Set<WalletInfo>>(emptySet())
-    val selectedWalletInfos: StateFlow<Set<WalletInfo>> = _selectedWalletInfos.asStateFlow()
+    private val _selectedWalletInfos = MutableStateFlow<Set<IndexedWallet>>(emptySet())
+    val selectedWalletInfos: StateFlow<Set<IndexedWallet>> = _selectedWalletInfos.asStateFlow()
 
     private val _selectedAddresses = MutableStateFlow<Set<String>>(emptySet())
     val selectedAddresses: StateFlow<Set<String>> = _selectedAddresses.asStateFlow()
@@ -54,46 +67,43 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.FETCHING
             try {
                 if (mnemonic.isNotBlank()) {
-                    data class IndexedWallet(val index: Int, val wallet: Any, val address: String)
+                    val wallets = (0 until 10).map { index ->
+                        val ethereumWallet =
+                            CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
+                        val solanaWallet =
+                            CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
+                        IndexedWallet(index, ethereumWallet, solanaWallet)
+                    }
 
-                    val multiWallets = (0 until 10).flatMap { index ->
-                        listOf(
-                            CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)?.let {
-                                IndexedWallet(index, it, it.address)
-                            },
-                            CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index).let {
-                                IndexedWallet(index, it, it.address)
-                            }
-                        )
-                    }.filterNotNull()
-
-                    val addresses = multiWallets.map { it.address }
-                    val a = mutableListOf<String>()
-                    a.addAll(addresses)
-                    val response = web3Repository.searchAssetsByAddresses(a)
+                    val addresses = wallets.flatMap {
+                        listOf(it.ethereumWallet.address, it.solanaWallet.address)
+                    }
+                    val response = web3Repository.searchAssetsByAddresses(addresses)
                     if (response.isSuccess && response.data != null) {
-                        val assetsList = response.data!!
-                        val walletInfos = assetsList.map { assetsView ->
-                            val wallet = multiWallets.find { it.address == assetsView.address }
-                            val balance = assetsView.assets
-                                .sumOf { it.amount.toBigDecimal() }
-                                .toPlainString()
-                            WalletInfo(
-                                wallet?.index ?: -1,
-                                if (wallet?.wallet is EthereumWallet) Constants.ChainId.ETHEREUM_CHAIN_ID else Constants.ChainId.Solana,
-                                assetsView.address,
-                                balance
-                            )
+                        val tokensMap = response.data!!.associateBy(
+                            { it.address },
+                            { it.assets }
+                        )
+                        if (tokensMap.isEmpty()) {
+                            _wallets.value = listOf(wallets[0])
+                        }else {
+                            val walletInfos = wallets.map { wallet ->
+                                val evmTokens =
+                                    tokensMap[wallet.ethereumWallet.address] ?: emptyList()
+                                val solanaTokens =
+                                    tokensMap[wallet.solanaWallet.address] ?: emptyList()
+                                val allTokens = evmTokens + solanaTokens
+                                IndexedWallet(
+                                    wallet.index,
+                                    wallet.ethereumWallet,
+                                    wallet.solanaWallet,
+                                    assets = allTokens
+                                )
+                            }
+                            _wallets.value = walletInfos
                         }
-                        _wallets.value = walletInfos
                     } else {
-                        _wallets.value = multiWallets.map {
-                            WalletInfo(
-                                it.index,
-                                if (it.wallet is EthereumWallet) Constants.ChainId.ETHEREUM_CHAIN_ID else Constants.ChainId.Solana,
-                                it.address
-                            )
-                        }
+                        _wallets.value = listOf(wallets[0])
                     }
                 }
                 _state.value = FetchWalletState.SELECT
@@ -105,25 +115,16 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     // Start importing selected wallet infos
-    fun startImporting(selectedWalletInfos: Set<WalletInfo>) {
+    fun startImporting(selectedWalletInfos: Set<IndexedWallet>) {
         viewModelScope.launch {
             _state.value = FetchWalletState.IMPORTING
             _importSuccess.value = false
             try {
-                // Create address records for each selected wallet
+                // Create wallets for each selected wallet
                 selectedWalletInfos.forEach { wallet ->
-                    val addressRequest = Web3AddressRequest(
-                        destination = wallet.address,
-                        chainId = wallet.chainId
-                    )
-                    val response = web3Repository.createAddress(addressRequest)
-                    if (response.isSuccess) {
-                        Timber.d("Created address for ${'$'}{wallet.address}")
-                    } else {
-                        Timber.e("Failed to create address for ${'$'}{wallet.address}")
-                    }
+                    createWallet(wallet)
                 }
-                Timber.d("Successfully imported ${'$'}{selectedWalletInfos.size} wallets")
+                Timber.d("Successfully imported ${selectedWalletInfos.size} wallets")
                 _importSuccess.value = true
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallets")
@@ -135,13 +136,78 @@ class FetchWalletViewModel @Inject constructor(
         startFetching()
     }
 
-    // Toggle selection of a WalletInfo object
-    fun toggleWalletSelection(wallet: WalletInfo) {
+    private suspend fun createWallet(indexedWallet: IndexedWallet) {
+        // Create EVM wallet
+        createWallet(
+            name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${indexedWallet.index}",
+            category = RefreshWeb3Job.WALLET_CATEGORY_PRIVATE,
+            addresses = listOf(
+                Web3AddressRequest(
+                    destination = indexedWallet.ethereumWallet.address,
+                    chainId = Constants.ChainId.ETHEREUM_CHAIN_ID
+                )
+                ,
+                Web3AddressRequest(
+                    destination = indexedWallet.solanaWallet.address,
+                    chainId = Constants.ChainId.SOLANA_CHAIN_ID
+                )
+            )
+        )
+    }
+
+    private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>) {
+        val walletRequest = WalletRequest(
+            name = name,
+            category = category,
+            addresses = addresses
+        )
+
+        requestRouteAPI(
+            invokeNetwork = {
+                web3Repository.createWallet(walletRequest)
+            },
+            successBlock = { response ->
+                val wallet = response.data
+                if (wallet != null) {
+                    // Insert wallet and addresses into local database
+                    insertWalletAndAddresses(wallet)
+                } else {
+                    Timber.e("Failed to create $category wallet: response data is null")
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to create $category wallet: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = {
+                userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            },
+            defaultErrorHandle = {}
+        )
+    }
+
+    private suspend fun insertWalletAndAddresses(walletResponse: Web3WalletResponse) {
+        val wallet = Web3Wallet(
+            id = walletResponse.id,
+            name = walletResponse.name,
+            category = walletResponse.category,
+            createdAt = walletResponse.createdAt,
+            updatedAt = walletResponse.updatedAt
+        )
+        web3Repository.insertWallet(wallet)
+        Timber.d("Created ${walletResponse.category} wallet with ID: ${walletResponse.id}")
+
+        walletResponse.addresses?.let { addresses ->
+            web3Repository.insertAddressList(addresses)
+            Timber.d("Inserted wallet with ID: ${walletResponse.id}, ${addresses.size} addresses")
+        }
+    }
+
+    fun toggleWalletSelection(wallet: IndexedWallet) {
         val current = _selectedWalletInfos.value
         _selectedWalletInfos.value = if (current.contains(wallet)) current - wallet else current + wallet
     }
 
-    // Select all WalletInfo objects
     fun selectAll() {
         _selectedWalletInfos.value = _wallets.value.toSet()
     }

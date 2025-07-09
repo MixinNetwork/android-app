@@ -13,4 +13,10 @@ interface Web3AddressDao : BaseDao<Web3Address> {
     
     @Query("SELECT * FROM addresses WHERE chain_id = :chainId")
     suspend fun getAddressesByChainId(chainId: String): Web3Address?
+
+    @Query("SELECT * FROM addresses WHERE wallet_id = :walletId")
+    suspend fun getAddressesByWalletId(walletId: String): List<Web3Address>
+
+    @Query("DELETE FROM addresses WHERE wallet_id = :walletId")
+    suspend fun deleteByWalletId(walletId: String)
 }

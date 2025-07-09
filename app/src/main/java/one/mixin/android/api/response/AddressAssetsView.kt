@@ -1,6 +1,7 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
 
 data class AddressAssetsView(
     @SerializedName("address")
@@ -38,4 +39,7 @@ data class AssetView(
     val walletId: String,
     @SerializedName("level")
     val assetLevel: Int
-)
+) {
+    val value
+        get() = (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+}

@@ -275,11 +275,6 @@ interface RouteService {
         @Path("id") id: String
     ): MixinResponse<List<Web3Token>>
 
-    @POST("addresses")
-    suspend fun createAddress(
-        @Body request: Web3AddressRequest
-    ): MixinResponse<List<Web3Address>>
-
     @GET("wallets/{id}/addresses")
     suspend fun getWalletAddresses(
         @Path("id") walletId: String

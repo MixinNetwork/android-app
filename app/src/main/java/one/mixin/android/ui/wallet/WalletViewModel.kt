@@ -56,6 +56,7 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
+import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -438,4 +439,20 @@ class WalletViewModel
     ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
 
     suspend fun searchAssetsByAddresses(addresses: List<String>) = web3Repository.searchAssetsByAddresses(addresses)
+
+    suspend fun deleteWallet(walletId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val response = web3Repository.destroyWallet(walletId)
+                if (response.isSuccess) {
+                    web3Repository.deleteTransactionsByWalletId(walletId)
+                    web3Repository.deleteAddressesByWalletId(walletId)
+                    web3Repository.deleteAssetsByWalletId(walletId)
+                    web3Repository.deleteWallet(walletId)
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
+    }
 }

@@ -5,6 +5,7 @@ import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
@@ -13,6 +14,7 @@ import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
+import one.mixin.android.db.web3.vo.Web3Wallet
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,7 +27,8 @@ constructor(
     val web3TransactionDao: Web3TransactionDao,
     val web3TokensExtraDao: Web3TokensExtraDao,
     val web3AddressDao: Web3AddressDao,
-    val web3WalletDao: Web3WalletDao
+    val web3WalletDao: Web3WalletDao,
+    val userRepository: UserRepository
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
 
@@ -53,7 +56,8 @@ constructor(
     }
 
     fun web3Transactions(walletId:String, assetId: String) = web3TransactionDao.web3Transactions(walletId, assetId)
-    
+
+    // todo walletid
     suspend fun getAddressesByChainId(walletId: String): Web3Address? {
         return web3AddressDao.getAddressesByChainId(walletId)
     }
@@ -66,5 +70,26 @@ constructor(
 
     suspend fun createWallet(request: WalletRequest) = routeService.createWallet(request)
 
-    suspend fun createAddress(request: Web3AddressRequest) = routeService.createAddress(request)
+    suspend fun insertWallet(wallet: Web3Wallet) = web3WalletDao.insertSuspend(wallet)
+
+    suspend fun insertAddress(address: Web3Address) = web3AddressDao.insertSuspend(address)
+
+    suspend fun insertAddressList(addresses: List<Web3Address>) = web3AddressDao.insertListSuspend(addresses)
+
+    suspend fun fetchSessionsSuspend(userIds: List<String>) = userRepository.fetchSessionsSuspend(userIds)
+
+    suspend fun destroyWallet(walletId: String) = routeService.destroyWallet(walletId)
+
+    suspend fun deleteWallet(walletId: String) = web3WalletDao.deleteWallet(walletId)
+
+    suspend fun deleteAddressesByWalletId(walletId: String) {
+        web3AddressDao.getAddressesByWalletId(walletId).forEach { address ->
+            Web3PropertyHelper.deleteKeyValue(address.destination)
+        }
+        web3AddressDao.deleteByWalletId(walletId)
+    }
+
+    suspend fun deleteAssetsByWalletId(walletId: String) = web3TokenDao.deleteByWalletId(walletId)
+
+    suspend fun deleteTransactionsByWalletId(walletId: String) = web3TransactionDao.deleteByWalletId(walletId)
 }

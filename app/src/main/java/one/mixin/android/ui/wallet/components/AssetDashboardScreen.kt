@@ -114,8 +114,8 @@ fun AssetDashboardScreen(
                         name = wallet.name,
                         balance = web3TokenTotalBalance,
                         assets = web3TokenDistribution,
-                        destination = WalletDestination.Classic,
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
+                        destination = WalletDestination.Import,
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Import, wallet.id) }
                     )
                 } else {
                     val web3TokenTotalBalance by viewModel.web3TokenTotalBalanceFlow(wallet.id).collectAsState()

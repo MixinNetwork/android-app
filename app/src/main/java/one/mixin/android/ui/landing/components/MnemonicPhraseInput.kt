@@ -105,21 +105,16 @@ fun MnemonicPhraseInput(
         )
     }
 
-    LaunchedEffect(mnemonicList) {
-        if (mnemonicList.isNotEmpty()) {
-            legacy = if (mnemonicList.size == 12) false else mnemonicList.size >= 13
-            inputs = when (state) {
-                MnemonicState.Import -> {
-                    if (mnemonicList.size <= 12) {
-                        mnemonicList + List(12 - mnemonicList.size) { "" }
-                    } else {
-                        mnemonicList + List(24 - mnemonicList.size) { "" }
-                    }
+    if (state == MnemonicState.Import) {
+        LaunchedEffect(mnemonicList) {
+            legacy =
+                if (mnemonicList.size == 12) false else if (mnemonicList.size > 12) true else legacy
+            inputs =
+                if (mnemonicList.size <= 12) {
+                    mnemonicList + List(12 - mnemonicList.size) { "" }
+                } else {
+                    mnemonicList + List(24 - mnemonicList.size) { "" }
                 }
-                else -> {
-                    emptyList()
-                }
-            }
         }
     }
 
@@ -391,16 +386,25 @@ fun MnemonicPhraseInput(
                                         if (clipData != null && clipData.itemCount > 0) {
                                             val pastedText = clipData.getItemAt(0).text.toString()
                                             val words = pastedText.split(" ")
-                                            if (legacy && words.size == 24 && isMnemonicValid(words)) {
-                                                inputs = words
-                                            } else if (!legacy && words.size == 12 && isMnemonicValid(
+                                            when {
+                                                words.size == (if (state == MnemonicState.Import) 24 else 25) && isMnemonicValid(
                                                     words
-                                                )
-                                            ) {
-                                                inputs = words
-                                            } else {
-                                                errorInfo =
-                                                    context.getString(R.string.invalid_mnemonic_phrase)
+                                                ) -> {
+                                                    legacy = true
+                                                    inputs = words
+                                                }
+
+                                                words.size == (if (state == MnemonicState.Import) 12 else 13) && isMnemonicValid(
+                                                    words
+                                                ) -> {
+                                                    legacy = false
+                                                    inputs = words
+                                                }
+
+                                                else -> {
+                                                    errorInfo =
+                                                        context.getString(R.string.invalid_mnemonic_phrase)
+                                                }
                                             }
                                         }
                                     } else if (state == MnemonicState.Display) {
@@ -447,8 +451,7 @@ fun MnemonicPhraseInput(
                                         val clipboard = context.getClipboardManager()
                                         clipboard.setPrimaryClip(
                                             ClipData.newPlainText(
-                                                null,
-                                                mnemonicList.joinToString(" ")
+                                                null, mnemonicList.joinToString(" ")
                                             )
                                         )
                                         toast(R.string.copied_to_clipboard)
@@ -596,9 +599,10 @@ fun MnemonicPhraseInput(
                         Text(
                             stringResource(
                                 when (state) {
+                                    MnemonicState.Import -> R.string.Next
                                     MnemonicState.Display -> R.string.Check_Backup
                                     MnemonicState.Input -> R.string.Confirm
-                                    MnemonicState.Verify, MnemonicState.Import -> R.string.Complete
+                                    MnemonicState.Verify -> R.string.Complete
                                 }
                             ),
                             color = Color.White,

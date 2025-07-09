@@ -42,10 +42,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
+import one.mixin.android.api.response.AssetView
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.EthereumWallet
+import one.mixin.android.crypto.SolanaWallet
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
+import java.math.BigDecimal
 import java.text.NumberFormat
 
 enum class FetchWalletState {
@@ -60,13 +66,15 @@ data class AssetInfo(
     val value: Double
 )
 
-data class WalletInfo(
+data class IndexedWallet(
     val index: Int,
-    val chainId: String,
-    val address: String,
-    val balance: String = "0",
-    val assets: List<AssetInfo> = emptyList()
-)
+    val ethereumWallet: EthereumWallet,
+    val solanaWallet: SolanaWallet,
+    val assets: List<AssetView> = emptyList()
+) {
+    val totalValue: BigDecimal
+        get() = assets.sumOf { (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) }
+}
 
 @Composable
 fun FetchWalletPage(
@@ -77,7 +85,7 @@ fun FetchWalletPage(
     val state by viewModel.state.collectAsState()
     val wallets by viewModel.wallets.collectAsState()
     val importSuccess by viewModel.importSuccess.collectAsState()
-    var selectedWalletInfos by remember { mutableStateOf(emptySet<WalletInfo>()) }
+    var selectedWalletInfos by remember { mutableStateOf(emptySet<IndexedWallet>()) }
 
     LaunchedEffect(mnemonic) {
         if (!mnemonic.isNullOrEmpty()) {
@@ -90,7 +98,7 @@ fun FetchWalletPage(
         }
     }
 
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -176,10 +184,10 @@ fun FetchingContent() {
 
 @Composable
 fun SelectContent(
-    wallets: List<WalletInfo>,
-    selectedWalletInfos: Set<WalletInfo>,
-    onWalletToggle: (WalletInfo) -> Unit,
-    onContinue: (Set<WalletInfo>) -> Unit,
+    wallets: List<IndexedWallet>,
+    selectedWalletInfos: Set<IndexedWallet>,
+    onWalletToggle: (IndexedWallet) -> Unit,
+    onContinue: (Set<IndexedWallet>) -> Unit,
     onBackPressed: () -> Unit,
     onSelectAll: () -> Unit
 ) {
@@ -215,7 +223,7 @@ fun SelectContent(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(items = wallets, key = { it.address }) { wallet ->
+            items(items = wallets, key = { it.index }) { wallet ->
                 WalletItem(
                     wallet = wallet,
                     isSelected = selectedWalletInfos.contains(wallet),
@@ -274,7 +282,7 @@ fun ImportingContent(
 
 @Composable
 fun WalletItem(
-    wallet: WalletInfo,
+    wallet: IndexedWallet,
     isSelected: Boolean,
     onToggle: () -> Unit
 ) {
@@ -288,7 +296,8 @@ fun WalletItem(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onToggle)
+                onClick = onToggle
+            )
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -312,7 +321,7 @@ fun WalletItem(
         Spacer(modifier = Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
-                text = wallet.balance,
+                text = wallet.totalValue.priceFormat(),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.W400,
@@ -339,8 +348,8 @@ fun WalletItem(
                     }
                 }
             } else {
-                val totalValue = wallet.assets.sumOf { it.value }
-                wallet.assets.take(2).forEach { asset ->
+                val totalValue = wallet.totalValue
+                wallet.assets.take(2).sortedBy { it.value }.forEach { asset ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CoilImage(
                             model = asset.iconUrl,
@@ -348,10 +357,10 @@ fun WalletItem(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        if (totalValue > 0) {
-                            val percentage = (asset.value / totalValue) * 100
+                        if (totalValue > BigDecimal.ZERO) {
+                            val percentage = (asset.value / totalValue) * BigDecimal(100)
                             Text(
-                                text = "${NumberFormat.getPercentInstance().format(percentage / 100)}",
+                                text = "${NumberFormat.getPercentInstance().format(percentage.toDouble() / 100)}",
                                 fontSize = 12.sp,
                                 color = MixinAppTheme.colors.textMinor
                             )
@@ -361,12 +370,6 @@ fun WalletItem(
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = wallet.balance,
-                fontSize = 12.sp,
-                color = MixinAppTheme.colors.textMinor,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-            )
         }
     }
 }
