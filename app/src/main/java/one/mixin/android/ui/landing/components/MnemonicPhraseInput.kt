@@ -93,6 +93,7 @@ fun MnemonicPhraseInput(
     pin: String? = null,
     onQrCode: ((List<String>) -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
+    onScan: (() -> Unit)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
     var inputs by remember {
@@ -103,6 +104,25 @@ fun MnemonicPhraseInput(
             }
         )
     }
+
+    LaunchedEffect(mnemonicList) {
+        if (mnemonicList.isNotEmpty()) {
+            legacy = if (mnemonicList.size == 12) false else mnemonicList.size >= 13
+            inputs = when (state) {
+                MnemonicState.Import -> {
+                    if (mnemonicList.size <= 12) {
+                        mnemonicList + List(12 - mnemonicList.size) { "" }
+                    } else {
+                        mnemonicList + List(24 - mnemonicList.size) { "" }
+                    }
+                }
+                else -> {
+                    emptyList()
+                }
+            }
+        }
+    }
+
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -112,15 +132,7 @@ fun MnemonicPhraseInput(
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
-    var maxInput by remember {
-        mutableIntStateOf(
-            if (state == MnemonicState.Import) {
-                if (legacy) 25 else 12
-            } else {
-                if (legacy) 26 else 14
-            }
-        )
-    }
+
     MixinAppTheme(skip = true) {
         KeyboardAwareBox(
             modifier = Modifier
@@ -346,7 +358,27 @@ fun MnemonicPhraseInput(
                                 )
                             }
                         }
-                    } else if (index == maxInput) {
+                    } else if (state == MnemonicState.Import && index == if(legacy) 24 else 12) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable { onScan?.invoke() }
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_scan),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.Scan), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+                        }
+                    } else if (index == if (legacy) 25 else 13) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -403,7 +435,7 @@ fun MnemonicPhraseInput(
                                 )
                             }
                         }
-                    } else if (index == maxInput + 1) {
+                    } else if (index == if (legacy) 26 else 14) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -715,6 +747,7 @@ fun InputBar(string: String, callback: (String) -> Unit) {
 fun MnemonicPhraseInputPreview() {
     MnemonicPhraseInput(
         state = MnemonicState.Input,
+        onScan = {},
         onComplete = { mnemonicList -> /* Handle mnemonic change */ },
     )
 }

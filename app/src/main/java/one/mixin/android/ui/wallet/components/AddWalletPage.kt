@@ -5,6 +5,15 @@ import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
 
 @Composable
-fun AddWalletPage(onComplete: (List<String>) -> Unit) {
-    MnemonicPhraseInput(MnemonicState.Import, onComplete = onComplete)
+fun AddWalletPage(
+    mnemonicList: List<String> = emptyList(),
+    onComplete: (List<String>) -> Unit,
+    onScan: () -> Unit
+) {
+    MnemonicPhraseInput(
+        state = MnemonicState.Import,
+        mnemonicList = mnemonicList,
+        onComplete = onComplete,
+        onScan = onScan
+    )
 }
