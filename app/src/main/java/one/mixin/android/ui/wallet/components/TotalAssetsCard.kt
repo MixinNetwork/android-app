@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.components
 
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,8 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,13 +27,19 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import java.math.BigDecimal
 
 @Composable
 fun TotalAssetsCard(
     viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
-    val combinedDistribution by viewModel.combinedAssetDistribution.collectAsState(initial = emptyList())
-    val totalBalance by viewModel.totalBalance.collectAsState()
+    var combinedDistribution by remember { mutableStateOf<List<AssetDistribution>>(emptyList()) }
+    var totalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
+
+    LaunchedEffect(viewModel) {
+        combinedDistribution = viewModel.getTokenDistribution()
+        totalBalance = viewModel.getTokenTotalBalance()
+    }
 
     Column(
         modifier = Modifier

@@ -24,10 +24,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,9 +42,11 @@ import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.openUrl
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import java.math.BigDecimal
 
 const val PREF_NAME = "wallet_info_card"
 private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
@@ -56,10 +59,16 @@ fun AssetDashboardScreen(
     onAddWalletClick: () -> Unit,
     viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
-    val tokenDistribution by viewModel.tokenDistribution.collectAsState(initial = emptyList())
-    val wallets by viewModel.wallets.collectAsState(initial = emptyList())
+    var tokenDistribution by remember { mutableStateOf<List<AssetDistribution>>(emptyList()) }
+    var wallets by remember { mutableStateOf<List<Web3Wallet>>(emptyList()) }
+    var tokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
 
-    val tokenTotalBalance by viewModel.tokenTotalBalance.collectAsState()
+    LaunchedEffect(viewModel) {
+        tokenDistribution = viewModel.getTokenDistribution()
+        wallets = viewModel.getWallets()
+        tokenTotalBalance = viewModel.getTokenTotalBalance()
+    }
+
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
@@ -96,7 +105,7 @@ fun AssetDashboardScreen(
             }
             TotalAssetsCard()
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             WalletCard(
                 balance = tokenTotalBalance,
                 assets = tokenDistribution,
@@ -107,9 +116,15 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             wallets.forEach { wallet ->
+                var web3TokenTotalBalance by remember(wallet.id) { mutableStateOf(BigDecimal.ZERO) }
+                var web3TokenDistribution by remember(wallet.id) { mutableStateOf<List<AssetDistribution>>(emptyList()) }
+
+                LaunchedEffect(wallet.id) {
+                    web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(wallet.id)
+                    web3TokenDistribution = viewModel.getWeb3TokenDistribution(wallet.id)
+                }
+
                 if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
-                    val web3TokenTotalBalance by viewModel.web3TokenTotalBalanceFlow(wallet.id).collectAsState()
-                    val web3TokenDistribution by viewModel.web3TokenDistributionFlow(wallet.id).collectAsState(initial = emptyList())
                     WalletCard(
                         name = wallet.name,
                         balance = web3TokenTotalBalance,
@@ -118,8 +133,6 @@ fun AssetDashboardScreen(
                         onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id)) }
                     )
                 } else {
-                    val web3TokenTotalBalance by viewModel.web3TokenTotalBalanceFlow(wallet.id).collectAsState()
-                    val web3TokenDistribution by viewModel.web3TokenDistributionFlow(wallet.id).collectAsState(initial = emptyList())
                     WalletCard(
                         balance = web3TokenTotalBalance,
                         assets = web3TokenDistribution,
@@ -160,10 +173,10 @@ fun WalletInfoCard(
 ) {
     val initialPage = if (hidePrivacyWalletInfo && !hideCommonWalletInfo) 0 else 0
     val pageCount = if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) 2 else 1
-    
+
     val pagerState = rememberPagerState(initialPage = initialPage) { pageCount }
     val context = LocalContext.current
-    
+
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -206,10 +219,10 @@ fun WalletInfoCard(
                     )
                 }
             }
-            
+
             if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) {
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
@@ -250,7 +263,7 @@ fun PrivacyWalletInfo(
                 color = MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_close_grey),
                 contentDescription = stringResource(R.string.Close),
@@ -259,9 +272,9 @@ fun PrivacyWalletInfo(
                     .clickable { onClose() }
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -271,18 +284,18 @@ fun PrivacyWalletInfo(
                 color = MixinAppTheme.colors.textMinor,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_privacy),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onLearnMoreClick() }
@@ -316,7 +329,7 @@ fun CommonWalletInfo(
                 color = MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_close_grey),
                 contentDescription = stringResource(R.string.Close),
@@ -325,9 +338,9 @@ fun CommonWalletInfo(
                     .clickable { onClose() }
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -337,18 +350,18 @@ fun CommonWalletInfo(
                 color = MixinAppTheme.colors.textMinor,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_common),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onLearnMoreClick() }
