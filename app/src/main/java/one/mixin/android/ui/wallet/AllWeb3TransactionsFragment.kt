@@ -53,6 +53,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         const val TAG = "AllTransactionsFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_FILTER_PARAMS = "filter_params"
+        const val ARGS_WALLET_ID = "args_wallet_id"
     }
 
     private val binding by viewBinding(FragmentAllTransactionsBinding::bind)
@@ -82,7 +83,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         (requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java)
             ?: Web3FilterParams(
                 tokenItems = tokenItem?.let { listOf(it) },
-                level = requireArguments().getInt("level", 0b00)
+                level = requireArguments().getInt("level", 0b00),
+                walletId = requireArguments().getString(ARGS_WALLET_ID)
             )
         )
     }

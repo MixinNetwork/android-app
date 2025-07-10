@@ -278,11 +278,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         builder.setCustomView(importBottomBinding.root)
         val bottomSheet = builder.create()
         importBottomBinding.hide.setOnClickListener {
-            // Todo
+            WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden)
             bottomSheet.dismiss()
         }
         importBottomBinding.transactionsTv.setOnClickListener {
-            // Todo
+            val dest = walletViewModel.selectedWalletDestination.value
+            if (dest is WalletDestination.Import) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+            } else {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions())
+            }
             bottomSheet.dismiss()
         }
         importBottomBinding.delete.setOnClickListener {
@@ -383,7 +388,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             bottomSheet.dismiss()
         }
         classicBottomBinding.transactionsTv.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions)
+            val dest = walletViewModel.selectedWalletDestination.value
+            if (dest is WalletDestination.Classic) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+            } else {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions())
+            }
             bottomSheet.dismiss()
         }
         bottomSheet.show()

@@ -79,11 +79,13 @@ class WalletActivity : BlazeBaseActivity() {
                     putBoolean(PENDING_TYPE, pendingType)
                 })
             }
-            Destination.AllWeb3Transactions -> {
+            is Destination.AllWeb3Transactions -> {
                 navGraph.setStartDestination(R.id.all_web3_transactions_fragment)
                 val pendingType = intent.getBooleanExtra(PENDING_TYPE, false)
+                val walletId = intent.getStringExtra(ARGS_WALLET_ID)
                 navController.setGraph(navGraph, Bundle().apply {
-                    if (pendingType) putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING))
+                    if (pendingType) putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING, walletId = walletId))
+                    else putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = walletId))
                 })
             }
             Destination.Hidden -> {
@@ -160,21 +162,21 @@ class WalletActivity : BlazeBaseActivity() {
 
     var routeProfile: RouteProfile? = null
 
-    enum class Destination {
-        Transactions,
-        Search,
-        SearchWeb3,
-        AllTransactions,
-        AllWeb3Transactions,
-        Hidden,
-        Web3Hidden,
-        Deposit,
-        Buy,
-        Market,
-        Address,
-        Web3Transactions,
-        Web3TransferDestinationInput,
-        InputWithBiometricItem,
+    sealed class Destination : java.io.Serializable {
+        object Transactions : Destination()
+        object Search : Destination()
+        object SearchWeb3 : Destination()
+        object AllTransactions : Destination()
+        data class AllWeb3Transactions(val walletId: String? = null) : Destination()
+        object Hidden : Destination()
+        object Web3Hidden : Destination()
+        object Deposit : Destination()
+        object Buy : Destination()
+        object Market : Destination()
+        object Address : Destination()
+        object Web3Transactions : Destination()
+        object Web3TransferDestinationInput : Destination()
+        object InputWithBiometricItem : Destination()
     }
 
     companion object {
@@ -185,6 +187,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val ADDRESS = "address"
         const val WEB3_TOKEN = "web3_token"
         const val PENDING_TYPE = "pending_type"
+        const val ARGS_WALLET_ID = "args_wallet_id"
 
         fun navigateToWalletActivity(activity: Activity, address: String, token: Web3TokenItem, chain: Web3TokenItem) {
             val intent = Intent(activity, WalletActivity::class.java).apply {
@@ -238,12 +241,14 @@ class WalletActivity : BlazeBaseActivity() {
         fun show(
             activity: Activity,
             destination: Destination,
-            pendingType: Boolean = false
+            pendingType: Boolean = false,
+            walletId: String? = null,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(PENDING_TYPE, pendingType)
+                    walletId?.let { putExtra(ARGS_WALLET_ID, it) }
                 },
             )
         }

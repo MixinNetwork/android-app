@@ -17,7 +17,8 @@ class Web3FilterParams(
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
-    var level: Int = 0b00
+    var level: Int = 0b00,
+    var walletId: String? = null
 ) : Parcelable {
     companion object {
         const val FILTER_MASK = 0b11
@@ -60,6 +61,10 @@ class Web3FilterParams(
                 val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
                 filters.add("(w.send_asset_id IN ($tokenIds) OR w.receive_asset_id IN ($tokenIds))")
             }
+        }
+
+        walletId?.let {
+            filters.add("w.address in (SELECT address FROM wallets WHERE wallet_id = '$it')")
         }
 
         tokenFilterType.let {

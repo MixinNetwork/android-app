@@ -154,7 +154,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
             _headBinding?.web3PendingView?.setOnClickListener {
                 if ((_headBinding?.web3PendingView?.getPendingCount() ?: 0) > 0) {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions, pendingType = true)
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
                 }
             }
             assetsAdapter.headerView = _headBinding!!.root
