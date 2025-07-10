@@ -931,9 +931,8 @@ class TokenRepository
                         withContext(Dispatchers.IO) {
                             findOrSyncAsset(assetId)
                         }
-                    } else {
-                        // do nothing
                     }
+                    // do nothing
                 }
             }
             return r
