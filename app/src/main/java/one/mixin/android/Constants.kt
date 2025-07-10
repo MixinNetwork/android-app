@@ -227,11 +227,11 @@ object Constants {
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
         const val SOLANA_CHAIN_ID = "64692c23-8971-4cf4-84a7-4dd1271dd887"
-
         const val LIGHTNING_NETWORK_CHAIN_ID = "59c09123-95cc-3ffd-a659-0f9169074cee"
-
         const val MixinVirtualMachine = "a0ffd769-5850-4b48-9651-d2ae44a3e64d"
         const val Base = "3fb612c5-6844-3979-ae4a-5a84e79da870"
+        const val Arbitrum = "8c590110-1abc-3697-84f2-05214e6516aa"
+        const val Optimism = "60360611-370c-3b69-9826-b13db93f6aba"
         const val Litecoin = "76c802a2-7c88-447f-a93e-c29c9e5dd9c8"
         const val Dogecoin = "6770a1e5-6086-44d5-b60f-545f9d9e8ffd"
         const val Monero = "05c5ac01-31f9-4a69-aa8a-ab796de1d041"
@@ -241,9 +241,6 @@ object Constants {
         const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
         const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
         const val Avalanche = "cbc77539-0a20-4666-8c8a-4ded62b36f0a"
-        const val Arbitrum = "d0688ff7-6656-4a79-bd5f-d764bfa9bc46"
-        const val Optimism = "62d5b01f-24ee-4c96-8214-8e04981d05f2"
-
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
     }
 
