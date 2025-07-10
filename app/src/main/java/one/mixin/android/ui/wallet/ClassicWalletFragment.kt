@@ -113,17 +113,17 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         WalletActivity.showBuy(requireActivity(), true, null, null)
                     }
                     sendReceiveView.send.setOnClickListener {
-                        Web3TokenListBottomSheetDialogFragment.newInstance().apply {
+                        Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId).apply {
                             setOnClickListener { token ->
                                 this@ClassicWalletFragment.lifecycleScope.launch {
-                                    val address = getAddressesByChainId(token.chainId)
+                                    val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
                                     if (address == null) {
                                         toast(R.string.Data_error)
                                         return@launch
                                     }
                                     val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
                                     Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
-                                    WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address, token, chain)
+                                    WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address.destination, token, chain)
                                 }
                                 dismissNow()
                             }
@@ -393,15 +393,15 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun showReceiveAssetList() {
-        Web3TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE).apply {
+        Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId, TYPE_FROM_RECEIVE).apply {
             setOnClickListener { token ->
                 this@ClassicWalletFragment.lifecycleScope.launch {
-                    val address = getAddressesByChainId(token.chainId)
-                    if (address.isNullOrEmpty()) {
+                    val address = web3ViewModel.getAddressesByChainId(this@ClassicWalletFragment.walletId, token.chainId)
+                    if (address == null) {
                         toast(R.string.Data_error)
                         return@launch
                     }
-                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address, WalletActivity.Destination.Address)
+                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, WalletActivity.Destination.Address)
                 }
                 dismissNow()
             }
@@ -411,30 +411,18 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     override fun <T> onNormalItemClick(item: T) {
         val token = item as Web3TokenItem
         lifecycleScope.launch {
-            val address = getAddressesByChainId(token.chainId)
+            val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
             if (address != null) {
                 WalletActivity.showWithWeb3Token(
                     requireActivity(),
                     token,
-                    address,
+                    address.destination,
                     WalletActivity.Destination.Web3Transactions
                 )
             } else{
                 toast(R.string.Data_error)
             }
         }
-    }
-
-    
-    private suspend fun getAddressesByChainId(chainId: String): String? {
-        if (walletId.isEmpty()) {
-            walletId = web3ViewModel.getClassicWalletId() ?: ""
-        }
-        if (walletId.isEmpty()) return null
-
-        val address = web3ViewModel.getAddressesByChainId(chainId)
-
-        return address?.destination
     }
 
 }

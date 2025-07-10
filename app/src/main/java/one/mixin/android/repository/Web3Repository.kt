@@ -57,11 +57,6 @@ constructor(
 
     fun web3Transactions(walletId:String, assetId: String) = web3TransactionDao.web3Transactions(walletId, assetId)
 
-    // todo walletid
-    suspend fun getAddressesByChainId(walletId: String): Web3Address? {
-        return web3AddressDao.getAddressesByChainId(walletId)
-    }
-
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()
 
     suspend fun searchAssetsByAddresses(addresses: List<String>) = routeService.searchAssetsByAddresses(
@@ -96,4 +91,6 @@ constructor(
     suspend fun deleteAssetsByWalletId(walletId: String) = web3TokenDao.deleteByWalletId(walletId)
 
     suspend fun deleteTransactionsByWalletId(walletId: String) = web3TransactionDao.deleteByWalletId(walletId)
+
+    suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3AddressDao.getAddressesByChainId(walletId, chainId)
 }

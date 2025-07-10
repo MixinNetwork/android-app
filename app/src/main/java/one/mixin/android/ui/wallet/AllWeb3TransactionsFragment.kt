@@ -392,7 +392,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val multiSelectWeb3TokenListBottomSheetDialogFragment by lazy {
-        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance()
+        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(walletId = filterParams.walletId)
             .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
                 override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
                     filterParams.tokenItems = tokenItems

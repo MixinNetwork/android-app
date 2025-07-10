@@ -50,7 +50,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
         const val WEB3_ASSET_PREFERENCE = "WEB3_TRANSFER_ASSET"
 
-        fun newInstance(type: Int = TYPE_FROM_SEND): Web3TokenListBottomSheetDialogFragment {
+        fun newInstance(walletId: String, type: Int = TYPE_FROM_SEND): Web3TokenListBottomSheetDialogFragment {
             return Web3TokenListBottomSheetDialogFragment().apply {
                 this.type = type
             }

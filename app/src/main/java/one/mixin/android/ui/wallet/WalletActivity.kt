@@ -163,6 +163,10 @@ class WalletActivity : BlazeBaseActivity() {
                     putParcelable(InputFragment.ARGS_BIOMETRIC_ITEM, biometricItem)
                 })
             }
+            else -> {
+                // Handle any other unexpected destination types
+                throw IllegalArgumentException("Unknown destination type: $destination")
+            }
         }
     }
 
