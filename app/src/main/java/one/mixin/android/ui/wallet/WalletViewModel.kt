@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -47,6 +48,7 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
+import one.mixin.android.ui.conversation.holder.TimeBubble
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.ui.wallet.components.WalletDestination
@@ -104,8 +106,7 @@ class WalletViewModel
 
     private fun initializeWallet() {
         viewModelScope.launch(Dispatchers.IO) {
-            val walletPref =
-                defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
+            val walletPref = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
             withContext(Dispatchers.Main) {
                 _hasUsedWallet.value = walletPref != null
             }
@@ -118,9 +119,7 @@ class WalletViewModel
 
     fun selectWallet(walletDestination: WalletDestination) {
         viewModelScope.launch(Dispatchers.IO) {
-            defaultSharedPreferences.edit()
-                .putString(Constants.Account.PREF_HAS_USED_WALLET, walletDestination.toString())
-                .apply()
+            defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, walletDestination.toString())
             withContext(Dispatchers.Main) {
                 _hasUsedWallet.value = true
                 _selectedWalletDestination.value = walletDestination

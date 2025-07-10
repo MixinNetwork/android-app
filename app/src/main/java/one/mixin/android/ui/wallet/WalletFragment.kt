@@ -283,10 +283,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         importBottomBinding.transactionsTv.setOnClickListener {
             val dest = walletViewModel.selectedWalletDestination.value
-            if (dest is WalletDestination.Import) {
-                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
-            } else {
-                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions())
+            dest?.let {
+                if (dest is WalletDestination.Import) {
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+                }
             }
             bottomSheet.dismiss()
         }
@@ -389,10 +389,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         classicBottomBinding.transactionsTv.setOnClickListener {
             val dest = walletViewModel.selectedWalletDestination.value
-            if (dest is WalletDestination.Classic) {
-                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
-            } else {
-                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions())
+            dest?.let {
+                if (dest is WalletDestination.Classic) {
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+                }
             }
             bottomSheet.dismiss()
         }

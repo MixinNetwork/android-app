@@ -154,7 +154,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
             _headBinding?.web3PendingView?.setOnClickListener {
                 if ((_headBinding?.web3PendingView?.getPendingCount() ?: 0) > 0) {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
+                    val destination = WalletActivity.Destination.AllWeb3Transactions(walletId = walletId)
+                    WalletActivity.show(requireActivity(), destination, pendingType = true)
                 }
             }
             assetsAdapter.headerView = _headBinding!!.root
@@ -188,7 +189,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         _walletId.observe(viewLifecycleOwner) { id ->
-            Timber.e("walletId $id")
             if (id.isNotEmpty()) {
                 web3ViewModel.web3TokensExcludeHidden(id)
                     .observe(viewLifecycleOwner) {

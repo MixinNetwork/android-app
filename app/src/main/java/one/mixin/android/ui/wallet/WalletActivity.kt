@@ -242,13 +242,14 @@ class WalletActivity : BlazeBaseActivity() {
             activity: Activity,
             destination: Destination,
             pendingType: Boolean = false,
-            walletId: String? = null,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(PENDING_TYPE, pendingType)
-                    walletId?.let { putExtra(ARGS_WALLET_ID, it) }
+                    if (destination is Destination.AllWeb3Transactions) {
+                        putExtra(ARGS_WALLET_ID, destination.walletId)
+                    }
                 },
             )
         }

@@ -29,7 +29,7 @@ class Web3FilterParams(
     }
 
     override fun toString(): String {
-        return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
+        return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} walletId:{$walletId}" +
             "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
             "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""} " +
             "level:$level"
@@ -64,7 +64,7 @@ class Web3FilterParams(
         }
 
         walletId?.let {
-            filters.add("w.address in (SELECT address FROM wallets WHERE wallet_id = '$it')")
+            filters.add("w.address IN (SELECT destination FROM addresses WHERE wallet_id = '$it')")
         }
 
         tokenFilterType.let {
@@ -106,7 +106,7 @@ class Web3FilterParams(
         }
 
         return SimpleSQLiteQuery(
-            "SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
+            "SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
                 "w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
                 "w.transaction_at, w.updated_at, w.level, " +
                 "c.symbol as chain_symbol, " +
