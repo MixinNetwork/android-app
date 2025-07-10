@@ -46,7 +46,6 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.openUrl
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import java.math.BigDecimal
 
 const val PREF_NAME = "wallet_info_card"
 private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
@@ -57,18 +56,8 @@ private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 fun AssetDashboardScreen(
     onWalletCardClick: (destination: WalletDestination) -> Unit,
     onAddWalletClick: () -> Unit,
-    viewModel: AssetDistributionViewModel = hiltViewModel()
 ) {
-    var tokenDistribution by remember { mutableStateOf<List<AssetDistribution>>(emptyList()) }
-    var wallets by remember { mutableStateOf<List<Web3Wallet>>(emptyList()) }
-    var tokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
-
-    LaunchedEffect(viewModel) {
-        tokenDistribution = viewModel.getTokenDistribution()
-        wallets = viewModel.getWallets()
-        tokenTotalBalance = viewModel.getTokenTotalBalance()
-    }
-
+    val viewModel: AssetDistributionViewModel = hiltViewModel()
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
@@ -107,35 +96,26 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             WalletCard(
-                balance = tokenTotalBalance,
-                assets = tokenDistribution,
                 destination = WalletDestination.Privacy,
                 onClick = { onWalletCardClick.invoke(WalletDestination.Privacy) }
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            var wallets by remember { mutableStateOf<List<Web3Wallet>>(emptyList()) }
+            LaunchedEffect(viewModel) {
+                wallets = viewModel.getWallets()
+            }
+
             wallets.forEach { wallet ->
-                var web3TokenTotalBalance by remember(wallet.id) { mutableStateOf(BigDecimal.ZERO) }
-                var web3TokenDistribution by remember(wallet.id) { mutableStateOf<List<AssetDistribution>>(emptyList()) }
-
-                LaunchedEffect(wallet.id) {
-                    web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(wallet.id)
-                    web3TokenDistribution = viewModel.getWeb3TokenDistribution(wallet.id)
-                }
-
                 if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
                     WalletCard(
                         name = wallet.name,
-                        balance = web3TokenTotalBalance,
-                        assets = web3TokenDistribution,
                         destination = WalletDestination.Import(wallet.id),
                         onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id)) }
                     )
                 } else {
                     WalletCard(
-                        balance = web3TokenTotalBalance,
-                        assets = web3TokenDistribution,
                         destination = WalletDestination.Classic(wallet.id),
                         onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
                     )

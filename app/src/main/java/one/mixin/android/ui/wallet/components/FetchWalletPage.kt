@@ -47,7 +47,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.EthereumWallet
 import one.mixin.android.crypto.SolanaWallet
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel

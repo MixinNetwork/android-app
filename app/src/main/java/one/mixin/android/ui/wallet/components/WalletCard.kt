@@ -20,7 +20,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
@@ -40,11 +45,33 @@ import java.math.BigDecimal
 @Composable
 fun WalletCard(
     name: String? = null,
-    balance: BigDecimal,
-    assets: List<AssetDistribution>,
     destination: WalletDestination?,
     onClick: () -> Unit,
+    viewModel: AssetDistributionViewModel = hiltViewModel(),
 ) {
+    var web3TokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
+    var tokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
+    var assets by remember { mutableStateOf(emptyList<AssetDistribution>()) }
+
+    LaunchedEffect(viewModel, destination) {
+        if (destination is WalletDestination.Privacy) {
+            tokenTotalBalance = viewModel.getTokenTotalBalance()
+            assets = viewModel.getTokenDistribution()
+        } else if (destination is WalletDestination.Classic) {
+            web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
+            assets = viewModel.getWeb3TokenDistribution(destination.walletId)
+        } else {
+            tokenTotalBalance = viewModel.getTokenTotalBalance()
+            assets = viewModel.getTokenDistribution()
+        }
+    }
+
+    val balance = if (destination is WalletDestination.Privacy) {
+        tokenTotalBalance
+    } else {
+        web3TokenTotalBalance
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,14 +89,14 @@ fun WalletCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     name
-                        ?: if (destination == WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
+                        ?: if (destination is WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
                         R.string.Common_Wallet
                     ),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
                 )
-                if (destination == WalletDestination.Privacy) {
+                if (destination is WalletDestination.Privacy) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         modifier = Modifier.size(18.dp),
@@ -101,39 +128,26 @@ fun WalletCard(
             if (assets.isNotEmpty()) {
                 Distribution(assets, destination = destination)
             } else {
-                if (destination == null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        privacyChain.forEachIndexed { index, iconRes ->
-                            Image(
-                                painter = painterResource(id = iconRes),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .offset(x = (-6 * index).dp)
-                                    .border(1.dp, MixinAppTheme.colors.background, CircleShape)
-                            )
-                        }
+                val chains =
+                    if (destination is WalletDestination.Privacy || destination == null) {
+                        privacyChain
+                    } else {
+                        classicChain
                     }
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        classicChain.forEachIndexed { index, iconRes ->
-                            Image(
-                                painter = painterResource(id = iconRes),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .offset(x = (-6 * index).dp)
-                                    .border(1.dp, MixinAppTheme.colors.background, CircleShape)
-                            )
-                        }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    chains.forEachIndexed { index, iconRes ->
+                        Image(
+                            painter = painterResource(id = iconRes),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .offset(x = (-6 * index).dp)
+                                .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                        )
                     }
                 }
             }
