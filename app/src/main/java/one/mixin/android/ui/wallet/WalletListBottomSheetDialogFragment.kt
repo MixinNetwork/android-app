@@ -71,7 +71,7 @@ import one.mixin.android.util.SystemUIManager
 class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletViewModel>()
-    private var onWalletClickListener: ((Web3Wallet) -> Unit)? = null
+    private var onWalletClickListener: ((Web3Wallet?) -> Unit)? = null
     private var behavior: BottomSheetBehavior<*>? = null
 
     private val excludeWalletId: String? by lazy {
@@ -103,6 +103,7 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                     WalletListScreen(
                         wallets = wallets,
+                        excludeWalletId = excludeWalletId,
                         onQueryChanged = { query ->
                             lifecycleScope.launch {
                                 searchQuery.emit(query)
@@ -163,7 +164,7 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {}
         }
 
-    fun setOnWalletClickListener(listener: (Web3Wallet) -> Unit) {
+    fun setOnWalletClickListener(listener: (Web3Wallet?) -> Unit) {
         onWalletClickListener = listener
     }
 
@@ -171,7 +172,7 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val TAG = "WalletListBottomSheetDialogFragment"
         private const val ARGS_EXCLUDE_WALLET_ID = "args_exclude_wallet_id"
 
-        fun newInstance(excludeWalletId: String): WalletListBottomSheetDialogFragment {
+        fun newInstance(excludeWalletId: String?): WalletListBottomSheetDialogFragment {
             return WalletListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_EXCLUDE_WALLET_ID, excludeWalletId)
             }
@@ -182,8 +183,9 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
 @Composable
 fun WalletListScreen(
     wallets: List<Web3Wallet>,
+    excludeWalletId: String?,
     onQueryChanged: (String) -> Unit,
-    onWalletClick: (Web3Wallet) -> Unit,
+    onWalletClick: (Web3Wallet?) -> Unit,
     onCancel: () -> Unit
 ) {
     var query by remember { mutableStateOf("") }
@@ -201,6 +203,18 @@ fun WalletListScreen(
         )
 
         LazyColumn(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)) {
+            if (excludeWalletId != null && query.isEmpty()) {
+                item {
+                    WalletCard(
+                        name = stringResource(id = R.string.Privacy_Wallet),
+                        destination = WalletDestination.Privacy,
+                        onClick = {
+                            onWalletClick.invoke(null)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
             items(wallets) { wallet ->
                 val destination = if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
                     WalletDestination.Import(wallet.id)
