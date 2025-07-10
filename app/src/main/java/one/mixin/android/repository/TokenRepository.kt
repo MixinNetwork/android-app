@@ -38,6 +38,7 @@ import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
+import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
@@ -921,7 +922,22 @@ class TokenRepository
         suspend fun getFees(
             id: String,
             destination: String,
-        ) = tokenService.getFees(id, destination)
+        ): MixinResponse<List<WithdrawalResponse>> {
+            val r = tokenService.getFees(id, destination)
+            if (r.isSuccess) {
+                r.data?.forEach { fee ->
+                    val assetId = fee.assetId
+                    if (assetId.isNullOrEmpty().not()) {
+                        withContext(Dispatchers.IO) {
+                            findOrSyncAsset(assetId)
+                        }
+                    } else {
+                        // do nothing
+                    }
+                }
+            }
+            return r
+        }
 
         suspend fun getMultisigs(requestId: String) = utxoService.getMultisigs(requestId)
 
