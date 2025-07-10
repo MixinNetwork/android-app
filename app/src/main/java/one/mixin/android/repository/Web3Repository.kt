@@ -44,7 +44,7 @@ constructor(
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
     
-    fun hiddenAssetItems(walletId: String) = web3TokenDao.hiddenAssetItems(walletId)
+    fun hiddenAssetItems(walletId: String?) = web3TokenDao.hiddenAssetItems(walletId)
     
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {
         val tokensExtra = web3TokensExtraDao.findByAssetId(tokenId,  walletId)

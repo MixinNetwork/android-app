@@ -92,9 +92,12 @@ class WalletActivity : BlazeBaseActivity() {
                 navGraph.setStartDestination(R.id.hidden_assets_fragment)
                 navController.setGraph(navGraph, null)
             }
-            Destination.Web3Hidden -> {
+            is Destination.Web3Hidden -> {
                 navGraph.setStartDestination(R.id.web3_hidden_assets_fragment)
-                navController.setGraph(navGraph, null)
+                val walletId = intent.getStringExtra(ARGS_WALLET_ID)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putString(Web3HiddenAssetsFragment.ARGS_WALLET_ID, walletId)
+                })
             }
             Destination.Deposit -> {
                 navGraph.setStartDestination(R.id.deposit_fragment)
@@ -169,7 +172,7 @@ class WalletActivity : BlazeBaseActivity() {
         object AllTransactions : Destination()
         data class AllWeb3Transactions(val walletId: String? = null) : Destination()
         object Hidden : Destination()
-        object Web3Hidden : Destination()
+        data class Web3Hidden(val walletId: String? = null) : Destination()
         object Deposit : Destination()
         object Buy : Destination()
         object Market : Destination()
@@ -248,6 +251,8 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(DESTINATION, destination)
                     putExtra(PENDING_TYPE, pendingType)
                     if (destination is Destination.AllWeb3Transactions) {
+                        putExtra(ARGS_WALLET_ID, destination.walletId)
+                    } else if (destination is Destination.Web3Hidden) {
                         putExtra(ARGS_WALLET_ID, destination.walletId)
                     }
                 },

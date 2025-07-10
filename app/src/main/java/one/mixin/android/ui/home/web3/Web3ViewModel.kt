@@ -85,7 +85,7 @@ internal constructor(
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
 
     // todo
-    fun hiddenAssetItems() = web3Repository.hiddenAssetItems("0195adf7-1d55-7163-9186-111845025a6c")
+    fun hiddenAssetItems(walletId: String? = null) = web3Repository.hiddenAssetItems(walletId)
 
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
         web3Repository.updateTokenHidden(tokenId, walletId, hidden)
