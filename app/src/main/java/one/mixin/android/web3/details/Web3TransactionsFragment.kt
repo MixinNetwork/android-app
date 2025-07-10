@@ -63,6 +63,7 @@ import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -119,6 +120,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        if (requireActivity() !is WalletActivity) {
+            binding.root.fitsSystemWindows = false
+        }
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
         refreshToken(token.walletId, token.assetId)
         binding.titleView.apply {
