@@ -68,9 +68,12 @@ class WalletActivity : BlazeBaseActivity() {
                 navGraph.setStartDestination(R.id.wallet_search_fragment)
                 navController.setGraph(navGraph, null)
             }
-            Destination.SearchWeb3 -> {
+            is Destination.SearchWeb3 -> {
                 navGraph.setStartDestination(R.id.wallet_search_web3_fragment)
-                navController.setGraph(navGraph, null)
+                val walletId = intent.getStringExtra(ARGS_WALLET_ID)
+                navController.setGraph(navGraph, Bundle().apply {
+                    putString(WalletSearchWeb3Fragment.ARGS_WALLET_ID, walletId)
+                })
             }
             Destination.AllTransactions -> {
                 navGraph.setStartDestination(R.id.all_transactions_fragment)
@@ -168,7 +171,7 @@ class WalletActivity : BlazeBaseActivity() {
     sealed class Destination : java.io.Serializable {
         object Transactions : Destination()
         object Search : Destination()
-        object SearchWeb3 : Destination()
+        data class SearchWeb3(val walletId: String? = null) : Destination()
         object AllTransactions : Destination()
         data class AllWeb3Transactions(val walletId: String? = null) : Destination()
         object Hidden : Destination()

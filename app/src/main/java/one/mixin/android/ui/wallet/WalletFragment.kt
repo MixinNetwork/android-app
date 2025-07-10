@@ -114,11 +114,23 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     is WalletDestination.Privacy -> {
                         WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
                     }
-                    is WalletDestination.Import, is WalletDestination.Classic -> {
-                        WalletActivity.show(
-                            requireActivity(),
-                            WalletActivity.Destination.SearchWeb3
-                        )
+                    is WalletDestination.Import -> {
+                        val dest = walletViewModel.selectedWalletDestination.value
+                        if (dest is WalletDestination.Import) {
+                            WalletActivity.show(
+                                requireActivity(),
+                                WalletActivity.Destination.SearchWeb3(dest.walletId)
+                            )
+                        }
+                    }
+                    is WalletDestination.Classic -> {
+                        val dest = walletViewModel.selectedWalletDestination.value
+                        if (dest is WalletDestination.Classic) {
+                            WalletActivity.show(
+                                requireActivity(),
+                                WalletActivity.Destination.SearchWeb3(dest.walletId)
+                            )
+                        }
                     }
                     null -> WalletActivity.show(
                         requireActivity(),

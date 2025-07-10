@@ -42,6 +42,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         const val POS_DEFAULT = 0
         const val POS_SEARCH = 1
         const val POS_EMPTY = 2
+        const val ARGS_WALLET_ID = "args_wallet_id"
         private const val TAG = "WalletSearchWeb3"
     }
 
@@ -50,6 +51,8 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
     private val viewModel by viewModels<Web3ViewModel>()
     private val walletViewModel by viewModels<WalletViewModel>()
+
+    private val walletId by lazy { requireArguments().getString(ARGS_WALLET_ID) }
 
     private val searchAdapter by lazy {
         SearchWeb3Adapter()
@@ -131,14 +134,13 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             if (viewDestroyed()) return@launch
             
             binding.pb.isVisible = true
-            val walletId = viewModel.getClassicWalletId() ?: ""
-            if (walletId.isEmpty()) {
+            if (walletId.isNullOrEmpty()) {
                 binding.rvVa.displayedChild = POS_EMPTY
                 binding.pb.isVisible = false
                 return@launch
             }
-            val tokens = withContext(Dispatchers.IO) { 
-                val allTokens = viewModel.web3TokensExcludeHidden(walletId).value ?: emptyList()
+            val tokens = withContext(Dispatchers.IO) {
+                val allTokens = viewModel.web3TokensExcludeHidden(walletId!!).value ?: emptyList()
                 allTokens.sortedByDescending {
                     runCatching { it.balance.toBigDecimal() * it.priceUsd.toBigDecimal() }.getOrDefault(0.toBigDecimal())
                 }
@@ -180,15 +182,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             binding.pb.isVisible = true
             isSearchingRemote = false
 
-            val walletId = viewModel.getClassicWalletId() ?: ""
-            if (walletId.isEmpty()) {
+            if (walletId.isNullOrEmpty()) {
                 binding.rvVa.displayedChild = POS_EMPTY
                 binding.pb.isVisible = false
                 return@launch
             }
 
             val localTokens = withContext(Dispatchers.IO) {
-                viewModel.web3TokensExcludeHidden(walletId).value?.filter { token ->
+                viewModel.web3TokensExcludeHidden(walletId!!).value?.filter { token ->
                     token.name.contains(query, ignoreCase = true) ||
                         token.symbol.contains(query, ignoreCase = true) ||
                         token.chainName?.contains(query, ignoreCase = true) == true
