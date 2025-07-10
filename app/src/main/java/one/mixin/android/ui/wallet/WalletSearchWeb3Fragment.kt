@@ -216,7 +216,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         
         try {
             val remoteTokens = withContext(Dispatchers.IO) {
-                walletViewModel.queryAsset(query, true)
+                walletViewModel.queryAsset(walletId, query, true)
             }
 
             if (remoteTokens.isNotEmpty() && isSearchingRemote) {

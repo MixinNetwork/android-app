@@ -116,6 +116,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId).apply {
                             setOnClickListener { token ->
                                 this@ClassicWalletFragment.lifecycleScope.launch {
+                                    if (walletId.isEmpty()) {
+                                        toast(R.string.Data_error)
+                                        return@launch
+                                    }
                                     val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
                                     if (address == null) {
                                         toast(R.string.Data_error)

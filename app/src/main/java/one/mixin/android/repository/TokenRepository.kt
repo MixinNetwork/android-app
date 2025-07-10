@@ -557,9 +557,9 @@ class TokenRepository
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
 
-        suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> {
+        suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> {
             val localLike = if (web3) {
-                web3TokenDao.fuzzySearchAsset(query, query).map { t -> t.toTokenItem() }
+                web3TokenDao.fuzzySearchAsset(walletId ?: "", query, query).map { t -> t.toTokenItem() }
             } else emptyList()
 
             val response =

@@ -220,12 +220,12 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 sendReceiveView.swap.setOnClickListener {
                     AnalyticsTracker.trackSwapStart("web3", "web3")
                     lifecycleScope.launch {
-                        val tokens = web3ViewModel.findWeb3TokenItems()
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
                                 putString(SwapFragment.ARGS_INPUT, token.assetId)
                                 putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
+                                putString(SwapFragment.ARGS_WALLET_ID, token.walletId)
                             }
                         )
                     }
@@ -289,7 +289,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     }
                 }
             }
-            web3ViewModel.web3TokenExtraFlow(token.assetId).flowOn(Dispatchers.Main).collect { balance ->
+            web3ViewModel.web3TokenExtraFlow(token.walletId, token.assetId).flowOn(Dispatchers.Main).collect { balance ->
                 balance?.let {
                     if (isAdded) {
                         updateHeader(token.copy(balance = it))

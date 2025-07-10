@@ -57,8 +57,8 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("UPDATE tokens SET amount = '0' WHERE wallet_id = :walletId")
     suspend fun updateAllBalancesToZero(walletId: String)
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.asset_id IN (:assetIds)")
-    suspend fun findWeb3TokenItemsByIds(assetIds: List<String>): List<Web3TokenItem>
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
+    suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem>
 
     @Query("SELECT amount FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
     fun tokenExtraFlow(walletId: String, assetId: String): Flow<String?>
@@ -66,11 +66,12 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id 
-        WHERE (t.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR t.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
+        WHERE wallet_id = :walletId AND (t.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR t.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
         ORDER BY t.symbol = :symbol COLLATE NOCASE OR t.name = :name COLLATE NOCASE DESC
         """,
     )
     suspend fun fuzzySearchAsset(
+        walletId: String,
         name: String,
         symbol: String,
     ): List<Web3TokenItem>

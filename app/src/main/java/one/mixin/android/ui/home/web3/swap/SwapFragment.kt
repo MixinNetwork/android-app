@@ -100,6 +100,7 @@ class SwapFragment : BaseFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
+        const val ARGS_WALLET_ID = "args_wallet_id"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -115,6 +116,7 @@ class SwapFragment : BaseFragment() {
             amount: String? = null,
             inMixin: Boolean = true,
             referral: String? = null,
+            walletId: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
                 when (T::class) {
@@ -139,6 +141,7 @@ class SwapFragment : BaseFragment() {
                 amount?.let { putString(ARGS_AMOUNT, it) }
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
+                walletId?.let { putString(ARGS_WALLET_ID, it) }
             }
     }
 
@@ -161,6 +164,7 @@ class SwapFragment : BaseFragment() {
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
     private var reviewing: Boolean by mutableStateOf(false)
+    private val walletId: String? by lazy { arguments?.getString(ARGS_WALLET_ID) }
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -223,6 +227,7 @@ class SwapFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapPage(
+                                walletId = walletId,
                                 from = fromToken,
                                 to = toToken,
                                 inMixin = inMixin(),
@@ -349,7 +354,7 @@ class SwapFragment : BaseFragment() {
                     ArrayList(
                         list,
                     ),
-                    isFrom = true
+                    isFrom = true,
                 ).apply {
                     setOnDeposit {
                         navTo(Web3AddressFragment.newInstance(JsSigner.evmAddress), Web3AddressFragment.TAG)
@@ -378,7 +383,7 @@ class SwapFragment : BaseFragment() {
                 if (inMixin()) {
                     if (isReverse) fromToken?.assetId else toToken?.assetId
                 } else null,
-                isFrom = false
+                isFrom = false,
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
@@ -676,7 +681,11 @@ class SwapFragment : BaseFragment() {
         tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
         if (!inMixin() && web3tokens.isNullOrEmpty()) {
-            swappable = swapViewModel.findWeb3AssetItemsWithBalance()
+            if (walletId == null) {
+                toast(R.string.Data_error)
+                return
+            }
+            swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.findAssetItemsWithBalance()

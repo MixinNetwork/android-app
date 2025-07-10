@@ -263,7 +263,7 @@ class WalletViewModel
         jobManager.addJobInBackground(RefreshTokensJob(assetId))
     }
 
-    suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> = tokenRepository.queryAsset(query, web3)
+    suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> = tokenRepository.queryAsset(walletId, query, web3)
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {
@@ -547,4 +547,6 @@ class WalletViewModel
             }
         }
     }
+
+    suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
 }

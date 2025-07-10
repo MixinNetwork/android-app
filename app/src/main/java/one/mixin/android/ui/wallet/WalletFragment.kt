@@ -30,6 +30,7 @@ import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
@@ -211,7 +212,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     R.id.wallet_container,
                     ClassicWalletFragment.TAG
                 )
-                binding.titleTv.setText(R.string.Common_Wallet)
+                lifecycleScope.launch {
+                    walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                    } ?: run {
+                        binding.titleTv.setText(R.string.Common_Wallet)
+                    }
+                }
                 binding.tailIcon.isVisible = false
             }
         }

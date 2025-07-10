@@ -103,9 +103,8 @@ internal constructor(
 
     fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
 
-    // todo replace
-    fun web3TokenExtraFlow(assetId: String) =
-        tokenRepository.web3TokenExtraFlow("0195adf7-1d55-7163-9186-111845025a6c",assetId)
+    fun web3TokenExtraFlow(walletId: String, assetId: String) =
+        tokenRepository.web3TokenExtraFlow(walletId,assetId)
 
     suspend fun findOrSyncAsset(
         assetId: String,
@@ -204,9 +203,8 @@ internal constructor(
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
         tokenRepository.findTokenItems(ids)
 
-    // todo replace
-    suspend fun findWeb3TokenItems(): List<Web3TokenItem> =
-        tokenRepository.findWeb3TokenItems("0195adf7-1d55-7163-9186-111845025a6c")
+    suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem> =
+        tokenRepository.findWeb3TokenItems(walletId)
 
     suspend fun findTokensExtra(assetId: String) =
         withContext(Dispatchers.IO) {
@@ -422,8 +420,8 @@ internal constructor(
 
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
-    suspend fun findTokensByIds(assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
-        return@withContext web3Repository.findWeb3TokenItemsByIds(assetIds)
+    suspend fun findTokensByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.findWeb3TokenItemsByIds(walletId, assetIds)
     }
 
     suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)

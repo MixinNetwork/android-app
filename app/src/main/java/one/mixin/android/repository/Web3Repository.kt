@@ -38,7 +38,7 @@ constructor(
 
     suspend fun web3TokenItemById(assetId: String) = web3TokenDao.web3TokenItemById(assetId)
     
-    suspend fun findWeb3TokenItemsByIds(assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(assetIds)
+    suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds)
 
     fun web3Tokens(walletId: String) = web3TokenDao.web3TokenItems(walletId)
     
@@ -93,4 +93,6 @@ constructor(
     suspend fun deleteTransactionsByWalletId(walletId: String) = web3TransactionDao.deleteByWalletId(walletId)
 
     suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3AddressDao.getAddressesByChainId(walletId, chainId)
+
+    suspend fun findWalletById(walletId: String) = web3WalletDao.getWalletById(walletId)
 }

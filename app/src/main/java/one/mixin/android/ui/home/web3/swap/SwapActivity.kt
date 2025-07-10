@@ -30,7 +30,8 @@ class SwapActivity : BaseActivity(){
             amount: String? = null,
             referral: String? = null,
             inMixin: Boolean = true,
-            tokens: List<TokenItem>? = null
+            tokens: List<TokenItem>? = null,
+            walletId: String? = null,
         ) {
             context.startActivity(
                 Intent(context, SwapActivity::class.java).apply {
@@ -40,6 +41,7 @@ class SwapActivity : BaseActivity(){
                     referral?.let { putExtra(ARGS_REFERRAL, it) }
                     putExtra(ARGS_IN_MIXIN, inMixin)
                     tokens?.let { putParcelableArrayListExtra(ARGS_TOKEN_ITEMS, ArrayList(it)) }
+                    walletId?.let { putExtra(SwapFragment.ARGS_WALLET_ID, it) }
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                 },
             )
@@ -59,6 +61,7 @@ class SwapActivity : BaseActivity(){
             intent.getStringExtra(ARGS_AMOUNT),
             inMixin =  intent.getBooleanExtra(ARGS_IN_MIXIN, true),
             referral = intent.getStringExtra(ARGS_REFERRAL),
+            walletId = intent.getStringExtra(SwapFragment.ARGS_WALLET_ID)
         )
         replaceFragment(swapFragment, R.id.container, SwapFragment.TAG)}
 }
