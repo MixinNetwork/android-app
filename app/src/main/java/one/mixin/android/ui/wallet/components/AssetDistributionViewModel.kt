@@ -1,8 +1,12 @@
 package one.mixin.android.ui.wallet.components
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -21,9 +25,22 @@ class AssetDistributionViewModel @Inject constructor(
     private val web3TokenDao: Web3TokenDao,
     private val web3WalletDao: Web3WalletDao,
 ) : ViewModel() {
-    suspend fun getWallets(): List<Web3Wallet> = withContext(Dispatchers.IO) {
-        web3WalletDao.getAllWallets()
+
+    private val _wallets = MutableStateFlow<List<Web3Wallet>>(emptyList())
+    val wallets: StateFlow<List<Web3Wallet>> = _wallets
+
+    init {
+        loadWallets()
     }
+
+    private fun loadWallets() {
+        viewModelScope.launch(Dispatchers.IO) {
+            web3WalletDao.getWallets().collect {
+                _wallets.value = it
+            }
+        }
+    }
+
 
     suspend fun getTokenDistribution(): List<AssetDistribution> = withContext(Dispatchers.IO) {
         val tokens = tokenRepository.findAssetItemsWithBalance()

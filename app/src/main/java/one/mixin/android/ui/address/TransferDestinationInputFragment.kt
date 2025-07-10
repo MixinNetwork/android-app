@@ -59,6 +59,7 @@ import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.InputFragment.Companion.ARGS_TO_USER
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
@@ -206,18 +207,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     startQrScan(ScanType.TRANSFER_DEST)
                                 },
                                 contentText = scannedTransferDest,
-                                toAccount = { address ->
-                                    requireView().hideKeyboard()
-                                    token?.let { t ->
-                                        validateAndNavigateToInput(
-                                            assetId = t.assetId,
-                                            chainId = t.chainId,
-                                            destination = address,
-                                            asset = t,
-                                            toAccount = true
-                                        )
-                                    }
-                                },
                                 toContact = {
                                     requireView().hideKeyboard()
                                     token?.let { t ->
@@ -237,42 +226,47 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             )
                                     }
                                 },
-                                toWallet = {
+                                toWallet = { walletId ->
                                     requireView().hideKeyboard()
-                                    val dialog =
-                                        indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                            setCancelable(false)
-                                        }
-                                    lifecycleScope.launch {
-                                        dialog.show()
-                                        web3Token?.let { token ->
-                                            val deposit = web3ViewModel.findAndSyncDepositEntry(token)
-                                            if (deposit == null) {
-                                                dialog.dismiss()
-                                                return@launch
-                                            }
-                                            val fromAddress = if (token.isSolana()) {
-                                                PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-                                            } else {
-                                                PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                                            }
+                                    if (walletId != null) {
+                                        WalletListBottomSheetDialogFragment.newInstance(walletId).apply {
+                                            setOnWalletClickListener { destinationWallet ->
+                                                val dialog =
+                                                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                        setCancelable(false)
+                                                    }
+                                                lifecycleScope.launch {
+                                                    dialog.show()
+                                                    web3Token?.let { tokenToSend ->
+                                                        val fromAddress = if (tokenToSend.isSolana()) {
+                                                            PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                                                        } else {
+                                                            PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                                                        }
 
-                                            if (fromAddress.isBlank()) {
-                                                toast(R.string.Alert_Not_Support)
-                                            } else {
-                                                (chainToken ?: web3ViewModel.web3TokenItemById(token.chainId))?.let { chain ->
-                                                  navigateToInputFragmentWithBundle(
-                                                        Bundle().apply {
-                                                                putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
-                                                                putString(InputFragment.ARGS_TO_ADDRESS, deposit.destination)
-                                                                putParcelable(InputFragment.ARGS_WEB3_TOKEN, token)
-                                                                putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
-                                                                putBoolean(InputFragment.ARGS_TO_WALLET, true)
-                                                    })
+                                                        val toAddress = web3ViewModel.getAddressesByChainId(destinationWallet.id, tokenToSend.chainId)
+
+                                                        if (fromAddress.isBlank() || toAddress == null) {
+                                                            toast(R.string.Alert_Not_Support)
+                                                        } else {
+                                                            (chainToken ?: web3ViewModel.web3TokenItemById(tokenToSend.chainId))?.let { chain ->
+                                                                navigateToInputFragmentWithBundle(
+                                                                    Bundle().apply {
+                                                                        putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                                        putString(InputFragment.ARGS_TO_ADDRESS, toAddress.destination)
+                                                                        putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
+                                                                        putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                        putBoolean(InputFragment.ARGS_TO_WALLET, true)
+                                                                    })
+                                                            }
+                                                        }
+                                                    }
+                                                    dialog.dismiss()
                                                 }
                                             }
-                                        }
-                                        dialog.dismiss()
+                                        }.show(parentFragmentManager, WalletListBottomSheetDialogFragment.TAG)
+                                    } else {
+                                        // Handle non-web3 wallet selection if needed
                                     }
                                 },
                                 toAddAddress = {
@@ -668,23 +662,5 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             }
         bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         return bottomSheet
-    }
-
-    private fun isValidAddress(address: String): Boolean {
-        // todo
-        // return if (web3Token?.chainName.equals("solana", true) == true) {
-        //     https://github.com/solana-labs/solana-web3.js/blob/afe5602674b2eb8f5e780097d98e1d60ec63606b/packages/addresses/src/address.ts#L36
-        //     if (address.length < 32 || address.length > 44) {
-        //         return false
-        //     }
-        //     return try {
-        //         address.decodeBase58().size == 32
-        //     } catch (e: Exception) {
-        //         false
-        //     }
-        // } else {
-        //     WalletUtils.isValidAddress(address)
-        // }
-        return true
     }
 }

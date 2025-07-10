@@ -1378,7 +1378,7 @@
     <string name="legacy_network_transfer_hint">当前转账使用的是旧网络</string>
     <string name="FREE">免费</string>
     <string name="send_to_address_description">转到我地址薄中的地址，地址受到 PIN 保护，避免地址钓鱼攻击。</string>
-    <string name="send_to_common_wallet_description">转到我的普通钱包，用于去中心化应用和 DeFi 协议。</string>
+    <string name="send_to_my_wallet_description">使用加密网络发送到我的另一个钱包。</string>
     <string name="send_to_contact_description">转给我的 Mixin 好友，转账隐私、零手续费且秒到账。</string>
     <string name="send_to_privacy_wallet_description">转到我的隐私钱包，保护资产的隐私和安全，避免各种潜在风险。</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
@@ -1875,6 +1875,7 @@
     <string name="insufficient_fee_description">需要 %1$s 以支付 %2$s 网络费用</string>
     <string name="Send_To_Title">转给</string>
     <string name="Common_Wallet">普通钱包</string>
+    <string name="My_Wallet">我的钱包</string>
     <string name="My_Wallet_desc">使用加密网络从我的另一个钱包接收。</string>
     <string name="Exchanges_or_Wallets">交易所或钱包</string>
     <string name="Exchanges_or_Wallets_desc">使用加密网络从其他交易所或链上钱包接收。</string>
@@ -1977,4 +1978,5 @@
         <item quantity="other">导入 %1$d 个钱包</item>
     </plurals>
     <string name="Rename">重命名</string>
+    <string name="Remove_Wallet">删除钱包</string>
 </resources>

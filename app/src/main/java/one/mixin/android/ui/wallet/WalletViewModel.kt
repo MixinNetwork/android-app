@@ -66,24 +66,34 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
+import one.mixin.android.db.web3.vo.Web3Wallet
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel
-    @Inject
-    internal constructor(
-        private val walletDatabase: WalletDatabase,
-        private val userRepository: UserRepository,
-        private val accountRepository: AccountRepository,
-        private val web3Repository: Web3Repository,
-        private val tokenRepository: TokenRepository,
-        private val assetRepository: AssetRepository,
-        private val jobManager: MixinJobManager,
-        private val pinCipher: PinCipher,
-        private val defaultSharedPreferences: SharedPreferences,
-    ) : ViewModel() {
+@Inject
+internal constructor(
+    private val walletDatabase: WalletDatabase,
+    private val userRepository: UserRepository,
+    private val accountRepository: AccountRepository,
+    private val web3Repository: Web3Repository,
+    private val tokenRepository: TokenRepository,
+    private val assetRepository: AssetRepository,
+    private val jobManager: MixinJobManager,
+    private val pinCipher: PinCipher,
+    private val defaultSharedPreferences: SharedPreferences,
+) : ViewModel() {
+
+    private val _walletsFlow = MutableStateFlow<List<Web3Wallet>>(emptyList())
+    val walletsFlow: StateFlow<List<Web3Wallet>> = _walletsFlow
+
+    fun searchWallets(excludeWalletId: String, query: String) {
+        viewModelScope.launch {
+            _walletsFlow.value = getWalletsExcluding(excludeWalletId, query)
+        }
+    }
 
     private val _selectedWalletId = MutableStateFlow<String?>(null)
     val selectedWalletId: StateFlow<String?> = _selectedWalletId.asStateFlow()
@@ -549,4 +559,6 @@ class WalletViewModel
     }
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
+    suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, query)
 }

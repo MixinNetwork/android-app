@@ -11,6 +11,9 @@ import one.mixin.android.db.BaseDao
 @Dao
 interface Web3WalletDao : BaseDao<Web3Wallet> {
     
+    @Query("SELECT * FROM wallets WHERE wallet_id != :excludeWalletId AND name LIKE '%' || :query || '%'")
+    suspend fun getWalletsExcludingByName(excludeWalletId: String, query: String): List<Web3Wallet>
+
     @Query("SELECT * FROM wallets")
     fun getWallets(): Flow<List<Web3Wallet>>
 

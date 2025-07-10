@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
@@ -62,6 +63,7 @@ fun AssetDashboardScreen(
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
+    val wallets by viewModel.wallets.collectAsStateWithLifecycle()
 
     MixinAppTheme(skip = true) {
         Column(
@@ -101,11 +103,6 @@ fun AssetDashboardScreen(
             )
 
             Spacer(modifier = Modifier.height(10.dp))
-
-            var wallets by remember { mutableStateOf<List<Web3Wallet>>(emptyList()) }
-            LaunchedEffect(viewModel) {
-                wallets = viewModel.getWallets()
-            }
 
             wallets.forEach { wallet ->
                 if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {

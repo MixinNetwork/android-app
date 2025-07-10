@@ -55,7 +55,7 @@ class WalletActivity : BlazeBaseActivity() {
 
         val destination = requireNotNull(intent.getSerializableExtraCompat(DESTINATION, Destination::class.java)) { "required destination can not be null" }
         when (destination) {
-            Destination.Transactions -> {
+            is Destination.Transactions -> {
                 navGraph.setStartDestination(R.id.transactions_fragment)
                 val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
                 val fromMarket = intent.getBooleanExtra(ARGS_FROM_MARKET, false)
@@ -64,7 +64,7 @@ class WalletActivity : BlazeBaseActivity() {
                     putBoolean(ARGS_FROM_MARKET, fromMarket)
                 })
             }
-            Destination.Search -> {
+            is Destination.Search -> {
                 navGraph.setStartDestination(R.id.wallet_search_fragment)
                 navController.setGraph(navGraph, null)
             }
@@ -91,7 +91,7 @@ class WalletActivity : BlazeBaseActivity() {
                     else putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = walletId))
                 })
             }
-            Destination.Hidden -> {
+            is Destination.Hidden -> {
                 navGraph.setStartDestination(R.id.hidden_assets_fragment)
                 navController.setGraph(navGraph, null)
             }
@@ -102,12 +102,12 @@ class WalletActivity : BlazeBaseActivity() {
                     putString(Web3HiddenAssetsFragment.ARGS_WALLET_ID, walletId)
                 })
             }
-            Destination.Deposit -> {
+            is Destination.Deposit -> {
                 navGraph.setStartDestination(R.id.deposit_fragment)
                 val token = requireNotNull(intent.getParcelableExtraCompat(ASSET, TokenItem::class.java)) { "required token can not be null" }
                 navController.setGraph(navGraph, Bundle().apply { putParcelable(ARGS_ASSET, token) })
             }
-            Destination.Buy -> {
+            is Destination.Buy -> {
                 navGraph.setStartDestination(R.id.wallet_calculate)
                 val state = intent.getParcelableExtraCompat(CalculateFragment.CALCULATE_STATE, FiatMoneyViewModel.CalculateState::class.java)
                 routeProfile = intent.getParcelableExtraCompat(ARGS_ROUTE_PROFILE, RouteProfile::class.java)
@@ -120,7 +120,7 @@ class WalletActivity : BlazeBaseActivity() {
                 }
                 )
             }
-            Destination.Market -> {
+            is Destination.Market -> {
                 navGraph.setStartDestination(R.id.market_fragment_details)
                 val marketItem = intent.getParcelableExtraCompat(ARGS_MARKET, MarketItem::class.java)
                 navController.setGraph(navGraph, Bundle().apply {
@@ -129,12 +129,12 @@ class WalletActivity : BlazeBaseActivity() {
                     }
                 })
             }
-            Destination.Address -> {
+            is Destination.Address -> {
                 navGraph.setStartDestination(R.id.web3_address_fragment)
                 val address = requireNotNull(intent.getStringExtra(ADDRESS)) { "required address can not be null" }
                 navController.setGraph(navGraph, Bundle().apply { putString(ADDRESS, address) })
             }
-            Destination.Web3Transactions -> {
+            is Destination.Web3Transactions -> {
                 navGraph.setStartDestination(R.id.web3_transactions_fragment)
                 val web3Token = requireNotNull(intent.getParcelableExtraCompat(WEB3_TOKEN, Web3TokenItem::class.java)) { "required web3 token can not be null" }
                 val address = requireNotNull(intent.getStringExtra(ADDRESS)) { "required address can not be null" }
@@ -143,7 +143,7 @@ class WalletActivity : BlazeBaseActivity() {
                     putString("args_address", address)
                 })
             }
-            Destination.Web3TransferDestinationInput -> {
+            is Destination.Web3TransferDestinationInput -> {
                 navGraph.setStartDestination(R.id.transfer_destination_input_fragment)
                 val address = intent.getStringExtra(TransferDestinationInputFragment.ARGS_ADDRESS)
                 val token = intent.getParcelableExtraCompat(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
@@ -156,7 +156,7 @@ class WalletActivity : BlazeBaseActivity() {
                     chain?.let { chain -> putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain) }
                 })
             }
-            Destination.InputWithBiometricItem -> {
+            is Destination.InputWithBiometricItem -> {
                 navGraph.setStartDestination(R.id.input_fragment)
                 val biometricItem = intent.getParcelableExtraCompat(InputFragment.ARGS_BIOMETRIC_ITEM, BiometricItem::class.java)
                 navController.setGraph(navGraph, Bundle().apply {

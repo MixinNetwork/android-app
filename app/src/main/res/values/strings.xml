@@ -1408,7 +1408,7 @@
     <string name="legacy_network_transfer_hint">Current transfer is using legacy network</string>
     <string name="FREE">FREE</string>
     <string name="send_to_address_description">Send to an address in your Address Book, PIN-protected to prevent phishing.</string>
-    <string name="send_to_common_wallet_description">Send to your Common Wallet for use with decentralized apps and DeFi protocols.</string>
+    <string name="send_to_my_wallet_description">Send to my other wallet using a crypto network.</string>
     <string name="send_to_contact_description">Send to your Mixin friends with privacy, zero fees, and instant delivery.</string>
     <string name="send_to_privacy_wallet_description">Send to your Privacy Wallet to keep your assets safe and hidden from potential risks.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
@@ -1919,6 +1919,7 @@
     <string name="For_your_security">For your security, enter your pin</string>
     <string name="Privacy_Wallet">Privacy Wallet</string>
     <string name="Common_Wallet">Common Wallet</string>
+    <string name="My_Wallet">My Wallet</string>
     <string name="Other">Other</string>
     <string name="My_Wallet_desc">Receive from my other wallet using a crypto network.</string>
     <string name="Exchanges_or_Wallets">Exchanges or Wallets</string>

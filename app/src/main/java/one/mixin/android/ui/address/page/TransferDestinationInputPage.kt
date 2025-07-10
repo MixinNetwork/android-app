@@ -91,8 +91,7 @@ fun TransferDestinationInputPage(
     contentText: String = "",
     toAddAddress: () -> Unit,
     toContact: () -> Unit,
-    toWallet: () -> Unit,
-    toAccount: (String) -> Unit,
+    toWallet: (String?) -> Unit,
     onSend: (String) -> Unit,
     onDeleteAddress: (Address) -> Unit,
     onAddressClick: (Address) -> Unit,
@@ -316,26 +315,25 @@ fun TransferDestinationInputPage(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
-                            if (account.isBlank().not()) {
-                                DestinationMenu(
-                                    R.drawable.ic_destination_wallet,
-                                    stringResource(R.string.Common_Wallet),
-                                    stringResource(R.string.send_to_common_wallet_description),
-                                    onClick = {
-                                        toAccount.invoke(account)
-                                    },
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
                             if (web3Token != null) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
-                                    R.string.Privacy_Wallet,
-                                    stringResource(R.string.send_to_privacy_wallet_description),
+                                    R.string.My_Wallet,
+                                    stringResource(R.string.send_to_my_wallet_description),
                                     onClick = {
-                                        toWallet.invoke()
+                                        toWallet.invoke(web3Token.walletId)
                                     },
                                     isPrivacy = true
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            } else if (account.isNotBlank()) {
+                                DestinationMenu(
+                                    R.drawable.ic_destination_wallet,
+                                    stringResource(R.string.My_Wallet),
+                                    stringResource(R.string.send_to_my_wallet_description),
+                                    onClick = {
+                                        toWallet.invoke(null)
+                                    },
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }

@@ -334,8 +334,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         importBottomBinding.rename.setOnClickListener {
             editDialog {
                 titleText = this@WalletFragment.getString(R.string.Rename)
-                editText = "" // todo
-                maxTextCount = 20
+                editText = binding.titleTv.text.toString()
+                maxTextCount = 32
                 allowEmpty = false
                 rightAction = { newName ->
                     this@WalletFragment.lifecycleScope.launch {
