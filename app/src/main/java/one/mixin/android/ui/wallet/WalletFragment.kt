@@ -59,6 +59,59 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    private var selectedWalletDestination: WalletDestination? = null
+
+    private fun loadSelectedWalletDestination(): WalletDestination {
+        val walletPref = requireContext().defaultSharedPreferences.getString(
+            Constants.Account.PREF_HAS_USED_WALLET, null
+        )
+
+        walletViewModel.setHasUsedWallet(walletPref != null)
+
+        var walletDestination = WalletDestination.fromString(walletPref)
+
+        lifecycleScope.launch {
+            walletDestination = when (walletDestination) {
+                is WalletDestination.Classic -> {
+
+                    val wallet = walletViewModel.findWalletById((walletDestination as WalletDestination.Classic).walletId)
+                    if (wallet != null) {
+                        walletDestination
+                    } else {
+                        WalletDestination.Privacy
+                    }
+                }
+                is WalletDestination.Private -> {
+                    val wallet = walletViewModel.findWalletById((walletDestination as WalletDestination.Private).walletId)
+                    if (wallet != null) {
+                        walletDestination
+                    } else {
+                        WalletDestination.Privacy
+                    }
+                }
+                is WalletDestination.Privacy -> {
+                    walletDestination
+                }
+            }
+
+            if (walletPref != null && walletDestination.toString() != walletPref) {
+                saveSelectedWalletDestination(walletDestination)
+            }
+
+            selectedWalletDestination = walletDestination
+            updateUi(walletDestination)
+        }
+
+        return walletDestination
+    }
+
+    private fun saveSelectedWalletDestination(destination: WalletDestination) {
+        requireContext().defaultSharedPreferences.edit()
+            .putString(Constants.Account.PREF_HAS_USED_WALLET, destination.toString())
+            .apply()
+        walletViewModel.setHasUsedWallet(true)
+    }
+
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val walletViewModel by viewModels<WalletViewModel>()
@@ -86,12 +139,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 badge.isVisible = !hasUsed
             }
 
-            walletViewModel.selectedWalletDestination.observe(viewLifecycleOwner) { destination ->
-                destination?.let { updateUi(it) }
-            }
+            selectedWalletDestination = loadSelectedWalletDestination()
+            selectedWalletDestination?.let { updateUi(it) }
 
             moreIb.setOnClickListener {
-                when (walletViewModel.selectedWalletDestination.value) {
+                when (selectedWalletDestination) {
                     is WalletDestination.Privacy -> showPrivacyBottom()
                     is WalletDestination.Private -> showImportBottom()
                     is WalletDestination.Classic -> showClassicBottom()
@@ -109,12 +161,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     }
             }
             searchIb.setOnClickListener {
-                when (walletViewModel.selectedWalletDestination.value) {
+                when (selectedWalletDestination) {
                     is WalletDestination.Privacy -> {
                         WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
                     }
                     is WalletDestination.Private -> {
-                        val dest = walletViewModel.selectedWalletDestination.value
+                        val dest = selectedWalletDestination
                         if (dest is WalletDestination.Private) {
                             WalletActivity.show(
                                 requireActivity(),
@@ -123,7 +175,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         }
                     }
                     is WalletDestination.Classic -> {
-                        val dest = walletViewModel.selectedWalletDestination.value
+                        val dest = selectedWalletDestination
                         if (dest is WalletDestination.Classic) {
                             WalletActivity.show(
                                 requireActivity(),
@@ -233,7 +285,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun handleWalletCardClick(destination: WalletDestination) {
-        walletViewModel.selectWallet(destination)
+        selectedWalletDestination = destination
+        saveSelectedWalletDestination(destination)
+        updateUi(destination)
         closeMenu()
     }
 
@@ -295,20 +349,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         builder.setCustomView(importBottomBinding.root)
         val bottomSheet = builder.create()
         importBottomBinding.hide.setOnClickListener {
-            val dest = walletViewModel.selectedWalletDestination.value
-            dest?.let {
-                if (dest is WalletDestination.Private) {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
-                }
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Private) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
             }
             bottomSheet.dismiss()
         }
         importBottomBinding.transactionsTv.setOnClickListener {
-            val dest = walletViewModel.selectedWalletDestination.value
-            dest?.let {
-                if (dest is WalletDestination.Private) {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
-                }
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Private) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
             }
             bottomSheet.dismiss()
         }
@@ -320,11 +370,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 disableToast = true
             }.setOnPinSuccess { _ ->
                 this.lifecycleScope.launch {
-                    val dest = walletViewModel.selectedWalletDestination.value
+                    val dest = selectedWalletDestination
                     if (dest is WalletDestination.Private) {
                         walletViewModel.deleteWallet(dest.walletId)
+                        selectedWalletDestination = WalletDestination.Privacy
+                        saveSelectedWalletDestination(WalletDestination.Privacy)
+                        updateUi(WalletDestination.Privacy)
                     }
-                    // Todo switch to default wallet
                 }
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
             bottomSheet.dismiss()
@@ -337,9 +389,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 allowEmpty = false
                 rightAction = { newName ->
                     this@WalletFragment.lifecycleScope.launch {
-                        val dest = walletViewModel.selectedWalletDestination.value
+                        val dest = selectedWalletDestination
                         if (dest is WalletDestination.Private) {
                             walletViewModel.renameWallet(dest.walletId, newName)
+                            updateUi(dest)
                         }
                     }
                 }
@@ -406,20 +459,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         builder.setCustomView(classicBottomBinding.root)
         val bottomSheet = builder.create()
         classicBottomBinding.hide.setOnClickListener {
-            val dest = walletViewModel.selectedWalletDestination.value
-            dest?.let {
-                if (dest is WalletDestination.Classic) {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
-                }
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Classic) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
             }
             bottomSheet.dismiss()
         }
         classicBottomBinding.transactionsTv.setOnClickListener {
-            val dest = walletViewModel.selectedWalletDestination.value
-            dest?.let {
-                if (dest is WalletDestination.Classic) {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
-                }
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Classic) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
             }
             bottomSheet.dismiss()
         }

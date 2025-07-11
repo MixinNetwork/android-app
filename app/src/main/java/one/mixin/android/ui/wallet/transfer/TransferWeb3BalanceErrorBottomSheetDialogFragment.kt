@@ -55,7 +55,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         lifecycleScope.launch {
-            val asset = t.token ?: return@launch
+            val asset = t.token
             if (asset.assetId in Constants.usdIds) {
                 val u = transferViewModel.findTopWeb3UsdBalanceAsset(asset.assetId)
                 if (u != null) {
@@ -99,8 +99,14 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                                 )
                                 this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
                             } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                Web3AddressActivity.show(requireActivity(), JsSigner.evmAddress)
-                                this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
+                                lifecycleScope.launch {
+                                    val addresses = transferViewModel.getAddressesByChainId(asset.walletId, asset.chainId)
+                                    val address = addresses?.destination
+                                    if (address != null) {
+                                        Web3AddressActivity.show(requireActivity(), address)
+                                    }
+                                    this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
+                                }
                             }
                         }
                     }.showNow(parentFragmentManager, AddFeeBottomSheetDialogFragment.TAG)

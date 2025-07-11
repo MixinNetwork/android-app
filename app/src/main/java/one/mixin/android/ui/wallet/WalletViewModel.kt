@@ -93,67 +93,11 @@ internal constructor(
         }
     }
 
-    private val _selectedWalletId = MutableStateFlow<String?>(null)
-    val selectedWalletId: StateFlow<String?> = _selectedWalletId.asStateFlow()
-
-    private val _selectedWalletDestination = MutableLiveData<WalletDestination>()
-    val selectedWalletDestination: LiveData<WalletDestination> = _selectedWalletDestination
-
     private val _hasUsedWallet = MutableLiveData<Boolean>()
     val hasUsedWallet: LiveData<Boolean> = _hasUsedWallet
 
-    val selectedWallet: LiveData<TokenItem?> = _selectedWalletDestination.switchMap { dest ->
-        liveData {
-            emit(loadWalletAsset(dest))
-        }
-    }
-
-    init {
-        initializeWallet()
-    }
-
-    private fun initializeWallet() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val walletPref = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
-            withContext(Dispatchers.Main) {
-                _hasUsedWallet.value = walletPref != null
-            }
-            val walletDestination = WalletDestination.fromString(walletPref)
-            withContext(Dispatchers.Main) {
-                _selectedWalletDestination.value = walletDestination
-            }
-        }
-    }
-
-    fun selectWallet(walletDestination: WalletDestination) {
-        viewModelScope.launch(Dispatchers.IO) {
-            defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, walletDestination.toString())
-            withContext(Dispatchers.Main) {
-                _hasUsedWallet.value = true
-                _selectedWalletDestination.value = walletDestination
-            }
-        }
-    }
-
-    private suspend fun loadWalletAsset(walletDestination: WalletDestination): TokenItem? {
-        return when (walletDestination) {
-            is WalletDestination.Privacy -> null
-            is WalletDestination.Classic -> tokenRepository.simpleAssetItem(walletDestination.walletId)
-            is WalletDestination.Private -> tokenRepository.simpleAssetItem(walletDestination.walletId)
-        }
-    }
-
-    fun setSelectedWallet(walletId: String?) {
-        _selectedWalletId.value = walletId
-        Timber.d("Selected wallet changed to: $walletId")
-    }
-
-    fun getCurrentSelectedWalletId(): String? {
-        return _selectedWalletId.value
-    }
-
-    fun clearSelectedWallet() {
-        setSelectedWallet(null)
+    fun setHasUsedWallet(hasUsed: Boolean) {
+        _hasUsedWallet.value = hasUsed
     }
 
     fun insertUser(user: User) =
@@ -549,6 +493,7 @@ internal constructor(
                     web3Repository.deleteAddressesByWalletId(walletId)
                     web3Repository.deleteAssetsByWalletId(walletId)
                     web3Repository.deleteWallet(walletId)
+                    // 移除 selectWallet 调用，删除钱包后的逻辑由 Fragment 处理
                 }
             } catch (e: Exception) {
                 Timber.e(e)
@@ -557,6 +502,5 @@ internal constructor(
     }
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
-
     suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, query)
 }

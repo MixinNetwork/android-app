@@ -9,7 +9,7 @@ sealed class WalletDestination {
         return when (this) {
             is Privacy -> "Privacy"
             is Classic -> "Classic_$walletId"
-            is Private -> "Import_$walletId"
+            is Private -> "Private_$walletId"
         }
     }
 
@@ -19,7 +19,7 @@ sealed class WalletDestination {
                 value == null -> Privacy
                 value == "Privacy" -> Privacy
                 value.startsWith("Classic_") -> Classic(value.removePrefix("Classic_"))
-                value.startsWith("Import_") -> Private(value.removePrefix("Import_"))
+                value.startsWith("Private_") -> Private(value.removePrefix("Private_"))
                 else -> Privacy
             }
         }
