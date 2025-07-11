@@ -8,8 +8,8 @@ sealed class WalletDestination {
     override fun toString(): String {
         return when (this) {
             is Privacy -> "Privacy"
-            is Classic -> "Classic_$walletId"
-            is Private -> "Private_$walletId"
+            is Classic -> "Classic(walletId=$walletId)"
+            is Private -> "Private(walletId=$walletId)"
         }
     }
 
@@ -18,8 +18,14 @@ sealed class WalletDestination {
             return when {
                 value == null -> Privacy
                 value == "Privacy" -> Privacy
-                value.startsWith("Classic_") -> Classic(value.removePrefix("Classic_"))
-                value.startsWith("Private_") -> Private(value.removePrefix("Private_"))
+                value.startsWith("Classic(walletId=") && value.endsWith(")") -> {
+                    val walletId = value.removePrefix("Classic(walletId=").removeSuffix(")")
+                    Classic(walletId)
+                }
+                value.startsWith("Private(walletId=") && value.endsWith(")") -> {
+                    val walletId = value.removePrefix("Private(walletId=").removeSuffix(")")
+                    Private(walletId)
+                }
                 else -> Privacy
             }
         }

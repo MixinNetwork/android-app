@@ -30,6 +30,7 @@ import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
@@ -45,6 +46,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.hypot
 
@@ -62,7 +64,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var selectedWalletDestination: WalletDestination? = null
 
     private fun loadSelectedWalletDestination(): WalletDestination {
-        val walletPref = requireContext().defaultSharedPreferences.getString(
+        val walletPref = defaultSharedPreferences.getString(
             Constants.Account.PREF_HAS_USED_WALLET, null
         )
 
@@ -73,7 +75,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         lifecycleScope.launch {
             walletDestination = when (walletDestination) {
                 is WalletDestination.Classic -> {
-
                     val wallet = walletViewModel.findWalletById((walletDestination as WalletDestination.Classic).walletId)
                     if (wallet != null) {
                         walletDestination
@@ -106,9 +107,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun saveSelectedWalletDestination(destination: WalletDestination) {
-        requireContext().defaultSharedPreferences.edit()
-            .putString(Constants.Account.PREF_HAS_USED_WALLET, destination.toString())
-            .apply()
+        defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, destination.toString())
         walletViewModel.setHasUsedWallet(true)
     }
 
@@ -134,6 +133,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.apply {
             walletViewModel.hasUsedWallet.observe(viewLifecycleOwner) { hasUsed ->
                 badge.isVisible = !hasUsed
