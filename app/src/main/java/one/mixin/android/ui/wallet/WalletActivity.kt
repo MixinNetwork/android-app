@@ -117,6 +117,10 @@ class WalletActivity : BlazeBaseActivity() {
                         CalculateFragment.ARGS_IS_WEB3,
                         intent.getBooleanExtra(CalculateFragment.ARGS_IS_WEB3, false)
                     )
+                    putString(
+                        CalculateFragment.ARGS_WALLET_ID_FOR_CALCULATE,
+                        intent.getStringExtra(CalculateFragment.ARGS_WALLET_ID_FOR_CALCULATE)
+                    )
                 }
                 )
             }
@@ -237,6 +241,7 @@ class WalletActivity : BlazeBaseActivity() {
             isWeb3: Boolean,
             state: FiatMoneyViewModel.CalculateState?,
             routeProfile: RouteProfile?,
+            walletId: String? = null,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
@@ -244,6 +249,7 @@ class WalletActivity : BlazeBaseActivity() {
                     state?.let { putExtra(CalculateFragment.CALCULATE_STATE, it) }
                     routeProfile?.let { putExtra(ARGS_ROUTE_PROFILE, it) }
                     putExtra(CalculateFragment.ARGS_IS_WEB3, isWeb3)
+                    walletId?.let { putExtra(CalculateFragment.ARGS_WALLET_ID_FOR_CALCULATE, it) }
                 },
             )
         }

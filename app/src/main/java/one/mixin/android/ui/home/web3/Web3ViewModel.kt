@@ -426,6 +426,10 @@ internal constructor(
 
     suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)
 
+    suspend fun getWalletName(walletId: String): String? = web3Repository.findWalletById(walletId)?.name
+
+    suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()
