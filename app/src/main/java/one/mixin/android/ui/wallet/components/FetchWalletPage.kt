@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.compose.CoilImage
@@ -73,66 +74,6 @@ data class IndexedWallet(
 ) {
     val totalValue: BigDecimal
         get() = assets.sumOf { (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) }
-}
-
-@Composable
-fun FetchWalletPage(
-    mnemonic: String? = null,
-    onBackPressed: () -> Unit,
-    viewModel: FetchWalletViewModel = hiltViewModel()
-) {
-    val state by viewModel.state.collectAsState()
-    val wallets by viewModel.wallets.collectAsState()
-    val importSuccess by viewModel.importSuccess.collectAsState()
-    var selectedWalletInfos by remember { mutableStateOf(emptySet<IndexedWallet>()) }
-
-    LaunchedEffect(mnemonic) {
-        if (!mnemonic.isNullOrEmpty()) {
-            viewModel.setMnemonic(mnemonic)
-        }
-    }
-    LaunchedEffect(importSuccess) {
-        if (importSuccess) {
-            onBackPressed()
-        }
-    }
-
-    MixinAppTheme(skip = true) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            when (state) {
-                FetchWalletState.FETCHING -> {
-                    FetchingContent()
-                }
-
-                FetchWalletState.SELECT -> {
-                    SelectContent(
-                        wallets = wallets,
-                        selectedWalletInfos = selectedWalletInfos,
-                        onWalletToggle = { wallet ->
-                            selectedWalletInfos = if (selectedWalletInfos.contains(wallet)) {
-                                selectedWalletInfos - wallet
-                            } else {
-                                selectedWalletInfos + wallet
-                            }
-                        },
-                        onContinue = { viewModel.startImporting(selectedWalletInfos) },
-                        onBackPressed = onBackPressed,
-                        onSelectAll = {
-                            selectedWalletInfos = wallets.toSet()
-                        }
-                    )
-                }
-
-                FetchWalletState.IMPORTING -> {
-                    ImportingContent()
-                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -271,8 +212,15 @@ fun SelectContent(
 }
 
 @Composable
-fun ImportingContent(
-) {
+fun ImportingContent(onFinished: () -> Unit) {
+    val viewModel: FetchWalletViewModel = hiltViewModel()
+    val activity = LocalContext.current as Activity
+    val closeFragment by viewModel.closeFragment.collectAsState()
+    LaunchedEffect(closeFragment) {
+        if (closeFragment) {
+            activity.finish()
+        }
+    }
     LoadingState(
         title = stringResource(R.string.importing_into_wallet),
         subtitle = stringResource(R.string.fetching_shouldnt_take_long)

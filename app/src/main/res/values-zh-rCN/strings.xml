@@ -1969,14 +1969,11 @@
     <string name="no_longer_member">你已不再是此群组的成员。</string>
     <string name="Import_Mnemonic_Phrase">导入助记词</string>
     <string name="Import_wallets_from_another_wallet">从其他钱包导入钱包。</string>
-    <plurals name="wallets_selected">
-        <item quantity="one">已选择 %1$d 个钱包</item>
-        <item quantity="other">已选择 %1$d 个钱包</item>
-    </plurals>
+
     <plurals name="import_wallets">
         <item quantity="one">导入 %1$d 个钱包</item>
         <item quantity="other">导入 %1$d 个钱包</item>
     </plurals>
-    <string name="Rename">重命名</string>
+    <string name="Rename_Wallet">重命名</string>
     <string name="Remove_Wallet">删除钱包</string>
 </resources>

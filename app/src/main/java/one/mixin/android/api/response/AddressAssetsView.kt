@@ -1,6 +1,7 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.db.web3.vo.Web3Token
 import java.math.BigDecimal
 
 data class AddressAssetsView(
@@ -42,4 +43,20 @@ data class AssetView(
 ) {
     val value
         get() = (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+
+    fun toWebToken(walletId: String): Web3Token = Web3Token(
+        walletId = walletId,
+        assetId = assetId,
+        chainId = chainId,
+        name = name,
+        assetKey = assetKey,
+        symbol = symbol,
+        iconUrl = iconUrl,
+        precision = precision.toInt(),
+        kernelAssetId = kernelAssetId,
+        balance = amount,
+        priceUsd = priceUSD,
+        changeUsd = changeUSD,
+        level = assetLevel
+    )
 }

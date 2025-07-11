@@ -15,10 +15,12 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.api.response.AssetView
 import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EthereumWallet
 import one.mixin.android.crypto.SolanaWallet
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.repository.UserRepository
@@ -50,8 +52,8 @@ class FetchWalletViewModel @Inject constructor(
 
     private var mnemonic: String = ""
 
-    private val _importSuccess = MutableStateFlow(false)
-    val importSuccess: StateFlow<Boolean> = _importSuccess.asStateFlow()
+    private val _closeFragment = MutableStateFlow(false)
+    val closeFragment: StateFlow<Boolean> = _closeFragment.asStateFlow()
 
     init {
         startFetching()
@@ -118,14 +120,12 @@ class FetchWalletViewModel @Inject constructor(
     fun startImporting(selectedWalletInfos: Set<IndexedWallet>) {
         viewModelScope.launch {
             _state.value = FetchWalletState.IMPORTING
-            _importSuccess.value = false
             try {
                 // Create wallets for each selected wallet
                 selectedWalletInfos.forEach { wallet ->
                     createWallet(wallet)
                 }
                 Timber.d("Successfully imported ${selectedWalletInfos.size} wallets")
-                _importSuccess.value = true
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallets")
             }
@@ -137,9 +137,8 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     private suspend fun createWallet(indexedWallet: IndexedWallet) {
-        // Create EVM wallet
         createWallet(
-            name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${indexedWallet.index}",
+            name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${indexedWallet.index + 1}",
             category = RefreshWeb3Job.WALLET_CATEGORY_PRIVATE,
             addresses = listOf(
                 Web3AddressRequest(
@@ -151,11 +150,12 @@ class FetchWalletViewModel @Inject constructor(
                     destination = indexedWallet.solanaWallet.address,
                     chainId = Constants.ChainId.SOLANA_CHAIN_ID
                 )
-            )
+            ),
+            indexedWallet.assets
         )
     }
 
-    private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>) {
+    private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>, assets: List<AssetView>) {
         val walletRequest = WalletRequest(
             name = name,
             category = category,
@@ -169,8 +169,9 @@ class FetchWalletViewModel @Inject constructor(
             successBlock = { response ->
                 val wallet = response.data
                 if (wallet != null) {
-                    // Insert wallet and addresses into local database
                     insertWalletAndAddresses(wallet)
+                    web3Repository.insertWeb3Tokens(assets.map { it.toWebToken(wallet.id) })
+                    _closeFragment.value = true
                 } else {
                     Timber.e("Failed to create $category wallet: response data is null")
                 }

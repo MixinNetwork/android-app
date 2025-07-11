@@ -46,7 +46,6 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.hypot
 
@@ -383,7 +382,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         importBottomBinding.rename.setOnClickListener {
             editDialog {
-                titleText = this@WalletFragment.getString(R.string.Rename)
+                titleText = this@WalletFragment.getString(R.string.Rename_Wallet)
                 editText = binding.titleTv.text.toString()
                 maxTextCount = 32
                 allowEmpty = false

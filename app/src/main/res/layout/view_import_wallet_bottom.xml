@@ -49,5 +49,5 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/Rename" />
+        android:text="@string/Rename_Wallet" />
 </LinearLayout>

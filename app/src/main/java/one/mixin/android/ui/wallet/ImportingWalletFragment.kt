@@ -23,7 +23,9 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
         binding.compose.setContent {
-            ImportingContent()
+            ImportingContent {
+                requireActivity().finish()
+            }
         }
     }
 }
