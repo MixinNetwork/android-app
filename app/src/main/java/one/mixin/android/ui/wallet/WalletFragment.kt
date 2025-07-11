@@ -29,8 +29,6 @@ import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.navigate
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
@@ -95,7 +93,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             moreIb.setOnClickListener {
                 when (walletViewModel.selectedWalletDestination.value) {
                     is WalletDestination.Privacy -> showPrivacyBottom()
-                    is WalletDestination.Import -> showImportBottom()
+                    is WalletDestination.Private -> showImportBottom()
                     is WalletDestination.Classic -> showClassicBottom()
                     null -> showPrivacyBottom() // Default
                 }
@@ -115,9 +113,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     is WalletDestination.Privacy -> {
                         WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
                     }
-                    is WalletDestination.Import -> {
+                    is WalletDestination.Private -> {
                         val dest = walletViewModel.selectedWalletDestination.value
-                        if (dest is WalletDestination.Import) {
+                        if (dest is WalletDestination.Private) {
                             WalletActivity.show(
                                 requireActivity(),
                                 WalletActivity.Destination.SearchWeb3(dest.walletId)
@@ -205,7 +203,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 binding.titleTv.setText(R.string.Common_Wallet)
                 binding.tailIcon.isVisible = false
             }
-            is WalletDestination.Import -> {
+            is WalletDestination.Private -> {
                 classicWalletFragment.walletId = destination.walletId
                 requireActivity().replaceFragment(
                     classicWalletFragment,
@@ -299,7 +297,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         importBottomBinding.hide.setOnClickListener {
             val dest = walletViewModel.selectedWalletDestination.value
             dest?.let {
-                if (dest is WalletDestination.Import) {
+                if (dest is WalletDestination.Private) {
                     WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
                 }
             }
@@ -308,7 +306,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         importBottomBinding.transactionsTv.setOnClickListener {
             val dest = walletViewModel.selectedWalletDestination.value
             dest?.let {
-                if (dest is WalletDestination.Import) {
+                if (dest is WalletDestination.Private) {
                     WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
                 }
             }
@@ -323,7 +321,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }.setOnPinSuccess { _ ->
                 this.lifecycleScope.launch {
                     val dest = walletViewModel.selectedWalletDestination.value
-                    if (dest is WalletDestination.Import) {
+                    if (dest is WalletDestination.Private) {
                         walletViewModel.deleteWallet(dest.walletId)
                     }
                     // Todo switch to default wallet
@@ -340,7 +338,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 rightAction = { newName ->
                     this@WalletFragment.lifecycleScope.launch {
                         val dest = walletViewModel.selectedWalletDestination.value
-                        if (dest is WalletDestination.Import) {
+                        if (dest is WalletDestination.Private) {
                             walletViewModel.renameWallet(dest.walletId, newName)
                         }
                     }

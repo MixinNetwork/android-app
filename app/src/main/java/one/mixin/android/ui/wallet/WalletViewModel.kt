@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.invoke
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -48,7 +47,6 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
-import one.mixin.android.ui.conversation.holder.TimeBubble
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.ui.wallet.components.WalletDestination
@@ -141,7 +139,7 @@ internal constructor(
         return when (walletDestination) {
             is WalletDestination.Privacy -> null
             is WalletDestination.Classic -> tokenRepository.simpleAssetItem(walletDestination.walletId)
-            is WalletDestination.Import -> tokenRepository.simpleAssetItem(walletDestination.walletId)
+            is WalletDestination.Private -> tokenRepository.simpleAssetItem(walletDestination.walletId)
         }
     }
 

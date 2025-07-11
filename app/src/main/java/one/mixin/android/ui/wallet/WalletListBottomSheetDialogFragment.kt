@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -217,7 +216,7 @@ fun WalletListScreen(
             }
             items(wallets) { wallet ->
                 val destination = if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
-                    WalletDestination.Import(wallet.id)
+                    WalletDestination.Private(wallet.id)
                 } else {
                     WalletDestination.Classic(wallet.id)
                 }

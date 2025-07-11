@@ -60,6 +60,9 @@ fun WalletCard(
         } else if (destination is WalletDestination.Classic) {
             web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
             assets = viewModel.getWeb3TokenDistribution(destination.walletId)
+        } else if (destination is WalletDestination.Private) {
+            web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
+            assets = viewModel.getWeb3TokenDistribution(destination.walletId)
         } else {
             tokenTotalBalance = viewModel.getTokenTotalBalance()
             assets = viewModel.getTokenDistribution()
