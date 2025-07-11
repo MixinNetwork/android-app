@@ -62,7 +62,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         setOnItemClickListener(object : Web3TransactionPagedAdapter.OnItemClickListener {
             override fun onItemClick(transaction: Web3TransactionItem) {
                 lifecycleScope.launch {
-                    val token = web3ViewModel.web3TokenItemById(transaction.getMainAssetId()) ?: return@launch
+                    // Todo
+                    val token = web3ViewModel.web3TokenItemById("",transaction.getMainAssetId()) ?: return@launch
                     this@AllWeb3TransactionsFragment.view?.findNavController()?.navigate(
                         R.id.action_all_web3_transactions_fragment_to_web3_transaction_fragment,
                         Bundle().apply {

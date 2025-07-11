@@ -67,6 +67,7 @@ data class TokenItem(
 
     override fun toSwapToken(): SwapToken {
         return SwapToken(
+            walletId = null,
             address = assetKey ?: "",
             assetId = assetId,
             decimals = 0,

@@ -729,7 +729,8 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         when (source) {
             "web3" -> {
                 depositDestination?.let { depositDestination->
-                    val token = bottomViewModel.web3TokenItemById(inAsset.assetId)
+                    // todo
+                    val token = bottomViewModel.web3TokenItemById("", inAsset.assetId)
                     if (token != null) {
                         try {
                             val transaction = token.buildTransaction(
@@ -802,7 +803,8 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                         buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
-                    chainToken = bottomViewModel.web3TokenItemById(token?.chainId ?: "")
+                    // todo
+                    chainToken = bottomViewModel.web3TokenItemById("",token?.chainId ?: "")
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))

@@ -103,7 +103,7 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
 
-        suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
-            web3Repository.web3TokenItemById(assetId)
+        suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(walletId, assetId)
         }
     }

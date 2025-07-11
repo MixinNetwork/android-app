@@ -193,7 +193,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
                 sendReceiveView.send.setOnClickListener {
                     lifecycleScope.launch {
-                        val chain = web3ViewModel.web3TokenItemById(token.chainId)
+                        // Todo
+                        val chain = web3ViewModel.web3TokenItemById("",token.chainId)
                         if (chain == null) {
                             jobManager.addJobInBackground(RefreshWeb3TokenJob(token.assetId))
                             toast(R.string.Please_wait_a_bit)

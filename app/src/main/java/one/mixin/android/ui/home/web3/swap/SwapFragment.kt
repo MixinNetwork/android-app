@@ -642,8 +642,8 @@ class SwapFragment : BaseFragment() {
             openSwapTransfer(resp, from, to)
         } else {
             AnalyticsTracker.trackSwapPreview()
-            val token = swapViewModel.web3TokenItemById(from.assetId) ?: return
-            val chainToken = swapViewModel.web3TokenItemById(from.chain.chainId) ?: return
+            val token = swapViewModel.web3TokenItemById(walletId!!, from.assetId) ?: return
+            val chainToken = swapViewModel.web3TokenItemById(walletId!!, from.chain.chainId) ?: return
             val depositDestination = resp.depositDestination ?: return
             openSwapTransfer(resp, from, to)
         }
@@ -706,13 +706,13 @@ class SwapFragment : BaseFragment() {
             val lastTo = lastSelectedPair?.getOrNull(1)
 
             fromToken = if (input != null) {
-                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(input)?.toSwapToken()
+                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!,input)?.toSwapToken()
             } else lastFrom
                 ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ETH_ID }
                     ?: tokens.firstOrNull())?.toSwapToken()
 
             toToken = if (output != null) {
-                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(
+                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!,
                     output
                 )?.toSwapToken()
             } else if (input != null) {
@@ -721,7 +721,7 @@ class SwapFragment : BaseFragment() {
                 } else {
                     USDT_ASSET_ETH_ID
                 }
-                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(o)
+                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!, o)
                     ?.toSwapToken()
             } else lastTo
                 ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }

@@ -290,7 +290,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(assetId)
+                            // Todo
+                            web3ViewModel.web3TokenItemById("", assetId)
                         }
                     )
                 }
@@ -304,7 +305,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(assetId)
+                            // Todo
+                            web3ViewModel.web3TokenItemById("", assetId)
                         },
                         approvals = transaction.approvals,
                     )

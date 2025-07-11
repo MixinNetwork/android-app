@@ -84,14 +84,13 @@ internal constructor(
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
 
-    // todo
-    fun hiddenAssetItems(walletId: String? = null) = web3Repository.hiddenAssetItems(walletId)
+    fun hiddenAssetItems(walletId: String) = web3Repository.hiddenAssetItems(walletId)
 
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
         web3Repository.updateTokenHidden(tokenId, walletId, hidden)
 
-    suspend fun  web3TokenItemById(chainId: String) = withContext(Dispatchers.IO) {
-        web3Repository.web3TokenItemById(chainId)
+    suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(walletId, assetId)
     }
 
     fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {

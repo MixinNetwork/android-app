@@ -224,7 +224,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                     it.chainId in Constants.Web3ChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID
                 }
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
-                    val t = viewModel.web3TokenItemById(tokenItem.assetId)
+                    val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)
                     Web3TokenItem(
                         walletId = t?.walletId ?: "",
                         assetId = tokenItem.assetId,

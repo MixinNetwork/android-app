@@ -123,8 +123,9 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.linkLoadingInfo.text = ""
         lifecycleScope.launch {
             if (swapResult != null) {
-                val web3TokenItem = viewModel.web3TokenItemById(fromToken.assetId)
-                val chainTokenItem = viewModel.web3TokenItemById(fromToken.chain.chainId)
+                // Todo: Handle swap result
+                val web3TokenItem = viewModel.web3TokenItemById("", fromToken.assetId)
+                val chainTokenItem = viewModel.web3TokenItemById("", fromToken.chain.chainId)
                 if (web3TokenItem != null) {
                     val jsSignMessage = web3TokenItem.buildTransaction(
                         rpc, JsSigner.evmAddress,
@@ -248,6 +249,11 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             showBrowserWalletBottomSheet()
             return
         }
+        if (token == null) {
+            Timber.e("token is null")
+            showBrowserWalletBottomSheet()
+            return
+        }
         viewModel.refreshAsset(chainId)
         try {
             val tipGas = withContext(Dispatchers.IO) {
@@ -273,7 +279,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val insufficientGas =
                 checkGas(token, chainId = chainId, tipGas, transaction.value, transaction.maxFeePerGas)
             if (insufficientGas) {
-                val c = chainToken ?: viewModel.web3TokenItemById(chainId)
+                val c = chainToken ?: viewModel.web3TokenItemById(token.walletId, chainId)
                 if (c == null) {
                     Timber.e("Insufficient gas for chain: ${chain.chainId}")
                     showBrowserWalletBottomSheet()
@@ -337,7 +343,8 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         maxFeePerGas: String?
     ): Boolean {
         val assetId = web3Token?.assetId
-        val c = viewModel.web3TokenItemById(chainId) ?: return true
+        val walletId = web3Token?.walletId ?: return true
+        val c = viewModel.web3TokenItemById(walletId, chainId) ?: return true
         return if (tipGas != null) {
             val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
             if (assetId == c.assetId && assetId == c.chainId) {

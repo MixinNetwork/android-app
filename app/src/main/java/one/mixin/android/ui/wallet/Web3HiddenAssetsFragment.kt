@@ -46,7 +46,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val binding by viewBinding(FragmentHiddenAssetsBinding::bind)
 
-    private val walletId by lazy { requireArguments().getString(ARGS_WALLET_ID) }
+    private val walletId by lazy { requireNotNull(requireArguments().getString(ARGS_WALLET_ID)) }
 
     private var assets: List<Web3TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(true) }

@@ -36,7 +36,7 @@ constructor(
 
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
-    suspend fun web3TokenItemById(assetId: String) = web3TokenDao.web3TokenItemById(assetId)
+    suspend fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)
     
     suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds)
 
@@ -44,7 +44,7 @@ constructor(
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
     
-    fun hiddenAssetItems(walletId: String?) = web3TokenDao.hiddenAssetItems(walletId)
+    fun hiddenAssetItems(walletId: String) = web3TokenDao.hiddenAssetItems(walletId)
     
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {
         val tokensExtra = web3TokensExtraDao.findByAssetId(tokenId,  walletId)

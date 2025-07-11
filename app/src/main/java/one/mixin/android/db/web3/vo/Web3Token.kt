@@ -65,6 +65,7 @@ data class Web3Token(
 
     override fun toSwapToken(): SwapToken {
         return SwapToken(
+            walletId = walletId,
             address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
             assetId = assetId,
             decimals = precision,

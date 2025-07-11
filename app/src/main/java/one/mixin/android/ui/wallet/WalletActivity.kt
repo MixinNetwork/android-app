@@ -267,6 +267,8 @@ class WalletActivity : BlazeBaseActivity() {
                         putExtra(ARGS_WALLET_ID, destination.walletId)
                     } else if (destination is Destination.Web3Hidden) {
                         putExtra(ARGS_WALLET_ID, destination.walletId)
+                    } else if (destination is Destination.SearchWeb3) {
+                        putExtra(ARGS_WALLET_ID, destination.walletId)
                     }
                 },
             )

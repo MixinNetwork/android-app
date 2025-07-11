@@ -146,8 +146,8 @@ class SwapViewModel
         }
     }
 
-    suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
-        web3Repository.web3TokenItemById(assetId)
+    suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(walletId, assetId)
     }
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)

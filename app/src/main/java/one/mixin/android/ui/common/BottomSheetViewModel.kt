@@ -1361,8 +1361,8 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
-        suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
-            web3Repository.web3TokenItemById(assetId)
+        suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(walletId,assetId)
         }
 
         suspend fun findAssetItemByCollectionHash(assetId: String): TokenItem? =

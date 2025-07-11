@@ -239,10 +239,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                             // Todo check
                                                             val toAddress = web3ViewModel.getAddressesByChainId(destinationWallet!!.id, tokenToSend.chainId)
 
-                                                            if (fromAddress == null || fromAddress.destination.isNullOrBlank() || toAddress == null) {
+                                                            if (fromAddress == null || fromAddress.destination.isBlank() || toAddress == null) {
                                                                 toast(R.string.Alert_Not_Support)
                                                             } else {
-                                                                (chainToken ?: web3ViewModel.web3TokenItemById(tokenToSend.chainId))?.let { chain ->
+                                                                (chainToken ?: web3ViewModel.web3TokenItemById(tokenToSend.walletId, tokenToSend.chainId))?.let { chain ->
                                                                     navigateToInputFragmentWithBundle(
                                                                         Bundle().apply {
                                                                             putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress.destination)
@@ -297,7 +297,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                     if (fromAddress.isNullOrBlank()) {
                                                         toast(R.string.Alert_Not_Support)
                                                     } else {
-                                                        val chain = chainToken ?: web3ViewModel.web3TokenItemById(token.chainId) ?:return@launch
+                                                        val chain = chainToken ?: web3ViewModel.web3TokenItemById(token.walletId, token.chainId) ?:return@launch
                                                         validateAndNavigateToInput(
                                                             assetId = token.assetId,
                                                             chainId = token.chainId,
@@ -336,6 +336,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                 toast(R.string.Alert_Not_Support)
                                             } else {
                                                 (chainToken ?: web3ViewModel.web3TokenItemById(
+                                                    web3Token!!.walletId,
                                                     web3Token!!.chainId
                                                 ))?.let { chain ->
                                                     navigateToInputFragmentWithBundle(Bundle().apply {

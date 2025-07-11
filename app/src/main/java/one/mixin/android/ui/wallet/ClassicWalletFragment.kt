@@ -125,7 +125,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                         toast(R.string.Data_error)
                                         return@launch
                                     }
-                                    val chain = web3ViewModel.web3TokenItemById(token.chainId) ?: return@launch
+                                    val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId) ?: return@launch
                                     Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
                                     WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address.destination, token, chain)
                                 }
@@ -158,8 +158,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
             _headBinding?.web3PendingView?.setOnClickListener {
                 if ((_headBinding?.web3PendingView?.getPendingCount() ?: 0) > 0) {
-                    val destination = WalletActivity.Destination.AllWeb3Transactions(walletId = walletId)
-                    WalletActivity.show(requireActivity(), destination, pendingType = true)
+                    WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
                 }
             }
             assetsAdapter.headerView = _headBinding!!.root

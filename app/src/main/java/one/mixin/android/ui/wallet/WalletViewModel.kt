@@ -105,7 +105,7 @@ internal constructor(
             userRepository.upsert(user)
         }
 
-    suspend fun  web3TokenItemById(chainId: String) = web3Repository.web3TokenItemById(chainId)
+    suspend fun  web3TokenItemById(walletId: String, assetId: String) = web3Repository.web3TokenItemById(walletId, assetId)
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
