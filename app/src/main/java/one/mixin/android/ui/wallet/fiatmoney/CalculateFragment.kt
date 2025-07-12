@@ -35,6 +35,7 @@ import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
@@ -49,9 +50,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.Keyboard
-import one.mixin.android.job.RefreshWeb3Job
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode

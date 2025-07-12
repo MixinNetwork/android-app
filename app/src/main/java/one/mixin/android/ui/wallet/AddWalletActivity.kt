@@ -2,8 +2,12 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.AddWalletSuccessEvent
 import one.mixin.android.ui.common.BlazeBaseActivity
 
 @AndroidEntryPoint
@@ -15,6 +19,9 @@ class AddWalletActivity : BlazeBaseActivity() {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, AddWalletFragment.newInstance())
                 .commitNow()
+        }
+        RxBus.listen(AddWalletSuccessEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
+            finish()
         }
     }
 

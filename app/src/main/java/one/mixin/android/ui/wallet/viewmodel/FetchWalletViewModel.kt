@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.viewmodel
 
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,18 +9,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApp
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
-import one.mixin.android.crypto.EthereumWallet
-import one.mixin.android.crypto.SolanaWallet
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.AddWalletSuccessEvent
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -51,9 +48,6 @@ class FetchWalletViewModel @Inject constructor(
     val selectedAddresses: StateFlow<Set<String>> = _selectedAddresses.asStateFlow()
 
     private var mnemonic: String = ""
-
-    private val _closeFragment = MutableStateFlow(false)
-    val closeFragment: StateFlow<Boolean> = _closeFragment.asStateFlow()
 
     init {
         startFetching()
@@ -126,6 +120,7 @@ class FetchWalletViewModel @Inject constructor(
                     createWallet(wallet)
                 }
                 Timber.d("Successfully imported ${selectedWalletInfos.size} wallets")
+                RxBus.publish(AddWalletSuccessEvent())
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallets")
             }
@@ -171,7 +166,6 @@ class FetchWalletViewModel @Inject constructor(
                 if (wallet != null) {
                     insertWalletAndAddresses(wallet)
                     web3Repository.insertWeb3Tokens(assets.map { it.toWebToken(wallet.id) })
-                    _closeFragment.value = true
                 } else {
                     Timber.e("Failed to create $category wallet: response data is null")
                 }

@@ -6,8 +6,6 @@ import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LivePagedListBuilder
@@ -21,7 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -36,6 +33,7 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -49,7 +47,6 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
-import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SnapshotItem
@@ -64,7 +61,6 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
-import one.mixin.android.db.web3.vo.Web3Wallet
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
