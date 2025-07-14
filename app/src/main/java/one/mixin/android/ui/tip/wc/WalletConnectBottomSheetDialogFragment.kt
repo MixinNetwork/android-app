@@ -49,6 +49,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.WalletConnectV2.getNamespaceProposal
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -271,7 +272,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 RequestType.SessionProposal -> {
                     sessionProposal =
                         viewModel.getV2SessionProposal(topic)?.apply {
-                            requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { chain = it }
+                            this.getNamespaceProposal()?.chains?.firstOrNull {
+                                c -> c.getChain() != null
+                            }?.getChain()?.let { chain = it }
                         }
                 }
                 RequestType.SessionRequest -> {
