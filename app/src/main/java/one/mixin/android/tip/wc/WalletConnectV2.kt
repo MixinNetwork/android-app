@@ -591,6 +591,6 @@ object WalletConnectV2 : WalletConnect() {
         errMsg?.let { throw WalletConnectException(0, it) }
     }
 
-    fun  Wallet.Model.SessionProposal.getNamespaceProposal(): Wallet.Model.Namespace.Proposal? =
+    fun Wallet.Model.SessionProposal.getNamespaceProposal(): Wallet.Model.Namespace.Proposal? =
         this.requiredNamespaces.values.firstOrNull() ?: this.optionalNamespaces.values.firstOrNull()
 }
