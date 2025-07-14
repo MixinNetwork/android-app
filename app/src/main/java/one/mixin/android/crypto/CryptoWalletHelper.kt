@@ -19,9 +19,9 @@ object CryptoWalletHelper {
     fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): EthereumWallet {
         try {
             val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index) ?: throw IllegalArgumentException()
-            val address = "0x${EthKeyGenerator.privateKeyToAddress(privateKey)}"
+            val address = EthKeyGenerator.privateKeyToAddress(privateKey)
             val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, "m/44'/60'/0'/0/$index")
-            assert(addressFromGo.lowercase() == address.lowercase()) { "Address mismatch: $addressFromGo != $address" }
+            assert(addressFromGo == address) { "Address mismatch: $addressFromGo != $address" }
             return EthereumWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),

@@ -513,53 +513,6 @@ internal constructor(
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
     suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, query)
 
-    suspend fun saveWeb3PrivateKey(context: Context, pin: String, address: String, privateKey: ByteArray): Boolean {
-        return try {
-            val result = tip.getOrRecoverTipPriv(context, pin)
-            val tipPriv = result.getOrThrow()
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(
-                tip.getMnemonicFromEncryptedPreferences(context),
-                tip.getEncryptedSalt(context),
-                pin,
-                tipPriv
-            )
-            val masterKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
-            val encryptionKeyBytes = masterKeyPair.privateKey.toByteArray()
-            val sha = MessageDigest.getInstance("SHA-256")
-            val hashedKey = sha.digest(encryptionKeyBytes)
-            val secretKey = SecretKeySpec(hashedKey, "AES")
-
-            val iv = ByteArray(16)
-            SecureRandom().nextBytes(iv)
-            val ivSpec = IvParameterSpec(iv)
-
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
-            val encryptedPrivateKey = cipher.doFinal(privateKey)
-
-            val encryptedData = iv + encryptedPrivateKey
-            val encryptedString = Base64.encodeToString(encryptedData, Base64.NO_WRAP)
-
-            val encryptedPrefs = runCatching {
-                EncryptedSharedPreferences.create(
-                    context,
-                    ENCRYPTED_WEB3_KEY,
-                    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                )
-            }.onFailure {
-                context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
-            }.getOrNull()
-
-            encryptedPrefs?.putString(address, encryptedString)
-            true
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to save web3 private key")
-            false
-        }
-    }
-
     suspend fun getWeb3PrivateKey(context: Context, pin: String, address: String): ByteArray? {
         return try {
             val encryptedPrefs = runCatching {

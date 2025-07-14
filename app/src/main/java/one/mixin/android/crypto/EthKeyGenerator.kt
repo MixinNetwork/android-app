@@ -54,6 +54,6 @@ object EthKeyGenerator {
 
     fun privateKeyToAddress(privateKey: ByteArray): String {
         val ecKeyPair = ECKeyPair.create(privateKey)
-        return Keys.getAddress(ecKeyPair)
+        return Keys.toChecksumAddress(Keys.getAddress(ecKeyPair.publicKey))
     }
 }

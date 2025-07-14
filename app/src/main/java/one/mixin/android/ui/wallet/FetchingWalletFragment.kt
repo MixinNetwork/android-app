@@ -18,14 +18,19 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG = "fetching"
         private const val ARGS_MNEMONIC = "args_mnemonic"
-        fun newInstance(mnemonic: String?) = FetchingWalletFragment().apply {
-            arguments = Bundle().apply { putString(ARGS_MNEMONIC, mnemonic) }
+        private const val ARGS_PIN = "args_pin"
+        fun newInstance(mnemonic: String?, pin: String? = null) = FetchingWalletFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARGS_MNEMONIC, mnemonic)
+                putString(ARGS_PIN, pin)
+            }
         }
     }
 
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private val viewModel by activityViewModels<FetchWalletViewModel>()
     private val mnemonic: String? by lazy { arguments?.getString(ARGS_MNEMONIC) }
+    private val pin: String? by lazy { arguments?.getString(ARGS_PIN) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,6 +39,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
             FetchingContent()
         }
         viewModel.setMnemonic(mnemonic.orEmpty())
+        viewModel.setPin(pin.orEmpty())
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
                 if (state == FetchWalletState.SELECT) {
