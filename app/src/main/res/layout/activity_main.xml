@@ -37,12 +37,14 @@
         android:layout_marginTop="56dp"
         android:id="@+id/container_search"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"/>
 
     <FrameLayout
         android:id="@+id/container_password"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"/>
 
 </FrameLayout>
 
