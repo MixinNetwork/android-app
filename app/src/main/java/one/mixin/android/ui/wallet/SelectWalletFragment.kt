@@ -19,11 +19,17 @@ import one.mixin.android.util.viewBinding
 class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG = "select"
-        fun newInstance() = SelectWalletFragment()
+        private const val ARGS_PIN = "args_pin"
+        fun newInstance(pin: String?) = SelectWalletFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARGS_PIN, pin)
+            }
+        }
     }
 
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private val viewModel by activityViewModels<FetchWalletViewModel>()
+    private val pin: String? by lazy { arguments?.getString(ARGS_PIN) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -36,7 +42,9 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 wallets = wallets,
                 selectedWalletInfos = selectedWalletInfos,
                 onWalletToggle = viewModel::toggleWalletSelection,
-                onContinue = viewModel::startImporting,
+                onContinue = {
+                    viewModel.startImporting(pin.orEmpty(), it)
+                },
                 onBackPressed = { requireActivity().finish() },
                 onSelectAll = viewModel::selectAll,
                 onFindMore = viewModel::findMoreWallets,

@@ -39,11 +39,10 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
             FetchingContent()
         }
         viewModel.setMnemonic(mnemonic.orEmpty())
-        viewModel.setPin(pin.orEmpty())
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
                 if (state == FetchWalletState.SELECT) {
-                    navTo(SelectWalletFragment.newInstance(), SelectWalletFragment.TAG)
+                    navTo(SelectWalletFragment.newInstance(pin), SelectWalletFragment.TAG)
                     requireActivity().supportFragmentManager
                         .beginTransaction()
                         .remove(this@FetchingWalletFragment)

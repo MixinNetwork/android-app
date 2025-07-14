@@ -24,24 +24,59 @@ import kotlin.test.assertEquals
 
 class MnemonicTest {
 
-    @Test
-    fun printMnemonicKeyAndEthAddress() {
-        val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
-        try {
-            repeat(10) {
-                EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", it)?.let { privateKey ->
-                    val address = "0x${EthKeyGenerator.privateKeyToAddress(privateKey)}"
-                    println("Ethereum Wallet $address")
-                } ?: throw IllegalStateException("Failed to generate private key for index $it")
-                SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", it)?.let { privateKey ->
-                    val kp =
-                        KeyPair.newKeyPairFromSeed(privateKey.toByteString(), checkOnCurve = true)
-                    println("Solana Wallet ${Base58.encode(kp.publicKey.toByteArray())}")
-                }
+    class MnemonicTest {
+
+        private val expectedSolanaAddresses = listOf(
+            "BLeUXTx9thHGT7VJUtF9vHEmfMDgW1nnKZ9UVer2CoLX",
+            "EdjcxP8MmXP4yRHguEVoH75kbXVfZNFXPgNfL9NqcXXK",
+            "AFG4eoTGSCdNemYFQhhJBqT7tJwo3WdC4Raeq9SkXx7p",
+            "gBXdHgqD3g2ChGjHveWiPXSGMRXRTNwbieiBWtKVtzJ",
+            "9c8ixKiHZ7vuydxovD32uGGi4Hn1BkpdyZeUy9jkTLtw",
+            "BnWk78yTZn6PmKnFQ1j2fqL4ZXekhQ6VYZVDNtU7d6Cq",
+            "6h5ScC2T65UKvJNnajrttU7rBhq1kCgaBGtw9z9s4K6L",
+            "GPAJ4A3YSzzVYeTigrfxB91j8ELPcqHCCq13vJvJhna1",
+            "HBWQTWgxLGy5JpvicSvHCZcmBjMN11shqBiGSaVvQtPJ",
+            "EMcYx649Zj64Tk32Xg6c7eYkLyJ7y2qjpnrQVcqCvJKA"
+        )
+        private val expectedEthereumAddresses = listOf(
+            "0x58A57ed9d8d624cBD12e2C467D34787555bB1b25",
+            "0x0D3eB21b6b21833A4939Cfff4810E9AE0758e12C",
+            "0xe42f4612e154153B68e241e8FDe337e0c4dD6bBD",
+            "0x2F07c220dC62CE9531bC44B695A6D93578806d8d",
+            "0x1454168e82efA260f49a6F86612cc6414Ba633e9",
+            "0x4fb070eF70961D204961c69B954B99808b9694BC",
+            "0x603049dcd328D58c9053eBE34F1692c0fac683f8",
+            "0x3eb84b6a7B4707C20B6bca41b537055B61E84764",
+            "0xa642b057F48020e850581a05Fe2Dde506EabD50D",
+            "0x61e3A11876506C169a25c90a6f64fEA5384d10f0"
+        )
+
+        @Test
+        fun testAddressGenerationFromMnemonic() {
+            val mnemonic =
+                "legal winner thank year wave sausage worth useful legal winner thank yellow"
+            repeat(10) { index ->
+                val ethPrivateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", index)
+                requireNotNull(ethPrivateKey) { "Failed to generate Ethereum private key for index $index" }
+                val generatedEthAddress = EthKeyGenerator.privateKeyToAddress(ethPrivateKey)
+                assertEquals(
+                    expectedEthereumAddresses[index],
+                    generatedEthAddress,
+                    "Ethereum address at index $index should match"
+                )
+
+                val solanaPrivateKey =
+                    SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", index)
+                requireNotNull(solanaPrivateKey) { "Failed to generate Solana private key for index $index" }
+                val keyPair =
+                    KeyPair.newKeyPairFromSeed(solanaPrivateKey.toByteString(), checkOnCurve = true)
+                val generatedSolanaAddress = Base58.encode(keyPair.publicKey.toByteArray())
+                assertEquals(
+                    expectedSolanaAddresses[index],
+                    generatedSolanaAddress,
+                    "Solana address at index $index should match"
+                )
             }
-        } catch (e: Exception) {
-            println("Error: ${e.message}")
-            e.printStackTrace()
         }
     }
 

@@ -30,7 +30,6 @@ object SolanaKeyGenerator {
     fun getPrivateKeyFromMnemonic(mnemonic: String, passphrase: String = "", index: Int = 0): ByteArray {
         // 1. Mnemonic to Seed
         val seed = mnemonicToSeed(mnemonic, passphrase)
-        println("seed: " + seed.joinToString("") { "%02x".format(it) })
 
         // 2. Seed to Master Key/Chain Code via SLIP-0010
         val masterKey = hmacSha512("ed25519 seed".toByteArray(StandardCharsets.UTF_8), seed)
