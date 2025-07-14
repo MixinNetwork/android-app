@@ -126,7 +126,9 @@ fun SelectContent(
     onWalletToggle: (IndexedWallet) -> Unit,
     onContinue: (Set<IndexedWallet>) -> Unit,
     onBackPressed: () -> Unit,
-    onSelectAll: () -> Unit
+    onSelectAll: () -> Unit,
+    onFindMore: () -> Unit,
+    isLoadingMore: Boolean,
 ) {
     MixinAppTheme(skip = true) {
         Column(
@@ -167,6 +169,30 @@ fun SelectContent(
                         isSelected = selectedWalletInfos.contains(wallet),
                         onToggle = { onWalletToggle(wallet) }
                     )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    if (isLoadingMore) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(30.dp),
+                                color = MixinAppTheme.colors.backgroundGray
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.find_more_wallets),
+                            color = MixinAppTheme.colors.accent,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onFindMore() }
+                                .padding(vertical = 8.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
                 }
             }
 

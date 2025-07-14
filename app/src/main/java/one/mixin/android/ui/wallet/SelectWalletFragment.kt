@@ -31,13 +31,16 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
         binding.compose.setContent {
             val wallets by viewModel.wallets.collectAsState()
             val selectedWalletInfos by viewModel.selectedWalletInfos.collectAsState()
+            val state by viewModel.state.collectAsState()
             SelectContent(
                 wallets = wallets,
                 selectedWalletInfos = selectedWalletInfos,
                 onWalletToggle = viewModel::toggleWalletSelection,
                 onContinue = viewModel::startImporting,
                 onBackPressed = { requireActivity().finish() },
-                onSelectAll = viewModel::selectAll
+                onSelectAll = viewModel::selectAll,
+                onFindMore = viewModel::findMoreWallets,
+                isLoadingMore = state == FetchWalletState.FETCHING && wallets.isNotEmpty(),
             )
         }
         viewLifecycleOwner.lifecycleScope.launch {

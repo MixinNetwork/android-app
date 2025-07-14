@@ -36,6 +36,7 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigDecimal
 import java.security.MessageDigest
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -64,27 +65,30 @@ class FetchWalletViewModel @Inject constructor(
     val selectedAddresses: StateFlow<Set<String>> = _selectedAddresses.asStateFlow()
 
     private var mnemonic: String = ""
-    private var pin: String = ""
+    private var currentIndex = 0
 
     init {
-        startFetching()
+        startFetching(0)
     }
 
     fun setMnemonic(mnemonic: String) {
         this.mnemonic = mnemonic
-        startFetching()
+        _wallets.value = emptyList()
+        currentIndex = 0
+        startFetching(0)
     }
 
-    fun setPin(pin: String) {
-        this.pin = pin
+    fun findMoreWallets() {
+        currentIndex += 10
+        startFetching(currentIndex)
     }
 
-    private fun startFetching() {
+    private fun startFetching(offset: Int) {
         viewModelScope.launch {
             _state.value = FetchWalletState.FETCHING
             try {
                 if (mnemonic.isNotBlank()) {
-                    val wallets = (0 until 10).map { index ->
+                    val wallets = (offset until offset + 10).map { index ->
                         val ethereumWallet =
                             CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
                         val solanaWallet =
@@ -102,25 +106,35 @@ class FetchWalletViewModel @Inject constructor(
                             { it.assets }
                         )
                         if (tokensMap.isEmpty()) {
-                            _wallets.value = listOf(wallets[0])
-                        }else {
+                            if (offset == 0) {
+                                _wallets.value = listOf(wallets[0])
+                            }
+                        } else {
                             val walletInfos = wallets.map { wallet ->
                                 val evmTokens =
                                     tokensMap[wallet.ethereumWallet.address] ?: emptyList()
                                 val solanaTokens =
                                     tokensMap[wallet.solanaWallet.address] ?: emptyList()
-                                val allTokens = evmTokens + solanaTokens
+                                val allTokens = (evmTokens + solanaTokens).sortedByDescending {
+                                    (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                                }
                                 IndexedWallet(
                                     wallet.index,
                                     wallet.ethereumWallet,
                                     wallet.solanaWallet,
                                     assets = allTokens
                                 )
+                            }.filter { it.assets.isNotEmpty() }
+                            if (offset == 0 && walletInfos.isEmpty()) {
+                                _wallets.value = listOf(wallets[0])
+                            } else {
+                                _wallets.value = _wallets.value + walletInfos
                             }
-                            _wallets.value = walletInfos
                         }
                     } else {
-                        _wallets.value = listOf(wallets[0])
+                        if (offset == 0) {
+                            _wallets.value = listOf(wallets[0])
+                        }
                     }
                 }
                 _state.value = FetchWalletState.SELECT
@@ -132,13 +146,17 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     // Start importing selected wallet infos
-    fun startImporting(selectedWalletInfos: Set<IndexedWallet>) {
+    fun startImporting(pin: String, selectedWalletInfos: Set<IndexedWallet>) {
+        if (pin.isBlank()) {
+            Timber.e("PIN is empty, cannot import wallets.")
+            return
+        }
         viewModelScope.launch {
             _state.value = FetchWalletState.IMPORTING
             try {
                 // Create wallets for each selected wallet
                 selectedWalletInfos.forEach { wallet ->
-                    createWallet(pin,wallet)
+                    createWallet(pin, wallet)
                 }
                 Timber.d("Successfully imported ${selectedWalletInfos.size} wallets")
                 RxBus.publish(AddWalletSuccessEvent())
@@ -148,8 +166,8 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    fun retry() {
-        startFetching()
+    fun retry(pin: String) {
+        startFetching(0)
     }
 
     private suspend fun createWallet(pin:String, indexedWallet: IndexedWallet) {
@@ -250,6 +268,10 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     suspend fun saveWeb3PrivateKey(context: Context, pin: String, address: String, privateKey: String): Boolean {
+        if (pin.isBlank()) {
+            Timber.e("PIN is empty, cannot save private key.")
+            return false
+        }
         return try {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val tipPriv = result.getOrThrow()

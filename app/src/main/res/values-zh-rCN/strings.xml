@@ -1962,18 +1962,22 @@
     <string name="View_Invoice">显示账单</string>
     <string name="verifying_payment">支付验证中…</string>
     <string name="verifying_payment_description">支付检测中，请耐心等待</string>
-    <string name="add_wallet">导入钱包</string>
     <string name="membership_congratulation_description">🎉 感谢您使用 Mixin 并续费精英版会员！会员有效期至 %1$s，同时获赠 %2$d Mixin Stars，可免费使用恢复服务。</string>
     <string name="Upgrade_Success">升级成功</string>
     <string name="Renew_Success">续费成功</string>
     <string name="no_longer_member">你已不再是此群组的成员。</string>
+    <string name="add_wallet">导入钱包</string>
+    <string name="fetching_into_wallet">正在导入到您的钱包…</string>
+    <string name="importing_into_wallet">正在导入到您的钱包…</string>
+    <string name="fetching_shouldnt_take_long">这应该不会花太长时间。</string>
     <string name="Import_Mnemonic_Phrase">导入助记词</string>
     <string name="Import_wallets_from_another_wallet">从其他钱包导入钱包。</string>
-
     <plurals name="import_wallets">
         <item quantity="one">导入 %1$d 个钱包</item>
         <item quantity="other">导入 %1$d 个钱包</item>
     </plurals>
-    <string name="Rename_Wallet">重命名</string>
+    <string name="Rename_Wallet">钱包重命名</string>
     <string name="Remove_Wallet">删除钱包</string>
+    <string name="remove_wallet_pin_hint">请输入您的 PIN 以删除钱包</string>
+    <string name="find_more_wallets">查找更多钱包</string>
 </resources>

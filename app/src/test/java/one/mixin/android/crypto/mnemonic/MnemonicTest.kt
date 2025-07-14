@@ -32,7 +32,7 @@ class MnemonicTest {
                 EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", it)?.let { privateKey ->
                     val address = "0x${EthKeyGenerator.privateKeyToAddress(privateKey)}"
                     println("Ethereum Wallet $address")
-                } ?: Timber.e("Failed to generate Ethereum wallet for index $it")
+                } ?: throw IllegalStateException("Failed to generate private key for index $it")
                 SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", it)?.let { privateKey ->
                     val kp =
                         KeyPair.newKeyPairFromSeed(privateKey.toByteString(), checkOnCurve = true)

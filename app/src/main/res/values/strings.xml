@@ -2031,4 +2031,5 @@
     <string name="Rename_Wallet">Rename Wallet</string>
     <string name="remove_wallet_pin_hint">Enter your PIN to remove wallet</string>
     <string name="Remove_Wallet">Remove Wallet</string>
+    <string name="find_more_wallets">Find more wallets</string>
 </resources>
