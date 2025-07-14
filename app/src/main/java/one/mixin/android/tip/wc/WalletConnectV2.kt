@@ -14,7 +14,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -233,13 +232,13 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-        val requiredNamespaces: Collection<String> = flattenCollections(sessionProposal.requiredNamespaces.values.map { it.chains })
+        val namespaces: Collection<String> = flattenCollections((sessionProposal.requiredNamespaces + sessionProposal.optionalNamespaces).values.map { it.chains })
         val chain =
-            if (requiredNamespaces.isEmpty()) {
+            if (namespaces.isEmpty()) {
                 supportChainList.firstOrNull()
             } else {
                 supportChainList.find {
-                    it.chainId in requiredNamespaces
+                    it.chainId in namespaces
                 }
             }
         if (chain == null) {
@@ -253,7 +252,6 @@ object WalletConnectV2 : WalletConnect() {
                 val pub = ECKeyPair.create(priv).publicKey
                 Keys.toChecksumAddress(Keys.getAddress(pub))
             }
-
         val supportedNamespaces = getSupportedNamespaces(chain, address)
         Timber.e("$TAG supportedNamespaces $supportedNamespaces")
         val sessionNamespaces = WalletKit.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
