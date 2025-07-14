@@ -73,7 +73,7 @@ data class IndexedWallet(
 
 @Composable
 private fun LoadingState(title: String, subtitle: String) {
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -128,7 +128,7 @@ fun SelectContent(
     onBackPressed: () -> Unit,
     onSelectAll: () -> Unit
 ) {
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -212,7 +212,7 @@ fun SelectContent(
 
 @Composable
 fun ImportingContent(onFinished: () -> Unit) {
-    MixinAppTheme {
+    MixinAppTheme(skip = true) {
         LoadingState(
             title = stringResource(R.string.importing_into_wallet),
             subtitle = stringResource(R.string.fetching_shouldnt_take_long)

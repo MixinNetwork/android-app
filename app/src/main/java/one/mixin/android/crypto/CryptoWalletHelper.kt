@@ -1,14 +1,11 @@
 package one.mixin.android.crypto
 
 import blockchain.Blockchain
-import org.bitcoinj.core.BlockChain
+import one.mixin.android.util.encodeToBase58String
 import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
 import org.bitcoinj.crypto.MnemonicCode
-import org.kethereum.bip39.model.MnemonicWords
-import org.kethereum.bip39.toSeed
-import org.sol4k.Keypair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
@@ -18,54 +15,11 @@ object CryptoWalletHelper {
     private const val ETH_DERIVATION_PATH = "m/44'/60'/0'/0/0"
     private const val SOL_DERIVATION_PATH = "m/44'/501'/0'/0'"
 
-    private fun deriveEthereumPrivateKeyAtIndex(masterKey: DeterministicKey, index: Int): ByteArray {
-        val derivationPath = listOf(
-            ChildNumber(44, true),   // m/44'
-            ChildNumber(60, true),   // m/44'/60'
-            ChildNumber(0, true),    // m/44'/60'/0'
-            ChildNumber(0, false),   // m/44'/60'/0'/0
-            ChildNumber(index, false)    // m/44'/60'/0'/0/0
-        )
-
-        var key = masterKey
-        for (childNumber in derivationPath) {
-            key = HDKeyDerivation.deriveChildKey(key, childNumber)
-        }
-
-        return key.privKeyBytes
-    }
-
-    private fun deriveSolPrivateKeyAtIndex(masterKey: DeterministicKey, index: Int): ByteArray {
-        val derivationPath = listOf(
-            ChildNumber(44, true),   // m/44'
-            ChildNumber(501, true),  // m/44'/501'
-            ChildNumber(index, true),    // m/44'/501'/0'
-            ChildNumber(0, true) // m/44'/501'/0'/index'
-        )
-
-        var key = masterKey
-        for (childNumber in derivationPath) {
-            key = HDKeyDerivation.deriveChildKey(key, childNumber)
-        }
-
-        return key.privKeyBytes
-    }
-
-    private fun privateKeyToAddress(privateKey: ByteArray): String {
-        val ecKeyPair = ECKeyPair.create(privateKey)
-        return Keys.getAddress(ecKeyPair)
-    }
-
     // Complete process: mnemonic -> private key -> address
     fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): EthereumWallet {
         try {
-            val mnemonicWords = mnemonic.split(" ")
-            MnemonicCode.INSTANCE.check(mnemonicWords)
-            val seed = MnemonicCode.toSeed(mnemonicWords, passphrase)
-
-            val masterKey = HDKeyDerivation.createMasterPrivateKey(seed)
-            val privateKey = deriveEthereumPrivateKeyAtIndex(masterKey, index)
-            val address = "0x${privateKeyToAddress(privateKey)}"
+            val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index) ?: throw IllegalArgumentException()
+            val address = "0x${EthKeyGenerator.privateKeyToAddress(privateKey)}"
             val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, "m/44'/60'/0'/0/$index")
             assert(addressFromGo.lowercase() == address.lowercase()) { "Address mismatch: $addressFromGo != $address" }
             return EthereumWallet(
@@ -83,16 +37,16 @@ object CryptoWalletHelper {
     // Complete process: mnemonic -> private key -> address for Solana
     fun mnemonicToSolanaWallet(mnemonic: String, passphrase: String = "", index: Int = 0): SolanaWallet {
         try {
-            val seed = MnemonicWords(mnemonic).toSeed(passphrase).seed
-            val masterKey = HDKeyDerivation.createMasterPrivateKey(seed)
-            val privateKey = deriveSolPrivateKeyAtIndex(masterKey, index)
-            // val address = Keypair.fromSecretKey(privateKey).publicKey.toBase58()
+            val privateKey = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+            val keyPair = newKeyPairFromSeed(privateKey)
+            val address = keyPair.publicKey.encodeToBase58String()
             val addressFromGo = Blockchain.generateSolanaAddressFromMnemonic(mnemonic, "m/44'/501'/$index'/0'")
+            assert(addressFromGo.lowercase() == address.lowercase()) { "Address mismatch: $addressFromGo != $address" }
 
             return SolanaWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
-                address = addressFromGo,
+                address = address,
                 index = index
             )
 

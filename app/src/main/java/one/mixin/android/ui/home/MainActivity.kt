@@ -69,6 +69,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
@@ -95,6 +96,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob

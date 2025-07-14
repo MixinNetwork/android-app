@@ -2,7 +2,9 @@
 
 package one.mixin.android.ui.wallet
 
+import android.content.Context
 import android.content.SharedPreferences
+import android.util.Base64
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,6 +16,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +28,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
+import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
@@ -44,6 +49,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
@@ -61,14 +67,21 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
+import org.web3j.crypto.Bip32ECKeyPair
 import timber.log.Timber
 import java.math.BigDecimal
+import java.security.MessageDigest
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel
 @Inject
 internal constructor(
+    private val tip: Tip,
     private val walletDatabase: WalletDatabase,
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
@@ -499,4 +512,96 @@ internal constructor(
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
     suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, query)
+
+    suspend fun saveWeb3PrivateKey(context: Context, pin: String, address: String, privateKey: ByteArray): Boolean {
+        return try {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            val tipPriv = result.getOrThrow()
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(
+                tip.getMnemonicFromEncryptedPreferences(context),
+                tip.getEncryptedSalt(context),
+                pin,
+                tipPriv
+            )
+            val masterKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
+            val encryptionKeyBytes = masterKeyPair.privateKey.toByteArray()
+            val sha = MessageDigest.getInstance("SHA-256")
+            val hashedKey = sha.digest(encryptionKeyBytes)
+            val secretKey = SecretKeySpec(hashedKey, "AES")
+
+            val iv = ByteArray(16)
+            SecureRandom().nextBytes(iv)
+            val ivSpec = IvParameterSpec(iv)
+
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
+            val encryptedPrivateKey = cipher.doFinal(privateKey)
+
+            val encryptedData = iv + encryptedPrivateKey
+            val encryptedString = Base64.encodeToString(encryptedData, Base64.NO_WRAP)
+
+            val encryptedPrefs = runCatching {
+                EncryptedSharedPreferences.create(
+                    context,
+                    ENCRYPTED_WEB3_KEY,
+                    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                )
+            }.onFailure {
+                context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+            }.getOrNull()
+
+            encryptedPrefs?.putString(address, encryptedString)
+            true
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save web3 private key")
+            false
+        }
+    }
+
+    suspend fun getWeb3PrivateKey(context: Context, pin: String, address: String): ByteArray? {
+        return try {
+            val encryptedPrefs = runCatching {
+                EncryptedSharedPreferences.create(
+                    context,
+                    ENCRYPTED_WEB3_KEY,
+                    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                )
+            }.onFailure {
+                context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+            }.getOrNull()
+
+            val encryptedString = encryptedPrefs?.getString(address, null) ?: return null
+
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            val tipPriv = result.getOrThrow()
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(
+                tip.getMnemonicFromEncryptedPreferences(context),
+                tip.getEncryptedSalt(context),
+                pin,
+                tipPriv
+            )
+            val masterKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
+            val encryptionKeyBytes = masterKeyPair.privateKey.toByteArray()
+            val sha = MessageDigest.getInstance("SHA-256")
+            val hashedKey = sha.digest(encryptionKeyBytes)
+            val secretKey = SecretKeySpec(hashedKey, "AES")
+
+            val encryptedData = Base64.decode(encryptedString, Base64.NO_WRAP)
+            val iv = encryptedData.copyOfRange(0, 16)
+            val encryptedPrivateKey = encryptedData.copyOfRange(16, encryptedData.size)
+
+            val ivSpec = IvParameterSpec(iv)
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
+            cipher.doFinal(encryptedPrivateKey)
+
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get web3 private key")
+            null
+        }
+    }
 }

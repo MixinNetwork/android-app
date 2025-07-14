@@ -44,6 +44,8 @@ object Constants {
         const val ALIAS_SPEND_SALT = "alias_spend_salt"
 
         const val ENCRYPTED_MNEMONIC = "encrypted_mnemonic"
+
+        const val ENCRYPTED_WEB3_KEY = "encrypted_web3_key"
     }
 
     object Account {

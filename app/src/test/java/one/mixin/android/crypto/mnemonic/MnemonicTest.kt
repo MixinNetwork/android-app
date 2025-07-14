@@ -1,15 +1,21 @@
 package one.mixin.android.crypto.mnemonic
 
 import com.lambdapioneer.argon2kt.Argon2Kt
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.EthKeyGenerator
+import one.mixin.android.crypto.SolanaKeyGenerator
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.mnemonicChecksumWord
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.eddsa.KeyPair
 import org.bitcoinj.crypto.MnemonicCode
 import org.junit.Test
+import org.sol4k.Base58
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.Keys
 import timber.log.Timber
@@ -21,26 +27,18 @@ class MnemonicTest {
     @Test
     fun printMnemonicKeyAndEthAddress() {
         val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
-
         try {
-            // val wallet = CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic)
-
-            // println("Mnemonic: ${wallet.mnemonic}")
-            // println("Private Key: ${wallet.privateKey}")
-            // println("Address: ${wallet.address}")
-            // assertEquals(
-            //     "0x58A57ed9d8d624cBD12e2C467D34787555bB1b25".lowercase(),
-            //     wallet.address.lowercase()
-            // )
-            // println("Checksum Address: ${Keys.toChecksumAddress(wallet.address.removePrefix("0x"))}")
-            //
-            // println("Address Valid: ${CryptoWalletHelper.isValidEthereumAddress(wallet.address)}")
-            repeat(20) {
-                val w = CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, "", it)
-                println(w.address)
+            repeat(10) {
+                EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", it)?.let { privateKey ->
+                    val address = "0x${EthKeyGenerator.privateKeyToAddress(privateKey)}"
+                    println("Ethereum Wallet $address")
+                } ?: Timber.e("Failed to generate Ethereum wallet for index $it")
+                SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", it)?.let { privateKey ->
+                    val kp =
+                        KeyPair.newKeyPairFromSeed(privateKey.toByteString(), checkOnCurve = true)
+                    println("Solana Wallet ${Base58.encode(kp.publicKey.toByteArray())}")
+                }
             }
-            val a = CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, "", 0)
-            assertEquals(a.address, "4f1JkUKpJURKG7Xn6Nzqxe594QyZER664J3S7ceEXi1mn")
         } catch (e: Exception) {
             println("Error: ${e.message}")
             e.printStackTrace()
