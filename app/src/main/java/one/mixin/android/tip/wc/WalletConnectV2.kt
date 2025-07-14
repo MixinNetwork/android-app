@@ -136,7 +136,7 @@ object WalletConnectV2 : WalletConnect() {
                             }
                         }
 
-                    val namespace = sessionProposal.requiredNamespaces.values.firstOrNull() ?: sessionProposal.optionalNamespaces.values.firstOrNull()
+                    val namespace = sessionProposal.getNamespaceProposal()
                     if (namespace == null) {
                         RxBus.publish(
                             WCErrorEvent(
@@ -592,4 +592,7 @@ object WalletConnectV2 : WalletConnect() {
         }
         errMsg?.let { throw WalletConnectException(0, it) }
     }
+
+    fun  Wallet.Model.SessionProposal.getNamespaceProposal(): Wallet.Model.Namespace.Proposal? =
+        this.requiredNamespaces.values.firstOrNull() ?: this.optionalNamespaces.values.firstOrNull()
 }
