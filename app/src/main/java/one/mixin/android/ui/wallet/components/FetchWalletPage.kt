@@ -39,8 +39,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.EthereumWallet
-import one.mixin.android.crypto.SolanaWallet
+import one.mixin.android.crypto.CryptoWallet
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
@@ -60,8 +59,8 @@ data class AssetInfo(
 
 data class IndexedWallet(
     val index: Int,
-    val ethereumWallet: EthereumWallet,
-    val solanaWallet: SolanaWallet,
+    val ethereumWallet: CryptoWallet,
+    val solanaWallet: CryptoWallet,
     val assets: List<AssetView> = emptyList()
 ) {
     val totalValue: BigDecimal

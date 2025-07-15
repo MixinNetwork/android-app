@@ -22,6 +22,7 @@ import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.toEntropy
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletSuccessEvent
 import one.mixin.android.extension.base64RawURLDecode
@@ -66,6 +67,7 @@ class FetchWalletViewModel @Inject constructor(
 
     private var mnemonic: String = ""
     private var currentIndex = 0
+    private var spendKey: ByteArray? = null
 
     init {
         startFetching(0)
@@ -76,6 +78,10 @@ class FetchWalletViewModel @Inject constructor(
         _wallets.value = emptyList()
         currentIndex = 0
         startFetching(0)
+    }
+
+    fun setSpendKey(spendKey: ByteArray) {
+        this.spendKey = spendKey
     }
 
     fun findMoreWallets() {
@@ -146,19 +152,29 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     // Start importing selected wallet infos
-    fun startImporting(pin: String, selectedWalletInfos: Set<IndexedWallet>) {
-        if (pin.isBlank()) {
-            Timber.e("PIN is empty, cannot import wallets.")
-            return
-        }
+    fun startImporting() {
         viewModelScope.launch {
             _state.value = FetchWalletState.IMPORTING
             try {
-                // Create wallets for each selected wallet
-                selectedWalletInfos.forEach { wallet ->
-                    createWallet(pin, wallet)
+                val walletsToCreate = selectedWalletInfos.value.map {
+                    val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${it.index + 1}"
+                    val category = RefreshWeb3Job.WALLET_CATEGORY_PRIVATE
+                    val addresses = listOf(
+                        Web3AddressRequest(
+                            destination = it.ethereumWallet.address,
+                            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                            path = it.ethereumWallet.path
+                        ),
+                        Web3AddressRequest(
+                            destination = it.solanaWallet.address,
+                            chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                            path = it.solanaWallet.path
+                        )
+                    )
+                    Triple(WalletRequest(name, category, addresses), it.assets, it.solanaWallet.mnemonic.split(" "))
                 }
-                Timber.d("Successfully imported ${selectedWalletInfos.size} wallets")
+                saveWallets(walletsToCreate)
+                Timber.d("Successfully imported ${selectedWalletInfos.value.size} wallets")
                 RxBus.publish(AddWalletSuccessEvent())
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallets")
@@ -166,79 +182,31 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    fun retry(pin: String) {
-        startFetching(0)
-    }
+    private suspend fun saveWallets(walletsToCreate: List<Triple<WalletRequest, List<AssetView>, List<String>>>) {
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            Timber.e("Spend key is null, cannot save wallets.")
+            return
+        }
 
-    private suspend fun createWallet(pin:String, indexedWallet: IndexedWallet) {
-        createWallet(
-            pin,
-            indexedWallet,
-            name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${indexedWallet.index + 1}",
-            category = RefreshWeb3Job.WALLET_CATEGORY_PRIVATE,
-            addresses = listOf(
-                Web3AddressRequest(
-                    destination = indexedWallet.ethereumWallet.address,
-                    chainId = Constants.ChainId.ETHEREUM_CHAIN_ID
-                )
-                ,
-                Web3AddressRequest(
-                    destination = indexedWallet.solanaWallet.address,
-                    chainId = Constants.ChainId.SOLANA_CHAIN_ID
-                )
-            ),
-            indexedWallet.assets
-        )
-    }
-
-    private suspend fun createWallet(
-        pin: String,
-        indexedWallet: IndexedWallet,
-        name: String,
-        category: String,
-        addresses: List<Web3AddressRequest>,
-        assets: List<AssetView>
-    ) {
-        val walletRequest = WalletRequest(
-            name = name,
-            category = category,
-            addresses = addresses
-        )
-
-        requestRouteAPI(
-            invokeNetwork = {
-                web3Repository.createWallet(walletRequest)
-            },
-            successBlock = { response ->
-                val wallet = response.data
-                if (wallet != null) {
-                    insertWalletAndAddresses(wallet)
-                    web3Repository.insertWeb3Tokens(assets.map { it.toWebToken(wallet.id) })
-                    saveWeb3PrivateKey(
-                        MixinApplication.appContext,
-                        pin,
-                        indexedWallet.ethereumWallet.address,
-                        indexedWallet.ethereumWallet.privateKey
-                    )
-                    saveWeb3PrivateKey(
-                        MixinApplication.appContext,
-                        pin,
-                        indexedWallet.solanaWallet.address,
-                        indexedWallet.solanaWallet.privateKey
-                    )
-                } else {
-                    Timber.e("Failed to create $category wallet: response data is null")
-                }
-            },
-            failureBlock = { response ->
-                Timber.e("Failed to create $category wallet: ${response.errorCode} - ${response.errorDescription}")
-                false
-            },
-            requestSession = {
-                userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-            },
-            defaultErrorHandle = {}
-        )
+        walletsToCreate.forEach { (walletRequest, assets, words) ->
+            requestRouteAPI(
+                invokeNetwork = { web3Repository.createWallet(walletRequest) },
+                successBlock = { response ->
+                    response.data?.let { wallet ->
+                        insertWalletAndAddresses(wallet)
+                        web3Repository.insertWeb3Tokens(assets.map { it.toWebToken(wallet.id) })
+                        saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
+                    } ?: Timber.e("Failed to create wallet: response data is null")
+                },
+                failureBlock = { response ->
+                    Timber.e("Failed to create wallet: ${response.errorCode} - ${response.errorDescription}")
+                    false
+                },
+                requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+                defaultErrorHandle = {}
+            )
+        }
     }
 
     private suspend fun insertWalletAndAddresses(walletResponse: Web3WalletResponse) {
@@ -267,20 +235,9 @@ class FetchWalletViewModel @Inject constructor(
         _selectedWalletInfos.value = _wallets.value.toSet()
     }
 
-    suspend fun saveWeb3PrivateKey(context: Context, pin: String, address: String, privateKey: String): Boolean {
-        if (pin.isBlank()) {
-            Timber.e("PIN is empty, cannot save private key.")
-            return false
-        }
+    private suspend fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
         return try {
-            val result = tip.getOrRecoverTipPriv(context, pin)
-            val tipPriv = result.getOrThrow()
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(
-                tip.getMnemonicFromEncryptedPreferences(context),
-                tip.getEncryptedSalt(context),
-                pin,
-                tipPriv
-            )
+            val entropy = runCatching { toEntropy(words) }.getOrNull() ?: return false
             val masterKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
             val encryptionKeyBytes = masterKeyPair.privateKey.toByteArray()
             val sha = MessageDigest.getInstance("SHA-256")
@@ -293,7 +250,7 @@ class FetchWalletViewModel @Inject constructor(
 
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
-            val encryptedPrivateKey = cipher.doFinal(Numeric.hexStringToByteArray(privateKey))
+            val encryptedPrivateKey = cipher.doFinal(entropy)
 
             val encryptedData = iv + encryptedPrivateKey
             val encryptedString = Base64.encodeToString(encryptedData, Base64.NO_WRAP)
@@ -310,7 +267,7 @@ class FetchWalletViewModel @Inject constructor(
                 context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
             }.getOrNull()
 
-            encryptedPrefs?.putString(address, encryptedString)
+            encryptedPrefs?.putString(walletId, encryptedString)
             true
         } catch (e: Exception) {
             Timber.e(e, "Failed to save web3 private key")

@@ -20,12 +20,7 @@ import one.mixin.android.util.viewBinding
 class AddWalletFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG = "AddWalletFragment"
-        private const val PIN_ARG = "pin_arg"
-        fun newInstance(pin: String? = null) = AddWalletFragment().apply {
-            arguments = Bundle().apply {
-                putString(PIN_ARG, pin)
-            }
-        }
+        fun newInstance() = AddWalletFragment()
     }
 
     private val binding by viewBinding(FragmentComposeBinding::bind)
@@ -51,20 +46,19 @@ class AddWalletFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().finish()
         }
-        val pin = arguments?.getString(PIN_ARG)
         binding.compose.setContent {
             // pass current scanned list into page, handle scan trigger
             AddWalletPage(
                 mnemonicList = scannedMnemonicList,
-                onComplete = { mnemonicList -> navigateToFetchWallet(mnemonicList, pin) },
+                onComplete = { mnemonicList -> navigateToFetchWallet(mnemonicList) },
                 onScan = { getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true)) }
             )
         }
     }
 
-    private fun navigateToFetchWallet(mnemonicList: List<String>, pin: String?) {
+    private fun navigateToFetchWallet(mnemonicList: List<String>) {
         val mnemonic = mnemonicList.joinToString(separator = " ")
-        navTo(FetchingWalletFragment.newInstance(mnemonic, pin), FetchingWalletFragment.TAG)
+        navTo(FetchingWalletFragment.newInstance(mnemonic), FetchingWalletFragment.TAG)
         requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
     }
 }

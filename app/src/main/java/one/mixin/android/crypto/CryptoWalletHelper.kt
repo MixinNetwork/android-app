@@ -2,70 +2,46 @@ package one.mixin.android.crypto
 
 import blockchain.Blockchain
 import one.mixin.android.util.encodeToBase58String
-import org.bitcoinj.crypto.ChildNumber
-import org.bitcoinj.crypto.DeterministicKey
-import org.bitcoinj.crypto.HDKeyDerivation
-import org.bitcoinj.crypto.MnemonicCode
-import org.web3j.crypto.ECKeyPair
-import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 
 object CryptoWalletHelper {
 
-    private const val ETH_DERIVATION_PATH = "m/44'/60'/0'/0/0"
-    private const val SOL_DERIVATION_PATH = "m/44'/501'/0'/0'"
-
-    // Complete process: mnemonic -> private key -> address
-    fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): EthereumWallet {
+    fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
-            val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index) ?: throw IllegalArgumentException()
+            val path = "m/44'/60'/0'/0/$index"
+            val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                ?: throw IllegalArgumentException("Private key generation failed")
             val address = EthKeyGenerator.privateKeyToAddress(privateKey)
-            val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, "m/44'/60'/0'/0/$index")
-            assert(addressFromGo == address) { "Address mismatch: $addressFromGo != $address" }
-            return EthereumWallet(
+            val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, path)
+            assert(addressFromGo.equals(address, ignoreCase = true)) { "Address mismatch: $addressFromGo != $address" }
+            return CryptoWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
                 address = address,
-                index = index
+                path = path
             )
-
         } catch (e: Exception) {
-            throw RuntimeException("Wallet generation failed: ${e.message}", e)
+            throw RuntimeException("Ethereum wallet generation failed: ${e.message}", e)
         }
     }
 
-    // Complete process: mnemonic -> private key -> address for Solana
-    fun mnemonicToSolanaWallet(mnemonic: String, passphrase: String = "", index: Int = 0): SolanaWallet {
+    fun mnemonicToSolanaWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
+            val path = "m/44'/501'/$index'/0'"
             val privateKey = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
             val keyPair = newKeyPairFromSeed(privateKey)
             val address = keyPair.publicKey.encodeToBase58String()
-            val addressFromGo = Blockchain.generateSolanaAddressFromMnemonic(mnemonic, "m/44'/501'/$index'/0'")
-            assert(addressFromGo.lowercase() == address.lowercase()) { "Address mismatch: $addressFromGo != $address" }
+            val addressFromGo = Blockchain.generateSolanaAddressFromMnemonic(mnemonic, path)
+            assert(addressFromGo.equals(address, ignoreCase = true)) { "Address mismatch: $addressFromGo != $address" }
 
-            return SolanaWallet(
+            return CryptoWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
                 address = address,
-                index = index
+                path = path
             )
-
         } catch (e: Exception) {
             throw RuntimeException("Solana wallet generation failed: ${e.message}", e)
         }
     }
 }
-
-data class EthereumWallet(
-    val mnemonic: String,
-    val privateKey: String,
-    val address: String,
-    val index: Int = 0
-)
-
-data class SolanaWallet(
-    val mnemonic: String,
-    val privateKey: String,
-    val address: String,
-    val index: Int = 0
-)

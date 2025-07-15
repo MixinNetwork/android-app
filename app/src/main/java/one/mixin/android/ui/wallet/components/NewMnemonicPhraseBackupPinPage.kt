@@ -1,4 +1,4 @@
-package one.mixin.android.ui.setting.ui.page
+package one.mixin.android.ui.wallet.components
 
 import PageScaffold
 import androidx.compose.foundation.Image
@@ -47,30 +47,23 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
-import one.mixin.android.extension.toHex
-import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 
 @Composable
-fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
+fun NewMnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var isLoading by remember { mutableStateOf(false) }
     var pinCode by remember { mutableStateOf("") }
     var errorInfo by remember { mutableStateOf("") }
-    val viewModel = hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val list = listOf(
         "1",
@@ -133,23 +126,12 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                         isLoading = true
                         coroutineScope.launch {
                             runCatching {
-                                val selfId = Session.getAccountId()!!
-                                val seed = tip.getOrRecoverTipPriv(context, pinCode).getOrThrow()
-                                val edKey = tip.getMnemonicEdKey(context, pinCode, seed)
-                                viewModel
-                                    .saltExport(
-                                        ExportRequest(
-                                            publicKey = edKey.publicKey.toHex(),
-                                            signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                            pinBase64 = viewModel.getEncryptedTipBody(selfId, pinCode),
-                                        )
-                                    )
-                            }.onSuccess { response ->
-                                if (response.isSuccess) {
+                                val result = tip.getOrRecoverTipPriv(context, pinCode)
+                                if (result.isSuccess) {
                                     next(pinCode)
                                 } else {
                                     isLoading = false
-                                    errorInfo = context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                                    errorInfo = result.exceptionOrNull()?.message ?: ""
                                     pinCode = ""
                                 }
                             }.onFailure { t ->

@@ -35,7 +35,9 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
@@ -68,6 +70,7 @@ import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
 import org.web3j.crypto.Bip32ECKeyPair
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.security.MessageDigest
@@ -502,7 +505,6 @@ internal constructor(
                     web3Repository.deleteAddressesByWalletId(walletId)
                     web3Repository.deleteAssetsByWalletId(walletId)
                     web3Repository.deleteWallet(walletId)
-                    // 移除 selectWallet 调用，删除钱包后的逻辑由 Fragment 处理
                 }
             } catch (e: Exception) {
                 Timber.e(e)
@@ -513,7 +515,7 @@ internal constructor(
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
     suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, query)
 
-    suspend fun getWeb3PrivateKey(context: Context, pin: String, address: String): ByteArray? {
+    suspend fun getWeb3PrivateKey(context: Context, pin: String, walletId: String, chainId: String, index: Int): ByteArray? {
         return try {
             val encryptedPrefs = runCatching {
                 EncryptedSharedPreferences.create(
@@ -527,7 +529,7 @@ internal constructor(
                 context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
             }.getOrNull()
 
-            val encryptedString = encryptedPrefs?.getString(address, null) ?: return null
+            val encryptedString = encryptedPrefs?.getString(walletId, null) ?: return null
 
             val result = tip.getOrRecoverTipPriv(context, pin)
             val tipPriv = result.getOrThrow()
@@ -550,8 +552,16 @@ internal constructor(
             val ivSpec = IvParameterSpec(iv)
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
-            cipher.doFinal(encryptedPrivateKey)
-
+            val entry = cipher.doFinal(encryptedPrivateKey)
+            val mnemoinc = toMnemonic(entry)
+            val privateKey = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                CryptoWalletHelper.mnemonicToSolanaWallet(mnemoinc, index = index)?.privateKey
+            } else {
+                CryptoWalletHelper.mnemonicToEthereumWallet(mnemoinc, index = index)?.privateKey
+            }
+            privateKey?.let {
+                Numeric.hexStringToByteArray(it)
+            }
         } catch (e: Exception) {
             Timber.e(e, "Failed to get web3 private key")
             null
