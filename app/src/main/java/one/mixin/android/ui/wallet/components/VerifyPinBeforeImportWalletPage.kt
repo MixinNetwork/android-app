@@ -46,7 +46,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -178,13 +177,13 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) ->
                         },
                 ) {
                     LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
                         modifier =
                         Modifier
                             .fillMaxHeight()
                             .padding(horizontal = 8.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        columns = GridCells.Fixed(3),
                         content = {
                             items(list.size) { index ->
                                 Box(
@@ -194,7 +193,7 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) ->
                                         .height(
                                             context.pxToDp(
                                                 (
-                                                    size.toSize().height -
+                                                    size.height.toFloat() -
                                                         context.dpToPx(
                                                             40f,
                                                         )

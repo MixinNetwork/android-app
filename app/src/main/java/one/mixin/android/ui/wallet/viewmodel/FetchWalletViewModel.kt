@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet.viewmodel
 
 import android.content.Context
-import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -22,10 +21,9 @@ import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
-import one.mixin.android.crypto.toEntropy
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletSuccessEvent
-import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.putString
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.repository.UserRepository
@@ -34,15 +32,10 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
-import org.web3j.crypto.Bip32ECKeyPair
+import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
-import java.security.MessageDigest
-import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 
 @HiltViewModel
@@ -258,4 +251,23 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
+    suspend fun getWeb3Priva(context: Context): String? {
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            Timber.e("Spend key is null, cannot save wallets.")
+            return null
+        }
+        return CryptoWalletHelper.getWeb3PrivateKey(context, currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID)?.let {
+            Numeric.toHexString(it)
+        }
+    }
+
+    suspend fun getWeb3Mnemonicte(context: Context): String? {
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            Timber.e("Spend key is null, cannot save wallets.")
+            return null
+        }
+        return CryptoWalletHelper.getWeb3Mnemonic(context, currentSpendKey, JsSigner.currentWalletId)
+    }
 }

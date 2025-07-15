@@ -2032,4 +2032,17 @@
     <string name="remove_wallet_pin_hint">Enter your PIN to remove wallet</string>
     <string name="Remove_Wallet">Remove Wallet</string>
     <string name="find_more_wallets">Find more wallets</string>
+    <string name="Show_Mnemonic_phrase">Show Mnemonic Phrase</string>
+    <string name="Show_Private_Key">Show Private Key</string>
+    <string name="wallet_security_title">Before you proceed</string>
+    <string name="wallet_security_subtitle">Read the following, then save the phrase securely.</string>
+    <string name="wallet_security_warning_1">Anyone with this mnemonic phrase can transfer all the funds in this wallet.</string>
+    <string name="wallet_security_warning_2">Mixin Messenger servers will not store your private key.</string>
+    <string name="wallet_security_warning_3">Do not share your private key with any third party, individual, website, or application.</string>
+    <string name="wallet_security_warning_4">Make sure no one or surveillance cameras are watching your screen!</string>
+    <string name="wallet_security_proceed_button">Proceed</string>
+    <string name="Write_it_down_on_a_piece_of_paper_and_keep_it_in_a_safe_place">Write it down on a piece of paper and keep it in a safe place.</string>
+    <string name="Your_Private_Key">Your Private Key</string>
+    <string name="Store_in_vault_or_safe_place">Store in vault or safe place.</string>
+    <string name="Dont_share_it_with_a_network">Don’t share it with a network.</string>
 </resources>

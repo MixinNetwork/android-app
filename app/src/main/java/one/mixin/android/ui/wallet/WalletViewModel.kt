@@ -4,7 +4,6 @@ package one.mixin.android.ui.wallet
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Base64
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -38,7 +37,6 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
-import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
@@ -70,15 +68,9 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
-import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
-import java.security.MessageDigest
-import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 
 @HiltViewModel

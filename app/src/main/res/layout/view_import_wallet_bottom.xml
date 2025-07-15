@@ -5,16 +5,15 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/hide"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?attr/bg_white"
         android:foreground="?android:attr/selectableItemBackground"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
-        android:textColor="?attr/text_primary"
-        android:text="@string/Hidden_Assets" />
+        android:textColor="?attr/text_assist" />
 
     <TextView
         android:id="@+id/transactions_tv"
@@ -29,7 +28,7 @@
         android:text="@string/All_Transactions" />
 
     <TextView
-        android:id="@+id/delete"
+        android:id="@+id/hide"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?attr/bg_white"
@@ -38,7 +37,8 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/Remove_Wallet" />
+        android:text="@string/Hidden_Assets" />
+
     <TextView
         android:id="@+id/rename"
         android:layout_width="match_parent"
@@ -50,4 +50,40 @@
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
         android:text="@string/Rename_Wallet" />
+
+    <TextView
+        android:id="@+id/mnemonic_phrase"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Show_Mnemonic_phrase" />
+
+    <TextView
+        android:id="@+id/private_key"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Show_Private_Key" />
+
+    <TextView
+        android:id="@+id/delete"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="@color/wallet_pink"
+        android:text="@string/Remove_Wallet" />
 </LinearLayout>

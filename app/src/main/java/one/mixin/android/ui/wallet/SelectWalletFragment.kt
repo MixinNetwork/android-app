@@ -11,7 +11,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.SelectContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel

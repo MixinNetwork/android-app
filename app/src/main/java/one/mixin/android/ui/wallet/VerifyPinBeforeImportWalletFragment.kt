@@ -25,6 +25,17 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
     private val viewModel by activityViewModels<FetchWalletViewModel>()
 
+    private var mode: WalletSecurityActivity.Mode =
+        WalletSecurityActivity.Mode.IMPORT // Default mode
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            val modeOrdinal = it.getInt(ARG_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
+            mode = WalletSecurityActivity.Mode.entries.toTypedArray()[modeOrdinal]
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,11 +60,42 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                     tipPriv
                                 )
                                 viewModel.setSpendKey(spendKey)
-                                navTo(AddWalletFragment.newInstance(), AddWalletFragment.TAG)
-                                requireActivity().supportFragmentManager
-                                    .beginTransaction()
-                                    .remove(this@VerifyPinBeforeImportWalletFragment)
-                                    .commit()
+                                when (mode) {
+                                    WalletSecurityActivity.Mode.IMPORT -> {
+                                        navTo(
+                                            AddWalletFragment.newInstance(),
+                                            AddWalletFragment.TAG
+                                        )
+                                        requireActivity().supportFragmentManager
+                                            .beginTransaction()
+                                            .remove(this@VerifyPinBeforeImportWalletFragment)
+                                            .commit()
+                                    }
+
+                                    WalletSecurityActivity.Mode.VIEW_MNEMONIC -> {
+                                        navTo(
+                                            DisplayWalletSecurityFragment.newInstance(
+                                                WalletSecurityActivity.Mode.VIEW_MNEMONIC,
+                                            ), "DisplayWalletSecurityFragment"
+                                        )
+                                        requireActivity().supportFragmentManager
+                                            .beginTransaction()
+                                            .remove(this@VerifyPinBeforeImportWalletFragment)
+                                            .commit()
+                                    }
+
+                                    WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
+                                        navTo(
+                                            DisplayWalletSecurityFragment.newInstance(
+                                                WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY,
+                                            ), "DisplayWalletSecurityFragment"
+                                        )
+                                        requireActivity().supportFragmentManager
+                                            .beginTransaction()
+                                            .remove(this@VerifyPinBeforeImportWalletFragment)
+                                            .commit()
+                                    }
+                                }
                             } else {
                                 requireActivity().finish()
                             }
@@ -66,6 +108,14 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
     companion object {
         const val TAG = "CheckPinFragment"
-        fun newInstance() = VerifyPinBeforeImportWalletFragment()
+        private const val ARG_MODE = "arg_mode"
+
+        fun newInstance(mode: WalletSecurityActivity.Mode = WalletSecurityActivity.Mode.IMPORT): VerifyPinBeforeImportWalletFragment {
+            val fragment = VerifyPinBeforeImportWalletFragment()
+            val args = Bundle()
+            args.putInt(ARG_MODE, mode.ordinal)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

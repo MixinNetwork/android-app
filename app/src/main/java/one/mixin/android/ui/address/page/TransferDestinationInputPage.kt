@@ -361,7 +361,7 @@ fun TransferDestinationInputPage(
                         ) {
                             Text(
                                 text = stringResource(R.string.Send),
-                                color = if (text.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                                color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
                     }

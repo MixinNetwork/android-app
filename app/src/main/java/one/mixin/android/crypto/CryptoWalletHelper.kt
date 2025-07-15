@@ -130,19 +130,10 @@ object CryptoWalletHelper {
         val decryptedEntropy = decryptionCipher.doFinal(extractedEncryptedEntropy)
         return MnemonicCode.INSTANCE.toMnemonic(decryptedEntropy)
     }
-    suspend fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
-        Timber.tag("CryptoWalletHelper").e("getWeb3PrivateKey called, chainId: $chainId")
+
+    suspend fun getWeb3Mnemonic(context: Context, spendKey: ByteArray, walletId: String): String? {
         return try {
-            val walletId = JsSigner.currentWalletId
-            Timber.tag("CryptoWalletHelper").e("walletId: $walletId")
-            if (walletId == JsSigner.classicWalletId || walletId.isEmpty()) {
-                Timber.tag("CryptoWalletHelper").e("Using tipPrivToPrivateKey, classicWalletId: ${JsSigner.classicWalletId}")
-                return tipPrivToPrivateKey(spendKey, chainId)
-            }
-            val index = requireNotNull(extractIndexFromPath(JsSigner.path))
-            Timber.tag("CryptoWalletHelper").e("Extracted index from path: $index, path: ${JsSigner.path}")
             val encryptedPrefs = runCatching {
-                Timber.tag("CryptoWalletHelper").e("Creating EncryptedSharedPreferences")
                 EncryptedSharedPreferences.create(
                     context,
                     ENCRYPTED_WEB3_KEY,
@@ -151,38 +142,45 @@ object CryptoWalletHelper {
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
                 )
             }.onFailure {
-                Timber.tag("CryptoWalletHelper").e(it, "Failed to create EncryptedSharedPreferences, deleting shared prefs")
                 context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
             }.getOrNull()
 
             val encryptedString = encryptedPrefs?.getString(walletId, null)
-            Timber.tag("CryptoWalletHelper").e("encryptedString is null: ${encryptedString == null}")
             if (encryptedString == null) {
-                Timber.tag("CryptoWalletHelper").e("No encryptedString found for walletId: $walletId")
                 return null
             }
-            val decryptedMnemonic = CryptoWalletHelper.decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
-            Timber.tag("CryptoWalletHelper").e("Decrypted mnemonic: $decryptedMnemonic")
+            CryptoWalletHelper.decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to decrypt mnemonic for walletId: $walletId")
+            null
+        }
+    }
+
+    suspend fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
+        return try {
+            val walletId = JsSigner.currentWalletId
+            if (walletId == JsSigner.classicWalletId || walletId.isEmpty()) {
+                return tipPrivToPrivateKey(spendKey, chainId)
+            }
+            val index = requireNotNull(extractIndexFromPath(JsSigner.path))
+            val decryptedMnemonic = getWeb3Mnemonic(context, spendKey, walletId) ?: return null
+
             val privateKey = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                Timber.tag("CryptoWalletHelper").e("Generating Solana private key")
                 CryptoWalletHelper.mnemonicToSolanaWallet(decryptedMnemonic, index = index).privateKey
             } else {
-                Timber.tag("CryptoWalletHelper").e("Generating Ethereum private key")
                 CryptoWalletHelper.mnemonicToEthereumWallet(decryptedMnemonic, index = index).privateKey
             }
-            Timber.tag("CryptoWalletHelper").e("Private key(hex): $privateKey")
             privateKey.let {
                 Numeric.hexStringToByteArray(it)
             }
         } catch (e: Exception) {
-            Timber.tag("CryptoWalletHelper").e(e, "Failed to get web3 private key")
+            Timber.e(e, "Failed to get web3 private key for chainId: $chainId")
             null
         }
     }
 
     fun removePrivate(context: Context, walletId: String) {
         val encryptedPrefs = runCatching {
-            Timber.tag("CryptoWalletHelper").e("Creating EncryptedSharedPreferences")
             EncryptedSharedPreferences.create(
                 context,
                 ENCRYPTED_WEB3_KEY,
@@ -191,7 +189,6 @@ object CryptoWalletHelper {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         }.onFailure {
-            Timber.tag("CryptoWalletHelper").e(it, "Failed to create EncryptedSharedPreferences, deleting shared prefs")
             context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
         }.getOrNull()
         encryptedPrefs?.remove(walletId)

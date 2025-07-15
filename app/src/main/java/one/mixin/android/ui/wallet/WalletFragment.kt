@@ -281,7 +281,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun handleAddWalletClick() {
         val dialog = AddWalletBottomSheetDialogFragment.newInstance()
         dialog.callback = {
-            startActivity(Intent(requireContext(), AddWalletActivity::class.java))
+            startActivity(Intent(requireContext(), WalletSecurityActivity::class.java).apply {
+                                putExtra(WalletSecurityActivity.EXTRA_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
+                            })
         }
         dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
     }
@@ -363,6 +365,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         builder.setCustomView(importBottomBinding.root)
         val bottomSheet = builder.create()
+        importBottomBinding.title.text = binding.titleTv.text.toString()
         importBottomBinding.hide.setOnClickListener {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Private) {
@@ -375,6 +378,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             if (dest is WalletDestination.Private) {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
             }
+            bottomSheet.dismiss()
+        }
+        importBottomBinding.privateKey.setOnClickListener {
+            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY)
+            bottomSheet.dismiss()
+        }
+        importBottomBinding.mnemonicPhrase.setOnClickListener {
+            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_MNEMONIC)
             bottomSheet.dismiss()
         }
         importBottomBinding.delete.setOnClickListener {

@@ -208,7 +208,63 @@ fun MnemonicPhraseInput(
                     Spacer(modifier = Modifier.height(44.dp))
                 }
                 InputGrid(if (legacy) 27 else 15, 10.dp) { index ->
-                    if (index < inputs.size) {
+                    if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 12) || (mnemonicList.size == 24 && index == 24))) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    onQrCode?.invoke(mnemonicList)
+                                }
+                                .padding(8.dp)) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_mnemonic_qrcode),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                stringResource(R.string.QR_Code), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+                        }
+                    } else if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 13) || (mnemonicList.size == 24 && index == 25))) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    val clipboard = context.getClipboardManager()
+                                    clipboard.setPrimaryClip(
+                                        ClipData.newPlainText(
+                                            null, mnemonicList.joinToString(" ")
+                                        )
+                                    )
+                                    toast(R.string.copied_to_clipboard)
+                                }
+                                .padding(8.dp)) {
+
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_copy_gray),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                stringResource(R.string.Copy), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+
+                        }
+                    } else if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 14) || (mnemonicList.size == 24 && index == 26))) {
+                        // placeholder
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {}
+                    } else if (index < inputs.size) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()

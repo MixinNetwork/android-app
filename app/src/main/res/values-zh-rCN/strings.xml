@@ -1980,4 +1980,17 @@
     <string name="Remove_Wallet">删除钱包</string>
     <string name="remove_wallet_pin_hint">请输入您的 PIN 以删除钱包</string>
     <string name="find_more_wallets">查找更多钱包</string>
+    <string name="Show_Mnemonic_phrase">显示助记词</string>
+    <string name="Show_Private_Key">显示私钥</string>
+    <string name="wallet_security_title">操作前请注意</string>
+    <string name="wallet_security_subtitle">请阅读以下内容，并妥善保存助记词。</string>
+    <string name="wallet_security_warning_1">拥有此助记词的人可以转移此钱包内的所有资金。</string>
+    <string name="wallet_security_warning_2">Mixin Messenger 服务器不会存储您的私钥。</string>
+    <string name="wallet_security_warning_3">不要将您的私钥泄露给任何第三方、个人、网站或应用程序。</string>
+    <string name="wallet_security_warning_4">请确保没有他人或摄像头正在窥视您的屏幕！</string>
+    <string name="wallet_security_proceed_button">继续</string>
+    <string name="Write_it_down_on_a_piece_of_paper_and_keep_it_in_a_safe_place">把它写在纸上并保存在安全的地方。</string>
+    <string name="Your_Private_Key">你的私钥</string>
+    <string name="Store_in_vault_or_safe_place">存放在保险箱或安全的地方。</string>
+    <string name="Dont_share_it_with_a_network">不要通过网络分享它。</string>
 </resources>
