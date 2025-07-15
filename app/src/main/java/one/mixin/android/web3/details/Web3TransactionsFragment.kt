@@ -71,6 +71,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.ChainType
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
 import java.math.BigDecimal
@@ -193,8 +194,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
                 sendReceiveView.send.setOnClickListener {
                     lifecycleScope.launch {
-                        // Todo
-                        val chain = web3ViewModel.web3TokenItemById("",token.chainId)
+                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
                         if (chain == null) {
                             jobManager.addJobInBackground(RefreshWeb3TokenJob(token.assetId))
                             toast(R.string.Please_wait_a_bit)

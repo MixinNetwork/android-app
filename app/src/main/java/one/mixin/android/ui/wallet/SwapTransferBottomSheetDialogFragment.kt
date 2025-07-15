@@ -729,8 +729,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         when (source) {
             "web3" -> {
                 depositDestination?.let { depositDestination->
-                    // todo
-                    val token = bottomViewModel.web3TokenItemById("", inAsset.assetId)
+                    val token = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
                             val transaction = token.buildTransaction(

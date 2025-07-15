@@ -74,6 +74,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
@@ -288,11 +289,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             account =
                 if (chain != Chain.Solana) {
-                    // TODO: to be modified
-                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                    JsSigner.solanaAddress
                 } else {
-                    // TODO: to be modified
-                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                    JsSigner.evmAddress
                 }
 
             if (requestType != RequestType.SessionRequest) return@launch

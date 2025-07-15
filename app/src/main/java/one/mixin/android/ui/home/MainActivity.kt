@@ -125,6 +125,7 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WCErrorEvent
@@ -215,6 +216,9 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var accountRepo: AccountRepository
+
+    @Inject
+    lateinit var web3Repository: Web3Repository
 
     @Inject
     lateinit var participantDao: ParticipantDao
@@ -353,10 +357,8 @@ class MainActivity : BlazeBaseActivity() {
                     if (e is WCEvent.V2) {
                         if (e.requestType != WalletConnect.RequestType.Connect) {
                             val type = e.chainType ?: TYPE_ETH
-                            // TODO: to be modified
                             if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
                                 WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                            // TODO: to be modified
                             } else if (type == TYPE_ETH && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
                                 WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
                             } else {
@@ -520,7 +522,6 @@ class MainActivity : BlazeBaseActivity() {
                 periodicWorkRequest
             )
             initWalletConnect()
-            // TODO: to be modified
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
@@ -716,7 +717,14 @@ class MainActivity : BlazeBaseActivity() {
 
         lifecycleScope.launch {
             WalletConnectV2
-            JsSigner.init()
+            val classicWalletId = web3Repository.getClassicWalletId()
+
+            JsSigner.init(
+                { classicWalletId },
+                { walletId ->
+                    runBlocking { web3Repository.getAddresses(walletId) }
+                }
+            )
         }
     }
 

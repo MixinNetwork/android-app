@@ -82,6 +82,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.db.property.PropertyHelper
@@ -1028,8 +1029,7 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
-            // TODO: to be modified
-            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(EVM_ADDRESS, ""))
+            WalletConnectTIP.peer = getPeerUI(JsSigner.evmAddress)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -1124,11 +1124,14 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 callback = {
-                    // TODO: to be modified
-                    val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$sig')") {}
-                    }
+                    // Todo
+                    val tipPriv = tipPrivToPrivateKey(it, chainId)
+                    // val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(requireContext()), tip.getEncryptedSalt(requireContext()), pin, tipPriv)
+                    // val privateKey = CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId)
+                    // val sig = TipSignSpec.Ecdsa.Secp256k1.sign(requireNotNull(privateKey), message.toByteArray())
+                    // lifecycleScope.launch {
+                    //     webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    // }
                 },
             )
         }

@@ -404,7 +404,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val ethAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                 // TODO: to be modified
                 val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-
                 val addressWarning = withdrawBiometricItem.address.destination !in listOf(ethAddress, solAddress) &&
                     withContext(Dispatchers.IO) {
                         val snapshot = transferViewModel.findLastWithdrawalSnapshotByReceiver(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag))

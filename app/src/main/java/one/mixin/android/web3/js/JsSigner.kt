@@ -5,11 +5,13 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.Buffer
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
@@ -21,7 +23,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.web3.Web3Exception
-import org.sol4k.Constants
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount
 import org.sol4kt.SignInInput
@@ -41,6 +42,7 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
+import org.sol4k.Constants as ConstantsSolana
 
 object JsSigner {
     sealed class JsSignerNetwork(val name: String) {
@@ -79,12 +81,19 @@ object JsSigner {
         return builder.build()
     }
 
+    lateinit var address: String
+        private set
     lateinit var evmAddress: String
         private set
     lateinit var solanaAddress: String
         private set
 
-    lateinit var address: String
+    lateinit var path: String
+        private set
+    lateinit var currentWalletId: String
+        private set
+
+    lateinit var classicWalletId: String
         private set
 
     fun updateAddress(
@@ -96,7 +105,6 @@ object JsSigner {
         } else {
             evmAddress = address
         }
-        JsSigner.address = address
     }
 
     fun useEvm() {
@@ -119,12 +127,37 @@ object JsSigner {
     // now only ETH and SOL
     var currentNetwork = JsSignerNetwork.Ethereum.name
 
-    suspend fun init() {
-        // TODO: to be modified
-        evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        // TODO: to be modified
-        solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-        address = evmAddress
+    private suspend fun updateAddressesAndPaths(
+        walletId: String,
+        queryAddress: (String) -> List<Web3Address>
+    ) {
+        if (walletId.isNotBlank()) {
+            val addresses = queryAddress(walletId)
+            path = addresses.firstOrNull()?.path ?:""
+            evmAddress =
+                addresses.firstOrNull { it.chainId != Constants.ChainId.SOLANA_CHAIN_ID }?.destination
+                    ?: ""
+            solanaAddress =
+                addresses.firstOrNull { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }?.destination
+                    ?: ""
+        } else {
+            evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+        }
+    }
+
+    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>) {
+        classicWalletId = classicQuery() ?: ""
+        currentWalletId = PropertyHelper.findValueByKey(
+            Constants.Account.SELECTED_WEB3_WALLET_ID,
+            classicWalletId
+        )
+        updateAddressesAndPaths(currentWalletId, queryAddress)
+    }
+
+    suspend fun setWallet(walletId: String, queryAddress: (String) -> List<Web3Address>) {
+        currentWalletId = walletId
+        updateAddressesAndPaths(walletId, queryAddress)
     }
 
     fun switchChain(switchChain: SwitchChain): Result<String> {
@@ -341,7 +374,7 @@ fun VersionedTransactionCompat.throwIfAnyMaliciousInstruction() {
     val accounts = message.accounts
     for (i in message.instructions) {
         val program = accounts[i.programIdIndex]
-        if (program != Constants.TOKEN_PROGRAM_ID) {
+        if (program != ConstantsSolana.TOKEN_PROGRAM_ID) {
             continue
         }
         val d = Buffer()

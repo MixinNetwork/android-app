@@ -123,9 +123,8 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.linkLoadingInfo.text = ""
         lifecycleScope.launch {
             if (swapResult != null) {
-                // Todo: Handle swap result
-                val web3TokenItem = viewModel.web3TokenItemById("", fromToken.assetId)
-                val chainTokenItem = viewModel.web3TokenItemById("", fromToken.chain.chainId)
+                val web3TokenItem = viewModel.web3TokenItemById(JsSigner.currentWalletId, fromToken.assetId)
+                val chainTokenItem = viewModel.web3TokenItemById(JsSigner.currentWalletId, fromToken.chain.chainId)
                 if (web3TokenItem != null) {
                     val jsSignMessage = web3TokenItem.buildTransaction(
                         rpc, JsSigner.evmAddress,

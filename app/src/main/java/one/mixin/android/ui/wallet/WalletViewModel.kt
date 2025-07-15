@@ -29,6 +29,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
@@ -505,6 +506,7 @@ internal constructor(
                     web3Repository.deleteAddressesByWalletId(walletId)
                     web3Repository.deleteAssetsByWalletId(walletId)
                     web3Repository.deleteWallet(walletId)
+                    CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
                 }
             } catch (e: Exception) {
                 Timber.e(e)
@@ -545,7 +547,7 @@ internal constructor(
             } else {
                 CryptoWalletHelper.mnemonicToEthereumWallet(mnemoinc, index = index).privateKey
             }
-            privateKey?.let {
+            privateKey.let {
                 Numeric.hexStringToByteArray(it)
             }
         } catch (e: Exception) {
@@ -553,4 +555,6 @@ internal constructor(
             null
         }
     }
+
+    suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
 }

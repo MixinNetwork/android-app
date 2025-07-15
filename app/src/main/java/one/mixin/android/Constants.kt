@@ -121,6 +121,8 @@ object Constants {
             const val EVM_ADDRESS = "evm_address"
             const val SOLANA_ADDRESS = "solana_address"
         }
+
+        const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
     }
 
     object Scheme {

@@ -44,6 +44,7 @@ import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_UN
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
@@ -62,8 +63,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         setOnItemClickListener(object : Web3TransactionPagedAdapter.OnItemClickListener {
             override fun onItemClick(transaction: Web3TransactionItem) {
                 lifecycleScope.launch {
-                    // Todo
-                    val token = web3ViewModel.web3TokenItemById("",transaction.getMainAssetId()) ?: return@launch
+                    val token = web3ViewModel.web3TokenItemById(JsSigner.currentWalletId,transaction.getMainAssetId()) ?: return@launch
                     this@AllWeb3TransactionsFragment.view?.findNavController()?.navigate(
                         R.id.action_all_web3_transactions_fragment_to_web3_transaction_fragment,
                         Bundle().apply {

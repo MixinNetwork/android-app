@@ -94,6 +94,8 @@ constructor(
 
     suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3AddressDao.getAddressesByChainId(walletId, chainId)
 
+    suspend fun getAddresses(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
+
     suspend fun findWalletById(walletId: String) = web3WalletDao.getWalletById(walletId)
 
     suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3WalletDao.getWalletsExcludingByName(excludeWalletId, query)

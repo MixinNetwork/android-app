@@ -140,6 +140,7 @@ import one.mixin.android.vo.safe.toAssetItem
 import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
+import one.mixin.android.web3.js.JsSigner
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -538,7 +539,7 @@ class TokenRepository
             web3WalletDao.deleteAllWallets()
         }
 
-        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(hash, chainId)
+        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(JsSigner.currentWalletId, hash, chainId)
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
@@ -1422,11 +1423,13 @@ class TokenRepository
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
-    suspend fun getPendingRawTransactions() = web3RawTransactionDao.getPendingRawTransactions()
+    suspend fun getPendingRawTransactions() = web3RawTransactionDao.getPendingRawTransactions(
+        JsSigner.currentWalletId)
 
-    suspend fun getPendingTransactions() = web3TransactionDao.getPendingTransactions()
+    suspend fun getPendingTransactions() = web3TransactionDao.getPendingTransactions(JsSigner.currentWalletId)
 
-    suspend fun getPendingRawTransactions(chainId: String) = web3RawTransactionDao.getPendingRawTransactions(chainId)
+    suspend fun getPendingRawTransactions(chainId: String) = web3RawTransactionDao.getPendingRawTransactions(
+        JsSigner.currentWalletId, chainId)
 
     suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
 
@@ -1434,7 +1437,7 @@ class TokenRepository
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
-    fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
+    fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(JsSigner.currentWalletId)
 
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
 

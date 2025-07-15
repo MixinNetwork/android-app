@@ -14,6 +14,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Numeric
 import javax.inject.Inject
 
@@ -22,11 +23,10 @@ class SessionRequestViewModel
     @Inject
     internal constructor() : ViewModel() {
         private var account: String = ""
+            get() {
+                return JsSigner.address
+            }
 
-        suspend fun init() {
-            // TODO: to be modified
-            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        }
 
         fun rejectRequest(
             version: WalletConnect.Version,

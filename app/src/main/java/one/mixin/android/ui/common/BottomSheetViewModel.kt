@@ -43,6 +43,7 @@ import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.UtxoService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.escapeSql
@@ -124,6 +125,7 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
+import one.mixin.android.web3.js.JsSigner
 import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.io.File
@@ -620,7 +622,7 @@ class BottomSheetViewModel
 
             val traceIds = invoice.entries.map { it.traceId }
             val completedTransactions = tokenRepository.transactionsFetch(traceIds)
-            
+
             if (completedTransactions.isSuccess && completedTransactions.data != null && completedTransactions.data!!.isNotEmpty()) {
                 Timber.e("Found completed transactions: ${completedTransactions.data!!.map { it.requestId }.joinToString()}")
 
@@ -925,8 +927,8 @@ class BottomSheetViewModel
                                 completedTransactions[reference.value].transactionHash
                             } else {
                                 val adjustedIndex = if (completedTransactions != null && completedTransactions.isNotEmpty())
-                                    reference.value - completedTransactions.size 
-                                else 
+                                    reference.value - completedTransactions.size
+                                else
                                     reference.value
                                 Timber.e("Kernel Invoice Transaction: Reference not found in completedTransactions, looking in verifiedTransactions at index $adjustedIndex")
                                 verifiedTransactions.getOrNull(adjustedIndex)?.hash ?: throw IllegalArgumentException("Reference not found")
@@ -1762,8 +1764,7 @@ class BottomSheetViewModel
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            // TODO: to be modified
-            return tipPrivToPrivateKey(spendKey, chainId)
+            return requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId))
         }
 
         suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String, assetId: String? = null) {

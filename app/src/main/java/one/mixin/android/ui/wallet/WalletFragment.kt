@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
@@ -28,6 +29,7 @@ import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
@@ -45,6 +47,7 @@ import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 import kotlin.math.hypot
@@ -286,6 +289,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun handleWalletCardClick(destination: WalletDestination) {
         selectedWalletDestination = destination
         saveSelectedWalletDestination(destination)
+        if (destination is WalletDestination.Classic || destination is WalletDestination.Private) {
+            val walletId = if (destination is WalletDestination.Classic) {
+                destination.walletId
+            } else {
+                (destination as WalletDestination.Private).walletId
+            }
+            lifecycleScope.launch {
+                JsSigner.setWallet(walletId) { queryWalletId ->
+                    runBlocking { walletViewModel.getAddresses(queryWalletId) }
+                }
+                PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
+            }
+        }
         updateUi(destination)
         closeMenu()
     }

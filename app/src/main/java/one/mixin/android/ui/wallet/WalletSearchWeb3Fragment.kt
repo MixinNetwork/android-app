@@ -34,6 +34,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
+import one.mixin.android.web3.js.JsSigner
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -276,11 +277,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 binding.searchEt.hideKeyboard()
                 lifecycleScope.launch {
                     val address = if (token.isSolana()) {
-                        // TODO: to be modified
-                        PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                        JsSigner.solanaAddress
                     } else {
-                        // TODO: to be modified
-                        PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                        JsSigner.evmAddress
                     }
                     view?.navigate(
                         R.id.action_wallet_search_web3_to_web3_transactions,

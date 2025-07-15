@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sumsub.sns.internal.core.common.J
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -76,6 +77,7 @@ import one.mixin.android.ui.wallet.components.PrivacyWalletInfo
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.js.JsSigner
 
 const val KEY_HIDE_PRIVACY_WALLET_GUIDE = "hide_privacy_wallet_guide"
 const val KEY_HIDE_COMMON_WALLET_GUIDE = "hide_common_wallet_guide"
@@ -112,15 +114,8 @@ fun TransferDestinationInputPage(
 
     LaunchedEffect(token?.chainId) {
         account = when {
-            token?.chainId == ChainId.SOLANA_CHAIN_ID ->// TODO: to be modified
- PropertyHelper.findValueByKey(
-                Constants.Account.ChainAddress.SOLANA_ADDRESS,
-                ""
-            )
-
-            token?.chainId in Constants.Web3ChainIds ->// TODO: to be modified
- PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-
+            token?.chainId == ChainId.SOLANA_CHAIN_ID -> JsSigner.solanaAddress
+            token?.chainId in Constants.Web3ChainIds -> JsSigner.evmAddress
             else -> ""
         }
     }
