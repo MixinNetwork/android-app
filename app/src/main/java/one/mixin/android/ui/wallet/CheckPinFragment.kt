@@ -55,7 +55,7 @@ class CheckPinFragment : BaseFragment(R.layout.fragment_compose) {
                                     .remove(this@CheckPinFragment)
                                     .commit()
                             } else {
-                                // TODO: show error
+                                requireActivity().finish()
                             }
                         }
                     }

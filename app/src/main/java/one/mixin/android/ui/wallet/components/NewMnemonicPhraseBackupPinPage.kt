@@ -81,7 +81,7 @@ fun NewMnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> 
     )
     MixinAppTheme {
         PageScaffold(
-            title = stringResource(R.string.Mnemonic_Phrase),
+            title = "",
             verticalScrollable = false,
             pop = pop,
         ) {

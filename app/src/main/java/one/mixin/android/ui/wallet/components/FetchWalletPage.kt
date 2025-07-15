@@ -84,6 +84,7 @@ private fun LoadingState(title: String, subtitle: String) {
                 contentDescription = null,
                 tint = Color.Unspecified,
             )
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = title,
                 fontSize = 18.sp,

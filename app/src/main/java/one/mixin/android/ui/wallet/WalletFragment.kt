@@ -364,6 +364,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         importBottomBinding.delete.setOnClickListener {
             VerifyBottomSheetDialogFragment.newInstance(
                 getString(R.string.remove_wallet_pin_hint),
+                true,
                 true
             ).apply {
                 disableToast = true
