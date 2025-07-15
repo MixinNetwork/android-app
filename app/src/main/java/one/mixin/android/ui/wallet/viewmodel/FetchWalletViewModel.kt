@@ -237,24 +237,7 @@ class FetchWalletViewModel @Inject constructor(
 
     private suspend fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
         return try {
-            val entropy = runCatching { toEntropy(words) }.getOrNull() ?: return false
-            val masterKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
-            val encryptionKeyBytes = masterKeyPair.privateKey.toByteArray()
-            val sha = MessageDigest.getInstance("SHA-256")
-            val hashedKey = sha.digest(encryptionKeyBytes)
-            val secretKey = SecretKeySpec(hashedKey, "AES")
-
-            val iv = ByteArray(16)
-            SecureRandom().nextBytes(iv)
-            val ivSpec = IvParameterSpec(iv)
-
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
-            val encryptedPrivateKey = cipher.doFinal(entropy)
-
-            val encryptedData = iv + encryptedPrivateKey
-            val encryptedString = Base64.encodeToString(encryptedData, Base64.NO_WRAP)
-
+            val encryptedString = CryptoWalletHelper.encryptMnemonicWithSpendKey(spendKey, words)
             val encryptedPrefs = runCatching {
                 EncryptedSharedPreferences.create(
                     context,

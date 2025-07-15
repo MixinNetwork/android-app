@@ -1,8 +1,18 @@
 package one.mixin.android.crypto
 
 import blockchain.Blockchain
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.util.encodeToBase58String
+import org.bitcoinj.crypto.MnemonicCode
+import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.utils.Numeric
+import java.security.MessageDigest
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 object CryptoWalletHelper {
 
@@ -43,5 +53,46 @@ object CryptoWalletHelper {
         } catch (e: Exception) {
             throw RuntimeException("Solana wallet generation failed: ${e.message}", e)
         }
+    }
+
+    fun encryptMnemonicWithSpendKey(spendKey: ByteArray, mnemonicWords: List<String>): String {
+        val encryptionKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
+        val encryptionKeySource = encryptionKeyPair.privateKey.toByteArray()
+        val sha256 = MessageDigest.getInstance("SHA-256")
+        val aesKeyBytes = sha256.digest(encryptionKeySource)
+        val secretKey = SecretKeySpec(aesKeyBytes, "AES")
+
+        val originalEntropy = toEntropy(mnemonicWords)
+        val initializationVector = ByteArray(16)
+        SecureRandom().nextBytes(initializationVector)
+        val ivParameterSpec = IvParameterSpec(initializationVector)
+
+        val encryptionCipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec)
+        val encryptedEntropy = encryptionCipher.doFinal(originalEntropy)
+
+        val encryptedDataWithIv = initializationVector + encryptedEntropy
+        return encryptedDataWithIv.base64RawURLEncode()
+    }
+
+    fun decryptMnemonicWithSpendKey(
+        spendKey: ByteArray,
+        base64EncryptedData: String
+    ): List<String> {
+        val encryptionKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
+        val encryptionKeySource = encryptionKeyPair.privateKey.toByteArray()
+        val sha256 = MessageDigest.getInstance("SHA-256")
+        val aesKeyBytes = sha256.digest(encryptionKeySource)
+        val secretKey = SecretKeySpec(aesKeyBytes, "AES")
+
+        val decodedEncryptedData = base64EncryptedData.base64RawURLDecode()
+        val extractedIv = decodedEncryptedData.copyOfRange(0, 16)
+        val extractedEncryptedEntropy =
+            decodedEncryptedData.copyOfRange(16, decodedEncryptedData.size)
+
+        val decryptionCipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(extractedIv))
+        val decryptedEntropy = decryptionCipher.doFinal(extractedEncryptedEntropy)
+        return MnemonicCode.INSTANCE.toMnemonic(decryptedEntropy)
     }
 }

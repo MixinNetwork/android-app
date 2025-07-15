@@ -531,33 +531,19 @@ internal constructor(
 
             val encryptedString = encryptedPrefs?.getString(walletId, null) ?: return null
 
-            val result = tip.getOrRecoverTipPriv(context, pin)
-            val tipPriv = result.getOrThrow()
+            val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(
                 tip.getMnemonicFromEncryptedPreferences(context),
                 tip.getEncryptedSalt(context),
                 pin,
                 tipPriv
             )
-            val masterKeyPair = Bip32ECKeyPair.generateKeyPair(spendKey)
-            val encryptionKeyBytes = masterKeyPair.privateKey.toByteArray()
-            val sha = MessageDigest.getInstance("SHA-256")
-            val hashedKey = sha.digest(encryptionKeyBytes)
-            val secretKey = SecretKeySpec(hashedKey, "AES")
 
-            val encryptedData = Base64.decode(encryptedString, Base64.NO_WRAP)
-            val iv = encryptedData.copyOfRange(0, 16)
-            val encryptedPrivateKey = encryptedData.copyOfRange(16, encryptedData.size)
-
-            val ivSpec = IvParameterSpec(iv)
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec)
-            val entry = cipher.doFinal(encryptedPrivateKey)
-            val mnemoinc = toMnemonic(entry)
+            val mnemoinc = CryptoWalletHelper.decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
             val privateKey = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                CryptoWalletHelper.mnemonicToSolanaWallet(mnemoinc, index = index)?.privateKey
+                CryptoWalletHelper.mnemonicToSolanaWallet(mnemoinc, index = index).privateKey
             } else {
-                CryptoWalletHelper.mnemonicToEthereumWallet(mnemoinc, index = index)?.privateKey
+                CryptoWalletHelper.mnemonicToEthereumWallet(mnemoinc, index = index).privateKey
             }
             privateKey?.let {
                 Numeric.hexStringToByteArray(it)
