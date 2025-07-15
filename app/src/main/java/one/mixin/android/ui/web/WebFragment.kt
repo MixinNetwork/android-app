@@ -1028,6 +1028,7 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
+            // TODO: to be modified
             WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(EVM_ADDRESS, ""))
             showWalletConnectBottomSheetDialogFragment(
                 tip,
@@ -1123,6 +1124,7 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 callback = {
+                    // TODO: to be modified
                     val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
                     lifecycleScope.launch {
                         webView.evaluateJavascript("$callbackFunction('$sig')") {}

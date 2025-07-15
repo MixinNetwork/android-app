@@ -276,8 +276,10 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 binding.searchEt.hideKeyboard()
                 lifecycleScope.launch {
                     val address = if (token.isSolana()) {
+                        // TODO: to be modified
                         PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
                     } else {
+                        // TODO: to be modified
                         PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                     }
                     view?.navigate(

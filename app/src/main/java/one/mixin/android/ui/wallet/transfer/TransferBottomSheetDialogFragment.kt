@@ -400,7 +400,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check withdraw within 30 days
                 val withdrawBiometricItem = t as WithdrawBiometricItem
                 val tips = mutableListOf<String>()
+                // TODO: to be modified
                 val ethAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                // TODO: to be modified
                 val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
 
                 val addressWarning = withdrawBiometricItem.address.destination !in listOf(ethAddress, solAddress) &&

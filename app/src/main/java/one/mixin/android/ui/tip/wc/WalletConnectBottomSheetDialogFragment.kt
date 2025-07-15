@@ -288,8 +288,10 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             account =
                 if (chain != Chain.Solana) {
+                    // TODO: to be modified
                     PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                 } else {
+                    // TODO: to be modified
                     PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
                 }
 

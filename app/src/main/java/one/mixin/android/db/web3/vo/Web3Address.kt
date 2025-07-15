@@ -30,6 +30,10 @@ data class Web3Address(
     @SerializedName("destination")
     val destination: String,
 
+    @ColumnInfo(name = "path")
+    @SerializedName("path")
+    val path: String = "",
+
     @ColumnInfo(name = "created_at")
     @SerializedName("created_at")
     val createdAt: String,

@@ -24,6 +24,7 @@ class SessionRequestViewModel
         private var account: String = ""
 
         suspend fun init() {
+            // TODO: to be modified
             account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
         }
 

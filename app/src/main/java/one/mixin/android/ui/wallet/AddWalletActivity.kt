@@ -17,7 +17,7 @@ class AddWalletActivity : BlazeBaseActivity() {
         setContentView(R.layout.activity_add_wallet)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, CheckPinFragment.newInstance())
+                .replace(R.id.container, VerifyPinBeforeImportWalletFragment.newInstance())
                 .commitNow()
         }
         RxBus.listen(AddWalletSuccessEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {

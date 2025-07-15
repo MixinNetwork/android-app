@@ -120,7 +120,9 @@ object JsSigner {
     var currentNetwork = JsSignerNetwork.Ethereum.name
 
     suspend fun init() {
+        // TODO: to be modified
         evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+        // TODO: to be modified
         solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
         address = evmAddress
     }

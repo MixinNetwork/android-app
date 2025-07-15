@@ -30,7 +30,9 @@ class RefreshWeb3Job : BaseJob(
         fetchWallets()
         val wallets = web3WalletDao.getAllWallets()
         if (wallets.isEmpty()) {
+            // TODO: to be modified
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            // TODO: to be modified
             val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             if (erc20Address.isBlank() || solAddress.isBlank()) {
                 Timber.e("EVM or Solana address is not set")

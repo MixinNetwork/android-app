@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:layout_marginBottom="44dp">
+        android:layout_marginBottom="48dp">
 
         <one.mixin.android.widget.PinView
             android:id="@+id/pin"

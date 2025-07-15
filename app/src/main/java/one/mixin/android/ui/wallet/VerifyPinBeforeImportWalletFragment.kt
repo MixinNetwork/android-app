@@ -13,12 +13,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.navTo
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.wallet.components.NewMnemonicPhraseBackupPinPage
+import one.mixin.android.ui.wallet.components.VerifyPinBeforeImportWalletPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CheckPinFragment : BaseFragment(R.layout.fragment_compose) {
+class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compose) {
 
     @Inject
     lateinit var tip: Tip
@@ -32,7 +32,7 @@ class CheckPinFragment : BaseFragment(R.layout.fragment_compose) {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                NewMnemonicPhraseBackupPinPage(
+                VerifyPinBeforeImportWalletPage(
                     tip = tip,
                     pop = {
                         activity?.finish()
@@ -52,7 +52,7 @@ class CheckPinFragment : BaseFragment(R.layout.fragment_compose) {
                                 navTo(AddWalletFragment.newInstance(), AddWalletFragment.TAG)
                                 requireActivity().supportFragmentManager
                                     .beginTransaction()
-                                    .remove(this@CheckPinFragment)
+                                    .remove(this@VerifyPinBeforeImportWalletFragment)
                                     .commit()
                             } else {
                                 requireActivity().finish()
@@ -66,6 +66,6 @@ class CheckPinFragment : BaseFragment(R.layout.fragment_compose) {
 
     companion object {
         const val TAG = "CheckPinFragment"
-        fun newInstance() = CheckPinFragment()
+        fun newInstance() = VerifyPinBeforeImportWalletFragment()
     }
 }

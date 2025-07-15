@@ -55,10 +55,9 @@ import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.tip.Tip
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.getMixinErrorStringByCode
 
 @Composable
-fun NewMnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
+fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var isLoading by remember { mutableStateOf(false) }

@@ -112,12 +112,14 @@ fun TransferDestinationInputPage(
 
     LaunchedEffect(token?.chainId) {
         account = when {
-            token?.chainId == ChainId.SOLANA_CHAIN_ID -> PropertyHelper.findValueByKey(
+            token?.chainId == ChainId.SOLANA_CHAIN_ID ->// TODO: to be modified
+ PropertyHelper.findValueByKey(
                 Constants.Account.ChainAddress.SOLANA_ADDRESS,
                 ""
             )
 
-            token?.chainId in Constants.Web3ChainIds -> PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            token?.chainId in Constants.Web3ChainIds ->// TODO: to be modified
+ PropertyHelper.findValueByKey(EVM_ADDRESS, "")
 
             else -> ""
         }
