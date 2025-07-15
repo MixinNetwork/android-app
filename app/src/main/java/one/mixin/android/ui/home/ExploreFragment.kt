@@ -2,7 +2,6 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,7 +33,6 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
@@ -111,6 +109,7 @@ class ExploreFragment : BaseFragment() {
                     this@ExploreFragment,
                     SearchExploreFragment(),
                     SearchExploreFragment.TAG,
+                    id= R.id.internal_container,
                 )
             }
             scanIb.setOnClickListener {
