@@ -151,25 +151,3 @@ fun Web3TokenItem.calcSolBalanceChange(balanceChange: VersionedTransactionCompat
 fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
     return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)
 }
-
-fun Web3Token.toWeb3TokenItem(): Web3TokenItem {
-    return Web3TokenItem(
-        walletId = this.walletId,
-        assetId = this.assetId,
-        chainId = this.chainId,
-        name = this.name,
-        assetKey = this.assetKey,
-        symbol = this.symbol,
-        iconUrl = this.iconUrl,
-        precision = this.precision,
-        kernelAssetId = this.kernelAssetId,
-        balance = this.balance,
-        priceUsd = this.priceUsd,
-        changeUsd = this.changeUsd,
-        chainIcon = null, // Default value, as it's not in Web3Token
-        chainName = null, // Default value
-        chainSymbol = null, // Default value
-        hidden = null, // Default value
-        level = this.level
-    )
-}

@@ -12,22 +12,19 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3WalletDao
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.repository.TokenRepository
-import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.UnifiedAssetItem
 import java.math.BigDecimal
 import javax.inject.Inject
 
 import one.mixin.android.repository.Web3Repository
-import one.mixin.android.db.web3.vo.toWeb3TokenItem
+
 
 @HiltViewModel
 class AssetDistributionViewModel @Inject constructor(
     private val tokenRepository: TokenRepository,
-    private val web3Repository: Web3Repository,
-    private val web3TokenDao: Web3TokenDao,
-    private val web3WalletDao: Web3WalletDao,
+    private val web3Repository: Web3Repository
 ) : ViewModel() {
 
     private val _wallets = MutableStateFlow<List<Web3Wallet>>(emptyList())
@@ -51,29 +48,18 @@ class AssetDistributionViewModel @Inject constructor(
 
     suspend fun getTokenDistribution(excludeWeb3: Boolean = false): List<AssetDistribution> = withContext(Dispatchers.IO) {
         val walletIds = _wallets.value.filter { it.hasLocalPrivateKey }.map { it.id }
-        val web3Tokens = if (excludeWeb3) emptyList() else web3Repository.allWeb3Tokens(walletIds)
-        val tokens = tokenRepository.findAssetItemsWithBalance()
+        val web3Tokens = if (excludeWeb3) emptyList<UnifiedAssetItem>() else web3Repository.allWeb3Tokens(walletIds)
+        val tokens = tokenRepository.findUnifiedAssetItem()
 
-        val unifiedTokens = mutableListOf<UnifiedToken>()
+        val unifiedAssets = mutableListOf<UnifiedAssetItem>()
+        unifiedAssets.addAll(tokens)
+        unifiedAssets.addAll(web3Tokens)
 
-        tokens.forEach { token ->
-            val value = calculateTokenValue(token)
-            if (value > BigDecimal.ZERO) {
-                unifiedTokens.add(UnifiedToken(token.symbol, token.iconUrl, value))
-            }
-        }
+        val tokensWithValue = unifiedAssets
+            .filter { calculateValue(it) > BigDecimal.ZERO }
+            .sortedByDescending { calculateValue(it) }
 
-        web3Tokens.forEach { web3Token ->
-            val web3TokenItem = web3Token.toWeb3TokenItem() // Convert to Web3TokenItem
-            val value = calculateWeb3TokenValue(web3TokenItem) // Now it's Web3TokenItem
-            if (value > BigDecimal.ZERO) {
-                unifiedTokens.add(UnifiedToken(web3TokenItem.symbol, web3TokenItem.iconUrl, value))
-            }
-        }
-
-        val tokensWithValue = unifiedTokens.sortedByDescending { it.value }
-
-        val totalTokenValue = tokensWithValue.sumOf { it.value }
+        val totalTokenValue = tokensWithValue.sumOf { calculateValue(it) }
 
         if (totalTokenValue == BigDecimal.ZERO || tokensWithValue.isEmpty()) {
             return@withContext emptyList()
@@ -85,7 +71,7 @@ class AssetDistributionViewModel @Inject constructor(
                     AssetDistribution(
                         symbol = token.symbol,
                         percentage = 1f,
-                        icons = listOfNotNull(token.iconUrl), // Handle nullability
+                        icons = listOfNotNull(token.iconUrl),
                         count = 1
                     )
                 }
@@ -94,7 +80,7 @@ class AssetDistributionViewModel @Inject constructor(
             tokensWithValue.size == 2 -> {
                 val token1 = tokensWithValue[0]
                 val token2 = tokensWithValue[1]
-                val value1 = token1.value
+                val value1 = calculateValue(token1)
 
                 val p1 = value1.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
                 val p2 = (1f - p1).coerceIn(0f, 1f)
@@ -103,13 +89,13 @@ class AssetDistributionViewModel @Inject constructor(
                     AssetDistribution(
                         symbol = token1.symbol,
                         percentage = p1,
-                        icons = listOfNotNull(token1.iconUrl), // Handle nullability
+                        icons = listOfNotNull(token1.iconUrl),
                         count = 1
                     ),
                     AssetDistribution(
                         symbol = token2.symbol,
                         percentage = p2,
-                        icons = listOfNotNull(token2.iconUrl), // Handle nullability
+                        icons = listOfNotNull(token2.iconUrl),
                         count = 1
                     )
                 )
@@ -120,23 +106,23 @@ class AssetDistributionViewModel @Inject constructor(
                 val others = tokensWithValue.drop(2)
 
                 val top2Distributions = top2.map { token ->
-                    val value = token.value
+                    val value = calculateValue(token)
                     val percentage = value.divide(totalTokenValue, 2, BigDecimal.ROUND_DOWN).toFloat()
                     AssetDistribution(
                         symbol = token.symbol,
                         percentage = percentage,
-                        icons = listOfNotNull(token.iconUrl), // Handle nullability
+                        icons = listOfNotNull(token.iconUrl),
                         count = 1
                     )
                 }
 
                 val othersPercentage = 1f - top2Distributions.sumOf { it.percentage.toDouble() }.toFloat()
-                val othersIcons = others.take(3).mapNotNull { it.iconUrl } // Handle nullability
+                val othersIcons = others.take(3).mapNotNull { it.iconUrl }
 
                 top2Distributions + AssetDistribution(
                     symbol = MixinApplication.appContext.getString(R.string.Other),
                     percentage = othersPercentage,
-                    icons = othersIcons, // Already filtered for nulls
+                    icons = othersIcons,
                     count = others.size,
                     isOthers = true
                 )
@@ -147,41 +133,34 @@ class AssetDistributionViewModel @Inject constructor(
     suspend fun getTokenTotalBalance(excludeWeb3: Boolean = false): BigDecimal = withContext(Dispatchers.IO) {
         val walletIds = _wallets.value.filter { it.hasLocalPrivateKey }.map { it.id }
         val web3Tokens = if (excludeWeb3) emptyList() else web3Repository.allWeb3Tokens(walletIds)
-        val tokens = tokenRepository.findAssetItemsWithBalance()
+        val tokens = tokenRepository.findUnifiedAssetItem()
 
-        val totalMixinTokenValue = tokens.sumOf { calculateTokenValue(it) }
-        val totalWeb3TokenValue = web3Tokens.sumOf { calculateWeb3TokenValue(it.toWeb3TokenItem()) } // Convert and calculate
+        val unifiedAssets = mutableListOf<UnifiedAssetItem>()
+        unifiedAssets.addAll(tokens)
+        unifiedAssets.addAll(web3Tokens)
 
-        totalMixinTokenValue.add(totalWeb3TokenValue)
+        unifiedAssets.sumOf { calculateValue(it) }
     }
 
-    private fun calculateTokenValue(token: TokenItem): BigDecimal {
+    private fun calculateValue(item: UnifiedAssetItem): BigDecimal {
         return try {
-            BigDecimal(token.balance).multiply(BigDecimal(token.priceUsd))
-        } catch (e: Exception) {
-            BigDecimal.ZERO
-        }
-    }
-
-    private fun calculateWeb3TokenValue(token: Web3TokenItem): BigDecimal {
-        return try {
-            BigDecimal(token.balance).multiply(BigDecimal(token.priceUsd))
+            BigDecimal(item.balance).multiply(BigDecimal(item.priceUsd))
         } catch (e: Exception) {
             BigDecimal.ZERO
         }
     }
 
     suspend fun getWeb3TokenTotalBalance(walletId: String): BigDecimal = withContext(Dispatchers.IO) {
-        val tokens = web3TokenDao.findWeb3TokenItems(walletId)
-        tokens.sumOf { calculateWeb3TokenValue(it) }
+        val tokens = web3Repository.findUnifiedAssetItem(walletId)
+        tokens.sumOf { calculateValue(it) }
     }
 
     suspend fun getWeb3TokenDistribution(walletId: String): List<AssetDistribution> = withContext(Dispatchers.IO) {
-        val tokens = web3TokenDao.findWeb3TokenItems(walletId)
+        val tokens = web3Repository.findUnifiedAssetItem(walletId)
         val tokensWithValue = tokens
-            .filter { calculateWeb3TokenValue(it) > BigDecimal.ZERO }
-            .sortedByDescending { calculateWeb3TokenValue(it) }
-        val totalWeb3Value = tokensWithValue.sumOf { calculateWeb3TokenValue(it) }
+            .filter { calculateValue(it) > BigDecimal.ZERO }
+            .sortedByDescending { calculateValue(it) }
+        val totalWeb3Value = tokensWithValue.sumOf { calculateValue(it) }
         if (totalWeb3Value == BigDecimal.ZERO || tokensWithValue.isEmpty()) return@withContext emptyList()
         when {
             tokensWithValue.size == 1 -> tokensWithValue.map { token ->
@@ -189,7 +168,7 @@ class AssetDistributionViewModel @Inject constructor(
             }
             tokensWithValue.size == 2 -> {
                 val (t1, t2) = tokensWithValue
-                val p1 = calculateWeb3TokenValue(t1).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                val p1 = calculateValue(t1).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
                 val p2 = (1f - p1).coerceIn(0f, 1f)
                 listOf(
                     AssetDistribution(t1.symbol, p1, listOfNotNull(t1.iconUrl), count = 1),
@@ -200,7 +179,7 @@ class AssetDistributionViewModel @Inject constructor(
                 val top2 = tokensWithValue.take(2)
                 val others = tokensWithValue.drop(2)
                 val top2Dist = top2.map { token ->
-                    val percentage = calculateWeb3TokenValue(token).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
+                    val percentage = calculateValue(token).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
                     AssetDistribution(token.symbol, percentage, listOfNotNull(token.iconUrl), count = 1)
                 }
                 val othersPercentage = 1f - top2Dist.sumOf { it.percentage.toDouble() }.toFloat()
@@ -217,8 +196,5 @@ class AssetDistributionViewModel @Inject constructor(
     }
 }
 
-data class UnifiedToken(
-    val symbol: String,
-    val iconUrl: String?,
-    val value: BigDecimal
-)
+
+

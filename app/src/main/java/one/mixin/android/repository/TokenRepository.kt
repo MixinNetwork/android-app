@@ -136,6 +136,7 @@ import one.mixin.android.vo.safe.SafeWithdrawal
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
+import one.mixin.android.vo.safe.UnifiedAssetItem
 import one.mixin.android.vo.safe.toAssetItem
 import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
@@ -483,6 +484,8 @@ class TokenRepository
         suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenDao.findTokenItems(ids)
 
         suspend fun findAssetItemsWithBalance(): List<TokenItem> = tokenDao.findAssetItemsWithBalance()
+
+        suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem> = tokenDao.findUnifiedAssetItem()
 
         suspend fun findWeb3AssetItemsWithBalance(walletId: String): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance(walletId)
 

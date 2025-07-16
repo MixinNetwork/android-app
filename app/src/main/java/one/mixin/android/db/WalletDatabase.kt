@@ -77,8 +77,6 @@ abstract class WalletDatabase : RoomDatabase() {
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT NOT NULL DEFAULT ''")
-                database.execSQL("UPDATE addresses SET path = \"m/44'/501'/0'/0'\" WHERE wallet_id = (SELECT wallet_id FROM wallets WHERE category = 'classic') AND chain_id = '64692c23-8971-4cf4-84a7-4dd1271dd887'")
-                database.execSQL("UPDATE addresses SET path = \"m/44'/60'/0'/0/0\" WHERE wallet_id = (SELECT wallet_id FROM wallets WHERE category = 'classic') AND chain_id != '64692c23-8971-4cf4-84a7-4dd1271dd887'")
             }
         }
 

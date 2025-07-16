@@ -118,4 +118,6 @@ constructor(
     suspend fun anyAddressExists(destinations: List<String>) = web3AddressDao.anyAddressExists(destinations)
 
     suspend fun allWeb3Tokens(walletIds: List<String>) = web3TokenDao.allWeb3Tokens(walletIds)
+
+    suspend fun findUnifiedAssetItem(walletId: String) = web3TokenDao.findUnifiedAssetItem(walletId)
 }
