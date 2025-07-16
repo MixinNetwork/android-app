@@ -511,20 +511,6 @@ internal constructor(
 
     suspend fun getWeb3PrivateKey(context: Context, pin: String, walletId: String, chainId: String, index: Int): ByteArray? {
         return try {
-            val encryptedPrefs = runCatching {
-                EncryptedSharedPreferences.create(
-                    context,
-                    ENCRYPTED_WEB3_KEY,
-                    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                )
-            }.onFailure {
-                context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
-            }.getOrNull()
-
-            val encryptedString = encryptedPrefs?.getString(walletId, null) ?: return null
-
             val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
             val spendKey = tip.getSpendPrivFromEncryptedSalt(
                 tip.getMnemonicFromEncryptedPreferences(context),
@@ -532,8 +518,7 @@ internal constructor(
                 pin,
                 tipPriv
             )
-
-            val mnemoinc = CryptoWalletHelper.decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
+            val mnemoinc = CryptoWalletHelper.getWeb3Mnemonic(context, spendKey, walletId) ?: return null
             val privateKey = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                 CryptoWalletHelper.mnemonicToSolanaWallet(mnemoinc, index = index).privateKey
             } else {

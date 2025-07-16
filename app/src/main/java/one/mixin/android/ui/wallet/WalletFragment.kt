@@ -366,6 +366,18 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         builder.setCustomView(importBottomBinding.root)
         val bottomSheet = builder.create()
         importBottomBinding.title.text = binding.titleTv.text.toString()
+
+        val dest = selectedWalletDestination
+        if (dest is WalletDestination.Private) {
+            lifecycleScope.launch {
+                val wallet = walletViewModel.findWalletById(dest.walletId)
+                val hasPrivateKey = wallet?.hasLocalPrivateKey == true
+                importBottomBinding.privateKey.isVisible = hasPrivateKey
+                importBottomBinding.mnemonicPhrase.isVisible = hasPrivateKey
+                importBottomBinding.rename.isVisible = hasPrivateKey
+            }
+        }
+
         importBottomBinding.hide.setOnClickListener {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Private) {

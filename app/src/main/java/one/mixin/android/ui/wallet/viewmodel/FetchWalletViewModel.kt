@@ -230,19 +230,7 @@ class FetchWalletViewModel @Inject constructor(
     private suspend fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
         return try {
             val encryptedString = CryptoWalletHelper.encryptMnemonicWithSpendKey(spendKey, words)
-            val encryptedPrefs = runCatching {
-                EncryptedSharedPreferences.create(
-                    context,
-                    ENCRYPTED_WEB3_KEY,
-                    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                )
-            }.onFailure {
-                context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
-            }.getOrNull()
-
-            encryptedPrefs?.putString(walletId, encryptedString)
+            CryptoWalletHelper.saveWeb3PrivateKey(context, walletId, encryptedString)
             true
         } catch (e: Exception) {
             Timber.e(e, "Failed to save web3 private key")

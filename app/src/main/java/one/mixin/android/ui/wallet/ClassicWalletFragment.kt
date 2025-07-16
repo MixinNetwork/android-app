@@ -193,6 +193,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
         _walletId.observe(viewLifecycleOwner) { id ->
             if (id.isNotEmpty()) {
+                lifecycleScope.launch {
+                    val wallet = web3ViewModel.findWalletById(id)
+                    _headBinding?.sendReceiveView?.isVisible = wallet?.hasLocalPrivateKey == true
+                }
                 web3ViewModel.web3TokensExcludeHidden(id)
                     .observe(viewLifecycleOwner) {
                         if (it.isEmpty()) {

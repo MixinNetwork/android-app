@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Ignore
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -29,5 +30,8 @@ data class Web3Wallet(
 
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
-    val updatedAt: String
-) : Parcelable
+    val updatedAt: String,
+) : Parcelable {
+    @Ignore
+    var hasLocalPrivateKey: Boolean = false
+}

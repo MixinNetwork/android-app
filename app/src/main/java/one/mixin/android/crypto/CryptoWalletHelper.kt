@@ -1,6 +1,7 @@
 package one.mixin.android.crypto
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import blockchain.Blockchain
@@ -8,6 +9,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.encodeToBase58String
@@ -23,6 +25,20 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 object CryptoWalletHelper {
+
+    private fun getSecureStorage(context: Context): SharedPreferences? {
+        return runCatching {
+            EncryptedSharedPreferences.create(
+                context,
+                ENCRYPTED_WEB3_KEY,
+                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        }.onFailure {
+            context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+        }.getOrNull()
+    }
 
     fun extractIndexFromPath(path: String): Int? {
         return try {
@@ -133,18 +149,7 @@ object CryptoWalletHelper {
 
     suspend fun getWeb3Mnemonic(context: Context, spendKey: ByteArray, walletId: String): String? {
         return try {
-            val encryptedPrefs = runCatching {
-                EncryptedSharedPreferences.create(
-                    context,
-                    ENCRYPTED_WEB3_KEY,
-                    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                )
-            }.onFailure {
-                context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
-            }.getOrNull()
-
+            val encryptedPrefs = getSecureStorage(context)
             val encryptedString = encryptedPrefs?.getString(walletId, null)
             if (encryptedString == null) {
                 return null
@@ -179,18 +184,13 @@ object CryptoWalletHelper {
         }
     }
 
+    fun saveWeb3PrivateKey(context: Context, walletId: String, encryptedString: String) {
+        val secureStorage = getSecureStorage(context)
+        secureStorage?.putString(walletId, encryptedString)
+    }
+
     fun removePrivate(context: Context, walletId: String) {
-        val encryptedPrefs = runCatching {
-            EncryptedSharedPreferences.create(
-                context,
-                ENCRYPTED_WEB3_KEY,
-                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-        }.onFailure {
-            context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
-        }.getOrNull()
+        val encryptedPrefs = getSecureStorage(context)
         encryptedPrefs?.remove(walletId)
     }
 }
