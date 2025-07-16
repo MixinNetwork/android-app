@@ -55,8 +55,8 @@ fun WalletCard(
 
     LaunchedEffect(viewModel, destination) {
         if (destination is WalletDestination.Privacy) {
-            tokenTotalBalance = viewModel.getTokenTotalBalance()
-            assets = viewModel.getTokenDistribution()
+            tokenTotalBalance = viewModel.getTokenTotalBalance(excludeWeb3 = true)
+            assets = viewModel.getTokenDistribution(excludeWeb3 = true)
         } else if (destination is WalletDestination.Classic) {
             web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
             assets = viewModel.getWeb3TokenDistribution(destination.walletId)
