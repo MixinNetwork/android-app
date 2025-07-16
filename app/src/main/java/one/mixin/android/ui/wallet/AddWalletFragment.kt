@@ -4,13 +4,19 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.components.AddWalletPage
@@ -46,6 +52,10 @@ class AddWalletFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().finish()
         }
+        binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
+        binding.titleView.rightAnimator.visibility = View.VISIBLE
+        binding.titleView.rightAnimator.displayedChild = 0
+        binding.titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
         binding.compose.setContent {
             // pass current scanned list into page, handle scan trigger
             AddWalletPage(

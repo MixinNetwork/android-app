@@ -23,7 +23,6 @@ import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletSuccessEvent
-import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.putString
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.repository.UserRepository

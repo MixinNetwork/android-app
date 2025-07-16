@@ -9,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.AddWalletSuccessEvent
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.wallet.ViewWalletSecurityFragment
 
 @AndroidEntryPoint
 class WalletSecurityActivity : BlazeBaseActivity() {
