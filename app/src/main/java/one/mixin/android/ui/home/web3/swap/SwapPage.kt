@@ -86,7 +86,6 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper

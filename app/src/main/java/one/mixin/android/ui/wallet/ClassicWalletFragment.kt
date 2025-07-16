@@ -11,7 +11,9 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -31,6 +33,7 @@ import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -196,30 +199,23 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 lifecycleScope.launch {
                     val wallet = web3ViewModel.findWalletById(id)
                     _headBinding?.sendReceiveView?.isVisible = wallet?.hasLocalPrivateKey == true
-                }
-                web3ViewModel.web3TokensExcludeHidden(id)
-                    .observe(viewLifecycleOwner) {
-                        if (it.isEmpty()) {
-                            setEmpty()
-                            assets = it
-                            assetsAdapter.setAssetList(it)
-                            if (lastFiatCurrency != Session.getFiatCurrency()) {
-                                lastFiatCurrency = Session.getFiatCurrency()
-                                assetsAdapter.notifyDataSetChanged()
-                            }
-                        } else {
-                            assets = it
-                            assetsAdapter.setAssetList(it)
-                            if (lastFiatCurrency != Session.getFiatCurrency()) {
-                                lastFiatCurrency = Session.getFiatCurrency()
-                                assetsAdapter.notifyDataSetChanged()
-                            }
-                            lifecycleScope.launch {
-                                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-                                renderPie(assets, bitcoin)
+                    _headBinding?.wacthLayout?.isVisible = wallet?.hasLocalPrivateKey == false
+
+                    if (wallet?.hasLocalPrivateKey == false) {
+                        val addresses = web3ViewModel.getAddresses(id)
+                        if (addresses.isNotEmpty()) {
+                            if (addresses.size == 1) {
+                                val address = addresses.first().destination
+                                _headBinding?.wacthTv?.text = getString(R.string.watching_address, "${address.take(6)}..${address.takeLast(4)}")
+                            } else {
+                                _headBinding?.wacthTv?.text = getString(R.string.watching_addresses, addresses.size)
                             }
                         }
                     }
+                }
+                lastData?.removeObservers(viewLifecycleOwner)
+                lastData = web3ViewModel.web3TokensExcludeHidden(id)
+                lastData?.observe(viewLifecycleOwner, observer)
             }
         }
 
@@ -230,6 +226,31 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             .subscribe { _ ->
                 assetsAdapter.notifyDataSetChanged()
             }
+    }
+
+    private var lastData: LiveData<List<Web3TokenItem>>? = null
+
+    private val observer = Observer<List<Web3TokenItem>> { data ->
+        if (data.isEmpty()) {
+            setEmpty()
+            assets = data
+            assetsAdapter.setAssetList(data)
+            if (lastFiatCurrency != Session.getFiatCurrency()) {
+                lastFiatCurrency = Session.getFiatCurrency()
+                assetsAdapter.notifyDataSetChanged()
+            }
+        } else {
+            assets = data
+            assetsAdapter.setAssetList(data)
+            if (lastFiatCurrency != Session.getFiatCurrency()) {
+                lastFiatCurrency = Session.getFiatCurrency()
+                assetsAdapter.notifyDataSetChanged()
+            }
+            lifecycleScope.launch {
+                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                renderPie(assets, bitcoin)
+            }
+        }
     }
 
     fun update() {

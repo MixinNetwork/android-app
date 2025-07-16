@@ -1,9 +1,11 @@
 package one.mixin.android.repository
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.map
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.WalletRequest
-import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
@@ -11,6 +13,7 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
@@ -22,6 +25,7 @@ import javax.inject.Singleton
 class Web3Repository
 @Inject
 constructor(
+    @ApplicationContext private val context: Context,
     val routeService: RouteService,
     val web3TokenDao: Web3TokenDao,
     val web3TransactionDao: Web3TransactionDao,
@@ -96,7 +100,20 @@ constructor(
 
     suspend fun getAddresses(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
 
-    suspend fun findWalletById(walletId: String) = web3WalletDao.getWalletById(walletId)
+    suspend fun findWalletById(walletId: String) =
+        web3WalletDao.getWalletById(walletId)?.updateWithLocalKeyInfo(context)
 
-    suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3WalletDao.getWalletsExcludingByName(excludeWalletId, query)
+    suspend fun getWalletsExcluding(excludeWalletId: String, query: String) =
+        web3WalletDao.getWalletsExcludingByName(excludeWalletId, query)
+            .updateWithLocalKeyInfo(context)
+
+    fun getWallets() = web3WalletDao.getWallets().map { it.updateWithLocalKeyInfo(context) }
+
+    suspend fun countAddressesByWalletId(walletId: String) = web3AddressDao.countAddressesByWalletId(walletId)
+
+    suspend fun getFirstAddressByWalletId(walletId: String) = web3AddressDao.getFirstAddressByWalletId(walletId)
+
+    suspend fun getAddressesByWalletId(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
+
+    suspend fun anyAddressExists(destinations: List<String>) = web3AddressDao.anyAddressExists(destinations)
 }

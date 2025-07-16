@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
@@ -31,6 +32,7 @@ import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
@@ -49,6 +51,7 @@ import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.hypot
 
@@ -266,7 +269,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 )
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
-                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleTv.text = if (!wallet.hasLocalPrivateKey) {
+                            getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey())
+                        } else {
+                            wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        }
                     } ?: run {
                         binding.titleTv.setText(R.string.Common_Wallet)
                     }
@@ -298,6 +305,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 (destination as WalletDestination.Private).walletId
             }
             lifecycleScope.launch {
+                val wallet = walletViewModel.findWalletById(walletId)
+                if (wallet == null || (CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId).not() && wallet.category == "private")) {
+                    return@launch
+                }
                 JsSigner.setWallet(walletId) { queryWalletId ->
                     runBlocking { walletViewModel.getAddresses(queryWalletId) }
                 }

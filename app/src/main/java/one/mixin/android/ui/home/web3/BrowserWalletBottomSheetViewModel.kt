@@ -18,9 +18,7 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.web3.js.JsSigner
 import org.sol4k.exception.RpcException
 import javax.inject.Inject
 

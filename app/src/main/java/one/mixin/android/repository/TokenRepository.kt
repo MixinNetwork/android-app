@@ -1417,8 +1417,6 @@ class TokenRepository
 
     fun assetFlow() = tokenDao.assetFlow()
 
-    fun getWallets() = web3WalletDao.getWallets()
-
     suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)

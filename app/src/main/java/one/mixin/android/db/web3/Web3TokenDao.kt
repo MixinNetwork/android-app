@@ -7,12 +7,8 @@ import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
-import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM
-import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.vo.safe.Token
-import one.mixin.android.vo.safe.TokenItem
 
 @Dao
 interface Web3TokenDao : BaseDao<Web3Token> {

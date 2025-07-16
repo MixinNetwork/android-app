@@ -1938,6 +1938,9 @@
     <string name="Invoices">账单</string>
     <string name="invoice_renew_plan">续订%1$s会员</string>
     <string name="invoice_upgrade_plan">升级到%1$s</string>
+    <string name="watch">观察 %1$s</string>
+    <string name="watching_address">你正在观察 %1$s</string>
+    <string name="watching_addresses">你正在观察 %1$d 个地址</string>
     <string name="All_Invoices">全部账单</string>
     <string name="buy_via">付款方式</string>
     <string name="Mixin_One">Mixin 大会员</string>

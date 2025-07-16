@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.vo.WithdrawalMemoPossibility
 
 @Entity(tableName = "chains")
 data class Web3Chain(

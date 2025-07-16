@@ -44,10 +44,10 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.bot.INTERNAL_BUY_ID
-import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_MEMBER_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged

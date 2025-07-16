@@ -3,8 +3,6 @@ package one.mixin.android.ui.wallet.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -23,7 +20,6 @@ import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletSuccessEvent
-import one.mixin.android.extension.putString
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -91,7 +87,7 @@ class FetchWalletViewModel @Inject constructor(
                             CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
                         val solanaWallet =
                             CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
-                        IndexedWallet(index, ethereumWallet, solanaWallet)
+                        IndexedWallet(index, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
                     }
 
                     val addresses = wallets.flatMap {
@@ -120,6 +116,7 @@ class FetchWalletViewModel @Inject constructor(
                                     wallet.index,
                                     wallet.ethereumWallet,
                                     wallet.solanaWallet,
+                                    exists = wallet.exists,
                                     assets = allTokens
                                 )
                             }.filter { it.assets.isNotEmpty() }

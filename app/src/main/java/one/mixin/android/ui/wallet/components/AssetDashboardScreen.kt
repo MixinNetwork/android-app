@@ -24,9 +24,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openUrl
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -103,8 +106,20 @@ fun AssetDashboardScreen(
 
             wallets.forEach { wallet ->
                 if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
+                    var name by remember(wallet.id) { mutableStateOf(wallet.name) }
+                    if (!wallet.hasLocalPrivateKey) {
+                        LaunchedEffect(wallet.id) {
+                            val addresses = viewModel.getAddressesByWalletId(wallet.id)
+                            if (addresses.isNotEmpty()) {
+                                name = context.getString(
+                                    R.string.watch,
+                                    addresses.joinToString(separator = "") { it.destination }.formatPublicKey()
+                                )
+                            }
+                        }
+                    }
                     WalletCard(
-                        name = wallet.name,
+                        name = name,
                         destination = WalletDestination.Private(wallet.id),
                         onClick = { onWalletCardClick.invoke(WalletDestination.Private(wallet.id)) }
                     )

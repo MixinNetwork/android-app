@@ -4,16 +4,12 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.painterResource
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl

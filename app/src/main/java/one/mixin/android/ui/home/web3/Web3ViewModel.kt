@@ -429,6 +429,8 @@ internal constructor(
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
 
+    suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()

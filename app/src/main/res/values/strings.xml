@@ -1998,6 +1998,9 @@
     <string name="All_Invoices">All Invoices</string>
     <string name="invoice_renew_plan">Renew %1$s Plan</string>
     <string name="invoice_upgrade_plan">Upgrade to %1$s</string>
+    <string name="watch">watching %1$s</string>
+    <string name="watching_address">You are watching %1$s</string>
+    <string name="watching_addresses">You are watching %1$d addresses</string>
     <string name="buy_via">Via</string>
     <string name="Mixin_One">Mixin One</string>
     <string name="mixin_one_desc">All the best of Mixin in one place</string>

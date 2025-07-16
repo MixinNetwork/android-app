@@ -61,7 +61,8 @@ data class IndexedWallet(
     val index: Int,
     val ethereumWallet: CryptoWallet,
     val solanaWallet: CryptoWallet,
-    val assets: List<AssetView> = emptyList()
+    val assets: List<AssetView> = emptyList(),
+    val exists: Boolean
 ) {
     val totalValue: BigDecimal
         get() = assets.sumOf {
@@ -262,7 +263,7 @@ fun WalletItem(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onToggle
+                onClick = if (wallet.exists) { {} } else { onToggle }
             )
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
@@ -274,8 +275,12 @@ fun WalletItem(
                 color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.weight(1f))
-            val iconRes =
-                if (isSelected) R.drawable.ic_sticker_checked else R.drawable.ic_sticker_unchecked
+
+            val iconRes = when {
+                wallet.exists -> R.drawable.ic_sticker_checked_disable
+                isSelected -> R.drawable.ic_sticker_checked
+                else -> R.drawable.ic_sticker_unchecked
+            }
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,

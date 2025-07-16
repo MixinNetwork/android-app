@@ -26,7 +26,7 @@ import javax.crypto.spec.SecretKeySpec
 
 object CryptoWalletHelper {
 
-    private fun getSecureStorage(context: Context): SharedPreferences? {
+    fun getSecureStorage(context: Context): SharedPreferences? {
         return runCatching {
             EncryptedSharedPreferences.create(
                 context,
@@ -38,6 +38,10 @@ object CryptoWalletHelper {
         }.onFailure {
             context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
         }.getOrNull()
+    }
+
+    fun hasPrivateKey(context: Context, walletId: String): Boolean {
+        return getSecureStorage(context)?.contains(walletId) ?: false
     }
 
     fun extractIndexFromPath(path: String): Int? {

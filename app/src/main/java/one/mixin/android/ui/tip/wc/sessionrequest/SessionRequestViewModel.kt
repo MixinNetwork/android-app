@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP

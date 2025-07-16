@@ -19,9 +19,12 @@ import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import javax.inject.Inject
 
+import one.mixin.android.repository.Web3Repository
+
 @HiltViewModel
 class AssetDistributionViewModel @Inject constructor(
     private val tokenRepository: TokenRepository,
+    private val web3Repository: Web3Repository,
     private val web3TokenDao: Web3TokenDao,
     private val web3WalletDao: Web3WalletDao,
 ) : ViewModel() {
@@ -35,10 +38,14 @@ class AssetDistributionViewModel @Inject constructor(
 
     private fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {
-            web3WalletDao.getWallets().collect {
+            web3Repository.getWallets().collect {
                 _wallets.value = it
             }
         }
+    }
+
+    suspend fun getAddressesByWalletId(walletId: String) = withContext(Dispatchers.IO) {
+        web3Repository.getAddressesByWalletId(walletId)
     }
 
 

@@ -9,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_AMOUNT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_IN_MIXIN
@@ -17,7 +16,6 @@ import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_REFERRAL
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
