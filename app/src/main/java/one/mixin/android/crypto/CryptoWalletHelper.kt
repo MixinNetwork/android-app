@@ -153,9 +153,9 @@ object CryptoWalletHelper {
             val decryptedMnemonic = getWeb3Mnemonic(context, spendKey, walletId) ?: return null
 
             val privateKey = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                CryptoWalletHelper.mnemonicToSolanaWallet(decryptedMnemonic, index = index).privateKey
+                mnemonicToSolanaWallet(decryptedMnemonic, index = index).privateKey
             } else {
-                CryptoWalletHelper.mnemonicToEthereumWallet(decryptedMnemonic, index = index).privateKey
+                mnemonicToEthereumWallet(decryptedMnemonic, index = index).privateKey
             }
             privateKey.let {
                 Numeric.hexStringToByteArray(it)

@@ -24,15 +24,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
@@ -41,10 +39,8 @@ import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
-import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
@@ -52,12 +48,10 @@ import one.mixin.android.ui.address.page.MemoInputPage
 import one.mixin.android.ui.address.page.TransferDestinationInputPage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
-import one.mixin.android.ui.common.biometric.buildWithdrawalBiometricItem
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
-import one.mixin.android.ui.wallet.InputFragment.Companion.ARGS_TO_USER
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
@@ -231,22 +225,31 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     requireView().hideKeyboard()
                                         WalletListBottomSheetDialogFragment.newInstance(fromWalletId).apply {
                                             setOnWalletClickListener { destinationWallet ->
-                                                lifecycleScope.launch {
+                                                this@TransferDestinationInputFragment.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+                                                    Timber.e(error)
+                                                }) {
                                                     when {
                                                         web3Token != null -> {
                                                             val tokenToSend = web3Token!!
                                                             val fromAddress = web3ViewModel.getAddressesByChainId(fromWalletId!!, tokenToSend.chainId)
-                                                            // Todo check
-                                                            val toAddress = web3ViewModel.getAddressesByChainId(destinationWallet!!.id, tokenToSend.chainId)
-
-                                                            if (fromAddress == null || fromAddress.destination.isBlank() || toAddress == null) {
+                                                            val toAddress = if(destinationWallet == null) {
+                                                                try {
+                                                                    val depositEntry = web3ViewModel.findAndSyncDepositEntry(tokenToSend)
+                                                                    depositEntry?.destination
+                                                                } catch (e: Exception) {
+                                                                    null
+                                                                }
+                                                            } else {
+                                                                web3ViewModel.getAddressesByChainId(destinationWallet.id, tokenToSend.chainId)?.destination
+                                                            }
+                                                            if (fromAddress == null || fromAddress.destination.isBlank() || toAddress.isNullOrBlank()) {
                                                                 toast(R.string.Alert_Not_Support)
                                                             } else {
                                                                 (chainToken ?: web3ViewModel.web3TokenItemById(tokenToSend.walletId, tokenToSend.chainId))?.let { chain ->
                                                                     navigateToInputFragmentWithBundle(
                                                                         Bundle().apply {
                                                                             putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress.destination)
-                                                                            putString(InputFragment.ARGS_TO_ADDRESS, toAddress.destination)
+                                                                            putString(InputFragment.ARGS_TO_ADDRESS, toAddress)
                                                                             putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
                                                                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
                                                                             putBoolean(InputFragment.ARGS_TO_WALLET, true)
@@ -256,8 +259,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                         }
 
                                                         token != null -> {
-                                                            // check
-                                                            val toAddress = web3ViewModel.getAddressesByChainId(destinationWallet!!.id, token!!.chainId)
+                                                            val toAddress = withContext(Dispatchers.IO) {
+                                                                web3ViewModel.getAddressesByChainId(destinationWallet!!.id, token!!.chainId)
+                                                            }
                                                             if (toAddress != null) {
                                                                 navigateToInputFragmentWithBundle(
                                                                     Bundle().apply {
@@ -665,3 +669,4 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         return bottomSheet
     }
 }
+

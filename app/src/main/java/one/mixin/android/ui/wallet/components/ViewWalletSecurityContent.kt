@@ -28,13 +28,14 @@ import one.mixin.android.ui.wallet.WalletSecurityActivity
 
 @Composable
 fun ViewWalletSecurityContent(mode: WalletSecurityActivity.Mode, pop: () -> Unit, next: () -> Unit) {
+    val keyword = when (mode) {
+        WalletSecurityActivity.Mode.VIEW_MNEMONIC -> stringResource(R.string.Mnemonic_Phrase)
+        WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> stringResource(R.string.private_key)
+        else -> ""
+    }
     MixinAppTheme {
         PageScaffold(
-            title = when (mode) {
-                WalletSecurityActivity.Mode.VIEW_MNEMONIC -> stringResource(R.string.Mnemonic_Phrase)
-                WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> stringResource(R.string.Asset_Key)
-                else -> throw IllegalArgumentException("Unsupported mode: $mode")
-            },
+            title = "",
             verticalScrollable = false,
             pop = pop,
         ) {
@@ -50,26 +51,32 @@ fun ViewWalletSecurityContent(mode: WalletSecurityActivity.Mode, pop: () -> Unit
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    stringResource(R.string.Before_you_proceed_desc), fontSize = 14.sp,
+                    stringResource(R.string.wallet_security_subtitle, keyword), fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 NumberedText(
                     modifier = Modifier
-                        .fillMaxWidth(), numberStr = "1", instructionStr = stringResource(R.string.wallet_security_warning_1),
+                        .fillMaxWidth(),
+                    numberStr = "1",
+                    instructionStr = stringResource(R.string.wallet_security_warning_1, keyword),
                     color = MixinAppTheme.colors.textMinor
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 NumberedText(
                     modifier = Modifier
-                        .fillMaxWidth(), numberStr = "2", instructionStr = stringResource(R.string.wallet_security_warning_2),
+                        .fillMaxWidth(),
+                    numberStr = "2",
+                    instructionStr = stringResource(R.string.wallet_security_warning_2, keyword),
                     color = MixinAppTheme.colors.textMinor
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 NumberedText(
                     modifier = Modifier
-                        .fillMaxWidth(), numberStr = "3", instructionStr = stringResource(R.string.wallet_security_warning_3),
+                        .fillMaxWidth(),
+                    numberStr = "3",
+                    instructionStr = stringResource(R.string.wallet_security_warning_3, keyword),
                     color = MixinAppTheme.colors.red
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -99,7 +106,7 @@ fun ViewWalletSecurityContent(mode: WalletSecurityActivity.Mode, pop: () -> Unit
                     ),
                 ) {
                     Text(
-                        text = stringResource(R.string.wallet_security_proceed_button),
+                        text = stringResource(R.string.wallet_security_proceed_button, if(mode == WalletSecurityActivity.Mode.VIEW_MNEMONIC) stringResource(R.string.Mnemonic_Phrase) else stringResource(R.string.private_key)),
                         color = Color.White
                     )
                 }

@@ -1786,6 +1786,7 @@
     <string name="Create_Account">Create Account</string>
     <string name="Mobile_Phone">Mobile Phone</string>
     <string name="Mnemonic_Phrase">Mnemonic Phrase</string>
+    <string name="private_key">Private Key</string>
     <string name="create_introduction">MPC Wallet, 2FA, %1$s, Self-custody, Social Recovery</string>
     <string name="Convenience">Convenience</string>
     <string name="Create_Mnemonic_Phrase">Create Mnemonic Phrase</string>
@@ -2038,15 +2039,16 @@
     <string name="Show_Mnemonic_phrase">Show Mnemonic Phrase</string>
     <string name="Show_Private_Key">Show Private Key</string>
     <string name="wallet_security_title">Before you proceed</string>
-    <string name="wallet_security_subtitle">Read the following, then save the phrase securely.</string>
-    <string name="wallet_security_warning_1">Anyone with this mnemonic phrase can transfer all the funds in this wallet.</string>
-    <string name="wallet_security_warning_2">Mixin Messenger servers will not store your private key.</string>
-    <string name="wallet_security_warning_3">Do not share your private key with any third party, individual, website, or application.</string>
+    <string name="wallet_security_subtitle">Read the following, then save the %1$s securely.</string>
+    <string name="wallet_security_warning_1">Anyone with this %1$s can transfer all funds in this wallet.</string>
+    <string name="wallet_security_warning_2">Mixin Messenger server does not store your %1$s.</string>
+    <string name="wallet_security_warning_3">Do not leak your %1$s to any third party, individual, website or application.</string>
     <string name="wallet_security_warning_4">Make sure no one or surveillance cameras are watching your screen!</string>
-    <string name="wallet_security_proceed_button">Proceed</string>
+    <string name="wallet_security_proceed_button">Show %1$s</string>
     <string name="Write_it_down_on_a_piece_of_paper_and_keep_it_in_a_safe_place">Write it down on a piece of paper and keep it in a safe place.</string>
     <string name="Your_Private_Key">Your Private Key</string>
     <string name="Store_in_vault_or_safe_place">Store in vault or safe place.</string>
     <string name="Dont_share_it_with_a_network">Don’t share it with a network.</string>
     <string name="Select_Network">Select Network</string>
+    <string name="remove_wallet_warning">Deleting this wallet will not affect your assets. Please make sure your private key or mnemonic phrase is backed up.</string>
 </resources>

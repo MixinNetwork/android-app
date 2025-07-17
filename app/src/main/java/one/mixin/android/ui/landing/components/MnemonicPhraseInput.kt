@@ -654,11 +654,13 @@ fun MnemonicPhraseInput(
                     } else {
                         Text(
                             stringResource(
-                                when (state) {
-                                    MnemonicState.Import -> R.string.Next
-                                    MnemonicState.Display -> R.string.Check_Backup
-                                    MnemonicState.Input -> R.string.Confirm
-                                    MnemonicState.Verify -> R.string.Complete
+                                when {
+                                    state == MnemonicState.Import -> R.string.Next
+                                    state == MnemonicState.Display && (inputs.size == 12 || inputs.size == 24) -> R.string.Done
+                                    state == MnemonicState.Display -> R.string.Check_Backup
+                                    state == MnemonicState.Input -> R.string.Confirm
+                                    state == MnemonicState.Verify -> R.string.Complete
+                                    else -> R.string.Next
                                 }
                             ),
                             color = Color.White,

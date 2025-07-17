@@ -33,6 +33,7 @@ import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
@@ -44,6 +45,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
@@ -286,13 +288,27 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var migrateEnable = false
 
     private fun handleAddWalletClick() {
-        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-        dialog.callback = {
-            startActivity(Intent(requireContext(), WalletSecurityActivity::class.java).apply {
-                                putExtra(WalletSecurityActivity.EXTRA_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
-                            })
+        if (!Session.saltExported() && Session.isAnonymous()) {
+            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                .apply {
+                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                    dialog.callback = {
+                        startActivity(Intent(requireContext(), WalletSecurityActivity::class.java).apply {
+                            putExtra(WalletSecurityActivity.EXTRA_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
+                        })
+                    }
+                    dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+                }
+                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+        } else {
+            val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+            dialog.callback = {
+                startActivity(Intent(requireContext(), WalletSecurityActivity::class.java).apply {
+                    putExtra(WalletSecurityActivity.EXTRA_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
+                })
+            }
+            dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
         }
-        dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
     }
 
     private fun handleWalletCardClick(destination: WalletDestination) {
@@ -418,7 +434,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             VerifyBottomSheetDialogFragment.newInstance(
                 getString(R.string.remove_wallet_pin_hint),
                 true,
-                true
+                true,
+                subtitle = getString(R.string.remove_wallet_warning),
             ).apply {
                 disableToast = true
             }.setOnPinSuccess { _ ->
