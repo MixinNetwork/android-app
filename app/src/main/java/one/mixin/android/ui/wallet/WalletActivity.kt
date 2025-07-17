@@ -75,7 +75,7 @@ class WalletActivity : BlazeBaseActivity() {
                     putString(WalletSearchWeb3Fragment.ARGS_WALLET_ID, walletId)
                 })
             }
-            Destination.AllTransactions -> {
+            is Destination.AllTransactions -> {
                 navGraph.setStartDestination(R.id.all_transactions_fragment)
                 val pendingType = intent.getBooleanExtra(PENDING_TYPE, false)
                 navController.setGraph(navGraph, Bundle().apply {

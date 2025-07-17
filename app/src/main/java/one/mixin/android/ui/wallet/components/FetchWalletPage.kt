@@ -269,7 +269,7 @@ fun WalletItem(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "${stringResource(R.string.Common_Wallet)} ${wallet.index}",
+                text = "${stringResource(R.string.Common_Wallet)} ${wallet.index + 1}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary

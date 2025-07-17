@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -123,6 +124,7 @@ class FetchWalletViewModel @Inject constructor(
                             if (offset == 0 && walletInfos.isEmpty()) {
                                 _wallets.value = listOf(wallets[0])
                             } else {
+                                _selectedWalletInfos.value = (walletInfos.filter { it.exists.not() } + _selectedWalletInfos.value).toSet()
                                 _wallets.value = _wallets.value + walletInfos
                             }
                         }
