@@ -317,7 +317,7 @@ fun TransferDestinationInputPage(
                                     onClick = {
                                         toWallet.invoke(web3Token.walletId)
                                     },
-                                    isPrivacy = true
+                                    isPrivacy = false
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             } else if (account.isNotBlank()) {

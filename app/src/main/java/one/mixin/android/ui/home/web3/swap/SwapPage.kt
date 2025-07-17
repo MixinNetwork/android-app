@@ -85,6 +85,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
+import one.mixin.android.job.RefreshWeb3Job.Companion.WALLET_CATEGORY_PRIVATE
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.ErrorHandler
@@ -115,6 +116,17 @@ fun SwapPage(
     val scope = rememberCoroutineScope()
 
     val viewModel = hiltViewModel<SwapViewModel>()
+    var walletDisplayName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(walletId) {
+        if (walletId != null) {
+            viewModel.findWeb3WalletById(walletId)?.let {
+                if (it.category == WALLET_CATEGORY_PRIVATE) {
+                    walletDisplayName = it.name
+                }
+            }
+        }
+    }
 
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
@@ -189,7 +201,7 @@ fun SwapPage(
 
     PageScaffold(
         title = stringResource(id = R.string.Swap),
-        subtitle = stringResource(if (!inMixin) R.string.Common_Wallet else R.string.Privacy_Wallet),
+        subtitle = walletDisplayName ?: stringResource(if (!inMixin) R.string.Common_Wallet else R.string.Privacy_Wallet),
         verticalScrollable = true,
         pop = pop,
         actions = {

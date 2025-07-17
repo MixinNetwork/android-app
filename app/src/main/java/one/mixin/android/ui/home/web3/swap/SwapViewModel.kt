@@ -150,5 +150,9 @@ class SwapViewModel
         web3Repository.web3TokenItemById(walletId, assetId)
     }
 
+    suspend fun findWeb3WalletById(walletId: String) = withContext(Dispatchers.IO) {
+        web3Repository.findWalletById(walletId)
+    }
+
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 }
