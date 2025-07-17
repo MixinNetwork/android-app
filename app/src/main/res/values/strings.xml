@@ -2048,4 +2048,5 @@
     <string name="Your_Private_Key">Your Private Key</string>
     <string name="Store_in_vault_or_safe_place">Store in vault or safe place.</string>
     <string name="Dont_share_it_with_a_network">Don’t share it with a network.</string>
+    <string name="Select_Network">Select Network</string>
 </resources>

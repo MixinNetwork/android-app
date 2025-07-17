@@ -10,15 +10,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.db.web3.Web3TokenDao
-import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.vo.safe.UnifiedAssetItem
 import java.math.BigDecimal
 import javax.inject.Inject
-
-import one.mixin.android.repository.Web3Repository
 
 
 @HiltViewModel

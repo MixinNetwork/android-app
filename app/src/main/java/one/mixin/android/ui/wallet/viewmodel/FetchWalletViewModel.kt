@@ -235,13 +235,17 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    suspend fun getWeb3Priva(context: Context): String? {
+    suspend fun getWeb3Priva(context: Context, chainId: String?): String? {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
             return null
         }
-        return CryptoWalletHelper.getWeb3PrivateKey(context, currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID)?.let {
+        if (chainId == null) {
+            Timber.e("Chain ID is null, cannot get private key.")
+            return null
+        }
+        return CryptoWalletHelper.getWeb3PrivateKey(context, currentSpendKey, chainId)?.let {
             Numeric.toHexString(it)
         }
     }

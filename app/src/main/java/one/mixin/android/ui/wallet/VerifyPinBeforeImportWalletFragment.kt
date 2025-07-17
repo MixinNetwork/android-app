@@ -27,12 +27,14 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
     private var mode: WalletSecurityActivity.Mode =
         WalletSecurityActivity.Mode.IMPORT // Default mode
+    private var chainId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             val modeOrdinal = it.getInt(ARG_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
             mode = WalletSecurityActivity.Mode.entries.toTypedArray()[modeOrdinal]
+            chainId = it.getString(ARG_CHAIN_ID)
         }
     }
 
@@ -87,7 +89,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                     WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
                                         navTo(
                                             DisplayWalletSecurityFragment.newInstance(
-                                                WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY,
+                                                WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY, chainId
                                             ), "DisplayWalletSecurityFragment"
                                         )
                                         requireActivity().supportFragmentManager
@@ -109,11 +111,13 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
     companion object {
         const val TAG = "CheckPinFragment"
         private const val ARG_MODE = "arg_mode"
+        private const val ARG_CHAIN_ID = "arg_chain_id"
 
-        fun newInstance(mode: WalletSecurityActivity.Mode = WalletSecurityActivity.Mode.IMPORT): VerifyPinBeforeImportWalletFragment {
+        fun newInstance(mode: WalletSecurityActivity.Mode = WalletSecurityActivity.Mode.IMPORT, chainId: String? = null): VerifyPinBeforeImportWalletFragment {
             val fragment = VerifyPinBeforeImportWalletFragment()
             val args = Bundle()
             args.putInt(ARG_MODE, mode.ordinal)
+            chainId?.let { args.putString(ARG_CHAIN_ID, it) }
             fragment.arguments = args
             return fragment
         }

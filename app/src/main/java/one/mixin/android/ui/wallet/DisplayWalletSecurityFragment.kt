@@ -21,12 +21,14 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
 
     private val viewModel by activityViewModels<FetchWalletViewModel>()
     private var mode: WalletSecurityActivity.Mode = WalletSecurityActivity.Mode.VIEW_MNEMONIC
+    private var chainId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             val modeOrdinal = it.getInt(ARG_MODE)
             mode = WalletSecurityActivity.Mode.entries.toTypedArray()[modeOrdinal]
+            chainId = it.getString(ARG_CHAIN_ID)
         }
     }
 
@@ -39,13 +41,13 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
             setContent {
                 var securityContent by remember { mutableStateOf<String?>(null) }
 
-                LaunchedEffect(mode) {
+                LaunchedEffect(mode, chainId) {
                     securityContent = when (mode) {
                         WalletSecurityActivity.Mode.VIEW_MNEMONIC -> {
                             viewModel.getWeb3Mnemonicte(requireContext()) ?: throw IllegalArgumentException("Mnemonic not found")
                         }
                         WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
-                            viewModel.getWeb3Priva(requireContext()) ?: throw IllegalArgumentException("Private key not found")
+                            viewModel.getWeb3Priva(requireContext(), chainId) ?: throw IllegalArgumentException("Private key not found")
                         }
                         else -> throw IllegalArgumentException("Unsupported mode: $mode")
                     }
@@ -69,11 +71,13 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
 
     companion object {
         private const val ARG_MODE = "arg_mode"
+        private const val ARG_CHAIN_ID = "arg_chain_id"
 
-        fun newInstance(mode: WalletSecurityActivity.Mode): DisplayWalletSecurityFragment {
+        fun newInstance(mode: WalletSecurityActivity.Mode, chainId: String? = null): DisplayWalletSecurityFragment {
             return DisplayWalletSecurityFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_MODE, mode.ordinal)
+                    chainId?.let { putString(ARG_CHAIN_ID, it) }
                 }
             }
         }

@@ -164,7 +164,6 @@ class TokenRepository
         private val safeSnapshotDao: SafeSnapshotDao,
         private val addressDao: AddressDao,
         private val addressService: AddressService,
-        private val memberService: MemberService,
         private val hotAssetDao: TopAssetDao,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
@@ -1449,4 +1448,6 @@ class TokenRepository
 
     suspend fun findTopWeb3UsdBalanceAsset(excludeId: String) =
         web3TokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
+
+    suspend fun getChainItemByWalletId(walletId: String) = web3AddressDao.getChainItemByWalletId(walletId)
 }

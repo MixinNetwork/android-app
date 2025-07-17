@@ -25,6 +25,7 @@ class ViewWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        val chainId = arguments?.getString(ARG_CHAIN_ID)
         return ComposeView(requireContext()).apply {
             setContent {
                 ViewWalletSecurityContent(
@@ -39,7 +40,7 @@ class ViewWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
                             else -> throw IllegalArgumentException("Unsupported mode: $mode")
                         }
                         parentFragmentManager.beginTransaction()
-                            .replace(R.id.container, VerifyPinBeforeImportWalletFragment.newInstance(verifyPinMode))
+                            .replace(R.id.container, VerifyPinBeforeImportWalletFragment.newInstance(verifyPinMode, chainId))
                             .addToBackStack(null)
                             .commit()
                     }
@@ -50,11 +51,13 @@ class ViewWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
 
     companion object {
         private const val ARG_MODE = "arg_mode"
+        private const val ARG_CHAIN_ID = "arg_chain_id"
 
-        fun newInstance(mode: WalletSecurityActivity.Mode): ViewWalletSecurityFragment {
+        fun newInstance(mode: WalletSecurityActivity.Mode, chainId: String? = null): ViewWalletSecurityFragment {
             val fragment = ViewWalletSecurityFragment()
             val args = Bundle()
             args.putInt(ARG_MODE, mode.ordinal)
+            chainId?.let { args.putString(ARG_CHAIN_ID, it) }
             fragment.arguments = args
             return fragment
         }

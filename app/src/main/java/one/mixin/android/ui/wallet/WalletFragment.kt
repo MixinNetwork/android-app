@@ -360,7 +360,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     private var _importBottomBinding: ViewImportWalletBottomBinding? = null
     private val importBottomBinding get() = requireNotNull(_importBottomBinding)
-
     @SuppressLint("InflateParams")
     private fun showImportBottom() {
         val builder = BottomSheet.Builder(requireActivity())
@@ -387,8 +386,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 importBottomBinding.mnemonicPhrase.isVisible = hasPrivateKey
                 importBottomBinding.rename.isVisible = hasPrivateKey
             }
+            importBottomBinding.privateKey.setOnClickListener {
+                ChainSelectionBottomSheetDialogFragment.newInstance(dest.walletId).apply {
+                    callback = { chainItem ->
+                        WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY, chainItem.chainId)
+                    }
+                }.show(parentFragmentManager, ChainSelectionBottomSheetDialogFragment.TAG)
+                bottomSheet.dismiss()
+            }
         }
-
         importBottomBinding.hide.setOnClickListener {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Private) {
@@ -403,10 +409,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             bottomSheet.dismiss()
         }
-        importBottomBinding.privateKey.setOnClickListener {
-            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY)
-            bottomSheet.dismiss()
-        }
+
         importBottomBinding.mnemonicPhrase.setOnClickListener {
             WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_MNEMONIC)
             bottomSheet.dismiss()

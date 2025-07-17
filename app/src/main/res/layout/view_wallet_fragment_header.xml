@@ -129,7 +129,8 @@
             android:layout_marginTop="30dp"
             android:background="@drawable/bg_round_window_btn"
             android:layout_gravity="center"
-            android:padding="10dp">
+            android:padding="10dp"
+            android:visibility="gone">
 
             <TextView
                 android:layout_gravity="center"
