@@ -9,8 +9,9 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:layout_marginBottom="10dp"
-    android:layout_marginStart="20dp"
-    android:layout_marginEnd="20dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:paddingHorizontal="20dp"
     android:paddingVertical="4dp">
 
     <one.mixin.android.widget.CircleImageView

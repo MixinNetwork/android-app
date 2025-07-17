@@ -277,9 +277,9 @@ fun WalletItem(
             Spacer(modifier = Modifier.weight(1f))
 
             val iconRes = when {
-                wallet.exists -> R.drawable.ic_sticker_checked_disable
-                isSelected -> R.drawable.ic_sticker_checked
-                else -> R.drawable.ic_sticker_unchecked
+                wallet.exists -> R.drawable.ic_wallet_disabled
+                isSelected -> R.drawable.ic_wallet_select
+                else -> R.drawable.ic_wallet_unselect
             }
             Icon(
                 painter = painterResource(id = iconRes),

@@ -196,9 +196,9 @@ fun generateRandomBytes(len: Int = 16): ByteArray {
 fun aesGcmEncrypt(
     plain: ByteArray,
     key: ByteArray,
+    iv: ByteArray? = null
 ): ByteArray {
-    val iv = ByteArray(GCM_IV_LENGTH)
-    secureRandom.nextBytes(iv)
+    val iv = iv ?: ByteArray(GCM_IV_LENGTH).also { secureRandom.nextBytes(it) }
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
     val parameterSpec = GCMParameterSpec(128, iv) // 128 bit auth tag length
     val secretKey = SecretKeySpec(key, "AES")

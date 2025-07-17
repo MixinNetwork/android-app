@@ -5,6 +5,8 @@ import com.lambdapioneer.argon2kt.Argon2Kt
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.crypto.EthKeyGenerator
 import one.mixin.android.crypto.SolanaKeyGenerator
+import one.mixin.android.crypto.aesGcmDecrypt
+import one.mixin.android.crypto.aesGcmEncrypt
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.mnemonicChecksumWord
 import one.mixin.android.crypto.toEntropy
@@ -25,9 +27,9 @@ import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.test.assertContains
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class MnemonicTest {
 
@@ -86,48 +88,24 @@ class MnemonicTest {
     @Test
     fun mnemonicEncryptTest() {
         val mnemonicWords = "legal winner thank year wave sausage worth useful legal winner thank yellow".split(" ")
-        println("mnemonicWords: $mnemonicWords")
         val spendKeyHex = "0f09874fa3dc875b9594cd956977decda74e12dea331cef4585649f27b200950"
-        println("spendKeyHex: $spendKeyHex")
-        val encryptionKeyPair = Bip32ECKeyPair.generateKeyPair(spendKeyHex.hexStringToByteArray())
-        val encryptionKeySource = encryptionKeyPair.privateKey.toByteArray()
-        println("encryptionKeySource: ${encryptionKeySource.hexString()}")
-        val sha256 = MessageDigest.getInstance("SHA-256")
-        val aesKeyBytes = sha256.digest(encryptionKeySource)
-        println("aesKeyBytes: ${aesKeyBytes.hexString()}")
-        val secretKey = SecretKeySpec(aesKeyBytes, "AES")
+
+        val sha256Digest = MessageDigest.getInstance("SHA-256")
+        val aesKeyBytes = sha256Digest.digest(spendKeyHex.hexStringToByteArray())
+        assertEquals("43be4f5caa5627ca1a3c218161909928f568f7cb5917f3d3ae22bc94ee2abfe0", aesKeyBytes.hexString())
+
+        val iv = "d20167853779cde83da34ff3".hexStringToByteArray() // 12 bytes
 
         val originalEntropy = toEntropy(mnemonicWords)
-        println("originalEntropy: ${originalEntropy.hexString()}")
-        // Online use of random data
-        val initializationVector = "1a7b83717ed8191c71e34424f5103711".hexStringToByteArray()
-        println("initializationVector: ${initializationVector.hexString()}")
-        val ivParameterSpec = IvParameterSpec(initializationVector)
 
-        val encryptionCipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        encryptionCipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec)
-        val encryptedEntropy = encryptionCipher.doFinal(originalEntropy)
-        println("encryptedEntropy: ${encryptedEntropy.hexString()}")
-
-        val encryptedDataWithIv = initializationVector + encryptedEntropy
-        val base64EncryptedData = encryptedDataWithIv.base64RawURLEncode()
-        println("base64EncryptedData: $base64EncryptedData")
-        assertEquals("GnuDcX7YGRxx40Qk9RA3EWSknPdQlDTVklWMD43OfbnzANnFzZp2MxToozsu6sEX", base64EncryptedData)
-
-        val decodedEncryptedData = base64EncryptedData.base64RawURLDecode()
-        val extractedIv = decodedEncryptedData.copyOfRange(0, 16)
-        val extractedEncryptedEntropy =
-            decodedEncryptedData.copyOfRange(16, decodedEncryptedData.size)
-
-        val decryptionCipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        decryptionCipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(extractedIv))
-        val decryptedEntropy = decryptionCipher.doFinal(extractedEncryptedEntropy)
-        println("decryptedEntropy: ${decryptedEntropy.hexString()}")
+        val encryptedDataWithIv = aesGcmEncrypt(originalEntropy, aesKeyBytes, iv)
+        assertEquals(encryptedDataWithIv.hexString(), "d20167853779cde83da34ff313f98e144e0c78360c41e8d75ebfa8ebeccd5ab6639458880ab9e854fc7d00ee")
+        val decryptedEntropy = aesGcmDecrypt(encryptedDataWithIv, aesKeyBytes)
         val reconstructedMnemonic = MnemonicCode.INSTANCE.toMnemonic(decryptedEntropy)
-        println("reconstructedMnemonic: $reconstructedMnemonic")
-        assertContentEquals(reconstructedMnemonic, mnemonicWords)
-        assertContentEquals(originalEntropy, decryptedEntropy)
+
+        assertContentEquals(mnemonicWords, reconstructedMnemonic)
     }
+
 
     @Test
     fun mnemonicTest() {
