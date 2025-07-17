@@ -124,7 +124,6 @@ fun TransferDestinationInputPage(
     var text by remember(contentText) { mutableStateOf(contentText) }
     val clipboardManager = LocalClipboardManager.current
 
-    MixinAppTheme {
         ModalBottomSheetLayout(
             sheetState = modalSheetState,
             scrimColor = Color.Black.copy(alpha = 0.3f),
@@ -389,4 +388,4 @@ fun TransferDestinationInputPage(
             }
         }
     }
-}
+
