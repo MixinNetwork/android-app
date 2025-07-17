@@ -15,7 +15,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("SELECT * FROM wallets WHERE wallet_id != :excludeWalletId AND name LIKE '%' || :query || '%'")
     suspend fun getWalletsExcludingByName(excludeWalletId: String, query: String): List<Web3Wallet>
 
-    @Query("SELECT * FROM wallets")
+    @Query("SELECT * FROM wallets ORDER BY created_at ASC")
     fun getWallets(): Flow<List<Web3Wallet>>
 
     @Query("SELECT wallet_id FROM wallets WHERE category = 'classic' LIMIT 1")

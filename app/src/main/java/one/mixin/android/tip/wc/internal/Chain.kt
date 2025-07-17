@@ -50,21 +50,21 @@ sealed class Chain(
         }
 
     fun getWeb3ChainId(): String =
-        // Optimism -> Constants.ChainId.
-        // Arbitrum ->  Constants.ChainId.
         // Blast ->  Constants.ChainId.
         when (this) {
             Ethereum -> Constants.ChainId.ETHEREUM_CHAIN_ID
             BinanceSmartChain -> Constants.ChainId.BinanceSmartChain
+            Optimism -> Constants.ChainId.Optimism
+            Arbitrum ->  Constants.ChainId.Arbitrum
             Polygon ->  Constants.ChainId.Polygon
             Base ->  Constants.ChainId.Base
             Avalanche ->  Constants.ChainId.Avalanche
             else ->  Constants.ChainId.Solana
         }
 }
-// Chain.Blast, Chain.Arbitrum, Chain.Optimism
-internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Solana)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche)
+// Chain.Blast
+internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Arbitrum, Chain.Optimism, Chain.Solana)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Avalanche, Chain.Arbitrum, Chain.Optimism)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
