@@ -140,9 +140,11 @@ object JsSigner {
             solanaAddress =
                 addresses.firstOrNull { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }?.destination
                     ?: ""
+            address = evmAddress
         } else {
             evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+            address = evmAddress
         }
     }
 

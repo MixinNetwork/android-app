@@ -8,7 +8,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp">
+        android:layout_height="60dp">
 
         <TextView
             android:id="@+id/title_tv"
@@ -16,7 +16,9 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/Select_Network"
-            android:textColor="?android:attr/textColorPrimary"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="16dp"
+            android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -27,7 +29,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:padding="16dp"
-            android:src="@drawable/ic_close" />
+            android:src="@drawable/ic_circle_close" />
 
     </RelativeLayout>
 
@@ -38,6 +40,6 @@
         android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:itemCount="5"
-        tools:listitem="@layout/item_network_fee" />
+        tools:listitem="@layout/item_chain_selection" />
 
 </LinearLayout>

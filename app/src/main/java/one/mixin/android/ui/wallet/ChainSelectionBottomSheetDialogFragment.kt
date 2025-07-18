@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -12,6 +13,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentChainSelectionBottomSheetBinding
 import one.mixin.android.databinding.ItemChainSelectionBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
@@ -118,7 +120,8 @@ class ChainSelectionBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
             callback: ((ChainItem) -> Unit)? = null,
         ) {
             binding.apply {
-                root.setBackgroundResource(R.drawable.bg_round_choose_network)
+                root.setBackgroundResource(binding.root.context.theme.obtainStyledAttributes(intArrayOf(R.attr.bg_market_card)).getResourceId(0, 0))
+                root.setPadding(16.dp, 4.dp, 16.dp, 4.dp)
                 assetIcon.loadImage(
                     chainItem.iconUrl,
                     one.mixin.android.R.drawable.ic_avatar_place_holder,

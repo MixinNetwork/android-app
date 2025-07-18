@@ -27,6 +27,9 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("SELECT * FROM wallets ORDER BY created_at ASC")
     suspend fun getAllWallets(): List<Web3Wallet>
 
+    @Query("SELECT * FROM wallets WHERE category = 'classic' ORDER BY created_at ASC")
+    suspend fun getAllClassicWallets(): List<Web3Wallet>
+
     @Query("DELETE FROM wallets WHERE wallet_id = :walletId")
     suspend fun deleteWalletById(walletId: String)
 

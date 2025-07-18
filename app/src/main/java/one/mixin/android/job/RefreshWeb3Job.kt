@@ -26,7 +26,7 @@ class RefreshWeb3Job : BaseJob(
 
     override fun onRun(): Unit = runBlocking {
         fetchWallets()
-        val wallets = web3WalletDao.getAllWallets()
+        val wallets = web3WalletDao.getAllClassicWallets()
         if (wallets.isEmpty()) {
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
