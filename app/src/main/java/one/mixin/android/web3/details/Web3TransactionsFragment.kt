@@ -133,7 +133,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         }
 
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
-        refreshToken(token.walletId, token.assetId)
+        refreshToken(token.assetId)
         binding.titleView.apply {
             titleTv.setTextOnly(token.name)
             leftIb.setOnClickListener {
@@ -204,7 +204,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     lifecycleScope.launch {
                         val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
                         if (chain == null) {
-                            jobManager.addJobInBackground(RefreshWeb3TokenJob(token.assetId))
+                            refreshToken(token.chainId)
                             toast(R.string.Please_wait_a_bit)
                         } else {
                             requireView().navigate(
@@ -463,7 +463,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         }
     }
 
-    private fun refreshToken(walletId: String, assetId: String) {
+    private fun refreshToken(assetId: String) {
         jobManager.addJobInBackground(RefreshWeb3TokenJob(null, assetId, address))
     }
 

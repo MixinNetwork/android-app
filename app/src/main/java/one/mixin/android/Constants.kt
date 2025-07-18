@@ -222,7 +222,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base)
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base, ChainId.Arbitrum, ChainId.Optimism)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
@@ -244,7 +244,6 @@ object Constants {
         const val Polygon = "b7938396-3f94-4e0a-9179-d3440718156f"
         const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
         const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
-        const val Avalanche = "cbc77539-0a20-4666-8c8a-4ded62b36f0a"
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
     }
 

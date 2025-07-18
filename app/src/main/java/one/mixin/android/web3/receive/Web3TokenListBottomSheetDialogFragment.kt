@@ -306,9 +306,14 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 val remoteAssets = if (type == TYPE_FROM_RECEIVE) {
                     val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
                     fuzzyResults.filter {
-                        it.chainId in listOf(Constants.ChainId.SOLANA_CHAIN_ID, Constants.ChainId.Base,
-                            Constants.ChainId.BinanceSmartChain, Constants.ChainId.ETHEREUM_CHAIN_ID,
-                            Constants.ChainId.Polygon)
+                        it.chainId in listOf(
+                            ChainId.SOLANA_CHAIN_ID,
+                            ChainId.ETHEREUM_CHAIN_ID,
+                            ChainId.Base,
+                            ChainId.Optimism,
+                            ChainId.Arbitrum,
+                            ChainId.BinanceSmartChain,
+                            ChainId.Polygon)
                     }.map { item ->
                         defaultAssets.find { item.assetId == it.assetId }.let { local ->
                             local

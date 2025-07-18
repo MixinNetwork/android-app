@@ -51,7 +51,6 @@ fun getChainNetwork(
 private val chainNames by lazy {
     mapOf(
         Constants.ChainId.ETHEREUM_CHAIN_ID to "Ethereum (ERC-20)",
-        Constants.ChainId.Avalanche to "Avalanche X-Chain",
         Constants.ChainId.BinanceBeaconChain to "BNB Beacon Chain (BEP-2)",
         Constants.ChainId.BitShares to "BitShares",
         Constants.ChainId.BinanceSmartChain to "BNB Smart Chain (BEP-20)",
