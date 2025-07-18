@@ -7,7 +7,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -21,13 +20,13 @@ import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletSuccessEvent
-import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -149,7 +148,7 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 val walletsToCreate = selectedWalletInfos.value.map {
                     val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${it.index + 1}"
-                    val category = RefreshWeb3Job.WALLET_CATEGORY_PRIVATE
+                    val category = WalletCategory.IMPORTED_MNEMONIC.value
                     val addresses = listOf(
                         Web3AddressRequest(
                             destination = it.ethereumWallet.address,

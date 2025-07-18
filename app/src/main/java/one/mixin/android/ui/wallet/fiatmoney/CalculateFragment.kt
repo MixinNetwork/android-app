@@ -35,7 +35,6 @@ import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
-import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.setting.Currency
@@ -48,6 +47,7 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.Keyboard
@@ -215,7 +215,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 titleView.setSubTitle(
                     getString(R.string.Buy), if (isWeb3) {
                         val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
-                        if (wallet != null && wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
+                        if (wallet != null && wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
                             wallet.name.takeIf { it.isNotEmpty() }
                                 ?: getString(R.string.Common_Wallet)
                         } else {

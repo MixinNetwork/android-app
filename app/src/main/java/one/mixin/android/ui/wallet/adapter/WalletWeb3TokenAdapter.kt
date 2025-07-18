@@ -15,7 +15,6 @@ import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat

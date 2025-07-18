@@ -13,6 +13,7 @@ import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 class RefreshWeb3Job : BaseJob(
@@ -21,9 +22,6 @@ class RefreshWeb3Job : BaseJob(
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshWeb3Job"
-
-        const val WALLET_CATEGORY_CLASSIC = "classic"
-        const val WALLET_CATEGORY_PRIVATE = "private"
     }
 
     override fun onRun(): Unit = runBlocking {
@@ -37,7 +35,7 @@ class RefreshWeb3Job : BaseJob(
                 return@runBlocking
             }
             createWallet(
-                "ClassicWallet", WALLET_CATEGORY_CLASSIC, listOf(
+                "ClassicWallet", WalletCategory.CLASSIC.value, listOf(
                     Web3AddressRequest(
                         destination = erc20Address,
                         chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,

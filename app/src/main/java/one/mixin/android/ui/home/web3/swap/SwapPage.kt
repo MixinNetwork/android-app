@@ -85,12 +85,12 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
-import one.mixin.android.job.RefreshWeb3Job.Companion.WALLET_CATEGORY_PRIVATE
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -121,7 +121,7 @@ fun SwapPage(
     LaunchedEffect(walletId) {
         if (walletId != null) {
             viewModel.findWeb3WalletById(walletId)?.let {
-                if (it.category == WALLET_CATEGORY_PRIVATE) {
+                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value) {
                     walletDisplayName = it.name
                 }
             }

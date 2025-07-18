@@ -1,0 +1,7 @@
+package one.mixin.android.vo
+
+enum class WalletCategory(val value: String) {
+    CLASSIC("classic"),
+    IMPORTED_MNEMONIC("imported_mnemonic"),
+    IMPORTED_PRIVATE_KEY("imported_private_key"),
+}

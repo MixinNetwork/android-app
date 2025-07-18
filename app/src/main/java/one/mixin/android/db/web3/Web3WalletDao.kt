@@ -36,7 +36,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("UPDATE wallets SET name = :newName WHERE wallet_id = :walletId")
     suspend fun updateWalletName(walletId: String, newName: String)
 
-    @Query("SELECT COUNT(*) FROM wallets WHERE category = 'private'")
+    @Query("SELECT COUNT(*) FROM wallets WHERE category = 'imported_mnemonic'")
     suspend fun countPrivateWallets(): Int
 
     @Transaction

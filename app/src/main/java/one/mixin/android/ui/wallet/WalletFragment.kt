@@ -33,7 +33,6 @@ import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
@@ -45,16 +44,15 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.AssetDistributionViewModel
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.rxpermission.RxPermissions
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.hypot
 
@@ -324,7 +322,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(walletId)
-                if (wallet == null || (CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId).not() && wallet.category == "private")) {
+                if (wallet == null || (CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId).not() && wallet.category == WalletCategory.IMPORTED_MNEMONIC.value)) {
                     return@launch
                 }
                 JsSigner.setWallet(walletId) { queryWalletId ->

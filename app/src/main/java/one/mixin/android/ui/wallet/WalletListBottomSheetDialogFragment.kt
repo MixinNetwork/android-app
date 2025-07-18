@@ -61,10 +61,10 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.WalletCategory
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -215,7 +215,7 @@ fun WalletListScreen(
                 }
             }
             items(wallets) { wallet ->
-                val destination = if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
+                val destination = if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
                     WalletDestination.Private(wallet.id)
                 } else {
                     WalletDestination.Classic(wallet.id)
