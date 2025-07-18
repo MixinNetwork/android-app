@@ -81,6 +81,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
 import one.mixin.android.event.SearchEvent
@@ -119,6 +120,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.TipSignSpec
 import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
@@ -1120,14 +1122,14 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 callback = {
-                    // Todo
-                    val tipPriv = tipPrivToPrivateKey(it, chainId)
-                    // val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(requireContext()), tip.getEncryptedSalt(requireContext()), pin, tipPriv)
-                    // val privateKey = CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId)
-                    // val sig = TipSignSpec.Ecdsa.Secp256k1.sign(requireNotNull(privateKey), message.toByteArray())
-                    // lifecycleScope.launch {
-                    //     webView.evaluateJavascript("$callbackFunction('$sig')") {}
-                    // }
+                    if (isAdded) {
+                        val spendKey = it
+                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId))
+                        val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                        }
+                    }
                 },
             )
         }

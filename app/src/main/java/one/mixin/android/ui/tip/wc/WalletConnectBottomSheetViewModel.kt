@@ -8,6 +8,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
+import one.mixin.android.crypto.CryptoWallet
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
@@ -57,8 +59,7 @@ class WalletConnectBottomSheetViewModel
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            // TODO: to be modified
-            return tipPrivToPrivateKey(spendKey, chainId)
+            return requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId))
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)

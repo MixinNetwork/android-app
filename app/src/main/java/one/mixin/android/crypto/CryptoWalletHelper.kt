@@ -129,7 +129,7 @@ object CryptoWalletHelper {
         return MnemonicCode.INSTANCE.toMnemonic(decryptedEntropy)
     }
 
-    suspend fun getWeb3Mnemonic(context: Context, spendKey: ByteArray, walletId: String): String? {
+    fun getWeb3Mnemonic(context: Context, spendKey: ByteArray, walletId: String): String? {
         return try {
             val encryptedPrefs = getSecureStorage(context)
             val encryptedString = encryptedPrefs?.getString(walletId, null)
@@ -143,7 +143,7 @@ object CryptoWalletHelper {
         }
     }
 
-    suspend fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
+    fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
         return try {
             val walletId = JsSigner.currentWalletId
             if (walletId == JsSigner.classicWalletId || walletId.isEmpty()) {
