@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/title_rl"

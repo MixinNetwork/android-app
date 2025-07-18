@@ -5,6 +5,5 @@
     android:id="@+id/coins_rv"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layoutManager="LinearLayoutManager"
-    android:fitsSystemWindows="true"/>
+    app:layoutManager="LinearLayoutManager" />
 
