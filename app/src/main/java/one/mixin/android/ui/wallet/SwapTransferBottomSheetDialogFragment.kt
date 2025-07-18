@@ -802,8 +802,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                         buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
-                    // todo
-                    chainToken = bottomViewModel.web3TokenItemById("",token?.chainId ?: "")
+                    chainToken = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId,token?.chainId ?: "")
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))
