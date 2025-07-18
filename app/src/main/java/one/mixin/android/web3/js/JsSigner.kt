@@ -191,10 +191,6 @@ object JsSigner {
                 currentChain = Chain.BinanceSmartChain
                 Result.success(Chain.BinanceSmartChain.name)
             }
-            Chain.Avalanche.hexReference -> {
-                currentChain = Chain.Avalanche
-                Result.success(Chain.Avalanche.name)
-            }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana
                 currentNetwork = JsSignerNetwork.Solana.name
