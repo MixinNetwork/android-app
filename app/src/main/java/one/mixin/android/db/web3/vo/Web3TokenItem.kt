@@ -195,9 +195,10 @@ fun Web3TokenItem.getChainFromName(): Chain {
     return when {
         chainId == Constants.ChainId.ETHEREUM_CHAIN_ID -> Chain.Ethereum
         chainId == Constants.ChainId.Base -> Chain.Base
+        chainId == Constants.ChainId.Optimism -> Chain.Optimism
+        chainId == Constants.ChainId.Arbitrum -> Chain.Arbitrum
         chainId == Constants.ChainId.Polygon-> Chain.Polygon
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
-        chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -207,12 +208,11 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
     return when {
         chainId == Constants.ChainId.ETHEREUM_CHAIN_ID -> "ETH"
         chainId == Constants.ChainId.Base -> "ETH"
+        chainId == Constants.ChainId.Optimism -> "ETH"
+        chainId == Constants.ChainId.Arbitrum -> "ETH"
         // chainId.equals("blast", true) -> "ETH"
-        // chainId.equals("arbitrum", true) -> "ETH"
-        // chainId.equals("optimism", true) -> "ETH"
         chainId == Constants.ChainId.BinanceSmartChain -> "POL"
         chainId == Constants.ChainId.Polygon -> "BNB"
-        chainId == Constants.ChainId.Avalanche -> "AVAX"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -301,14 +301,13 @@ suspend fun Web3TokenItem.buildTransaction(
     } else {
         JsSigner.useEvm()
         // (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-        // (chainId.equals("arbitrum", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
-        // (chainId.equals("optimism", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
             if ((chainId == Constants.ChainId.Base && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.ETHEREUM_CHAIN_ID && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.Polygon && (assetKey == "0x0000000000000000000000000000000000000000" || assetKey == "0x0000000000000000000000000000000000001010")) ||
                 (chainId == Constants.ChainId.BinanceSmartChain && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000")
+                (chainId == Constants.ChainId.Optimism && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainId == Constants.ChainId.Arbitrum && assetKey == "0x0000000000000000000000000000000000000000")
             ) {
                 val value = Numeric.toHexStringWithPrefix(Convert.toWei(v, Convert.Unit.ETHER).toBigInteger())
                 WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)
