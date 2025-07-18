@@ -121,7 +121,7 @@ class ChainSelectionBottomSheetDialogFragment : MixinBottomSheetDialogFragment()
         ) {
             binding.apply {
                 root.setBackgroundResource(binding.root.context.theme.obtainStyledAttributes(intArrayOf(R.attr.bg_market_card)).getResourceId(0, 0))
-                root.setPadding(16.dp, 4.dp, 16.dp, 4.dp)
+                root.setPadding(20.dp, 4.dp, 20.dp, 4.dp)
                 assetIcon.loadImage(
                     chainItem.iconUrl,
                     one.mixin.android.R.drawable.ic_avatar_place_holder,

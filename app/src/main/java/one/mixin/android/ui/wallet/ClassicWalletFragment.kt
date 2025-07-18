@@ -157,7 +157,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                 }
             _headBinding?.pendingView?.isVisible = false
-            _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount())
+
             _headBinding?.web3PendingView?.setOnClickListener {
                 if ((_headBinding?.web3PendingView?.getPendingCount() ?: 0) > 0) {
                     WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
@@ -212,6 +212,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         }
                     }
                 }
+                _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount(walletId))
+
                 lastData?.removeObservers(viewLifecycleOwner)
                 lastData = web3ViewModel.web3TokensExcludeHidden(id)
                 lastData?.observe(viewLifecycleOwner, observer)

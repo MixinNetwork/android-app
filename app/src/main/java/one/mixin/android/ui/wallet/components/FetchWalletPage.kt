@@ -132,6 +132,9 @@ fun SelectContent(
     isLoadingMore: Boolean,
 ) {
     MixinAppTheme(skip = true) {
+        val selectableWallets = wallets.filter { !it.exists }
+        val isAllSelected = selectableWallets.isNotEmpty() && selectedWalletInfos.containsAll(selectableWallets)
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -151,7 +154,9 @@ fun SelectContent(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = stringResource(R.string.Select_all),
+                    text = stringResource(
+                        if (isAllSelected) R.string.Deselect_all else R.string.Select_all
+                    ),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.accent,
                     modifier = Modifier.clickable { onSelectAll() }
@@ -224,7 +229,7 @@ fun SelectContent(
                 ) {
                     Text(
                         text = pluralStringResource(
-                            R.plurals.items_selected,
+                            R.plurals.import_wallets,
                             selectedWalletInfos.size,
                             selectedWalletInfos.size
                         ),

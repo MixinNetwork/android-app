@@ -1423,13 +1423,13 @@ class TokenRepository
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
-    suspend fun getPendingRawTransactions() = web3RawTransactionDao.getPendingRawTransactions(
-        JsSigner.currentWalletId)
+    suspend fun getPendingRawTransactions(walletId: String) = web3RawTransactionDao.getPendingRawTransactions(
+        walletId)
 
-    suspend fun getPendingTransactions() = web3TransactionDao.getPendingTransactions(JsSigner.currentWalletId)
+    suspend fun getPendingTransactions(walletId: String) = web3TransactionDao.getPendingTransactions(walletId)
 
-    suspend fun getPendingRawTransactions(chainId: String) = web3RawTransactionDao.getPendingRawTransactions(
-        JsSigner.currentWalletId, chainId)
+    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = web3RawTransactionDao.getPendingRawTransactions(
+        walletId, chainId)
 
     suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
 
@@ -1437,7 +1437,7 @@ class TokenRepository
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
-    fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(JsSigner.currentWalletId)
+    fun getPendingTransactionCount(walletId: String): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(walletId)
 
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
 

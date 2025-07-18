@@ -20,6 +20,8 @@ import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletSuccessEvent
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
@@ -36,6 +38,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FetchWalletViewModel @Inject constructor(
     private val tip: Tip,
+    private val jobManager: MixinJobManager,
     private val web3Repository: Web3Repository,
     private val userRepository: UserRepository,
 ) : ViewModel() {
@@ -184,7 +187,7 @@ class FetchWalletViewModel @Inject constructor(
                 invokeNetwork = { web3Repository.createWallet(walletRequest) },
                 successBlock = { response ->
                     response.data?.let { wallet ->
-                        insertWalletAndAddresses(wallet)
+                        jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
                         web3Repository.insertWeb3Tokens(assets.map { it.toWebToken(wallet.id) })
                         saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
                     } ?: Timber.e("Failed to create wallet: response data is null")
@@ -199,30 +202,17 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    private suspend fun insertWalletAndAddresses(walletResponse: Web3WalletResponse) {
-        val wallet = Web3Wallet(
-            id = walletResponse.id,
-            name = walletResponse.name,
-            category = walletResponse.category,
-            createdAt = walletResponse.createdAt,
-            updatedAt = walletResponse.updatedAt
-        )
-        web3Repository.insertWallet(wallet)
-        Timber.d("Created ${walletResponse.category} wallet with ID: ${walletResponse.id}")
-
-        walletResponse.addresses?.let { addresses ->
-            web3Repository.insertAddressList(addresses)
-            Timber.d("Inserted wallet with ID: ${walletResponse.id}, ${addresses.size} addresses")
-        }
-    }
-
     fun toggleWalletSelection(wallet: IndexedWallet) {
         val current = _selectedWalletInfos.value
         _selectedWalletInfos.value = if (current.contains(wallet)) current - wallet else current + wallet
     }
 
     fun selectAll() {
-        _selectedWalletInfos.value = _wallets.value.toSet()
+        if(_selectedWalletInfos.value.size == _wallets.value.filter { it.exists.not() }.size) {
+            _selectedWalletInfos.value = emptySet()
+        } else {
+            _selectedWalletInfos.value = _wallets.value.filter { it.exists.not() }.toSet()
+        }
     }
 
     private suspend fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {

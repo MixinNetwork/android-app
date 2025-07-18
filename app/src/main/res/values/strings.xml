@@ -2051,4 +2051,5 @@
     <string name="Dont_share_it_with_a_network">Don’t share it with a network.</string>
     <string name="Select_Network">Select Network</string>
     <string name="remove_wallet_warning">Deleting this wallet will not affect your assets. Please make sure your private key or mnemonic phrase is backed up.</string>
+    <string name="words">%1$d words</string>
 </resources>

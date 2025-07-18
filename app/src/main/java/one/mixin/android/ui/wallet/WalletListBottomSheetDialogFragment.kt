@@ -221,7 +221,7 @@ fun WalletListScreen(
                     WalletDestination.Classic(wallet.id)
                 }
                 WalletCard(
-                    name = wallet.name,
+                    name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
                     destination = destination,
                     onClick = { onWalletClick(wallet) }
                 )

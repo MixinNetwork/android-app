@@ -187,7 +187,7 @@ fun MnemonicPhraseInput(
                                 color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
                             ),
                         ) {
-                            Text("${if (state == MnemonicState.Input) 13 else 12} words", color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
+                            Text(stringResource(R.string.words, if (state == MnemonicState.Input) 13 else 12), color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         WordCountButton(
@@ -200,7 +200,7 @@ fun MnemonicPhraseInput(
                                 color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray
                             ),
                         ) {
-                            Text("${if (state == MnemonicState.Input) 25 else 24} words", color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
+                            Text(stringResource(R.string.words, if (state == MnemonicState.Input) 25 else 24), color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))

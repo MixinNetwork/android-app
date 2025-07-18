@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
@@ -59,8 +60,12 @@ class Web3PendingView @JvmOverloads constructor(
         return pendingCount
     }
 
+    private var lastPendingData: LiveData<Int>? = null
+
     fun observePendingCount(lifecycleOwner: LifecycleOwner, pendingCountLiveData: LiveData<Int>) {
-        pendingCountLiveData.observe(lifecycleOwner) { count ->
+        lastPendingData?.removeObservers(lifecycleOwner)
+        lastPendingData = pendingCountLiveData
+        lastPendingData?.observe(lifecycleOwner){ count ->
             setPendingCount(count)
         }
     }

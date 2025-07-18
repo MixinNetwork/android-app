@@ -438,13 +438,13 @@ internal constructor(
 
     fun marketById(assetId: String) = tokenRepository.marketById(assetId)
 
-    suspend fun getPendingRawTransactions() = tokenRepository.getPendingRawTransactions()
+    suspend fun getPendingRawTransactions(walletId: String) = tokenRepository.getPendingRawTransactions(walletId)
 
-    suspend fun getPendingTransactions() = tokenRepository.getPendingTransactions()
+    suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
 
-    suspend fun getPendingRawTransactions(chainId: String) = tokenRepository.getPendingRawTransactions(chainId)
+    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = tokenRepository.getPendingRawTransactions(walletId, chainId)
 
-    fun getPendingTransactionCount(): LiveData<Int> = tokenRepository.getPendingTransactionCount()
+    fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 
     suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
 

@@ -1992,10 +1992,12 @@
     <string name="wallet_security_warning_2">Mixin Messenger 服务器不会存储您的%1$s。</string>
     <string name="wallet_security_warning_3">不要将您的%1$s泄露给任何第三方、个人、网站或应用程序。</string>
     <string name="wallet_security_warning_4">请确保没有他人或摄像头正在窥视您的屏幕！</string>
-    <string name="wallet_security_proceed_button">显示 %1$s</string>
+    <string name="wallet_security_proceed_button">显示%1$s</string>
     <string name="Write_it_down_on_a_piece_of_paper_and_keep_it_in_a_safe_place">把它写在纸上并保存在安全的地方。</string>
     <string name="Your_Private_Key">你的私钥</string>
     <string name="Store_in_vault_or_safe_place">存放在保险箱或安全的地方。</string>
     <string name="Dont_share_it_with_a_network">不要通过网络分享它。</string>
+    <string name="Select_Network">选择网络</string>
     <string name="remove_wallet_warning">移除此钱包不会影响你的资产，请确保你的私钥或助记词已备份。</string>
+    <string name="words">%1$d个单词</string>
 </resources>

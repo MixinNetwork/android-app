@@ -61,6 +61,7 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -250,9 +251,17 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                         Bundle().apply {
                                                                             putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress.destination)
                                                                             putString(InputFragment.ARGS_TO_ADDRESS, toAddress)
+                                                                            putString(
+                                                                                InputFragment.ARGS_TO_ADDRESS_LABEL,
+                                                                                if (destinationWallet == null)
+                                                                                    getString(R.string.Privacy_Wallet)
+                                                                                else if (destinationWallet.category == WalletCategory.CLASSIC.value)
+                                                                                    getString(R.string.Common_Wallet)
+                                                                                else destinationWallet.name ?: ""
+                                                                            )
                                                                             putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
                                                                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
-                                                                            putBoolean(InputFragment.ARGS_TO_WALLET, true)
+                                                                            putBoolean(InputFragment.ARGS_TO_WALLET, destinationWallet == null)
                                                                         })
                                                                 }
                                                             }

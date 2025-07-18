@@ -8,7 +8,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp">
+        android:layout_height="70dp">
 
         <TextView
             android:id="@+id/title_tv"
@@ -17,7 +17,7 @@
             android:layout_centerInParent="true"
             android:text="@string/Select_Network"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="20dp"
             android:textColor="?attr/text_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -29,6 +29,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:padding="16dp"
+            android:layout_marginEnd="4dp"
             android:src="@drawable/ic_circle_close" />
 
     </RelativeLayout>
