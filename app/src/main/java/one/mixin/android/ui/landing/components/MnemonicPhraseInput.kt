@@ -656,7 +656,7 @@ fun MnemonicPhraseInput(
                             stringResource(
                                 when {
                                     state == MnemonicState.Import -> R.string.Next
-                                    state == MnemonicState.Display && (inputs.size == 12 || inputs.size == 24) -> R.string.Done
+                                    state == MnemonicState.Display && (mnemonicList.size == 12 || mnemonicList.size == 24) -> R.string.Done
                                     state == MnemonicState.Display -> R.string.Check_Backup
                                     state == MnemonicState.Input -> R.string.Confirm
                                     state == MnemonicState.Verify -> R.string.Complete

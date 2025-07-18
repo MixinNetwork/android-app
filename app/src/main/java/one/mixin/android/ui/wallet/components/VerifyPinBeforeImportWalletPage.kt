@@ -63,6 +63,26 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) ->
     var pinCode by remember { mutableStateOf("") }
     var errorInfo by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
+    val onPinSubmit: () -> Unit = submit@{
+        if (isLoading) return@submit
+        isLoading = true
+        coroutineScope.launch {
+            runCatching {
+                val result = tip.getOrRecoverTipPriv(context, pinCode)
+                if (result.isSuccess) {
+                    next(pinCode)
+                } else {
+                    isLoading = false
+                    errorInfo = result.exceptionOrNull()?.message ?: ""
+                    pinCode = ""
+                }
+            }.onFailure { t ->
+                isLoading = false
+                errorInfo = ErrorHandler.getErrorMessage(t)
+                pinCode = ""
+            }
+        }
+    }
     val list = listOf(
         "1",
         "2",
@@ -120,25 +140,7 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) ->
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    onClick = {
-                        isLoading = true
-                        coroutineScope.launch {
-                            runCatching {
-                                val result = tip.getOrRecoverTipPriv(context, pinCode)
-                                if (result.isSuccess) {
-                                    next(pinCode)
-                                } else {
-                                    isLoading = false
-                                    errorInfo = result.exceptionOrNull()?.message ?: ""
-                                    pinCode = ""
-                                }
-                            }.onFailure { t ->
-                                isLoading = false
-                                errorInfo = ErrorHandler.getErrorMessage(t)
-                                pinCode = ""
-                            }
-                        }
-                    },
+                    onClick = onPinSubmit,
                     colors =
                     ButtonDefaults.outlinedButtonColors(
                         backgroundColor = if (pinCode.length < 6) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent
@@ -221,6 +223,9 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) ->
                                                     }
                                                 } else if (pinCode.length < 6) {
                                                     pinCode += list[index]
+                                                    if (pinCode.length == 6) {
+                                                        onPinSubmit()
+                                                    }
                                                 }
                                             }
                                         },

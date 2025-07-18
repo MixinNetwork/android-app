@@ -47,6 +47,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
+import one.mixin.android.ui.wallet.components.AssetDistributionViewModel
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -121,6 +122,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val assetDistributionViewModel by viewModels<AssetDistributionViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -206,7 +208,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             titleRl.setOnClickListener {
                 if (compose.isVisible.not()) {
                     compose.visibility = VISIBLE
-
+                    assetDistributionViewModel.loadWallets()
                     val centerX = titleTv.x.toInt() + titleTv.width / 2
                     val centerY = titleTv.y.toInt() + titleTv.height / 2
                     val startRadius = 0

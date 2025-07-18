@@ -91,7 +91,7 @@ fun DisplayPrivateKeyContent(
             )
 
             Icon(
-                painter = painterResource(R.drawable.ic_paste),
+                painter = painterResource(R.drawable.ic_copy_gray),
                 contentDescription = null,
                 tint = MixinAppTheme.colors.iconGray,
                 modifier = Modifier

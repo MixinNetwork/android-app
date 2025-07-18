@@ -47,6 +47,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openUrl
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import timber.log.Timber
 
 const val PREF_NAME = "wallet_info_card"
 private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
@@ -106,7 +107,7 @@ fun AssetDashboardScreen(
 
             wallets.forEach { wallet ->
                 if (wallet.category == RefreshWeb3Job.WALLET_CATEGORY_PRIVATE) {
-                    var name by remember(wallet.id) { mutableStateOf(wallet.name) }
+                    var name by remember(wallet.name) { mutableStateOf(wallet.name) }
                     if (!wallet.hasLocalPrivateKey) {
                         LaunchedEffect(wallet.id) {
                             val addresses = viewModel.getAddressesByWalletId(wallet.id)

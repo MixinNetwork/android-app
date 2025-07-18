@@ -27,11 +27,7 @@ class AssetDistributionViewModel @Inject constructor(
     private val _wallets = MutableStateFlow<List<Web3Wallet>>(emptyList())
     val wallets: StateFlow<List<Web3Wallet>> = _wallets
 
-    init {
-        loadWallets()
-    }
-
-    private fun loadWallets() {
+    fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {
             web3Repository.getWallets().collect {
                 _wallets.value = it
