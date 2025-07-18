@@ -55,7 +55,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
     val viewModel = hiltViewModel<SearchViewModel>()
     val source by viewModel.recentTokenItems.collectAsState(initial = emptyList())
     val recentToken = if (web3) {
-        source.filter { it.chainId in listOf(Constants.ChainId.Solana, Constants.ChainId.ETHEREUM_CHAIN_ID, Constants.ChainId.Base, Constants.ChainId.Polygon, Constants.ChainId.Avalanche, Constants.ChainId.BinanceSmartChain) }
+        source.filter { it.chainId in listOf(Constants.ChainId.Solana, Constants.ChainId.ETHEREUM_CHAIN_ID, Constants.ChainId.Base, Constants.ChainId.Polygon, Constants.ChainId.BinanceSmartChain) }
     } else {
         source
     }
