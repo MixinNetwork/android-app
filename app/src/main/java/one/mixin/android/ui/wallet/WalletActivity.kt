@@ -85,7 +85,7 @@ class WalletActivity : BlazeBaseActivity() {
             is Destination.AllWeb3Transactions -> {
                 navGraph.setStartDestination(R.id.all_web3_transactions_fragment)
                 val pendingType = intent.getBooleanExtra(PENDING_TYPE, false)
-                val walletId = intent.getStringExtra(ARGS_WALLET_ID)
+                val walletId = requireNotNull(intent.getStringExtra(ARGS_WALLET_ID))
                 navController.setGraph(navGraph, Bundle().apply {
                     if (pendingType) putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(tokenFilterType = Web3TokenFilterType.PENDING, walletId = walletId))
                     else putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = walletId))
@@ -181,7 +181,7 @@ class WalletActivity : BlazeBaseActivity() {
         object Search : Destination()
         data class SearchWeb3(val walletId: String? = null) : Destination()
         object AllTransactions : Destination()
-        data class AllWeb3Transactions(val walletId: String? = null) : Destination()
+        data class AllWeb3Transactions(val walletId: String) : Destination()
         object Hidden : Destination()
         data class Web3Hidden(val walletId: String? = null) : Destination()
         object Deposit : Destination()

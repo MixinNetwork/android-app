@@ -18,7 +18,7 @@ class Web3FilterParams(
     var startTime: Long? = null,
     var endTime: Long? = null,
     var level: Int = 0b00,
-    var walletId: String? = null
+    var walletId: String
 ) : Parcelable {
     companion object {
         const val FILTER_MASK = 0b11
@@ -63,7 +63,7 @@ class Web3FilterParams(
             }
         }
 
-        walletId?.let {
+        walletId.let {
             filters.add("w.address IN (SELECT destination FROM addresses WHERE wallet_id = '$it')")
         }
 
