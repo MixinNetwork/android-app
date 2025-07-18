@@ -120,8 +120,8 @@ fun AssetDashboardScreen(
                     }
                     WalletCard(
                         name = name,
-                        destination = WalletDestination.Private(wallet.id),
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Private(wallet.id)) }
+                        destination = WalletDestination.Import(wallet.id),
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id)) }
                     )
                 } else {
                     WalletCard(

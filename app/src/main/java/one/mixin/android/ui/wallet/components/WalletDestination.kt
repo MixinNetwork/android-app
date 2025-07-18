@@ -3,13 +3,13 @@ package one.mixin.android.ui.wallet.components
 sealed class WalletDestination {
     object Privacy : WalletDestination()
     data class Classic(val walletId: String) : WalletDestination()
-    data class Private(val walletId: String) : WalletDestination()
+    data class Import(val walletId: String) : WalletDestination()
 
     override fun toString(): String {
         return when (this) {
             is Privacy -> "Privacy"
             is Classic -> "Classic(walletId=$walletId)"
-            is Private -> "Private(walletId=$walletId)"
+            is Import -> "Import(walletId=$walletId)"
         }
     }
 
@@ -22,9 +22,9 @@ sealed class WalletDestination {
                     val walletId = value.removePrefix("Classic(walletId=").removeSuffix(")")
                     Classic(walletId)
                 }
-                value.startsWith("Private(walletId=") && value.endsWith(")") -> {
-                    val walletId = value.removePrefix("Private(walletId=").removeSuffix(")")
-                    Private(walletId)
+                value.startsWith("Import(walletId=") && value.endsWith(")") -> {
+                    val walletId = value.removePrefix("Import(walletId=").removeSuffix(")")
+                    Import(walletId)
                 }
                 else -> Privacy
             }

@@ -216,7 +216,7 @@ fun WalletListScreen(
             }
             items(wallets) { wallet ->
                 val destination = if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
-                    WalletDestination.Private(wallet.id)
+                    WalletDestination.Import(wallet.id)
                 } else {
                     WalletDestination.Classic(wallet.id)
                 }
