@@ -81,12 +81,10 @@ data class Web3TokenItem(
         return chainName ?: when {
             chainId == Constants.ChainId.ETHEREUM_CHAIN_ID -> "Ethereum"
             chainId == Constants.ChainId.Base -> "ETH"
-            // chainId.equals("blast", true) -> "Blast"
-            // chainId.equals("arbitrum", true) -> "Arbitrum"
-            // chainId.equals("optimism", true) -> "Optimism"
+            chainId == Constants.ChainId.Arbitrum -> "Arbitrum One"
+            chainId == Constants.ChainId.Optimism -> "Optimism"
             chainId == Constants.ChainId.BinanceSmartChain -> "Polygon"
             chainId == Constants.ChainId.Polygon -> "BNB Chain"
-            chainId == Constants.ChainId.Avalanche -> "Avalanche"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
