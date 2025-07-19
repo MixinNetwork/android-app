@@ -136,7 +136,7 @@ object CryptoWalletHelper {
             if (encryptedString == null) {
                 return null
             }
-            CryptoWalletHelper.decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
+            decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
         } catch (e: Exception) {
             Timber.e(e, "Failed to decrypt mnemonic for walletId: $walletId")
             null
@@ -145,21 +145,20 @@ object CryptoWalletHelper {
 
     fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
         return try {
-            val walletId = JsSigner.currentWalletId
-            if (walletId == JsSigner.classicWalletId || walletId.isEmpty()) {
+            val currentWalletId = JsSigner.currentWalletId
+            if (currentWalletId == JsSigner.classicWalletId || currentWalletId.isEmpty()) {
                 return tipPrivToPrivateKey(spendKey, chainId)
             }
-            val index = requireNotNull(extractIndexFromPath(JsSigner.path))
-            val decryptedMnemonic = getWeb3Mnemonic(context, spendKey, walletId) ?: return null
+            val derivationIndex = requireNotNull(extractIndexFromPath(JsSigner.path))
+            val mnemonic = getWeb3Mnemonic(context, spendKey, currentWalletId) ?: return null
 
-            val privateKey = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                mnemonicToSolanaWallet(decryptedMnemonic, index = index).privateKey
+            val privateKeyHex = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                mnemonicToSolanaWallet(mnemonic, index = derivationIndex).privateKey
             } else {
-                mnemonicToEthereumWallet(decryptedMnemonic, index = index).privateKey
+                mnemonicToEthereumWallet(mnemonic, index = derivationIndex).privateKey
             }
-            privateKey.let {
-                Numeric.hexStringToByteArray(it)
-            }
+            val privateKeyBytes = Numeric.hexStringToByteArray(privateKeyHex)
+            return privateKeyBytes
         } catch (e: Exception) {
             Timber.e(e, "Failed to get web3 private key for chainId: $chainId")
             null

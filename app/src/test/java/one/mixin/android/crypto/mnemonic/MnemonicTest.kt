@@ -16,10 +16,12 @@ import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.util.encodeToBase58String
 import one.mixin.eddsa.KeyPair
 import org.bitcoinj.crypto.MnemonicCode
 import org.junit.Test
 import org.sol4k.Base58
+import org.sol4k.Keypair
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.utils.Numeric
 import java.security.MessageDigest
@@ -70,10 +72,25 @@ class MnemonicTest {
                 generatedEthAddress,
                 "Ethereum address at index $index should match"
             )
+            if (index == 0) {
+                assertEquals(
+                    "0x33fa40f84e854b941c2b0436dd4a256e1df1cb41b9c1c0ccc8446408c19b8bf9",
+                    Numeric.toHexString(ethPrivateKey),
+                    "ETH private key at index $index should match"
+                )
+            }
 
             val solanaPrivateKey =
                 SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", index)
             requireNotNull(solanaPrivateKey) { "Failed to generate Solana private key for index $index" }
+            val kp = Keypair.fromSecretKey(solanaPrivateKey)
+            if (index == 0) {
+                assertEquals(
+                    "37NfN7eam3KCwdC6jAc7nFeuDNYCV1K2AgNWmT4Xo6ogQPMnJ1ZoWA7AKN6jzEoQi3FNTEkkXiwu7VjqXdu8FGUs",
+                    kp.secret.encodeToBase58String(),
+                    "Solana private key at index $index should match"
+                )
+            }
             val keyPair =
                 KeyPair.newKeyPairFromSeed(solanaPrivateKey.toByteString(), checkOnCurve = true)
             val generatedSolanaAddress = Base58.encode(keyPair.publicKey.toByteArray())

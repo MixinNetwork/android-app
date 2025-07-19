@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
@@ -20,6 +21,7 @@ import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletSuccessEvent
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
@@ -28,8 +30,11 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
+import one.mixin.eddsa.KeyPair
+import org.sol4k.Keypair
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
@@ -215,7 +220,7 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    private suspend fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
+    private fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
         return try {
             val encryptedString = CryptoWalletHelper.encryptMnemonicWithSpendKey(spendKey, words)
             CryptoWalletHelper.saveWeb3PrivateKey(context, walletId, encryptedString)
@@ -226,7 +231,7 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    suspend fun getWeb3Priva(context: Context, chainId: String?): String? {
+    fun getWeb3Priva(context: Context, chainId: String?): String? {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
@@ -237,11 +242,16 @@ class FetchWalletViewModel @Inject constructor(
             return null
         }
         return CryptoWalletHelper.getWeb3PrivateKey(context, currentSpendKey, chainId)?.let {
-            Numeric.toHexString(it)
+            if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                val kp = Keypair.fromSecretKey(it)
+                kp.secret.encodeToBase58String()
+            } else {
+                Numeric.toHexString(it)
+            }
         }
     }
 
-    suspend fun getWeb3Mnemonicte(context: Context): String? {
+    fun getWeb3Mnemonicte(context: Context): String? {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
