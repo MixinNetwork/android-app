@@ -169,7 +169,7 @@ class FetchWalletViewModel @Inject constructor(
                             path = it.solanaWallet.path
                         )
                     )
-                    Triple(WalletRequest(name, category, addresses), it.assets, it.solanaWallet.mnemonic.split(" "))
+                    Pair(WalletRequest(name, category, addresses), it.solanaWallet.mnemonic.split(" "))
                 }
                 saveWallets(walletsToCreate)
                 Timber.d("Successfully imported ${selectedWalletInfos.value.size} wallets")
@@ -180,21 +180,29 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    private suspend fun saveWallets(walletsToCreate: List<Triple<WalletRequest, List<AssetView>, List<String>>>) {
+    private suspend fun saveWallets(walletsToCreate: List<Pair<WalletRequest, List<String>>>) {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
             return
         }
 
-        walletsToCreate.forEach { (walletRequest, assets, words) ->
+        walletsToCreate.forEach { (walletRequest, words) ->
             requestRouteAPI(
                 invokeNetwork = { web3Repository.createWallet(walletRequest) },
                 successBlock = { response ->
                     response.data?.let { wallet ->
-                        jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
-                        web3Repository.insertWeb3Tokens(assets.map { it.toWebToken(wallet.id) })
+                        web3Repository.insertWallet(
+                            Web3Wallet(
+                                id = wallet.id,
+                                name = wallet.name,
+                                category = wallet.category,
+                                createdAt = wallet.createdAt,
+                                updatedAt = wallet.updatedAt,
+                            )
+                        )
                         saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
+                        jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
                     } ?: Timber.e("Failed to create wallet: response data is null")
                 },
                 failureBlock = { response ->
