@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
@@ -49,6 +51,7 @@ fun WalletCard(
     onClick: () -> Unit,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     var web3TokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
     var tokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
     var assets by remember { mutableStateOf(emptyList<AssetDistribution>()) }
@@ -104,6 +107,14 @@ fun WalletCard(
                     Icon(
                         modifier = Modifier.size(18.dp),
                         painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                        tint = Color.Unspecified,
+                        contentDescription = null,
+                    )
+                } else if (destination is WalletDestination.Import && CryptoWalletHelper.hasPrivateKey(context, destination.walletId).not()) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        modifier = Modifier.size(18.dp),
+                        painter = painterResource(id = R.drawable.ic_wallet_watch),
                         tint = Color.Unspecified,
                         contentDescription = null,
                     )
