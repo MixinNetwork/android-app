@@ -48,6 +48,7 @@ import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.AssetDistributionViewModel
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.ui.web.reloadWebViewInClips
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
@@ -334,6 +335,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 JsSigner.setWallet(walletId) { queryWalletId ->
                     runBlocking { walletViewModel.getAddresses(queryWalletId) }
                 }
+                reloadWebViewInClips()
                 PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
             }
         }
