@@ -56,6 +56,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -215,7 +216,7 @@ fun WalletListScreen(
                 }
             }
             items(wallets) { wallet ->
-                val destination = if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
+                val destination = if (wallet.notClassic()) {
                     WalletDestination.Import(wallet.id, wallet.category)
                 } else {
                     WalletDestination.Classic(wallet.id)

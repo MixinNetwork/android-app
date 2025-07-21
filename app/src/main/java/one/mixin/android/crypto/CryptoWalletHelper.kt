@@ -9,21 +9,23 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
-import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.tip.tipPrivToPrivateKey
+import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 import org.bitcoinj.crypto.MnemonicCode
-import org.web3j.crypto.Bip32ECKeyPair
+import org.sol4k.Base58
+import org.sol4k.Keypair
+import org.sol4k.Keypair.Companion.fromSecretKey
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.security.MessageDigest
-import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
+import kotlin.jvm.Throws
 
 object CryptoWalletHelper {
 
@@ -111,6 +113,24 @@ object CryptoWalletHelper {
         }
     }
 
+    fun privateKeyToAddress(privateKey: String, chainId: String): String {
+        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+            val privateKeyBytes = Base58.decode(privateKey)
+            val keyPair = fromSecretKey(privateKeyBytes)
+            keyPair.publicKey.toBase58()
+        } else {
+            val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
+            EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
+        }
+    }
+
+    fun encryptPrivateKeyWithSpendKey(spendKey: ByteArray, privateKey: String): String {
+        val sha256Digest = MessageDigest.getInstance("SHA-256")
+        val aesKeyBytes = sha256Digest.digest(spendKey)
+        val privateKeyBytes = privateKey.toByteArray()
+        return aesGcmEncrypt(privateKeyBytes, aesKeyBytes).base64RawURLEncode()
+    }
+
     fun encryptMnemonicWithSpendKey(spendKey: ByteArray, mnemonicWords: List<String>): String {
         val sha256Digest = MessageDigest.getInstance("SHA-256")
         val aesKeyBytes = sha256Digest.digest(spendKey)
@@ -143,22 +163,56 @@ object CryptoWalletHelper {
         }
     }
 
+    fun getWeb3PrivateKey(
+        context: Context,
+        spendKey: ByteArray,
+        walletId: String,
+        chainId: String
+    ): ByteArray? {
+        return try {
+            val encryptedPrefs = getSecureStorage(context)
+            val encryptedString = encryptedPrefs?.getString(walletId, null) ?: return null
+            val sha256Digest = MessageDigest.getInstance("SHA-256")
+            val aesKeyBytes = sha256Digest.digest(spendKey)
+            val encryptedBytes = encryptedString.base64RawURLDecode()
+            val privateKeyStr = String(aesGcmDecrypt(encryptedBytes, aesKeyBytes))
+            if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                privateKeyStr.decodeBase58()
+            } else {
+                Numeric.hexStringToByteArray(privateKeyStr)
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to decrypt private key for walletId: $walletId")
+            null
+        }
+    }
+
     fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
         return try {
             val currentWalletId = JsSigner.currentWalletId
-            if (currentWalletId == JsSigner.classicWalletId || currentWalletId.isEmpty()) {
-                return tipPrivToPrivateKey(spendKey, chainId)
-            }
-            val derivationIndex = requireNotNull(extractIndexFromPath(JsSigner.path))
-            val mnemonic = getWeb3Mnemonic(context, spendKey, currentWalletId) ?: return null
+            val currentCategory = JsSigner.currentWalletCategory
 
-            val privateKeyHex = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                mnemonicToSolanaWallet(mnemonic, index = derivationIndex).privateKey
-            } else {
-                mnemonicToEthereumWallet(mnemonic, index = derivationIndex).privateKey
+            when {
+                currentWalletId == JsSigner.classicWalletId || currentWalletId.isEmpty() -> {
+                    tipPrivToPrivateKey(spendKey, chainId)
+                }
+
+                currentCategory == WalletCategory.IMPORTED_PRIVATE_KEY.value -> {
+                    getWeb3PrivateKey(context, spendKey, currentWalletId, chainId)
+                }
+
+                else -> { // Mnemonic-derived wallet
+                    val mnemonic = getWeb3Mnemonic(context, spendKey, currentWalletId)
+                        ?: return null
+                    val derivationIndex = requireNotNull(extractIndexFromPath(JsSigner.path))
+
+                    if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                        SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+                    } else {
+                        EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+                    }
+                }
             }
-            val privateKeyBytes = Numeric.hexStringToByteArray(privateKeyHex)
-            return privateKeyBytes
         } catch (e: Exception) {
             Timber.e(e, "Failed to get web3 private key for chainId: $chainId")
             null

@@ -7,6 +7,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.vo.WalletCategory
 
 @Entity(tableName = "wallets")
 @Parcelize
@@ -34,4 +35,12 @@ data class Web3Wallet(
 ) : Parcelable {
     @Ignore
     var hasLocalPrivateKey: Boolean = false
+}
+
+fun Web3Wallet.notClassic(): Boolean {
+    return category == WalletCategory.IMPORTED_MNEMONIC.value || category == WalletCategory.IMPORTED_PRIVATE_KEY.value || category == WalletCategory.WATCH_ADDRESS.value
+}
+
+fun Web3Wallet.isImported(): Boolean {
+    return category == WalletCategory.IMPORTED_MNEMONIC.value || category == WalletCategory.IMPORTED_PRIVATE_KEY.value
 }

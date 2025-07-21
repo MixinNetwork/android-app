@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.BaseDao
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.vo.WalletCategory
 
 @Dao
 interface Web3WalletDao : BaseDao<Web3Wallet> {
@@ -57,7 +58,14 @@ fun List<Web3Wallet>.updateWithLocalKeyInfo(context: Context): List<Web3Wallet> 
 }
 
 fun Web3Wallet.updateWithLocalKeyInfo(context: Context): Web3Wallet {
-    this.hasLocalPrivateKey =
-        this.category == "classic"|| CryptoWalletHelper.hasPrivateKey(context, this.id)
-    return this
+    if (this.category == WalletCategory.WATCH_ADDRESS.value) {
+        this.hasLocalPrivateKey = false
+        return this
+    }else if (this.category == WalletCategory.CLASSIC.value) {
+        this.hasLocalPrivateKey = true
+        return this
+    }else {
+        this.hasLocalPrivateKey = CryptoWalletHelper.hasPrivateKey(context, this.id)
+        return this
+    }
 }

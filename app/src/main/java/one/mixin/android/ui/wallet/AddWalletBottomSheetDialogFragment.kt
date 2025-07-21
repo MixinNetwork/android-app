@@ -8,6 +8,12 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
 
 class AddWalletBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    enum class Action {
+        IMPORT_MNEMONIC,
+        IMPORT_PRIVATE_KEY,
+        ADD_WATCH_ADDRESS,
+    }
+
     companion object {
         const val TAG = "AddWalletBottomSheetDialogFragment"
         fun newInstance() = AddWalletBottomSheetDialogFragment()
@@ -17,7 +23,7 @@ class AddWalletBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         FragmentAddWalletBottomSheetBinding.inflate(LayoutInflater.from(context))
     }
 
-    var callback: (() -> Unit)? = null
+    var callback: ((Action) -> Unit)? = null
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -29,7 +35,15 @@ class AddWalletBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.apply {
             rightIv.setOnClickListener { dismiss() }
             importMnemonicPhrase.setOnClickListener {
-                callback?.invoke()
+                callback?.invoke(Action.IMPORT_MNEMONIC)
+                dismiss()
+            }
+            importPrivateKey.setOnClickListener {
+                callback?.invoke(Action.IMPORT_PRIVATE_KEY)
+                dismiss()
+            }
+            addWatchAddress.setOnClickListener {
+                callback?.invoke(Action.ADD_WATCH_ADDRESS)
                 dismiss()
             }
         }

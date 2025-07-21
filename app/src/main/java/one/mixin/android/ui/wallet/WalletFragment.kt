@@ -31,6 +31,7 @@ import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openPermissionSetting
@@ -108,6 +109,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 is WalletDestination.Privacy -> dest
             }
 
+            Timber.e("Final wallet destination: $finalWalletDestination")
             if (initialWalletDestination != finalWalletDestination || walletPref?.trim()?.startsWith("{") == false) {
                 saveSelectedWalletDestination(finalWalletDestination)
             }
@@ -120,6 +122,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun saveSelectedWalletDestination(destination: WalletDestination) {
+
         defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, GsonHelper.customGson.toJson(destination))
         walletViewModel.setHasUsedWallet(true)
     }
@@ -300,25 +303,28 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var migrateEnable = false
 
     private fun handleAddWalletClick() {
+        val callback: (AddWalletBottomSheetDialogFragment.Action) -> Unit = { action ->
+            val intent = Intent(requireContext(), WalletSecurityActivity::class.java)
+            val mode = when (action) {
+                AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT
+                AddWalletBottomSheetDialogFragment.Action.IMPORT_PRIVATE_KEY -> WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
+                AddWalletBottomSheetDialogFragment.Action.ADD_WATCH_ADDRESS -> WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
+            }
+            intent.putExtra(WalletSecurityActivity.EXTRA_MODE, mode.ordinal)
+            startActivity(intent)
+        }
+
         if (!Session.saltExported() && Session.isAnonymous()) {
             BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
                 .apply {
                     val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-                    dialog.callback = {
-                        startActivity(Intent(requireContext(), WalletSecurityActivity::class.java).apply {
-                            putExtra(WalletSecurityActivity.EXTRA_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
-                        })
-                    }
+                    dialog.callback = callback
                     dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
                 }
                 .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
         } else {
             val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-            dialog.callback = {
-                startActivity(Intent(requireContext(), WalletSecurityActivity::class.java).apply {
-                    putExtra(WalletSecurityActivity.EXTRA_MODE, WalletSecurityActivity.Mode.IMPORT.ordinal)
-                })
-            }
+            dialog.callback = callback
             dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
         }
     }
@@ -334,7 +340,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(walletId)
-                if (wallet == null || (CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId).not() && wallet.category == WalletCategory.IMPORTED_MNEMONIC.value)) {
+                if (wallet == null || (CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId).not() && wallet.isImported())) {
                     return@launch
                 }
                 JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
@@ -424,6 +430,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 bottomSheet.dismiss()
             }
         }
+        importBottomBinding.mnemonicPhrase.isVisible = dest is WalletDestination.Import && dest.category == WalletCategory.IMPORTED_MNEMONIC.value
         importBottomBinding.hide.setOnClickListener {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Import) {

@@ -478,7 +478,7 @@
     </plurals>
     <string name="I_know">Я знаю</string>
     <string name="Immediately">Немедленно</string>
-    <string name="Import">Импорт</string>
+    <string name="Import_Chat">Импорт</string>
     <string name="in_connecting">Подключение…</string>
     <string name="Incognito_Keyboard">Клавиатура инкогнито</string>
     <string name="Incoming_voice_call">Входящий голосовой вызов</string>

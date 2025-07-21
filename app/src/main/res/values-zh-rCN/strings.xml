@@ -554,7 +554,7 @@
     <string name="i_am_good">我很好。</string>
     <string name="I_know">我知道了</string>
     <string name="Immediately">立刻</string>
-    <string name="Import">导入聊天记录</string>
+    <string name="Import_Chat">导入聊天记录</string>
     <string name="in_connecting">正在连接…</string>
     <string name="Incognito_Keyboard">隐身键盘</string>
     <string name="Incoming_voice_call">语音通话来电</string>
@@ -2000,4 +2000,11 @@
     <string name="Select_Network">选择网络</string>
     <string name="remove_wallet_warning">移除此钱包不会影响你的资产，请确保你的私钥或助记词已备份。</string>
     <string name="words">%1$d个单词</string>
+    <string name="import_private_key">导入私钥</string>
+    <string name="add_watch_address">添加观察地址</string>
+    <string name="private_key_hint">输入你的私钥</string>
+    <string name="address_hint">输入你的钱包地址</string>
+    <string name="import_private_key_description">导入单链钱包。</string>
+    <string name="add_watch_address_description">追踪任意公开钱包地址。</string>
+    <string name="Import">导入</string>
 </resources>

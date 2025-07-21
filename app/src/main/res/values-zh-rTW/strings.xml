@@ -462,7 +462,7 @@
     </plurals>
     <string name="I_know">我知道了</string>
     <string name="Immediately">立刻</string>
-    <string name="Import">匯入聊天記錄</string>
+    <string name="Import_Chat">匯入聊天記錄</string>
     <string name="in_connecting">正在連線…</string>
     <string name="Incognito_Keyboard">隱身鍵盤</string>
     <string name="Incoming_voice_call">語音通話來電</string>

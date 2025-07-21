@@ -23,6 +23,8 @@ import org.junit.Test
 import org.sol4k.Base58
 import org.sol4k.Keypair
 import org.web3j.crypto.Bip32ECKeyPair
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -100,6 +102,22 @@ class MnemonicTest {
                 "Solana address at index $index should match"
             )
         }
+    }
+
+    @Test
+    fun testPrivateKeyToPublicKey() {
+        val solanaPrivateKeyBase58 = "37NfN7eam3KCwdC6jAc7nFeuDNYCV1K2AgNWmT4Xo6ogQPMnJ1ZoWA7AKN6jzEoQi3FNTEkkXiwu7VjqXdu8FGUs"
+        val solanaPrivateKeyBytes = Base58.decode(solanaPrivateKeyBase58)
+        val solanaKeypair = Keypair.fromSecretKey(solanaPrivateKeyBytes)
+        assertEquals(
+            "BLeUXTx9thHGT7VJUtF9vHEmfMDgW1nnKZ9UVer2CoLX",
+            Base58.encode(solanaKeypair.publicKey.bytes())
+        )
+
+        val ethPrivateKeyHex = "0x33fa40f84e854b941c2b0436dd4a256e1df1cb41b9c1c0ccc8446408c19b8bf9"
+        val ethKeyPair = ECKeyPair.create(Numeric.hexStringToByteArray(ethPrivateKeyHex))
+        val ethAddress = Keys.toChecksumAddress(Keys.getAddress(ethKeyPair.publicKey))
+        assertEquals("0x58A57ed9d8d624cBD12e2C467D34787555bB1b25", ethAddress)
     }
 
     @Test
