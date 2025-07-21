@@ -273,7 +273,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.titleTv.text = if (!wallet.hasLocalPrivateKey) {
-                            getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey())
+                            getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey(suffixLen = 4, prefixLen = 6))
                         } else {
                             wallet.name.ifBlank { getString(R.string.Common_Wallet) }
                         }

@@ -325,9 +325,11 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(limit: Int = 50): String {
+fun String.formatPublicKey( limit: Int = 50, prefixLen: Int = 8, suffixLen: Int = 6): String {
     if (this.length <= limit) return this
-    return substring(0, 8) + "..." + substring(length - 6, length)
+    val prefix = substring(0, prefixLen.coerceAtMost(length))
+    val suffix = substring(length - suffixLen.coerceAtLeast(0), length)
+    return "$prefix...$suffix"
 }
 
 fun String.numberFormat(): String {

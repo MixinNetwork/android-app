@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.formatPublicKey
@@ -63,6 +65,7 @@ fun AssetDashboardScreen(
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
+    val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
 
     MixinAppTheme(skip = true) {
@@ -83,16 +86,30 @@ fun AssetDashboardScreen(
                         .wrapContentHeight(Alignment.CenterVertically)
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    painter = painterResource(R.drawable.ic_add_black_24dp),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            onAddWalletClick()
-                        }
-                )
+                Box {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add_black_24dp),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                if (!addWalletClicked.value) {
+                                    addWalletClicked.value = true
+                                    prefs.edit { putBoolean(PREF_HAS_USED_ADD_WALLET, true) }
+                                }
+                                onAddWalletClick()
+                            }
+                    )
+                    if (!addWalletClicked.value) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(8.dp)
+                                .background(color = Color.Red, shape = CircleShape)
+                        )
+                    }
+                }
             }
             TotalAssetsCard()
             Spacer(modifier = Modifier.height(20.dp))
