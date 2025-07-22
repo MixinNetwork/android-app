@@ -130,7 +130,7 @@ fun AssetDashboardScreen(
                             if (addresses.isNotEmpty()) {
                                 name = context.getString(
                                     R.string.watch,
-                                    addresses.joinToString(separator = "") { it.destination }.formatPublicKey()
+                                    addresses.joinToString(separator = "") { it.destination }.formatPublicKey(15)
                                 )
                             }
                         }

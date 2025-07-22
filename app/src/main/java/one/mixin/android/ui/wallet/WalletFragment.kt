@@ -282,7 +282,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
                         binding.titleTv.text = if (!wallet.hasLocalPrivateKey) {
-                            getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey(suffixLen = 4, prefixLen = 6))
+                            getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey(limit = 15, suffixLen = 4, prefixLen = 6))
                         } else {
                             wallet.name.ifBlank { getString(R.string.Common_Wallet) }
                         }
