@@ -494,6 +494,7 @@ internal constructor(
                     web3Repository.deleteTransactionsByWalletId(walletId)
                     web3Repository.deleteAddressesByWalletId(walletId)
                     web3Repository.deleteAssetsByWalletId(walletId)
+                    web3Repository.deleteHiddenTokens(walletId)
                     web3Repository.deleteWallet(walletId)
                     CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
                 }

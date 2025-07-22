@@ -94,6 +94,8 @@ constructor(
 
     suspend fun deleteAssetsByWalletId(walletId: String) = web3TokenDao.deleteByWalletId(walletId)
 
+    suspend fun deleteHiddenTokens(walletId: String) = web3TokensExtraDao.deleteHiddenTokens(walletId)
+
     suspend fun deleteTransactionsByWalletId(walletId: String) = web3TransactionDao.deleteByWalletId(walletId)
 
     suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3AddressDao.getAddressesByChainId(walletId, chainId)

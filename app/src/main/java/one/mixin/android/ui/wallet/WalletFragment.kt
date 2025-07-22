@@ -411,6 +411,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         importBottomBinding.title.text = binding.titleTv.text.toString()
 
         val dest = selectedWalletDestination
+        importBottomBinding.mnemonicPhrase.isVisible = dest is WalletDestination.Import && dest.category == WalletCategory.IMPORTED_MNEMONIC.value
         if (dest is WalletDestination.Import) {
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(dest.walletId)
