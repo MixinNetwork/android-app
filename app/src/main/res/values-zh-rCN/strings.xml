@@ -2007,4 +2007,7 @@
     <string name="import_private_key_description">导入单链钱包。</string>
     <string name="add_watch_address_description">追踪任意公开钱包地址。</string>
     <string name="Import">导入</string>
+    <string name="Address_Already_Exists">该地址已存在于您的钱包中。</string>
+    <string name="Invalid_Private_Key">私钥无效</string>
+    <string name="Invalid_Address">地址无效</string>
 </resources>

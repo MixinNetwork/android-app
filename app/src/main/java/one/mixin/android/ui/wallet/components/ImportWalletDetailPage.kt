@@ -26,6 +26,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,17 +41,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.extension.openUrl
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import org.sol4k.Base58
-import org.web3j.crypto.Credentials
-import org.web3j.crypto.Keys
 import org.web3j.crypto.WalletUtils
-import org.web3j.utils.Numeric
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -62,6 +63,7 @@ fun ImportWalletDetailPage(
     val context = LocalContext.current
     var text by remember { mutableStateOf("") }
     val clipboardManager = LocalClipboardManager.current
+    val walletViewModel: Web3ViewModel = hiltViewModel()
 
     val networks = mapOf(
         "Ethereum" to Constants.ChainId.ETHEREUM_CHAIN_ID,
@@ -74,8 +76,54 @@ fun ImportWalletDetailPage(
     var selectedNetworkName by remember { mutableStateOf(networks.keys.first()) }
 
     val isEvmNetwork = selectedNetworkName != "Solana"
+    val chainId = networks[selectedNetworkName] ?: ""
 
-    val isButtonEnabled by remember(mode, text, isEvmNetwork) {
+    var addressExists by remember { mutableStateOf(false) }
+    var addressToCheck by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(text, chainId, mode) {
+        if (text.isEmpty()) {
+            addressExists = false
+            addressToCheck = null
+            return@LaunchedEffect
+        }
+
+        try {
+            val address = when (mode) {
+                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
+                    if (isEvmNetwork && isEvmPrivateKeyValid(text)) {
+                        CryptoWalletHelper.privateKeyToAddress(text, chainId)
+                    } else if (!isEvmNetwork && isSolanaPrivateKeyValid(text)) {
+                        CryptoWalletHelper.privateKeyToAddress(text, chainId)
+                    } else {
+                        null
+                    }
+                }
+                WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
+                    if ((isEvmNetwork && isEvmAddressValid(text)) ||
+                        (!isEvmNetwork && isSolanaAddressValid(text))) {
+                        text
+                    } else {
+                        null
+                    }
+                }
+                else -> null
+            }
+
+            if (address != null && address != addressToCheck) {
+                addressToCheck = address
+                addressExists = walletViewModel.anyAddressExists(listOf(address))
+            } else if (address == null) {
+                addressExists = false
+                addressToCheck = null
+            }
+        } catch (e: Exception) {
+            addressExists = false
+            addressToCheck = null
+        }
+    }
+
+    val isInputValid by remember(mode, text, isEvmNetwork) {
         derivedStateOf {
             when (mode) {
                 WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
@@ -97,6 +145,14 @@ fun ImportWalletDetailPage(
         }
     }
 
+    val showInvalidError by remember(text, isInputValid) {
+        derivedStateOf {
+            text.isNotEmpty() && !isInputValid
+        }
+    }
+
+    val isButtonEnabled = isInputValid && !addressExists
+
     val title = when (mode) {
         WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> stringResource(R.string.import_private_key)
         WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> stringResource(R.string.add_watch_address)
@@ -109,14 +165,20 @@ fun ImportWalletDetailPage(
     }
 
     MixinAppTheme {
-        PageScaffold(title = title, pop = pop, actions = { IconButton(onClick = { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }) { Icon(painter = painterResource(id = R.drawable.ic_support), contentDescription = null, tint = MixinAppTheme.colors.icon) } }) {
+        PageScaffold(title = title, pop = pop, actions = {
+            IconButton(onClick = { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_support),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.icon
+                )
+            }
+        }) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-
-
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = {
@@ -220,13 +282,43 @@ fun ImportWalletDetailPage(
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
+
+
+                when {
+                    addressExists -> {
+                        Text(
+                            text = stringResource(R.string.Address_Already_Exists),
+                            color = MixinAppTheme.colors.red,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 48.dp, vertical = 8.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                    showInvalidError -> {
+                        Text(
+                            text = when (mode) {
+                                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY ->
+                                    stringResource(R.string.Invalid_Private_Key)
+                                WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS ->
+                                    stringResource(R.string.Invalid_Address)
+                                else -> ""
+                            },
+                            color = MixinAppTheme.colors.red,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 48.dp, vertical = 8.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 48.dp)
                         .height(48.dp),
                     onClick = {
-                        val chainId = networks[selectedNetworkName] ?: ""
                         onConfirmClick(chainId, text)
                     },
                     enabled = isButtonEnabled,

@@ -17,7 +17,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.event.AddWalletSuccessEvent
+import one.mixin.android.event.AddWalletEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
@@ -169,8 +169,9 @@ class FetchWalletViewModel @Inject constructor(
                 }
                 saveWallets(walletsToCreate)
                 Timber.d("Successfully imported ${selectedWalletInfos.value.size} wallets")
-                RxBus.publish(AddWalletSuccessEvent())
+                RxBus.publish(AddWalletEvent(true))
             } catch (e: Exception) {
+                RxBus.publish(AddWalletEvent(false))
                 Timber.e(e, "Failed to import wallets")
             }
         }
@@ -336,15 +337,18 @@ class FetchWalletViewModel @Inject constructor(
                     }
                     jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
                     Timber.d("Successfully imported wallet ${wallet.id}")
-                    RxBus.publish(AddWalletSuccessEvent())
+                    RxBus.publish(AddWalletEvent(true))
                 } ?: Timber.e("Failed to create wallet: response data is null")
             },
             failureBlock = { response ->
                 Timber.e("Failed to create wallet: ${response.errorCode} - ${response.errorDescription}")
+                RxBus.publish(AddWalletEvent(false))
                 false
             },
             requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-            defaultErrorHandle = {}
+            defaultErrorHandle = {
+                RxBus.publish(AddWalletEvent(false))
+            }
         )
     }
 

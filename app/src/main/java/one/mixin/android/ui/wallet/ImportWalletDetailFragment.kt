@@ -15,7 +15,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.ImportWalletDetailPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
-import timber.log.Timber
 
 @AndroidEntryPoint
 class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
@@ -61,7 +60,7 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
                 ImportWalletDetailPage(
                     mode = mode,
                     pop = {
-                        activity?.supportFragmentManager?.popBackStack()
+                        activity?.finish()
                     },
                     onConfirmClick = { chainId, key ->
                         viewModel.importWallet(key, chainId, mode)

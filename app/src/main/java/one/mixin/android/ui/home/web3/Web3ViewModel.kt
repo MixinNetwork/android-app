@@ -103,7 +103,7 @@ internal constructor(
     fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
 
     fun web3TokenExtraFlow(walletId: String, assetId: String) =
-        tokenRepository.web3TokenExtraFlow(walletId,assetId)
+        tokenRepository.web3TokenExtraFlow(walletId, assetId)
 
     suspend fun findOrSyncAsset(
         assetId: String,
@@ -446,11 +446,13 @@ internal constructor(
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 
-    suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
+    suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
     suspend fun updateTransaction(hash: String, status: String, chainId: String) =
         withContext(Dispatchers.IO) { tokenRepository.updateTransaction(hash, status, chainId) }
 
     suspend fun insertRawTransaction(raw: Web3RawTransaction) =
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
+
+    suspend fun anyAddressExists(destinations: List<String>) = web3Repository.anyAddressExists(destinations)
 }
