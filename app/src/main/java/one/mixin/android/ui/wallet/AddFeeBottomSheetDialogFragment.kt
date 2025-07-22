@@ -8,6 +8,7 @@ import one.mixin.android.databinding.FragmentAddFeeBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
@@ -53,6 +54,7 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val web3TokenItem = requireArguments().getParcelable<Web3TokenItem?>(ARGS_WEB3_TOKEN)
         binding.apply {
             titleTv.text = "${getString(R.string.Add)} ${tokenItem?.symbol ?: web3TokenItem?.symbol ?: ""}"
+            subtitleTv.text = tokenItem?.chainName ?: web3TokenItem?.chainName ?: ""
             rightIv.setOnClickListener {
                 dismiss()
             }

@@ -299,6 +299,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         jobManager.addJobInBackground(SyncOutputJob())
         lifecycleScope.launch {
             binding.apply {
+                if (requireActivity() !is WalletActivity){
+                    root.fitsSystemWindows = false
+                }
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
