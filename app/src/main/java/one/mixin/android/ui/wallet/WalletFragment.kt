@@ -416,6 +416,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         importBottomBinding.title.text = binding.titleTv.text.toString()
 
         val dest = selectedWalletDestination
+        importBottomBinding.privateKey.isVisible = dest is WalletDestination.Import && dest.category != WalletCategory.WATCH_ADDRESS.value
+        importBottomBinding.mnemonicPhrase.isVisible = dest is WalletDestination.Import && dest.category == WalletCategory.IMPORTED_MNEMONIC.value
+        importBottomBinding.rename.isVisible = dest is WalletDestination.Import && dest.category != WalletCategory.WATCH_ADDRESS.value
         if (dest is WalletDestination.Import) {
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(dest.walletId)
@@ -433,7 +436,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 bottomSheet.dismiss()
             }
         }
-        importBottomBinding.mnemonicPhrase.isVisible = dest is WalletDestination.Import && dest.category == WalletCategory.IMPORTED_MNEMONIC.value
         importBottomBinding.hide.setOnClickListener {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Import) {
