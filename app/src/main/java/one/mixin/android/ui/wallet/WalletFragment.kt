@@ -49,6 +49,7 @@ import one.mixin.android.ui.wallet.components.AssetDistributionViewModel
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.reloadWebViewInClips
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
@@ -78,44 +79,48 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
         walletViewModel.setHasUsedWallet(walletPref != null)
 
-        var walletDestination = WalletDestination.fromString(walletPref)
+        val initialWalletDestination = walletPref?.let { pref ->
+            try {
+                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
+            } catch (e: Exception) {
+                WalletDestination.Privacy
+            }
+        } ?: WalletDestination.Privacy
 
         lifecycleScope.launch {
-            walletDestination = when (walletDestination) {
+            val finalWalletDestination = when (val dest = initialWalletDestination) {
                 is WalletDestination.Classic -> {
-                    val wallet = walletViewModel.findWalletById((walletDestination as WalletDestination.Classic).walletId)
-                    if (wallet != null) {
-                        walletDestination
-                    } else {
-                        WalletDestination.Privacy
-                    }
+                    val wallet = walletViewModel.findWalletById(dest.walletId)
+                    if (wallet != null) dest else WalletDestination.Privacy
                 }
                 is WalletDestination.Import -> {
-                    val wallet = walletViewModel.findWalletById((walletDestination as WalletDestination.Import).walletId)
+                    val wallet = walletViewModel.findWalletById(dest.walletId)
                     if (wallet != null) {
-                        walletDestination
+                        if (dest.category != wallet.category) {
+                            WalletDestination.Import(dest.walletId, wallet.category)
+                        } else {
+                            dest
+                        }
                     } else {
                         WalletDestination.Privacy
                     }
                 }
-                is WalletDestination.Privacy -> {
-                    walletDestination
-                }
+                is WalletDestination.Privacy -> dest
             }
 
-            if (walletPref != null && walletDestination.toString() != walletPref) {
-                saveSelectedWalletDestination(walletDestination)
+            if (initialWalletDestination != finalWalletDestination || walletPref?.trim()?.startsWith("{") == false) {
+                saveSelectedWalletDestination(finalWalletDestination)
             }
 
-            selectedWalletDestination = walletDestination
-            updateUi(walletDestination)
+            selectedWalletDestination = finalWalletDestination
+            updateUi(finalWalletDestination)
         }
 
-        return walletDestination
+        return initialWalletDestination
     }
 
     private fun saveSelectedWalletDestination(destination: WalletDestination) {
-        defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, destination.toString())
+        defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, GsonHelper.customGson.toJson(destination))
         walletViewModel.setHasUsedWallet(true)
     }
 
@@ -332,7 +337,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 if (wallet == null || (CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId).not() && wallet.category == WalletCategory.IMPORTED_MNEMONIC.value)) {
                     return@launch
                 }
-                JsSigner.setWallet(walletId) { queryWalletId ->
+                JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
                     runBlocking { walletViewModel.getAddresses(queryWalletId) }
                 }
                 reloadWebViewInClips()

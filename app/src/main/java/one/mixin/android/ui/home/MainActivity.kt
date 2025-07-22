@@ -714,11 +714,12 @@ class MainActivity : BlazeBaseActivity() {
         lifecycleScope.launch {
             WalletConnectV2
             val classicWalletId = web3Repository.getClassicWalletId()
-
             JsSigner.init(
                 { classicWalletId },
                 { walletId ->
                     runBlocking { web3Repository.getAddresses(walletId) }
+                }, { walletId ->
+                    runBlocking { web3Repository.findWalletById(walletId) }
                 }
             )
         }
