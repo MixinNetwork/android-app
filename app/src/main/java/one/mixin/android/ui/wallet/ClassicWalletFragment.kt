@@ -198,16 +198,16 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 lifecycleScope.launch {
                     val wallet = web3ViewModel.findWalletById(id)
                     _headBinding?.sendReceiveView?.isVisible = wallet?.hasLocalPrivateKey == true
-                    _headBinding?.wacthLayout?.isVisible = wallet?.hasLocalPrivateKey == false
+                    _headBinding?.watchLayout?.isVisible = wallet?.hasLocalPrivateKey == false
 
                     if (wallet?.hasLocalPrivateKey == false) {
                         val addresses = web3ViewModel.getAddresses(id)
                         if (addresses.isNotEmpty()) {
                             if (addresses.size == 1) {
                                 val address = addresses.first().destination
-                                _headBinding?.wacthTv?.text = getString(R.string.watching_address, "${address.take(6)}..${address.takeLast(4)}")
+                                _headBinding?.watchTv?.text = getString(R.string.watching_address, "${address.take(6)}..${address.takeLast(4)}")
                             } else {
-                                _headBinding?.wacthTv?.text = getString(R.string.watching_addresses, addresses.size)
+                                _headBinding?.watchTv?.text = getString(R.string.watching_addresses, addresses.size)
                             }
                         }
                     }

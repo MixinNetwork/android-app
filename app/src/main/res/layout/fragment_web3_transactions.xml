@@ -214,7 +214,7 @@
                         android:textColor="@color/wallet_green" />
 
                     <FrameLayout
-                        android:id="@+id/wacth_layout"
+                        android:id="@+id/watch_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -228,11 +228,12 @@
 
                         <TextView
                             android:drawableStart="@drawable/ic_wallet_watch"
-                            android:id="@+id/wacth_tv"
+                            android:id="@+id/watch_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="?attr/text_assist"
-                            android:layout_gravity="center"/>
+                            android:layout_gravity="center"
+                            tools:ignore="UseCompatTextViewDrawableXml" />
                     </FrameLayout>
 
 

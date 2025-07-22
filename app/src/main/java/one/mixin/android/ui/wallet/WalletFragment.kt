@@ -41,7 +41,6 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
@@ -52,7 +51,6 @@ import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.reloadWebViewInClips
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
