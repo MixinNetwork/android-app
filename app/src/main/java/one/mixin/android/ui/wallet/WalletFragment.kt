@@ -17,6 +17,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -41,6 +42,7 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.internal.ethTransactionSerializer
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
@@ -48,6 +50,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.AssetDistributionViewModel
 import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.reloadWebViewInClips
 import one.mixin.android.util.GsonHelper
@@ -82,7 +85,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
         val initialWalletDestination = walletPref?.let { pref ->
             try {
-                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
+                gson.fromJson(pref, WalletDestination::class.java)
             } catch (e: Exception) {
                 WalletDestination.Privacy
             }
@@ -122,10 +125,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun saveSelectedWalletDestination(destination: WalletDestination) {
-
-        defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, GsonHelper.customGson.toJson(destination))
+        defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, gson.toJson(destination))
         walletViewModel.setHasUsedWallet(true)
     }
+
+    private val gson = GsonBuilder()
+        .registerTypeHierarchyAdapter(WalletDestination::class.java, WalletDestinationTypeAdapter())
+        .create()
 
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -159,7 +165,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             selectedWalletDestination?.let { updateUi(it) }
 
             moreIb.setOnClickListener {
-                Timber.e("More button clicked, selectedWalletDestination: $selectedWalletDestination")
                 when (selectedWalletDestination) {
                     is WalletDestination.Privacy -> showPrivacyBottom()
                     is WalletDestination.Import -> showImportBottom()
