@@ -133,7 +133,7 @@ buildscript {
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '19.2.0'
         ext.playServicesLocationVersion = '21.3.0'
-        firebaseBomVersion = "33.16.0"
+        firebaseBomVersion = "34.0.0"
         billingKtxVersion = "8.0.0"
         webpdecoderVersion = "2.7.4.16.0"
 
