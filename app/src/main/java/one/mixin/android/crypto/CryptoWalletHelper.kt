@@ -228,4 +228,8 @@ object CryptoWalletHelper {
         val encryptedPrefs = getSecureStorage(context)
         encryptedPrefs?.remove(walletId)
     }
+
+    fun clear(context: Context) {
+        context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+    }
 }
