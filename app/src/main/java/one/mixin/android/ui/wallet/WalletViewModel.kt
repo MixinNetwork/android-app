@@ -480,20 +480,18 @@ internal constructor(
     }
 
     suspend fun deleteWallet(walletId: String) {
-        withContext(Dispatchers.IO) {
-            try {
-                val response = web3Repository.destroyWallet(walletId)
-                if (response.isSuccess) {
-                    web3Repository.deleteTransactionsByWalletId(walletId)
-                    web3Repository.deleteAddressesByWalletId(walletId)
-                    web3Repository.deleteAssetsByWalletId(walletId)
-                    web3Repository.deleteHiddenTokens(walletId)
-                    web3Repository.deleteWallet(walletId)
-                    CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
-                }
-            } catch (e: Exception) {
-                Timber.e(e)
+        try {
+            val response = web3Repository.destroyWallet(walletId)
+            if (response.isSuccess) {
+                web3Repository.deleteTransactionsByWalletId(walletId)
+                web3Repository.deleteAddressesByWalletId(walletId)
+                web3Repository.deleteAssetsByWalletId(walletId)
+                web3Repository.deleteHiddenTokens(walletId)
+                web3Repository.deleteWallet(walletId)
+                CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
             }
+        } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 

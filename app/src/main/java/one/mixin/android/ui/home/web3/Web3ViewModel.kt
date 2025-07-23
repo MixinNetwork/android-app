@@ -431,6 +431,8 @@ internal constructor(
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
 
+    suspend fun getAddressesGroupedByDestination(walletId: String) = web3Repository.getAddressesGroupedByDestination(walletId)
+
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
         private val solanaTokenMap = mutableMapOf<String, Web3Token>()

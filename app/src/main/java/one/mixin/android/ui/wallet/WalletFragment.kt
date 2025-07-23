@@ -286,7 +286,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
-                        binding.titleTv.text = if (!wallet.hasLocalPrivateKey) {
+                        binding.titleTv.text = if (wallet.category == WalletCategory.WATCH_ADDRESS.value) {
+                            wallet.name
+                        } else if (!wallet.hasLocalPrivateKey) {
                             getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey(limit = 15, suffixLen = 4, prefixLen = 6))
                         } else {
                             wallet.name.ifBlank { getString(R.string.Common_Wallet) }
@@ -355,6 +357,23 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         closeMenu()
     }
 
+    private suspend fun switchToClassicWallet(destination: WalletDestination) {
+        if (destination is WalletDestination.Classic) {
+            selectedWalletDestination = destination
+            saveSelectedWalletDestination(destination)
+            val walletId = destination.walletId
+            val wallet = walletViewModel.findWalletById(walletId)
+            if (wallet != null && wallet.category != WalletCategory.WATCH_ADDRESS.value && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
+                JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
+                    runBlocking { walletViewModel.getAddresses(queryWalletId) }
+                }
+                reloadWebViewInClips()
+                PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
+                updateUi(destination)
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         if (classicWalletFragment.isVisible) classicWalletFragment.update()
@@ -416,14 +435,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         val dest = selectedWalletDestination
         importBottomBinding.privateKey.isVisible = dest is WalletDestination.Import && dest.category != WalletCategory.WATCH_ADDRESS.value
         importBottomBinding.mnemonicPhrase.isVisible = dest is WalletDestination.Import && dest.category == WalletCategory.IMPORTED_MNEMONIC.value
-        importBottomBinding.rename.isVisible = dest is WalletDestination.Import && dest.category != WalletCategory.WATCH_ADDRESS.value
+        importBottomBinding.rename.isVisible = dest is WalletDestination.Import
         if (dest is WalletDestination.Import) {
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(dest.walletId)
                 val hasPrivateKey = wallet?.hasLocalPrivateKey == true
                 importBottomBinding.privateKey.isVisible = hasPrivateKey
                 importBottomBinding.mnemonicPhrase.isVisible = hasPrivateKey
-                importBottomBinding.rename.isVisible = hasPrivateKey
             }
             importBottomBinding.privateKey.setOnClickListener {
                 ChainSelectionBottomSheetDialogFragment.newInstance(dest.walletId).apply {
@@ -465,13 +483,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 val dialog = indeterminateProgressDialog(R.string.Please_wait_a_bit).apply {
                     setCancelable(false)
                 }
-                this.lifecycleScope.launch {
+                this@WalletFragment.lifecycleScope.launch {
                     dialog.show()
                     try {
                         val dest = selectedWalletDestination
                         if (dest is WalletDestination.Import) {
                             walletViewModel.deleteWallet(dest.walletId)
-                            this@WalletFragment.handleWalletCardClick(WalletDestination.Classic(JsSigner.classicWalletId))
+                            this@WalletFragment.switchToClassicWallet(WalletDestination.Classic(JsSigner.classicWalletId))
                         }
                     } finally {
                         dialog.dismiss()

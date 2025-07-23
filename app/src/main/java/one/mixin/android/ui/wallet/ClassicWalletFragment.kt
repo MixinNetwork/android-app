@@ -198,7 +198,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     _headBinding?.watchLayout?.isVisible = wallet?.hasLocalPrivateKey == false
 
                     if (wallet?.hasLocalPrivateKey == false) {
-                        val addresses = web3ViewModel.getAddresses(id)
+                        val addresses = web3ViewModel.getAddressesGroupedByDestination(id)
                         if (addresses.isNotEmpty()) {
                             if (addresses.size == 1) {
                                 val address = addresses.first().destination

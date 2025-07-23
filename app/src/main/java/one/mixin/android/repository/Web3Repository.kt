@@ -102,6 +102,8 @@ constructor(
 
     suspend fun getAddresses(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
 
+    suspend fun getAddressesGroupedByDestination(walletId: String) = web3AddressDao.getAddressesGroupedByDestination(walletId)
+
     suspend fun findWalletById(walletId: String) =
         web3WalletDao.getWalletById(walletId)?.updateWithLocalKeyInfo(context)
 

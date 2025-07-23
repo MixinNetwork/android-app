@@ -270,7 +270,7 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 val address: String
                 val category: WalletCategory
-                val name = MixinApplication.appContext.getString(R.string.Common_Wallet)
+                val name = MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)
                 _state.value = FetchWalletState.IMPORTING
                 when (mode) {
                     WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {

@@ -46,10 +46,12 @@ import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 const val PREF_NAME = "wallet_info_card"
@@ -125,7 +127,7 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             wallets.forEach { wallet ->
-                if (wallet.notClassic()) {
+                if (wallet.isImported()) {
                     var name by remember(wallet.name) { mutableStateOf(wallet.name) }
                     if (!wallet.hasLocalPrivateKey) {
                         LaunchedEffect(wallet.id) {
@@ -144,6 +146,11 @@ fun AssetDashboardScreen(
                         destination = WalletDestination.Import(wallet.id, wallet.category),
                         onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) }
                     )
+                } else if (wallet.category == WalletCategory.WATCH_ADDRESS.value) {
+                    WalletCard(
+                        name = wallet.name,
+                        destination = WalletDestination.Import(wallet.id, wallet.category),
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) })
                 } else {
                     WalletCard(
                         destination = WalletDestination.Classic(wallet.id),
