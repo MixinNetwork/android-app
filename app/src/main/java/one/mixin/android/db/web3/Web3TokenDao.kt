@@ -24,7 +24,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId")
     suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem>
 
-    @Query("SELECT symbol, icon_url AS iconUrl, amount AS balance, price_usd AS priceUsd FROM tokens WHERE amount * price_usd > 0 AND wallet_id = :walletId ORDER BY amount * price_usd")
+    @Query("SELECT t.symbol, t.icon_url AS iconUrl, t.amount AS balance, t.price_usd AS priceUsd FROM tokens t LEFT JOIN tokens_extra te ON t.asset_id = te.asset_id AND t.wallet_id = te.wallet_id WHERE t.amount * t.price_usd > 0 AND t.wallet_id = :walletId AND (te.hidden IS NULL OR te.hidden = 0) ORDER BY t.amount * t.price_usd")
     suspend fun findUnifiedAssetItem(walletId: String): List<UnifiedAssetItem>
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.amount > 0 AND t.wallet_id = :walletId")
@@ -42,7 +42,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT * FROM tokens WHERE amount * price_usd > 0 AND wallet_id = :walletId ORDER BY amount * price_usd")
     fun web3TokensFlow(walletId: String): Flow<List<Web3Token>>
 
-    @Query("SELECT symbol, icon_url AS iconUrl, amount AS balance, price_usd AS priceUsd FROM tokens WHERE amount * price_usd > 0 AND wallet_id in (:walletIds) ORDER BY amount * price_usd")
+    @Query("SELECT t.symbol, t.icon_url AS iconUrl, t.amount AS balance, t.price_usd AS priceUsd FROM tokens t LEFT JOIN tokens_extra te ON t.asset_id = te.asset_id AND t.wallet_id = te.wallet_id WHERE t.amount * t.price_usd > 0 AND t.wallet_id IN (:walletIds) AND (te.hidden IS NULL OR te.hidden = 0) ORDER BY t.amount * t.price_usd")
     suspend fun allWeb3Tokens(walletIds: List<String>): List<UnifiedAssetItem>
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id = :assetId")

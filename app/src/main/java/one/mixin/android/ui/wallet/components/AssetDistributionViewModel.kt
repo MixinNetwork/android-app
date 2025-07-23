@@ -41,7 +41,7 @@ class AssetDistributionViewModel @Inject constructor(
 
     suspend fun getTokenDistribution(excludeWeb3: Boolean = false): List<AssetDistribution> = withContext(Dispatchers.IO) {
         val walletIds = _wallets.value.filter { it.hasLocalPrivateKey }.map { it.id }
-        val web3Tokens = if (excludeWeb3) emptyList<UnifiedAssetItem>() else web3Repository.allWeb3Tokens(walletIds)
+        val web3Tokens = if (excludeWeb3) emptyList() else web3Repository.allWeb3Tokens(walletIds)
         val tokens = tokenRepository.findUnifiedAssetItem()
 
         val unifiedAssets = mutableListOf<UnifiedAssetItem>()
