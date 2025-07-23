@@ -35,6 +35,7 @@ import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
@@ -461,11 +462,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             ).apply {
                 disableToast = true
             }.setOnPinSuccess { _ ->
+                val dialog = indeterminateProgressDialog(R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
                 this.lifecycleScope.launch {
-                    val dest = selectedWalletDestination
-                    if (dest is WalletDestination.Import) {
-                        walletViewModel.deleteWallet(dest.walletId)
-                        this@WalletFragment.handleWalletCardClick(WalletDestination.Classic(JsSigner.classicWalletId))
+                    dialog.show()
+                    try {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Import) {
+                            walletViewModel.deleteWallet(dest.walletId)
+                            this@WalletFragment.handleWalletCardClick(WalletDestination.Classic(JsSigner.classicWalletId))
+                        }
+                    } finally {
+                        dialog.dismiss()
                     }
                 }
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
