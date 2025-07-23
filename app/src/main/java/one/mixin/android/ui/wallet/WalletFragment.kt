@@ -107,6 +107,18 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         WalletDestination.Privacy
                     }
                 }
+                is WalletDestination.Watch -> {
+                    val wallet = walletViewModel.findWalletById(dest.walletId)
+                    if (wallet != null) {
+                        if (dest.category != wallet.category) {
+                            WalletDestination.Watch(dest.walletId, wallet.category)
+                        } else {
+                            dest
+                        }
+                    } else {
+                        WalletDestination.Privacy
+                    }
+                }
                 is WalletDestination.Privacy -> dest
             }
 
@@ -163,6 +175,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 when (selectedWalletDestination) {
                     is WalletDestination.Privacy -> showPrivacyBottom()
                     is WalletDestination.Import -> showImportBottom()
+                    is WalletDestination.Watch -> showImportBottom()
                     is WalletDestination.Classic -> showClassicBottom()
                     null -> showPrivacyBottom() // Default
                 }
@@ -185,6 +198,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     is WalletDestination.Import -> {
                         val dest = selectedWalletDestination
                         if (dest is WalletDestination.Import) {
+                            WalletActivity.show(
+                                requireActivity(),
+                                WalletActivity.Destination.SearchWeb3(dest.walletId)
+                            )
+                        }
+                    }
+                    is WalletDestination.Watch -> {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Watch) {
                             WalletActivity.show(
                                 requireActivity(),
                                 WalletActivity.Destination.SearchWeb3(dest.walletId)
@@ -275,6 +297,25 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 binding.titleTv.setText(R.string.Common_Wallet)
                 binding.tailIcon.isVisible = false
             }
+            is WalletDestination.Watch -> {
+                classicWalletFragment.walletId = destination.walletId
+                requireActivity().replaceFragment(
+                    classicWalletFragment,
+                    R.id.wallet_container,
+                    ClassicWalletFragment.TAG
+                )
+                lifecycleScope.launch {
+                    walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
+                        binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
+                        binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
+                        binding.titleTv.text = wallet.name
+                    } ?: run {
+                        binding.titleTv.setCompoundDrawables(null, null ,null , null)
+                        binding.titleTv.setText(R.string.Watch_Wallet)
+                        binding.tailIcon.isVisible = false
+                    }
+                }
+            }
             is WalletDestination.Import -> {
                 classicWalletFragment.walletId = destination.walletId
                 requireActivity().replaceFragment(
@@ -286,9 +327,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
-                        binding.titleTv.text = if (wallet.category == WalletCategory.WATCH_ADDRESS.value) {
-                            wallet.name
-                        } else if (!wallet.hasLocalPrivateKey) {
+                        binding.titleTv.text = if (!wallet.hasLocalPrivateKey) {
                             getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey(limit = 15, suffixLen = 4, prefixLen = 6))
                         } else {
                             wallet.name.ifBlank { getString(R.string.Common_Wallet) }

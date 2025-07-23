@@ -2012,4 +2012,7 @@
     <string name="Invalid_Private_Key">私钥无效</string>
     <string name="Invalid_Address">地址无效</string>
     <string name="Private_Key_Notice">您的私钥只会本地存储在您的设备上。</string>
+    <string name="Imported">Imported</string>
+    <string name="NoKey">NoKey</string>
+    <string name="Watching">Watching</string>
 </resources>

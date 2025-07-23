@@ -73,6 +73,10 @@ fun AssetDashboardScreen(
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.loadWallets()
+    }
+
     MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier
@@ -127,30 +131,18 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             wallets.forEach { wallet ->
-                if (wallet.isImported()) {
-                    var name by remember(wallet.name) { mutableStateOf(wallet.name) }
-                    if (!wallet.hasLocalPrivateKey) {
-                        LaunchedEffect(wallet.id) {
-                            val addresses = viewModel.getAddressesByWalletId(wallet.id)
-                            if (addresses.isNotEmpty()) {
-                                name = context.getString(
-                                    R.string.watch,
-                                    addresses.joinToString(separator = "") { it.destination }.formatPublicKey(limit = 15)
-                                )
-                            }
-                        }
-                    }
-                    Timber.e("${wallet.id} - ${wallet.category} - ${wallet.name} - ${wallet.hasLocalPrivateKey} - ${CryptoWalletHelper.hasPrivateKey(context, wallet.id).not()}")
-                    WalletCard(
-                        name = name,
-                        destination = WalletDestination.Import(wallet.id, wallet.category),
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) }
-                    )
-                } else if (wallet.category == WalletCategory.WATCH_ADDRESS.value) {
+                if (wallet.category == WalletCategory.WATCH_ADDRESS.value) {
                     WalletCard(
                         name = wallet.name,
-                        destination = WalletDestination.Import(wallet.id, wallet.category),
+                        destination = WalletDestination.Watch(wallet.id, wallet.category),
                         onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) })
+                } else if (wallet.isImported()) {
+                    WalletCard(
+                        name = wallet.name,
+                        hasLocalPrivateKey = wallet.hasLocalPrivateKey,
+                        destination = WalletDestination.Import(wallet.id, wallet.category),
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) },
+                    )
                 } else {
                     WalletCard(
                         destination = WalletDestination.Classic(wallet.id),

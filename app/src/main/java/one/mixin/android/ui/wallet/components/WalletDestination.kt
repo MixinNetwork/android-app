@@ -10,6 +10,7 @@ sealed class WalletDestination {
     object Privacy : WalletDestination()
     data class Classic(val walletId: String) : WalletDestination()
     data class Import(val walletId: String, val category: String) : WalletDestination()
+    data class Watch(val walletId: String, val category: String) : WalletDestination()
 }
 
 
@@ -33,6 +34,11 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
             }
             is WalletDestination.Import -> {
                 out.name("type").value("Import")
+                out.name("walletId").value(value.walletId)
+                out.name("category").value(value.category)
+            }
+            is WalletDestination.Watch -> {
+                out.name("type").value("Watch")
                 out.name("walletId").value(value.walletId)
                 out.name("category").value(value.category)
             }
@@ -66,6 +72,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
             "Privacy" -> WalletDestination.Privacy
             "Classic" -> WalletDestination.Classic(walletId ?: "")
             "Import" -> WalletDestination.Import(walletId ?: "", category ?: "")
+            "Watch" -> WalletDestination.Watch(walletId ?: "", category ?: "")
             else -> throw JsonParseException("Unknown type: $type")
         }
     }

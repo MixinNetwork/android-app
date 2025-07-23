@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +49,7 @@ import java.math.BigDecimal
 @Composable
 fun WalletCard(
     name: String? = null,
+    hasLocalPrivateKey: Boolean = true,
     destination: WalletDestination?,
     onClick: () -> Unit,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
@@ -110,7 +113,35 @@ fun WalletCard(
                         tint = Color.Unspecified,
                         contentDescription = null,
                     )
-                } else if (destination is WalletDestination.Import && CryptoWalletHelper.hasPrivateKey(context, destination.walletId).not()) {
+                } else if (destination is WalletDestination.Import) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.Imported),
+                        color = MixinAppTheme.colors.textRemarks,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(
+                                color = MixinAppTheme.colors.backgroundGrayLight,
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    )
+                    if (!hasLocalPrivateKey) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.NoKey),
+                            color = MixinAppTheme.colors.red,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(
+                                    color = MixinAppTheme.colors.red.copy(alpha = 0.2f),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        )
+
+                    }
+                } else if (destination is WalletDestination.Watch) {
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         modifier = Modifier.size(18.dp),
@@ -118,7 +149,20 @@ fun WalletCard(
                         tint = Color.Unspecified,
                         contentDescription = null,
                     )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.Watching),
+                        color = MixinAppTheme.colors.textRemarks,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(
+                                color = MixinAppTheme.colors.backgroundGrayLight,
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    )
                 }
+
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     painter = painterResource(id = R.drawable.ic_arrow_right),
@@ -187,7 +231,7 @@ val classicChain = listOf(
     R.drawable.ic_chain_polygon,
     R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_base,
-    // R.drawable.ic_chain_arbitrum_eth,
+     R.drawable.ic_chain_arbitrum_eth,
     // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
 )

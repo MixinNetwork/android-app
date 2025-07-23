@@ -2064,4 +2064,7 @@
     <string name="Invalid_Private_Key">Invalid Private Key</string>
     <string name="Invalid_Address">Invalid Address</string>
     <string name="Private_Key_Notice">Your Private key wall only be stored locaally on your device.</string>
+    <string name="Imported">Imported</string>
+    <string name="NoKey">NoKey</string>
+    <string name="Watching">Watching</string>
 </resources>
