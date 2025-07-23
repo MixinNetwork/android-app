@@ -341,14 +341,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(walletId)
-                if (wallet == null || (CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId).not() && wallet.isImported())) {
-                    return@launch
+                if (wallet != null && wallet.category != WalletCategory.WATCH_ADDRESS.value && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
+                    JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
+                        runBlocking { walletViewModel.getAddresses(queryWalletId) }
+                    }
+                    reloadWebViewInClips()
+                    PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
                 }
-                JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
-                    runBlocking { walletViewModel.getAddresses(queryWalletId) }
-                }
-                reloadWebViewInClips()
-                PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
             }
         }
         updateUi(destination)
@@ -466,9 +465,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     val dest = selectedWalletDestination
                     if (dest is WalletDestination.Import) {
                         walletViewModel.deleteWallet(dest.walletId)
-                        selectedWalletDestination = WalletDestination.Privacy
-                        saveSelectedWalletDestination(WalletDestination.Privacy)
-                        updateUi(WalletDestination.Privacy)
+                        this@WalletFragment.handleWalletCardClick(WalletDestination.Classic(JsSigner.classicWalletId))
                     }
                 }
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)

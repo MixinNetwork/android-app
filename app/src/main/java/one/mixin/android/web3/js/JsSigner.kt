@@ -8,6 +8,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
@@ -16,6 +17,7 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -151,6 +153,14 @@ object JsSigner {
             solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
             address = evmAddress
         }
+
+        if (WalletConnect.isEnabled()) {
+            if (currentChain.assetId == SOLANA_CHAIN_ID) {
+                WalletConnectV2.switchAccount(solanaAddress)
+            } else {
+                WalletConnectV2.switchAccount(evmAddress)
+            }
+        }
     }
 
     suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> Web3Wallet?) {
@@ -164,6 +174,7 @@ object JsSigner {
     }
 
     suspend fun setWallet(walletId: String, category: String, queryAddress: (String) -> List<Web3Address>) {
+        if (category == WalletCategory.WATCH_ADDRESS.value) return
         currentWalletId = walletId
         currentWalletCategory = category
         updateAddressesAndPaths(walletId, queryAddress)
