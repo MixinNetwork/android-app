@@ -76,7 +76,7 @@ abstract class WalletDatabase : RoomDatabase() {
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT")
             }
         }
 

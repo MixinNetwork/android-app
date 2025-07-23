@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "1605f8963444e2b4e2137c30f0e3eefc",
+    "identityHash": "76d5ffded2efab680d437a8e47fd09ff",
     "entities": [
       {
         "tableName": "tokens",
@@ -269,7 +269,7 @@
       },
       {
         "tableName": "addresses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `path` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `path` TEXT, `created_at` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
         "fields": [
           {
             "fieldPath": "addressId",
@@ -298,8 +298,7 @@
           {
             "fieldPath": "path",
             "columnName": "path",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "createdAt",
@@ -491,7 +490,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1605f8963444e2b4e2137c30f0e3eefc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '76d5ffded2efab680d437a8e47fd09ff')"
     ]
   }
 }

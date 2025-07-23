@@ -32,7 +32,7 @@ data class Web3Address(
 
     @ColumnInfo(name = "path")
     @SerializedName("path")
-    val path: String = "",
+    val path: String?,
 
     @ColumnInfo(name = "created_at")
     @SerializedName("created_at")
