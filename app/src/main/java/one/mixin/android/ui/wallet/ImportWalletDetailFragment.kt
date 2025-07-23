@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +15,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.ImportWalletDetailPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
@@ -21,11 +25,20 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
 
     private val viewModel by activityViewModels<FetchWalletViewModel>()
     private var mode: WalletSecurityActivity.Mode = WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
+    private var scannedText by mutableStateOf("")
+
+    private val scanLauncher =
+        registerForActivityResult(CaptureActivity.CaptureContract()) { intent ->
+            intent?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)?.let {
+                scannedText = it
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            val modeOrdinal = it.getInt(ARG_MODE, WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY.ordinal)
+            val modeOrdinal =
+                it.getInt(ARG_MODE, WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY.ordinal)
             mode = WalletSecurityActivity.Mode.values()[modeOrdinal]
         }
     }
@@ -64,7 +77,16 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
                     },
                     onConfirmClick = { chainId, key ->
                         viewModel.importWallet(key, chainId, mode)
-                    }
+                    },
+                    onScan = {
+                        scanLauncher.launch(
+                            Pair(
+                                CaptureActivity.ARGS_FOR_SCAN_RESULT,
+                                true
+                            )
+                        )
+                    },
+                    contentText = scannedText
                 )
             }
         }

@@ -2062,4 +2062,5 @@
     <string name="Address_Already_Exists">This address already exists in your wallet.</string>
     <string name="Invalid_Private_Key">Invalid Private Key</string>
     <string name="Invalid_Address">Invalid Address</string>
+    <string name="Private_Key_Notice">Your Private key wall only be stored locaally on your device.</string>
 </resources>

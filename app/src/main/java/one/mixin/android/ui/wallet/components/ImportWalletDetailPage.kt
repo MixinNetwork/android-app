@@ -6,12 +6,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -40,6 +42,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.Constants
@@ -59,9 +62,11 @@ fun ImportWalletDetailPage(
     mode: WalletSecurityActivity.Mode,
     pop: () -> Unit,
     onConfirmClick: (String, String) -> Unit,
+    onScan: (() -> Unit)? = null,
+    contentText: String = "",
 ) {
     val context = LocalContext.current
-    var text by remember { mutableStateOf("") }
+    var text by remember(contentText) { mutableStateOf(contentText) }
     val clipboardManager = LocalClipboardManager.current
     val walletViewModel: Web3ViewModel = hiltViewModel()
 
@@ -264,20 +269,56 @@ fun ImportWalletDetailPage(
                             cursorColor = MixinAppTheme.colors.accent
                         )
                     )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_copy_gray),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.iconGray,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(16.dp)
-                            .clickable {
-                                clipboardManager
-                                    .getText()
-                                    ?.text?.let {
-                                        text = it
+                    if (text.isNotBlank()) {
+                        IconButton(
+                            onClick = {
+                                text = ""
+                            }, modifier = Modifier.align(Alignment.BottomEnd)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_addr_remove),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.iconGray
+                            )
+                        }
+                    } else {
+                        Row(modifier = Modifier.align(Alignment.BottomEnd)) {
+                            IconButton(
+                                onClick = {
+                                    clipboardManager.getText()?.let {
+                                        text = it.text
                                     }
+                                },
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_paste),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.iconGray
+                                )
                             }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            IconButton(
+                                onClick = {
+                                    onScan?.invoke()
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_scan),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.iconGray
+                                )
+                            }
+                        }
+                    }
+                }
+                if (mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY) {
+                    Text(
+                        stringResource(R.string.Private_Key_Notice),
+                        color = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        textAlign = TextAlign.Start
                     )
                 }
 

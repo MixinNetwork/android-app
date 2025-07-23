@@ -2010,4 +2010,5 @@
     <string name="Address_Already_Exists">该地址已存在于您的钱包中。</string>
     <string name="Invalid_Private_Key">私钥无效</string>
     <string name="Invalid_Address">地址无效</string>
+    <string name="Private_Key_Notice">您的私钥只会本地存储在您的设备上。</string>
 </resources>
