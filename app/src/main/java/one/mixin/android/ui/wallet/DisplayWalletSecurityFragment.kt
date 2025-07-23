@@ -44,7 +44,7 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
                 LaunchedEffect(mode, chainId) {
                     securityContent = when (mode) {
                         WalletSecurityActivity.Mode.VIEW_MNEMONIC -> {
-                            viewModel.getWeb3Mnemonicte(requireContext()) ?: throw IllegalArgumentException("Mnemonic not found")
+                            viewModel.getWeb3Mnemonic(requireContext()) ?: throw IllegalArgumentException("Mnemonic not found")
                         }
                         WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
                             viewModel.getWeb3Priva(requireContext(), chainId) ?: throw IllegalArgumentException("Private key not found")

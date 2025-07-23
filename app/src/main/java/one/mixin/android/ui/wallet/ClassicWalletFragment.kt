@@ -151,9 +151,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
-                        sendReceiveView.badge.isVisible = false
-                        defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_SWAP, false)
-                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
                     }
                 }
             _headBinding?.pendingView?.isVisible = false

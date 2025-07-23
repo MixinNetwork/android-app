@@ -10,5 +10,5 @@ data class Web3AddressRequest(
     val chainId: String,
 
     @SerializedName("path")
-    val path: String
+    val path: String?
 )

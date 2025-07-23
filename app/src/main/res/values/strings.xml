@@ -569,7 +569,7 @@
     <string name="i_am_good">I’m good.</string>
     <string name="I_know">I know</string>
     <string name="Immediately">Immediately</string>
-    <string name="Import">Import</string>
+    <string name="Import_Chat">Import</string>
     <string name="in_connecting">Connecting…</string>
     <string name="Incognito_Keyboard">Incognito Keyboard</string>
     <string name="Incoming_voice_call">Incoming voice call</string>
@@ -2052,4 +2052,15 @@
     <string name="Select_Network">Select Network</string>
     <string name="remove_wallet_warning">Deleting this wallet will not affect your assets. Please make sure your private key or mnemonic phrase is backed up.</string>
     <string name="words">%1$d words</string>
+    <string name="import_private_key">Import Private Key</string>
+    <string name="add_watch_address">Add Watch Address</string>
+    <string name="private_key_hint">Type your private key</string>
+    <string name="address_hint">Type your wallet address</string>
+    <string name="import_private_key_description">Import a single-chain wallet.</string>
+    <string name="add_watch_address_description">Track any public wallet address.</string>
+    <string name="Import">Import</string>
+    <string name="Address_Already_Exists">This address already exists in your wallet.</string>
+    <string name="Invalid_Private_Key">Invalid Private Key</string>
+    <string name="Invalid_Address">Invalid Address</string>
+    <string name="Private_Key_Notice">Your Private key wall only be stored locaally on your device.</string>
 </resources>

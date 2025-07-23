@@ -493,7 +493,7 @@
     </plurals>
     <string name="I_know">Lo sé</string>
     <string name="Immediately">Inmediatamente</string>
-    <string name="Import">Importar</string>
+    <string name="Import_Chat">Importar</string>
     <string name="in_connecting">Conectando…</string>
     <string name="Incognito_Keyboard">Teclado incógnito</string>
     <string name="Incoming_voice_call">Llamada de voz entrante</string>

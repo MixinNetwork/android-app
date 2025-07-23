@@ -142,6 +142,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
@@ -330,16 +331,22 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 lifecycleScope.launch{
                     when (e.badge) {
-                        Account.PREF_HAS_USED_SWAP -> {
+                        Account.PREF_HAS_USED_SWAP, Account.PREF_HAS_USED_BUY, Account.PREF_HAS_USED_WALLET_LIST -> {
                             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
-                                isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+                                isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
+                                        defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
                                 backgroundColor = Color.RED
                             }
                         }
 
-                        Account.PREF_HAS_USED_MARKET -> {
+                        Account.PREF_HAS_USED_MARKET, PREF_BOT_CLICKED_IDS  -> {
                             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
-                                isVisible = false
+                                isVisible = try {
+                                    defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+                                        ?.split(",")?.toSet() ?: emptySet()
+                                } catch (e: Exception) {
+                                    emptySet()
+                                }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
                                 backgroundColor = Color.RED
                             }
                         }
@@ -970,14 +977,20 @@ class MainActivity : BlazeBaseActivity() {
                 }
         }
         lifecycleScope.launch {
-            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
+                    defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
 
             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
                 isVisible = swap
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
             }
 
-            val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            val market = try {
+                defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+                    ?.split(",")?.toSet() ?: emptySet()
+            } catch (e: Exception) {
+                emptySet()
+            }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
                 isVisible = market
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)

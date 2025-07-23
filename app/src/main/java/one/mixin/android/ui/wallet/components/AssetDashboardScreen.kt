@@ -45,14 +45,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.WalletCategory
+import timber.log.Timber
 
 const val PREF_NAME = "wallet_info_card"
 private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
 private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
+private const val KEY_ADD_WALLET_CLICKED = "add_wallet_clicked"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -122,7 +125,7 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             wallets.forEach { wallet ->
-                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
+                if (wallet.notClassic()) {
                     var name by remember(wallet.name) { mutableStateOf(wallet.name) }
                     if (!wallet.hasLocalPrivateKey) {
                         LaunchedEffect(wallet.id) {
@@ -130,11 +133,12 @@ fun AssetDashboardScreen(
                             if (addresses.isNotEmpty()) {
                                 name = context.getString(
                                     R.string.watch,
-                                    addresses.joinToString(separator = "") { it.destination }.formatPublicKey(15)
+                                    addresses.joinToString(separator = "") { it.destination }.formatPublicKey(limit = 15)
                                 )
                             }
                         }
                     }
+                    Timber.e("${wallet.id} - ${wallet.category} - ${wallet.name} - ${wallet.hasLocalPrivateKey} - ${CryptoWalletHelper.hasPrivateKey(context, wallet.id).not()}")
                     WalletCard(
                         name = name,
                         destination = WalletDestination.Import(wallet.id, wallet.category),

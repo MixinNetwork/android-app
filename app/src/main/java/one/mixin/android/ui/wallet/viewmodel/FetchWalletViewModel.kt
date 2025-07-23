@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
@@ -16,24 +15,21 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
-import one.mixin.android.api.response.AssetView
-import one.mixin.android.api.response.web3.Web3WalletResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.event.AddWalletSuccessEvent
-import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.event.AddWalletEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
-import one.mixin.eddsa.KeyPair
 import org.sol4k.Keypair
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -173,8 +169,9 @@ class FetchWalletViewModel @Inject constructor(
                 }
                 saveWallets(walletsToCreate)
                 Timber.d("Successfully imported ${selectedWalletInfos.value.size} wallets")
-                RxBus.publish(AddWalletSuccessEvent())
+                RxBus.publish(AddWalletEvent(true))
             } catch (e: Exception) {
+                RxBus.publish(AddWalletEvent(false))
                 Timber.e(e, "Failed to import wallets")
             }
         }
@@ -259,12 +256,110 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    fun getWeb3Mnemonicte(context: Context): String? {
+    fun getWeb3Mnemonic(context: Context): String? {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
             return null
         }
         return CryptoWalletHelper.getWeb3Mnemonic(context, currentSpendKey, JsSigner.currentWalletId)
+    }
+
+    fun importWallet(key: String, chainId: String, mode: WalletSecurityActivity.Mode) {
+        viewModelScope.launch {
+            try {
+                val address: String
+                val category: WalletCategory
+                val name = MixinApplication.appContext.getString(R.string.Common_Wallet)
+                _state.value = FetchWalletState.IMPORTING
+                when (mode) {
+                    WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
+                        address = CryptoWalletHelper.privateKeyToAddress(key, chainId)
+                        category = WalletCategory.IMPORTED_PRIVATE_KEY
+                    }
+                    WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
+                        address = key
+                        category = WalletCategory.WATCH_ADDRESS
+                    }
+                    else -> {
+                        throw IllegalArgumentException("Unsupported mode for import: $mode")
+                    }
+                }
+
+                if (address.isBlank()) {
+                    throw IllegalArgumentException("Could not derive or find address.")
+                }
+
+                val web3AddressRequest = Web3AddressRequest(
+                    destination = address,
+                    chainId = chainId,
+                    path = null
+                )
+
+                val walletRequest = WalletRequest(
+                    name = name,
+                    category = category.value,
+                    addresses = listOf(web3AddressRequest)
+                )
+                if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) {
+                    saveImportedWallet(walletRequest, null)
+                } else {
+                    saveImportedWallet(walletRequest, key)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to import wallet")
+                _state.value = FetchWalletState.SELECT
+            }
+        }
+    }
+
+    private suspend fun saveImportedWallet(walletRequest: WalletRequest, privateKey: String?) {
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            Timber.e("Spend key is null, cannot save wallets.")
+            return
+        }
+        requestRouteAPI(
+            invokeNetwork = { web3Repository.createWallet(walletRequest) },
+            successBlock = { response ->
+                response.data?.let { wallet ->
+                    web3Repository.insertWallet(
+                        Web3Wallet(
+                            id = wallet.id,
+                            name = wallet.name,
+                            category = wallet.category,
+                            createdAt = wallet.createdAt,
+                            updatedAt = wallet.updatedAt,
+                        )
+                    )
+                    if (privateKey.isNullOrEmpty().not()) {
+                        saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, privateKey)
+                    }
+                    jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
+                    Timber.d("Successfully imported wallet ${wallet.id}")
+                    RxBus.publish(AddWalletEvent(true))
+                } ?: Timber.e("Failed to create wallet: response data is null")
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to create wallet: ${response.errorCode} - ${response.errorDescription}")
+                RxBus.publish(AddWalletEvent(false))
+                false
+            },
+            requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+            defaultErrorHandle = {
+                RxBus.publish(AddWalletEvent(false))
+            }
+        )
+    }
+
+    private fun saveWeb3ImportedPrivateKey(context: Context, spendKey: ByteArray, walletId: String, privateKey: String): Boolean {
+        return try {
+            val encryptedString = CryptoWalletHelper.encryptPrivateKeyWithSpendKey(spendKey, privateKey)
+            CryptoWalletHelper.saveWeb3PrivateKey(context, walletId, encryptedString)
+            true
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save web3 private key")
+            false
+        }
     }
 }
