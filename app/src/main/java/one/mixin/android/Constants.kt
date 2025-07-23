@@ -94,10 +94,14 @@ object Constants {
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
+        const val PREF_HAS_USED_BUY = "pref_has_used_buy"
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
-        const val PREF_HAS_USED_WALLET = "pref_has_used_wallet"
+
+        const val PREF_USED_WALLET = "pref_used_wallet"
+
+        const val PREF_HAS_USED_WALLET_LIST = "pref_has_used_wallet_list"
 
         const val PREF_HAS_USED_ADD_WALLET = "pref_has_used_add_wallet"
 

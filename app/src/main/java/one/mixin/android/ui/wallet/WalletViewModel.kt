@@ -95,13 +95,6 @@ internal constructor(
         }
     }
 
-    private val _hasUsedWallet = MutableLiveData<Boolean>()
-    val hasUsedWallet: LiveData<Boolean> = _hasUsedWallet
-
-    fun setHasUsedWallet(hasUsed: Boolean) {
-        _hasUsedWallet.value = hasUsed
-    }
-
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)

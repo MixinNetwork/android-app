@@ -2,9 +2,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="horizontal"
     android:weightSum="3"
-    tools:parentTag="android.widget.LinearLayout"
-    android:orientation="horizontal">
+    tools:parentTag="android.widget.LinearLayout">
 
     <LinearLayout
         android:id="@+id/buy"
@@ -15,11 +15,27 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <ImageView
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:foreground="@drawable/mixin_ripple_24"
-            android:src="@drawable/ic_wallet_buy" />
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/mixin_ripple_24"
+                android:src="@drawable/ic_wallet_buy" />
+
+            <View
+                android:id="@+id/buy_badge"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="3dp"
+                android:background="@drawable/bg_red_dot"
+                android:visibility="gone" />
+
+        </FrameLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -28,7 +44,7 @@
             android:text="@string/Buy"
             android:textColor="?attr/text_primary"
             android:textFontWeight="600"
-            android:textSize="12sp"/>
+            android:textSize="12sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -52,7 +68,7 @@
             android:text="@string/Receive"
             android:textColor="?attr/text_primary"
             android:textFontWeight="600"
-            android:textSize="12sp"/>
+            android:textSize="12sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -76,7 +92,7 @@
             android:text="@string/Send_transfer"
             android:textColor="?attr/text_primary"
             android:textFontWeight="600"
-            android:textSize="12sp"/>
+            android:textSize="12sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -99,13 +115,13 @@
                 android:src="@drawable/ic_wallet_swap" />
 
             <View
-                android:id="@+id/badge"
-                android:layout_marginTop="3dp"
+                android:id="@+id/swap_badge"
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_gravity="end|top"
+                android:layout_marginTop="3dp"
                 android:background="@drawable/bg_red_dot"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         </FrameLayout>
 
@@ -116,7 +132,7 @@
             android:text="@string/Swap"
             android:textColor="?attr/text_primary"
             android:textFontWeight="600"
-            android:textSize="12sp"/>
+            android:textSize="12sp" />
     </LinearLayout>
 
 </merge>

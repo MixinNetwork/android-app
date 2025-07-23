@@ -36,6 +36,7 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
@@ -76,10 +77,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     private fun loadSelectedWalletDestination(): WalletDestination {
         val walletPref = defaultSharedPreferences.getString(
-            Constants.Account.PREF_HAS_USED_WALLET, null
+            Constants.Account.PREF_USED_WALLET, null
         )
-
-        walletViewModel.setHasUsedWallet(walletPref != null)
 
         val initialWalletDestination = walletPref?.let { pref ->
             try {
@@ -123,8 +122,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun saveSelectedWalletDestination(destination: WalletDestination) {
-        defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, gson.toJson(destination))
-        walletViewModel.setHasUsedWallet(true)
+        defaultSharedPreferences.putString(Constants.Account.PREF_USED_WALLET, gson.toJson(destination))
     }
 
     private val gson = GsonBuilder()
@@ -155,9 +153,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            walletViewModel.hasUsedWallet.observe(viewLifecycleOwner) { hasUsed ->
-                badge.isVisible = !hasUsed
-            }
+            badge.isVisible = defaultSharedPreferences.getBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, true)
 
             selectedWalletDestination = loadSelectedWalletDestination()
             selectedWalletDestination?.let { updateUi(it) }
@@ -217,6 +213,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
 
             titleRl.setOnClickListener {
+                badge.isVisible = false
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
                 if (compose.isVisible.not()) {
                     compose.visibility = VISIBLE
                     assetDistributionViewModel.loadWallets()

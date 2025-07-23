@@ -72,7 +72,7 @@ import javax.inject.Inject
 class ExploreFragment : BaseFragment() {
     companion object {
         const val TAG = "ExploreFragment"
-        private const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
+        const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
         private val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID)
         fun newInstance() = ExploreFragment()
     }
@@ -279,6 +279,7 @@ class ExploreFragment : BaseFragment() {
         if (old.add(id)) {
             sp.edit().putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")).apply()
             updateFavoriteDot()
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
         }
     }
 

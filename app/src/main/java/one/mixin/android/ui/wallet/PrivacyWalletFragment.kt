@@ -19,7 +19,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account
+import one.mixin.android.Constants.Account.PREF_HAS_USED_BUY
+import one.mixin.android.Constants.Account.PREF_HAS_USED_SWAP
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
@@ -33,6 +34,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
@@ -101,6 +103,9 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         WalletActivity.showBuy(requireActivity(), false, null, null)
+                        defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
+                        RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
+                        sendReceiveView.swapBadge.isVisible = false
                     }
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
@@ -127,10 +132,9 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         SwapActivity.show(requireActivity(), inMixin = true)
-                        if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 0) {
-                            sendReceiveView.badge.isVisible = false
-                            RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
-                        }
+                        defaultSharedPreferences.putBoolean(PREF_HAS_USED_SWAP, false)
+                        RxBus.publish(BadgeEvent(PREF_HAS_USED_SWAP))
+                        sendReceiveView.swapBadge.isVisible = false
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root
@@ -202,20 +206,10 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 assetsAdapter.notifyDataSetChanged()
             }
 
-        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
-        _headBinding?.sendReceiveView?.badge?.isVisible = swap
-
-        RxBus.listen(BadgeEvent::class.java)
-            .autoDispose(destroyScope)
-            .subscribe { e ->
-                lifecycleScope.launch{
-                    when (e.badge) {
-                        Account.PREF_HAS_USED_SWAP -> {
-                            _headBinding?.sendReceiveView?.badge?.isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
-                        }
-                    }
-                }
-            }
+        val swap = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true)
+        _headBinding?.sendReceiveView?.swapBadge?.isVisible = swap
+        val buy = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true)
+        _headBinding?.sendReceiveView?.buyBadge?.isVisible = buy
     }
 
     override fun onResume() {
