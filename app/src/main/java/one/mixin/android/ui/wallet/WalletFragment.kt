@@ -143,7 +143,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val walletViewModel by viewModels<WalletViewModel>()
-    private val assetDistributionViewModel by viewModels<AssetDistributionViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -238,7 +237,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
                 if (compose.isVisible.not()) {
                     compose.visibility = VISIBLE
-                    assetDistributionViewModel.loadWallets()
                     val centerX = titleTv.x.toInt() + titleTv.width / 2
                     val centerY = titleTv.y.toInt() + titleTv.height / 2
                     val startRadius = 0

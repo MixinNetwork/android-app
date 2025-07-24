@@ -35,10 +35,6 @@ class AssetDistributionViewModel @Inject constructor(
         }
     }
 
-    suspend fun getAddressesByWalletId(walletId: String) = withContext(Dispatchers.IO) {
-        web3Repository.getAddressesByWalletId(walletId)
-    }
-
     suspend fun getTokenDistribution(excludeWeb3: Boolean = false): List<AssetDistribution> = withContext(Dispatchers.IO) {
         val walletIds = _wallets.value.filter { it.hasLocalPrivateKey }.map { it.id }
         val web3Tokens = if (excludeWeb3) emptyList() else web3Repository.allWeb3Tokens(walletIds)
