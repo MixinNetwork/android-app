@@ -94,6 +94,7 @@ fun MnemonicPhraseInput(
     onQrCode: ((List<String>) -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
     onScan: (() -> Unit)? = null,
+    validate: ((List<String>) -> String?)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
     var inputs by remember {
@@ -333,6 +334,10 @@ fun MnemonicPhraseInput(
                                         },
                                         onDone = {
                                             val words = inputs.map { it.trim() }
+                                            validate?.invoke(words)?.let {
+                                                errorInfo = it
+                                                return@KeyboardActions
+                                            }
                                             when (state) {
                                                 MnemonicState.Input -> onComplete.invoke(words)
                                                 MnemonicState.Import -> {
@@ -577,6 +582,10 @@ fun MnemonicPhraseInput(
                     enabled = state == MnemonicState.Display || inputs.all { it.isNotEmpty() },
                     onClick = {
                         val words = inputs.map { it.trim() }
+                        validate?.invoke(words)?.let {
+                            errorInfo = it
+                            return@Button
+                        }
                         when (state) {
                             MnemonicState.Input -> onComplete.invoke(words)
                             MnemonicState.Import -> {

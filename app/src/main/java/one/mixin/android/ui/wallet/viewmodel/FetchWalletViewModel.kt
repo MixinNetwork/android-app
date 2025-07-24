@@ -16,6 +16,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.AddWalletEvent
 import one.mixin.android.job.MixinJobManager
@@ -75,6 +76,10 @@ class FetchWalletViewModel @Inject constructor(
 
     fun setSpendKey(spendKey: ByteArray) {
         this.spendKey = spendKey
+    }
+
+    fun getSpendKey(): ByteArray? {
+        return spendKey
     }
 
     fun findMoreWallets() {
@@ -213,6 +218,10 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
+    suspend fun getAddressesByChainId(walletId: String, chainId: String): Web3Address? {
+        return web3Repository.getAddressesByChainId(walletId, chainId)
+    }
+
     fun toggleWalletSelection(wallet: IndexedWallet) {
         val current = _selectedWalletInfos.value
         _selectedWalletInfos.value = if (current.contains(wallet)) current - wallet else current + wallet
@@ -226,7 +235,7 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    private fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
+    fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
         return try {
             val encryptedString = CryptoWalletHelper.encryptMnemonicWithSpendKey(spendKey, words)
             CryptoWalletHelper.saveWeb3PrivateKey(context, walletId, encryptedString)
@@ -363,5 +372,14 @@ class FetchWalletViewModel @Inject constructor(
             Timber.e(e, "Failed to save web3 private key")
             false
         }
+    }
+
+    fun savePrivateKey(walletId: String, privateKey: String) {
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            Timber.e("Spend key is null, cannot save wallets.")
+            return
+        }
+        saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, walletId, privateKey)
     }
 }

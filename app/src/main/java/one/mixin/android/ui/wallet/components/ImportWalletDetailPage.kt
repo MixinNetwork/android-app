@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet.components
 import PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -55,6 +54,7 @@ import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import org.sol4k.Base58
 import org.web3j.crypto.WalletUtils
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -64,6 +64,7 @@ fun ImportWalletDetailPage(
     onConfirmClick: (String, String) -> Unit,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
+    walletId: String? = null,
 ) {
     val context = LocalContext.current
     var text by remember(contentText) { mutableStateOf(contentText) }
@@ -85,17 +86,19 @@ fun ImportWalletDetailPage(
 
     var addressExists by remember { mutableStateOf(false) }
     var addressToCheck by remember { mutableStateOf<String?>(null) }
+    var isAddressMismatched by remember { mutableStateOf(false) }
 
-    LaunchedEffect(text, chainId, mode) {
+    LaunchedEffect(text, chainId, mode, walletId) {
         if (text.isEmpty()) {
             addressExists = false
             addressToCheck = null
+            isAddressMismatched = false
             return@LaunchedEffect
         }
 
         try {
             val address = when (mode) {
-                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
+                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY, WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork && isEvmPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, chainId)
                     } else if (!isEvmNetwork && isSolanaPrivateKeyValid(text)) {
@@ -115,7 +118,11 @@ fun ImportWalletDetailPage(
                 else -> null
             }
 
-            if (address != null && address != addressToCheck) {
+            if (address != null && mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) {
+                val addressMatches = walletViewModel.isAddressMatch(walletId, address)
+                isAddressMismatched = !addressMatches
+                addressExists = false
+            } else if (address != null && address != addressToCheck) {
                 addressToCheck = address
                 addressExists = walletViewModel.anyAddressExists(listOf(address))
             } else if (address == null) {
@@ -123,15 +130,18 @@ fun ImportWalletDetailPage(
                 addressToCheck = null
             }
         } catch (e: Exception) {
+            Timber.e(e)
             addressExists = false
             addressToCheck = null
+            isAddressMismatched = false
         }
     }
 
     val isInputValid by remember(mode, text, isEvmNetwork) {
         derivedStateOf {
             when (mode) {
-                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
+                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
+                WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork) {
                         isEvmPrivateKeyValid(text)
                     } else {
@@ -156,16 +166,27 @@ fun ImportWalletDetailPage(
         }
     }
 
-    val isButtonEnabled = isInputValid && !addressExists
+    val showReimportMismatchError by remember(mode, isInputValid, isAddressMismatched) {
+        derivedStateOf {
+            mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY && text.isNotEmpty() && isInputValid && isAddressMismatched
+        }
+    }
+
+    val isButtonEnabled = when (mode) {
+        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> isInputValid && !isAddressMismatched
+        else -> isInputValid && !addressExists
+    }
 
     val title = when (mode) {
         WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> stringResource(R.string.import_private_key)
         WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> stringResource(R.string.add_watch_address)
+        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> stringResource(R.string.import_private_key)
         else -> ""
     }
     val hint = when (mode) {
         WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
         WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> stringResource(R.string.address_hint)
+        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> stringResource(R.string.private_key_hint)
         else -> ""
     }
 
@@ -339,12 +360,23 @@ fun ImportWalletDetailPage(
                     showInvalidError -> {
                         Text(
                             text = when (mode) {
-                                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY ->
+                                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
+                                WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY ->
                                     stringResource(R.string.Invalid_Private_Key)
                                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS ->
                                     stringResource(R.string.Invalid_Address)
                                 else -> ""
                             },
+                            color = MixinAppTheme.colors.red,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 48.dp, vertical = 8.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                    showReimportMismatchError -> {
+                        Text(
+                            text = stringResource(R.string.reimport_private_key_error),
                             color = MixinAppTheme.colors.red,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -378,7 +410,7 @@ fun ImportWalletDetailPage(
                     ),
                 ) {
                     Text(
-                        text = stringResource(id = if (mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY) R.string.Import else R.string.Add),
+                        text = stringResource(id = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Add else R.string.Import),
                         color = Color.White
                     )
                 }
@@ -387,6 +419,7 @@ fun ImportWalletDetailPage(
         }
     }
 }
+
 
 private fun isEvmAddressValid(address: String): Boolean {
     return try {

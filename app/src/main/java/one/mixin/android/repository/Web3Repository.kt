@@ -124,4 +124,7 @@ constructor(
     suspend fun allWeb3Tokens(walletIds: List<String>) = web3TokenDao.allWeb3Tokens(walletIds)
 
     suspend fun findUnifiedAssetItem(walletId: String) = web3TokenDao.findUnifiedAssetItem(walletId)
+    suspend fun isAddressMatch(walletId: String, address: String): Boolean {
+        return web3AddressDao.isAddressMatch(walletId, address)
+    }
 }

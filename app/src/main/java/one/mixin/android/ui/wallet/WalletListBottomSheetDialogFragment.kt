@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.CircularProgressIndicator
@@ -60,22 +58,22 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.components.WalletCard
-import one.mixin.android.ui.wallet.components.WalletDestination
-import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.WalletCategory
-import one.mixin.android.db.web3.vo.isImported
-import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
 import one.mixin.android.ui.wallet.components.PREF_NAME
+import one.mixin.android.ui.wallet.components.WalletCard
+import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletInfoCard
+import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.WalletCategory
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {

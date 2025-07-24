@@ -28,7 +28,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,15 +44,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
-import one.mixin.android.db.web3.vo.notClassic
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.WalletCategory
-import timber.log.Timber
 
 const val PREF_NAME = "wallet_info_card"
 const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"

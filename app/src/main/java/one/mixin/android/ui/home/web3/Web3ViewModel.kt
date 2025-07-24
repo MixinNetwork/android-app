@@ -457,4 +457,10 @@ internal constructor(
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
 
     suspend fun anyAddressExists(destinations: List<String>) = web3Repository.anyAddressExists(destinations)
+    suspend fun isAddressMatch(walletId: String?, address: String): Boolean {
+        if (walletId == null) return false
+        return withContext(Dispatchers.IO) {
+            web3Repository.isAddressMatch(walletId, address)
+        }
+    }
 }

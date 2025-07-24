@@ -35,4 +35,7 @@ interface Web3AddressDao : BaseDao<Web3Address> {
 
     @Query("SELECT a.chain_id, c.icon_url, c.name, a.destination FROM addresses a LEFT JOIN chains c ON c.chain_id = a.chain_id WHERE a.wallet_id = :walletId")
     suspend fun getChainItemByWalletId(walletId: String): List<ChainItem>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM addresses WHERE wallet_id = :walletId AND destination = :address)")
+    suspend fun isAddressMatch(walletId: String, address: String): Boolean
 }

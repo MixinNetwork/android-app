@@ -1,11 +1,11 @@
 package one.mixin.android.ui.wallet.components
-import com.google.gson.*
-import com.google.gson.reflect.TypeToken
+import com.google.gson.JsonParseException
+import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import timber.log.Timber
-import java.lang.reflect.Type
+
 sealed class WalletDestination {
     object Privacy : WalletDestination()
     data class Classic(val walletId: String) : WalletDestination()

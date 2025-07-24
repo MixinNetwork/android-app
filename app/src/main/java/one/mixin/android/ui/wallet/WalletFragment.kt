@@ -32,9 +32,7 @@ import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -310,7 +308,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Watch_Wallet) }
                     } ?: run {
-                        binding.titleTv.setCompoundDrawables(null, null ,null , null)
                         binding.titleTv.setText(R.string.Watch_Wallet)
                         binding.tailIcon.isVisible = false
                     }
@@ -326,10 +323,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
-                        binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
+                        binding.tailIcon.isVisible = false
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
                     } ?: run {
-                        binding.titleTv.setCompoundDrawables(null, null ,null , null)
                         binding.titleTv.setText(R.string.Common_Wallet)
                         binding.tailIcon.isVisible = false
                     }
@@ -345,7 +341,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         val callback: (AddWalletBottomSheetDialogFragment.Action) -> Unit = { action ->
             val intent = Intent(requireContext(), WalletSecurityActivity::class.java)
             val mode = when (action) {
-                AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT
+                AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT_MNEMONIC
                 AddWalletBottomSheetDialogFragment.Action.IMPORT_PRIVATE_KEY -> WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
                 AddWalletBottomSheetDialogFragment.Action.ADD_WATCH_ADDRESS -> WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
             }

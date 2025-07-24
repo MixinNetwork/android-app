@@ -2069,4 +2069,8 @@
     <string name="NoKey">NoKey</string>
     <string name="Watching">Watching</string>
     <string name="error_max_wallet_reached">ERROR 10632: Maximum wallet limit reached</string>
+    <string name="Import_Private_Key_Desc">The encrypted private key for this wallet is missing from this device. Please re-import to continue.</string>
+    <string name="Import_Mnemonic_Phrase_Desc">The encrypted mnemonic phrase for this wallet is missing from this device. Please re-import to continue.</string>
+    <string name="reimport_private_key_error">The imported private key does not match the wallet, please re-import.</string>
+    <string name="reimport_mnemonic_Phrase_error">The imported mnemonic phrase does not match the wallet, please re-import.</string>
 </resources>

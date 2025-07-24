@@ -2,10 +2,8 @@
 
 package one.mixin.android.ui.wallet
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
@@ -34,7 +32,6 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
-import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.escapeSql
@@ -65,7 +62,6 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
-import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
