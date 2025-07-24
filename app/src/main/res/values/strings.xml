@@ -2051,6 +2051,7 @@
     <string name="Store_in_vault_or_safe_place">Store in vault or safe place.</string>
     <string name="Dont_share_it_with_a_network">Don’t share it with a network.</string>
     <string name="watch_only_wallet_warning_message">This is a watch-only wallet. Are you sure you want to use it to receive assets?</string>
+    <string name="no_key_wallet_warning_message">This wallet has no private key on this device. Are you sure you want to use it to receive assets?</string>
     <string name="remove_wallet_warning">Deleting this wallet will not affect your assets. Please make sure your private key or mnemonic phrase is backed up.</string>
     <string name="words">%1$d words</string>
     <string name="import_private_key">Import Private Key</string>

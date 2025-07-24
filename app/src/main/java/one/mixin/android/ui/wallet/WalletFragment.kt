@@ -470,7 +470,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         val dest = selectedWalletDestination
         importBottomBinding.privateKey.isVisible = dest is WalletDestination.Import && dest.category != WalletCategory.WATCH_ADDRESS.value
         importBottomBinding.mnemonicPhrase.isVisible = dest is WalletDestination.Import && dest.category == WalletCategory.IMPORTED_MNEMONIC.value
-        importBottomBinding.rename.isVisible = dest is WalletDestination.Import
+        importBottomBinding.rename.isVisible = dest is WalletDestination.Import || dest is WalletDestination.Watch
         if (dest is WalletDestination.Import) {
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(dest.walletId)
@@ -491,12 +491,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Import) {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
+            } else if (dest is WalletDestination.Watch) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
             }
             bottomSheet.dismiss()
         }
         importBottomBinding.transactionsTv.setOnClickListener {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Import) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+            } else if (dest is WalletDestination.Watch) {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
             }
             bottomSheet.dismiss()
@@ -525,6 +529,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         if (dest is WalletDestination.Import) {
                             walletViewModel.deleteWallet(dest.walletId)
                             this@WalletFragment.switchToClassicWallet(WalletDestination.Classic(JsSigner.classicWalletId))
+                        }else if (dest is WalletDestination.Watch) {
+                            walletViewModel.deleteWallet(dest.walletId)
+                            this@WalletFragment.switchToClassicWallet(WalletDestination.Classic(JsSigner.classicWalletId))
                         }
                     } finally {
                         dialog.dismiss()
@@ -543,6 +550,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     this@WalletFragment.lifecycleScope.launch {
                         val dest = selectedWalletDestination
                         if (dest is WalletDestination.Import) {
+                            walletViewModel.renameWallet(dest.walletId, newName)
+                            updateUi(dest)
+                        } else if (dest is WalletDestination.Watch) {
                             walletViewModel.renameWallet(dest.walletId, newName)
                             updateUi(dest)
                         }

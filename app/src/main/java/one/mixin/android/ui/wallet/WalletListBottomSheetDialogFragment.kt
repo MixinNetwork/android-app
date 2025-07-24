@@ -113,8 +113,8 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         },
                         onWalletClick = { wallet ->
-                            if (wallet != null && wallet.isWatch()) {
-                                NoKeyWarningBottomSheetDialogFragment.newInstance(wallet.name).apply {
+                            if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
+                                NoKeyWarningBottomSheetDialogFragment.newInstance(wallet).apply {
                                     onConfirm = {
                                         onWalletClickListener?.invoke(wallet)
                                         dismiss()

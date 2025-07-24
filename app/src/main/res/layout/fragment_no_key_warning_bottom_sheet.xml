@@ -25,6 +25,7 @@
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:drawableEnd="4dp"
         app:drawableEndCompat="@drawable/ic_wallet_watch" />
 
     <TextView

@@ -22,15 +22,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -39,9 +40,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
@@ -54,24 +57,52 @@ fun WalletCard(
     onClick: () -> Unit,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
     var web3TokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
     var tokenTotalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
     var assets by remember { mutableStateOf(emptyList<AssetDistribution>()) }
+    var refreshTrigger by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(viewModel, destination) {
-        if (destination is WalletDestination.Privacy) {
-            tokenTotalBalance = viewModel.getTokenTotalBalance(excludeWeb3 = true)
-            assets = viewModel.getTokenDistribution(excludeWeb3 = true)
-        } else if (destination is WalletDestination.Classic) {
-            web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
-            assets = viewModel.getWeb3TokenDistribution(destination.walletId)
-        } else if (destination is WalletDestination.Import) {
-            web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
-            assets = viewModel.getWeb3TokenDistribution(destination.walletId)
-        } else {
-            tokenTotalBalance = viewModel.getTokenTotalBalance()
-            assets = viewModel.getTokenDistribution()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                refreshTrigger++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(viewModel, destination, refreshTrigger) {
+        when (destination) {
+            is WalletDestination.Privacy -> {
+                tokenTotalBalance = viewModel.getTokenTotalBalance(excludeWeb3 = true)
+                assets = viewModel.getTokenDistribution(excludeWeb3 = true)
+            }
+
+            is WalletDestination.Classic -> {
+                web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
+                assets = viewModel.getWeb3TokenDistribution(destination.walletId)
+            }
+
+            is WalletDestination.Import -> {
+                web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
+                assets = viewModel.getWeb3TokenDistribution(destination.walletId)
+            }
+
+            is WalletDestination.Watch -> {
+                web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
+                assets = viewModel.getWeb3TokenDistribution(destination.walletId)
+            }
+
+            else -> {
+                tokenTotalBalance = viewModel.getTokenTotalBalance()
+                assets = viewModel.getTokenDistribution()
+            }
         }
     }
 
