@@ -62,10 +62,13 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isWatch
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -110,8 +113,17 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                         },
                         onWalletClick = { wallet ->
-                            onWalletClickListener?.invoke(wallet)
-                            dismiss()
+                            if (wallet != null && wallet.isWatch()) {
+                                NoKeyWarningBottomSheetDialogFragment.newInstance(wallet.name).apply {
+                                    onConfirm = {
+                                        onWalletClickListener?.invoke(wallet)
+                                        dismiss()
+                                    }
+                                }.show(parentFragmentManager, NoKeyWarningBottomSheetDialogFragment.TAG)
+                            } else {
+                                onWalletClickListener?.invoke(wallet)
+                                dismiss()
+                            }
                         },
                         onCancel = {
                             dismiss()
@@ -216,16 +228,29 @@ fun WalletListScreen(
                 }
             }
             items(wallets) { wallet ->
-                val destination = if (wallet.notClassic()) {
-                    WalletDestination.Import(wallet.id, wallet.category)
+                if (wallet.isImported()) {
+                    val destination = WalletDestination.Import(wallet.id, wallet.category)
+                    WalletCard(
+                        name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                        destination = destination,
+                        hasLocalPrivateKey = wallet.hasLocalPrivateKey,
+                        onClick = { onWalletClick(wallet) }
+                    )
+                } else if (wallet.isWatch()) {
+                    val destination = WalletDestination.Watch(wallet.id, wallet.category)
+                    WalletCard(
+                        name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                        destination = destination,
+                        onClick = { onWalletClick(wallet) }
+                    )
                 } else {
-                    WalletDestination.Classic(wallet.id)
+                    val destination = WalletDestination.Classic(wallet.id)
+                    WalletCard(
+                        name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                        destination = destination,
+                        onClick = { onWalletClick(wallet) }
+                    )
                 }
-                WalletCard(
-                    name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
-                    destination = destination,
-                    onClick = { onWalletClick(wallet) }
-                )
                 Spacer(modifier = Modifier.height(10.dp))
             }
         }

@@ -194,7 +194,7 @@ fun ImportWalletDetailPage(
                         readOnly = true,
                         value = selectedNetworkName,
                         onValueChange = { },
-                        label = { Text(stringResource(R.string.Select_Network), color = MixinAppTheme.colors.accent) },
+                        label = { Text(stringResource(R.string.Choose_Network), color = MixinAppTheme.colors.accent) },
                         trailingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.ic_sort_arrow_down),

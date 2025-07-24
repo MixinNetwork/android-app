@@ -47,6 +47,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.openUrl
@@ -131,7 +132,7 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             wallets.forEach { wallet ->
-                if (wallet.category == WalletCategory.WATCH_ADDRESS.value) {
+                if (wallet.isWatch()) {
                     WalletCard(
                         name = wallet.name,
                         destination = WalletDestination.Watch(wallet.id, wallet.category),

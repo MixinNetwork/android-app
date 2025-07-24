@@ -99,8 +99,8 @@ fun WalletCard(
                 Text(
                     name
                         ?: if (destination is WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
-                        R.string.Common_Wallet
-                    ),
+                            R.string.Common_Wallet
+                        ),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
@@ -124,7 +124,7 @@ fun WalletCard(
                                 color = MixinAppTheme.colors.backgroundGrayLight,
                                 shape = RoundedCornerShape(4.dp)
                             )
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                            .padding(horizontal = 4.dp)
                     )
                     if (!hasLocalPrivateKey) {
                         Spacer(modifier = Modifier.width(4.dp))
@@ -137,7 +137,7 @@ fun WalletCard(
                                     color = MixinAppTheme.colors.red.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(4.dp)
                                 )
-                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                .padding(horizontal = 4.dp)
                         )
 
                     }
@@ -159,7 +159,7 @@ fun WalletCard(
                                 color = MixinAppTheme.colors.backgroundGrayLight,
                                 shape = RoundedCornerShape(4.dp)
                             )
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                            .padding(horizontal = 4.dp)
                     )
                 }
 
@@ -231,7 +231,7 @@ val classicChain = listOf(
     R.drawable.ic_chain_polygon,
     R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_base,
-     R.drawable.ic_chain_arbitrum_eth,
+    R.drawable.ic_chain_arbitrum_eth,
     // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
 )

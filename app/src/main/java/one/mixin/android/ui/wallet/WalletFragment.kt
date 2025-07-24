@@ -308,7 +308,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
-                        binding.titleTv.text = wallet.name
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Watch_Wallet) }
                     } ?: run {
                         binding.titleTv.setCompoundDrawables(null, null ,null , null)
                         binding.titleTv.setText(R.string.Watch_Wallet)
@@ -327,11 +327,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
-                        binding.titleTv.text = if (!wallet.hasLocalPrivateKey) {
-                            getString(R.string.watch, walletViewModel.getAddresses(wallet.id).joinToString { it.destination }.formatPublicKey(limit = 15, suffixLen = 4, prefixLen = 6))
-                        } else {
-                            wallet.name.ifBlank { getString(R.string.Common_Wallet) }
-                        }
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
                     } ?: run {
                         binding.titleTv.setCompoundDrawables(null, null ,null , null)
                         binding.titleTv.setText(R.string.Common_Wallet)
@@ -383,7 +379,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
             lifecycleScope.launch {
                 val wallet = walletViewModel.findWalletById(walletId)
-                if (wallet != null && wallet.category != WalletCategory.WATCH_ADDRESS.value && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
+                if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
                     JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
                         runBlocking { walletViewModel.getAddresses(queryWalletId) }
                     }

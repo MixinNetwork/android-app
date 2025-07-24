@@ -44,3 +44,7 @@ fun Web3Wallet.notClassic(): Boolean {
 fun Web3Wallet.isImported(): Boolean {
     return category == WalletCategory.IMPORTED_MNEMONIC.value || category == WalletCategory.IMPORTED_PRIVATE_KEY.value
 }
+
+fun Web3Wallet.isWatch(): Boolean {
+    return category == WalletCategory.WATCH_ADDRESS.value
+}

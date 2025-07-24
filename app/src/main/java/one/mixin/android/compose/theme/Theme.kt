@@ -78,6 +78,7 @@ class AppColors(
     val walletYellow: Color,
     val walletPurple: Color,
     val badgeRed: Color,
+    val warning: Color,
 )
 
 class AppDrawables(
@@ -120,6 +121,7 @@ private val LightColorPalette =
         walletYellow = Color(0xFFFFC107),
         walletPurple = Color(0xFF9C27B0),
         badgeRed = Color(0xFFDB454F),
+        warning = Color(0xFFF6A417),
     )
 
 private val DarkColorPalette =
@@ -149,6 +151,7 @@ private val DarkColorPalette =
         walletYellow = Color(0xFFFFEE58),
         walletPurple = Color(0xFFBA68C8),
         badgeRed = Color(0xFFF67070),
+        warning = Color(0xFFF6A417),
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }

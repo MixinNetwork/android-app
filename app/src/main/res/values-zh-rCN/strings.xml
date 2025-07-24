@@ -1998,7 +1998,7 @@
     <string name="Your_Private_Key">你的私钥</string>
     <string name="Store_in_vault_or_safe_place">存放在保险箱或安全的地方。</string>
     <string name="Dont_share_it_with_a_network">不要通过网络分享它。</string>
-    <string name="Select_Network">选择网络</string>
+    <string name="watch_only_wallet_warning_message">这是一个仅供观察的钱包。您确定要用它来接收资产吗？</string>
     <string name="remove_wallet_warning">移除此钱包不会影响你的资产，请确保你的私钥或助记词已备份。</string>
     <string name="words">%1$d个单词</string>
     <string name="import_private_key">导入私钥</string>
