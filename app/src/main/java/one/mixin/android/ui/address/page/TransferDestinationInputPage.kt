@@ -132,7 +132,7 @@ fun TransferDestinationInputPage(
         ) {
             PageScaffold(
                 title = stringResource(R.string.Send),
-                subtitle = if (web3Token != null) {
+                subtitle = name ?: if (web3Token != null) {
                     stringResource(R.string.Common_Wallet)
                 } else {
                     stringResource(R.string.Privacy_Wallet)

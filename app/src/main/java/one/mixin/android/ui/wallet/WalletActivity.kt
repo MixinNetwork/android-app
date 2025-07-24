@@ -8,6 +8,7 @@ import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
@@ -18,6 +19,7 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
+import one.mixin.android.ui.wallet.WalletActivity.Companion.ARGS_WALLET_ID
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
@@ -152,12 +154,14 @@ class WalletActivity : BlazeBaseActivity() {
                 val address = intent.getStringExtra(TransferDestinationInputFragment.ARGS_ADDRESS)
                 val token = intent.getParcelableExtraCompat(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
                 val chain = intent.getParcelableExtraCompat(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
-                val asset = intent.getParcelableExtraCompat(TransactionsFragment.ARGS_ASSET, TokenItem::class.java)
+                val wallet = intent.getParcelableExtraCompat(TransferDestinationInputFragment.ARGS_WALLET, Web3Wallet::class.java)
+                val asset = intent.getParcelableExtraCompat(ARGS_ASSET, TokenItem::class.java)
                 navController.setGraph(navGraph, Bundle().apply {
-                    asset?.let { asset-> putParcelable(TransactionsFragment.ARGS_ASSET, asset) }
+                    asset?.let { asset-> putParcelable(ARGS_ASSET, asset) }
                     address?.let { address -> putString(TransferDestinationInputFragment.ARGS_ADDRESS, address) }
                     token?.let { token -> putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token) }
                     chain?.let { chain -> putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain) }
+                    wallet?.let { wallet -> putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet) }
                 })
             }
             is Destination.InputWithBiometricItem -> {
@@ -203,11 +207,12 @@ class WalletActivity : BlazeBaseActivity() {
         const val PENDING_TYPE = "pending_type"
         const val ARGS_WALLET_ID = "args_wallet_id"
 
-        fun navigateToWalletActivity(activity: Activity, address: String, token: Web3TokenItem, chain: Web3TokenItem) {
+        fun navigateToWalletActivity(activity: Activity, address: String, token: Web3TokenItem, chain: Web3TokenItem, wallet: Web3Wallet) {
             val intent = Intent(activity, WalletActivity::class.java).apply {
                 putExtra(TransferDestinationInputFragment.ARGS_ADDRESS, address)
                 putExtra(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                 putExtra(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
+                putExtra(TransferDestinationInputFragment.ARGS_WALLET, wallet)
                 putExtra(DESTINATION, Destination.Web3TransferDestinationInput)
             }
             activity.startActivity(intent)

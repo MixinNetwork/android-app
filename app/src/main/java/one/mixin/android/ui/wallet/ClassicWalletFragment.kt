@@ -142,14 +142,15 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                             toast(R.string.Data_error)
                                             return@launch
                                         }
+                                        val wallet = web3ViewModel.findWalletById(walletId)
                                         val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
-                                        if (address == null) {
+                                        if (address == null || wallet == null) {
                                             toast(R.string.Data_error)
                                             return@launch
                                         }
                                         val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId) ?: return@launch
                                         Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
-                                        WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address.destination, token, chain)
+                                        WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address.destination, token, chain, wallet)
                                     }
                                     dismissNow()
                                 }
