@@ -1,6 +1,8 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -36,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,6 +46,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.edit
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -56,7 +60,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -69,6 +72,10 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
+import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
+import one.mixin.android.ui.wallet.components.PREF_NAME
+import one.mixin.android.ui.wallet.components.WalletInfoCard
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -91,7 +98,7 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -145,6 +152,7 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, R.style.MixinBottomSheet)
         dialog.window?.let { window ->
@@ -203,10 +211,13 @@ fun WalletListScreen(
     excludeWalletId: String?,
     onQueryChanged: (String) -> Unit,
     onWalletClick: (Web3Wallet?) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var query by remember { mutableStateOf("") }
-
+    val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
+    val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             query = query,
@@ -218,21 +229,18 @@ fun WalletListScreen(
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
-
-        LazyColumn(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)) {
+        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)) {
             if (excludeWalletId != null && query.isEmpty()) {
-                item {
-                    WalletCard(
-                        name = stringResource(id = R.string.Privacy_Wallet),
-                        destination = WalletDestination.Privacy,
-                        onClick = {
-                            onWalletClick.invoke(null)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
+                WalletCard(
+                    name = stringResource(id = R.string.Privacy_Wallet),
+                    destination = WalletDestination.Privacy,
+                    onClick = {
+                        onWalletClick.invoke(null)
+                    }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
             }
-            items(wallets) { wallet ->
+            wallets.forEach { wallet ->
                 if (wallet.isImported()) {
                     val destination = WalletDestination.Import(wallet.id, wallet.category)
                     WalletCard(
@@ -258,6 +266,23 @@ fun WalletListScreen(
                 }
                 Spacer(modifier = Modifier.height(10.dp))
             }
+
+            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
+                Spacer(modifier = Modifier.weight(1f))
+                WalletInfoCard(
+                    hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
+                    hideCommonWalletInfo = hideCommonWalletInfo.value,
+                    onPrivacyClose = {
+                        hidePrivacyWalletInfo.value = true
+                        prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
+                    },
+                    onCommonClose = {
+                        hideCommonWalletInfo.value = true
+                        prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
+                    }
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+            }
         }
     }
 }
@@ -268,7 +293,7 @@ fun SearchBar(
     onQueryChanged: (String) -> Unit,
     isSearching: Boolean,
     onCancel: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),

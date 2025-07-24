@@ -53,7 +53,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -61,7 +60,6 @@ import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openUrl
@@ -69,16 +67,11 @@ import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.ui.wallet.components.CommonWalletInfo
 import one.mixin.android.ui.wallet.components.PREF_NAME
-import one.mixin.android.ui.wallet.components.PrivacyWalletInfo
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.js.JsSigner
-
-const val KEY_HIDE_PRIVACY_WALLET_GUIDE = "hide_privacy_wallet_guide"
-const val KEY_HIDE_COMMON_WALLET_GUIDE = "hide_common_wallet_guide"
 
 @Composable
 fun TransferDestinationInputPage(
@@ -98,8 +91,6 @@ fun TransferDestinationInputPage(
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-    val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_GUIDE, false)) }
-    val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_GUIDE, false)) }
     val localLocalSoftwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
@@ -361,29 +352,6 @@ fun TransferDestinationInputPage(
                                 color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
                             )
                         }
-                    }
-                    if (text.isBlank() && token != null && hideCommonWalletInfo.value.not()) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        CommonWalletInfo(
-                            onLearnMoreClick = {
-                                context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv5pmu6yca6zkx5yyf77yf-8308b1/")
-                            },
-                            onClose = {
-                                prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_GUIDE, true) }
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
-                    } else if (text.isBlank() && web3Token != null && hidePrivacyWalletInfo.value.not()) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        PrivacyWalletInfo(
-                            onLearnMoreClick = {
-                                context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv6zqq56eb6zkx5yyf77yf-1s7o0e2/")
-                            },
-                            onClose = {
-                                prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_GUIDE, true) }
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
             }

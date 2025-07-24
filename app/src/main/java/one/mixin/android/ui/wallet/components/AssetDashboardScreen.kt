@@ -56,9 +56,8 @@ import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 const val PREF_NAME = "wallet_info_card"
-private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
-private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
-private const val KEY_ADD_WALLET_CLICKED = "add_wallet_clicked"
+const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
+const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
