@@ -441,6 +441,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 output = t.assetId,
                                                 null,
                                                 null,
+                                                walletId = JsSigner.currentWalletId,
                                                 inMixin = false
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {

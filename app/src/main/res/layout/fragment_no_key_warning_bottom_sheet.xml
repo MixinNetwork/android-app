@@ -25,7 +25,7 @@
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:drawableEnd="4dp"
+        android:drawablePadding="4dp"
         app:drawableEndCompat="@drawable/ic_wallet_watch" />
 
     <TextView
@@ -64,9 +64,10 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="30dp"
         android:gravity="center"
         android:text="@string/Cancel"
-        android:textColor="?android:textColorSecondary"
+        android:textColor="?attr/text_assist"
         android:textSize="16sp" />
 
 </LinearLayout>

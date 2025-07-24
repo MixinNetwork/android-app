@@ -116,8 +116,8 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
                                 NoKeyWarningBottomSheetDialogFragment.newInstance(wallet).apply {
                                     onConfirm = {
-                                        onWalletClickListener?.invoke(wallet)
-                                        dismiss()
+                                        this@WalletListBottomSheetDialogFragment.onWalletClickListener?.invoke(wallet)
+                                        this@WalletListBottomSheetDialogFragment.dismiss()
                                     }
                                 }.show(parentFragmentManager, NoKeyWarningBottomSheetDialogFragment.TAG)
                             } else {

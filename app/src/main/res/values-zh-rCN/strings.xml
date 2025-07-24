@@ -2016,4 +2016,5 @@
     <string name="Imported">Imported</string>
     <string name="NoKey">NoKey</string>
     <string name="Watching">Watching</string>
+    <string name="error_max_wallet_reached">错误 10632: 已达到钱包数量上限</string>
 </resources>

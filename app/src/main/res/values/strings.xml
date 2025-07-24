@@ -2068,4 +2068,5 @@
     <string name="Imported">Imported</string>
     <string name="NoKey">NoKey</string>
     <string name="Watching">Watching</string>
+    <string name="error_max_wallet_reached">ERROR 10632: Maximum wallet limit reached</string>
 </resources>

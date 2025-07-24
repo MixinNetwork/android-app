@@ -32,6 +32,9 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -74,6 +77,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         const val ARGS_WEB3_TOKEN = "args_web3_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
+        const val ARGS_WALLET = "args_wallet"
     }
 
     private val token: TokenItem? by lazy {
@@ -93,6 +97,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     private val chainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
+    }
+
+    private val wallet by lazy {
+        requireArguments().getParcelableCompat(ARGS_WALLET, Web3Wallet::class.java)
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
@@ -194,7 +202,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             TransferDestinationInputPage(
                                 token = token,
                                 web3Token = web3Token,
-                                web3Chain = chainToken,
+                                name = if (wallet?.isWatch() == true || wallet?.isImported() == true) wallet?.name else null,
                                 addressShown = addressShown,
                                 pop = {
                                     requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -257,7 +265,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                                     getString(R.string.Privacy_Wallet)
                                                                                 else if (destinationWallet.category == WalletCategory.CLASSIC.value)
                                                                                     getString(R.string.Common_Wallet)
-                                                                                else destinationWallet.name ?: ""
+                                                                                else destinationWallet.name
                                                                             )
                                                                             putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
                                                                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)

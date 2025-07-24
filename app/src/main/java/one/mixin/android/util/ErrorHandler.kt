@@ -218,6 +218,7 @@ open class ErrorHandler {
         const val INVALID_QUOTE_AMOUNT = 10614
         const val NO_AVAILABLE_QUOTE = 10615
         const val SIMULATE_TRANSACTION_FAILED = 10631
+        const val MAX_WALLET_REACHED = 10632
 
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
@@ -311,6 +312,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.NO_AVAILABLE_QUOTE -> {
             getString(R.string.error_no_available_quote)
+        }
+        ErrorHandler.MAX_WALLET_REACHED -> {
+            getString(R.string.error_max_wallet_reached)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)

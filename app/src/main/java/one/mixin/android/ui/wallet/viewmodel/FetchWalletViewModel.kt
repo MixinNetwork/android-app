@@ -27,6 +27,7 @@ import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
@@ -342,6 +343,7 @@ class FetchWalletViewModel @Inject constructor(
             },
             failureBlock = { response ->
                 Timber.e("Failed to create wallet: ${response.errorCode} - ${response.errorDescription}")
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
                 RxBus.publish(AddWalletEvent(false))
                 false
             },

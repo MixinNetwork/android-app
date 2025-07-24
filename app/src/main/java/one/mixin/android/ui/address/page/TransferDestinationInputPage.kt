@@ -36,7 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -61,6 +61,7 @@ import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openUrl
@@ -83,7 +84,7 @@ const val KEY_HIDE_COMMON_WALLET_GUIDE = "hide_common_wallet_guide"
 fun TransferDestinationInputPage(
     token: TokenItem?,
     web3Token: Web3TokenItem?,
-    web3Chain: Web3TokenItem?,
+    name: String?,
     addressShown: Boolean,
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
@@ -122,13 +123,13 @@ fun TransferDestinationInputPage(
         skipHalfExpanded = true
     )
     var text by remember(contentText) { mutableStateOf(contentText) }
-    val clipboardManager = LocalClipboardManager.current
+    val clipboardManager = LocalClipboard.current
 
-        ModalBottomSheetLayout(
-            sheetState = modalSheetState,
-            scrimColor = Color.Black.copy(alpha = 0.3f),
-            sheetBackgroundColor = Color.Transparent,
-            sheetContent = {
+    ModalBottomSheetLayout(
+        sheetState = modalSheetState,
+        scrimColor = Color.Black.copy(alpha = 0.3f),
+        sheetBackgroundColor = Color.Transparent,
+        sheetContent = {
                 AddressSearchBottomSheet(
                     addresses = addresses,
                     modalSheetState = modalSheetState,
@@ -252,8 +253,8 @@ fun TransferDestinationInputPage(
                             Row(modifier = Modifier.align(Alignment.BottomEnd)) {
                                 IconButton(
                                     onClick = {
-                                        clipboardManager.getText()?.let {
-                                            text = it.text
+                                        clipboardManager.nativeClipboard.primaryClip?.getItemAt(0)?.text?.let {
+                                            text = it.toString()
                                         }
                                     },
                                 ) {

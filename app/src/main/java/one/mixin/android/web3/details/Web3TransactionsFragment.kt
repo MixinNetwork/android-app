@@ -203,6 +203,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 sendReceiveView.send.setOnClickListener {
                     lifecycleScope.launch {
                         val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                        val wallet = web3ViewModel.findWalletById(token.walletId)
                         if (chain == null) {
                             refreshToken(token.chainId)
                             toast(R.string.Please_wait_a_bit)
@@ -211,6 +212,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                                 R.id.action_web3_transactions_to_transfer_destination,
                                 Bundle().apply {
                                     putString(TransferDestinationInputFragment.ARGS_ADDRESS, address)
+                                    putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet)
                                     putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                                     putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
                                 }
@@ -499,4 +501,3 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         if (isAdded) web3ViewModel.scrollOffset = binding.scrollView.scrollY
     }
 }
-
