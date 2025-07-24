@@ -41,7 +41,6 @@ import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.SyncOutputJob
@@ -56,7 +55,6 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
-import one.mixin.android.ui.wallet.InputFragment.Companion.ARGS_TO_USER
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
@@ -67,7 +65,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -117,6 +114,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     private var scannedMemo by mutableStateOf("")
     private var scannedLabel by mutableStateOf("")
     private var scannedTransferDest by mutableStateOf("")
+    private var errorInfo by mutableStateOf<String?>(null)
 
     enum class ScanType { ADDRESS, MEMO, LABEL, TRANSFER_DEST }
 
@@ -279,6 +277,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
+                                    errorInfo = null
                                     if (token != null && (address.isExternalTransferUrl() || address.isLightningUrl())) {
                                         LinkBottomSheetDialogFragment.newInstance(address).show(
                                             parentFragmentManager,
@@ -324,6 +323,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         }
                                     }
                                 },
+                                errorInfo = errorInfo,
                                 onAddressClick = { address ->
                                     requireView().hideKeyboard()
                                     if (web3Token != null) {
@@ -404,7 +404,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 web3Token = web3Token,
                                 address = address,
                                 contentText = scannedMemo,
+                                errorInfo = errorInfo,
                                 onNext = { memo ->
+                                    errorInfo = null
                                     requireView().hideKeyboard()
                                     token?.let { t ->
                                         validateAndNavigateToInput(
@@ -560,6 +562,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 if (assetId.isNotEmpty() && destination.isNotEmpty()) {
                     val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
                     if (response.isSuccess) {
+                        errorInfo = null
                         val addressLabel = withContext(Dispatchers.IO) {
                             if (toAccount == true) return@withContext null
                             viewModel.findAddressByReceiver(destination, tag ?: "")
@@ -592,11 +595,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             }
                         }
                     } else {
-                        toast(response.errorDescription)
+                        errorInfo = response.errorDescription
                     }
                 }
             } catch (e: Exception) {
-                toast(e.message?:getString(R.string.Data_error))
+                errorInfo = e.message ?: getString(R.string.Unknown)
             } finally {
                 dialog.dismiss()
             }

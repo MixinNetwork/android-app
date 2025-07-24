@@ -17,7 +17,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -26,6 +25,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -79,7 +79,6 @@ import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
-import one.mixin.android.ui.home.web3.BrowserWalletBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
@@ -1276,6 +1275,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private val errorHandler =
         CoroutineExceptionHandler { _, error ->
             when (error) {
+                is ServerErrorException -> {
+                    showError(getString(R.string.error_server_5xx_code, error.code))
+                }
                 is BalanceError -> {
                     TransferBalanceErrorBottomSheetDialogFragment.newInstance(error.assetBiometricItem).showNow(parentFragmentManager,
                         TransferBalanceErrorBottomSheetDialogFragment.TAG)
@@ -1287,7 +1289,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 else -> {
                     ErrorHandler.handleError(error)
                     Timber.e(error)
-                    showError(R.string.Network_error)
+                    showError(error.message ?: getString(R.string.Unknown))
                 }
             }
         }

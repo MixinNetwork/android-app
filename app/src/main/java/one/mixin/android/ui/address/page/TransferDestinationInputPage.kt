@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -35,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -89,6 +92,7 @@ fun TransferDestinationInputPage(
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
+    errorInfo: String? = null,
     toAddAddress: () -> Unit,
     toContact: () -> Unit,
     toWallet: () -> Unit,
@@ -188,7 +192,8 @@ fun TransferDestinationInputPage(
                                 text = it
                             },
                             modifier = Modifier
-                                .height(120.dp),
+                                .wrapContentHeight()
+                                .heightIn(min = 120.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 backgroundColor = Color.Transparent,
                                 textColor = MixinAppTheme.colors.textPrimary,
@@ -214,7 +219,7 @@ fun TransferDestinationInputPage(
                                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
                             ),
                             minLines = 3,
-                            maxLines = 3,
+                            maxLines = 20,
                             visualTransformation = if (text.isExternalTransferUrl() || text.isLightningUrl()) {
                                 VisualTransformation { input ->
                                     val inputText = input.text
@@ -340,8 +345,14 @@ fun TransferDestinationInputPage(
                             }
                         }
                     } else {
-                        Spacer(modifier = Modifier.height(16.dp))
-
+                        Text(
+                            text = errorInfo ?: "",
+                            color = MixinAppTheme.colors.red,
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .align(Alignment.CenterHorizontally)
+                                .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
+                        )
                         Button(
                             modifier = Modifier
                                 .fillMaxWidth()
