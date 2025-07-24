@@ -232,7 +232,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 toWallet = { fromWalletId ->
                                     requireView().hideKeyboard()
-                                        WalletListBottomSheetDialogFragment.newInstance(fromWalletId).apply {
+                                        WalletListBottomSheetDialogFragment.newInstance(fromWalletId, web3Token?.chainId?: token!!.chainId).apply {
                                             setOnWalletClickListener { destinationWallet ->
                                                 this@TransferDestinationInputFragment.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                                                     Timber.e(error)

@@ -75,7 +75,6 @@ class WalletViewModel
 @Inject
 internal constructor(
     private val tip: Tip,
-    private val walletDatabase: WalletDatabase,
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
     private val web3Repository: Web3Repository,
@@ -83,15 +82,14 @@ internal constructor(
     private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager,
     private val pinCipher: PinCipher,
-    private val defaultSharedPreferences: SharedPreferences,
 ) : ViewModel() {
 
     private val _walletsFlow = MutableStateFlow<List<Web3Wallet>>(emptyList())
     val walletsFlow: StateFlow<List<Web3Wallet>> = _walletsFlow
 
-    fun searchWallets(excludeWalletId: String, query: String) {
+    fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
         viewModelScope.launch {
-            _walletsFlow.value = getWalletsExcluding(excludeWalletId, query)
+            _walletsFlow.value = getWalletsExcluding(excludeWalletId, chainId, query)
         }
     }
 
@@ -496,31 +494,8 @@ internal constructor(
     }
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
-    suspend fun getWalletsExcluding(excludeWalletId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, query)
 
-    suspend fun getWeb3PrivateKey(context: Context, pin: String, walletId: String, chainId: String, index: Int): ByteArray? {
-        return try {
-            val tipPriv = tip.getOrRecoverTipPriv(context, pin).getOrThrow()
-            val spendKey = tip.getSpendPrivFromEncryptedSalt(
-                tip.getMnemonicFromEncryptedPreferences(context),
-                tip.getEncryptedSalt(context),
-                pin,
-                tipPriv
-            )
-            val mnemoinc = CryptoWalletHelper.getWeb3Mnemonic(context, spendKey, walletId) ?: return null
-            val privateKey = if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                CryptoWalletHelper.mnemonicToSolanaWallet(mnemoinc, index = index).privateKey
-            } else {
-                CryptoWalletHelper.mnemonicToEthereumWallet(mnemoinc, index = index).privateKey
-            }
-            privateKey.let {
-                Numeric.hexStringToByteArray(it)
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to get web3 private key")
-            null
-        }
-    }
+    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
 }

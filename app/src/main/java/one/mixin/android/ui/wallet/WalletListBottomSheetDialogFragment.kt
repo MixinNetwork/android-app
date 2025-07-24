@@ -81,6 +81,10 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
         requireArguments().getString(ARGS_EXCLUDE_WALLET_ID)
     }
 
+    private val chainId: String by lazy {
+        requireArguments().getString(ARGS_CHAIN_ID) ?: ""
+    }
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @OptIn(FlowPreview::class)
@@ -95,12 +99,11 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 MixinAppTheme {
                     val searchQuery = remember { MutableStateFlow("") }
                     val wallets by viewModel.walletsFlow.collectAsState()
-
                     LaunchedEffect(Unit) {
                         searchQuery
                             .debounce(300)
                             .collect { query ->
-                                viewModel.searchWallets(excludeWalletId ?: "", query)
+                                viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
                             }
                     }
 
@@ -183,10 +186,12 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "WalletListBottomSheetDialogFragment"
         private const val ARGS_EXCLUDE_WALLET_ID = "args_exclude_wallet_id"
+        private const val ARGS_CHAIN_ID = "args_chain_id"
 
-        fun newInstance(excludeWalletId: String?): WalletListBottomSheetDialogFragment {
+        fun newInstance(excludeWalletId: String?, chainId: String): WalletListBottomSheetDialogFragment {
             return WalletListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_EXCLUDE_WALLET_ID, excludeWalletId)
+                putString(ARGS_CHAIN_ID, chainId)
             }
         }
     }

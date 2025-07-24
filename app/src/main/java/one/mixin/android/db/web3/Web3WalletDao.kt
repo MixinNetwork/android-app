@@ -13,8 +13,8 @@ import one.mixin.android.vo.WalletCategory
 @Dao
 interface Web3WalletDao : BaseDao<Web3Wallet> {
 
-    @Query("SELECT * FROM wallets WHERE wallet_id != :excludeWalletId AND name LIKE '%' || :query || '%'")
-    suspend fun getWalletsExcludingByName(excludeWalletId: String, query: String): List<Web3Wallet>
+    @Query("SELECT DISTINCT w.* FROM wallets w INNER JOIN addresses a ON w.wallet_id = a.wallet_id WHERE w.wallet_id != :excludeWalletId AND a.chain_id = :chainId AND w.name LIKE '%' || :query || '%'")
+    suspend fun getWalletsExcludingByName(excludeWalletId: String, chainId: String, query: String): List<Web3Wallet>
 
     @Query("SELECT * FROM wallets ORDER BY created_at ASC")
     fun getWallets(): Flow<List<Web3Wallet>>
