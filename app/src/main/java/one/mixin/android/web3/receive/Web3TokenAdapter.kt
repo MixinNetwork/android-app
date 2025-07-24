@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem

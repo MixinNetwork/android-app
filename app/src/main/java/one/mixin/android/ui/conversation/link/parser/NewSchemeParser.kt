@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.link.parser
 import androidx.core.net.toUri
 import kotlinx.coroutines.coroutineScope
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
@@ -345,11 +346,15 @@ class NewSchemeParser(
                 }
 
             }, { url ->
-                linkViewModel.paySuspend(
+                val response = linkViewModel.paySuspend(
                     TransferRequest(
                         assetId = Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, rawPaymentUrl = url
                     )
-                ).data
+                )
+                response.error?.let {
+                    errorMsg = MixinApplication.appContext.getMixinErrorStringByCode(it.code, it.description)
+                }
+                response.data
             })
 
         if (insufficientId == null) {
