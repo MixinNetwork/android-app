@@ -46,8 +46,10 @@ import java.util.UUID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import one.mixin.android.MixinApplication
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.SchemeBottomSheet
+import one.mixin.android.util.getMixinErrorStringByCode
 
 class NewSchemeParser(
     private val bottomSheet: SchemeBottomSheet,
@@ -350,11 +352,15 @@ class NewSchemeParser(
                 }
 
             }, { url ->
-                linkViewModel.paySuspend(
+                val response = linkViewModel.paySuspend(
                     TransferRequest(
                         assetId = Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, rawPaymentUrl = url
                     )
-                ).data
+                )
+                response.error?.let {
+                    errorMsg = MixinApplication.appContext.getMixinErrorStringByCode(it.code, it.description)
+                }
+                response.data
             })
 
         if (insufficientId == null) {
