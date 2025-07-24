@@ -24,7 +24,9 @@ import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isSolToken
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
@@ -54,6 +56,7 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.reminder.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
@@ -70,6 +73,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.js.JsSigner
@@ -128,8 +132,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
         lifecycleScope.launch {
             val wallet = web3ViewModel.findWalletById(token.walletId)
-            binding.sendReceiveView.isVisible = wallet?.hasLocalPrivateKey == true
-            binding.empty.isVisible = wallet?.hasLocalPrivateKey == false
+            binding.sendReceiveView.isVisible = wallet?.isWatch() == true
+            binding.empty.isVisible = wallet?.isWatch() == false
         }
 
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
@@ -204,6 +208,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     lifecycleScope.launch {
                         val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
                         val wallet = web3ViewModel.findWalletById(token.walletId)
+                        if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                            ImportKeyBottomSheetDialogFragment.newInstance(
+                                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
+                                walletId = wallet.id
+                            ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
+                            return@launch
+                        }
                         if (chain == null) {
                             refreshToken(token.chainId)
                             toast(R.string.Please_wait_a_bit)
@@ -221,16 +232,34 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     }
                 }
                 sendReceiveView.receive.setOnClickListener {
-                    requireView().navigate(
-                        R.id.action_web3_transactions_to_web3_address,
-                        Bundle().apply {
-                            putString("address", address)
+                    lifecycleScope.launch {
+                        val wallet = web3ViewModel.findWalletById(token.walletId)
+                        if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                            ImportKeyBottomSheetDialogFragment.newInstance(
+                                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
+                                walletId = wallet.id
+                            ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
+                            return@launch
                         }
-                    )
+                        requireView().navigate(
+                            R.id.action_web3_transactions_to_web3_address,
+                            Bundle().apply {
+                                putString("address", address)
+                            }
+                        )
+                    }
                 }
                 sendReceiveView.swap.setOnClickListener {
-                    AnalyticsTracker.trackSwapStart("web3", "web3")
                     lifecycleScope.launch {
+                        val wallet = web3ViewModel.findWalletById(token.walletId)
+                        if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                            ImportKeyBottomSheetDialogFragment.newInstance(
+                                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
+                                walletId = wallet.id
+                            ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
+                            return@launch
+                        }
+                        AnalyticsTracker.trackSwapStart("web3", "web3")
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
