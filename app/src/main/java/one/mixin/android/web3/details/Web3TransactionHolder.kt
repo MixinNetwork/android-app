@@ -12,6 +12,7 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
@@ -83,12 +84,16 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                         receiveSymbolTv.text = transaction.receiveAssetSymbol ?: ""
 
 
-                        val sendAmount = transaction.senders.find {
+                        transaction.senders.find {
                             it.assetId == transaction.sendAssetId
-                        }?.amount ?: transaction.senders.lastOrNull()?.amount
+                        }?.amount?.notNullWithElse({
+                            sendValue.text = formatAmountWithSign(it, false)
+                            sendSymbolTv.text = transaction.sendAssetSymbol ?: ""
+                        }, {
+                            sendValue.text = formatAmountWithSign(transaction.senders.lastOrNull()?.amount, false)
+                            sendSymbolTv.text = ""
+                        })
                         sendValue.textColorResource = R.color.wallet_pink
-                        sendValue.text = formatAmountWithSign(sendAmount, false)
-                        sendSymbolTv.text = transaction.sendAssetSymbol ?: ""
                     } else {
                         amountAnimator.displayedChild = 0
                         value.textColorResource = R.color.wallet_green
