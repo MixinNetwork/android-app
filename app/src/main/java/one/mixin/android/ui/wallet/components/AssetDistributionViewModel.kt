@@ -181,6 +181,8 @@ class AssetDistributionViewModel @Inject constructor(
             }
         }
     }
+
+    suspend fun getAddresses(walletId:String) = web3Repository.getAddresses(walletId)
 }
 
 

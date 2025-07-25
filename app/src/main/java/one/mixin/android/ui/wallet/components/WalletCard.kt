@@ -44,12 +44,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.reactivex.android.schedulers.AndroidSchedulers
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.WalletCategory
+import timber.log.Timber
 import java.math.BigDecimal
 
 @Composable
@@ -97,7 +100,7 @@ fun WalletCard(
         }
     }
 
-    LaunchedEffect(viewModel, destination, refreshTrigger) {
+    LaunchedEffect(refreshTrigger) {
         when (destination) {
             is WalletDestination.Privacy -> {
                 tokenTotalBalance = viewModel.getTokenTotalBalance(excludeWeb3 = true)
@@ -237,26 +240,47 @@ fun WalletCard(
             if (assets.isNotEmpty()) {
                 Distribution(assets, destination = destination)
             } else {
-                val chains =
-                    if (destination is WalletDestination.Privacy || destination == null) {
+                var chains by remember(destination) { mutableStateOf<List<Int>?>(null) }
+                LaunchedEffect(refreshTrigger) {
+                    chains = if (destination is WalletDestination.Privacy || destination == null) {
                         privacyChain
+                    } else if ((destination is WalletDestination.Watch && (destination.category == WalletCategory.WATCH_ADDRESS.value || destination.category == WalletCategory.IMPORTED_PRIVATE_KEY.value)) ||
+                        (destination is WalletDestination.Import && (destination.category == WalletCategory.WATCH_ADDRESS.value || destination.category == WalletCategory.IMPORTED_PRIVATE_KEY.value))
+                    ) {
+                        val walletId = if (destination is WalletDestination.Watch) destination.walletId else (destination as WalletDestination.Import).walletId
+                        val address = viewModel.getAddresses(walletId)
+                        if (address.any { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }) {
+                            listOf(R.drawable.ic_chain_sol)
+                        } else {
+                            listOf(
+                                R.drawable.ic_chain_eth,
+                                R.drawable.ic_chain_polygon,
+                                R.drawable.ic_chain_bsc,
+                                R.drawable.ic_chain_base,
+                                R.drawable.ic_chain_arbitrum_eth
+                            )
+                        }
                     } else {
                         classicChain
                     }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    chains.forEachIndexed { index, iconRes ->
-                        Image(
-                            painter = painterResource(id = iconRes),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(18.dp)
-                                .offset(x = (-6 * index).dp)
-                                .border(1.dp, MixinAppTheme.colors.background, CircleShape)
-                        )
+                }
+
+                if (chains != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        chains!!.forEachIndexed { index, iconRes ->
+                            Image(
+                                painter = painterResource(id = iconRes),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .offset(x = (-6 * index).dp)
+                                    .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                            )
+                        }
                     }
                 }
             }
