@@ -14,7 +14,6 @@ import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -110,7 +109,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     dismissAllowingStateLoss()
                                 },
                                 learnMoreAction = {
-                                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                                    context.openUrl(getString(R.string.import_mnemonic_phrase_url))
                                 }
                             )
                         }
@@ -127,7 +126,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     dismissAllowingStateLoss()
                                 },
                                 learnMoreAction = {
-                                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                                    context.openUrl(getString(R.string.import_private_key_url))
                                 }
                             )
                         }

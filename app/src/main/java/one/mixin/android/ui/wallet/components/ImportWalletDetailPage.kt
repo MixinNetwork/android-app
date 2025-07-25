@@ -349,7 +349,7 @@ fun ImportWalletDetailPage(
                 when {
                     addressExists -> {
                         Text(
-                            text = stringResource(R.string.Address_Already_Exists),
+                            text = stringResource(R.string.Wallet_Already_Exists),
                             color = MixinAppTheme.colors.red,
                             modifier = Modifier
                                 .fillMaxWidth()

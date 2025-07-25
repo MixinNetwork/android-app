@@ -8,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -18,7 +17,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.db.web3.vo.Web3Address
-import one.mixin.android.event.AddWalletEvent
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -96,7 +94,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
             val index = CryptoWalletHelper.extractIndexFromPath(it.path!!)
             val derivedAddress = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.ETHEREUM_CHAIN_ID, "", index!!)
             if (!derivedAddress.equals(it.destination, ignoreCase = true)) {
-                return getString(R.string.reimport_mnemonic_Phrase_error)
+                return getString(R.string.reimport_mnemonic_phrase_error)
             }
         }
 
@@ -104,7 +102,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
             val index = CryptoWalletHelper.extractIndexFromPath(it.path!!)
             val derivedAddress = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.SOLANA_CHAIN_ID, "", index!!)
             if (!derivedAddress.equals(it.destination, ignoreCase = true)) {
-                return getString(R.string.reimport_mnemonic_Phrase_error)
+                return getString(R.string.reimport_mnemonic_phrase_error)
             }
         }
         return null

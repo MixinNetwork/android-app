@@ -5,8 +5,6 @@ import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
@@ -37,17 +35,6 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 selectedWalletInfos = selectedWalletInfos,
                 onWalletToggle = viewModel::toggleWalletSelection,
                 onContinue = {
-                    viewModel.startImporting()
-                },
-                onBackPressed = { requireActivity().finish() },
-                onSelectAll = viewModel::selectAll,
-                onFindMore = viewModel::findMoreWallets,
-                isLoadingMore = state == FetchWalletState.FETCHING && wallets.isNotEmpty(),
-            )
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.state.collect { state ->
-                if (state == FetchWalletState.IMPORTING) {
                     navTo(
                         ImportingWalletFragment.newInstance(),
                         ImportingWalletFragment.TAG
@@ -56,8 +43,12 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                         .beginTransaction()
                         .remove(this@SelectWalletFragment)
                         .commit()
-                }
-            }
+                },
+                onBackPressed = { requireActivity().finish() },
+                onSelectAll = viewModel::selectAll,
+                onFindMore = viewModel::findMoreWallets,
+                isLoadingMore = state == FetchWalletState.FETCHING && wallets.isNotEmpty(),
+            )
         }
     }
 }

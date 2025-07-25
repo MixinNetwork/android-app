@@ -9,14 +9,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.ImportWalletDetailPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 
@@ -45,22 +42,6 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        lifecycleScope.launch {
-            viewModel.state.collect { state ->
-                if (state == FetchWalletState.IMPORTING) {
-                    navTo(
-                        ImportingWalletFragment.newInstance(),
-                        ImportingWalletFragment.TAG
-                    )
-                    if (isAdded) {
-                        requireActivity().supportFragmentManager
-                            .beginTransaction()
-                            .remove(this@ImportWalletDetailFragment)
-                            .commit()
-                    }
-                }
-            }
-        }
     }
 
     override fun onCreateView(
@@ -76,7 +57,16 @@ class ImportWalletDetailFragment : BaseFragment(R.layout.fragment_compose) {
                         activity?.finish()
                     },
                     onConfirmClick = { chainId, key ->
-                        viewModel.importWallet(key, chainId, mode)
+                        navTo(
+                            ImportingWalletFragment.newInstance(key, chainId, mode),
+                            ImportingWalletFragment.TAG
+                        )
+                        if (isAdded) {
+                            requireActivity().supportFragmentManager
+                                .beginTransaction()
+                                .remove(this@ImportWalletDetailFragment)
+                                .commit()
+                        }
                     },
                     onScan = {
                         scanLauncher.launch(
