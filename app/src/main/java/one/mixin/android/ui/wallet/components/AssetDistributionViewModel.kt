@@ -29,9 +29,7 @@ class AssetDistributionViewModel @Inject constructor(
 
     fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {
-            web3Repository.getWallets().collect {
-                _wallets.value = it
-            }
+            _wallets.value = web3Repository.getAllWallets()
         }
     }
 

@@ -35,6 +35,18 @@ data class Web3Wallet(
 ) : Parcelable {
     @Ignore
     var hasLocalPrivateKey: Boolean = false
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Web3Wallet) return false
+
+        return id == other.id &&
+                category == other.category &&
+                name == other.name &&
+                createdAt == other.createdAt &&
+                updatedAt == other.updatedAt &&
+                hasLocalPrivateKey == other.hasLocalPrivateKey
+    }
 }
 
 fun Web3Wallet.notClassic(): Boolean {

@@ -111,7 +111,7 @@ constructor(
         web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
             .updateWithLocalKeyInfo(context)
 
-    fun getWallets() = web3WalletDao.getWallets().map { it.updateWithLocalKeyInfo(context) }
+    suspend fun getAllWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }
 
     suspend fun countAddressesByWalletId(walletId: String) = web3AddressDao.countAddressesByWalletId(walletId)
 
