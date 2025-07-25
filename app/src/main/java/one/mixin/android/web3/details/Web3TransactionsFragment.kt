@@ -132,8 +132,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
         lifecycleScope.launch {
             val wallet = web3ViewModel.findWalletById(token.walletId)
-            binding.sendReceiveView.isVisible = wallet?.isWatch() == true
-            binding.empty.isVisible = wallet?.isWatch() == false
+            binding.sendReceiveView.isVisible = wallet?.isWatch() != true
+            binding.empty.isVisible = wallet?.isWatch() == true
         }
 
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
