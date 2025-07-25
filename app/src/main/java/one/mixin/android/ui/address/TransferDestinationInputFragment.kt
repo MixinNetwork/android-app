@@ -269,6 +269,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                             )
                                                                             putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
                                                                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                            putParcelable(ARGS_WALLET, wallet)
                                                                             putBoolean(InputFragment.ARGS_TO_WALLET, destinationWallet == null)
                                                                         })
                                                                 }
@@ -365,6 +366,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                         putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
                                                         putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token!!)
                                                         putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                        putParcelable(ARGS_WALLET, wallet)
                                                         putString(InputFragment.ARGS_TO_ADDRESS_LABEL, address.label)
                                                     })
                                                 }

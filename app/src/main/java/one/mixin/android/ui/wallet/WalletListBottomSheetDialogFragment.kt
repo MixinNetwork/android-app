@@ -19,8 +19,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -227,7 +229,7 @@ fun WalletListScreen(
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
-        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)) {
+        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp).verticalScroll(rememberScrollState())) {
             if (excludeWalletId != null && query.isEmpty()) {
                 WalletCard(
                     name = stringResource(id = R.string.Privacy_Wallet),
