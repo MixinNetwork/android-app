@@ -43,8 +43,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
@@ -64,7 +67,7 @@ fun WalletCard(
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    DisposableEffect(lifecycleOwner) {
+    DisposableEffect(lifecycleOwner, destination) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 refreshTrigger++
@@ -72,8 +75,25 @@ fun WalletCard(
         }
         lifecycleOwner.lifecycle.addObserver(observer)
 
+        val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { event ->
+                val walletId = when (destination) {
+                    is WalletDestination.Classic -> destination.walletId
+                    is WalletDestination.Import -> destination.walletId
+                    is WalletDestination.Watch -> destination.walletId
+                    else -> null
+                }
+                if (walletId == null) {
+                    refreshTrigger++
+                } else if (event.walletId == walletId) {
+                    refreshTrigger++
+                }
+            }
+
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+            disposable.dispose()
         }
     }
 

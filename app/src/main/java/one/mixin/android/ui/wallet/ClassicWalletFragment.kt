@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -20,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -42,8 +44,8 @@ import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
-import one.mixin.android.ui.home.reminder.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
@@ -303,6 +305,18 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     override fun onResume() {
         super.onResume()
         jobManager.addJobInBackground(RefreshWeb3Job())
+        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+            fragment = this,
+            web3ViewModel = web3ViewModel,
+            jobManager = jobManager,
+            refreshJob = refreshJob
+        )
+    }
+    private var refreshJob: Job? = null
+
+    override fun onPause() {
+        super.onPause()
+        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {

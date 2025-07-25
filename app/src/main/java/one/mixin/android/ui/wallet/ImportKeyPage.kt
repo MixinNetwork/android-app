@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.reminder
+package one.mixin.android.ui.wallet
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
 fun ImportKeyPage(
@@ -38,9 +39,9 @@ fun ImportKeyPage(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
-            .background(MixinAppTheme.colors.primary),
+            .background(MixinAppTheme.colors.primary)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(32.dp))
@@ -55,10 +56,16 @@ fun ImportKeyPage(
                 color = MixinAppTheme.colors.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.W600
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(id = description),
-                color = MixinAppTheme.colors.textAssist
-            )
+            HighlightedTextWithClick(
+                stringResource(description, stringResource(R.string.Learn_More)),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                stringResource(R.string.Learn_More),
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 14.sp,
+                lineHeight = 21.sp
+            ) {
+                learnMoreAction.invoke()
+            }
             Spacer(modifier = Modifier.height(50.dp))
             Spacer(modifier = Modifier.height(24.dp))
             Button(

@@ -2017,8 +2017,8 @@
     <string name="NoKey">NoKey</string>
     <string name="Watching">Watching</string>
     <string name="error_max_wallet_reached">错误 10632: 已达到钱包数量上限</string>
-    <string name="Import_Private_Key_Desc">此钱包的加密私钥在此设备上缺失，请重新导入以继续。</string>
-    <string name="Import_Mnemonic_Phrase_Desc">此钱包的加密助记词在此设备上缺失，请重新导入以继续。</string>
+    <string name="Import_Private_Key_Desc">此钱包的加密私钥在此设备上缺失，请重新导入以继续。%1$s</string>
+    <string name="Import_Mnemonic_Phrase_Desc">此钱包的加密助记词在此设备上缺失，请重新导入以继续。%1$s</string>
     <string name="reimport_private_key_error">导入的私钥与钱包不匹配，请重新导入。</string>
     <string name="reimport_mnemonic_Phrase_error">导入的助记词与钱包不匹配，请重新导入。</string>
 </resources>

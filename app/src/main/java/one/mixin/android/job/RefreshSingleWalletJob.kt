@@ -4,9 +4,11 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.RxBus
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
@@ -29,6 +31,7 @@ class RefreshSingleWalletJob(
             fetchChain()
             fetchWalletAddresses(wallet)
             fetchWalletAssets(wallet)
+            RxBus.publish(WalletRefreshedEvent(walletId))
             Timber.d("Successfully refreshed wallet: $walletId")
         } catch (e: Exception) {
             Timber.e(e, "Failed to refresh wallet: $walletId")

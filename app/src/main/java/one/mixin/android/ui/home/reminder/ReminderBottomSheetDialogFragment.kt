@@ -25,9 +25,11 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.compose.theme.languageBasedImage
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -154,6 +156,7 @@ class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
+            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {

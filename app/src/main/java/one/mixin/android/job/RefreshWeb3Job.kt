@@ -6,12 +6,14 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
@@ -52,6 +54,7 @@ class RefreshWeb3Job : BaseJob(
             fetchChain()
             wallets.forEach { wallet ->
                 fetchWalletAssets(wallet)
+                RxBus.publish(WalletRefreshedEvent(wallet.id))
             }
         }
         jobManager.addJobInBackground(RefreshWeb3TransactionsJob())

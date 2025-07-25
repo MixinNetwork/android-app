@@ -28,6 +28,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,11 +48,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 
@@ -85,8 +89,15 @@ fun AssetDashboardScreen(
         }
         lifecycleOwner.lifecycle.addObserver(observer)
 
+        val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { event ->
+                refreshTrigger++
+            }
+
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+            disposable.dispose()
         }
     }
 

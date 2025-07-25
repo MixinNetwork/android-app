@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.reminder
+package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -14,13 +14,16 @@ import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
@@ -89,13 +92,14 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
+            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {
                     when (popupType) {
                         is PopupType.ImportPrivateKey -> {
                             ImportKeyPage(
-                                R.drawable.bg_import_key,
+                                R.drawable.bg_import_private_key,
                                 R.string.import_private_key,
                                 R.string.Import_Private_Key_Desc,
                                 action = {
@@ -106,12 +110,13 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     dismissAllowingStateLoss()
                                 },
                                 learnMoreAction = {
+                                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                                 }
                             )
                         }
                         is PopupType.ImportMnemonicPhrase -> {
                             ImportKeyPage(
-                                R.drawable.bg_improt_mnemonic,
+                                R.drawable.bg_import_mnemonic,
                                 R.string.Import_Mnemonic_Phrase,
                                 R.string.Import_Mnemonic_Phrase_Desc,
                                 action = {
@@ -122,6 +127,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     dismissAllowingStateLoss()
                                 },
                                 learnMoreAction = {
+                                    context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                                 }
                             )
                         }
