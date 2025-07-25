@@ -7,7 +7,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.event.AddWalletEvent
 import one.mixin.android.ui.common.BlazeBaseActivity
 import timber.log.Timber
 
@@ -35,9 +34,6 @@ class WalletSecurityActivity : BlazeBaseActivity() {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, fragment)
                 .commitNow()
-        }
-        RxBus.listen(AddWalletEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
-            finish()
         }
     }
 

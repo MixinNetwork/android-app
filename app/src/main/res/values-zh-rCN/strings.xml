@@ -2023,4 +2023,6 @@
     <string name="reimport_mnemonic_phrase_error">导入的助记词与钱包不匹配。</string>
     <string name="import_mnemonic_phrase_url">https://support.mixin.one/zh/article/5aac5l2v5a85ywl5yqp6k6w6kn-eri489/</string>
     <string name="import_private_key_url">https://support.mixin.one/zh/article/5aac5l2v5a85ywl56eb6zkl-5tmr21/</string>
+    <string name="Import_Failed">导入失败</string>
+    <string name="Partial_Import_Successful">部分导入成功</string>
 </resources>

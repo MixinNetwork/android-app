@@ -2075,4 +2075,6 @@
     <string name="reimport_mnemonic_phrase_error">The imported mnemonic phrase does not match the wallet.</string>
     <string name="import_mnemonic_phrase_url">https://support.mixin.one/en/article/how-to-import-mnemonic-phrases-tjujvv/</string>
     <string name="import_private_key_url">https://support.mixin.one/en/article/how-to-import-private-keys-w7wn4w/</string>
+    <string name="Import_Failed">Import Failed</string>
+    <string name="Partial_Import_Successful">Partial Import Successful</string>
 </resources>

@@ -2,12 +2,17 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.components.FetchWalletState
+import one.mixin.android.ui.wallet.components.ImportErrorContent
 import one.mixin.android.ui.wallet.components.ImportingContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
@@ -24,8 +29,40 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.rightAnimator.displayedChild = 0
         binding.titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
         binding.compose.setContent {
-            ImportingContent {
-                requireActivity().finish()
+            val state by viewModel.state.collectAsState()
+            val errorCode by viewModel.errorCode.collectAsState()
+            val errorMessage by viewModel.errorMessage.collectAsState()
+            val partialSuccess by viewModel.partialSuccess.collectAsState()
+
+            when (state) {
+                FetchWalletState.IMPORTING -> {
+                    ImportingContent {
+                        requireActivity().finish()
+                    }
+                }
+                FetchWalletState.IMPORT_ERROR -> {
+                    binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
+                    ImportErrorContent(
+                        partialSuccess =partialSuccess,
+                        errorCode = errorCode,
+                        errorMessage =errorMessage,
+                        onUpgradePlan = {
+                            val fragment = MixinMemberUpgradeBottomSheetDialogFragment.newInstance()
+                            fragment.show(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+                        },
+                        onNotNow = {
+                            requireActivity().finish()
+                        }
+                    )
+                }
+                FetchWalletState.IMPORT_SUCCESS ->{
+                    requireActivity().finish()
+                }
+                else -> {
+                    ImportingContent {
+                        requireActivity().finish()
+                    }
+                }
             }
         }
 

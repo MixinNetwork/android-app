@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,12 +23,15 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -35,11 +40,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
+import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.R
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWallet
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
@@ -48,7 +57,9 @@ import java.text.NumberFormat
 enum class FetchWalletState {
     FETCHING,
     SELECT,
-    IMPORTING
+    IMPORTING,
+    IMPORT_ERROR,
+    IMPORT_SUCCESS
 }
 
 data class AssetInfo(
@@ -253,6 +264,108 @@ fun ImportingContent(onFinished: () -> Unit) {
 }
 
 @Composable
+fun ImportErrorContent(
+    partialSuccess: Boolean? = null,
+    errorCode: Int? = null,
+    errorMessage: String? = null,
+    onUpgradePlan: () -> Unit,
+    onNotNow: () -> Unit
+) {
+    val context = LocalContext.current
+    MixinAppTheme(skip = true) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(132.dp))
+
+            Icon(
+                painter = painterResource(id = R.drawable.ic_wallet_warning),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(64.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = if (partialSuccess == true) {
+                    stringResource(R.string.Partial_Import_Successful)
+                } else {
+                    stringResource(R.string.Import_Failed)
+                },
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MixinAppTheme.colors.textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = if (errorCode == 10632) {
+                    stringResource(R.string.error_max_wallet_reached)
+                } else {
+                    errorMessage ?: stringResource(R.string.Import_Failed)
+                },
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (errorCode == 10632) {
+                Button(
+                    onClick = onUpgradePlan,
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MixinAppTheme.colors.accent
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(vertical = 12.dp),
+                    elevation = ButtonDefaults.elevation(
+                        pressedElevation = 0.dp,
+                        defaultElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                    ),
+                ) {
+                    Text(
+                        text = stringResource(R.string.Upgrade_Plan),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                TextButton(
+                    onClick = onNotNow,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.Done),
+                        color = MixinAppTheme.colors.accent
+                    )
+                }
+            } else {
+                TextButton(
+                    onClick = onNotNow,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.Done),
+                        color = MixinAppTheme.colors.accent
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+    }
+}
+
+@Composable
 fun WalletItem(
     wallet: IndexedWallet,
     isSelected: Boolean,
@@ -268,7 +381,11 @@ fun WalletItem(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = if (wallet.exists) { {} } else { onToggle }
+                onClick = if (wallet.exists) {
+                    {}
+                } else {
+                    onToggle
+                }
             )
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {

@@ -18,7 +18,6 @@ import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.event.AddWalletEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
@@ -30,6 +29,7 @@ import one.mixin.android.ui.wallet.components.IndexedWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 import org.sol4k.Keypair
@@ -58,6 +58,15 @@ class FetchWalletViewModel @Inject constructor(
 
     private val _selectedAddresses = MutableStateFlow<Set<String>>(emptySet())
     val selectedAddresses: StateFlow<Set<String>> = _selectedAddresses.asStateFlow()
+
+    private val _errorCode = MutableStateFlow<Int?>(null)
+    val errorCode: StateFlow<Int?> = _errorCode.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _partialSuccess = MutableStateFlow<Boolean?>(null)
+    val partialSuccess: StateFlow<Boolean?> = _partialSuccess.asStateFlow()
 
     private var mnemonic: String = ""
     private var currentIndex = 0
@@ -173,25 +182,36 @@ class FetchWalletViewModel @Inject constructor(
                     )
                     Pair(WalletRequest(name, category, addresses), it.solanaWallet.mnemonic.split(" "))
                 }
-                saveWallets(walletsToCreate)
-                Timber.d("Successfully imported ${selectedWalletInfos.value.size} wallets")
-                RxBus.publish(AddWalletEvent(true))
+
+                val expectedCount = walletsToCreate.size
+                val successCount = saveWallets(walletsToCreate)
+
+                Timber.d("Import completed: $successCount/$expectedCount wallets imported successfully")
+                if (expectedCount == successCount) {
+                    _state.value = FetchWalletState.IMPORT_SUCCESS
+                } else {
+                    _partialSuccess.value = successCount > 0
+                }
             } catch (e: Exception) {
-                RxBus.publish(AddWalletEvent(false))
                 Timber.e(e, "Failed to import wallets")
+                _errorCode.value = null
+                _errorMessage.value = e.message
+                _state.value = FetchWalletState.IMPORT_ERROR
             }
         }
     }
 
-    private suspend fun saveWallets(walletsToCreate: List<Pair<WalletRequest, List<String>>>) {
+    private suspend fun saveWallets(walletsToCreate: List<Pair<WalletRequest, List<String>>>): Int {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
-            return
+            return 0
         }
 
-        walletsToCreate.forEach { (walletRequest, words) ->
-            requestRouteAPI(
+        var successCount = 0
+
+        for ((walletRequest, words) in walletsToCreate) {
+            val result = requestRouteAPI(
                 invokeNetwork = { web3Repository.createWallet(walletRequest) },
                 successBlock = { response ->
                     response.data?.let { wallet ->
@@ -206,16 +226,27 @@ class FetchWalletViewModel @Inject constructor(
                         )
                         saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
                         jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
-                    } ?: Timber.e("Failed to create wallet: response data is null")
+                        successCount++
+                    }
                 },
                 failureBlock = { response ->
                     Timber.e("Failed to create wallet: ${response.errorCode} - ${response.errorDescription}")
-                    false
+                    _errorCode.value = response.errorCode
+                    _errorMessage.value = MixinApplication.appContext.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                    _state.value = FetchWalletState.IMPORT_ERROR
+                    true
                 },
                 requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-                defaultErrorHandle = {}
+                exceptionBlock = {
+                    _errorMessage.value = ErrorHandler.getErrorMessage(it)
+                    _state.value = FetchWalletState.IMPORT_ERROR
+                    true
+                }
             )
+            if (result == null) break
         }
+
+        return successCount
     }
 
     suspend fun getAddressesByChainId(walletId: String, chainId: String): Web3Address? {
@@ -327,8 +358,11 @@ class FetchWalletViewModel @Inject constructor(
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
+            _errorMessage.value = "Spend key is null"
+            _state.value = FetchWalletState.IMPORT_ERROR
             return
         }
+
         requestRouteAPI(
             invokeNetwork = { web3Repository.createWallet(walletRequest) },
             successBlock = { response ->
@@ -347,18 +381,21 @@ class FetchWalletViewModel @Inject constructor(
                     }
                     jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
                     Timber.d("Successfully imported wallet ${wallet.id}")
-                    RxBus.publish(AddWalletEvent(true))
-                } ?: Timber.e("Failed to create wallet: response data is null")
+
+                    _state.value = FetchWalletState.IMPORT_SUCCESS
+                }
             },
             failureBlock = { response ->
+                _errorCode.value = response.errorCode
+                _errorMessage.value = MixinApplication.appContext.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                _state.value = FetchWalletState.IMPORT_ERROR
                 Timber.e("Failed to create wallet: ${response.errorCode} - ${response.errorDescription}")
-                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
-                RxBus.publish(AddWalletEvent(false))
                 false
             },
             requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-            defaultErrorHandle = {
-                RxBus.publish(AddWalletEvent(false))
+            exceptionBlock = {
+                _errorMessage.value = ErrorHandler.getErrorMessage(it)
+                true
             }
         )
     }

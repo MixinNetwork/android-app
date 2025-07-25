@@ -110,7 +110,6 @@ fun AssetDashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -148,53 +147,59 @@ fun AssetDashboardScreen(
                     }
                 }
             }
-            TotalAssetsCard()
-            Spacer(modifier = Modifier.height(20.dp))
-
-            WalletCard(
-                destination = WalletDestination.Privacy,
-                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy) }
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            wallets.forEach { wallet ->
-                if (wallet.isWatch()) {
-                    WalletCard(
-                        name = wallet.name,
-                        destination = WalletDestination.Watch(wallet.id, wallet.category),
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) })
-                } else if (wallet.isImported()) {
-                    WalletCard(
-                        name = wallet.name,
-                        hasLocalPrivateKey = wallet.hasLocalPrivateKey,
-                        destination = WalletDestination.Import(wallet.id, wallet.category),
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) },
-                    )
-                } else {
-                    WalletCard(
-                        destination = WalletDestination.Classic(wallet.id),
-                        onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
-                Spacer(modifier = Modifier.weight(1f))
-                WalletInfoCard(
-                    hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
-                    hideCommonWalletInfo = hideCommonWalletInfo.value,
-                    onPrivacyClose = {
-                        hidePrivacyWalletInfo.value = true
-                        prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
-                    },
-                    onCommonClose = {
-                        hideCommonWalletInfo.value = true
-                        prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
-                    }
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                TotalAssetsCard()
                 Spacer(modifier = Modifier.height(20.dp))
+
+                WalletCard(
+                    destination = WalletDestination.Privacy,
+                    onClick = { onWalletCardClick.invoke(WalletDestination.Privacy) }
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                wallets.forEach { wallet ->
+                    if (wallet.isWatch()) {
+                        WalletCard(
+                            name = wallet.name,
+                            destination = WalletDestination.Watch(wallet.id, wallet.category),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) })
+                    } else if (wallet.isImported()) {
+                        WalletCard(
+                            name = wallet.name,
+                            hasLocalPrivateKey = wallet.hasLocalPrivateKey,
+                            destination = WalletDestination.Import(wallet.id, wallet.category),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) },
+                        )
+                    } else {
+                        WalletCard(
+                            destination = WalletDestination.Classic(wallet.id),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    WalletInfoCard(
+                        hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
+                        hideCommonWalletInfo = hideCommonWalletInfo.value,
+                        onPrivacyClose = {
+                            hidePrivacyWalletInfo.value = true
+                            prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
+                        },
+                        onCommonClose = {
+                            hideCommonWalletInfo.value = true
+                            prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
             }
         }
     }
@@ -206,7 +211,7 @@ fun WalletInfoCard(
     hidePrivacyWalletInfo: Boolean,
     hideCommonWalletInfo: Boolean,
     onPrivacyClose: () -> Unit,
-    onCommonClose: () -> Unit
+    onCommonClose: () -> Unit,
 ) {
     val initialPage = if (hidePrivacyWalletInfo && !hideCommonWalletInfo) 0 else 0
     val pageCount = if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) 2 else 1
@@ -233,6 +238,7 @@ fun WalletInfoCard(
                             },
                             onClose = onPrivacyClose
                         )
+
                         1 -> CommonWalletInfo(
                             onLearnMoreClick = {
                                 context.openUrl(context.getString(R.string.url_classic_wallet))
@@ -284,12 +290,14 @@ fun WalletInfoCard(
 @Composable
 fun PrivacyWalletInfo(
     onLearnMoreClick: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -350,12 +358,14 @@ fun PrivacyWalletInfo(
 @Composable
 fun CommonWalletInfo(
     onLearnMoreClick: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
