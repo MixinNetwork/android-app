@@ -178,7 +178,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
         binding.apply {
             assetRv.adapter = adapter
-            adapter.tokens = tokens
+            adapter.tokens = tokens.sortByKeywordAndBalance()
             radio.isVisible = !isLoading
             initRadio()
             searchEt.et.setHint(if (inMixin()) R.string.search_placeholder_asset else R.string.search_swap_token)
@@ -257,7 +257,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null) {
-                adapter.tokens = tokens
+                adapter.tokens = tokens.sortByKeywordAndBalance()
                 adapter.isSearch = false
                 if (isLoading) {
                     binding.rvVa.displayedChild = 3

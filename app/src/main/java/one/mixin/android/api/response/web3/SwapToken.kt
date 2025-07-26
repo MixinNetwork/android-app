@@ -64,21 +64,21 @@ data class SwapToken(
         if (other !is SwapToken) return false
 
         return if (assetId.isNotEmpty()) {
-            assetId == other.assetId
+            assetId == other.assetId && walletId == other.walletId
         } else if (address.isNotEmpty()) {
-            assetKey == other.assetKey
+            assetKey == other.assetKey && walletId == other.walletId
         } else {
-            name == other.name && chain.chainId == other.chain.chainId
+            name == other.name && chain.chainId == other.chain.chainId && walletId == other.walletId
         }
     }
 
     override fun hashCode(): Int {
-        return  if (assetId.isNotEmpty()) {
-            assetId.hashCode()
+        return if (assetId.isNotEmpty()) {
+            (assetId + walletId).hashCode()
         } else if (address.isNotEmpty()) {
-            assetKey.hashCode()
+            (assetKey + walletId).hashCode()
         } else {
-            (name + chain.chainId).hashCode()
+            (name + chain.chainId + walletId).hashCode()
         }
     }
 

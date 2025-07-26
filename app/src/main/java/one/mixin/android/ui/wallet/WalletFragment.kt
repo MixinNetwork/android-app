@@ -392,7 +392,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             saveSelectedWalletDestination(destination)
             val walletId = destination.walletId
             val wallet = walletViewModel.findWalletById(walletId)
-            if (wallet != null && wallet.category != WalletCategory.WATCH_ADDRESS.value && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
+            if (wallet != null) {
                 JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
                     runBlocking { walletViewModel.getAddresses(queryWalletId) }
                 }
@@ -523,7 +523,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         if (dest is WalletDestination.Import) {
                             walletViewModel.deleteWallet(dest.walletId)
                             this@WalletFragment.switchToClassicWallet(WalletDestination.Classic(JsSigner.classicWalletId))
-                        }else if (dest is WalletDestination.Watch) {
+                        } else if (dest is WalletDestination.Watch) {
                             walletViewModel.deleteWallet(dest.walletId)
                             this@WalletFragment.switchToClassicWallet(WalletDestination.Classic(JsSigner.classicWalletId))
                         }
