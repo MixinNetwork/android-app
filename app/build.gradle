@@ -335,10 +335,9 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
 
-    implementation "com.google.firebase:firebase-messaging-ktx"
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
-    implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+    implementation "com.google.firebase:firebase-messaging"
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics'
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
