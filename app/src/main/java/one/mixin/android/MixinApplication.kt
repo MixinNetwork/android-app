@@ -97,6 +97,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
+import kotlin.time.ExperimentalTime
 
 open class MixinApplication :
     Application(),
@@ -488,6 +489,7 @@ open class MixinApplication :
         return false
     }
 
+    @OptIn(ExperimentalTime::class)
     @ExperimentalCoilApi
     @RequiresApi(Build.VERSION_CODES.P)
     override fun newImageLoader(context: PlatformContext): ImageLoader {
