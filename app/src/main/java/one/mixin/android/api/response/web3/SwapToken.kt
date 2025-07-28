@@ -4,7 +4,6 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
 import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.equalsIgnoreCase

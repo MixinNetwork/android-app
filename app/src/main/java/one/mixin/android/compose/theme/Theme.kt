@@ -20,13 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
-import java.util.Locale
 
 val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 

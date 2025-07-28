@@ -1,8 +1,6 @@
 package one.mixin.android.api.response.web3
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.web3.vo.Web3Address

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +34,7 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -92,6 +94,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             field = value
             _walletId.value = value
         }
+
+    private var progressDialog: Dialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -254,6 +258,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 }
                 _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount(walletId))
 
+                if (lastData != null) {
+                    progressDialog = indeterminateProgressDialog(R.string.Please_wait_a_bit).apply {
+                        setCancelable(false)
+                        show()
+                    }
+                }
                 lastData?.removeObservers(viewLifecycleOwner)
                 lastData = web3ViewModel.web3TokensExcludeHidden(id)
                 lastData?.observe(viewLifecycleOwner, observer)
@@ -272,6 +282,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var lastData: LiveData<List<Web3TokenItem>>? = null
 
     private val observer = Observer<List<Web3TokenItem>> { data ->
+        progressDialog?.dismiss()
+        progressDialog = null
         if (data.isEmpty()) {
             setEmpty()
             assets = data

@@ -18,14 +18,10 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 import org.bitcoinj.crypto.MnemonicCode
 import org.sol4k.Base58
-import org.sol4k.Keypair
 import org.sol4k.Keypair.Companion.fromSecretKey
-import org.web3j.crypto.ECKeyPair
-import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.security.MessageDigest
-import kotlin.jvm.Throws
 
 object CryptoWalletHelper {
 
