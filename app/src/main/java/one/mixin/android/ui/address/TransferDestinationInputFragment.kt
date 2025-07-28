@@ -67,6 +67,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
