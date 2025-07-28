@@ -87,7 +87,7 @@ class VersionedTransactionCompat(
 
     fun allSignerSigned(): Boolean {
         return message.header.numRequireSignatures == signatures.size &&
-                signatures.all { s ->  s!= Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
+                signatures.all { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
     }
 
     private fun parseSystemProgramData(data: ByteArray): Long? {
