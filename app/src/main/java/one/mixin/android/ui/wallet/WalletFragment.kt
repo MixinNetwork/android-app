@@ -20,8 +20,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import okhttp3.Dispatcher
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -81,7 +83,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         val initialWalletDestination = walletPref?.let { pref ->
             try {
                 gson.fromJson(pref, WalletDestination::class.java)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 WalletDestination.Privacy
             }
         } ?: WalletDestination.Privacy
@@ -370,7 +372,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             } else {
                 (destination as WalletDestination.Import).walletId
             }
-            lifecycleScope.launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 val wallet = walletViewModel.findWalletById(walletId)
                 if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
                     JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->

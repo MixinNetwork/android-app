@@ -95,8 +95,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _walletId.value = value
         }
 
-    private var progressDialog: Dialog? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -258,12 +256,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 }
                 _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount(walletId))
 
-                if (lastData != null) {
-                    progressDialog = indeterminateProgressDialog(R.string.Please_wait_a_bit).apply {
-                        setCancelable(false)
-                        show()
-                    }
-                }
                 lastData?.removeObservers(viewLifecycleOwner)
                 lastData = web3ViewModel.web3TokensExcludeHidden(id)
                 lastData?.observe(viewLifecycleOwner, observer)
@@ -282,8 +274,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var lastData: LiveData<List<Web3TokenItem>>? = null
 
     private val observer = Observer<List<Web3TokenItem>> { data ->
-        progressDialog?.dismiss()
-        progressDialog = null
         if (data.isEmpty()) {
             setEmpty()
             assets = data
