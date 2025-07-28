@@ -349,7 +349,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val sig = tx.signatures.first { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
                     val rawTx = tx.serialize().base64Encode()
-                    if (tx.onlyOneSigner()) {
+                    if (tx.allSignerSigned()) {
                         viewModel.postRawTx(rawTx, Constants.ChainId.Solana, JsSigner.solanaAddress,  toAddress,token?.assetId)
                         onTxhash?.invoke(sig, rawTx)
                     }
