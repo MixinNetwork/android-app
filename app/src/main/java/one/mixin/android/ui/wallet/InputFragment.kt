@@ -337,7 +337,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
                                 }
                                 item is AddressTransferBiometricItem -> {
-                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, "$toAddress${addressTag?.let { ":$it" }?:""}".formatPublicKey(16))
+                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, (if(toAddress == null) item.address else "$toAddress${addressTag?.let { ":$it" }?:""}").formatPublicKey(16))
                                 }
                                 item is TransferBiometricItem -> {
                                     titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), item.users) {
