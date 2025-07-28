@@ -715,21 +715,18 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun initWalletConnect() {
+    private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
-
-        lifecycleScope.launch {
-            WalletConnectV2
-            val classicWalletId = web3Repository.getClassicWalletId()
-            JsSigner.init(
-                { classicWalletId },
-                { walletId ->
-                    runBlocking { web3Repository.getAddresses(walletId) }
-                }, { walletId ->
-                    runBlocking { web3Repository.findWalletById(walletId) }
-                }
-            )
-        }
+        WalletConnectV2
+        val classicWalletId = web3Repository.getClassicWalletId()
+        JsSigner.init(
+            { classicWalletId },
+            { walletId ->
+                runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
+            }, { walletId ->
+                runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+            }
+        )
     }
 
     override fun onNewIntent(intent: Intent) {
