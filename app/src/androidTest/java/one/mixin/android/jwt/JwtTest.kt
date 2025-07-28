@@ -1,7 +1,11 @@
 package one.mixin.android.jwt
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.jsonwebtoken.EdDSAPrivateKey
 import io.jsonwebtoken.EdDSAPublicKey
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.DELAY_SECOND
 import one.mixin.android.crypto.generateEd25519KeyPair
@@ -13,12 +17,14 @@ import one.mixin.android.mock.mockAccount
 import one.mixin.android.mock.mockRequest
 import one.mixin.android.session.Session
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.junit.Test
+import org.junit.runner.RunWith
 import java.security.Security
 import java.util.UUID
-import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
+
+@RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class JwtTest {
     init {
         Security.addProvider(BouncyCastleProvider())
