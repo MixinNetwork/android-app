@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -59,6 +60,7 @@ fun MemoInputPage(
     web3Token: Web3TokenItem?,
     address: String,
     contentText: String = "",
+    errorInfo: String? = null,
     onNext: (String?) -> Unit,
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
@@ -194,6 +196,15 @@ fun MemoInputPage(
                     Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End, fontSize = 14.sp, lineHeight = 17.sp)
                 }
                 Spacer(modifier = Modifier.weight(1f))
+
+                Text(
+                    text = errorInfo ?: "",
+                    color = MixinAppTheme.colors.red,
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
+                )
 
                 Button(
                     modifier = Modifier

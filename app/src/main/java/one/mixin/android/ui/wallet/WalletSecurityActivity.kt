@@ -2,13 +2,9 @@ package one.mixin.android.ui.wallet
 
 import android.app.Activity
 import android.os.Bundle
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.ui.common.BlazeBaseActivity
-import timber.log.Timber
 
 @AndroidEntryPoint
 class WalletSecurityActivity : BlazeBaseActivity() {

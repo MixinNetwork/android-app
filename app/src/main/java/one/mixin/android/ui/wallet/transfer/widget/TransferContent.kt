@@ -370,6 +370,10 @@ class TransferContent : LinearLayout {
             total.setContent(R.string.Total, "${addressTransferBiometricItem.amount} ${addressTransferBiometricItem.asset?.symbol}", amountAs(addressTransferBiometricItem.amount, addressTransferBiometricItem.asset!!))
 
             val tokenItem = addressTransferBiometricItem.asset!!
+            if (!addressTransferBiometricItem.memo.isNullOrBlank()) {
+                memo.isVisible = true
+                memo.setContent(R.string.Memo, addressTransferBiometricItem.memo ?: "")
+            }
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
         }
     }

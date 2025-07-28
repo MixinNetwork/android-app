@@ -1,12 +1,12 @@
 package one.mixin.android.ui.conversation.link.parser
 import androidx.core.net.toUri
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.coroutineScope
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.navTo
@@ -14,7 +14,9 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
@@ -25,7 +27,6 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.link.CollectionBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
@@ -35,6 +36,7 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferInvoiceBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
@@ -43,11 +45,6 @@ import one.mixin.android.vo.toUser
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.common.SchemeBottomSheet
 
 class NewSchemeParser(
     private val bottomSheet: SchemeBottomSheet,
@@ -350,11 +347,15 @@ class NewSchemeParser(
                 }
 
             }, { url ->
-                linkViewModel.paySuspend(
+                val response = linkViewModel.paySuspend(
                     TransferRequest(
                         assetId = Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, rawPaymentUrl = url
                     )
-                ).data
+                )
+                response.error?.let {
+                    errorMsg = MixinApplication.appContext.getMixinErrorStringByCode(it.code, it.description)
+                }
+                response.data
             })
 
         if (insufficientId == null) {

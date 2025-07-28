@@ -52,7 +52,6 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.WalletCategory
-import timber.log.Timber
 import java.math.BigDecimal
 
 @Composable

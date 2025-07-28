@@ -19,7 +19,6 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
-import one.mixin.android.ui.wallet.WalletActivity.Companion.ARGS_WALLET_ID
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile

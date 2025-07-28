@@ -15,7 +15,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.VerifyPinBeforeImportWalletPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint

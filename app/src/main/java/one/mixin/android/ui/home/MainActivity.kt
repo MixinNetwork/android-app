@@ -47,7 +47,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS

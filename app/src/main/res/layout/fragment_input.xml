@@ -185,6 +185,9 @@
                             android:gravity="center_vertical"
                             android:includeFontPadding="false"
                             android:textColor="?attr/text_assist"
+                            android:maxWidth="200dp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
                             tools:text="Content" />
 
                         <ProgressBar
