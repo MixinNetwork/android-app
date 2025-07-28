@@ -706,13 +706,11 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun initWalletConnect() {
-        if (!WalletConnect.isEnabled()) return
+    private suspend fun initWalletConnect() = withContext(Dispatchers.IO) {
+        if (!WalletConnect.isEnabled()) return@withContext
 
-        lifecycleScope.launch {
-            WalletConnectV2
-            JsSigner.init()
-        }
+        WalletConnectV2
+        JsSigner.init()
     }
 
     override fun onNewIntent(intent: Intent) {
