@@ -28,6 +28,9 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("SELECT * FROM wallets ORDER BY created_at ASC")
     suspend fun getAllWallets(): List<Web3Wallet>
 
+    @Query("SELECT name FROM wallets WHERE category IN (:categories)")
+    suspend fun getAllWalletNames(categories: List<String>): List<String?>
+
     @Query("SELECT * FROM wallets WHERE category = 'classic' ORDER BY created_at ASC")
     suspend fun getAllClassicWallets(): List<Web3Wallet>
 

@@ -24,6 +24,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
@@ -34,6 +35,7 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
@@ -463,6 +465,7 @@ internal constructor(
                 if (response.isSuccess && response.data != null) {
                     // Update local database
                     web3Repository.updateWalletName(walletId, newName)
+                    RxBus.publish(WalletRefreshedEvent(walletId))
                     Timber.d("Successfully renamed wallet $walletId to $newName")
                 } else {
                     Timber.e("Failed to rename wallet: ${response.errorCode} - ${response.errorDescription}")
@@ -483,6 +486,7 @@ internal constructor(
                 web3Repository.deleteHiddenTokens(walletId)
                 web3Repository.deleteWallet(walletId)
                 CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
+                RxBus.publish(WalletRefreshedEvent(walletId))
             }
         } catch (e: Exception) {
             Timber.e(e)

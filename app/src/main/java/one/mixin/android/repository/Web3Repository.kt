@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.map
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.WalletRequest
@@ -127,4 +126,6 @@ constructor(
     suspend fun isAddressMatch(walletId: String, address: String): Boolean {
         return web3AddressDao.isAddressMatch(walletId, address)
     }
+
+    suspend fun getAllWalletNames(categories :List<String>) = web3WalletDao.getAllWalletNames(categories)
 }

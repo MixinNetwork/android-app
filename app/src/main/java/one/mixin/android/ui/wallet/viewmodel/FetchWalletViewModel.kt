@@ -100,12 +100,21 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.FETCHING
             try {
                 if (mnemonic.isNotBlank()) {
+                    val names = web3Repository.getAllWalletNames(listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                    val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
+                    val regex = """^$commonWalletName (\d+)$""".toRegex()
+                    val maxIndex = names
+                        .filterNotNull()
+                        .mapNotNull { name ->
+                            regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+                        }.maxOrNull() ?: 0
+
                     val wallets = (offset until offset + 10).map { index ->
                         val ethereumWallet =
                             CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
                         val solanaWallet =
                             CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
-                        IndexedWallet(index, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
+                        IndexedWallet(maxIndex + index + 1, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
                     }
 
                     val addresses = wallets.flatMap {
@@ -165,7 +174,7 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.IMPORTING
             try {
                 val walletsToCreate = selectedWalletInfos.value.map {
-                    val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${it.index + 1}"
+                    val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${it.index}"
                     val category = WalletCategory.IMPORTED_MNEMONIC.value
                     val addresses = listOf(
                         Web3AddressRequest(
@@ -310,7 +319,16 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 val address: String
                 val category: WalletCategory
-                val name = MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)
+                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
+                val regex = """^$commonWalletName (\d+)$""".toRegex()
+                val maxIndex = names
+                    .filterNotNull()
+                    .mapNotNull { name ->
+                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+                    }.maxOrNull() ?: 0
+
+                val name = "${MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)} ${maxIndex + 1}"
                 _state.value = FetchWalletState.IMPORTING
                 when (mode) {
                     WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
