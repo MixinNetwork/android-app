@@ -112,14 +112,14 @@ class NewSchemeParser(
                         val biometricItem = TransferBiometricItem(users, mixAddress.threshold, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, null, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                         checkRawTransaction(biometricItem)
                     } else if (mixAddress.xinMembers.isNotEmpty()) {
-                        val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
+                        val addressTransferBiometricItem = AddressTransferBiometricItem(mixAddress.xinMembers.first().string(), mixAddress.threshold.toInt(), traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                         checkRawTransaction(addressTransferBiometricItem)
                     } else {
                         return Result.failure(ParserError(FAILURE))
                     }
                 } else {
                     // TODO verify address?
-                    val addressTransferBiometricItem = AddressTransferBiometricItem(urlQueryParser.lastPath, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
+                    val addressTransferBiometricItem = AddressTransferBiometricItem(urlQueryParser.lastPath, 1, traceId, token, requireNotNull(amount), urlQueryParser.memo, status, urlQueryParser.returnTo, reference = urlQueryParser.reference)
                     checkRawTransaction(addressTransferBiometricItem)
                 }
             } else if (payType  == PayType.Invoice) {
@@ -152,13 +152,13 @@ class NewSchemeParser(
                     val assetMap = invoice.groupByAssetId()
                     for ((assetId, amount) in assetMap) {
                         if (result != null) continue
-                        
+
                         val token = checkAsset(assetId)
                         if (token == null) {
                             result = Result.failure(ParserError(FAILURE))
                             continue
                         }
-                        
+
                         val tokensExtra = linkViewModel.findTokensExtra(assetId)
                         if (tokensExtra == null) {
                             result = Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount, urlQueryParser.memo, PaymentStatus.pending.name, urlQueryParser.reference)))
@@ -167,18 +167,18 @@ class NewSchemeParser(
                             result = Result.failure(BalanceError(AssetBiometricItem(token, traceId, amount, urlQueryParser.memo, PaymentStatus.pending.name, urlQueryParser.reference)))
                             continue
                         }
-                        
+
                         if (!checkUtxo(assetId, amount)) {
                             result = Result.success(SUCCESS)
                             continue
                         }
                     }
                 }
-                
+
                 if (result != null) {
                     return result
                 }
-                
+
                 val bottom = TransferInvoiceBottomSheetDialogFragment.newInstance(invoice.toString())
                 bottom.show(bottomSheet.parentFragmentManager, TransferInvoiceBottomSheetDialogFragment.TAG)
                 return Result.success(SUCCESS)
@@ -229,12 +229,13 @@ class NewSchemeParser(
                         }
                     }
                     mixAddress.xinMembers.size == 1 -> {
-                        buildAddressBiometricItem(mixAddress.xinMembers.first().string(), traceId, asset, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference)
+                        buildAddressBiometricItem(mixAddress.xinMembers.first().string(), traceId, asset, amount ?: "", urlQueryParser.memo, mixAddress.threshold.toInt(), urlQueryParser.returnTo, reference = urlQueryParser.reference)
                     }
                     else -> null
                 }
             }
-            else -> buildAddressBiometricItem(urlQueryParser.lastPath, traceId, asset, amount ?: "", urlQueryParser.memo, urlQueryParser.returnTo, from, reference = urlQueryParser.reference)
+            else -> buildAddressBiometricItem(urlQueryParser.lastPath, traceId, asset, amount ?: "", urlQueryParser.memo, 1, urlQueryParser.returnTo, reference = urlQueryParser.reference)
+
         }
     }
 

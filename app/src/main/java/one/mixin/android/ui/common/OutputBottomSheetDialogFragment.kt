@@ -200,7 +200,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                 }
                 is AddressTransferBiometricItem -> {
                     trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
-                    bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo, t.reference)
+                    bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, t.threshold, pin, t.traceId, t.memo, t.reference)
                 }
                 else -> {
                     t as WithdrawBiometricItem
