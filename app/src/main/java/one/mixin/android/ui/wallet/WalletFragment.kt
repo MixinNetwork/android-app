@@ -23,7 +23,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import okhttp3.Dispatcher
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -507,7 +506,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         importBottomBinding.delete.setOnClickListener {
             VerifyBottomSheetDialogFragment.newInstance(
-                getString(R.string.remove_wallet_pin_hint),
+                getString(R.string.delete_wallet_title),
                 true,
                 true,
                 subtitle = getString(R.string.remove_wallet_warning),
@@ -537,7 +536,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         importBottomBinding.rename.setOnClickListener {
             editDialog {
-                titleText = this@WalletFragment.getString(R.string.Rename_Wallet)
+                titleText = this@WalletFragment.getString(R.string.rename_wallet)
                 editText = binding.titleTv.text.toString()
                 maxTextCount = 32
                 allowEmpty = false

@@ -11,7 +11,6 @@ import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toast
-import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.biometric.UtxoException
@@ -314,7 +313,7 @@ fun Context.getMixinErrorStringByCode(
             getString(R.string.error_no_available_quote)
         }
         ErrorHandler.MAX_WALLET_REACHED -> {
-            getString(R.string.error_max_wallet_reached)
+            getString(R.string.error_too_many_wallets)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)

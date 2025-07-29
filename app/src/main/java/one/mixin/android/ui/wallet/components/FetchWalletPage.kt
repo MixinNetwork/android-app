@@ -119,7 +119,7 @@ private fun LoadingState(title: String, subtitle: String) {
 @Composable
 fun FetchingContent() {
     LoadingState(
-        title = stringResource(R.string.fetching_into_wallet),
+        title = stringResource(R.string.fetching_in_to_your_wallet),
         subtitle = stringResource(R.string.fetching_shouldnt_take_long)
     )
 }
@@ -250,7 +250,7 @@ fun SelectContent(
 fun ImportingContent(onFinished: () -> Unit) {
     MixinAppTheme(skip = true) {
         LoadingState(
-            title = stringResource(R.string.importing_into_wallet),
+            title = stringResource(R.string.importing_into_your_wallet),
             subtitle = stringResource(R.string.fetching_shouldnt_take_long)
         )
     }
@@ -285,7 +285,7 @@ fun ImportErrorContent(
 
             Text(
                 text = if (partialSuccess == true) {
-                    stringResource(R.string.Partial_Import_Successful)
+                    stringResource(R.string.partial_import_successful)
                 } else {
                     stringResource(R.string.Import_Failed)
                 },
@@ -298,7 +298,7 @@ fun ImportErrorContent(
 
             Text(
                 text = if (errorCode == 10632) {
-                    stringResource(R.string.error_max_wallet_reached)
+                    stringResource(R.string.error_too_many_wallets)
                 } else {
                     errorMessage ?: stringResource(R.string.Import_Failed)
                 },

@@ -12,12 +12,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -51,7 +48,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -70,7 +66,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.getMatchingWords
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.isMnemonicValid
@@ -82,7 +77,6 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.home.web3.swap.KeyboardAwareBox
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
-import timber.log.Timber
 
 @Composable
 fun MnemonicPhraseInput(
@@ -153,7 +147,7 @@ fun MnemonicPhraseInput(
                 Text(
                     text = when (state) {
                         MnemonicState.Input -> stringResource(R.string.log_in_whit_mnemonic_phrase)
-                        MnemonicState.Import -> stringResource(R.string.Import_Mnemonic_Phrase)
+                        MnemonicState.Import -> stringResource(R.string.import_mnemonic_phrase)
                         MnemonicState.Display -> stringResource(R.string.write_down_mnemonic_phrase)
                         MnemonicState.Verify -> stringResource(R.string.check_mnemonic_phrase)
                     }, fontSize = 18.sp,

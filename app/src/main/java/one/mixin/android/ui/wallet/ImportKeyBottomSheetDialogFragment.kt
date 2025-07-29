@@ -116,7 +116,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         is PopupType.ImportMnemonicPhrase -> {
                             ImportKeyPage(
                                 R.drawable.bg_import_mnemonic,
-                                R.string.Import_Mnemonic_Phrase,
+                                R.string.import_mnemonic_phrase,
                                 R.string.Import_Mnemonic_Phrase_Desc,
                                 action = {
                                     WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC, walletId = walletId)

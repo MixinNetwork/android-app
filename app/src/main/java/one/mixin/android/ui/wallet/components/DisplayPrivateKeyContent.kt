@@ -64,7 +64,7 @@ fun DisplayPrivateKeyContent(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = stringResource(R.string.Write_it_down_on_a_piece_of_paper_and_keep_it_in_a_safe_place),
+            text = stringResource(R.string.write_down_secret_description),
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textMinor,
             textAlign = TextAlign.Center,

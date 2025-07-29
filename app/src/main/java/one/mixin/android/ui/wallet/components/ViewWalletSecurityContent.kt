@@ -60,7 +60,7 @@ fun ViewWalletSecurityContent(mode: WalletSecurityActivity.Mode, pop: () -> Unit
                     modifier = Modifier
                         .fillMaxWidth(),
                     numberStr = "1",
-                    instructionStr = stringResource(R.string.wallet_security_warning_1, keyword),
+                    instructionStr = stringResource(R.string.export_mnemonics_warning_1, keyword),
                     color = MixinAppTheme.colors.textMinor
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -68,7 +68,7 @@ fun ViewWalletSecurityContent(mode: WalletSecurityActivity.Mode, pop: () -> Unit
                     modifier = Modifier
                         .fillMaxWidth(),
                     numberStr = "2",
-                    instructionStr = stringResource(R.string.wallet_security_warning_2, keyword),
+                    instructionStr = stringResource(R.string.export_mnemonics_warning_2, keyword),
                     color = MixinAppTheme.colors.textMinor
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -76,13 +76,13 @@ fun ViewWalletSecurityContent(mode: WalletSecurityActivity.Mode, pop: () -> Unit
                     modifier = Modifier
                         .fillMaxWidth(),
                     numberStr = "3",
-                    instructionStr = stringResource(R.string.wallet_security_warning_3, keyword),
+                    instructionStr = stringResource(R.string.export_mnemonics_warning_3, keyword),
                     color = MixinAppTheme.colors.red
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 NumberedText(
                     modifier = Modifier
-                        .fillMaxWidth(), numberStr = "4", instructionStr = stringResource(R.string.wallet_security_warning_4),
+                        .fillMaxWidth(), numberStr = "4", instructionStr = stringResource(R.string.export_mnemonics_warning_4),
                     color = MixinAppTheme.colors.red
                 )
 

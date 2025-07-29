@@ -49,7 +49,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/Rename_Wallet" />
+        android:text="@string/rename_wallet" />
 
     <TextView
         android:id="@+id/mnemonic_phrase"
@@ -61,7 +61,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/Show_Mnemonic_phrase" />
+        android:text="@string/show_mnemonic_phrase" />
 
     <TextView
         android:id="@+id/private_key"
@@ -73,7 +73,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:textColor="?attr/text_primary"
-        android:text="@string/Show_Private_Key" />
+        android:text="@string/show_private_key" />
 
     <TextView
         android:id="@+id/delete"
