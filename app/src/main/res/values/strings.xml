@@ -1470,7 +1470,7 @@
     <string name="Confirm_Withdrawal">Confirm Withdrawal</string>
     <string name="Sending_Withdrawal_Request">Sending Withdrawal Request</string>
     <string name="Withdrawal_Request_Sent">Withdrawal Request Sent</string>
-    <string name="address_validity_reminder">The address %1$s(%2$s) has not been used for over %3$s days. Please check if the address is still valid.</string>
+    <string name="address_validity_reminder">The address %1$s(%2$s) has not been used for over %3$d days. Please check if the address is still valid.</string>
     <string name="withdrawal_sending_description">The withdrawal request is being sent to the Mixin mainnet. Please wait a moment.</string>
     <string name="Confirm_Transfer">Confirm Transfer</string>
     <string name="Sending_Transfer_Request">Sending Transfer Request</string>

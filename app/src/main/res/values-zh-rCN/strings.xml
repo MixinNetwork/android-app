@@ -1439,7 +1439,7 @@
     <string name="Confirm_Withdrawal">提现确认</string>
     <string name="Sending_Withdrawal_Request">正在发送提现</string>
     <string name="Withdrawal_Request_Sent">提现请求已提交</string>
-    <string name="address_validity_reminder">您已经超过 %3$s 天没有使用地址 %1$s（%2$s），请注意检查地址是否仍然有效。</string>
+    <string name="address_validity_reminder">您已经超过 %3$d 天没有使用地址 %1$s（%2$s），请注意检查地址是否仍然有效。</string>
     <string name="withdrawal_sending_description">正在创建提现，请稍候。</string>
     <string name="Confirm_Transfer">转账确认</string>
     <string name="Sending_Transfer_Request">正在发送转账</string>
