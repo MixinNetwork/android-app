@@ -83,6 +83,7 @@ import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp as dip
 import one.mixin.android.extension.getParcelableCompat
@@ -137,6 +138,7 @@ import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -270,14 +272,14 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
-            roundTopOrBottom(12.dp.value, top = true, bottom = false)
+            roundTopOrBottom(8.dip.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {
                     Column(
                         modifier =
                         Modifier
-                            .clip(shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                            .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .background(MixinAppTheme.colors.background),

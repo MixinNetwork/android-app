@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.composeDp
 
 @Composable
 fun WalletLabel(
@@ -33,7 +34,7 @@ fun WalletLabel(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = if (isWeb3) Color(0xFF007AFF) else Color(0xFF8666F0), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+            .background(color = if (isWeb3) Color(0xFF007AFF) else Color(0xFF8666F0), shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
             .padding(top = 7.dp),
         contentAlignment = Alignment.TopCenter
     ) {
@@ -59,7 +60,7 @@ fun WalletLabel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(12.dp)
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .clip(RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
                     .background(MixinAppTheme.colors.background)
             )
         }

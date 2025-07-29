@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
@@ -19,7 +22,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SessionRequestViewModel
     @Inject
-    internal constructor() : ViewModel() {
+    internal constructor(
+        val web3Repository: Web3Repository
+    ) : ViewModel() {
         private var account: String = ""
             get() {
                 return JsSigner.address
@@ -91,4 +96,8 @@ class SessionRequestViewModel
                     data as String
                 }
             }
-    }
+
+        suspend fun findWalletById(walletId: String) = withContext(Dispatchers.IO) {
+            web3Repository.findWalletById(walletId)
+        }
+}
