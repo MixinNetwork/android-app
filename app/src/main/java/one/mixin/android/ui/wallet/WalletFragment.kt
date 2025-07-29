@@ -471,7 +471,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 val wallet = walletViewModel.findWalletById(dest.walletId)
                 val hasPrivateKey = wallet?.hasLocalPrivateKey == true
                 importBottomBinding.privateKey.isVisible = hasPrivateKey
-                importBottomBinding.mnemonicPhrase.isVisible = hasPrivateKey
+                importBottomBinding.mnemonicPhrase.isVisible = hasPrivateKey && wallet.category == WalletCategory.IMPORTED_MNEMONIC.value
             }
             importBottomBinding.privateKey.setOnClickListener {
                 ChainSelectionBottomSheetDialogFragment.newInstance(dest.walletId).apply {
