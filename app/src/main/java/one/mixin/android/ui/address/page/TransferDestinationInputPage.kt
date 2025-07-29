@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -54,6 +55,7 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -72,6 +74,7 @@ import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.js.JsSigner
@@ -104,6 +107,19 @@ fun TransferDestinationInputPage(
 
     var account by remember { mutableStateOf("") }
     val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+    var walletDisplayName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(web3Token?.walletId) {
+        if (web3Token?.walletId != null) {
+            viewModel.findWeb3WalletById(web3Token.walletId)?.let {
+                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                    it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                    it.category == WalletCategory.WATCH_ADDRESS.value) {
+                    walletDisplayName = it.name
+                }
+            }
+        }
+    }
 
     LaunchedEffect(token?.chainId) {
         account = when {
@@ -136,10 +152,31 @@ fun TransferDestinationInputPage(
         ) {
             PageScaffold(
                 title = stringResource(R.string.Send),
-                subtitle = name ?: if (web3Token != null) {
-                    stringResource(R.string.Common_Wallet)
-                } else {
-                    stringResource(R.string.Privacy_Wallet)
+                subtitle = {
+                    val subtitleText = when {
+                        name != null -> name
+                        web3Token != null -> walletDisplayName ?: stringResource(R.string.Common_Wallet)
+                        else -> stringResource(R.string.Privacy_Wallet)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (name == null && web3Token == null) { // Privacy Wallet
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        Text(
+                            text = subtitleText,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 },
                 verticalScrollable = false,
                 pop = pop,

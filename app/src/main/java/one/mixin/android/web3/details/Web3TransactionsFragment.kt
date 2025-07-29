@@ -499,18 +499,18 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
-        val bundle = Bundle().apply {
-            putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
-            putString(
-                Web3TransactionFragment.ARGS_CHAIN,
-                if (item.chainId == Constants.ChainId.SOLANA_CHAIN_ID) ChainType.solana.name else ChainType.ethereum.name
+        lifecycleScope.launch {
+            val wallet = web3ViewModel.findWalletById(token.walletId)
+            val bundle = Bundle().apply {
+                putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
+                putParcelable(ARGS_TOKEN, token)
+                putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet)
+            }
+            findNavController().navigate(
+                R.id.action_web3_transactions_to_web3_transaction,
+                bundle
             )
-            putParcelable(ARGS_TOKEN, token)
         }
-        findNavController().navigate(
-            R.id.action_web3_transactions_to_web3_transaction,
-            bundle
-        )
     }
 
     override fun onUserClick(userId: String) {

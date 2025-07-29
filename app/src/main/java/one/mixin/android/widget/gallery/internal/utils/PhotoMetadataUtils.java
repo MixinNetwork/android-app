@@ -9,14 +9,8 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+
 import androidx.exifinterface.media.ExifInterface;
-import one.mixin.android.R;
-import one.mixin.android.widget.gallery.MimeType;
-import one.mixin.android.widget.gallery.filter.Filter;
-import one.mixin.android.widget.gallery.internal.entity.IncapableCause;
-import one.mixin.android.widget.gallery.internal.entity.Item;
-import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;
-import timber.log.Timber;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,6 +18,14 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
+
+import one.mixin.android.R;
+import one.mixin.android.widget.gallery.MimeType;
+import one.mixin.android.widget.gallery.filter.Filter;
+import one.mixin.android.widget.gallery.internal.entity.IncapableCause;
+import one.mixin.android.widget.gallery.internal.entity.Item;
+import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;
+import timber.log.Timber;
 
 public final class PhotoMetadataUtils {
     private static final String TAG = PhotoMetadataUtils.class.getSimpleName();

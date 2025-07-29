@@ -277,6 +277,7 @@ class SwapFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapOrderListPage(
+                                walletId = walletId,
                                 pop = {
                                     navigateUp(navController)
                                 },
@@ -290,6 +291,7 @@ class SwapFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
                                 SwapOrderDetailPage(
+                                    walletId = walletId,
                                     orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
                                     onShare = { payAssetId, receiveAssetId ->
                                         lifecycleScope.launch {

@@ -212,19 +212,23 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 titleView.rightIb.setOnClickListener {
                     context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
                 }
-                titleView.setSubTitle(
-                    getString(R.string.Buy), if (isWeb3) {
-                        val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
-                        if (wallet != null && wallet.notClassic()) {
-                            wallet.name.takeIf { it.isNotEmpty() }
-                                ?: getString(R.string.Common_Wallet)
-                        } else {
-                            getString(R.string.Common_Wallet)
-                        }
+                if (isWeb3) {
+                    val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
+                    if (wallet != null && wallet.notClassic()) {
+                        titleView.setSubTitle(
+                            getString(R.string.Buy),
+                            wallet.name.takeIf { it.isNotEmpty() } ?: getString(R.string.Common_Wallet)
+                        )
                     } else {
-                        getString(R.string.Privacy_Wallet)
+                        titleView.setSubTitle(getString(R.string.Buy), getString(R.string.Common_Wallet))
                     }
-                )
+                } else {
+                    titleView.setSubTitle(
+                        getString(R.string.Buy),
+                        getString(R.string.Privacy_Wallet),
+                        R.drawable.ic_wallet_privacy
+                    )
+                }
                 assetRl.setOnClickListener {
                     if (isLoading) return@setOnClickListener
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile

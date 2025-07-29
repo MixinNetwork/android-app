@@ -1,6 +1,7 @@
 package one.mixin.android.widget.imageeditor;
 
 import android.content.res.Resources;
+
 import androidx.annotation.Dimension;
 import androidx.annotation.Px;
 

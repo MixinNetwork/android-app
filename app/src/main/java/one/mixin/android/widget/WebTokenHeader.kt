@@ -9,9 +9,9 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
+import one.mixin.android.databinding.ViewWeb3TokenHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isSolToken
-import one.mixin.android.databinding.ViewWeb3TokenHeaderBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.home.web3.StakeAccountSummary

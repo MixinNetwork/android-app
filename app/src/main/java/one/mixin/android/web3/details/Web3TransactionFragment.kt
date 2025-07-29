@@ -21,6 +21,7 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
@@ -35,6 +36,7 @@ import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.web3.js.JsSignMessage
@@ -51,15 +53,18 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         const val TAG = "Web3TransactionFragment"
         const val ARGS_TRANSACTION = "args_transaction"
         const val ARGS_CHAIN = "args_chain"
+        const val ARGS_WALLET = "args_wallet"
 
         fun newInstance(
             transaction: Web3TransactionItem,
             chain: String,
             web3Token: Web3TokenItem,
+            wallet: Web3Wallet,
         ) = Web3TransactionFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, transaction)
             putString(ARGS_CHAIN, chain)
             putParcelable(ARGS_TOKEN, web3Token)
+            putParcelable(ARGS_WALLET, wallet)
         }
     }
 
@@ -67,6 +72,10 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val token: Web3TokenItem by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)!!
+    }
+
+    private val wallet: Web3Wallet by lazy {
+        requireArguments().getParcelableCompat(ARGS_WALLET, Web3Wallet::class.java)!!
     }
 
     private val transaction by lazy {
@@ -113,6 +122,13 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         binding.root.isClickable = true
         binding.apply {
+            if (wallet.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                wallet.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                wallet.category == WalletCategory.WATCH_ADDRESS.value) {
+                titleView.setSubTitle(getString(R.string.Transaction), wallet.name)
+            } else {
+                titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Common_Wallet))
+            }
             spamLl.isVisible = transaction.isNotVerified()
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
