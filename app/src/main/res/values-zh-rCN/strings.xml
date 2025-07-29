@@ -1982,7 +1982,7 @@
         <item quantity="other">导入 %1$d 个钱包</item>
     </plurals>
     <string name="rename_wallet">重命名钱包</string>
-    <string name="Remove_Wallet">移除钱包</string>
+    <string name="Remove_Wallet">删除钱包</string>
     <string name="delete_wallet_title">请输入 PIN 以移除钱包</string>
     <string name="find_more_wallets">查找更多钱包</string>
     <string name="show_mnemonic_phrase">查看助记词</string>

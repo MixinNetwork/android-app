@@ -475,7 +475,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             importBottomBinding.privateKey.setOnClickListener {
                 ChainSelectionBottomSheetDialogFragment.newInstance(dest.walletId).apply {
                     callback = { chainItem ->
-                        WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY, chainItem.chainId)
+                        WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY, chainItem.chainId, dest.walletId)
                     }
                 }.show(parentFragmentManager, ChainSelectionBottomSheetDialogFragment.TAG)
                 bottomSheet.dismiss()
@@ -501,7 +501,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
 
         importBottomBinding.mnemonicPhrase.setOnClickListener {
-            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_MNEMONIC)
+            WalletSecurityActivity.show(
+                requireActivity(), WalletSecurityActivity.Mode.VIEW_MNEMONIC, walletId = if (dest is WalletDestination.Import) {
+                    dest.walletId
+                } else {
+                    null
+                }
+            )
             bottomSheet.dismiss()
         }
         importBottomBinding.delete.setOnClickListener {

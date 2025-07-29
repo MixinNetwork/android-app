@@ -285,7 +285,7 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    fun getWeb3Priva(context: Context, chainId: String?): String? {
+    fun getWeb3Priva(context: Context, chainId: String?, walletId: String?): String? {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
@@ -293,6 +293,10 @@ class FetchWalletViewModel @Inject constructor(
         }
         if (chainId == null) {
             Timber.e("Chain ID is null, cannot get private key.")
+            return null
+        }
+        if (walletId != JsSigner.currentWalletId) {
+            Timber.e("Wallet ID does not match current wallet ID, cannot get private key.")
             return null
         }
         return CryptoWalletHelper.getWeb3PrivateKey(context, currentSpendKey, chainId)?.let {
