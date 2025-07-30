@@ -89,7 +89,7 @@ fun TextWithRoundedLabel(
     val fullText = "$content  $label"
     val labelStart = fullText.lastIndexOf(label)
     val labelEnd = labelStart + label.length
-    val accentColor = MixinAppTheme.colors.accent
+    val accentColor = Color(0xFF7EABFB)
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     Text(
@@ -121,7 +121,7 @@ fun TextWithRoundedLabel(
                         labelStartOffset - horizontalPadding,
                         lineTop + verticalPadding
                     ),
-                    size = androidx.compose.ui.geometry.Size(
+                    size = Size(
                         labelEndOffset - labelStartOffset + horizontalPadding * 2,
                         lineHeight - verticalPadding * 2
                     ),
