@@ -6,13 +6,16 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 class RefreshWeb3Job : BaseJob(
@@ -21,14 +24,11 @@ class RefreshWeb3Job : BaseJob(
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshWeb3Job"
-
-        const val WALLET_CATEGORY_CLASSIC = "classic"
-        const val WALLET_CATEGORY_PRIVATE = "private"
     }
 
     override fun onRun(): Unit = runBlocking {
         fetchWallets()
-        val wallets = web3WalletDao.getAllWallets()
+        val wallets = web3WalletDao.getAllClassicWallets()
         if (wallets.isEmpty()) {
             val erc20Address = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
             val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
@@ -37,14 +37,16 @@ class RefreshWeb3Job : BaseJob(
                 return@runBlocking
             }
             createWallet(
-                "ClassicWallet", WALLET_CATEGORY_CLASSIC, listOf(
+                "ClassicWallet", WalletCategory.CLASSIC.value, listOf(
                     Web3AddressRequest(
                         destination = erc20Address,
-                        chainId = Constants.ChainId.Polygon
+                        chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                        path = "m/44'/60'/0'/0/0"
                     ),
                     Web3AddressRequest(
                         destination = solAddress,
-                        chainId = Constants.ChainId.SOLANA_CHAIN_ID
+                        chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                        path = "m/44'/501'/0'/0'"
                     )
                 )
             )
@@ -52,6 +54,7 @@ class RefreshWeb3Job : BaseJob(
             fetchChain()
             wallets.forEach { wallet ->
                 fetchWalletAssets(wallet)
+                RxBus.publish(WalletRefreshedEvent(wallet.id))
             }
         }
         jobManager.addJobInBackground(RefreshWeb3TransactionsJob())

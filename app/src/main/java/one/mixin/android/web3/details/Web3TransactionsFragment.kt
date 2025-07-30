@@ -24,7 +24,9 @@ import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isSolToken
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
@@ -61,14 +63,17 @@ import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
+import one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.ChainType
 import one.mixin.android.widget.BottomSheet
@@ -123,6 +128,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         if (requireActivity() !is WalletActivity) {
             binding.root.fitsSystemWindows = false
         }
+
+        lifecycleScope.launch {
+            val wallet = web3ViewModel.findWalletById(token.walletId)
+            binding.sendReceiveView.isVisible = wallet?.isWatch() != true
+            binding.empty.isVisible = wallet?.isWatch() == true
+        }
+
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
         refreshToken(token.assetId)
         binding.titleView.apply {
@@ -193,7 +205,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
                 sendReceiveView.send.setOnClickListener {
                     lifecycleScope.launch {
-                        val chain = web3ViewModel.web3TokenItemById(token.chainId)
+                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                        val wallet = web3ViewModel.findWalletById(token.walletId)
+                        if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                            ImportKeyBottomSheetDialogFragment.newInstance(
+                                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
+                                walletId = wallet.id
+                            ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
+                            return@launch
+                        }
                         if (chain == null) {
                             refreshToken(token.chainId)
                             toast(R.string.Please_wait_a_bit)
@@ -202,6 +222,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                                 R.id.action_web3_transactions_to_transfer_destination,
                                 Bundle().apply {
                                     putString(TransferDestinationInputFragment.ARGS_ADDRESS, address)
+                                    putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet)
                                     putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                                     putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
                                 }
@@ -210,22 +231,40 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     }
                 }
                 sendReceiveView.receive.setOnClickListener {
-                    requireView().navigate(
-                        R.id.action_web3_transactions_to_web3_address,
-                        Bundle().apply {
-                            putString("address", address)
+                    lifecycleScope.launch {
+                        val wallet = web3ViewModel.findWalletById(token.walletId)
+                        if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                            ImportKeyBottomSheetDialogFragment.newInstance(
+                                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
+                                walletId = wallet.id
+                            ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
+                            return@launch
                         }
-                    )
+                        requireView().navigate(
+                            R.id.action_web3_transactions_to_web3_address,
+                            Bundle().apply {
+                                putString("address", address)
+                            }
+                        )
+                    }
                 }
                 sendReceiveView.swap.setOnClickListener {
-                    AnalyticsTracker.trackSwapStart("web3", "web3")
                     lifecycleScope.launch {
-                        val tokens = web3ViewModel.findWeb3TokenItems()
+                        val wallet = web3ViewModel.findWalletById(token.walletId)
+                        if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                            ImportKeyBottomSheetDialogFragment.newInstance(
+                                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
+                                walletId = wallet.id
+                            ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
+                            return@launch
+                        }
+                        AnalyticsTracker.trackSwapStart("web3", "web3")
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
                                 putString(SwapFragment.ARGS_INPUT, token.assetId)
                                 putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
+                                putString(SwapFragment.ARGS_WALLET_ID, token.walletId)
                             }
                         )
                     }
@@ -235,10 +274,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     view.navigate(
                         R.id.action_web3_transactions_to_all_web3_transactions,
                         Bundle().apply {
-                            putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
-                            if (token.isSpam()) {
-                                putInt("level", FILTER_GOOD_AND_SPAM)
-                            }
+                            putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = token.walletId, level = if (token.isSpam()) FILTER_GOOD_AND_SPAM else Web3FilterParams.FILTER_GOOD_ONLY, tokenItems = listOf(token)))
                         }
                     )
                 }
@@ -276,7 +312,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         binding.scrollView.viewTreeObserver.addOnScrollChangedListener(this@Web3TransactionsFragment)
         updateHeader(token)
         lifecycleScope.launch {
-            web3ViewModel.web3Transactions(token.assetId).observe(viewLifecycleOwner) { list ->
+            web3ViewModel.web3Transactions(token.walletId, token.assetId)
+                .observe(viewLifecycleOwner) { list ->
                 binding.transactionsRv.isVisible = list.isNotEmpty()
                 binding.bottomRl.isVisible = list.isEmpty()
                 binding.transactionsRv.list = list
@@ -288,7 +325,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     }
                 }
             }
-            web3ViewModel.web3TokenExtraFlow(token.assetId).flowOn(Dispatchers.Main).collect { balance ->
+            web3ViewModel.web3TokenExtraFlow(token.walletId, token.assetId).flowOn(Dispatchers.Main).collect { balance ->
                 balance?.let {
                     if (isAdded) {
                         updateHeader(token.copy(balance = it))
@@ -483,10 +520,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         requireView().navigate(
             R.id.action_web3_transactions_to_all_web3_transactions,
             Bundle().apply {
-                putParcelable(AllWeb3TransactionsFragment.ARGS_TOKEN, token)
-                if (token.isSpam()) {
-                    putInt("level", FILTER_GOOD_AND_SPAM)
-                }
+                putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = token.walletId, level = if (token.isSpam()) FILTER_GOOD_AND_SPAM else Web3FilterParams.FILTER_GOOD_ONLY, tokenItems = listOf(token)))
             }
         )
     }
@@ -495,4 +529,3 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         if (isAdded) web3ViewModel.scrollOffset = binding.scrollView.scrollY
     }
 }
-

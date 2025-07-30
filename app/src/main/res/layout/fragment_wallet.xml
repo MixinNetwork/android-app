@@ -48,7 +48,6 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_toEndOf="@+id/head_icon"
-                    android:text="@string/Wallets"
                     android:textColor="?attr/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold"

@@ -209,3 +209,9 @@ fun releaseAll() {
     MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
     FloatingWebClip.getInstance().hide()
 }
+
+fun reloadWebViewInClips() {
+    clips.forEach { clip ->
+        clip.webView?.reload()
+    }
+}

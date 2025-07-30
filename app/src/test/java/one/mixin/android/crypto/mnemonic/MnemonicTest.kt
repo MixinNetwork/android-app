@@ -1,21 +1,146 @@
 package one.mixin.android.crypto.mnemonic
 
+import android.util.Base64
 import com.lambdapioneer.argon2kt.Argon2Kt
+import okio.ByteString.Companion.toByteString
+import one.mixin.android.crypto.EthKeyGenerator
+import one.mixin.android.crypto.SolanaKeyGenerator
+import one.mixin.android.crypto.aesGcmDecrypt
+import one.mixin.android.crypto.aesGcmEncrypt
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.mnemonicChecksumWord
 import one.mixin.android.crypto.toEntropy
+import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.crypto.toSeed
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
-import one.mixin.android.extension.toHex
+import one.mixin.android.util.encodeToBase58String
+import one.mixin.eddsa.KeyPair
 import org.bitcoinj.crypto.MnemonicCode
 import org.junit.Test
+import org.sol4k.Base58
+import org.sol4k.Keypair
 import org.web3j.crypto.Bip32ECKeyPair
-import timber.log.Timber
+import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Keys
+import org.web3j.utils.Numeric
+import java.security.MessageDigest
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class MnemonicTest {
+
+    private val expectedSolanaAddresses = listOf(
+        "BLeUXTx9thHGT7VJUtF9vHEmfMDgW1nnKZ9UVer2CoLX",
+        "EdjcxP8MmXP4yRHguEVoH75kbXVfZNFXPgNfL9NqcXXK",
+        "AFG4eoTGSCdNemYFQhhJBqT7tJwo3WdC4Raeq9SkXx7p",
+        "gBXdHgqD3g2ChGjHveWiPXSGMRXRTNwbieiBWtKVtzJ",
+        "9c8ixKiHZ7vuydxovD32uGGi4Hn1BkpdyZeUy9jkTLtw",
+        "BnWk78yTZn6PmKnFQ1j2fqL4ZXekhQ6VYZVDNtU7d6Cq",
+        "6h5ScC2T65UKvJNnajrttU7rBhq1kCgaBGtw9z9s4K6L",
+        "GPAJ4A3YSzzVYeTigrfxB91j8ELPcqHCCq13vJvJhna1",
+        "HBWQTWgxLGy5JpvicSvHCZcmBjMN11shqBiGSaVvQtPJ",
+        "EMcYx649Zj64Tk32Xg6c7eYkLyJ7y2qjpnrQVcqCvJKA"
+    )
+    private val expectedEthereumAddresses = listOf(
+        "0x58A57ed9d8d624cBD12e2C467D34787555bB1b25",
+        "0x0D3eB21b6b21833A4939Cfff4810E9AE0758e12C",
+        "0xe42f4612e154153B68e241e8FDe337e0c4dD6bBD",
+        "0x2F07c220dC62CE9531bC44B695A6D93578806d8d",
+        "0x1454168e82efA260f49a6F86612cc6414Ba633e9",
+        "0x4fb070eF70961D204961c69B954B99808b9694BC",
+        "0x603049dcd328D58c9053eBE34F1692c0fac683f8",
+        "0x3eb84b6a7B4707C20B6bca41b537055B61E84764",
+        "0xa642b057F48020e850581a05Fe2Dde506EabD50D",
+        "0x61e3A11876506C169a25c90a6f64fEA5384d10f0"
+    )
+
+    @Test
+    fun testAddressGenerationFromMnemonic() {
+        val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+        repeat(10) { index ->
+            val ethPrivateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", index)
+            requireNotNull(ethPrivateKey) { "Failed to generate Ethereum private key for index $index" }
+            val generatedEthAddress = EthKeyGenerator.privateKeyToAddress(ethPrivateKey)
+            assertEquals(
+                expectedEthereumAddresses[index],
+                generatedEthAddress,
+                "Ethereum address at index $index should match"
+            )
+            if (index == 0) {
+                assertEquals(
+                    "0x33fa40f84e854b941c2b0436dd4a256e1df1cb41b9c1c0ccc8446408c19b8bf9",
+                    Numeric.toHexString(ethPrivateKey),
+                    "ETH private key at index $index should match"
+                )
+            }
+
+            val solanaPrivateKey =
+                SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", index)
+            requireNotNull(solanaPrivateKey) { "Failed to generate Solana private key for index $index" }
+            val kp = Keypair.fromSecretKey(solanaPrivateKey)
+            if (index == 0) {
+                assertEquals(
+                    "37NfN7eam3KCwdC6jAc7nFeuDNYCV1K2AgNWmT4Xo6ogQPMnJ1ZoWA7AKN6jzEoQi3FNTEkkXiwu7VjqXdu8FGUs",
+                    kp.secret.encodeToBase58String(),
+                    "Solana private key at index $index should match"
+                )
+            }
+            val keyPair =
+                KeyPair.newKeyPairFromSeed(solanaPrivateKey.toByteString(), checkOnCurve = true)
+            val generatedSolanaAddress = Base58.encode(keyPair.publicKey.toByteArray())
+            assertEquals(
+                expectedSolanaAddresses[index],
+                generatedSolanaAddress,
+                "Solana address at index $index should match"
+            )
+        }
+    }
+
+    @Test
+    fun testPrivateKeyToPublicKey() {
+        val solanaPrivateKeyBase58 = "37NfN7eam3KCwdC6jAc7nFeuDNYCV1K2AgNWmT4Xo6ogQPMnJ1ZoWA7AKN6jzEoQi3FNTEkkXiwu7VjqXdu8FGUs"
+        val solanaPrivateKeyBytes = Base58.decode(solanaPrivateKeyBase58)
+        val solanaKeypair = Keypair.fromSecretKey(solanaPrivateKeyBytes)
+        assertEquals(
+            "BLeUXTx9thHGT7VJUtF9vHEmfMDgW1nnKZ9UVer2CoLX",
+            Base58.encode(solanaKeypair.publicKey.bytes())
+        )
+
+        val ethPrivateKeyHex = "0x33fa40f84e854b941c2b0436dd4a256e1df1cb41b9c1c0ccc8446408c19b8bf9"
+        val ethKeyPair = ECKeyPair.create(Numeric.hexStringToByteArray(ethPrivateKeyHex))
+        val ethAddress = Keys.toChecksumAddress(Keys.getAddress(ethKeyPair.publicKey))
+        assertEquals("0x58A57ed9d8d624cBD12e2C467D34787555bB1b25", ethAddress)
+    }
+
+    @Test
+    fun mnemonicEncryptTest() {
+        val mnemonicWords = "legal winner thank year wave sausage worth useful legal winner thank yellow".split(" ")
+        val spendKeyHex = "0f09874fa3dc875b9594cd956977decda74e12dea331cef4585649f27b200950"
+
+        val sha256Digest = MessageDigest.getInstance("SHA-256")
+        val aesKeyBytes = sha256Digest.digest(spendKeyHex.hexStringToByteArray())
+        assertEquals("43be4f5caa5627ca1a3c218161909928f568f7cb5917f3d3ae22bc94ee2abfe0", aesKeyBytes.hexString())
+
+        val iv = "d20167853779cde83da34ff3".hexStringToByteArray() // 12 bytes
+
+        val originalEntropy = toEntropy(mnemonicWords)
+
+        val encryptedDataWithIv = aesGcmEncrypt(originalEntropy, aesKeyBytes, iv)
+        assertEquals(encryptedDataWithIv.hexString(), "d20167853779cde83da34ff313f98e144e0c78360c41e8d75ebfa8ebeccd5ab6639458880ab9e854fc7d00ee")
+        val decryptedEntropy = aesGcmDecrypt(encryptedDataWithIv, aesKeyBytes)
+        val reconstructedMnemonic = MnemonicCode.INSTANCE.toMnemonic(decryptedEntropy)
+
+        assertContentEquals(mnemonicWords, reconstructedMnemonic)
+    }
+
 
     @Test
     fun mnemonicTest() {
@@ -24,11 +149,11 @@ class MnemonicTest {
         val mn = "legal winner thank year wave sausage worth useful legal winner thank yellow"
         val seed = toSeed(mn.split(" "), "")
         println(seed.hexString())
-        assertEquals(seed.hexString() ,"878386efb78845b3355bd15ea4d39ef97d179cb712b77d5c12b6be415fffeffe5f377ba02bf3f8544ab800b955e51fbff09828f682052a20faa6addbbddfb096")
+        assertEquals(seed.hexString(), "878386efb78845b3355bd15ea4d39ef97d179cb712b77d5c12b6be415fffeffe5f377ba02bf3f8544ab800b955e51fbff09828f682052a20faa6addbbddfb096")
         val key = Bip32ECKeyPair.generateKeyPair(seed)
         println(key.privateKey.toByteArray().hexString())
         println(key.publicKey.toByteArray().hexString())
-        assertEquals(key.privateKey.toByteArray().hexString() ,"7e56ecf5943d79e1f5f87e11c768253d7f3fcf30ae71335611e366c578b4564e")
+        assertEquals(key.privateKey.toByteArray().hexString(), "7e56ecf5943d79e1f5f87e11c768253d7f3fcf30ae71335611e366c578b4564e")
         val entropy = toEntropy(mn.split(" "))
         val spendKey = argon.argon2IHash(tipSeed, entropy).rawHashAsByteArray()
         assertEquals(spendKey.hexString(), "0f09874fa3dc875b9594cd956977decda74e12dea331cef4585649f27b200950")

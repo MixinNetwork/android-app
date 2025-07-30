@@ -179,6 +179,7 @@ android {
         staging {
             initWith debug
             applicationIdSuffix ".test"
+            matchingFallbacks = ['debug']
         }
     }
 

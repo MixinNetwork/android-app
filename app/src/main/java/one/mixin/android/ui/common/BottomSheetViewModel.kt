@@ -43,6 +43,7 @@ import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.UtxoService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.escapeSql
@@ -124,6 +125,7 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
+import one.mixin.android.web3.js.JsSigner
 import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.io.File
@@ -621,7 +623,7 @@ class BottomSheetViewModel
 
             val traceIds = invoice.entries.map { it.traceId }
             val completedTransactions = tokenRepository.transactionsFetch(traceIds)
-            
+
             if (completedTransactions.isSuccess && completedTransactions.data != null && completedTransactions.data!!.isNotEmpty()) {
                 Timber.e("Found completed transactions: ${completedTransactions.data!!.map { it.requestId }.joinToString()}")
 
@@ -926,8 +928,8 @@ class BottomSheetViewModel
                                 completedTransactions[reference.value].transactionHash
                             } else {
                                 val adjustedIndex = if (completedTransactions != null && completedTransactions.isNotEmpty())
-                                    reference.value - completedTransactions.size 
-                                else 
+                                    reference.value - completedTransactions.size
+                                else
                                     reference.value
                                 Timber.e("Kernel Invoice Transaction: Reference not found in completedTransactions, looking in verifiedTransactions at index $adjustedIndex")
                                 verifiedTransactions.getOrNull(adjustedIndex)?.hash ?: throw IllegalArgumentException("Reference not found")
@@ -1362,8 +1364,8 @@ class BottomSheetViewModel
         suspend fun findAssetItemById(assetId: String): TokenItem? =
             tokenRepository.findAssetItemById(assetId)
 
-        suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
-            web3Repository.web3TokenItemById(assetId)
+        suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(walletId,assetId)
         }
 
         suspend fun findAssetItemByCollectionHash(assetId: String): TokenItem? =
@@ -1650,8 +1652,8 @@ class BottomSheetViewModel
                 tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
             }
 
-        suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> =
-            tokenRepository.queryAsset(query, web3)
+        suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> =
+            tokenRepository.queryAsset(walletId, query, web3)
 
         suspend fun findOrSyncAsset(assetId: String): TokenItem? {
             return withContext(Dispatchers.IO) {
@@ -1754,7 +1756,7 @@ class BottomSheetViewModel
             return privateKeyToAddress(spendKey, chainId)
         }
 
-        fun web3TokenItems() = tokenRepository.web3TokenItems()
+        fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
 
         suspend fun getWeb3Priv(
             context: Context,
@@ -1763,7 +1765,7 @@ class BottomSheetViewModel
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToPrivateKey(spendKey, chainId)
+            return requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId))
         }
 
         suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String, assetId: String? = null) {

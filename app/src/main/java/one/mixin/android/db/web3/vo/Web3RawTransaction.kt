@@ -2,11 +2,10 @@ package one.mixin.android.db.web3.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.Ignore
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.api.response.web3.BalanceChange
 import one.mixin.android.api.response.web3.ParsedTx
 
 @Entity(

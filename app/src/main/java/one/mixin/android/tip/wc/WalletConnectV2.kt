@@ -489,6 +489,55 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
+    fun switchAccount(address:String) {
+        val sessions = getListOfActiveSessions()
+        if (sessions.isEmpty()) {
+            Timber.e("$TAG switchAccount session not found for topic")
+            return
+        }
+        sessions.forEach { session ->
+            val newNamespaces = session.namespaces.mapValues { (_, ns) ->
+                val chainId = ns.chains?.firstOrNull()
+                if (chainId == null) {
+                    Timber.w("$TAG switchAccount: namespace has no chains, skipping update for it")
+                    return@mapValues ns
+                }
+                val chain = supportChainList.find { it.chainId == chainId }
+                if (chain == null) {
+                    Timber.w("$TAG switchAccount: unsupported chainId $chainId, skipping update for it")
+                    return@mapValues ns
+                }
+
+                val newAccount = "$chainId:$address"
+
+                Wallet.Model.Namespace.Session(
+                    chains = ns.chains,
+                    accounts = listOf(newAccount),
+                    methods = ns.methods,
+                    events = ns.events,
+                )
+            }
+
+            val updateParams = Wallet.Params.SessionUpdate(
+                sessionTopic = session.topic,
+                namespaces = newNamespaces,
+            )
+
+            waitActionCheckError { latch ->
+                var errMsg: String? = null
+                WalletKit.updateSession(updateParams, onSuccess = {
+                    Timber.d("$TAG session updated successfully")
+                    latch.countDown()
+                }, onError = { error ->
+                    errMsg = "$TAG session update error: $error"
+                    Timber.e(errMsg)
+                    latch.countDown()
+                })
+                errMsg
+            }
+        }
+    }
+
     fun approveRequestInternal(
         result: String,
         sessionRequest: Wallet.Model.SessionRequest,

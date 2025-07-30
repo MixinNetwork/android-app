@@ -8,8 +8,6 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
-import one.mixin.android.db.web3.vo.Web3Address
-import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.db.converter.Web3TypeConverters
 import one.mixin.android.db.web3.Web3AddressDao
@@ -19,11 +17,13 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.vo.Property
 import java.io.File
@@ -39,7 +39,7 @@ import java.io.File
         Web3RawTransaction::class,
         Property::class
     ],
-    version = 3,
+    version = 4,
 )
 @TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
@@ -74,6 +74,12 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT")
+            }
+        }
+
         fun getDatabase(context: Context): WalletDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -91,7 +97,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     INSTANCE = builder.build()
                 }
             }

@@ -136,10 +136,12 @@ import one.mixin.android.vo.safe.SafeWithdrawal
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
+import one.mixin.android.vo.safe.UnifiedAssetItem
 import one.mixin.android.vo.safe.toAssetItem
 import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
+import one.mixin.android.web3.js.JsSigner
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -162,7 +164,6 @@ class TokenRepository
         private val safeSnapshotDao: SafeSnapshotDao,
         private val addressDao: AddressDao,
         private val addressService: AddressService,
-        private val memberService: MemberService,
         private val hotAssetDao: TopAssetDao,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
@@ -483,11 +484,13 @@ class TokenRepository
 
         suspend fun findAssetItemsWithBalance(): List<TokenItem> = tokenDao.findAssetItemsWithBalance()
 
-        suspend fun findWeb3AssetItemsWithBalance(): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance()
+        suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem> = tokenDao.findUnifiedAssetItem()
+
+        suspend fun findWeb3AssetItemsWithBalance(walletId: String): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance(walletId)
 
         suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
 
-        fun web3TokenItems(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems()
+        fun web3TokenItems(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId)
 
         suspend fun fuzzySearchToken(
             query: String,
@@ -538,7 +541,7 @@ class TokenRepository
             web3WalletDao.deleteAllWallets()
         }
 
-        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(hash, chainId)
+        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(JsSigner.currentWalletId, hash, chainId)
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
@@ -558,9 +561,9 @@ class TokenRepository
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
             safeSnapshotDao.clearPendingDepositsByAssetId(assetId)
 
-        suspend fun queryAsset(query: String, web3: Boolean = false): List<TokenItem> {
+        suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> {
             val localLike = if (web3) {
-                web3TokenDao.fuzzySearchAsset(query, query).map { t -> t.toTokenItem() }
+                web3TokenDao.fuzzySearchAsset(walletId ?: "", query, query).map { t -> t.toTokenItem() }
             } else emptyList()
 
             val response =
@@ -1408,25 +1411,25 @@ class TokenRepository
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
-    fun web3TokenExtraFlow(asseId: String) = web3TokenDao.tokenExtraFlow(asseId)
+    fun web3TokenExtraFlow(walletId: String, asseId: String) = web3TokenDao.tokenExtraFlow(walletId, asseId)
 
-    fun web3TokensFlow() = web3TokenDao.web3TokensFlow()
+    fun web3TokensFlow(walletId: String) = web3TokenDao.web3TokensFlow(walletId)
 
-    suspend fun findWeb3TokenItems(): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems()
+    suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem> = web3TokenDao.findWeb3TokenItems(walletId)
 
     fun assetFlow() = tokenDao.assetFlow()
-
-    fun getWallets() = web3WalletDao.getWallets()
 
     suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
-    suspend fun getPendingRawTransactions() = web3RawTransactionDao.getPendingRawTransactions()
+    suspend fun getPendingRawTransactions(walletId: String) = web3RawTransactionDao.getPendingRawTransactions(
+        walletId)
 
-    suspend fun getPendingTransactions() = web3TransactionDao.getPendingTransactions()
+    suspend fun getPendingTransactions(walletId: String) = web3TransactionDao.getPendingTransactions(walletId)
 
-    suspend fun getPendingRawTransactions(chainId: String) = web3RawTransactionDao.getPendingRawTransactions(chainId)
+    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = web3RawTransactionDao.getPendingRawTransactions(
+        walletId, chainId)
 
     suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
 
@@ -1434,7 +1437,7 @@ class TokenRepository
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
-    fun getPendingTransactionCount(): LiveData<Int> = web3TransactionDao.getPendingTransactionCount()
+    fun getPendingTransactionCount(walletId: String): LiveData<Int> = web3TransactionDao.getPendingTransactionCount(walletId)
 
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
 
@@ -1445,4 +1448,6 @@ class TokenRepository
 
     suspend fun findTopWeb3UsdBalanceAsset(excludeId: String) =
         web3TokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
+
+    suspend fun getChainItemByWalletId(walletId: String) = web3AddressDao.getChainItemByWalletId(walletId)
 }

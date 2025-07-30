@@ -22,6 +22,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
+import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -31,7 +32,6 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.remove
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
@@ -50,7 +50,6 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 import java.math.BigDecimal
@@ -64,14 +63,17 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val CURRENT_CURRENCY = "current_currency"
         const val CURRENT_ASSET_ID = "current_asset_id"
         const val ARGS_IS_WEB3 = "args_is_web3"
+        const val ARGS_WALLET_ID_FOR_CALCULATE = "args_wallet_id_for_calculate"
 
         fun newInstance() = CalculateFragment()
     }
 
     private val binding by viewBinding(FragmentCalculateBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+    private val web3ViewModel by viewModels<one.mixin.android.ui.home.web3.Web3ViewModel>()
 
     private val isWeb3 by lazy { requireArguments().getBoolean(ARGS_IS_WEB3, false) }
+    private val walletIdForCalculate by lazy { requireArguments().getString(ARGS_WALLET_ID_FOR_CALCULATE) }
 
     private suspend fun initData() {
         var currencyName = getDefaultCurrency(requireContext(), getCurrencyData(requireContext().resources))
@@ -212,7 +214,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
                 titleView.setSubTitle(
                     getString(R.string.Buy), if (isWeb3) {
-                        getString(R.string.Common_Wallet)
+                        val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
+                        if (wallet != null && wallet.notClassic()) {
+                            wallet.name.takeIf { it.isNotEmpty() }
+                                ?: getString(R.string.Common_Wallet)
+                        } else {
+                            getString(R.string.Common_Wallet)
+                        }
                     } else {
                         getString(R.string.Privacy_Wallet)
                     }
@@ -358,11 +366,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             if (viewDestroyed()) return@inner
                             val asset = fiatMoneyViewModel.asset ?: return@inner
                             val destination = if (isWeb3) {
-                                if (asset.chainId == Constants.ChainId.Solana) {
-                                    JsSigner.solanaAddress
-                                } else {
-                                    JsSigner.evmAddress
-                                }
+                                val walletId = walletIdForCalculate ?: return@inner
+                                web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination ?: return@inner
                             } else
                                 fiatMoneyViewModel.getAddressById(asset.chainId)?.destination ?: return@inner
                             try {

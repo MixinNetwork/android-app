@@ -44,6 +44,8 @@ object Constants {
         const val ALIAS_SPEND_SALT = "alias_spend_salt"
 
         const val ENCRYPTED_MNEMONIC = "encrypted_mnemonic"
+
+        const val ENCRYPTED_WEB3_KEY = "encrypted_web3_key"
     }
 
     object Account {
@@ -92,10 +94,16 @@ object Constants {
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
+        const val PREF_HAS_USED_BUY = "pref_has_used_buy"
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
-        const val PREF_HAS_USED_WALLET = "pref_has_used_wallet"
+
+        const val PREF_USED_WALLET = "pref_used_wallet"
+
+        const val PREF_HAS_USED_WALLET_LIST = "pref_has_used_wallet_list"
+
+        const val PREF_HAS_USED_ADD_WALLET = "pref_has_used_add_wallet"
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
@@ -119,6 +127,8 @@ object Constants {
             const val EVM_ADDRESS = "evm_address"
             const val SOLANA_ADDRESS = "solana_address"
         }
+
+        const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
     }
 
     object Scheme {

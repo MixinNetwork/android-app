@@ -82,15 +82,15 @@ internal constructor(
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    fun web3TokensExcludeHidden() = web3Repository.web3TokensExcludeHidden()
-    
-    fun hiddenAssetItems() = web3Repository.hiddenAssetItems()
+    fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
+
+    fun hiddenAssetItems(walletId: String) = web3Repository.hiddenAssetItems(walletId)
 
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
         web3Repository.updateTokenHidden(tokenId, walletId, hidden)
 
-    suspend fun  web3TokenItemById(chainId: String) = withContext(Dispatchers.IO) {
-        web3Repository.web3TokenItemById(chainId)
+    suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(walletId, assetId)
     }
 
     fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
@@ -100,10 +100,10 @@ internal constructor(
         emit(null)
     }.flowOn(Dispatchers.IO)
 
-    fun web3Transactions(assetId: String) = web3Repository.web3Transactions(assetId)
+    fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
 
-    fun web3TokenExtraFlow(assetId: String) =
-        tokenRepository.web3TokenExtraFlow(assetId)
+    fun web3TokenExtraFlow(walletId: String, assetId: String) =
+        tokenRepository.web3TokenExtraFlow(walletId, assetId)
 
     suspend fun findOrSyncAsset(
         assetId: String,
@@ -202,8 +202,8 @@ internal constructor(
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
         tokenRepository.findTokenItems(ids)
 
-    suspend fun findWeb3TokenItems(): List<Web3TokenItem> =
-        tokenRepository.findWeb3TokenItems()
+    suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem> =
+        tokenRepository.findWeb3TokenItems(walletId)
 
     suspend fun findTokensExtra(assetId: String) =
         withContext(Dispatchers.IO) {
@@ -411,19 +411,27 @@ internal constructor(
         tokenRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
     }
 
-    suspend fun getAddressesByChainId(chainId: String): Web3Address? {
-        return web3Repository.getAddressesByChainId(chainId)
+    suspend fun getAddressesByChainId(walletId: String, chainId: String): Web3Address? {
+        return web3Repository.getAddressesByChainId(walletId, chainId)
     }
 
     suspend fun getClassicWalletId(): String? = web3Repository.getClassicWalletId()
 
     suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
 
-    suspend fun findTokensByIds(assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
-        return@withContext web3Repository.findWeb3TokenItemsByIds(assetIds)
+    suspend fun findTokensByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.findWeb3TokenItemsByIds(walletId, assetIds)
     }
 
     suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)
+
+    suspend fun getWalletName(walletId: String): String? = web3Repository.findWalletById(walletId)?.name
+
+    suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
+    suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    suspend fun getAddressesGroupedByDestination(walletId: String) = web3Repository.getAddressesGroupedByDestination(walletId)
 
     companion object {
         private val evmTokenMap = mutableMapOf<String, Web3Token>()
@@ -432,19 +440,27 @@ internal constructor(
 
     fun marketById(assetId: String) = tokenRepository.marketById(assetId)
 
-    suspend fun getPendingRawTransactions() = tokenRepository.getPendingRawTransactions()
+    suspend fun getPendingRawTransactions(walletId: String) = tokenRepository.getPendingRawTransactions(walletId)
 
-    suspend fun getPendingTransactions() = tokenRepository.getPendingTransactions()
+    suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
 
-    suspend fun getPendingRawTransactions(chainId: String) = tokenRepository.getPendingRawTransactions(chainId)
+    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = tokenRepository.getPendingRawTransactions(walletId, chainId)
 
-    fun getPendingTransactionCount(): LiveData<Int> = tokenRepository.getPendingTransactionCount()
+    fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 
-    suspend fun transaction(hash:String, chainId: String) = tokenRepository.transaction(hash, chainId)
+    suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
     suspend fun updateTransaction(hash: String, status: String, chainId: String) =
         withContext(Dispatchers.IO) { tokenRepository.updateTransaction(hash, status, chainId) }
 
     suspend fun insertRawTransaction(raw: Web3RawTransaction) =
         withContext(Dispatchers.IO) { tokenRepository.insertWeb3RawTransaction(raw) }
+
+    suspend fun anyAddressExists(destinations: List<String>) = web3Repository.anyAddressExists(destinations)
+    suspend fun isAddressMatch(walletId: String?, address: String): Boolean {
+        if (walletId == null) return false
+        return withContext(Dispatchers.IO) {
+            web3Repository.isAddressMatch(walletId, address)
+        }
+    }
 }

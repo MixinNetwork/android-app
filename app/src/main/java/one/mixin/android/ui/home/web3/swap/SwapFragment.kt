@@ -100,6 +100,7 @@ class SwapFragment : BaseFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
+        const val ARGS_WALLET_ID = "args_wallet_id"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -115,6 +116,7 @@ class SwapFragment : BaseFragment() {
             amount: String? = null,
             inMixin: Boolean = true,
             referral: String? = null,
+            walletId: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
                 when (T::class) {
@@ -139,6 +141,7 @@ class SwapFragment : BaseFragment() {
                 amount?.let { putString(ARGS_AMOUNT, it) }
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
+                walletId?.let { putString(ARGS_WALLET_ID, it) }
             }
     }
 
@@ -161,6 +164,7 @@ class SwapFragment : BaseFragment() {
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
     private var reviewing: Boolean by mutableStateOf(false)
+    private val walletId: String? by lazy { arguments?.getString(ARGS_WALLET_ID) }
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -169,7 +173,7 @@ class SwapFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+        orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
@@ -223,6 +227,7 @@ class SwapFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapPage(
+                                walletId = walletId,
                                 from = fromToken,
                                 to = toToken,
                                 inMixin = inMixin(),
@@ -259,7 +264,7 @@ class SwapFragment : BaseFragment() {
                                     if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
                                         defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
                                         orderBadge = false
-                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP_TRANSACTION))
                                     }
                                 },
                                 pop = {
@@ -349,7 +354,7 @@ class SwapFragment : BaseFragment() {
                     ArrayList(
                         list,
                     ),
-                    isFrom = true
+                    isFrom = true,
                 ).apply {
                     setOnDeposit {
                         navTo(Web3AddressFragment.newInstance(JsSigner.evmAddress), Web3AddressFragment.TAG)
@@ -378,7 +383,7 @@ class SwapFragment : BaseFragment() {
                 if (inMixin()) {
                     if (isReverse) fromToken?.assetId else toToken?.assetId
                 } else null,
-                isFrom = false
+                isFrom = false,
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
@@ -637,8 +642,8 @@ class SwapFragment : BaseFragment() {
             openSwapTransfer(resp, from, to)
         } else {
             AnalyticsTracker.trackSwapPreview()
-            val token = swapViewModel.web3TokenItemById(from.assetId) ?: return
-            val chainToken = swapViewModel.web3TokenItemById(from.chain.chainId) ?: return
+            val token = swapViewModel.web3TokenItemById(walletId!!, from.assetId) ?: return
+            val chainToken = swapViewModel.web3TokenItemById(walletId!!, from.chain.chainId) ?: return
             val depositDestination = resp.depositDestination ?: return
             openSwapTransfer(resp, from, to)
         }
@@ -676,7 +681,11 @@ class SwapFragment : BaseFragment() {
         tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
         if (!inMixin() && web3tokens.isNullOrEmpty()) {
-            swappable = swapViewModel.findWeb3AssetItemsWithBalance()
+            if (walletId == null) {
+                toast(R.string.Data_error)
+                return
+            }
+            swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.findAssetItemsWithBalance()
@@ -697,13 +706,13 @@ class SwapFragment : BaseFragment() {
             val lastTo = lastSelectedPair?.getOrNull(1)
 
             fromToken = if (input != null) {
-                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(input)?.toSwapToken()
+                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!,input)?.toSwapToken()
             } else lastFrom
                 ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ETH_ID }
                     ?: tokens.firstOrNull())?.toSwapToken()
 
             toToken = if (output != null) {
-                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(
+                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!,
                     output
                 )?.toSwapToken()
             } else if (input != null) {
@@ -712,7 +721,7 @@ class SwapFragment : BaseFragment() {
                 } else {
                     USDT_ASSET_ETH_ID
                 }
-                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(o)
+                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!, o)
                     ?.toSwapToken()
             } else lastTo
                 ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }
@@ -757,9 +766,9 @@ class SwapFragment : BaseFragment() {
             },
         )?.let { remote ->
             if (!inMixin()) {
-                remoteSwapTokens = remote.map { it.copy(isWeb3 = true) }.map { token ->
+                remoteSwapTokens = remote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
-                        web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
+                        (web3Token.assetKey == token.address && web3Token.assetId == token.assetId) || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
                     } ?: return@map token
                     token.balance = t.balance
                     token

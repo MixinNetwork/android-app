@@ -29,12 +29,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
@@ -74,6 +71,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
@@ -288,9 +286,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             account =
                 if (chain != Chain.Solana) {
-                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                    JsSigner.solanaAddress
                 } else {
-                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                    JsSigner.evmAddress
                 }
 
             if (requestType != RequestType.SessionRequest) return@launch

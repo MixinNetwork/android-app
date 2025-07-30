@@ -4,12 +4,11 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.web3.js.JsSigner
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,10 +16,9 @@ class SessionProposalViewModel
     @Inject
     internal constructor() : ViewModel() {
         private var account: String = ""
-
-        suspend fun init() {
-            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        }
+            get() {
+                return JsSigner.address
+            }
 
         fun rejectSession(
             version: WalletConnect.Version,

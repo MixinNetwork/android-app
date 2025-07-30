@@ -74,7 +74,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
-import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
@@ -103,7 +102,6 @@ import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
-import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
@@ -731,7 +729,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         when (source) {
             "web3" -> {
                 depositDestination?.let { depositDestination->
-                    val token = bottomViewModel.web3TokenItemById(inAsset.assetId)
+                    val token = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
                             val transaction = token.buildTransaction(
@@ -804,7 +802,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                         buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
-                    chainToken = bottomViewModel.web3TokenItemById(token?.chainId ?: "")
+                    chainToken = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId,token?.chainId ?: "")
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))

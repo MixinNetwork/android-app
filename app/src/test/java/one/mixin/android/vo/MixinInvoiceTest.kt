@@ -98,19 +98,19 @@ class MixinInvoiceTest {
         )
         
         val emptyData = ByteArray(0)
-        val cost1 = invoice.estimateStorageCost(emptyData)
+        val cost1 = estimateStorageCost(emptyData)
         assertEquals("0.001", cost1.toString())
         
         val smallData = ByteArray(64)
-        val cost2 = invoice.estimateStorageCost(smallData)
+        val cost2 = estimateStorageCost(smallData)
         assertEquals("0.001", cost2.toString())
         
         val mediumData = ByteArray(129)
-        val cost3 = invoice.estimateStorageCost(mediumData)
+        val cost3 = estimateStorageCost(mediumData)
         assertEquals("0.002", cost3.toString())
         
         val largeData = ByteArray(300)
-        val cost4 = invoice.estimateStorageCost(largeData)
+        val cost4 = estimateStorageCost(largeData)
         assertEquals("0.003", cost4.toString())
     }
     
@@ -132,7 +132,7 @@ class MixinInvoiceTest {
         assertEquals(Constants.AssetId.XIN_ASSET_ID, entry.assetId)
         assertEquals("test storage invoice", String(entry.extra))
         
-        val cost = invoice.estimateStorageCost(data)
+        val cost = estimateStorageCost(data)
         assertEquals(cost.toInt(), entry.amount.toInt())
     }
     

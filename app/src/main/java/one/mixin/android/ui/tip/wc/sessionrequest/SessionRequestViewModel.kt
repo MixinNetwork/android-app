@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -14,6 +12,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Numeric
 import javax.inject.Inject
 
@@ -22,10 +21,10 @@ class SessionRequestViewModel
     @Inject
     internal constructor() : ViewModel() {
         private var account: String = ""
+            get() {
+                return JsSigner.address
+            }
 
-        suspend fun init() {
-            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        }
 
         fun rejectRequest(
             version: WalletConnect.Version,

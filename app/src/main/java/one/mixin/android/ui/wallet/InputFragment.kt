@@ -60,7 +60,6 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -442,6 +441,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 output = t.assetId,
                                                 null,
                                                 null,
+                                                walletId = JsSigner.currentWalletId,
                                                 inMixin = false
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {

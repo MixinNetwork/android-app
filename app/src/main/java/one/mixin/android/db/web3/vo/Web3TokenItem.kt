@@ -13,6 +13,7 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
@@ -36,8 +37,6 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.RoundingMode
-import one.mixin.android.vo.safe.TokenItem
-
 
 @Parcelize
 data class Web3TokenItem(
@@ -96,6 +95,7 @@ data class Web3TokenItem(
     
     override fun toSwapToken(): SwapToken {
         return SwapToken(
+            walletId = walletId,
             address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
             assetId = assetId,
             decimals = precision,

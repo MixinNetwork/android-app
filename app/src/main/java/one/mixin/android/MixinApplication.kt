@@ -47,8 +47,8 @@ import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
-import okhttp3.Call
 import okhttp3.OkHttpClient
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -319,6 +319,7 @@ open class MixinApplication :
                 disconnect<VoiceCallService>(this)
             }
             notificationManager.cancelAll()
+            CryptoWalletHelper.clear(this)
             Session.clearAccount()
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()

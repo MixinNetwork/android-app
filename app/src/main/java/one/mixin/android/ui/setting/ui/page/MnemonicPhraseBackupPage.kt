@@ -66,7 +66,7 @@ fun MnemonicPhraseBackupPage(pop: () -> Unit, next: () -> Unit) {
                     Text(
                         stringResource(
                             if (Session.saltExported()) {
-                                R.string.Show_Mnemonic_Phrase
+                                R.string.show_mnemonic_phrase
                             } else {
                                 R.string.Backup_Mnemonic_Phrase
                             }
