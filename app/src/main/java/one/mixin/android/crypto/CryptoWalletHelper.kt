@@ -45,14 +45,16 @@ object CryptoWalletHelper {
 
     fun extractIndexFromPath(path: String): Int? {
         return try {
-            val parts = path.removePrefix("m/").split("/")
-
             when {
-                parts.size >= 5 && parts[1] == "60'" -> {
-                    parts[4].toIntOrNull()
+                // Ethereum path: m/44'/60'/0'/0/{index}
+                path.startsWith("m/44'/60'/") -> {
+                    path.removePrefix("m/44'/60'/0'/0/").toIntOrNull()
                 }
-                parts.size >= 4 && parts[1] == "501'" -> {
-                    parts[2].removeSuffix("'").toIntOrNull()
+                // Solana path: m/44'/501'/{index}'/0'
+                path.startsWith("m/44'/501'/") -> {
+                    path.removePrefix("m/44'/501'/")
+                        .removeSuffix("'/0'")
+                        .toIntOrNull()
                 }
                 else -> null
             }
@@ -62,14 +64,6 @@ object CryptoWalletHelper {
         }
     }
 
-    fun isEthereumPath(path: String): Boolean {
-        return path.contains("/60'/")
-    }
-
-    fun isSolanaPath(path: String): Boolean {
-        return path.contains("/501'/")
-    }
-
     fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
             val path = "m/44'/60'/0'/0/$index"
@@ -77,7 +71,7 @@ object CryptoWalletHelper {
                 ?: throw IllegalArgumentException("Private key generation failed")
             val address = EthKeyGenerator.privateKeyToAddress(privateKey)
             val addressFromGo = Blockchain.generateEvmAddressFromMnemonic(mnemonic, path)
-            assert(addressFromGo.equals(address, ignoreCase = true)) { "Address mismatch: $addressFromGo != $address" }
+            assert(addressFromGo.equals(address)) { "Address mismatch: $addressFromGo != $address" }
             return CryptoWallet(
                 mnemonic = mnemonic,
                 privateKey = Numeric.toHexString(privateKey),
@@ -96,7 +90,7 @@ object CryptoWalletHelper {
             val keyPair = newKeyPairFromSeed(privateKey)
             val address = keyPair.publicKey.encodeToBase58String()
             val addressFromGo = Blockchain.generateSolanaAddressFromMnemonic(mnemonic, path)
-            assert(addressFromGo.equals(address, ignoreCase = true)) { "Address mismatch: $addressFromGo != $address" }
+            assert(addressFromGo.equals(address)) { "Address mismatch: $addressFromGo != $address" }
 
             return CryptoWallet(
                 mnemonic = mnemonic,
