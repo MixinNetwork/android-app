@@ -50,6 +50,7 @@ import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.composeDp
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
@@ -106,11 +107,11 @@ fun BrowserPage(
     onRejectAction: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
-    val walletViewModel = hiltViewModel<WalletViewModel>()
     val context = LocalContext.current
     var showWarning by remember { mutableStateOf(false) }
     var walletName by remember { mutableStateOf<String?>(null) }
     var addressDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
     LaunchedEffect(parsedTx) {
         showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
@@ -128,10 +129,18 @@ fun BrowserPage(
     LaunchedEffect(toAddress, token?.chainId) {
         if (toAddress != null) {
             try {
-                addressDisplayInfo = walletViewModel.checkAddressAndGetDisplayName(toAddress, token?.chainId)
+                addressDisplayInfo = viewModel.checkAddressAndGetDisplayName(toAddress, token?.chainId)
             } catch (e: Exception) {
                 addressDisplayInfo = null
             }
+        }
+    }
+
+    LaunchedEffect(account) {
+        try {
+            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account,null)
+        } catch (e: Exception) {
+            walletDisplayInfo = null
         }
     }
 
@@ -351,7 +360,12 @@ fun BrowserPage(
                     }
                 }
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+                walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                    val (displayName, _) = walletDisplayInfo
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
+                }, {
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
+                })
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(modifier = Modifier.height(20.dp))

@@ -42,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.checkout.threedsobfuscation.ac
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
@@ -49,6 +50,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.currencyFormat
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat12
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
@@ -63,6 +65,7 @@ import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.priceUSD
@@ -94,6 +97,8 @@ fun SessionRequestPage(
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     val context = LocalContext.current
     var walletName by remember { mutableStateOf<String?>(null) }
+    val walletViewModel = hiltViewModel<WalletViewModel>()
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
     if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
         Loading()
@@ -113,6 +118,15 @@ fun SessionRequestPage(
         } else {
             1
         }
+
+    LaunchedEffect(account) {
+        try {
+            walletDisplayInfo = walletViewModel.checkAddressAndGetDisplayName(account,null)
+        } catch (e: Exception) {
+            walletDisplayInfo = null
+        }
+    }
+
 
     LaunchedEffect(Unit) {
         try {
@@ -318,7 +332,12 @@ fun SessionRequestPage(
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+                walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                    val (displayName, _) = walletDisplayInfo
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
+                }, {
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
+                })
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(

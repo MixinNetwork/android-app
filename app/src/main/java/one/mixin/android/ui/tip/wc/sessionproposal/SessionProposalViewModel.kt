@@ -6,11 +6,15 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 import javax.inject.Inject
 
@@ -18,7 +22,8 @@ import javax.inject.Inject
 class SessionProposalViewModel
     @Inject
     internal constructor(
-        val web3Repository: Web3Repository
+        val web3Repository: Web3Repository,
+        val tokenRepository: TokenRepository,
     ) : ViewModel() {
         private var account: String = ""
             get() {
@@ -67,4 +72,22 @@ class SessionProposalViewModel
             web3Repository.findWalletById(walletId)
         }
 
+        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
+            return withContext(Dispatchers.IO) {
+
+                if (chainId != null) {
+                    val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                    if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), false)
+                }
+
+                val wallet = web3Repository.getWalletByDestination(destination)
+                if (wallet != null) {
+                    if (wallet.category == WalletCategory.CLASSIC.value) {
+                        return@withContext Pair(MixinApplication.appContext.getString(R.string.Common_Wallet), false)
+                    }
+                    return@withContext Pair(wallet.name, true)
+                }
+                return@withContext null
+            }
+        }
 }

@@ -42,12 +42,14 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.composeDp
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
@@ -71,6 +73,7 @@ fun SessionProposalPage(
     }
     val context = LocalContext.current
     var walletName by remember { mutableStateOf<String?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
     val sessionProposalUI = viewModel.getSessionProposalUI(version, chain, sessionProposal)
     if (sessionProposalUI == null) {
@@ -86,6 +89,15 @@ fun SessionProposalPage(
             wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
         }
     }
+
+    LaunchedEffect(account) {
+        try {
+            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account,null)
+        } catch (e: Exception) {
+            walletDisplayInfo = null
+        }
+    }
+
 
     MixinAppTheme {
         Column(
@@ -191,7 +203,13 @@ fun SessionProposalPage(
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.uri)
             Box(modifier = Modifier.height(20.dp))
-            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+
+            walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                val (displayName, _) = walletDisplayInfo
+                ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
+            }, {
+                ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
+            })
             Box(
                 modifier =
                     Modifier

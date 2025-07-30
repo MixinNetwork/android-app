@@ -49,8 +49,6 @@ fun ItemContent(
         )
         Box(modifier = Modifier.height(4.dp))
 
-
-
         if (label != null) {
             TextWithRoundedLabel(subTitle, label)
         } else {
@@ -58,7 +56,6 @@ fun ItemContent(
                 text = subTitle,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
-                modifier = Modifier.padding(start = 8.dp)
             )
         }
 
