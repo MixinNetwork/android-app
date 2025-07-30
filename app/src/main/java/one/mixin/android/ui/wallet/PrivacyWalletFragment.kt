@@ -105,7 +105,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         WalletActivity.showBuy(requireActivity(), false, null, null)
                         defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
                         RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
-                        sendReceiveView.swapBadge.isVisible = false
+                        sendReceiveView.buyBadge.isVisible = false
                     }
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
