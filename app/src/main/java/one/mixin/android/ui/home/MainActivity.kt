@@ -172,6 +172,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -243,6 +244,7 @@ class MainActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SystemUIManager.setSystemUiColor(window, colorFromAttribute(R.attr.bg_white), true)
         navigationController = NavigationController(this)
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)

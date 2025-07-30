@@ -137,7 +137,7 @@ class InscriptionActivity : BaseActivity() {
                 ::callbackSend,
             )
         SystemUIManager.lightUI(window, false)
-        window.statusBarColor = Color.TRANSPARENT
+        SystemUIManager.setSystemUiColor(window, Color.TRANSPARENT)
         binding = ActivityInscriptionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first

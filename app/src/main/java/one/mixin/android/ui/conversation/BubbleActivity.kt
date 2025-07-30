@@ -39,7 +39,6 @@ class BubbleActivity : BlazeBaseActivity() {
                 displayId != Display.DEFAULT_DISPLAY
             }
         setContentView(R.layout.activity_chat)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         showConversation(intent)
     }
 

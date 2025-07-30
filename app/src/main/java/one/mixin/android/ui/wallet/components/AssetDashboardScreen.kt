@@ -104,7 +104,7 @@ fun AssetDashboardScreen(
         viewModel.loadWallets()
     }
 
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         Column(
             modifier = Modifier
                 .fillMaxSize()

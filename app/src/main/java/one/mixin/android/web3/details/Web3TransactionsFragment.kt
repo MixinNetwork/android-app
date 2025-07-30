@@ -125,10 +125,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        if (requireActivity() !is WalletActivity) {
-            binding.root.fitsSystemWindows = false
-        }
-
         lifecycleScope.launch {
             val wallet = web3ViewModel.findWalletById(token.walletId)
             binding.sendReceiveView.isVisible = wallet?.isWatch() != true

@@ -138,7 +138,7 @@ class WebActivity : BaseActivity() {
                 supportFragmentManager.beginTransaction().show(f).commit()
                 if (f is WebFragment) {
                     val dark = isDarkColor(f.titleColor)
-                    window.statusBarColor = f.titleColor
+                    SystemUIManager.setSystemUiColor(window, f.titleColor, true)
                     SystemUIManager.lightUI(window, !dark)
                 }
             } else {
@@ -176,11 +176,13 @@ class WebActivity : BaseActivity() {
         clip.shareable?.let { extras.putBoolean(WebFragment.ARGS_SHAREABLE, it) }
         isExpand = true
 
-        window.statusBarColor =
+        SystemUIManager.setSystemUiColor(
+            window,
             clip.titleColor.apply {
                 val dark = isDarkColor(this)
                 SystemUIManager.lightUI(window, !dark)
-            }
+            }, true
+        )
         releaseWeb()
         supportFragmentManager.beginTransaction().add(
             R.id.container,

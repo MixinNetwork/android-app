@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
@@ -30,8 +31,9 @@ open class BaseActivity : AppCompatActivity() {
         } else {
             setTheme(getDefaultThemeId())
         }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (!skipSystemUi) {
-            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
+            SystemUIManager.setSystemUiColor(window, colorFromAttribute(R.attr.bg_white))
         }
     }
 

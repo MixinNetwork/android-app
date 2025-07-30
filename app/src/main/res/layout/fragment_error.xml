@@ -5,8 +5,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    tools:ignore="UseCompoundDrawables"
-    android:fitsSystemWindows="true">
+    tools:ignore="UseCompoundDrawables">
 
     <ImageView
         android:id="@+id/close_iv"

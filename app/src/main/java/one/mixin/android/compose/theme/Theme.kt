@@ -156,7 +156,6 @@ private val LocalColors = compositionLocalOf { LightColorPalette }
 @Composable
 fun MixinAppTheme(
     darkTheme: Boolean = MixinApplication.get().isNightMode(),
-    skip: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors =
@@ -186,15 +185,7 @@ fun MixinAppTheme(
             LocalTextSelectionColors provides textSelectionColors,
             LocalRippleConfiguration provides rippleConfiguration
         ) {
-            if (skip) {
-                content()
-            } else {
-                Box(modifier = Modifier
-                    .background(colors.background)
-                    .systemBarsPadding()) {
-                    content()
-                }
-            }
+            content()
         }
     }
 }

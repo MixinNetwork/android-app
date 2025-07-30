@@ -25,6 +25,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.supportsS
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.AvatarTransform
 
 class AvatarActivity : BaseActivity() {
@@ -67,7 +68,7 @@ class AvatarActivity : BaseActivity() {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         postponeEnterTransition()
-        window.statusBarColor = Color.TRANSPARENT
+        SystemUIManager.setSystemUiColor(window, Color.TRANSPARENT)
         binding = ActivityAvatarBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {

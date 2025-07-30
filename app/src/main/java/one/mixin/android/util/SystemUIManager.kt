@@ -1,41 +1,17 @@
 package one.mixin.android.util
 
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.os.Build
 import android.view.Window
 import android.view.WindowInsets
 import androidx.annotation.ColorInt
-import androidx.core.view.ViewCompat
+import androidx.constraintlayout.compose.Skip
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import one.mixin.android.extension.supportsPie
-import one.mixin.android.extension.supportsVanillaIceCream
 
 @SuppressLint("InlinedApi")
 object SystemUIManager {
-    fun fitsSystem(
-        window: Window,
-        @ColorInt color: Int = 0x33000000,
-    ) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        setSystemUiColor(window, color)
-    }
-
-    fun clearStyle(window: Window) {
-        WindowCompat.setDecorFitsSystemWindows(window, true)
-    }
-
-    fun fullScreen(window: Window) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            hide(WindowInsetsCompat.Type.systemBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-    }
 
     fun lightUI(
         window: Window,
@@ -66,24 +42,20 @@ object SystemUIManager {
     fun setSystemUiColor(
         window: Window,
         color: Int,
+        onlyStatus: Boolean = false,
     ) {
-        supportsVanillaIceCream({
-            window.decorView.setOnApplyWindowInsetsListener { view, insets ->
-                val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
-                val navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars())
-                view.setPadding(
-                    0,
-                    statusBarInsets.top,
-                    0,
-                    navBarInsets.bottom
-                )
-                view.setBackgroundColor(color)
-                insets
-            }
-        }, {
-            window.statusBarColor = color
-            window.navigationBarColor = color
-        })
+        window.decorView.setOnApplyWindowInsetsListener { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
+            val navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars())
+            view.setPadding(
+                0,
+                statusBarInsets.top,
+                0,
+                if (onlyStatus) 0 else navBarInsets.bottom,
+            )
+            view.setBackgroundColor(color)
+            insets
+        }
     }
 
     fun hasCutOut(window: Window): Boolean {
