@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -151,7 +152,9 @@ fun AssetDashboardScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                TotalAssetsCard()
+                key(refreshTrigger) {
+                    TotalAssetsCard()
+                }
                 Spacer(modifier = Modifier.height(20.dp))
 
                 WalletCard(

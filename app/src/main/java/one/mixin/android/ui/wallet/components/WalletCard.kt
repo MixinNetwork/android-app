@@ -51,6 +51,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 
@@ -226,14 +227,14 @@ fun WalletCard(
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = balance.numberFormat2(),
+                    text = balance.multiply(Fiats.getRate().toBigDecimal()).numberFormat2(),
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W400,
                     fontFamily = FontFamily(Font(R.font.mixin_font))
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("USD", color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                Text(Fiats.getAccountCurrencyAppearance(), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
             if (assets.isNotEmpty()) {
