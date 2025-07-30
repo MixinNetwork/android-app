@@ -65,13 +65,17 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         val isG = captchaType.isG()
         webView.webViewClient =
             object : WebViewClient() {
+                var loadSuccess = true
+
                 override fun onPageFinished(
                     view: WebView?,
                     url: String?,
                 ) {
                     super.onPageFinished(view, url)
-                    cancelRunOnUiThread(stopWebViewRunnable)
-                    view?.translationY(0f)
+                    if (loadSuccess) {
+                        cancelRunOnUiThread(stopWebViewRunnable)
+                        view?.translationY(0f)
+                    }
                 }
 
                 override fun onReceivedHttpError(
@@ -81,6 +85,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 ) {
                     super.onReceivedHttpError(view, request, errorResponse)
                     reportException(CaptchaException("$TAG load $captchaType onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
+                    loadSuccess = false
                 }
 
                 override fun onReceivedSslError(
@@ -90,6 +95,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 ) {
                     super.onReceivedSslError(view, handler, error)
                     reportException(CaptchaException("$TAG load $captchaType onReceivedSslError ${error?.toString()}"))
+                    loadSuccess = false
                 }
 
                 override fun onReceivedError(
@@ -99,6 +105,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 ) {
                     super.onReceivedError(view, request, error)
                     reportException(CaptchaException("$TAG load $captchaType onReceivedError ${error?.errorCode} ${error?.description}"))
+                    loadSuccess = false
                 }
             }
         val input = context.assets.open("captcha.html")
