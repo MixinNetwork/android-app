@@ -34,7 +34,7 @@ fun WalletLabel(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = if (isWeb3) Color(0xFF007AFF) else Color(0xFF8666F0), shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+            .background(color = if (isWeb3) Color(0xFF007AFF) else Color(0xFF8666F0))
             .padding(top = 7.dp),
         contentAlignment = Alignment.TopCenter
     ) {

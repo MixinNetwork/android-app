@@ -324,7 +324,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         if (addressLabel.isNullOrBlank()) {
                             titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Common_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toMyWallet)
                         } else {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "" , toMyWallet)
                         }
                     }
                     TransferType.WEB3 -> {

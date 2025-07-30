@@ -20,7 +20,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
             val fragment = when (mode) {
                 Mode.IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.IMPORT_MNEMONIC)
                 Mode.RE_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_MNEMONIC, walletId = walletId)
-                Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId)
+                Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
                 Mode.VIEW_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.VIEW_MNEMONIC, walletId = walletId)
                 Mode.VIEW_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.VIEW_PRIVATE_KEY, chainId = chainId, walletId = walletId)
                 Mode.IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.IMPORT_PRIVATE_KEY)

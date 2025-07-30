@@ -210,7 +210,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
                             ImportKeyBottomSheetDialogFragment.newInstance(
                                 if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                walletId = wallet.id
+                                walletId = wallet.id, chainId = token.chainId
                             ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                             return@launch
                         }
@@ -236,7 +236,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
                             ImportKeyBottomSheetDialogFragment.newInstance(
                                 if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                walletId = wallet.id
+                                walletId = wallet.id, chainId = token.chainId
                             ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                             return@launch
                         }
@@ -254,7 +254,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
                             ImportKeyBottomSheetDialogFragment.newInstance(
                                 if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                walletId = wallet.id
+                                walletId = wallet.id, chainId = token.chainId
                             ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                             return@launch
                         }

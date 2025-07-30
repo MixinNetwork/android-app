@@ -119,7 +119,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                     }
                                     WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                                         navTo(
-                                            ReImportPrivateKeyFragment.newInstance(walletId),
+                                            ReImportPrivateKeyFragment.newInstance(walletId, chainId),
                                             ReImportPrivateKeyFragment.TAG
                                         )
                                         requireActivity().supportFragmentManager

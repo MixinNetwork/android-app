@@ -273,6 +273,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                             putParcelable(ARGS_WALLET, wallet)
                                                                             putBoolean(InputFragment.ARGS_TO_WALLET, destinationWallet == null)
                                                                             putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
+                                                                            putString(InputFragment.ARGS_TO_ADDRESS_LABEL, destinationWallet?.name)
                                                                         })
                                                                 }
                                                             }
