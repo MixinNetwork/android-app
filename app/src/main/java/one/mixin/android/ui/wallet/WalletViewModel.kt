@@ -24,6 +24,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
@@ -56,6 +57,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.DepositEntry
@@ -498,4 +500,23 @@ internal constructor(
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
+        return withContext(Dispatchers.IO) {
+
+            if (chainId != null) {
+                val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), false)
+            }
+
+            val wallet = web3Repository.getWalletByDestination(destination)
+            if (wallet != null) {
+                if (wallet.category == WalletCategory.CLASSIC.value) {
+                    return@withContext Pair(MixinApplication.appContext.getString(R.string.Common_Wallet), false)
+                }
+                return@withContext Pair(wallet.name, true)
+            }
+            return@withContext null
+        }
+    }
 }

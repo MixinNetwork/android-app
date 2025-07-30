@@ -64,6 +64,7 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.WalletCategory
@@ -105,9 +106,11 @@ fun BrowserPage(
     onRejectAction: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
+    val walletViewModel = hiltViewModel<WalletViewModel>()
     val context = LocalContext.current
     var showWarning by remember { mutableStateOf(false) }
     var walletName by remember { mutableStateOf<String?>(null) }
+    var addressDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
     LaunchedEffect(parsedTx) {
         showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
@@ -119,6 +122,16 @@ fun BrowserPage(
             context.getString(R.string.Common_Wallet)
         } else {
             wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+        }
+    }
+
+    LaunchedEffect(toAddress, token?.chainId) {
+        if (toAddress != null) {
+            try {
+                addressDisplayInfo = walletViewModel.checkAddressAndGetDisplayName(toAddress, token?.chainId)
+            } catch (e: Exception) {
+                addressDisplayInfo = null
+            }
         }
     }
 
@@ -322,7 +335,20 @@ fun BrowserPage(
                 }
                 if (toAddress != null) {
                     Box(modifier = Modifier.height(20.dp))
-                    ItemContent(title = stringResource(id = R.string.Receivers).uppercase(), subTitle = toAddress)
+                    val displayInfo = addressDisplayInfo
+                    if (displayInfo != null) {
+                        val (displayName, _) = displayInfo
+                        ItemContent(
+                            title = stringResource(id = R.string.Receivers).uppercase(), 
+                            subTitle = toAddress, 
+                            label = displayName
+                        )
+                    } else {
+                        ItemContent(
+                            title = stringResource(id = R.string.Receivers).uppercase(), 
+                            subTitle = toAddress,
+                        )
+                    }
                 }
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
