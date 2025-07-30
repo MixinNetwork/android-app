@@ -69,6 +69,7 @@ class AvatarActivity : BaseActivity() {
         }
         postponeEnterTransition()
         SystemUIManager.setSystemUiColor(window, Color.TRANSPARENT)
+        SystemUIManager.fullScreen(window)
         binding = ActivityAvatarBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {

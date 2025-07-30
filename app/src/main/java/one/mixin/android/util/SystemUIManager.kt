@@ -58,6 +58,13 @@ object SystemUIManager {
         }
     }
 
+    fun fullScreen(window: Window) {
+        window.decorView.setOnApplyWindowInsetsListener { view, insets ->
+            view.setPadding(0, 0, 0, 0,)
+            insets
+        }
+    }
+
     fun hasCutOut(window: Window): Boolean {
         supportsPie {
             return window.decorView.rootWindowInsets?.displayCutout?.safeInsetTop != 0
