@@ -346,11 +346,12 @@ fun BrowserPage(
                     Box(modifier = Modifier.height(20.dp))
                     val displayInfo = addressDisplayInfo
                     if (displayInfo != null) {
-                        val (displayName, _) = displayInfo
+                        val (displayName, isAddress) = displayInfo
                         ItemContent(
                             title = stringResource(id = R.string.Receivers).uppercase(), 
                             subTitle = toAddress, 
-                            label = displayName
+                            label = displayName,
+                            isAddress = isAddress,
                         )
                     } else {
                         ItemContent(

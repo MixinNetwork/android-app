@@ -108,7 +108,6 @@ class SessionRequestViewModel
 
         suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
             return withContext(Dispatchers.IO) {
-
                 if (chainId != null) {
                     val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
                     if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), false)
@@ -119,7 +118,13 @@ class SessionRequestViewModel
                     if (wallet.category == WalletCategory.CLASSIC.value) {
                         return@withContext Pair(MixinApplication.appContext.getString(R.string.Common_Wallet), false)
                     }
-                    return@withContext Pair(wallet.name, true)
+                    return@withContext Pair(wallet.name, false)
+                }
+                if (chainId != null) {
+                    val address = tokenRepository.matchAddress(destination, chainId)
+                    if (address != null) {
+                        return@withContext Pair(address.label, true)
+                    }
                 }
                 return@withContext null
             }

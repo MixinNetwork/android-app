@@ -388,7 +388,7 @@ class TransferContent : LinearLayout {
 
             val label = withdrawBiometricItem.label
             if (label != null) {
-                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label)
+                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
             } else {
                 address.setContent(R.string.Receiver, withdrawBiometricItem.displayAddress())
             }

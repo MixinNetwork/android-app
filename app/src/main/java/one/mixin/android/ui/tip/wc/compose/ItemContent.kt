@@ -34,6 +34,7 @@ fun ItemContent(
     subTitle: String,
     label: String? = null,
     footer: String? = null,
+    isAddress: Boolean = false,
 ) {
     Column(
         modifier =
@@ -50,7 +51,7 @@ fun ItemContent(
         Box(modifier = Modifier.height(4.dp))
 
         if (label != null) {
-            TextWithRoundedLabel(subTitle, label)
+            TextWithRoundedLabel(subTitle, label, isAddress)
         } else {
             Text(
                 text = subTitle,
@@ -76,6 +77,7 @@ fun ItemContent(
 fun TextWithRoundedLabel(
     content: String,
     label: String,
+    isAddress: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -86,7 +88,7 @@ fun TextWithRoundedLabel(
     val fullText = "$content  $label"
     val labelStart = fullText.lastIndexOf(label)
     val labelEnd = labelStart + label.length
-    val accentColor = Color(0xFF7EABFB)
+    val accentColor = if(!isAddress) Color(0xB34B7CDD) else Color(0xFF8DCC99)
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     Text(
