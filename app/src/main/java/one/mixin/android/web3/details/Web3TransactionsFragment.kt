@@ -133,6 +133,12 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             val wallet = web3ViewModel.findWalletById(token.walletId)
             binding.sendReceiveView.isVisible = wallet?.isWatch() != true
             binding.empty.isVisible = wallet?.isWatch() == true
+            if (token.isSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
+                binding.stake.root.visibility = View.VISIBLE
+                getStakeAccounts(address)
+            } else{
+                binding.stake.root.visibility = View.GONE
+            }
         }
 
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
@@ -359,7 +365,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 }
                 bottomSheet.dismiss()
             }
-            stakeSolTv.isVisible = token.isSolToken()
+            stakeSolTv.isVisible = token.isSolToken() && binding.stake.root.isVisible
             stakeSolTv.setOnClickListener {
                 this@Web3TransactionsFragment.navTo(
                     ValidatorsFragment.newInstance().apply {
