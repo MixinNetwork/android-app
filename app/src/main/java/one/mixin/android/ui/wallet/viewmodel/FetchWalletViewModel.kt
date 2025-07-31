@@ -95,26 +95,33 @@ class FetchWalletViewModel @Inject constructor(
         startFetching(currentIndex)
     }
 
+    private var localMaxIndex: Int = 0
+
     private fun startFetching(offset: Int) {
         viewModelScope.launch {
             _state.value = FetchWalletState.FETCHING
             try {
                 if (mnemonic.isNotBlank()) {
-                    val names = web3Repository.getAllWalletNames(listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                    val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                    val regex = """^$commonWalletName (\d+)$""".toRegex()
-                    val maxIndex = names
-                        .filterNotNull()
-                        .mapNotNull { name ->
-                            regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                        }.maxOrNull() ?: 0
+                    if (localMaxIndex == 0) {
+                        val names = web3Repository.getAllWalletNames(listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                        val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
+                        val regex = """^$commonWalletName (\d+)$""".toRegex()
+                        localMaxIndex = names
+                            .filterNotNull()
+                            .mapNotNull { name ->
+                                regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+                            }.maxOrNull() ?: 0
+                        Timber.e("localMaxIndex $localMaxIndex")
+                    }
 
-                    val wallets = (offset until offset + 10).mapIndexed { index, _ ->
+                    val wallets = (offset until offset + 10).map { index ->
                         val ethereumWallet =
                             CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
                         val solanaWallet =
                             CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
-                        IndexedWallet(maxIndex + index + 1, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
+
+                        val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${localMaxIndex + 1}"
+                        IndexedWallet( name, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
                     }
 
                     val addresses = wallets.flatMap {
@@ -139,15 +146,14 @@ class FetchWalletViewModel @Inject constructor(
                                 val allTokens = (evmTokens + solanaTokens).sortedByDescending {
                                     (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                                 }
-                                IndexedWallet(
-                                    wallet.index,
-                                    wallet.ethereumWallet,
-                                    wallet.solanaWallet,
-                                    exists = wallet.exists,
-                                    assets = allTokens
-                                )
-                            }.filter { it.assets.isNotEmpty() }
+                                wallet.copy(assets = allTokens)
+                            }.filter { it.assets.isNotEmpty() }.map { wallet ->
+                                localMaxIndex ++
+                                val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} $localMaxIndex"
+                                wallet.copy(name = name)
+                            }
                             if (offset == 0 && walletInfos.isEmpty()) {
+                                localMaxIndex ++
                                 _wallets.value = listOf(wallets[0])
                             } else {
                                 _selectedWalletInfos.value = (walletInfos.filter { it.exists.not() } + _selectedWalletInfos.value).toSet()
@@ -174,7 +180,6 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.IMPORTING
             try {
                 val walletsToCreate = selectedWalletInfos.value.map {
-                    val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${it.index}"
                     val category = WalletCategory.IMPORTED_MNEMONIC.value
                     val addresses = listOf(
                         Web3AddressRequest(
@@ -188,7 +193,7 @@ class FetchWalletViewModel @Inject constructor(
                             path = it.solanaWallet.path
                         )
                     )
-                    Pair(WalletRequest(name, category, addresses), it.solanaWallet.mnemonic.split(" "))
+                    Pair(WalletRequest(it.name, category, addresses), it.solanaWallet.mnemonic.split(" "))
                 }
 
                 val expectedCount = walletsToCreate.size
@@ -323,16 +328,6 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 val address: String
                 val category: WalletCategory
-                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                val regex = """^$commonWalletName (\d+)$""".toRegex()
-                val maxIndex = names
-                    .filterNotNull()
-                    .mapNotNull { name ->
-                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                    }.maxOrNull() ?: 0
-
-                val name = "${MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)} ${maxIndex + 1}"
                 _state.value = FetchWalletState.IMPORTING
                 when (mode) {
                     WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
@@ -351,7 +346,15 @@ class FetchWalletViewModel @Inject constructor(
                 if (address.isBlank()) {
                     throw IllegalArgumentException("Could not derive or find address.")
                 }
-
+                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                val walletName = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) { MixinApplication.appContext.getString(R.string.Watch_Wallet) } else { MixinApplication.appContext.getString(R.string.Common_Wallet) }
+                val regex = """^$walletName (\d+)$""".toRegex()
+                val maxIndex = names
+                    .filterNotNull()
+                    .mapNotNull { name ->
+                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+                    }.maxOrNull() ?: 0
+                val name = "${MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)} ${maxIndex + 1}"
                 val web3AddressRequest = Web3AddressRequest(
                     destination = address,
                     chainId = chainId,

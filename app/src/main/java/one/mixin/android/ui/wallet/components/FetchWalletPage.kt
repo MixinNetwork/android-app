@@ -62,7 +62,7 @@ data class AssetInfo(
 )
 
 data class IndexedWallet(
-    val index: Int,
+    val name: String,
     val ethereumWallet: CryptoWallet,
     val solanaWallet: CryptoWallet,
     val assets: List<AssetView> = emptyList(),
@@ -173,7 +173,7 @@ fun SelectContent(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(items = wallets, key = { it.index }) { wallet ->
+                items(items = wallets, key = { it.hashCode() }) { wallet ->
                     WalletItem(
                         wallet = wallet,
                         isSelected = selectedWalletInfos.contains(wallet),
@@ -384,7 +384,7 @@ fun WalletItem(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "${stringResource(R.string.Common_Wallet)} ${wallet.index}",
+                text = wallet.name,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.textPrimary
