@@ -35,6 +35,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.components.Tooltip
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -84,14 +85,14 @@ fun TotalAssetsCard(
         Spacer(modifier = Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
-                text = totalBalance.numberFormat2(),
+                text = totalBalance.multiply(Fiats.getRate().toBigDecimal()).numberFormat2(),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily(Font(R.font.mixin_font))
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text("USD", color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+            Text(Fiats.getAccountCurrencyAppearance(), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
         }
         Spacer(Modifier.height(17.dp))
         MultiColorProgressBar(combinedDistribution)

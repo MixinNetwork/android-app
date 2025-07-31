@@ -77,6 +77,9 @@ fun ImportWalletDetailPage(
         "Base" to Constants.ChainId.Base,
         "BSC" to Constants.ChainId.BinanceSmartChain,
         "Polygon" to Constants.ChainId.Polygon,
+        "Polygon" to Constants.ChainId.Polygon,
+        "Arbitrum" to Constants.ChainId.Arbitrum,
+        "Optimism" to Constants.ChainId.Optimism,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
     var expanded by remember { mutableStateOf(false) }
