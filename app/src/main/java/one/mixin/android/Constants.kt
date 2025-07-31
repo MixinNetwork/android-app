@@ -6,6 +6,12 @@ import com.checkout.base.model.Environment
 import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
+import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Base
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
 
@@ -279,6 +285,18 @@ object Constants {
                 "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
                 "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
             )
+
+        val ethAssets = mapOf(
+            ETHEREUM_CHAIN_ID to "Ethereum",
+            Base to "Base",
+            Optimism to "Optimism",
+            Arbitrum to "Arbitrum"
+        )
+
+        val btcAssets = mapOf(
+            BITCOIN_CHAIN_ID to "Bitcoin",
+            LIGHTNING_NETWORK_CHAIN_ID to "Lightning",
+        )
 
     }
 
