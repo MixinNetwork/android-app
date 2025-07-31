@@ -59,7 +59,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             setCustomView(contentView)
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
-        binding.root.roundTopOrBottom(8.dp.toFloat(), true, false)
+        binding.root.roundTopOrBottom(12.dp.toFloat(), true, false)
         val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
         drawable?.setBounds(0, 0, 22.dp, 22.dp)
         binding.walletTv.compoundDrawablePadding = 4.dp

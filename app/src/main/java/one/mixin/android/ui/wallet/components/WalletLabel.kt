@@ -60,7 +60,7 @@ fun WalletLabel(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(12.dp)
-                    .clip(RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+                    .clip(RoundedCornerShape(topStart = 12.composeDp, topEnd = 12.composeDp))
                     .background(MixinAppTheme.colors.background)
             )
         }

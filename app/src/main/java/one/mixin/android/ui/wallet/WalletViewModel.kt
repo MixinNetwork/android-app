@@ -519,4 +519,6 @@ internal constructor(
             return@withContext null
         }
     }
+
+    suspend fun getWalletByDestination(destination: String) = web3Repository.getWalletByDestination(destination)
 }

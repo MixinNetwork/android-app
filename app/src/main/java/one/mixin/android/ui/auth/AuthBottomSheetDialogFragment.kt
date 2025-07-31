@@ -143,7 +143,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(8.dp.value, top = true, bottom = false)
+            roundTopOrBottom(12.dp.value, top = true, bottom = false)
             setContent {
                 AuthBottomSheetDialogCompose(
                     name = "$appName($appNumber)",

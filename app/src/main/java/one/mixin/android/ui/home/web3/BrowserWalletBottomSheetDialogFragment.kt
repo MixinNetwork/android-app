@@ -159,7 +159,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(8.dip.toFloat(), top = true, bottom = false)
+            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
             token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
             amount = requireArguments().getString(ARGS_AMOUNT)
             setContent {
