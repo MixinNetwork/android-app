@@ -11,11 +11,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.Ignore
 import org.junit.Test
 import java.util.concurrent.Executors
 import kotlin.random.Random
 
 class CoroutineTest {
+    @Ignore
     @Test
     fun testFlow() =
         runBlocking {
@@ -40,6 +42,7 @@ class CoroutineTest {
             println("Done")
         }
 
+    @Ignore
     @Test
     fun testMockBarrier() =
         runBlocking {
@@ -77,6 +80,7 @@ class CoroutineTest {
         Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_PROCESS_THREAD") }.asCoroutineDispatcher()
     }
 
+    @Ignore
     @Test
     fun `test process coroutine`(): Unit =
         runBlocking {

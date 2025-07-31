@@ -93,7 +93,7 @@ class MixinInvoiceTest {
     fun testEstimateStorageCost() {
         val invoice = MixinInvoice(
             version = MIXIN_INVOICE_VERSION,
-            recipient = MixAddress.newStorageRecipient()!!,
+            recipient = MixAddress.newStorageRecipient(),
             entries = mutableListOf()
         )
         

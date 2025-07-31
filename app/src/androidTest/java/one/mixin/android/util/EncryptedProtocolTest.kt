@@ -1,5 +1,8 @@
 package one.mixin.android.util
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidTest
+import junit.framework.TestCase.assertEquals
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.aesDecrypt
@@ -13,11 +16,12 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
+import org.junit.Test
+import org.junit.runner.RunWith
 import java.util.UUID
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
-@ExperimentalUnsignedTypes
+@RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class EncryptedProtocolTest {
     @Test
     fun testText() {
