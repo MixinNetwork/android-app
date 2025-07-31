@@ -6,8 +6,7 @@
     android:orientation="vertical"
     android:background="@drawable/bg_upper_round"
     android:gravity="center_horizontal"
-    tools:ignore="UseCompoundDrawables"
-    android:fitsSystemWindows="true">
+    tools:ignore="UseCompoundDrawables">
     
     <ImageView
         android:layout_width="76dp"

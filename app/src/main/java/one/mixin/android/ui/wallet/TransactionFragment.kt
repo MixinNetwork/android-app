@@ -53,9 +53,6 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        if (requireActivity() !is WalletActivity) {
-            binding.root.fitsSystemWindows = false
-        }
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightIb.setOnClickListener {
