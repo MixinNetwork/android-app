@@ -45,7 +45,7 @@ fun WalletLabel(
                         painter = painterResource(id = R.drawable.ic_wallet_privacy_white),
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                 }
