@@ -78,7 +78,7 @@ buildscript {
         ext.streetMapVersion= '6.1.20'
 
         ext.junitVersion = '4.13.2'
-        ext.testCoreVersion = '1.6.1'
+        ext.testCoreVersion = '1.7.0'
         ext.mockitoVersion = '5.18.0'
         ext.androidxJunitVersion = '1.2.1'
         ext.leakcanaryVerison = '2.14'
