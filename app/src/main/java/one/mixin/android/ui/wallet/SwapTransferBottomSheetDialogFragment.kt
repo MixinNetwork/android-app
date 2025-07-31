@@ -272,7 +272,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
-            roundTopOrBottom(8.dip.toFloat(), top = true, bottom = false)
+            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {

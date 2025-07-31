@@ -148,7 +148,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
+            roundTopOrBottom(11.dp.toFloat(), top = true, bottom = false)
             step =
                 when (requestType) {
                     RequestType.Connect -> Step.Connecting
