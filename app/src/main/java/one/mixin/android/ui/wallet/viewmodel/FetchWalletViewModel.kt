@@ -109,7 +109,7 @@ class FetchWalletViewModel @Inject constructor(
                             regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
                         }.maxOrNull() ?: 0
 
-                    val wallets = (offset until offset + 10).map { index ->
+                    val wallets = (offset until offset + 10).mapIndexed { index, _ ->
                         val ethereumWallet =
                             CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
                         val solanaWallet =
