@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
@@ -23,12 +24,15 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.vo.WalletCategory
+import kotlin.getValue
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {
     companion object {
         const val TAG = "Web3ReceiveFragment"
-        
+
         fun newInstance(address: String): Web3AddressFragment {
             val fragment = Web3AddressFragment()
             val args = Bundle().apply {
@@ -39,6 +43,7 @@ class Web3AddressFragment : BaseFragment() {
         }
     }
 
+    private val walletViewModel by viewModels<WalletViewModel>()
     private var _binding: FragmentWeb3AddressBinding? = null
     private val binding get() = requireNotNull(_binding)
     private lateinit var address: String
@@ -60,6 +65,10 @@ class Web3AddressFragment : BaseFragment() {
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
         lifecycleScope.launch {
+            val wallet = walletViewModel.getWalletByDestination(address)
+            if (wallet != null) {
+                binding.title.setSubTitle(getString(R.string.Receive), if (wallet.category == WalletCategory.CLASSIC.value) getString(R.string.Common_Wallet) else wallet.name)
+            }
             binding.copy.setOnClickListener {
                 context?.heavyClickVibrate()
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
