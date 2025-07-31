@@ -426,6 +426,7 @@ dependencies {
     implementation "org.web3j:crypto:${web3jCryptoVersion}"
     implementation platform("com.reown:android-bom:${reownBomVersion}")
     implementation "com.reown:android-core"
+    testImplementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
     implementation "org.sol4k:sol4k:${sol4kVersion}"
