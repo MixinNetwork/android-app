@@ -108,11 +108,19 @@ class DepositFragment : BaseFragment() {
                 if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
                     networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
-                    initUsdtChips(asset)
+                    initChips(asset, Constants.AssetId.usdtAssets)
                 } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)){
                     networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
-                    initUsdcChips(asset)
+                    initChips(asset, Constants.AssetId.usdcAssets)
+                } else if (Constants.AssetId.ethAssets.contains(asset.assetId)){
+                    networkTitle.isVisible = true
+                    networkChipGroup.isVisible = true
+                    initChips(asset, Constants.AssetId.ethAssets)
+                } else if (Constants.AssetId.btcAssets.contains(asset.assetId)){
+                    networkTitle.isVisible = true
+                    networkChipGroup.isVisible = true
+                    initChips(asset, Constants.AssetId.btcAssets)
                 } else {
                     networkTitle.isVisible = false
                     networkChipGroup.isVisible = false
@@ -150,14 +158,6 @@ class DepositFragment : BaseFragment() {
     }
 
     private val localMap = mutableMapOf<String, DepositEntry>()
-
-    private fun initUsdtChips(asset: TokenItem) {
-        initChips(asset, Constants.AssetId.usdtAssets)
-    }
-
-    private fun initUsdcChips(asset: TokenItem) {
-        initChips(asset, Constants.AssetId.usdcAssets)
-    }
 
     private fun initChips(asset: TokenItem, uAssets: Map<String, String>) {
         binding.apply {
