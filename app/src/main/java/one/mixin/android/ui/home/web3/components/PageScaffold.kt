@@ -21,7 +21,37 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun PageScaffold(
     title: String,
-    subtitle: String? = null,
+    subtitleText: String?,
+    verticalScrollable: Boolean = true,
+    pop: (() -> Unit)?,
+    actions: @Composable RowScope.() -> Unit = {},
+    body: @Composable ColumnScope.() -> Unit,
+) {
+    PageScaffold(
+        title = title,
+        subtitle = subtitleText?.let { text ->
+            @Composable {
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        },
+        verticalScrollable = verticalScrollable,
+        pop = pop,
+        actions = actions,
+        body = body
+    )
+}
+
+@Composable
+fun PageScaffold(
+    title: String,
+    subtitle: @Composable (() -> Unit)? = null,
     verticalScrollable: Boolean = true,
     pop: (() -> Unit)?,
     actions: @Composable RowScope.() -> Unit = {},
@@ -38,16 +68,7 @@ fun PageScaffold(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        if (subtitle != null) {
-                            Text(
-                                text = subtitle,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp,
-                                color = MixinAppTheme.colors.textAssist,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        subtitle?.invoke()
                     }
                 },
                 actions = actions,

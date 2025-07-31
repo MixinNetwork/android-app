@@ -5,8 +5,10 @@ import android.graphics.Matrix;
 import android.view.animation.CycleInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import one.mixin.android.widget.imageeditor.CanvasMatrix;
 
 /**

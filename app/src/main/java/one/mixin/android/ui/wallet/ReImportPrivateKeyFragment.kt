@@ -26,11 +26,13 @@ class ReImportPrivateKeyFragment : BaseFragment(R.layout.fragment_compose) {
     private val viewModel by activityViewModels<FetchWalletViewModel>()
 
     private var walletId: String? = null
+    private var chainId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             walletId = it.getString(ARG_WALLET_ID)
+            chainId = it.getString(ARG_CHAIN_ID)
         }
     }
 
@@ -43,6 +45,7 @@ class ReImportPrivateKeyFragment : BaseFragment(R.layout.fragment_compose) {
             setContent {
                 ImportWalletDetailPage(
                     mode = WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY,
+                    chainId = chainId,
                     walletId = walletId,
                     pop = {
                         activity?.finish()
@@ -61,11 +64,13 @@ class ReImportPrivateKeyFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG = "ReImportPrivateKeyFragment"
         private const val ARG_WALLET_ID = "arg_wallet_id"
+        private const val ARG_CHAIN_ID = "arg_chain_id"
 
-        fun newInstance(walletId: String?): ReImportPrivateKeyFragment {
+        fun newInstance(walletId: String?, chainId: String?): ReImportPrivateKeyFragment {
             val fragment = ReImportPrivateKeyFragment()
             val args = Bundle()
             walletId?.let { args.putString(ARG_WALLET_ID, it) }
+            chainId?.let { args.putString(ARG_CHAIN_ID, it) }
             fragment.arguments = args
             return fragment
         }

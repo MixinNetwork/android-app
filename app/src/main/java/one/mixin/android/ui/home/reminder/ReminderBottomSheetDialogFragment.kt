@@ -156,7 +156,7 @@ class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
-            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
+            roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {

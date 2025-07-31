@@ -272,6 +272,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
                                                                             putParcelable(ARGS_WALLET, wallet)
                                                                             putBoolean(InputFragment.ARGS_TO_WALLET, destinationWallet == null)
+                                                                            putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
+                                                                            putString(InputFragment.ARGS_TO_ADDRESS_LABEL, destinationWallet?.name)
                                                                         })
                                                                 }
                                                             }
@@ -287,6 +289,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                         putParcelable(InputFragment.ARGS_TOKEN, token)
                                                                         putString(InputFragment.ARGS_TO_ADDRESS, toAddress.destination)
                                                                         putBoolean(InputFragment.ARGS_TO_WALLET, true)
+                                                                        putString(InputFragment.ARGS_TO_ADDRESS_LABEL, destinationWallet?.name)
+                                                                        putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
                                                                     })
                                                             } else {
                                                                 toast(R.string.Alert_Not_Support)

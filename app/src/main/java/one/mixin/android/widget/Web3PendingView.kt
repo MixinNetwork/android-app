@@ -8,16 +8,10 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.navTo
-import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
-import one.mixin.android.ui.wallet.Web3FilterParams
-import one.mixin.android.ui.wallet.Web3TokenFilterType
 
 class Web3PendingView @JvmOverloads constructor(
     context: Context,

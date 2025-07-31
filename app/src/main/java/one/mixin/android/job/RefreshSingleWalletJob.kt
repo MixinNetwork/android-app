@@ -32,7 +32,7 @@ class RefreshSingleWalletJob(
             fetchWalletAddresses(wallet)
             fetchWalletAssets(wallet)
             RxBus.publish(WalletRefreshedEvent(walletId))
-            Timber.d("Successfully refreshed wallet: $walletId")
+            Timber.e("Successfully refreshed wallet: $walletId")
         } catch (e: Exception) {
             Timber.e(e, "Failed to refresh wallet: $walletId")
         }

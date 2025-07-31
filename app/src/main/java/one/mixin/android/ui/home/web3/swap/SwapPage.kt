@@ -56,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -121,7 +122,9 @@ fun SwapPage(
     LaunchedEffect(walletId) {
         if (walletId != null) {
             viewModel.findWeb3WalletById(walletId)?.let {
-                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value || it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value) {
+                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                    it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                    it.category == WalletCategory.WATCH_ADDRESS.value) {
                     walletDisplayName = it.name
                 }
             }
@@ -201,7 +204,32 @@ fun SwapPage(
 
     PageScaffold(
         title = stringResource(id = R.string.Swap),
-        subtitle = walletDisplayName ?: stringResource(if (!inMixin) R.string.Common_Wallet else R.string.Privacy_Wallet),
+        subtitle = {
+            val text = if (walletId == null) {
+                stringResource(id = R.string.Privacy_Wallet)
+            } else {
+                walletDisplayName ?: stringResource(id = R.string.Common_Wallet)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (walletId == null) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        },
         verticalScrollable = true,
         pop = pop,
         actions = {

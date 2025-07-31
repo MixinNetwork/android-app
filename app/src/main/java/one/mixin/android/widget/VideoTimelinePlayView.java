@@ -1,7 +1,13 @@
 package one.mixin.android.widget;
 
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
@@ -9,10 +15,11 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import one.mixin.android.R;
-import timber.log.Timber;
 
 import java.util.ArrayList;
+
+import one.mixin.android.R;
+import timber.log.Timber;
 
 public class VideoTimelinePlayView extends View {
 

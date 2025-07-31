@@ -78,9 +78,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
                                     WalletSecurityActivity.Mode.VIEW_MNEMONIC -> {
                                         navTo(
-                                            DisplayWalletSecurityFragment.newInstance(
-                                                WalletSecurityActivity.Mode.VIEW_MNEMONIC,
-                                            ), "DisplayWalletSecurityFragment"
+                                            ViewWalletSecurityFragment.newInstance(mode, walletId = walletId), "ViewWalletSecurityFragment"
                                         )
                                         requireActivity().supportFragmentManager
                                             .beginTransaction()
@@ -90,10 +88,9 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
                                     WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
                                         navTo(
-                                            DisplayWalletSecurityFragment.newInstance(
-                                                WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY, chainId
-                                            ), "DisplayWalletSecurityFragment"
+                                            ViewWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId), "ViewWalletSecurityFragment"
                                         )
+
                                         requireActivity().supportFragmentManager
                                             .beginTransaction()
                                             .remove(this@VerifyPinBeforeImportWalletFragment)
@@ -122,7 +119,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                     }
                                     WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                                         navTo(
-                                            ReImportPrivateKeyFragment.newInstance(walletId),
+                                            ReImportPrivateKeyFragment.newInstance(walletId, chainId),
                                             ReImportPrivateKeyFragment.TAG
                                         )
                                         requireActivity().supportFragmentManager

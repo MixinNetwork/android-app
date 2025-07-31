@@ -2,21 +2,16 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
 import android.util.AttributeSet
 import android.util.SparseArray
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
-import android.widget.TextView
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPinBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.hintTextColor
-import one.mixin.android.extension.textColor
 
 class PinView : LinearLayout {
     companion object {

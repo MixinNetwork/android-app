@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.dp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
@@ -36,10 +37,10 @@ import one.mixin.android.api.ResponseError
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
@@ -142,6 +143,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            roundTopOrBottom(8.dp.value, top = true, bottom = false)
             setContent {
                 AuthBottomSheetDialogCompose(
                     name = "$appName($appNumber)",
@@ -174,7 +176,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
             doOnPreDraw {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = 690.dp
+                behavior?.peekHeight = 690.dp.value.toInt()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }

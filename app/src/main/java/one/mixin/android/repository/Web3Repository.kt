@@ -128,4 +128,6 @@ constructor(
     }
 
     suspend fun getAllWalletNames(categories :List<String>) = web3WalletDao.getAllWalletNames(categories)
+
+    suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
 }

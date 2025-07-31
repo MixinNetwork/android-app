@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,7 +33,6 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -116,12 +114,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         lifecycleScope.launch {
-
                             val wallet = web3ViewModel.findWalletById(walletId)
+                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId = chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
@@ -131,10 +129,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.send.setOnClickListener {
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
+                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId = chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
@@ -164,9 +163,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                                val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
@@ -187,9 +187,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                                val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId = chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }

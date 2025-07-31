@@ -12,10 +12,12 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
+
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
+
 import one.mixin.android.widget.imageeditor.model.EditorElement;
 import one.mixin.android.widget.imageeditor.model.EditorModel;
 import one.mixin.android.widget.imageeditor.model.ThumbRenderer;

@@ -154,7 +154,7 @@ class TransferContent : LinearLayout {
             address.isVisible = false
             receive.isVisible = true
             sender.isVisible = true
-            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+            sender.setContent(R.string.Sender)
             receive.setContent(R.plurals.Receiver_title, transferBiometricItem.users, transferBiometricItem.threshold.toInt(), userClick)
             total.isVisible = true
             total.setContent(R.string.Total, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!))
@@ -254,7 +254,7 @@ class TransferContent : LinearLayout {
             } else {
                 receive.isVisible = true
                 sender.isVisible = true
-                sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+                sender.setContent(R.string.Sender)
                 receive.setContent(R.plurals.Receiver_title, nftBiometricItem.receivers, null, userClick)
             }
 
@@ -274,7 +274,7 @@ class TransferContent : LinearLayout {
         _binding.apply {
             amount.setContent(R.string.Label, addressManageBiometricItem.label ?: "")
             sender.isVisible = true
-            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+            sender.setContent(R.string.Sender)
             address.isVisible = true
             address.setContent(R.string.Address, addressManageBiometricItem.destination ?: "")
             val tokenItem = addressManageBiometricItem.asset!!
@@ -388,12 +388,12 @@ class TransferContent : LinearLayout {
 
             val label = withdrawBiometricItem.label
             if (label != null) {
-                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label)
+                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
             } else {
                 address.setContent(R.string.Receiver, withdrawBiometricItem.displayAddress())
             }
 
-            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+            sender.setContent(R.string.Sender)
 
             val (totalAmount, totalPrice) = formatWithdrawBiometricItem(withdrawBiometricItem)
             total.setContent(R.string.Total, totalAmount, totalPrice)

@@ -57,6 +57,7 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
             binding.root.fitsSystemWindows = false
         }
         binding.titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightIb.setOnClickListener {
             lifecycleScope.launch {

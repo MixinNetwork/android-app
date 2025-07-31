@@ -1439,7 +1439,7 @@
     <string name="Confirm_Withdrawal">提现确认</string>
     <string name="Sending_Withdrawal_Request">正在发送提现</string>
     <string name="Withdrawal_Request_Sent">提现请求已提交</string>
-    <string name="address_validity_reminder">您已经超过 %3$s 天没有使用地址 %1$s（%2$s），请注意检查地址是否仍然有效。</string>
+    <string name="address_validity_reminder">您已经超过 %3$d 天没有使用地址 %1$s（%2$s），请注意检查地址是否仍然有效。</string>
     <string name="withdrawal_sending_description">正在创建提现，请稍候。</string>
     <string name="Confirm_Transfer">转账确认</string>
     <string name="Sending_Transfer_Request">正在发送转账</string>
@@ -1982,7 +1982,7 @@
         <item quantity="other">导入 %1$d 个钱包</item>
     </plurals>
     <string name="rename_wallet">重命名钱包</string>
-    <string name="Remove_Wallet">移除钱包</string>
+    <string name="Remove_Wallet">删除钱包</string>
     <string name="delete_wallet_title">请输入 PIN 以移除钱包</string>
     <string name="find_more_wallets">查找更多钱包</string>
     <string name="show_mnemonic_phrase">查看助记词</string>

@@ -65,6 +65,7 @@ fun ImportWalletDetailPage(
     onScan: (() -> Unit)? = null,
     contentText: String = "",
     walletId: String? = null,
+    chainId: String? = null,
 ) {
     val context = LocalContext.current
     var text by remember(contentText) { mutableStateOf(contentText) }
@@ -82,16 +83,23 @@ fun ImportWalletDetailPage(
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
     var expanded by remember { mutableStateOf(false) }
-    var selectedNetworkName by remember { mutableStateOf(networks.keys.first()) }
+    val initialNetworkName = remember(chainId) {
+        if (chainId == null) null
+        else networks.entries.find { it.value == chainId }?.key
+    }
+
+    var selectedNetworkName by remember(initialNetworkName) {
+        mutableStateOf(initialNetworkName ?: networks.keys.first())
+    }
 
     val isEvmNetwork = selectedNetworkName != "Solana"
-    val chainId = networks[selectedNetworkName] ?: ""
+    val currentChainId = networks[selectedNetworkName] ?: ""
 
     var addressExists by remember { mutableStateOf(false) }
     var addressToCheck by remember { mutableStateOf<String?>(null) }
     var isAddressMismatched by remember { mutableStateOf(false) }
 
-    LaunchedEffect(text, chainId, mode, walletId) {
+    LaunchedEffect(text, currentChainId, mode, walletId) {
         if (text.isEmpty()) {
             addressExists = false
             addressToCheck = null
@@ -103,9 +111,9 @@ fun ImportWalletDetailPage(
             val address = when (mode) {
                 WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY, WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork && isEvmPrivateKeyValid(text)) {
-                        CryptoWalletHelper.privateKeyToAddress(text, chainId)
+                        CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
                     } else if (!isEvmNetwork && isSolanaPrivateKeyValid(text)) {
-                        CryptoWalletHelper.privateKeyToAddress(text, chainId)
+                        CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
                     } else {
                         null
                     }
@@ -211,7 +219,9 @@ fun ImportWalletDetailPage(
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = {
-                        expanded = !expanded
+                        if (chainId == null) {
+                            expanded = !expanded
+                        }
                     },
                 ) {
                     TextField(
@@ -220,11 +230,13 @@ fun ImportWalletDetailPage(
                         onValueChange = { },
                         label = { Text(stringResource(R.string.Choose_Network), color = MixinAppTheme.colors.accent) },
                         trailingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_sort_arrow_down),
-                                contentDescription = null,
-                                tint = MixinAppTheme.colors.iconGray
-                            )
+                            if (chainId == null) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_sort_arrow_down),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.iconGray
+                                )
+                            }
                         },
                         colors = TextFieldDefaults.textFieldColors(
                             textColor = MixinAppTheme.colors.textPrimary,
@@ -395,7 +407,7 @@ fun ImportWalletDetailPage(
                         .padding(horizontal = 48.dp)
                         .height(48.dp),
                     onClick = {
-                        onConfirmClick(chainId, text)
+                        onConfirmClick(currentChainId, text)
                     },
                     enabled = isButtonEnabled,
                     colors = ButtonDefaults.buttonColors(

@@ -41,4 +41,7 @@ interface AddressDao : BaseDao<Address> {
         destination: String,
         tag: String,
     ): String?
+
+    @Query("SELECT * FROM addresses WHERE destination = :destination AND chain_id = :chainId")
+    suspend fun matchAddress(destination: String, chainId: String): Address?
 }

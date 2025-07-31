@@ -1450,4 +1450,6 @@ class TokenRepository
         web3TokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
 
     suspend fun getChainItemByWalletId(walletId: String) = web3AddressDao.getChainItemByWalletId(walletId)
+
+    suspend fun matchAddress(destination: String, chainId: String): Address? = addressDao.matchAddress(destination, chainId)
 }
