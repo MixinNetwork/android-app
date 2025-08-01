@@ -43,6 +43,7 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -366,6 +367,25 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun handleWalletCardClick(destination: WalletDestination) {
         selectedWalletDestination = destination
         saveSelectedWalletDestination(destination)
+        when (destination) {
+            is WalletDestination.Classic -> {
+                destination.walletId
+            }
+
+            is WalletDestination.Import -> {
+                destination.walletId
+            }
+
+            is WalletDestination.Watch -> {
+                destination.walletId
+            }
+
+            else -> {
+                null
+            }
+        }?.let { wallet ->
+            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
+        }
         if (destination is WalletDestination.Classic || destination is WalletDestination.Import) {
             val walletId = if (destination is WalletDestination.Classic) {
                 destination.walletId
