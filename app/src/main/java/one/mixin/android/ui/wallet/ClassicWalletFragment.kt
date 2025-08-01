@@ -38,7 +38,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3Job
+import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
@@ -52,6 +52,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.widget.PercentItemView
@@ -306,7 +307,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onResume() {
         super.onResume()
-        jobManager.addJobInBackground(RefreshWeb3Job())
+        jobManager.addJobInBackground(RefreshSingleWalletJob(JsSigner.currentWalletId))
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
@@ -323,7 +324,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onHiddenChanged(hidden: Boolean) {
         if (!hidden) {
-            jobManager.addJobInBackground(RefreshWeb3Job())
+            jobManager.addJobInBackground(RefreshSingleWalletJob(JsSigner.currentWalletId))
         }
     }
 

@@ -588,7 +588,17 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
                     if (response.isSuccess) {
                         errorInfo = null
+                        val wallet = withContext(Dispatchers.IO) {
+                            viewModel.getWalletByDestination(destination)
+                        }
                         val addressLabel = withContext(Dispatchers.IO) {
+                            if (wallet != null) {
+                                return@withContext if (wallet.category == WalletCategory.CLASSIC.value) {
+                                    context?.getString(R.string.Common_Wallet)
+                                } else {
+                                    wallet.name.takeIf { it.isNotEmpty() } ?: context?.getString(R.string.Common_Wallet)
+                                }
+                            }
                             if (toAccount == true) return@withContext null
                             viewModel.findAddressByReceiver(destination, tag ?: "")
                         }
@@ -599,6 +609,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     putString(InputFragment.ARGS_TO_ADDRESS, destination)
                                     putString(InputFragment.ARGS_TO_ADDRESS_TAG, tag)
                                     putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
+                                    putBoolean(InputFragment.ARGS_TO_MY_WALLET, wallet != null)
                                 })
                             }
                             asset != null && destination.isNotEmpty() -> {
@@ -607,6 +618,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     putString(InputFragment.ARGS_TO_ADDRESS, destination)
                                     putBoolean(InputFragment.ARGS_TO_ACCOUNT, toAccount ?: false)
                                     putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
+                                    putBoolean(InputFragment.ARGS_TO_MY_WALLET, wallet != null)
                                 })
                             }
                             fromAddress != null && destination.isNotEmpty() && web3Token != null && chainToken != null -> {
@@ -616,6 +628,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token)
                                     putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
                                     putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
+                                    putBoolean(InputFragment.ARGS_TO_MY_WALLET, wallet != null)
                                 })
                             }
                         }
