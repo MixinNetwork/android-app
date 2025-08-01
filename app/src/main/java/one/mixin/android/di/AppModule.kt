@@ -240,7 +240,11 @@ object AppModule {
 
                 var jwtResult: JwtResult? = null
                 response.body?.run {
-                    val bytes = this.bytes()
+                    val bytes = runCatching {
+                        this.bytes()
+                    }.onFailure { e ->
+                        Timber.d(e, "Unable to read response body, likely a WebSocket or streaming response")
+                    }.getOrNull() ?: return@run
                     val body = bytes.toResponseBody(this.contentType())
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
