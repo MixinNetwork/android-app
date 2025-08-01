@@ -23,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -377,7 +378,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
                         runBlocking { walletViewModel.getAddresses(queryWalletId) }
                     }
-                    reloadWebViewInClips()
+                    withContext(Dispatchers.Main) {
+                        reloadWebViewInClips()
+                    }
                     PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
                 }
             }
