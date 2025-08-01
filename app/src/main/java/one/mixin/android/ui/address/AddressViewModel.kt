@@ -31,4 +31,6 @@ class AddressViewModel
     ) = accountRepository.validateExternalAddress(assetId, chain, destination, tag)
 
     fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
+
+    suspend fun getWalletByDestination(destination: String) = web3Repository.getWalletByDestination(destination)
 }

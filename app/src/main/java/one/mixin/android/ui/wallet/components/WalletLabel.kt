@@ -52,7 +52,7 @@ fun WalletLabel(
                 Text(
                     text = walletName ?: stringResource(id = R.string.Privacy_Wallet),
                     color = Color.White,
-                    fontSize = 12.sp
+                    fontSize = 14.sp
                 )
             }
             Spacer(modifier = Modifier.height(7.dp))

@@ -46,6 +46,7 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
@@ -1758,6 +1759,8 @@ class BottomSheetViewModel
         }
 
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
+
+        fun web3TokenItems(walletId: String, level:Int) = tokenRepository.web3TokenItems(walletId, level)
 
         suspend fun getWeb3Priv(
             context: Context,

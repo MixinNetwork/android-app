@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.graphics.Color
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -11,13 +12,18 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferBalanceErrorBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenFeeItem
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.WalletCategory
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressActivity
 import one.mixin.android.widget.BottomSheet
 
@@ -40,14 +46,19 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
     }
 
     private val transferViewModel by viewModels<TransferViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "UseKtx")
     override fun setupDialog(
         dialog: Dialog,
         style: Int,
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
+        binding.root.roundTopOrBottom(12.dp.toFloat(), true, false)
+        binding.walletLabel.setBackgroundColor(Color.parseColor("#FF007AFF"))
+        binding.walletTv.setCompoundDrawablesRelative(null, null, null, null)
+
         dialog.setCanceledOnTouchOutside(false)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
@@ -55,6 +66,13 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
         }
         lifecycleScope.launch {
             val asset = t.token
+            val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+            val walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
+                getString(R.string.Common_Wallet)
+            } else {
+                wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
+            }
+            binding.walletTv.text = walletName
             if (asset.assetId in Constants.usdIds) {
                 val u = transferViewModel.findTopWeb3UsdBalanceAsset(asset.assetId)
                 if (u != null) {

@@ -184,7 +184,11 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         walletId?.let {
-            bottomViewModel.web3TokenItems(it).observe(this) { items ->
+            if (type == TYPE_FROM_RECEIVE) {
+                bottomViewModel.web3TokenItems(it, Constants.AssetLevel.VERIFIED)
+            } else {
+                bottomViewModel.web3TokenItems(it)
+            }.observe(this) { items ->
                 defaultAssets = items
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     adapter.tokens = ArrayList(defaultAssets.filter { item ->
