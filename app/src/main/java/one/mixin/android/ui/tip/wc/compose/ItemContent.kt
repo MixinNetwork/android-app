@@ -1,29 +1,32 @@
 package one.mixin.android.ui.tip.wc.compose
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
 
@@ -51,7 +54,7 @@ fun ItemContent(
         Box(modifier = Modifier.height(4.dp))
 
         if (label != null) {
-            TextWithRoundedLabel(subTitle, label, isAddress)
+            TextWithRoundedLabelInline(subTitle, label, isAddress)
         } else {
             Text(
                 text = subTitle,
@@ -71,62 +74,71 @@ fun ItemContent(
     }
 }
 
-
-
 @Composable
-fun TextWithRoundedLabel(
+fun TextWithRoundedLabelInline(
     content: String,
     label: String,
     isAddress: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val accentColor = if (!isAddress) Color(0xB34B7CDD) else Color(0xFF8DCC99)
     val density = LocalDensity.current
-    val cornerRadius = with(density) { 4.dp.toPx() }
-    val horizontalPadding = with(density) { 4.dp.toPx() }
-    val verticalPadding = with(density) { 2.dp.toPx() }
-
-    val fullText = "$content  $label"
-    val labelStart = fullText.lastIndexOf(label)
-    val labelEnd = labelStart + label.length
-    val accentColor = if(!isAddress) Color(0xB34B7CDD) else Color(0xFF8DCC99)
-    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     Text(
         text = buildAnnotatedString {
-            append(fullText)
-            addStyle(
-                style = SpanStyle(
-                    fontSize = 0.8.em,
-                    color = Color.White
-                ),
-                start = labelStart,
-                end = labelEnd
-            )
+            append(content)
+            append(" ")
+            appendInlineContent("label", "[label]")
         },
         color = MixinAppTheme.colors.textPrimary,
         fontSize = 14.sp,
-        onTextLayout = { textLayoutResult = it },
-        modifier = modifier.drawBehind {
-            textLayoutResult?.let { layout ->
-                val labelStartOffset = layout.getHorizontalPosition(labelStart, true)
-                val labelEndOffset = layout.getHorizontalPosition(labelEnd, true)
-                val lineTop = layout.getLineTop(layout.getLineForOffset(labelStart))
-                val lineBottom = layout.getLineBottom(layout.getLineForOffset(labelStart))
-                val lineHeight = lineBottom - lineTop
-
-                drawRoundRect(
-                    color = accentColor,
-                    topLeft = Offset(
-                        labelStartOffset - horizontalPadding,
-                        lineTop + verticalPadding
-                    ),
-                    size = Size(
-                        labelEndOffset - labelStartOffset + horizontalPadding * 2,
-                        lineHeight - verticalPadding * 2
-                    ),
-                    cornerRadius = CornerRadius(cornerRadius, cornerRadius)
+        inlineContent = mapOf(
+            "label" to InlineTextContent(
+                placeholder = Placeholder(
+                    width = with(density) {
+                        (measureTextWidth(label, (14 * 0.8).sp) + 12.dp).toSp()
+                    },
+                    height = with(density) {
+                        (16.dp).toSp()
+                    },
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            color = accentColor,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .wrapContentSize(Alignment.Center),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = label,
+                        color = Color.White,
+                        fontSize = (14 * 0.8).sp,
+                        lineHeight = (16 * 0.8).sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(
+                            horizontal = 4.dp,
+                        )
+                    )
+                }
             }
-        }
+        ),
+        modifier = modifier
     )
+}
+
+@Composable
+private fun measureTextWidth(text: String, fontSize: TextUnit): Dp {
+    val density = LocalDensity.current
+    val fontSizePx = with(density) { fontSize.toPx() }
+    val paint = android.graphics.Paint().apply {
+        textSize = fontSizePx
+        isAntiAlias = true
+    }
+    val textWidth = paint.measureText(text)
+    return with(density) { textWidth.toDp() }
 }
