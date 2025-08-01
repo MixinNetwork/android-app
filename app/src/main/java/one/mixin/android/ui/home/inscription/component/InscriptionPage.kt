@@ -157,7 +157,7 @@ private fun InscriptionPageImp(
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { onMoreAction(inscription) }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_home_more),
+                        painter = painterResource(id = R.drawable.ic_more),
                         contentDescription = null,
                         tint = Color.White,
                     )
