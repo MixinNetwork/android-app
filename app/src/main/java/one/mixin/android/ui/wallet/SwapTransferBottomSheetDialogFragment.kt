@@ -37,6 +37,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,7 +86,6 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dp as dip
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
@@ -276,6 +276,16 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {
+                    LaunchedEffect(Unit) {
+                        if (source == "web3") {
+                            val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+                            walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
+                                context.getString(R.string.Common_Wallet)
+                            } else {
+                                wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+                            }
+                        }
+                    }
                     Column(
                         modifier =
                         Modifier
