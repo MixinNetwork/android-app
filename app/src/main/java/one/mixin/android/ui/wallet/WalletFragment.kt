@@ -555,9 +555,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         importBottomBinding.delete.setOnClickListener {
             VerifyBottomSheetDialogFragment.newInstance(
                 getString(R.string.delete_wallet_title),
-                true,
-                true,
-                subtitle = getString(R.string.remove_wallet_warning),
+                disableBiometric = true,
+                isHintRed = true,
+                subtitle = getString(
+                    if (dest is WalletDestination.Import) R.string.delete_common_wallet_description
+                    else R.string.delete_watch_wallet_description,
+                ),
             ).apply {
                 disableToast = true
             }.setOnPinSuccess { _ ->

@@ -169,7 +169,7 @@ fun AssetDashboardScreen(
                         WalletCard(
                             name = wallet.name,
                             destination = WalletDestination.Watch(wallet.id, wallet.category),
-                            onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) })
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Watch(wallet.id, wallet.category)) })
                     } else if (wallet.isImported()) {
                         WalletCard(
                             name = wallet.name,
