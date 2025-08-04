@@ -90,8 +90,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private val _walletId = MutableLiveData<String>()
     var walletId: String = ""
         set(value) {
-            field = value
-            _walletId.value = value
+            if (value != field) {
+                field = value
+                _walletId.value = value
+            }
+            Timber.e("walletId set to $value")
         }
 
     override fun onCreateView(
@@ -257,7 +260,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     }
                 }
                 _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount(walletId))
-
+                Timber.e("observe web3TokensExcludeHidden $id")
                 lastData?.removeObservers(viewLifecycleOwner)
                 lastData = web3ViewModel.web3TokensExcludeHidden(id)
                 lastData?.observe(viewLifecycleOwner, observer)
@@ -276,6 +279,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var lastData: LiveData<List<Web3TokenItem>>? = null
 
     private val observer = Observer<List<Web3TokenItem>> { data ->
+        Timber.e("observe web3TokensExcludeHidden data size: ${data.size}, walletId: $walletId")
         if (data.isEmpty()) {
             setEmpty()
             assets = data

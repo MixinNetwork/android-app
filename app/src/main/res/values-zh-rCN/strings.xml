@@ -2000,7 +2000,8 @@
     <string name="Dont_share_it_with_a_network">不要通过网络分享它。</string>
     <string name="watch_only_wallet_warning_message">这是一个仅供观察的钱包。您确定要用它来接收资产吗？</string>
     <string name="no_key_wallet_warning_message">此钱包在此设备上没有私钥。您确定要用它来接收资产吗？</string>
-    <string name="remove_wallet_warning">在移除钱包之前，请确保您已写下助记词或私钥。否则，您将无法恢复钱包。</string>
+    <string name="delete_common_wallet_description">在移除钱包之前，请确保您已写下助记词或私钥。否则，您将无法恢复钱包。</string>
+    <string name="delete_watch_wallet_description">这是一个观察钱包，删除此钱包不会影响你的资产。</string>
     <string name="words">%1$d个单词</string>
     <string name="import_private_key">导入私钥</string>
     <string name="add_watch_address">添加观察地址</string>

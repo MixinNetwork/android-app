@@ -2052,7 +2052,8 @@
     <string name="Dont_share_it_with_a_network">Don’t share it with a network.</string>
     <string name="watch_only_wallet_warning_message">This is a watch-only wallet. Are you sure you want to use it to receive assets?</string>
     <string name="no_key_wallet_warning_message">This wallet has no private key on this device. Are you sure you want to use it to receive assets?</string>
-    <string name="remove_wallet_warning">Make sure you\'ve written down the recovery phrase or private key before removing the wallet. Otherwise you won\'t be able to recover the wallet.</string>
+    <string name="delete_common_wallet_description">Make sure you\'ve written down the recovery phrase or private key before removing the wallet. Otherwise you won\'t be able to recover the wallet.</string>
+    <string name="delete_watch_wallet_description">Deleting this wallet will not affect your assets, as it is a watch-only wallet.</string>
     <string name="words">%1$d words</string>
     <string name="import_private_key">Import Private Key</string>
     <string name="add_watch_address">Add Watch Address</string>

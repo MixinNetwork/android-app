@@ -330,7 +330,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     TransferType.WEB3 -> {
                         titleView.setLabel(
                             getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
-                            addressLabel ?: if (toWallet) getString(R.string.Mixin_Wallet) else null,
+                            addressLabel ?: if (toWallet) getString(R.string.Privacy_Wallet) else null,
                             toAddress ?: "",
                             toMyWallet
                         )
