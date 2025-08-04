@@ -65,7 +65,6 @@ import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.WalletCategory

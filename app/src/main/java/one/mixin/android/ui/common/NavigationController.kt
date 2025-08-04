@@ -68,15 +68,6 @@ class NavigationController(mainActivity: MainActivity) {
         ContactsActivity.show(context)
     }
 
-    fun pushWallet(walletFragment: WalletFragment) {
-        if (Session.getAccount()?.hasPin == true) {
-            navigate(Wallet, walletFragment)
-        } else {
-            val id = requireNotNull(context.defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
-            TipActivity.show(context, TipBundle(TipType.Create, id, TryConnecting))
-        }
-    }
-
     fun showSearch(fm: FragmentManager) {
         var searchFragment = fm.findFragmentByTag(SearchFragment.TAG)
         if (searchFragment == null) {
