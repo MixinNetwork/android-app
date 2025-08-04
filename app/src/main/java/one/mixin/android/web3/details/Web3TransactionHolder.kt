@@ -60,18 +60,58 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                 }
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-                    amountAnimator.displayedChild = 0
-                    value.textColorResource = R.color.wallet_green
-                    value.text = formatAmountWithSign(amount, true)
-                    symbolTv.text = transaction.receiveAssetSymbol ?: ""
+                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                        amountAnimator.displayedChild = 1
+
+                        receiveValue.textColorResource = R.color.wallet_green
+                        receiveValue.text = formatAmountWithSign(amount, true)
+                        receiveSymbolTv.text = transaction.receiveAssetSymbol ?: ""
+
+
+                        transaction.senders.find {
+                            it.assetId == transaction.sendAssetId
+                        }?.amount?.notNullWithElse({
+                            sendValue.text = formatAmountWithSign(it, false)
+                            sendSymbolTv.text = transaction.sendAssetSymbol ?: ""
+                        }, {
+                            sendValue.text = formatAmountWithSign(transaction.senders.lastOrNull()?.amount, false)
+                            sendSymbolTv.text = ""
+                        })
+                        sendValue.textColorResource = R.color.wallet_pink
+                    } else {
+                        amountAnimator.displayedChild = 0
+                        value.textColorResource = R.color.wallet_green
+                        value.text = formatAmountWithSign(amount, true)
+                        symbolTv.text = transaction.receiveAssetSymbol ?: ""
+                    }
                     avatar.loadUrl(transaction)
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-                    amountAnimator.displayedChild = 0
-                    value.textColorResource = R.color.wallet_pink
-                    value.text = formatAmountWithSign(amount, false)
-                    symbolTv.text = transaction.sendAssetSymbol ?: ""
+                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                        amountAnimator.displayedChild = 1
+
+                        receiveValue.textColorResource = R.color.wallet_green
+                        receiveValue.text = formatAmountWithSign(amount, true)
+                        receiveSymbolTv.text = transaction.receiveAssetSymbol ?: ""
+
+
+                        transaction.senders.find {
+                            it.assetId == transaction.sendAssetId
+                        }?.amount?.notNullWithElse({
+                            sendValue.text = formatAmountWithSign(it, false)
+                            sendSymbolTv.text = transaction.sendAssetSymbol ?: ""
+                        }, {
+                            sendValue.text = formatAmountWithSign(transaction.senders.lastOrNull()?.amount, false)
+                            sendSymbolTv.text = ""
+                        })
+                        sendValue.textColorResource = R.color.wallet_pink
+                    } else {
+                        amountAnimator.displayedChild = 0
+                        value.textColorResource = R.color.wallet_pink
+                        value.text = formatAmountWithSign(amount, false)
+                        symbolTv.text = transaction.sendAssetSymbol ?: ""
+                    }
                     avatar.loadUrl(transaction)
                 }
                 transaction.transactionType == TransactionType.SWAP.value -> {

@@ -298,23 +298,10 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 TransactionType.SWAP.value -> getString(R.string.Swap)
                 else -> transaction.transactionType
             }
-
-            if (transaction.transactionType == TransactionType.SWAP.value && transaction.senders.isNotEmpty()) {
-                assetChangesLl.visibility = View.VISIBLE
-                assetChangesContainer.setContent {
-                    AssetChangesList(
-                        status = transaction.status,
-                        senders = transaction.senders,
-                        receivers = transaction.receivers,
-                        fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(JsSigner.currentWalletId, assetId)
-                        }
-                    )
-                }
-            } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
+            if (transaction.transactionType == TransactionType.APPROVAL.value) {
                 assetChangesLl.visibility = View.VISIBLE
                 assetChangesTitle.setText(R.string.TOKEN_ACCESS_APPROVAL)
-                
+
                 assetChangesContainer.setContent {
                     AssetChangesList(
                         status = transaction.status,
@@ -324,6 +311,18 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                             web3ViewModel.web3TokenItemById(JsSigner.currentWalletId, assetId)
                         },
                         approvals = transaction.approvals,
+                    )
+                }
+            } else if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                assetChangesLl.visibility = View.VISIBLE
+                assetChangesContainer.setContent {
+                    AssetChangesList(
+                        status = transaction.status,
+                        senders = transaction.senders,
+                        receivers = transaction.receivers,
+                        fetchToken = { assetId ->
+                            web3ViewModel.web3TokenItemById(JsSigner.currentWalletId, assetId)
+                        }
                     )
                 }
             } else {
