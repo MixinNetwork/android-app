@@ -260,6 +260,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                         Bundle().apply {
                                                                             putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress.destination)
                                                                             putString(InputFragment.ARGS_TO_ADDRESS, toAddress)
+                                                                            putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
+                                                                            putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                            putParcelable(ARGS_WALLET, wallet)
+                                                                            putBoolean(InputFragment.ARGS_TO_WALLET, destinationWallet == null)
+                                                                            putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
                                                                             putString(
                                                                                 InputFragment.ARGS_TO_ADDRESS_LABEL,
                                                                                 if (destinationWallet == null)
@@ -268,12 +273,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                                     getString(R.string.Common_Wallet)
                                                                                 else destinationWallet.name
                                                                             )
-                                                                            putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
-                                                                            putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
-                                                                            putParcelable(ARGS_WALLET, wallet)
-                                                                            putBoolean(InputFragment.ARGS_TO_WALLET, destinationWallet == null)
-                                                                            putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
-                                                                            putString(InputFragment.ARGS_TO_ADDRESS_LABEL, destinationWallet?.name)
                                                                         })
                                                                 }
                                                             }
@@ -289,7 +288,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                         putParcelable(InputFragment.ARGS_TOKEN, token)
                                                                         putString(InputFragment.ARGS_TO_ADDRESS, toAddress.destination)
                                                                         putBoolean(InputFragment.ARGS_TO_WALLET, true)
-                                                                        putString(InputFragment.ARGS_TO_ADDRESS_LABEL, destinationWallet?.name)
+                                                                        putString(
+                                                                            InputFragment.ARGS_TO_ADDRESS_LABEL,
+                                                                            if (destinationWallet == null)
+                                                                                getString(R.string.Privacy_Wallet)
+                                                                            else if (destinationWallet.category == WalletCategory.CLASSIC.value)
+                                                                                getString(R.string.Common_Wallet)
+                                                                            else destinationWallet.name
+                                                                        )
                                                                         putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
                                                                     })
                                                             } else {
