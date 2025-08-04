@@ -165,17 +165,29 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     getString(R.string.Approval)
                 }
                 else -> {
-                    buildAmountSymbol(
-                        requireContext(),
-                        formatAmountWithSign(mainAmount, transaction.transactionType == TransactionType.TRANSFER_IN.value),
-                        when (transaction.transactionType) {
-                            TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
-                            TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
-                            TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
-                            else -> ""
-                        },
-                        amountColor, symbolColor
-                    )
+                    if ((transaction.transactionType == TransactionType.TRANSFER_OUT.value || transaction.transactionType == TransactionType.TRANSFER_IN.value) &&
+                        (transaction.senders.size > 1 || transaction.receivers.size > 1)) {
+                        valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                        valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                        valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                        if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
+                            getString(R.string.Send)
+                        } else {
+                            getString(R.string.Deposit)
+                        }
+                    } else {
+                        buildAmountSymbol(
+                            requireContext(),
+                            formatAmountWithSign(mainAmount, transaction.transactionType == TransactionType.TRANSFER_IN.value),
+                            when (transaction.transactionType) {
+                                TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
+                                TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
+                                TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
+                                else -> ""
+                            },
+                            amountColor, symbolColor
+                        )
+                    }
                 }
             }
 
@@ -256,11 +268,19 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
-                    avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                        avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                    } else {
+                        avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    }
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
-                    avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                        avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
+                    } else {
+                        avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    }
                 }
 
                 transaction.transactionType == TransactionType.SWAP.value -> {
