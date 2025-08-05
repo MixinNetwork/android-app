@@ -526,11 +526,6 @@ class TokenRepository
             }
         }
 
-
-        fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
-            return web3TransactionDao.allTransactions(filterParams.buildQuery())
-        }
-
         suspend fun deleteAllWeb3Transactions() {
             val addresses = web3AddressDao.getAddress()
             web3TransactionDao.deleteAllTransactions()

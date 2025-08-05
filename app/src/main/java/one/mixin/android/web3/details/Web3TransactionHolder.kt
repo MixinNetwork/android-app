@@ -211,7 +211,6 @@ fun AmountList(
     assetChanges: List<AssetChange>,
     senders: List<AssetChange>,
 ) {
-    val viewModel = hiltViewModel<Web3ViewModel>()
     val holder = LocalView.current.tag as? Web3TransactionHolder
     Column(
         horizontalAlignment = Alignment.End,
@@ -221,14 +220,9 @@ fun AmountList(
             val isSender = senders.contains(assetChange)
             val amount = holder?.formatAmountWithSign(assetChange.amount, !isSender) ?: assetChange.amount
 
-            var symbol by remember { mutableStateOf("") }
-            LaunchedEffect(assetChange.assetId) {
-                symbol = viewModel.getAssetSymbolById(assetChange.assetId)
-            }
-
             AmountRow(
                 amount = amount,
-                symbol = symbol,
+                symbol = assetChange.symbol ?: "",
                 isSender = isSender
             )
             if (index < assetChanges.size - 1) {

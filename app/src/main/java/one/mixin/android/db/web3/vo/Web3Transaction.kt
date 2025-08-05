@@ -108,5 +108,8 @@ data class AssetChange(
 
     @ColumnInfo(name = "approval_type")
     @SerializedName("approval_type")
-    val type: String? = null
+    val type: String? = null,
+
+    @Ignore
+    val symbol: String? = null,
 ) : Parcelable

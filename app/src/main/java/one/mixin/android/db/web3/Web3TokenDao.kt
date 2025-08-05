@@ -74,6 +74,9 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
     suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem>
 
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
+    fun findWeb3TokenItemsByIdsSync(walletId: String, assetIds: List<String>): List<Web3TokenItem>
+
     @Query("SELECT amount FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
     fun tokenExtraFlow(walletId: String, assetId: String): Flow<String?>
 
