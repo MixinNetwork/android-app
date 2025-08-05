@@ -4,32 +4,41 @@ import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT
 
 object Bip44Path {
-    // m/44'/0'/0'/0/0
-    val Bitcoin =
+    /**
+     * Generate Bitcoin derivation path with variable index
+     * Bitcoin path: m/44'/0'/0'/0/{index}
+     */
+    fun bitcoin(index: Int = 0): IntArray =
         intArrayOf(
             44 or HARDENED_BIT,
             0 or HARDENED_BIT,
             0 or HARDENED_BIT,
             0,
-            0,
+            index,
         )
 
-    // m/44'/60'/0'/0/0
-    val Ethereum =
+    /**
+     * Generate Ethereum derivation path with variable index
+     * Ethereum path: m/44'/60'/0'/0/{index}
+     */
+    fun ethereum(index: Int = 0): IntArray =
         intArrayOf(
             44 or HARDENED_BIT,
             60 or HARDENED_BIT,
             0 or HARDENED_BIT,
             0,
-            0,
+            index,
         )
 
-    // m/44'/501'/0'/0'
-    val Solana =
+    /**
+     * Generate Solana derivation path with variable index
+     * Solana path: m/44'/501'/{index}'/0'
+     */
+    fun solana(index: Int = 0): IntArray =
         intArrayOf(
             44 or HARDENED_BIT,
             501 or HARDENED_BIT,
-            0 or HARDENED_BIT,
+            index or HARDENED_BIT,
             0 or HARDENED_BIT,
         )
 }

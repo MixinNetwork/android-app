@@ -110,13 +110,14 @@ private fun matchTipSignSpec(
 fun tipPrivToPrivateKey(
     priv: ByteArray,
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
+    index: Int = 0,
 ): ByteArray {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
 
     when (chainId) {
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
             val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
             val kp = Keypair.fromSecretKey(seed)
             val address = kp.publicKey.toBase58()
@@ -127,7 +128,7 @@ fun tipPrivToPrivateKey(
         }
         else -> {
             val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
             val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
             if (address != addressFromGo) {
                 throw IllegalArgumentException("Generate illegal Ethereum Address")
@@ -141,27 +142,28 @@ fun tipPrivToPrivateKey(
 fun privateKeyToAddress(
     priv: ByteArray,
     chainId: String,
+    index: Int = 0,
 ): String {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
     when (chainId) {
         Constants.ChainId.ETHEREUM_CHAIN_ID -> {
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.ethereum(index))
             val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
-            if (address != addressFromGo) {
-                throw IllegalArgumentException("Generate illegal Address")
-            }
+//            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
+//            if (address != addressFromGo) {
+//                throw IllegalArgumentException("Generate illegal Address")
+//            }
             return address
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
             val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
             val kp = Keypair.fromSecretKey(seed)
             val address = kp.publicKey.toBase58()
-            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
-            if (address != addressFromGo) {
-                throw IllegalArgumentException("Generate illegal Solana Address")
-            }
+//            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
+//            if (address != addressFromGo) {
+//                throw IllegalArgumentException("Generate illegal Solana Address")
+//            }
             return address
         }
         else -> throw IllegalArgumentException("Not supported chainId")

@@ -312,7 +312,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         ClassicWalletFragment.TAG
                     )
                 }
-                binding.titleTv.setText(R.string.Common_Wallet)
+                lifecycleScope.launch {
+                    walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                    } ?: run {
+                        binding.titleTv.setText(R.string.Common_Wallet)
+                    }
+                }
                 binding.tailIcon.isVisible = false
             }
             is WalletDestination.Watch -> {
@@ -366,6 +372,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT_MNEMONIC
                 AddWalletBottomSheetDialogFragment.Action.IMPORT_PRIVATE_KEY -> WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
                 AddWalletBottomSheetDialogFragment.Action.ADD_WATCH_ADDRESS -> WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
+                AddWalletBottomSheetDialogFragment.Action.CREATE_WALLET -> WalletSecurityActivity.Mode.CREATE_WALLET
             }
             intent.putExtra(WalletSecurityActivity.EXTRA_MODE, mode.ordinal)
             startActivity(intent)
@@ -676,6 +683,24 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Classic) {
                 WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+            }
+            bottomSheet.dismiss()
+        }
+        classicBottomBinding.rename.setOnClickListener {
+            editDialog {
+                titleText = this@WalletFragment.getString(R.string.rename_wallet)
+                editText = binding.titleTv.text.toString()
+                maxTextCount = 32
+                allowEmpty = false
+                rightAction = { newName ->
+                    this@WalletFragment.lifecycleScope.launch {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Classic) {
+                            walletViewModel.renameWallet(dest.walletId, newName)
+                            updateUi(dest)
+                        }
+                    }
+                }
             }
             bottomSheet.dismiss()
         }

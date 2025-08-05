@@ -12,6 +12,7 @@ class AddWalletBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         IMPORT_MNEMONIC,
         IMPORT_PRIVATE_KEY,
         ADD_WATCH_ADDRESS,
+        CREATE_WALLET,
     }
 
     companion object {
@@ -34,6 +35,10 @@ class AddWalletBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         binding.apply {
             rightIv.setOnClickListener { dismiss() }
+            addWatchAddress.setOnClickListener {
+                callback?.invoke(Action.ADD_WATCH_ADDRESS)
+                dismiss()
+            }
             importMnemonicPhrase.setOnClickListener {
                 callback?.invoke(Action.IMPORT_MNEMONIC)
                 dismiss()
@@ -42,8 +47,8 @@ class AddWalletBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 callback?.invoke(Action.IMPORT_PRIVATE_KEY)
                 dismiss()
             }
-            addWatchAddress.setOnClickListener {
-                callback?.invoke(Action.ADD_WATCH_ADDRESS)
+            createNewWallet.setOnClickListener {
+                callback?.invoke(Action.CREATE_WALLET)
                 dismiss()
             }
         }

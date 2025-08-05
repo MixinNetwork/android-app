@@ -6,6 +6,7 @@ import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -17,6 +18,8 @@ import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.ui.wallet.Web3FilterParams
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -128,6 +131,33 @@ constructor(
     }
 
     suspend fun getAllWalletNames(categories :List<String>) = web3WalletDao.getAllWalletNames(categories)
+
+    suspend fun getClassicWalletMaxIndex(): Int {
+        return try {
+            val classicWallets = web3WalletDao.getAllClassicWallets()
+
+            if (classicWallets.isEmpty()) {
+                return 0
+            }
+
+            var maxIndex = 0
+            for (wallet in classicWallets) {
+                val addresses = web3AddressDao.getAddressesByWalletId(wallet.id)
+                for (address in addresses) {
+                    address.path?.let { path ->
+                        val index = CryptoWalletHelper.extractIndexFromPath(path)
+                        if (index != null && index > maxIndex) {
+                            maxIndex = index
+                        }
+                    }
+                }
+            }
+            maxIndex
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get classic wallet max index")
+            0
+        }
+    }
 
     suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
 }
