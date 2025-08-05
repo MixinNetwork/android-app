@@ -333,7 +333,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         approvals = transaction.approvals,
                     )
                 }
-            } else if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+            } else if (transaction.transactionType == TransactionType.SWAP.value || transaction.senders.size > 1 || transaction.receivers.size > 1) {
                 assetChangesLl.visibility = View.VISIBLE
                 assetChangesContainer.setContent {
                     AssetChangesList(

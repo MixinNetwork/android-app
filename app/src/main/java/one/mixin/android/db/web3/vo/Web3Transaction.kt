@@ -3,6 +3,7 @@ package one.mixin.android.db.web3.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName

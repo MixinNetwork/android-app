@@ -1,7 +1,8 @@
 package one.mixin.android.repository
 
 import android.content.Context
-import androidx.lifecycle.map
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import one.mixin.android.api.request.web3.EstimateFeeRequest
@@ -63,37 +64,40 @@ constructor(
     }
 
     fun web3Transactions(walletId: String, assetId: String) =
-        web3TransactionDao.web3Transactions(walletId, assetId).map { list ->
-            val assetIds = list.flatMap { it.senders.map { it.assetId } + it.receivers.map { it.assetId } + (it.approvals?.map { it.assetId } ?: emptyList()) }.distinct()
-            val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds).associateBy { it.assetId }
-            list.map { transaction ->
-                transaction.copy(
-                    senders = transaction.senders.map {
-                        it.copy(symbol = tokens[it.assetId]?.symbol)
-                    },
-                    receivers = transaction.receivers.map {
-                        it.copy(symbol = tokens[it.assetId]?.symbol)
-                    },
-                    approvals = transaction.approvals?.map {
-                        it.copy(symbol = tokens[it.assetId]?.symbol)
-                    }
-                )
+        web3TransactionDao.web3Transactions(walletId, assetId).switchMap { list ->
+            liveData {
+                val assetIds = list.flatMap { it.senders.map { it.assetId } + it.receivers.map { it.assetId } + (it.approvals?.map { it.assetId } ?: emptyList()) }.distinct()
+                val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
+                val result = list.map { transaction ->
+                    transaction.copy(
+                        senders = transaction.senders.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        receivers = transaction.receivers.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        approvals = transaction.approvals?.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        }
+                    )
+                }
+                emit(result)
             }
         }
 
-    suspend fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
-        val allTokens = web3TokenDao.findWeb3TokenItems(filterParams.walletId).associateBy { it.assetId }
-
+    fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
         return web3TransactionDao.allTransactions(filterParams.buildQuery()).map { transaction ->
+            val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
+            val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(filterParams.walletId, assetIds.distinct()).associateBy { it.assetId }
             transaction.copy(
                 senders = transaction.senders.map {
-                    it.copy(symbol = allTokens[it.assetId]?.symbol)
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
                 },
                 receivers = transaction.receivers.map {
-                    it.copy(symbol = allTokens[it.assetId]?.symbol)
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
                 },
                 approvals = transaction.approvals?.map {
-                    it.copy(symbol = allTokens[it.assetId]?.symbol)
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
                 }
             )
         }
