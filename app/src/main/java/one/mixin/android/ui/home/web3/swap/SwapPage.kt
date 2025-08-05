@@ -273,7 +273,7 @@ fun SwapPage(
             val fromBalance = if (walletId.isNullOrBlank()) {
                 from.balance
             } else {
-                viewModel.tokenExtraFlow(walletId, from, inMixin).collectAsStateWithLifecycle(from.balance).value
+                viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
             }
 
             KeyboardAwareBox(
@@ -531,7 +531,7 @@ fun InputArea(
         if (walletId.isNullOrBlank()) {
             token.balance
         } else {
-            viewModel.tokenExtraFlow(walletId, token, inMixin).collectAsStateWithLifecycle(token.balance).value
+            viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
         }
     }
     Column(
