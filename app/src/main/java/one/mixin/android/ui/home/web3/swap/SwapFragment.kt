@@ -644,9 +644,6 @@ class SwapFragment : BaseFragment() {
             openSwapTransfer(resp, from, to)
         } else {
             AnalyticsTracker.trackSwapPreview()
-            val token = swapViewModel.web3TokenItemById(walletId!!, from.assetId) ?: return
-            val chainToken = swapViewModel.web3TokenItemById(walletId!!, from.chain.chainId) ?: return
-            val depositDestination = resp.depositDestination ?: return
             openSwapTransfer(resp, from, to)
         }
     }
@@ -834,7 +831,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
-    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR }
+    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${JsSigner.currentWalletId}"}
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
     private fun getReferral(): String? = arguments?.getString(ARGS_REFERRAL)
