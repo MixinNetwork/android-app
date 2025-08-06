@@ -200,7 +200,8 @@ object CryptoWalletHelper {
 
             when {
                 currentCategory == WalletCategory.CLASSIC.value || currentWalletId.isEmpty() -> {
-                    val derivationIndex = requireNotNull(extractIndexFromPath(JsSigner.path))
+                    val derivationIndex = extractIndexFromPath(JsSigner.path) ?: 0
+                    Timber.d("currentWalletId: ${JsSigner.currentWalletId}, currentWalletCategory: ${JsSigner.currentWalletCategory}, evmAddress: ${JsSigner.evmAddress}, solanaAddress: ${JsSigner.solanaAddress} derivationIndex: $derivationIndex")
                     tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
                 }
 

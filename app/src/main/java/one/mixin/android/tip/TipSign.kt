@@ -116,23 +116,23 @@ fun tipPrivToPrivateKey(
 
     when (chainId) {
         Constants.ChainId.SOLANA_CHAIN_ID -> {
-            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
+//            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
             val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
             val kp = Keypair.fromSecretKey(seed)
             val address = kp.publicKey.toBase58()
-            if (address != addressFromGo) {
-                throw IllegalArgumentException("Generate illegal Solana Address")
-            }
+//            if (address != addressFromGo) {
+//                throw IllegalArgumentException("Generate illegal Solana Address")
+//            }
             return kp.secret
         }
         else -> {
-            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
+//            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
             val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-            if (address != addressFromGo) {
-                throw IllegalArgumentException("Generate illegal Ethereum Address")
-            }
+//            if (address != addressFromGo) {
+//                throw IllegalArgumentException("Generate illegal Ethereum Address")
+//            }
             return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
         }
     }

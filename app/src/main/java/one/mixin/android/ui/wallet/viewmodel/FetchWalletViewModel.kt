@@ -467,7 +467,7 @@ class FetchWalletViewModel @Inject constructor(
                     }.maxOrNull() ?: 0
                 val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${maxIndex + 1}"
                 val evmAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
-                val solAddress =privateKeyToAddress(currentSpendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
+                val solAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
                 val walletRequest = WalletRequest(
                     name = name,
                     category = WalletCategory.CLASSIC.value,
