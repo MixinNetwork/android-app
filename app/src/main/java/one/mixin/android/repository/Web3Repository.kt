@@ -1,6 +1,9 @@
 package one.mixin.android.repository
 
 import android.content.Context
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
+import androidx.paging.DataSource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.AddressSearchRequest
@@ -17,6 +20,7 @@ import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.Web3FilterParams
 import timber.log.Timber
@@ -61,7 +65,45 @@ constructor(
         }
     }
 
-    fun web3Transactions(walletId:String, assetId: String) = web3TransactionDao.web3Transactions(walletId, assetId)
+    fun web3Transactions(walletId: String, assetId: String) =
+        web3TransactionDao.web3Transactions(walletId, assetId).switchMap { list ->
+            liveData {
+                val assetIds = list.flatMap { it.senders.map { it.assetId } + it.receivers.map { it.assetId } + (it.approvals?.map { it.assetId } ?: emptyList()) }.distinct()
+                val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
+                val result = list.map { transaction ->
+                    transaction.copy(
+                        senders = transaction.senders.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        receivers = transaction.receivers.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        approvals = transaction.approvals?.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        }
+                    )
+                }
+                emit(result)
+            }
+        }
+
+    fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
+        return web3TransactionDao.allTransactions(filterParams.buildQuery()).map { transaction ->
+            val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
+            val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(filterParams.walletId, assetIds.distinct()).associateBy { it.assetId }
+            transaction.copy(
+                senders = transaction.senders.map {
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
+                },
+                receivers = transaction.receivers.map {
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
+                },
+                approvals = transaction.approvals?.map {
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
+                }
+            )
+        }
+    }
 
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()
 

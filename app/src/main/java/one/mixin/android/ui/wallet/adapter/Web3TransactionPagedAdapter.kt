@@ -63,8 +63,11 @@ class Web3TransactionPagedAdapter :
         parent: ViewGroup,
         viewType: Int,
     ): Web3TransactionHolder {
+        val binding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Web3TransactionHolder(
-            ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        )
+            binding
+        ).also {
+            binding.root.tag = it
+        }
     }
 }
