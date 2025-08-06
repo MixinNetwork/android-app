@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -37,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -157,7 +159,10 @@ fun WalletCard(
                         ),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W500,
-                    color = MixinAppTheme.colors.textPrimary
+                    color = MixinAppTheme.colors.textPrimary,
+                    maxLines = 1,
+                    modifier = Modifier.widthIn(max = 240.dp),
+                    overflow = TextOverflow.Ellipsis
                 )
                 if (destination is WalletDestination.Privacy) {
                     Spacer(modifier = Modifier.width(4.dp))

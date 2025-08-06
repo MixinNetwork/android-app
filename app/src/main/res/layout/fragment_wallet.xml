@@ -52,6 +52,9 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:includeFontPadding="false"
+                    android:maxWidth="240dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     tools:ignore="RelativeOverlap" />
 
                 <ImageView
