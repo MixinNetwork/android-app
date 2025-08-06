@@ -95,9 +95,8 @@ class Web3TransactionHolder(
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
                         amountAnimator.displayedChild = 1
-                        val assetChanges = (transaction.receivers + transaction.senders).take(3)
                         binding.doubleLineComposeView.setContent {
-                            AmountList(assetChanges = assetChanges, senders = transaction.senders)
+                            AmountList(assetChanges = transaction.receivers.take(3), senders = emptyList())
                         }
                     } else {
                         amountAnimator.displayedChild = 0
@@ -111,9 +110,8 @@ class Web3TransactionHolder(
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
                         amountAnimator.displayedChild = 1
-                        val assetChanges = (transaction.receivers + transaction.senders).take(3)
                         binding.doubleLineComposeView.setContent {
-                            AmountList(assetChanges = assetChanges, senders = transaction.senders)
+                            AmountList(assetChanges = (transaction.senders).take(3), senders = transaction.senders)
                         }
                     } else {
                         amountAnimator.displayedChild = 0
@@ -217,7 +215,7 @@ fun AmountList(
         modifier = Modifier.wrapContentWidth()
     ) {
         assetChanges.forEachIndexed { index, assetChange ->
-            val isSender = senders.contains(assetChange)
+            val isSender = if (senders.isEmpty()) false else senders.contains(assetChange)
             val amount = holder?.formatAmountWithSign(assetChange.amount, !isSender) ?: assetChange.amount
 
             AmountRow(
@@ -240,7 +238,7 @@ fun AmountRow(amount: String, symbol: String, isSender: Boolean) {
         modifier = Modifier.wrapContentWidth()
     ) {
         Text(
-            text = "${if (isSender) "+" else "-"}$amount",
+            text = "${if (isSender) "-" else "+"}$amount",
             color = colorResource(id = if (isSender) R.color.wallet_pink else R.color.wallet_green),
             fontSize = 16.sp,
             fontFamily = FontFamily(Font(R.font.mixin_font)),
