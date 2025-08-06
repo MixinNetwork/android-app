@@ -199,8 +199,9 @@ object CryptoWalletHelper {
             val currentCategory = JsSigner.currentWalletCategory
 
             when {
-                currentWalletId == JsSigner.classicWalletId || currentWalletId.isEmpty() -> {
-                    tipPrivToPrivateKey(spendKey, chainId)
+                currentCategory == WalletCategory.CLASSIC.value || currentWalletId.isEmpty() -> {
+                    val derivationIndex = requireNotNull(extractIndexFromPath(JsSigner.path))
+                    tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
                 }
 
                 currentCategory == WalletCategory.IMPORTED_PRIVATE_KEY.value -> {

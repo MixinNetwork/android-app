@@ -267,11 +267,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                             putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
                                                                             putString(
                                                                                 InputFragment.ARGS_TO_ADDRESS_LABEL,
-                                                                                if (destinationWallet == null)
-                                                                                    getString(R.string.Privacy_Wallet)
-                                                                                else if (destinationWallet.category == WalletCategory.CLASSIC.value)
-                                                                                    getString(R.string.Common_Wallet)
-                                                                                else destinationWallet.name
+                                                                                destinationWallet?.name ?: getString(R.string.Privacy_Wallet)
                                                                             )
                                                                         })
                                                                 }
@@ -290,11 +286,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                         putBoolean(InputFragment.ARGS_TO_WALLET, true)
                                                                         putString(
                                                                             InputFragment.ARGS_TO_ADDRESS_LABEL,
-                                                                            if (destinationWallet == null)
-                                                                                getString(R.string.Privacy_Wallet)
-                                                                            else if (destinationWallet.category == WalletCategory.CLASSIC.value)
-                                                                                getString(R.string.Common_Wallet)
-                                                                            else destinationWallet.name
+                                                                            destinationWallet?.name ?: getString(R.string.Privacy_Wallet)
                                                                         )
                                                                         putBoolean(InputFragment.ARGS_TO_MY_WALLET, true)
                                                                     })
@@ -599,11 +591,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                         }
                         val addressLabel = withContext(Dispatchers.IO) {
                             if (wallet != null) {
-                                return@withContext if (wallet.category == WalletCategory.CLASSIC.value) {
-                                    context?.getString(R.string.Common_Wallet)
-                                } else {
-                                    wallet.name.takeIf { it.isNotEmpty() } ?: context?.getString(R.string.Common_Wallet)
-                                }
+                                return@withContext wallet.name.takeIf { it.isNotEmpty() } ?: context?.getString(R.string.Common_Wallet)
                             }
                             if (toAccount == true) return@withContext null
                             viewModel.findAddressByReceiver(destination, tag ?: "")

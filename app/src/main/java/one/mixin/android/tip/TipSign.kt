@@ -69,14 +69,14 @@ sealed class TipSignSpec(
 sealed class TipSignAction(open val spec: TipSignSpec) {
     data class Public(override val spec: TipSignSpec) : TipSignAction(spec) {
         // TODO: to be modified
-        operator fun invoke(priv: ByteArray) = spec.public(tipPrivToPrivateKey(priv))
+        operator fun invoke(priv: ByteArray) = spec.public(tipPrivToPrivateKey(priv, index = 0))
     }
 
     data class Signature(override val spec: TipSignSpec) : TipSignAction(spec) {
         operator fun invoke(
             priv: ByteArray,
             data: ByteArray,
-        ) = spec.sign(tipPrivToPrivateKey(priv), data)     // TODO: to be modified
+        ) = spec.sign(tipPrivToPrivateKey(priv, index = 0), data)     // TODO: to be modified
     }
 }
 
@@ -110,7 +110,7 @@ private fun matchTipSignSpec(
 fun tipPrivToPrivateKey(
     priv: ByteArray,
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
-    index: Int = 0,
+    index: Int,
 ): ByteArray {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
 

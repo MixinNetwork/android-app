@@ -122,7 +122,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         binding.root.isClickable = true
         binding.apply {
-            if (wallet.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+            if (wallet.category == WalletCategory.CLASSIC.value ||
+                wallet.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
                 wallet.category == WalletCategory.IMPORTED_MNEMONIC.value ||
                 wallet.category == WalletCategory.WATCH_ADDRESS.value) {
                 titleView.setSubTitle(getString(R.string.Transaction), wallet.name)
