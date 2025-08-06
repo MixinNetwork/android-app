@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -111,9 +112,7 @@ import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshStickerAlbumJob
-import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
@@ -952,12 +951,7 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
-                if (it.itemId == R.id.nav_wallet) {
-                    jobManager.addJobInBackground(RefreshTokensJob())
-                    jobManager.addJobInBackground(RefreshSnapshotsJob())
-                    jobManager.addJobInBackground(SyncOutputJob())
-                    jobManager.addJobInBackground(RefreshWeb3Job())
-                }
+                Timber.e("onItemSelected: ${it.itemId}")
                 lifecycleScope.launch {
                     channel.send(it.itemId)
                 }
@@ -1002,7 +996,13 @@ class MainActivity : BlazeBaseActivity() {
             }
 
             R.id.nav_wallet -> {
-                openWallet()
+                Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
+                if (Session.getAccount()?.hasPin == true) {
+                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                } else {
+                    val id = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
+                    TipActivity.show(this, TipBundle(TipType.Create, id, TryConnecting))
+                }
                 conversationListFragment.hideCircles()
             }
 
@@ -1021,10 +1021,6 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
         conversationListFragment.hideContainer()
-    }
-
-    fun openWallet() {
-        navigationController.pushWallet(walletFragment)
     }
 
     fun showUpdate(releaseUrl: String?) {

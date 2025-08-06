@@ -289,9 +289,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             account =
                 if (chain != Chain.Solana) {
-                    JsSigner.solanaAddress
-                } else {
                     JsSigner.evmAddress
+                } else {
+                    JsSigner.solanaAddress
                 }
 
             if (requestType != RequestType.SessionRequest) return@launch
