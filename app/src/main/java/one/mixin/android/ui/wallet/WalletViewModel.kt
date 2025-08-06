@@ -172,7 +172,7 @@ internal constructor(
         filterParams: Web3FilterParams,
     ): LiveData<PagedList<Web3TransactionItem>> =
         LivePagedListBuilder(
-            tokenRepository.allWeb3Transaction(filterParams),
+            web3Repository.allWeb3Transaction(filterParams),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)

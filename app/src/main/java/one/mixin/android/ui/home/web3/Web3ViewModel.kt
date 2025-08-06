@@ -463,4 +463,10 @@ internal constructor(
             web3Repository.isAddressMatch(walletId, address)
         }
     }
+
+    suspend fun getAssetSymbolById(assetId: String): String {
+        return withContext(Dispatchers.IO) {
+            tokenRepository.findAssetItemById(assetId)?.symbol ?: ""
+        }
+    }
 }

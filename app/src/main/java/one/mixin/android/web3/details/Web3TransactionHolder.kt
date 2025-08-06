@@ -2,24 +2,57 @@ package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
 import android.util.TypedValue
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.isVisible
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.flow.firstOrNull
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionsBinding
+import one.mixin.android.db.web3.vo.AssetChange
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.colorAttr
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat12
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
+import one.mixin.android.ui.home.web3.Web3ViewModel
 
-class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : RecyclerView.ViewHolder(binding.root) {
+class Web3TransactionHolder(
+    val binding: ItemWeb3TransactionsBinding
+) : RecyclerView.ViewHolder(binding.root) {
 
-    private fun formatAmountWithSign(amount: String?, positive: Boolean): String {
+    fun formatAmountWithSign(amount: String?, positive: Boolean): String {
         if (amount.isNullOrEmpty()) return "N/A"
         val formattedAmount = amount.numberFormat12()
         return if (positive) {
@@ -60,40 +93,44 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                 }
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-                    amountAnimator.displayedChild = 0
-                    value.textColorResource = R.color.wallet_green
-                    value.text = formatAmountWithSign(amount, true)
-                    symbolTv.text = transaction.receiveAssetSymbol ?: ""
+                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                        amountAnimator.displayedChild = 1
+                        val assetChanges = (transaction.receivers + transaction.senders).take(3)
+                        binding.doubleLineComposeView.setContent {
+                            AmountList(assetChanges = assetChanges, senders = transaction.senders)
+                        }
+                    } else {
+                        amountAnimator.displayedChild = 0
+                        value.textColorResource = R.color.wallet_green
+                        value.text = formatAmountWithSign(amount, true)
+                        symbolTv.text = transaction.receiveAssetSymbol ?: ""
+                    }
                     avatar.loadUrl(transaction)
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-                    amountAnimator.displayedChild = 0
-                    value.textColorResource = R.color.wallet_pink
-                    value.text = formatAmountWithSign(amount, false)
-                    symbolTv.text = transaction.sendAssetSymbol ?: ""
+                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                        amountAnimator.displayedChild = 1
+                        val assetChanges = (transaction.receivers + transaction.senders).take(3)
+                        binding.doubleLineComposeView.setContent {
+                            AmountList(assetChanges = assetChanges, senders = transaction.senders)
+                        }
+                    } else {
+                        amountAnimator.displayedChild = 0
+                        value.textColorResource = R.color.wallet_pink
+                        value.text = formatAmountWithSign(amount, false)
+                        symbolTv.text = transaction.sendAssetSymbol ?: ""
+                    }
                     avatar.loadUrl(transaction)
                 }
                 transaction.transactionType == TransactionType.SWAP.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     if (transaction.senders.isNotEmpty()) {
                         amountAnimator.displayedChild = 1
-                        
-                        receiveValue.textColorResource = R.color.wallet_green
-                        receiveValue.text = formatAmountWithSign(amount, true)
-                        receiveSymbolTv.text = transaction.receiveAssetSymbol ?: ""
-
-
-                        transaction.senders.find {
-                            it.assetId == transaction.sendAssetId
-                        }?.amount?.notNullWithElse({
-                            sendValue.text = formatAmountWithSign(it, false)
-                            sendSymbolTv.text = transaction.sendAssetSymbol ?: ""
-                        }, {
-                            sendValue.text = formatAmountWithSign(transaction.senders.lastOrNull()?.amount, false)
-                            sendSymbolTv.text = ""
-                        })
-                        sendValue.textColorResource = R.color.wallet_pink
+                        val assetChanges = (transaction.receivers + transaction.senders).take(3)
+                        binding.doubleLineComposeView.setContent {
+                            AmountList(assetChanges = assetChanges, senders = transaction.senders)
+                        }
                     } else {
                         amountAnimator.displayedChild = 0
                         value.textColorResource = R.color.wallet_green
@@ -106,12 +143,12 @@ class Web3TransactionHolder(val binding: ItemWeb3TransactionsBinding) : Recycler
                     amountAnimator.displayedChild = 0
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                     avatar.loadUrl(transaction)
-                    
+
                     val approvals = transaction.approvals
                     if (approvals != null && approvals.isNotEmpty()) {
                         val approvalAssetChange = approvals[0]
                         val isUnlimited = approvalAssetChange.type == "unlimited"
-                        
+
                         if (isUnlimited) {
                             value.textColorResource = R.color.wallet_pink
                             value.text = itemView.context.getString(R.string.unlimited)
@@ -166,5 +203,59 @@ class Web3HeaderHolder(val binding: ItemWeb3TokenHeaderBinding) : RecyclerView.V
 
     fun enableSwap() {
         binding.header.enableSwap()
+    }
+}
+
+@Composable
+fun AmountList(
+    assetChanges: List<AssetChange>,
+    senders: List<AssetChange>,
+) {
+    val holder = LocalView.current.tag as? Web3TransactionHolder
+    Column(
+        horizontalAlignment = Alignment.End,
+        modifier = Modifier.wrapContentWidth()
+    ) {
+        assetChanges.forEachIndexed { index, assetChange ->
+            val isSender = senders.contains(assetChange)
+            val amount = holder?.formatAmountWithSign(assetChange.amount, !isSender) ?: assetChange.amount
+
+            AmountRow(
+                amount = amount,
+                symbol = assetChange.symbol ?: "",
+                isSender = isSender
+            )
+            if (index < assetChanges.size - 1) {
+                Spacer(modifier = Modifier.height(2.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun AmountRow(amount: String, symbol: String, isSender: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End,
+        modifier = Modifier.wrapContentWidth()
+    ) {
+        Text(
+            text = "${if (isSender) "+" else "-"}$amount",
+            color = colorResource(id = if (isSender) R.color.wallet_pink else R.color.wallet_green),
+            fontSize = 16.sp,
+            fontFamily = FontFamily(Font(R.font.mixin_font)),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.widthIn(max = 200.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = symbol,
+            color = Color(LocalContext.current.colorAttr(R.attr.text_primary)),
+            fontSize = 10.sp,
+            modifier = Modifier
+                .widthIn(min = 20.dp, max = 200.dp)
+                .offset(y = (-1).dp)
+        )
     }
 }
