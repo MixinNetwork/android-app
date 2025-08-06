@@ -41,6 +41,14 @@ object Bip44Path {
             index or HARDENED_BIT,
             0 or HARDENED_BIT,
         )
+
+    fun ethereumPathString(index: Int = 0): String {
+        return "m/44'/60'/0'/0/$index"
+    }
+
+    fun solanaPathString(index: Int = 0): String {
+        return "m/44'/501'/${index}'/0'"
+    }
 }
 
 fun generateBip44Key(
