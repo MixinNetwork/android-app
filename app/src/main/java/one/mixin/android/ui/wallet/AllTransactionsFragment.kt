@@ -255,11 +255,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     false
                 },
                 successBlock = {
-                    val pendingDeposits = it.data
-                    if (pendingDeposits.isNullOrEmpty()) {
-                        walletViewModel.clearAllPendingDeposits()
-                        return@handleMixinResponse
-                    }
+                    val pendingDeposits = it.data ?: emptyList()
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
                     pendingDeposits
                         .filter { pd ->
@@ -268,6 +264,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                             }
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearAllPendingDeposits()
+                                return@let
+                            }
                             lifecycleScope.launch {
                                 snapshots.map { it.assetId }.distinct().forEach {
                                     walletViewModel.findOrSyncAsset(it)
