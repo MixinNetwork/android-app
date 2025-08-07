@@ -3,8 +3,8 @@ package one.mixin.android.db.web3.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Index
-import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
@@ -109,5 +109,8 @@ data class AssetChange(
 
     @ColumnInfo(name = "approval_type")
     @SerializedName("approval_type")
-    val type: String? = null
+    val type: String? = null,
+
+    @Ignore
+    val symbol: String? = null,
 ) : Parcelable

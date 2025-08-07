@@ -60,7 +60,6 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -90,6 +89,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val ARGS_FROM_ADDRESS = "args_from_address"
 
         const val ARGS_TO_WALLET = "args_to_wallet"
+
+        const val ARGS_TO_MY_WALLET = "args_to_my_wallet"
         const val ARGS_TO_ACCOUNT = "args_to_account"
 
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
@@ -249,6 +250,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         requireArguments().getBoolean(ARGS_TO_WALLET, false)
     }
 
+    private val toMyWallet by lazy {
+        requireArguments().getBoolean(ARGS_TO_MY_WALLET, false)
+    }
+
     private val toAccount by lazy {
         requireArguments().getBoolean(ARGS_TO_ACCOUNT, false)
     }
@@ -300,6 +305,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         jobManager.addJobInBackground(SyncOutputJob())
         lifecycleScope.launch {
             binding.apply {
+                if (requireActivity() !is WalletActivity){
+                    root.fitsSystemWindows = false
+                }
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
@@ -314,17 +322,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                     TransferType.ADDRESS -> {
                         if (addressLabel.isNullOrBlank()) {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Common_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toAccount)
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Common_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toMyWallet)
                         } else {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
+                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "" , toMyWallet)
                         }
                     }
                     TransferType.WEB3 -> {
                         titleView.setLabel(
                             getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
-                            addressLabel ?: if (toWallet) getString(R.string.Mixin_Wallet) else null,
+                            addressLabel ?: if (toWallet) getString(R.string.Privacy_Wallet) else null,
                             toAddress ?: "",
-                            toWallet
+                            toMyWallet
                         )
                     }
                     TransferType.BIOMETRIC_ITEM -> {
@@ -334,7 +342,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
                                 }
                                 item is AddressTransferBiometricItem -> {
-                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, "$toAddress${addressTag?.let { ":$it" }?:""}".formatPublicKey(16))
+                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, (if (toAddress == null) item.address else "$toAddress${addressTag?.let { ":$it" } ?: ""}").formatPublicKey(16))
                                 }
                                 item is TransferBiometricItem -> {
                                     titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), item.users) {
@@ -439,6 +447,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 output = t.assetId,
                                                 null,
                                                 null,
+                                                walletId = JsSigner.currentWalletId,
                                                 inMixin = false
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
@@ -614,6 +623,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     ?: Address(addressId ?: "", "address", assetId, chainId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
                                 val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
+                                val toWallet = web3ViewModel.anyAddressExists(listOf(address.destination))
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
                                     networkFee,
@@ -623,7 +633,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     amount,
                                     null,
                                     PaymentStatus.pending.name,
-                                    null
+                                    null,
+                                    toWallet
                                 )
 
                                 prepareCheck(withdrawBiometricItem)

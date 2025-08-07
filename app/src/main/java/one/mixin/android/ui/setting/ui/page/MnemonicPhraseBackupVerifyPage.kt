@@ -18,32 +18,39 @@ import one.mixin.android.ui.landing.components.MnemonicState
 
 @Composable
 fun MnemonicPhraseBackupVerifyPage(mnemonicList: List<String>, pop: () -> Unit, next: (List<String>) -> Unit, tip: Tip, pin: String) {
-    MnemonicPhraseInput(MnemonicState.Verify, mnemonicList = mnemonicList, onComplete = { next.invoke(mnemonicList) }, tip, pin) {
-        val context = LocalContext.current
-        MixinTopAppBar(
-            title = {
-                Text(stringResource(R.string.Mnemonic_Phrase))
-            },
-            actions = {
-                IconButton(onClick = {
-                    context.openUrl(Constants.HelpLink.TIP)
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_support),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.icon,
-                    )
+    val context = LocalContext.current
+    MnemonicPhraseInput(
+        state = MnemonicState.Verify,
+        mnemonicList = mnemonicList,
+        onComplete = { next.invoke(mnemonicList) },
+        tip = tip,
+        pin = pin,
+        title = {
+            MixinTopAppBar(
+                title = {
+                    Text(stringResource(R.string.Mnemonic_Phrase))
+                },
+                actions = {
+                    IconButton(onClick = {
+                        context.openUrl(Constants.HelpLink.TIP)
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_support),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { pop() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_back),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
                 }
-            },
-            navigationIcon = {
-                IconButton(onClick = { pop() }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.icon,
-                    )
-                }
-            }
-        )
-    }
+            )
+        }
+    )
 }

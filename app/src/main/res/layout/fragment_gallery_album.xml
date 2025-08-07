@@ -4,7 +4,8 @@
     android:id="@+id/va"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_white">
+    android:background="?attr/bg_white"
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"

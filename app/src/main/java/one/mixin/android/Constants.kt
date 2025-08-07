@@ -6,6 +6,12 @@ import com.checkout.base.model.Environment
 import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
+import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Base
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
 
@@ -44,6 +50,8 @@ object Constants {
         const val ALIAS_SPEND_SALT = "alias_spend_salt"
 
         const val ENCRYPTED_MNEMONIC = "encrypted_mnemonic"
+
+        const val ENCRYPTED_WEB3_KEY = "encrypted_web3_key"
     }
 
     object Account {
@@ -92,10 +100,16 @@ object Constants {
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
+        const val PREF_HAS_USED_BUY = "pref_has_used_buy"
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
-        const val PREF_HAS_USED_WALLET = "pref_has_used_wallet"
+
+        const val PREF_USED_WALLET = "pref_used_wallet"
+
+        const val PREF_HAS_USED_WALLET_LIST = "pref_has_used_wallet_list"
+
+        const val PREF_HAS_USED_ADD_WALLET = "pref_has_used_add_wallet"
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
@@ -119,6 +133,8 @@ object Constants {
             const val EVM_ADDRESS = "evm_address"
             const val SOLANA_ADDRESS = "solana_address"
         }
+
+        const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
     }
 
     object Scheme {
@@ -218,7 +234,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base)
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base, ChainId.Arbitrum, ChainId.Optimism)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
@@ -227,11 +243,11 @@ object Constants {
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
         const val SOLANA_CHAIN_ID = "64692c23-8971-4cf4-84a7-4dd1271dd887"
-
         const val LIGHTNING_NETWORK_CHAIN_ID = "59c09123-95cc-3ffd-a659-0f9169074cee"
-
         const val MixinVirtualMachine = "a0ffd769-5850-4b48-9651-d2ae44a3e64d"
         const val Base = "3fb612c5-6844-3979-ae4a-5a84e79da870"
+        const val Arbitrum = "8c590110-1abc-3697-84f2-05214e6516aa"
+        const val Optimism = "60360611-370c-3b69-9826-b13db93f6aba"
         const val Litecoin = "76c802a2-7c88-447f-a93e-c29c9e5dd9c8"
         const val Dogecoin = "6770a1e5-6086-44d5-b60f-545f9d9e8ffd"
         const val Monero = "05c5ac01-31f9-4a69-aa8a-ab796de1d041"
@@ -240,10 +256,6 @@ object Constants {
         const val Polygon = "b7938396-3f94-4e0a-9179-d3440718156f"
         const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
         const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
-        const val Avalanche = "cbc77539-0a20-4666-8c8a-4ded62b36f0a"
-        const val Arbitrum = "d0688ff7-6656-4a79-bd5f-d764bfa9bc46"
-        const val Optimism = "62d5b01f-24ee-4c96-8214-8e04981d05f2"
-
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
     }
 
@@ -273,6 +285,18 @@ object Constants {
                 "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
                 "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
             )
+
+        val ethAssets = mapOf(
+            ETHEREUM_CHAIN_ID to "Ethereum",
+            Base to "Base",
+            Optimism to "Optimism",
+            Arbitrum to "Arbitrum"
+        )
+
+        val btcAssets = mapOf(
+            BITCOIN_CHAIN_ID to "Bitcoin",
+            LIGHTNING_NETWORK_CHAIN_ID to "Lightning",
+        )
 
     }
 

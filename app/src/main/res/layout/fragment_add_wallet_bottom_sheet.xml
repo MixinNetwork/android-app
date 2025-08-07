@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BottomSheetLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="@drawable/bg_upper_round"
+    android:paddingBottom="16dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:id="@+id/title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxWidth="240dp"
+            android:singleLine="true"
+            android:layout_marginStart="20dp"
+            android:text="@string/add_wallet"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:layout_centerVertical="true"/>
+
+        <ImageView
+            android:id="@+id/right_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/margin16"
+            android:src="@drawable/ic_close_black"
+            android:background="@drawable/mixin_ripple"
+            tools:ignore="ContentDescription"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/import_mnemonic_phrase"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/bg_market_card"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:id="@+id/asset_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_mnemonic_phrase"/>
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:layout_above="@id/center_place_holder"
+            android:layout_toEndOf="@id/asset_icon"
+            android:text="@string/import_mnemonic_phrase"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="?attr/text_assist"
+            android:layout_below="@id/center_place_holder"
+            android:layout_toEndOf="@id/asset_icon"
+            android:text="@string/Import_wallets_from_another_wallet"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/import_private_key"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/bg_market_card"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:id="@+id/private_key_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_private_key" />
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder_2"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:layout_above="@id/center_place_holder_2"
+            android:layout_toEndOf="@id/private_key_icon"
+            android:text="@string/import_private_key"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="?attr/text_assist"
+            android:layout_below="@id/center_place_holder_2"
+            android:layout_toEndOf="@id/private_key_icon"
+            android:text="@string/import_private_key_description"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/add_watch_address"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/bg_market_card"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:id="@+id/watch_address_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="14dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_menu_watch_address" />
+
+        <androidx.legacy.widget.Space
+            android:id="@+id/center_place_holder_3"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="?attr/text_primary"
+            android:layout_above="@id/center_place_holder_3"
+            android:layout_toEndOf="@id/watch_address_icon"
+            android:text="@string/add_watch_address"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="?attr/text_assist"
+            android:layout_below="@id/center_place_holder_3"
+            android:layout_toEndOf="@id/watch_address_icon"
+            android:text="@string/add_watch_address_description"/>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="300dp"/>
+</one.mixin.android.widget.BottomSheetLinearLayout>

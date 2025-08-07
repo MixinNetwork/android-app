@@ -88,7 +88,7 @@ fun MnemonicPhraseBackupBeforePage(pop: () -> Unit, next: () -> Unit) {
                     ),
                 ) {
                     Text(
-                        text = stringResource(R.string.Show_Mnemonic_Phrase),
+                        text = stringResource(R.string.show_mnemonic_phrase),
                         color = Color.White
                     )
                 }

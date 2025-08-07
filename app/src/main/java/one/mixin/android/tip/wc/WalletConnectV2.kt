@@ -14,7 +14,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -136,7 +135,7 @@ object WalletConnectV2 : WalletConnect() {
                             }
                         }
 
-                    val namespace = sessionProposal.requiredNamespaces.values.firstOrNull() ?: sessionProposal.optionalNamespaces.values.firstOrNull()
+                    val namespace = sessionProposal.getNamespaceProposal()
                     if (namespace == null) {
                         RxBus.publish(
                             WCErrorEvent(
@@ -233,13 +232,13 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-        val requiredNamespaces: Collection<String> = flattenCollections(sessionProposal.requiredNamespaces.values.map { it.chains })
+        val namespaces: Collection<String> = flattenCollections((sessionProposal.requiredNamespaces + sessionProposal.optionalNamespaces).values.map { it.chains })
         val chain =
-            if (requiredNamespaces.isEmpty()) {
+            if (namespaces.isEmpty()) {
                 supportChainList.firstOrNull()
             } else {
                 supportChainList.find {
-                    it.chainId in requiredNamespaces
+                    it.chainId in namespaces
                 }
             }
         if (chain == null) {
@@ -253,7 +252,6 @@ object WalletConnectV2 : WalletConnect() {
                 val pub = ECKeyPair.create(priv).publicKey
                 Keys.toChecksumAddress(Keys.getAddress(pub))
             }
-
         val supportedNamespaces = getSupportedNamespaces(chain, address)
         Timber.e("$TAG supportedNamespaces $supportedNamespaces")
         val sessionNamespaces = WalletKit.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
@@ -491,6 +489,55 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
+    fun switchAccount(address:String) {
+        val sessions = getListOfActiveSessions()
+        if (sessions.isEmpty()) {
+            Timber.e("$TAG switchAccount session not found for topic")
+            return
+        }
+        sessions.forEach { session ->
+            val newNamespaces = session.namespaces.mapValues { (_, ns) ->
+                val chainId = ns.chains?.firstOrNull()
+                if (chainId == null) {
+                    Timber.w("$TAG switchAccount: namespace has no chains, skipping update for it")
+                    return@mapValues ns
+                }
+                val chain = supportChainList.find { it.chainId == chainId }
+                if (chain == null) {
+                    Timber.w("$TAG switchAccount: unsupported chainId $chainId, skipping update for it")
+                    return@mapValues ns
+                }
+
+                val newAccount = "$chainId:$address"
+
+                Wallet.Model.Namespace.Session(
+                    chains = ns.chains,
+                    accounts = listOf(newAccount),
+                    methods = ns.methods,
+                    events = ns.events,
+                )
+            }
+
+            val updateParams = Wallet.Params.SessionUpdate(
+                sessionTopic = session.topic,
+                namespaces = newNamespaces,
+            )
+
+            waitActionCheckError { latch ->
+                var errMsg: String? = null
+                WalletKit.updateSession(updateParams, onSuccess = {
+                    Timber.d("$TAG session updated successfully")
+                    latch.countDown()
+                }, onError = { error ->
+                    errMsg = "$TAG session update error: $error"
+                    Timber.e(errMsg)
+                    latch.countDown()
+                })
+                errMsg
+            }
+        }
+    }
+
     fun approveRequestInternal(
         result: String,
         sessionRequest: Wallet.Model.SessionRequest,
@@ -592,4 +639,7 @@ object WalletConnectV2 : WalletConnect() {
         }
         errMsg?.let { throw WalletConnectException(0, it) }
     }
+
+    fun Wallet.Model.SessionProposal.getNamespaceProposal(): Wallet.Model.Namespace.Proposal? =
+        this.requiredNamespaces.values.firstOrNull() ?: this.optionalNamespaces.values.firstOrNull()
 }

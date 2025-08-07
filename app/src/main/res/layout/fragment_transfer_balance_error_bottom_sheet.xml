@@ -1,113 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_upper_round"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/wallet_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <one.mixin.android.ui.wallet.transfer.widget.TransferHeader
-                android:id="@+id/header"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <one.mixin.android.ui.wallet.transfer.widget.TransferErrorContent
-                android:id="@+id/content"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-    </ScrollView>
-
-    <one.mixin.android.ui.wallet.transfer.widget.TransferBottom
-        android:id="@+id/bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/error_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_transfer_usd"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:visibility="gone">
-
-        <ImageView
-            android:id="@+id/error_icon"
-            android:layout_width="26dp"
-            android:layout_height="26dp"
-            android:src="@drawable/ic_transfer_usd_warning"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_margin="20dp"
-            android:contentDescription="@null" />
-
-        <TextView
-            android:id="@+id/content_tv"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="20dp"
-            android:textSize="14sp"
-            android:gravity="start"
-            android:textColor="?attr/text_primary"
-            android:lineSpacingExtra="7sp"
-            android:text="@string/swap_usdt_hint"
-            app:layout_constraintStart_toEndOf="@id/error_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/error_icon" />
-
-        <TextView
-            android:id="@+id/positive"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="20dp"
-            android:layout_marginEnd="20dp"
-            android:textSize="16sp"
-            android:textColor="@color/selector_blue_tv"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:text="@string/Trade"
-            app:layout_constraintTop_toBottomOf="@id/content_tv" />
-
-        <TextView
-            android:id="@+id/negative"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
-            android:textSize="16sp"
-            android:textColor="@color/selector_blue_tv"
-            android:text="@string/Cancel"
-            app:layout_constraintEnd_toStartOf="@+id/positive"
-            app:layout_constraintTop_toTopOf="@id/positive" />
-
-        <TextView
-            android:id="@+id/index"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:background="#8666F0"
+            android:drawablePadding="4dp"
             android:gravity="center"
-            android:textSize="14sp"
-            android:includeFontPadding="false"
-            app:layout_constraintTop_toTopOf="@id/positive"
-            app:layout_constraintBottom_toBottomOf="@id/positive"
-            app:layout_constraintStart_toStartOf="@id/error_icon"
-            app:layout_constraintEnd_toEndOf="@id/error_icon" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</LinearLayout>
+            android:paddingTop="8dp">
 
+            <TextView
+                android:id="@+id/wallet_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="18dp"
+                android:drawablePadding="4dp"
+                android:text="@string/Privacy_Wallet"
+                android:textColor="@android:color/white"
+                android:drawableStart="@drawable/ic_wallet_privacy_white"
+                android:textSize="14sp"
+                android:gravity="center_vertical"
+                android:translationY="10dp"
+                tools:ignore="UseCompatTextViewDrawableXml" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/bg_upper_round" />
+        </FrameLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <one.mixin.android.ui.wallet.transfer.widget.TransferHeader
+                    android:id="@+id/header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <one.mixin.android.ui.wallet.transfer.widget.TransferErrorContent
+                    android:id="@+id/content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </ScrollView>
+
+        <one.mixin.android.ui.wallet.transfer.widget.TransferBottom
+            android:id="@+id/bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/error_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_transfer_usd"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/error_icon"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_margin="20dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_transfer_usd_warning"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/content_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:gravity="start"
+                android:lineSpacingExtra="7sp"
+                android:text="@string/swap_usdt_hint"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/error_icon"
+                app:layout_constraintTop_toTopOf="@+id/error_icon" />
+
+            <TextView
+                android:id="@+id/positive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:text="@string/Trade"
+                android:textColor="@color/selector_blue_tv"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/content_tv" />
+
+            <TextView
+                android:id="@+id/negative"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:text="@string/Cancel"
+                android:textColor="@color/selector_blue_tv"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@+id/positive"
+                app:layout_constraintTop_toTopOf="@id/positive" />
+
+            <TextView
+                android:id="@+id/index"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="@id/positive"
+                app:layout_constraintEnd_toEndOf="@id/error_icon"
+                app:layout_constraintStart_toStartOf="@id/error_icon"
+                app:layout_constraintTop_toTopOf="@id/positive" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+</LinearLayout>

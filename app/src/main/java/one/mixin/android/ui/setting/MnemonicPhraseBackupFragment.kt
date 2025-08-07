@@ -60,6 +60,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
         binding.compose.setContent {
             MixinAppTheme(
                 darkTheme = requireContext().isNightMode(),
+                skip = true,
             ) {
                 val navController = rememberNavController()
                 NavHost(

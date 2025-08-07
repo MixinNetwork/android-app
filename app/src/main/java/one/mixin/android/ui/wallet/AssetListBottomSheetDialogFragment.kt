@@ -329,7 +329,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 adapter.submitList(localAssets)
 
-                val remoteAssets = bottomViewModel.queryAsset(query).filter { item ->
+                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).filter { item ->
                     ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                 }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)

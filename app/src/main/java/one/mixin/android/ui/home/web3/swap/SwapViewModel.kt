@@ -119,7 +119,7 @@ class SwapViewModel
 
     suspend fun findAssetItemsWithBalance() = tokenRepository.findAssetItemsWithBalance()
 
-    suspend fun findWeb3AssetItemsWithBalance() = tokenRepository.findWeb3AssetItemsWithBalance()
+    suspend fun findWeb3AssetItemsWithBalance(walletId: String) = tokenRepository.findWeb3AssetItemsWithBalance(walletId)
 
     fun swapOrders() = tokenRepository.swapOrders()
 
@@ -138,16 +138,20 @@ class SwapViewModel
         return@withContext tokenRepository.checkMarketById(assetId, true)
     }
 
-    fun tokenExtraFlow(token: SwapToken, inMixin: Boolean): Flow<String?> {
-        return if (!inMixin) {
-            tokenRepository.web3TokenExtraFlow(token.assetId)
+    fun tokenExtraFlow(token: SwapToken): Flow<String?> {
+        return if (token.walletId.isNullOrBlank().not()) {
+            tokenRepository.web3TokenExtraFlow(token.walletId,token.assetId)
         } else {
             tokenRepository.tokenExtraFlow(token.assetId)
         }
     }
 
-    suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
-        web3Repository.web3TokenItemById(assetId)
+    suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.web3TokenItemById(walletId, assetId)
+    }
+
+    suspend fun findWeb3WalletById(walletId: String) = withContext(Dispatchers.IO) {
+        web3Repository.findWalletById(walletId)
     }
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)

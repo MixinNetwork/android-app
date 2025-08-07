@@ -37,6 +37,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,7 +75,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
-import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
@@ -84,12 +84,14 @@ import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -103,15 +105,16 @@ import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
-import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.biometric.isUtxoException
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -119,6 +122,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.User
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
@@ -134,6 +138,7 @@ import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -166,9 +171,38 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var behavior: BottomSheetBehavior<*>? = null
 
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
+        super.setupDialog(dialog, R.style.MixinBottomSheet)
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().isNightMode())
+        }
+        dialog.window?.setGravity(Gravity.BOTTOM)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
+            )
+        }
+    }
+
+
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     enum class Step {
         Pending,
@@ -230,6 +264,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var chainToken: Web3TokenItem? by mutableStateOf(null)
     private var token: Web3TokenItem? by mutableStateOf(null)
     private var insufficientGas by mutableStateOf(false)
+    private var walletName by mutableStateOf<String?>(null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -237,17 +272,29 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
+            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {
+                    LaunchedEffect(Unit) {
+                        if (source == "web3") {
+                            val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+                            walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
+                                context.getString(R.string.Common_Wallet)
+                            } else {
+                                wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+                            }
+                        }
+                    }
                     Column(
                         modifier =
                         Modifier
-                            .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                            .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .background(MixinAppTheme.colors.background),
                     ) {
+                        WalletLabel(walletName = walletName, isWeb3 = source == "web3")
                         Column(
                             modifier =
                             Modifier
@@ -653,23 +700,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             "",
             "",
         )
-
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(
-        dialog: Dialog,
-        style: Int,
-    ) {
-        super.setupDialog(dialog, R.style.MixinBottomSheet)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-        }
-        dialog.window?.setGravity(Gravity.BOTTOM)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
-    }
-
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(
@@ -688,16 +718,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ) {
             }
         }
-
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.let { window ->
-            SystemUIManager.lightUI(
-                window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night),
-            )
-        }
-    }
 
     override fun onDetach() {
         super.onDetach()
@@ -730,8 +750,14 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         
         when (source) {
             "web3" -> {
+                val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+                walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
+                    getString(R.string.Common_Wallet)
+                } else {
+                    wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
+                }
                 depositDestination?.let { depositDestination->
-                    val token = bottomViewModel.web3TokenItemById(inAsset.assetId)
+                    val token = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
                             val transaction = token.buildTransaction(
@@ -804,7 +830,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                         buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
-                    chainToken = bottomViewModel.web3TokenItemById(token?.chainId ?: "")
+                    chainToken = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId,token?.chainId ?: "")
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))

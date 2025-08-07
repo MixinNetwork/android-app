@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.os.Bundle
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -40,12 +41,24 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         const val POS_EMPTY_TOKEN = 2
         const val LIMIT = 10
 
-        fun newInstance() = MultiSelectWeb3TokenListBottomSheetDialogFragment()
+        private const val ARGS_WALLET_ID = "args_wallet_id"
+
+        fun newInstance(walletId: String? = null): MultiSelectWeb3TokenListBottomSheetDialogFragment {
+            return MultiSelectWeb3TokenListBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    walletId?.let { putString(ARGS_WALLET_ID, it) }
+                }
+            }
+        }
     }
 
     private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
 
     private val walletViewModel by viewModels<WalletViewModel>()
+
+    private val walletId: String? by lazy {
+        arguments?.getString(ARGS_WALLET_ID)
+    }
 
     private val selectedTokenItems = mutableListOf<Web3TokenItem>()
     private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems) }
@@ -136,7 +149,10 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                     )
         }
 
-        bottomViewModel.web3TokenItems()
+        // Use walletId parameter instead of hardcoded value
+        val targetWalletId = walletId ?: "0195adf7-1d55-7163-9186-111845025a6c" // fallback to default if null
+
+        bottomViewModel.web3TokenItems(targetWalletId)
             .observe(this) { tokens ->
                 defaultAssets = tokens
                 if (binding.searchEt.et.text.isNullOrBlank()) {

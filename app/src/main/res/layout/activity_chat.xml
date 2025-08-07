@@ -2,6 +2,7 @@
 <one.mixin.android.widget.ContainerFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
 </one.mixin.android.widget.ContainerFrameLayout>

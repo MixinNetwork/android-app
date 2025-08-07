@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -21,6 +21,7 @@ class TransferViewModel
 internal constructor(
     val userRepository: UserRepository,
     val tokenRepository: TokenRepository,
+    val web3Repository: Web3Repository,
 ) : ViewModel() {
     private val _status = MutableStateFlow(TransferStatus.AWAITING_CONFIRMATION)
     val status = _status.asStateFlow()
@@ -71,4 +72,7 @@ internal constructor(
 
     suspend fun findTopWeb3UsdBalanceAsset(excludeId: String) =
         tokenRepository.findTopWeb3UsdBalanceAsset(excludeId)
+
+    suspend fun getAddressesByChainId(walletId: String, chainId: String) =
+        web3Repository.getAddressesByChainId(walletId, chainId)
 }

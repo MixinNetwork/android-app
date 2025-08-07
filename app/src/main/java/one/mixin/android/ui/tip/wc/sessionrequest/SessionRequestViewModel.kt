@@ -5,27 +5,36 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.db.property.PropertyHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.vo.WalletCategory
+import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Numeric
 import javax.inject.Inject
 
 @HiltViewModel
 class SessionRequestViewModel
     @Inject
-    internal constructor() : ViewModel() {
+    internal constructor(
+        val web3Repository: Web3Repository,
+        val tokenRepository: TokenRepository
+    ) : ViewModel() {
         private var account: String = ""
+            get() {
+                return JsSigner.address
+            }
 
-        suspend fun init() {
-            account = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        }
 
         fun rejectRequest(
             version: WalletConnect.Version,
@@ -92,4 +101,32 @@ class SessionRequestViewModel
                     data as String
                 }
             }
-    }
+
+        suspend fun findWalletById(walletId: String) = withContext(Dispatchers.IO) {
+            web3Repository.findWalletById(walletId)
+        }
+
+        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
+            return withContext(Dispatchers.IO) {
+                if (chainId != null) {
+                    val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                    if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), false)
+                }
+
+                val wallet = web3Repository.getWalletByDestination(destination)
+                if (wallet != null) {
+                    if (wallet.category == WalletCategory.CLASSIC.value) {
+                        return@withContext Pair(MixinApplication.appContext.getString(R.string.Common_Wallet), false)
+                    }
+                    return@withContext Pair(wallet.name, false)
+                }
+                if (chainId != null) {
+                    val address = tokenRepository.matchAddress(destination, chainId)
+                    if (address != null) {
+                        return@withContext Pair(address.label, true)
+                    }
+                }
+                return@withContext null
+            }
+        }
+}

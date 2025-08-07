@@ -3,9 +3,6 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.vo.Address
-import one.mixin.android.vo.Asset
-import one.mixin.android.vo.User
 
 data class PaymentResponse(
     val amount: String?,

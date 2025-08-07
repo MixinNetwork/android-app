@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -99,7 +100,7 @@
             android:layout_marginBottom="20dp"
             android:layout_marginTop="30dp"
             android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="8dp" />
 
         <one.mixin.android.widget.PendingView
             android:id="@+id/pending_view"
@@ -107,7 +108,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"/>
+            android:layout_marginBottom="20dp" />
 
         <one.mixin.android.widget.Web3PendingView
             android:id="@+id/web3_pending_view"
@@ -116,7 +117,30 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/watch_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_round_window_btn"
+            android:layout_gravity="center"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_gravity="center"
+                android:id="@+id/watch_tv"
+                android:drawablePadding="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/text_assist"
+                app:drawableStartCompat="@drawable/ic_wallet_watch" />
+        </FrameLayout>
 
         <View
             android:layout_width="wrap_content"

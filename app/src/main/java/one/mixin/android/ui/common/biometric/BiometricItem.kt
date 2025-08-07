@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common.biometric
 
+import android.annotation.SuppressLint
 import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -65,6 +66,7 @@ fun buildTransferBiometricItem(
 @Parcelize
 open class AddressTransferBiometricItem(
     open val address: String,
+    open val threshold: Int,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
@@ -74,6 +76,7 @@ open class AddressTransferBiometricItem(
     override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
+@Parcelize
 class AddressManageBiometricItem(
     override var asset: TokenItem?,
     val destination: String?,
@@ -89,15 +92,16 @@ fun buildAddressBiometricItem(
     token: TokenItem?,
     amount: String,
     memo: String?,
+    threshold: Int,
     returnTo: String?,
-    from: Int,
     reference: String?,
 ) =
-    AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, reference)
+    AddressTransferBiometricItem(mainnetAddress, threshold, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, reference)
 
 @Parcelize
 class InvoiceBiometricItem(
     override val address: String,
+    override val threshold: Int,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
@@ -106,28 +110,7 @@ class InvoiceBiometricItem(
     override val returnTo: String?,
     override var reference: String?,
     val invoice: String,
-) : AddressTransferBiometricItem(address, traceId, asset, amount, memo, state, returnTo, reference)
-
-fun buildInvoiceBiometricItem(
-    invoice: MixinInvoice,
-    traceId: String,
-    token: TokenItem?,
-    amount: String,
-    memo: String?,
-    returnTo: String?,
-    from: Int,
-    reference: String?,
-) = InvoiceBiometricItem(
-    address = invoice.recipient.toString(),
-    traceId = traceId,
-    asset = token,
-    memo = memo,
-    amount = amount,
-    returnTo = returnTo,
-    reference = reference,
-    state = PaymentStatus.pending.name,
-    invoice = invoice.toString(),
-)
+) : AddressTransferBiometricItem(address, threshold, traceId, asset, amount, memo, state, returnTo, reference)
 
 @Parcelize
 class WithdrawBiometricItem(
@@ -140,6 +123,7 @@ class WithdrawBiometricItem(
     override var memo: String?,
     override var state: String,
     var trace: Trace?,
+    val toWallet: Boolean = false,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, null) {
     // Check if the asset and fee balances are sufficient for withdrawal
     // Return 1 if sufficient, 2 if asset is insufficient, 3 if fee is insufficient

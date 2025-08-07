@@ -3,9 +3,10 @@ package one.mixin.android.widget;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import timber.log.Timber;
 
 import java.util.ArrayList;
+
+import timber.log.Timber;
 
 public class PathAnimator {
 

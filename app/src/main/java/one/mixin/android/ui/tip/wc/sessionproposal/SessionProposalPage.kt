@@ -19,10 +19,16 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -35,12 +41,18 @@ import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.composeDp
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.ui.wallet.components.WalletLabel
+import one.mixin.android.vo.WalletCategory
+import one.mixin.android.web3.js.JsSigner
 
 @Composable
 fun SessionProposalPage(
@@ -59,22 +71,46 @@ fun SessionProposalPage(
         Loading()
         return
     }
+    val context = LocalContext.current
+    var walletName by remember { mutableStateOf<String?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
     val sessionProposalUI = viewModel.getSessionProposalUI(version, chain, sessionProposal)
     if (sessionProposalUI == null) {
         Loading()
         return
     }
+
+    LaunchedEffect(Unit) {
+        val wallet = viewModel.findWalletById(JsSigner.currentWalletId)
+        walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
+            context.getString(R.string.Common_Wallet)
+        } else {
+            wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+        }
+    }
+
+    LaunchedEffect(account) {
+        try {
+            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account,null)
+        } catch (e: Exception) {
+            walletDisplayInfo = null
+        }
+    }
+
+
     MixinAppTheme {
         Column(
             modifier =
                 Modifier
-                    .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(MixinAppTheme.colors.background),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            WalletLabel(walletName = walletName, isWeb3 = true)
+
             Box(modifier = Modifier.height(50.dp))
 
             when (step) {
@@ -167,7 +203,13 @@ fun SessionProposalPage(
             Box(modifier = Modifier.height(20.dp))
             ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.uri)
             Box(modifier = Modifier.height(20.dp))
-            ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+
+            walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                val (displayName, _) = walletDisplayInfo
+                ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
+            }, {
+                ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
+            })
             Box(
                 modifier =
                     Modifier

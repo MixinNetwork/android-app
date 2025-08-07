@@ -78,15 +78,14 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.areBubblesAllowedCompat
 import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isPlayStoreInstalled
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
@@ -113,9 +112,7 @@ import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshStickerAlbumJob
-import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
@@ -123,6 +120,7 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WCErrorEvent
@@ -142,6 +140,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
@@ -165,7 +164,6 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
-import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
@@ -213,6 +211,9 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var accountRepo: AccountRepository
+
+    @Inject
+    lateinit var web3Repository: Web3Repository
 
     @Inject
     lateinit var participantDao: ParticipantDao
@@ -328,16 +329,22 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe { e ->
                 lifecycleScope.launch{
                     when (e.badge) {
-                        Account.PREF_HAS_USED_SWAP -> {
+                        Account.PREF_HAS_USED_SWAP, Account.PREF_HAS_USED_BUY, Account.PREF_HAS_USED_WALLET_LIST -> {
                             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
-                                isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+                                isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
+                                        defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
                                 backgroundColor = Color.RED
                             }
                         }
 
-                        Account.PREF_HAS_USED_MARKET -> {
+                        Account.PREF_HAS_USED_MARKET, PREF_BOT_CLICKED_IDS  -> {
                             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
-                                isVisible = false
+                                isVisible = try {
+                                    defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+                                        ?.split(",")?.toSet() ?: emptySet()
+                                } catch (e: Exception) {
+                                    emptySet()
+                                }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
                                 backgroundColor = Color.RED
                             }
                         }
@@ -706,13 +713,18 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun initWalletConnect() {
+    private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
-
-        lifecycleScope.launch {
-            WalletConnectV2
-            JsSigner.init()
-        }
+        WalletConnectV2
+        val classicWalletId = web3Repository.getClassicWalletId()
+        JsSigner.init(
+            { classicWalletId },
+            { walletId ->
+                runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
+            }, { walletId ->
+                runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+            }
+        )
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -939,12 +951,7 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
-                if (it.itemId == R.id.nav_wallet) {
-                    jobManager.addJobInBackground(RefreshTokensJob())
-                    jobManager.addJobInBackground(RefreshSnapshotsJob())
-                    jobManager.addJobInBackground(SyncOutputJob())
-                    jobManager.addJobInBackground(RefreshWeb3Job())
-                }
+                Timber.e("onItemSelected: ${it.itemId}")
                 lifecycleScope.launch {
                     channel.send(it.itemId)
                 }
@@ -960,14 +967,20 @@ class MainActivity : BlazeBaseActivity() {
                 }
         }
         lifecycleScope.launch {
-            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+            val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
+                    defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
 
             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
                 isVisible = swap
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
             }
 
-            val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            val market = try {
+                defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+                    ?.split(",")?.toSet() ?: emptySet()
+            } catch (e: Exception) {
+                emptySet()
+            }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
                 isVisible = market
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
@@ -983,7 +996,13 @@ class MainActivity : BlazeBaseActivity() {
             }
 
             R.id.nav_wallet -> {
-                openWallet()
+                Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
+                if (Session.getAccount()?.hasPin == true) {
+                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                } else {
+                    val id = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
+                    TipActivity.show(this, TipBundle(TipType.Create, id, TryConnecting))
+                }
                 conversationListFragment.hideCircles()
             }
 
@@ -1002,10 +1021,6 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
         conversationListFragment.hideContainer()
-    }
-
-    fun openWallet() {
-        navigationController.pushWallet(walletFragment)
     }
 
     fun showUpdate(releaseUrl: String?) {

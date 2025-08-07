@@ -1,43 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fitsSystemWindows="true">
 
     <TextView
-            android:id="@+id/link_error_info"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:gravity="center"
-            android:visibility="gone"
-            android:textColor="?attr/text_primary"
-            android:text="@string/Invalid_Link"/>
+        android:id="@+id/link_error_info"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:gravity="center"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text="@string/Invalid_Link"
+        android:textColor="?attr/text_primary"
+        android:visibility="gone" />
 
     <RelativeLayout
-            android:id="@+id/link_loading"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_gravity="center"
-            android:orientation="vertical"
-            tools:visibility="gone">
+        android:id="@+id/link_loading"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        tools:visibility="gone">
 
         <TextView
-                android:id="@+id/link_loading_info"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="@dimen/margin16"
-                android:layout_above="@+id/pb"
-                android:textColor="?attr/text_primary"
-                android:text="@string/Checking_link"/>
+            android:id="@+id/link_loading_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/pb"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/margin16"
+            android:text="@string/Checking_link"
+            android:textColor="?attr/text_primary" />
 
         <ProgressBar
-                android:id="@+id/pb"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_centerInParent="true"
-                android:theme="@style/AppTheme.BlueAccent"/>
+            android:id="@+id/pb"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_centerInParent="true"
+            android:theme="@style/AppTheme.BlueAccent" />
     </RelativeLayout>
 </FrameLayout>

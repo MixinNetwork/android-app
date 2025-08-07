@@ -20,10 +20,6 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
     override fun onRun(): Unit =
         runBlocking {
             val lastCreate = swapOrderDao.lastOrderCreatedAt()
-            if (lastCreate != null && MixinApplication.appContext.defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == -1){
-                MixinApplication.appContext.defaultSharedPreferences.putInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, 0)
-                RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
-            }
             refreshOrders(lastCreate)
         }
 

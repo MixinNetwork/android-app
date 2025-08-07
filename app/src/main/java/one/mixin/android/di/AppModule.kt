@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
@@ -42,7 +43,6 @@ import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
-import one.mixin.android.Constants.RouteConfig.WEB3_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -240,7 +240,11 @@ object AppModule {
 
                 var jwtResult: JwtResult? = null
                 response.body?.run {
-                    val bytes = this.bytes()
+                    val bytes = runCatching {
+                        this.bytes()
+                    }.onFailure { e ->
+                        Timber.d(e, "Unable to read response body, likely a WebSocket or streaming response")
+                    }.getOrNull() ?: return@run
                     val body = bytes.toResponseBody(this.contentType())
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
@@ -683,4 +687,8 @@ object AppModule {
     @Provides
     fun provideMemberService(retrofit: Retrofit): MemberService =
         retrofit.create(MemberService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(app: Application): SharedPreferences = app.defaultSharedPreferences
 }

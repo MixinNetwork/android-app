@@ -1,6 +1,9 @@
 package one.mixin.android.compose.theme
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.ExperimentalMaterialApi
@@ -13,15 +16,14 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
-import java.util.Locale
 
 val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 
@@ -73,6 +75,7 @@ class AppColors(
     val walletYellow: Color,
     val walletPurple: Color,
     val badgeRed: Color,
+    val warning: Color,
 )
 
 class AppDrawables(
@@ -115,6 +118,7 @@ private val LightColorPalette =
         walletYellow = Color(0xFFFFC107),
         walletPurple = Color(0xFF9C27B0),
         badgeRed = Color(0xFFDB454F),
+        warning = Color(0xFFF6A417),
     )
 
 private val DarkColorPalette =
@@ -144,6 +148,7 @@ private val DarkColorPalette =
         walletYellow = Color(0xFFFFEE58),
         walletPurple = Color(0xFFBA68C8),
         badgeRed = Color(0xFFF67070),
+        warning = Color(0xFFF6A417),
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
@@ -151,6 +156,7 @@ private val LocalColors = compositionLocalOf { LightColorPalette }
 @Composable
 fun MixinAppTheme(
     darkTheme: Boolean = MixinApplication.get().isNightMode(),
+    skip: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors =
@@ -178,9 +184,18 @@ fun MixinAppTheme(
         CompositionLocalProvider(
             LocalColors provides colors,
             LocalTextSelectionColors provides textSelectionColors,
-            LocalRippleConfiguration provides rippleConfiguration,
-            content = content,
-        )
+            LocalRippleConfiguration provides rippleConfiguration
+        ) {
+            if (skip) {
+                content()
+            } else {
+                Box(modifier = Modifier
+                    .background(colors.background)
+                    .systemBarsPadding()) {
+                    content()
+                }
+            }
+        }
     }
 }
 

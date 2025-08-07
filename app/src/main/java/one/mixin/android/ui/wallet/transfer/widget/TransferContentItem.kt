@@ -60,6 +60,7 @@ class TransferContentItem : RelativeLayout {
         @StringRes titleResId: Int,
         contentStr: String,
         label: String,
+        toWallet: Boolean,
     ) {
         _binding.apply {
             title.text = context.getString(titleResId).uppercase()
@@ -72,7 +73,7 @@ class TransferContentItem : RelativeLayout {
             val start = fullText.lastIndexOf(label)
             val end = start + label.length
 
-            val backgroundColor: Int = Color.parseColor("#8DCC99")
+            val backgroundColor: Int = if (toWallet) Color.parseColor("#B34B7CDD") else Color.parseColor("#8DCC99")
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
             spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

@@ -7,9 +7,11 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentCurrencyBottomSheetBinding
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
@@ -94,6 +96,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 successBlock = {
                     it.data?.let { account ->
                         Session.storeAccount(account)
+                        RxBus.publish(WalletRefreshedEvent(""))
                         callback?.onCurrencyClick(currency)
                         toast(R.string.Save_success)
                         dismiss()

@@ -737,7 +737,7 @@ fun ActionBottom(
                     focusedElevation = 0.dp,
                 ),
         ) {
-            Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary)
+            Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary, fontWeight = FontWeight.W400)
         }
         Box(modifier = Modifier.width(36.dp))
         Button(
@@ -757,7 +757,7 @@ fun ActionBottom(
                     focusedElevation = 0.dp,
                 ),
         ) {
-            Text(text = confirmTitle, color = Color.White)
+            Text(text = confirmTitle, color = Color.White, fontWeight = FontWeight.W400)
         }
     }
 }

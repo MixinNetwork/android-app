@@ -60,6 +60,8 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 
 @Composable
 fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
@@ -147,12 +149,12 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                                     next(pinCode)
                                 } else {
                                     isLoading = false
-                                    errorInfo = response.errorDescription
+                                    errorInfo = context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
                                     pinCode = ""
                                 }
                             }.onFailure { t ->
                                 isLoading = false
-                                errorInfo = t.message ?: ""
+                                errorInfo = ErrorHandler.getErrorMessage(t)
                                 pinCode = ""
                             }
                         }

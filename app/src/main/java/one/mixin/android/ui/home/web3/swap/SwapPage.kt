@@ -56,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -86,17 +87,18 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 @FlowPreview
 @Composable
 fun SwapPage(
+    walletId: String?,
     from: SwapToken?,
     to: SwapToken?,
     inMixin: Boolean,
@@ -115,6 +117,19 @@ fun SwapPage(
     val scope = rememberCoroutineScope()
 
     val viewModel = hiltViewModel<SwapViewModel>()
+    var walletDisplayName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(walletId) {
+        if (walletId != null) {
+            viewModel.findWeb3WalletById(walletId)?.let {
+                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                    it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                    it.category == WalletCategory.WATCH_ADDRESS.value) {
+                    walletDisplayName = it.name
+                }
+            }
+        }
+    }
 
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
@@ -189,7 +204,32 @@ fun SwapPage(
 
     PageScaffold(
         title = stringResource(id = R.string.Swap),
-        subtitle = stringResource(if (!inMixin) R.string.Common_Wallet else R.string.Privacy_Wallet),
+        subtitle = {
+            val text = if (walletId == null) {
+                stringResource(id = R.string.Privacy_Wallet)
+            } else {
+                walletDisplayName ?: stringResource(id = R.string.Common_Wallet)
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (walletId == null) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+                Text(
+                    text = text,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        },
         verticalScrollable = true,
         pop = pop,
         actions = {
@@ -230,7 +270,11 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = viewModel.tokenExtraFlow(from, inMixin).collectAsStateWithLifecycle(from.balance).value
+            val fromBalance = if (walletId.isNullOrBlank()) {
+                from.balance
+            } else {
+                viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+            }
 
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
@@ -294,6 +338,7 @@ fun SwapPage(
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                                     onInputChanged = { inputText = it },
                                     onDeposit = onDeposit,
+                                    walletId = walletId,
                                     onMax = {
                                         val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                         if (balance > BigDecimal.ZERO) {
@@ -314,6 +359,7 @@ fun SwapPage(
                                     readOnly = true,
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
                                     onDeposit = null,
+                                    walletId = walletId,
                                 )
                             },
                             margin = 6.dp,
@@ -476,12 +522,17 @@ fun InputArea(
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
+    walletId: String? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
         null
     } else {
-        viewModel.tokenExtraFlow(token, inMixin).collectAsStateWithLifecycle(token.balance).value
+        if (walletId.isNullOrBlank()) {
+            token.balance
+        } else {
+            viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
+        }
     }
     Column(
         modifier =

@@ -68,6 +68,7 @@ sealed class TipSignSpec(
 
 sealed class TipSignAction(open val spec: TipSignSpec) {
     data class Public(override val spec: TipSignSpec) : TipSignAction(spec) {
+        // TODO: to be modified
         operator fun invoke(priv: ByteArray) = spec.public(tipPrivToPrivateKey(priv))
     }
 
@@ -75,7 +76,7 @@ sealed class TipSignAction(open val spec: TipSignSpec) {
         operator fun invoke(
             priv: ByteArray,
             data: ByteArray,
-        ) = spec.sign(tipPrivToPrivateKey(priv), data)
+        ) = spec.sign(tipPrivToPrivateKey(priv), data)     // TODO: to be modified
     }
 }
 

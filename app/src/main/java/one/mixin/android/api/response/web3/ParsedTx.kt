@@ -1,10 +1,6 @@
 package one.mixin.android.api.response.web3
 
 import com.google.gson.annotations.SerializedName
-import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.extension.currencyFormat
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.math.RoundingMode

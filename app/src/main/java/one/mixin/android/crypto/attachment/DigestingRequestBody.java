@@ -1,14 +1,15 @@
 package one.mixin.android.crypto.attachment;
 
 
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import okio.BufferedSink;
 import org.whispersystems.libsignal.util.guava.Preconditions;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okio.BufferedSink;
 
 public class DigestingRequestBody extends RequestBody {
 

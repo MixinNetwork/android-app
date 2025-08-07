@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/bg_upper_round"
-    android:paddingBottom="16dp">
+    android:paddingBottom="16dp"
+    android:fitsSystemWindows="true">
 
     <ImageView
         android:layout_marginTop="58dp"

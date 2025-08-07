@@ -48,11 +48,13 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_toEndOf="@+id/head_icon"
-                    android:text="@string/Wallets"
                     android:textColor="?attr/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:includeFontPadding="false"
+                    android:maxWidth="240dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     tools:ignore="RelativeOverlap" />
 
                 <ImageView
@@ -99,7 +101,7 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/mixin_ripple"
                 android:padding="8dp"
-                app:srcCompat="@drawable/ic_home_more"
+                app:srcCompat="@drawable/ic_more"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 

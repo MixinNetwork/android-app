@@ -94,6 +94,7 @@ class CollectiblesFragment : BaseFragment() {
                     this@CollectiblesFragment,
                     SearchInscriptionFragment(),
                     SearchInscriptionFragment.TAG,
+                    id= R.id.internal_container,
                 )
             }
 

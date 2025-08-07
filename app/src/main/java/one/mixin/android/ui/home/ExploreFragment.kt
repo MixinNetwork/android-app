@@ -2,7 +2,6 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,7 +33,6 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
@@ -46,10 +44,10 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.bot.INTERNAL_BUY_ID
-import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_MEMBER_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
@@ -74,7 +72,7 @@ import javax.inject.Inject
 class ExploreFragment : BaseFragment() {
     companion object {
         const val TAG = "ExploreFragment"
-        private const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
+        const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
         private val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID)
         fun newInstance() = ExploreFragment()
     }
@@ -111,6 +109,7 @@ class ExploreFragment : BaseFragment() {
                     this@ExploreFragment,
                     SearchExploreFragment(),
                     SearchExploreFragment.TAG,
+                    id= R.id.internal_container,
                 )
             }
             scanIb.setOnClickListener {
@@ -280,6 +279,7 @@ class ExploreFragment : BaseFragment() {
         if (old.add(id)) {
             sp.edit().putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")).apply()
             updateFavoriteDot()
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
         }
     }
 

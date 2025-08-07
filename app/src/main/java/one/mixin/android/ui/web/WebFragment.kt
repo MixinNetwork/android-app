@@ -75,16 +75,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.alert
@@ -465,6 +464,10 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
+        activity?.window?.let { window->
+            SystemUIManager.setSystemUiColor(requireActivity().window, requireContext().colorFromAttribute(R.color.bgWhite))
+            SystemUIManager.lightUI(window , requireContext().isNightMode().not())
+        }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
                 override fun onBackClick() {
@@ -1024,7 +1027,7 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
-            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(EVM_ADDRESS, ""))
+            WalletConnectTIP.peer = getPeerUI(JsSigner.evmAddress)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -1057,9 +1060,13 @@ class WebFragment : BaseFragment() {
         callbackFunction: String,
     ) {
         if (viewDestroyed()) return
-        app ?: return
 
         lifecycleScope.launch {
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+
             val sameHost =
                 try {
                     Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
@@ -1115,9 +1122,13 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 callback = {
-                    val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    if (isAdded) {
+                        val spendKey = it
+                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId))
+                        val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                        }
                     }
                 },
             )
@@ -1647,8 +1658,8 @@ class WebFragment : BaseFragment() {
     ) {
         if (viewDestroyed()) return
 
-        requireActivity().window.statusBarColor = color
         requireActivity().window?.let {
+            SystemUIManager.setSystemUiColor(it, color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color

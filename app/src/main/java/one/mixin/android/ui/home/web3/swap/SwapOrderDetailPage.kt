@@ -27,8 +27,12 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,6 +55,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.SwapOrderItem
 import java.math.BigDecimal
@@ -57,6 +63,7 @@ import java.math.RoundingMode
 
 @Composable
 fun SwapOrderDetailPage(
+    walletId: String?,
     orderId: String,
     onShare: (String, String) -> Unit,
     onTryAgain: (String, String) -> Unit,
@@ -65,9 +72,49 @@ fun SwapOrderDetailPage(
     val context = LocalContext.current
     val viewModel: SwapViewModel = hiltViewModel()
     val orderItem = viewModel.getOrderById(orderId).collectAsState(null)
+    var walletDisplayName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(walletId) {
+        if (walletId != null) {
+            viewModel.findWeb3WalletById(walletId)?.let {
+                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                    it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                    it.category == WalletCategory.WATCH_ADDRESS.value) {
+                    walletDisplayName = it.name
+                }
+            }
+        }
+    }
+
     MixinAppTheme {
         PageScaffold(
             title = stringResource(id = R.string.Order_Details),
+            subtitle = {
+                val text = if (walletId == null) {
+                    stringResource(id = R.string.Privacy_Wallet)
+                } else {
+                    walletDisplayName ?: stringResource(id = R.string.Common_Wallet)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (walletId == null) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = text,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            },
             pop = pop,
             actions = {
                 IconButton(onClick = {

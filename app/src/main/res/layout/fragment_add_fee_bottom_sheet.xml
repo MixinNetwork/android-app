@@ -6,11 +6,12 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical"
-    android:paddingBottom="16dp">
+    android:paddingBottom="16dp"
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp">
+        android:layout_height="70dp">
 
         <TextView
             android:id="@+id/title_tv"
@@ -25,6 +26,18 @@
             android:text="@string/Add"
             android:textColor="?attr/text_primary"
             android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/subtitle_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_below="@id/title_tv"
+            android:gravity="center"
+            android:singleLine="true"
+            android:textColor="?attr/text_assist"
+            android:textSize="12sp" />
 
         <ImageView
             android:id="@+id/right_iv"
@@ -44,7 +57,7 @@
         android:background="?attr/bg_white"
         android:orientation="vertical"
         android:paddingStart="12dp"
-        android:paddingTop="8dp"
+        android:paddingTop="10dp"
         android:paddingEnd="12dp"
         android:paddingBottom="28dp">
 

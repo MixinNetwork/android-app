@@ -12,4 +12,7 @@ interface Web3TokensExtraDao : BaseDao<Web3TokensExtra> {
 
     @Query("UPDATE tokens_extra SET hidden = :hidden WHERE asset_id = :assetId AND wallet_id = :walletId")
     suspend fun updateHidden(assetId: String, walletId: String, hidden: Boolean)
+
+    @Query("DELETE FROM tokens_extra WHERE wallet_id = :walletId")
+    suspend fun deleteHiddenTokens(walletId: String)
 }

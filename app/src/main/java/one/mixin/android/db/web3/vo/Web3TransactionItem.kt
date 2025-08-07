@@ -8,7 +8,6 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.extension.numberFormat12
-import one.mixin.android.extension.numberFormat8
 import java.math.BigDecimal
 
 @Parcelize

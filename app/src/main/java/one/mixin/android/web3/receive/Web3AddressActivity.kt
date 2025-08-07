@@ -8,7 +8,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint

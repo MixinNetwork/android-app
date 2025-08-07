@@ -2,6 +2,9 @@ package org.sol4kt
 
 import one.mixin.android.extension.base64Encode
 import org.junit.Test
+import org.sol4k.PublicKey
+import org.sol4k.Transaction
+import org.sol4k.VersionedTransaction
 import org.sol4k.instruction.TransferInstruction
 
 class VersionedTransactionCompatTest {

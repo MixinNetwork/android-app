@@ -14,7 +14,7 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @Query("""
-        SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level, 
+        SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level, 
             c.symbol as chain_symbol,
             c.icon_url as chain_icon_url,
             s.icon_url as send_asset_icon_url,
@@ -25,20 +25,18 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
         LEFT JOIN tokens c ON c.asset_id = w.chain_id
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id
-        WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
+        WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND (s.wallet_id = :walletId OR c.wallet_id = :walletId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
+        AND w.address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)
         ORDER BY w.transaction_at DESC 
         LIMIT 21
     """)
-    fun web3Transactions(assetId: String): LiveData<List<Web3TransactionItem>>
+    fun web3Transactions(walletId: String, assetId: String): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: SupportSQLiteQuery): DataSource.Factory<Int, Web3TransactionItem>
 
-    @Query("SELECT * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
+    @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
     suspend fun getLatestTransaction(hash: String, chainId: String): Web3Transaction?
-
-    @Query("SELECT COUNT(*) FROM transactions")
-    suspend fun getTransactionCount(): Int
 
     @Query("DELETE FROM transactions WHERE status = 'pending' AND transaction_hash = :hash AND chain_id = :chainId")
     fun deletePending(hash: String, chainId: String)
@@ -49,9 +47,12 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     @Query("DELETE FROM transactions")
     suspend fun deleteAllTransactions()
 
-    @Query("SELECT COUNT(*) FROM transactions WHERE status = 'pending'")
-    fun getPendingTransactionCount(): LiveData<Int>
+    @Query("SELECT COUNT(*) FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
+    fun getPendingTransactionCount(walletId: String): LiveData<Int>
 
-    @Query("SELECT * FROM transactions WHERE status = 'pending'")
-    suspend fun getPendingTransactions(): List<Web3Transaction>
+    @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
+    suspend fun getPendingTransactions(walletId: String): List<Web3Transaction>
+
+    @Query("DELETE FROM transactions WHERE address IN (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
+    suspend fun deleteByWalletId(walletId: String)
 }

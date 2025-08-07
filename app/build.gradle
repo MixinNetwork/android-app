@@ -16,9 +16,9 @@ plugins {
 }
 
 def versionMajor = 3
-def versionMinor = 1
-def versionPatch = 0
-def versionBuild = 1
+def versionMinor = 2
+def versionPatch = 3
+def versionBuild = 2
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -30,7 +30,7 @@ android {
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -179,6 +179,7 @@ android {
         staging {
             initWith debug
             applicationIdSuffix ".test"
+            matchingFallbacks = ['debug']
         }
     }
 
@@ -248,7 +249,7 @@ dependencies {
     implementation "androidx.sharetarget:sharetarget:${sharetargetVersion}"
     implementation "androidx.coordinatorlayout:coordinatorlayout:${coordinatorVersion}"
     implementation "androidx.biometric:biometric:${biometricVersion}"
-    implementation "androidx.security:security-crypto:1.0.0"
+    implementation "androidx.security:security-crypto:1.1.0"
 
     implementation "org.sol4k:tweetnacl:${tweetnaclVersion}"
     implementation "org.sol4k:utilities:${sol4kUtilitiesVersion}"
@@ -335,10 +336,9 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
 
-    implementation "com.google.firebase:firebase-messaging-ktx"
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
-    implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+    implementation "com.google.firebase:firebase-messaging"
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics'
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
@@ -426,6 +426,7 @@ dependencies {
     implementation "org.web3j:crypto:${web3jCryptoVersion}"
     implementation platform("com.reown:android-bom:${reownBomVersion}")
     implementation "com.reown:android-core"
+    testImplementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
     implementation "org.sol4k:sol4k:${sol4kVersion}"
