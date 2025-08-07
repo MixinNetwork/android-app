@@ -21,6 +21,9 @@ interface AddressDao : BaseDao<Address> {
     @Query("SELECT * FROM addresses WHERE chain_id = :id ORDER BY updated_at DESC")
     fun getAddressById(id: String): Address?
 
+    @Query("SELECT * FROM addresses WHERE address_id = :id")
+    fun getAddressByAddressId(id: String): Address?
+
     @Query("DELETE FROM addresses WHERE address_id = :addressId")
     suspend fun deleteById(addressId: String)
 
