@@ -389,6 +389,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         onDismissAction?.invoke(step == Step.Done)
     }
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
+        if (solanaTxSource.isConnectDapp() && tx.calcPriorityFee() != BigDecimal.ZERO) {
+            return tx
+        }
         val priorityFeeResp = viewModel.getPriorityFee(tx.serialize().base64Encode())
         if (priorityFeeResp != null && priorityFeeResp.unitPrice != null && priorityFeeResp.unitLimit != null) {
             tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)

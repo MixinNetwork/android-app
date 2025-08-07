@@ -60,4 +60,6 @@ enum class SolanaTxSource {
     InnerTransfer, InnerSwap, InnerStake, Web, Link, WalletConnect;
 
     fun isInnerTx() = this == InnerTransfer || this == InnerSwap || this == InnerStake
+
+    fun isConnectDapp() = this == Web || this == WalletConnect
 }
