@@ -95,7 +95,7 @@ class Web3TransactionHolder(
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
                         amountAnimator.displayedChild = 1
-                        val assetChanges = (transaction.receivers + transaction.senders).take(3)
+                        val assetChanges = transaction.receivers.take(3)
                         binding.doubleLineComposeView.setContent {
                             AmountList(assetChanges = assetChanges, senders = transaction.senders)
                         }
@@ -111,7 +111,7 @@ class Web3TransactionHolder(
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                     if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
                         amountAnimator.displayedChild = 1
-                        val assetChanges = (transaction.receivers + transaction.senders).take(3)
+                        val assetChanges = (transaction.senders).take(3)
                         binding.doubleLineComposeView.setContent {
                             AmountList(assetChanges = assetChanges, senders = transaction.senders)
                         }

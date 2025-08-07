@@ -101,6 +101,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+            if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
+                AnalyticsTracker.trackSignUpPinSet()
+            }
             closeIv.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
@@ -410,13 +413,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
             when(tipBundle.tipType) {
                 TipType.Change -> {
-                    AnalyticsTracker.trackLoginVerifyPin("change_pin")
+                    AnalyticsTracker.trackLoginPinVerify("change_pin")
                 }
                 TipType.Upgrade -> {
-                    AnalyticsTracker.trackLoginVerifyPin("upgrade_pin")
-                }
-                TipType.Create -> {
-                    AnalyticsTracker.trackSignUpSetPin()
+                    AnalyticsTracker.trackLoginPinVerify("pin_upgrade")
                 }
                 else -> {
                     // do nothing
@@ -533,6 +533,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
         }
 
+        if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
+            AnalyticsTracker.trackSignUpEnd()
+        }
         if (activity?.isTaskRoot == true) {
             MainActivity.show(requireContext())
         }

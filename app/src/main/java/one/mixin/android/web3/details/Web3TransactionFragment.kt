@@ -338,8 +338,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 assetChangesContainer.setContent {
                     AssetChangesList(
                         status = transaction.status,
-                        senders = transaction.senders,
-                        receivers = transaction.receivers,
+                        senders = if (transaction.transactionType == TransactionType.TRANSFER_IN.value) emptyList() else transaction.senders,
+                        receivers = if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) emptyList() else transaction.receivers,
                         fetchToken = { assetId ->
                             web3ViewModel.web3TokenItemById(JsSigner.currentWalletId, assetId)
                         }
