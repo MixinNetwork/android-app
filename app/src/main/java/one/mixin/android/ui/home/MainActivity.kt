@@ -172,6 +172,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
@@ -184,6 +185,7 @@ import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -282,7 +284,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().isOnline.set(true)
-        if (checkNeedGo2MigrationPage()) {
+        if (checkNeedGo2MigrationPage() || checkWalletUpdate()) {
             InitializeActivity.showDBUpgrade(this)
             finish()
             return
@@ -557,6 +559,19 @@ class MainActivity : BlazeBaseActivity() {
         } else {
             reportException(IllegalStateException("Receive TipEvent nodeCounter < 1"))
         }
+    }
+
+    @SuppressLint("RestrictedApi")
+    private fun checkWalletUpdate(): Boolean {
+        val currentVersion =
+            try {
+                val dir = dbDir(this)
+                File(dir, Constants.DataBase.WEB3_DB_NAME)
+                readVersion(File(dir, Constants.DataBase.WEB3_DB_NAME))
+            } catch (e: Exception) {
+                0
+            }
+        return currentVersion <= 4
     }
 
     @SuppressLint("RestrictedApi")

@@ -189,6 +189,8 @@ object Constants {
         const val MINI_VERSION = 15
         const val CURRENT_VERSION = 66
 
+        const val CURRENT_WALLET_VERSION = 5
+
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
         const val WEB3_DB_NAME = "web3.db"
