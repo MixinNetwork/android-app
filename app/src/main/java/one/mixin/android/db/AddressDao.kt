@@ -21,9 +21,6 @@ interface AddressDao : BaseDao<Address> {
     @Query("SELECT * FROM addresses WHERE chain_id = :id ORDER BY updated_at DESC")
     fun getAddressById(id: String): Address?
 
-    @Query("SELECT * FROM addresses WHERE address_id = :id")
-    fun getAddressByAddressId(id: String): Address?
-
     @Query("DELETE FROM addresses WHERE address_id = :addressId")
     suspend fun deleteById(addressId: String)
 
@@ -40,7 +37,7 @@ interface AddressDao : BaseDao<Address> {
     ): Address?
 
     @Query("SELECT label FROM addresses WHERE destination = :destination AND tag = :tag")
-    fun findAddressByReceiver(
+    fun findAddressByDestination(
         destination: String,
         tag: String,
     ): String?

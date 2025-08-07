@@ -466,12 +466,6 @@ internal constructor(
         }
     }
 
-    suspend fun getAssetSymbolById(assetId: String): String {
-        return withContext(Dispatchers.IO) {
-            tokenRepository.findAssetItemById(assetId)?.symbol ?: ""
-        }
-    }
-
     suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String?): Pair<String, Boolean>? {
         return withContext(Dispatchers.IO) {
 
@@ -488,7 +482,7 @@ internal constructor(
                 return@withContext Pair(wallet.name, false)
             }
 
-            tokenRepository.findAddressByReceiver(destination, tag ?: "")?.let { label ->
+            tokenRepository.findAddressByDestination(destination, tag ?: "")?.let { label ->
                 return@withContext Pair(label, false)
             }
             return@withContext null

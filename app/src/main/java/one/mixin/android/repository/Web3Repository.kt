@@ -5,8 +5,8 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
 import dagger.hilt.android.qualifiers.ApplicationContext
-import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.AddressSearchRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.property.Web3PropertyHelper

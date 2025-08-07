@@ -46,7 +46,6 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
@@ -71,7 +70,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.privateKeyToAddress
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
@@ -126,7 +124,6 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
-import one.mixin.android.web3.js.JsSigner
 import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.io.File
@@ -1735,8 +1732,7 @@ class BottomSheetViewModel
             return@withContext tokenRepository.refreshInscription(inscriptionHash)
         }
 
-        fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
-
+        fun findAddressByDestination(receiver: String, tag: String) = tokenRepository.findAddressByDestination(receiver, tag)
 
         suspend fun checkMarketById(id: String): MarketItem? = withContext(Dispatchers.IO) {
             tokenRepository.checkMarketById(id)
