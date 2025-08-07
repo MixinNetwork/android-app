@@ -299,6 +299,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
                             }
                         }.map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear token pending deposits
                             if (snapshots.isEmpty()) {
                                 walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
                                 return@let

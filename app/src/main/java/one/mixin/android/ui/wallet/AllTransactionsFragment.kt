@@ -264,6 +264,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                             }
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear all pending deposits
                             if (snapshots.isEmpty()) {
                                 walletViewModel.clearAllPendingDeposits()
                                 return@let
