@@ -426,6 +426,8 @@ class TokenRepository
         ) =
             safeSnapshotDao.snapshotLocal(assetId, snapshotId)
 
+        fun findAddressByDestination(receiver: String, tag: String, chainId: String) = addressDao.findAddressByDestination(receiver, tag, chainId)
+
         fun findAddressByDestination(receiver: String, tag: String) = addressDao.findAddressByDestination(receiver, tag)
 
         fun insertSnapshot(snapshot: SafeSnapshot) = safeSnapshotDao.insert(snapshot)
