@@ -459,8 +459,8 @@ internal constructor(
 
     suspend fun searchAssetsByAddresses(addresses: List<String>) = web3Repository.searchAssetsByAddresses(addresses)
 
-    suspend fun renameWallet(walletId: String, newName: String): Boolean {
-        return withContext(Dispatchers.IO) {
+    suspend fun renameWallet(walletId: String, newName: String) {
+        withContext(Dispatchers.IO) {
             try {
                 val request = WalletRequest(name = newName, category = null, addresses = null)
                 val response = web3Repository.updateWallet(walletId, request)
@@ -472,15 +472,11 @@ internal constructor(
                 } else {
                     Timber.e("Failed to rename wallet: ${response.errorCode} - ${response.errorDescription}")
                 }
-                true
             } catch (e: Exception) {
                 Timber.e(e, "Failed to rename wallet $walletId")
-                false
             }
         }
     }
-
-    suspend fun getClassicWalletId() = web3Repository.getClassicWalletId()
 
     suspend fun deleteWallet(walletId: String) {
         try {

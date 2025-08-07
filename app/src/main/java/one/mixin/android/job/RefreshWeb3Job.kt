@@ -6,6 +6,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
@@ -51,6 +52,15 @@ class RefreshWeb3Job : BaseJob(
                 )
             )
         } else {
+            wallets.forEach { wallet ->
+                if (web3AddressDao.getAddressesByWalletId(wallet.id).any {
+                        it.path == null || it.path.isBlank()
+                    }) {
+                    routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    fetchWalletAddresses(wallet)
+                }
+            }
+
             fetchChain()
             wallets.forEach { wallet ->
                 fetchWalletAssets(wallet)

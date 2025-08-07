@@ -8,9 +8,6 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
-import one.mixin.android.MixinApp
-import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.db.converter.Web3TypeConverters
 import one.mixin.android.db.web3.Web3AddressDao
@@ -42,7 +39,7 @@ import java.io.File
         Web3RawTransaction::class,
         Property::class
     ],
-    version = Constants.DataBase.CURRENT_WALLET_VERSION,
+    version = 4,
 )
 @TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
@@ -83,13 +80,6 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
-        val MIGRATION_4_5 = object : Migration(4, 5) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                val name = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                database.execSQL("UPDATE wallets SET name = '$name' WHERE category = 'classic'")
-            }
-        }
-
         fun getDatabase(context: Context): WalletDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -107,7 +97,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     INSTANCE = builder.build()
                 }
             }
