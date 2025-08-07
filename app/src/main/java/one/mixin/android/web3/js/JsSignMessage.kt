@@ -28,7 +28,10 @@ class JsSignMessage(
 
         fun isSignMessage(type: Int): Boolean =
             type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
+
     }
+
+    fun isSolMessage() = type == TYPE_RAW_TRANSACTION || type == TYPE_SIGN_IN
 
     val reviewData: String?
         get() {

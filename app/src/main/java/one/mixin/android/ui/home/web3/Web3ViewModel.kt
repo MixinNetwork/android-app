@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -48,6 +49,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.User
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeCollectible
@@ -464,9 +466,26 @@ internal constructor(
         }
     }
 
-    suspend fun getAssetSymbolById(assetId: String): String {
+    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String?): Pair<String, Boolean>? {
         return withContext(Dispatchers.IO) {
-            tokenRepository.findAssetItemById(assetId)?.symbol ?: ""
+
+            if (chainId != null && tag.isNullOrBlank()) {
+                val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), true)
+            }
+
+            val wallet = web3Repository.getWalletByDestination(destination)
+            if (wallet != null) {
+                if (wallet.category == WalletCategory.CLASSIC.value) {
+                    return@withContext Pair(MixinApplication.appContext.getString(R.string.Common_Wallet), false)
+                }
+                return@withContext Pair(wallet.name, false)
+            }
+
+            tokenRepository.findAddressByDestination(destination, tag ?: "")?.let { label ->
+                return@withContext Pair(label, false)
+            }
+            return@withContext null
         }
     }
 }

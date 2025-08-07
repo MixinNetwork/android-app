@@ -42,6 +42,7 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
@@ -162,35 +163,43 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
             amount = requireArguments().getString(ARGS_AMOUNT)
             setContent {
-                BrowserPage(
-                    JsSigner.address,
-                    currentChain,
-                    amount,
-                    token,
-                    toAddress,
-                    signMessage.type,
-                    step,
-                    signMessage.isCancelTx,
-                    signMessage.isSpeedUp,
-                    tipGas,
-                    solanaTx?.calcFee(JsSigner.address),
-                    parsedTx,
-                    signMessage.solanaTxSource,
-                    asset,
-                    signMessage.wcEthereumTransaction,
-                    solanaSignInInput?.toMessage() ?: signMessage.reviewData,
-                    url,
-                    title,
-                    errorInfo,
-                    insufficientGas,
-                    onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
-                    showPin = { showPin() },
-                    onDismissRequest = { dismiss() },
-                    onRejectAction = {
-                        onRejectAction?.invoke()
-                        dismiss()
-                    },
-                )
+                if (signMessage.isSolMessage() && JsSigner.solanaAddress.isBlank()) {
+                    toast(getString(R.string.not_support_network, currentChain.symbol))
+                    dismiss()
+                } else if (signMessage.isSolMessage().not() && JsSigner.evmAddress.isBlank()) {
+                    toast(getString(R.string.not_support_network, currentChain.symbol))
+                    dismiss()
+                } else {
+                    BrowserPage(
+                        JsSigner.address,
+                        currentChain,
+                        amount,
+                        token,
+                        toAddress,
+                        signMessage.type,
+                        step,
+                        signMessage.isCancelTx,
+                        signMessage.isSpeedUp,
+                        tipGas,
+                        solanaTx?.calcFee(JsSigner.address),
+                        parsedTx,
+                        signMessage.solanaTxSource,
+                        asset,
+                        signMessage.wcEthereumTransaction,
+                        solanaSignInInput?.toMessage() ?: signMessage.reviewData,
+                        url,
+                        title,
+                        errorInfo,
+                        insufficientGas,
+                        onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
+                        showPin = { showPin() },
+                        onDismissRequest = { dismiss() },
+                        onRejectAction = {
+                            onRejectAction?.invoke()
+                            dismiss()
+                        },
+                    )
+                }
             }
 
             doOnPreDraw {

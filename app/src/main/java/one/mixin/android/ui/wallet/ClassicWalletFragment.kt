@@ -16,6 +16,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.switchMap
 import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -96,6 +97,26 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
             Timber.e("walletId set to $value")
         }
+
+    private val tokensLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData()
+            } else {
+                web3ViewModel.web3TokensExcludeHidden(id)
+            }
+        }
+    }
+
+    private val pendingTxCountLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData(0)
+            } else {
+                web3ViewModel.getPendingTransactionCount(id)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -233,13 +254,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
-        // Initialize _walletId
-        lifecycleScope.launch {
-            if (walletId.isEmpty()) {
-                walletId = web3ViewModel.getClassicWalletId() ?: ""
-            }
-        }
-
         _walletId.observe(viewLifecycleOwner) { id ->
             if (id.isNotEmpty()) {
                 lifecycleScope.launch {
@@ -259,14 +273,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         }
                     }
                 }
-                _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount(walletId))
-                Timber.e("observe web3TokensExcludeHidden $id")
-                lastData?.removeObservers(viewLifecycleOwner)
-                lastData = web3ViewModel.web3TokensExcludeHidden(id)
-                lastData?.observe(viewLifecycleOwner, observer)
             }
         }
 
+        _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, pendingTxCountLiveData)
+        tokensLiveData.observe(viewLifecycleOwner, observer)
 
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -275,8 +286,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 assetsAdapter.notifyDataSetChanged()
             }
     }
-
-    private var lastData: LiveData<List<Web3TokenItem>>? = null
 
     private val observer = Observer<List<Web3TokenItem>> { data ->
         Timber.e("observe web3TokensExcludeHidden data size: ${data.size}, walletId: $walletId")

@@ -116,7 +116,7 @@ internal constructor(
             .cachedIn(viewModelScope)
 
     fun snapshotsLimit(id: String) = tokenRepository.snapshotsLimit(id)
-    fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
+    fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByDestination(receiver, tag)
 
     suspend fun snapshotLocal(
         assetId: String,

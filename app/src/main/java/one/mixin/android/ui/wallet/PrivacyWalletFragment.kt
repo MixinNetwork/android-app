@@ -237,11 +237,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     false
                 },
                 successBlock = {
-                    val pendingDeposits = it.data
-                    if (pendingDeposits.isNullOrEmpty()) {
-                        walletViewModel.clearAllPendingDeposits()
-                        return@handleMixinResponse
-                    }
+                    val pendingDeposits = it.data ?: emptyList()
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
                     pendingDeposits
                         .filter { pd ->
@@ -250,8 +246,13 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             }
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear all pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearAllPendingDeposits()
+                                return@let
+                            }
                             lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct()?.forEach {
+                                snapshots.map { it.assetId }.distinct().forEach {
                                     walletViewModel.findOrSyncAsset(it)
                                 }
                                 walletViewModel.insertPendingDeposit(snapshots)

@@ -37,7 +37,7 @@ interface AddressDao : BaseDao<Address> {
     ): Address?
 
     @Query("SELECT label FROM addresses WHERE destination = :destination AND tag = :tag")
-    fun findAddressByReceiver(
+    fun findAddressByDestination(
         destination: String,
         tag: String,
     ): String?

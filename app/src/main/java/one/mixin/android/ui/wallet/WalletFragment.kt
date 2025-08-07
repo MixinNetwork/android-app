@@ -112,44 +112,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         } ?: WalletDestination.Privacy
 
         selectedWalletDestination = initialWalletDestination
-        lifecycleScope.launch {
-            val finalWalletDestination = when (val dest = initialWalletDestination) {
-                is WalletDestination.Classic -> {
-                    val wallet = walletViewModel.findWalletById(dest.walletId)
-                    if (wallet != null) dest else WalletDestination.Privacy
-                }
-                is WalletDestination.Import -> {
-                    val wallet = walletViewModel.findWalletById(dest.walletId)
-                    if (wallet != null) {
-                        if (dest.category != wallet.category) {
-                            WalletDestination.Import(dest.walletId, wallet.category)
-                        } else {
-                            dest
-                        }
-                    } else {
-                        WalletDestination.Privacy
-                    }
-                }
-                is WalletDestination.Watch -> {
-                    val wallet = walletViewModel.findWalletById(dest.walletId)
-                    if (wallet != null) {
-                        if (dest.category != wallet.category) {
-                            WalletDestination.Watch(dest.walletId, wallet.category)
-                        } else {
-                            dest
-                        }
-                    } else {
-                        WalletDestination.Privacy
-                    }
-                }
-                is WalletDestination.Privacy -> dest
-            }
-
-            Timber.e("Final wallet destination: $finalWalletDestination")
-            if (initialWalletDestination != finalWalletDestination) {
-                selectedWalletDestination = finalWalletDestination
-            }
-        }
+        Timber.e("Loaded selected wallet destination: $selectedWalletDestination")
     }
 
     private fun saveSelectedWalletDestination(destination: WalletDestination) {
@@ -182,10 +145,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in WalletFragment")
+        loadSelectedWalletDestination()
+
         binding.apply {
             badge.isVisible = defaultSharedPreferences.getBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, true)
-
-            loadSelectedWalletDestination()
 
             moreIb.setOnClickListener {
                 when (selectedWalletDestination) {
@@ -291,6 +255,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun updateUi(destination: WalletDestination) {
+        Timber.e("updateUi called with destination: $destination")
         when (destination) {
             is WalletDestination.Privacy -> {
                 if (privacyWalletFragment.isAdded.not()) {
