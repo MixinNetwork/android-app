@@ -528,11 +528,7 @@ fun InputArea(
     val balance = if (token == null) {
         null
     } else {
-        if (walletId.isNullOrBlank()) {
-            token.balance
-        } else {
-            viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
-        }
+        viewModel.tokenExtraFlow(token).collectAsStateWithLifecycle(token.balance).value
     }
     Column(
         modifier =
