@@ -87,23 +87,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val TAG = "InputFragment"
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_FROM_ADDRESS = "args_from_address"
-
-        const val ARGS_TO_WALLET = "args_to_wallet"
-
-        const val ARGS_TO_MY_WALLET = "args_to_my_wallet"
-        const val ARGS_TO_ACCOUNT = "args_to_account"
-
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
-        const val ARGS_TO_ADDRESS_ID = "args_to_address_id"
-        const val ARGS_TO_ADDRESS_LABEL = "args_to_address_label"
-
         const val ARGS_TO_USER = "args_to_user"
 
         const val ARGS_WEB3_TOKEN = "args_web3_token"
         const val ARGS_WEB3_CHAIN_TOKEN = "args_web3_chain_token"
-        const val ARGS_TOKEN = "args_token"
 
-        const val ARGS_RECEIVE = "args_receive"
+        const val ARGS_TOKEN = "args_token"
 
         const val ARGS_BIOMETRIC_ITEM = "args_biometric_item"
 
@@ -119,8 +109,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             toAddress: String,
             web3Token: Web3TokenItem,
             chainToken: Web3TokenItem,
-            label: String? = null,
-            toWallet: Boolean = false
         ) =
             InputFragment().apply {
                 withArgs {
@@ -129,8 +117,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putParcelable(ARGS_WEB3_TOKEN, web3Token)
                     putParcelable(ARGS_WEB3_CHAIN_TOKEN, chainToken)
-                    putString(ARGS_TO_ADDRESS_LABEL, label)
-                    putBoolean(ARGS_TO_WALLET, toWallet)
                 }
             }
 
@@ -138,38 +124,15 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             tokenItem: TokenItem,
             toAddress: String,
             tag: String? = null,
-            toAccount: Boolean? = null,
-            isReceive: Boolean = false,
-            label: String? = null
         ) =
             InputFragment().apply {
                 withArgs {
-                    if (toAccount != null) {
-                        putBoolean(ARGS_TO_ACCOUNT, toAccount)
-                    }
                     putParcelable(ARGS_TOKEN, tokenItem)
                     putString(ARGS_TO_ADDRESS, toAddress)
                     putString(ARGS_TO_ADDRESS_TAG, tag)
-                    putBoolean(ARGS_RECEIVE, isReceive)
-                    if (label != null) {
-                        putString(ARGS_TO_ADDRESS_LABEL, label)
-                    }
                 }
             }
 
-        fun newInstance(
-            tokenItem: TokenItem,
-            address: Address,
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_TOKEN, tokenItem)
-                    putString(ARGS_TO_ADDRESS, address.destination)
-                    putString(ARGS_TO_ADDRESS_TAG, address.tag)
-                    putString(ARGS_TO_ADDRESS_ID, address.addressId)
-                    putString(ARGS_TO_ADDRESS_LABEL, address.label)
-                }
-            }
 
         fun newInstance(
             tokenItem: TokenItem,
@@ -234,30 +197,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         requireArguments().getString(ARGS_TO_ADDRESS_TAG) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.tag
     }
 
-    private val addressLabel by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS_LABEL) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.label
-    }
-
-    private val addressId by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS_ID) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.addressId
-    }
-
-    private val isReceive by lazy {
-        requireArguments().getBoolean(ARGS_RECEIVE, false)
-    }
-
-    private val toWallet by lazy {
-        requireArguments().getBoolean(ARGS_TO_WALLET, false)
-    }
-
-    private val toMyWallet by lazy {
-        requireArguments().getBoolean(ARGS_TO_MY_WALLET, false)
-    }
-
-    private val toAccount by lazy {
-        requireArguments().getBoolean(ARGS_TO_ACCOUNT, false)
-    }
-
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
     }
@@ -316,51 +255,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, getString(R.string.Token))
                 binding.insufficientFunds.text = getString(R.string.send_sol_for_rent, "0.00203928")
-                when (transferType) {
-                    TransferType.USER -> {
-                        titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), user)
-                    }
-                    TransferType.ADDRESS -> {
-                        if (addressLabel.isNullOrBlank()) {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Common_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toMyWallet)
-                        } else {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "" , toMyWallet)
-                        }
-                    }
-                    TransferType.WEB3 -> {
-                        titleView.setLabel(
-                            getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
-                            addressLabel ?: if (toWallet) getString(R.string.Privacy_Wallet) else null,
-                            toAddress ?: "",
-                            toMyWallet
-                        )
-                    }
-                    TransferType.BIOMETRIC_ITEM -> {
-                        assetBiometricItem?.let { item ->
-                            when {
-                                item is WithdrawBiometricItem -> {
-                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
-                                }
-                                item is AddressTransferBiometricItem -> {
-                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, (if (toAddress == null) item.address else "$toAddress${addressTag?.let { ":$it" } ?: ""}").formatPublicKey(16))
-                                }
-                                item is TransferBiometricItem -> {
-                                    titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), item.users) {
-                                        showUserList(item.users)
-                                    }
-                                }
-
-                                else -> {
-                                    titleView.setSubTitle(
-                                        getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
-                                        ""
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    else -> {}
-                }
+                initTitle()
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
                 keyboard.setOnClickKeyboardListener(
@@ -620,7 +515,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     binding.insufficientFeeBalance.isVisible = false
                                 }
                                 val address = (assetBiometricItem as? WithdrawBiometricItem)?.address
-                                    ?: Address(addressId ?: "", "address", assetId, chainId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
+                                    ?: Address("", "address", assetId, chainId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
                                 val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val toWallet = web3ViewModel.anyAddressExists(listOf(address.destination))
@@ -736,6 +631,65 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
             checkSolanaToExists()
             refreshFee()
+        }
+    }
+
+    private var addressLabel:String? = null
+
+    private fun initTitle() {
+        binding.apply {
+            when (transferType) {
+                TransferType.USER -> {
+                    titleView.setSubTitle(getString(R.string.Send_To_Title), user)
+                }
+                TransferType.ADDRESS -> {
+                    renderTitle(requireNotNull(toAddress), addressTag)
+                }
+                TransferType.WEB3 -> {
+                    renderTitle(requireNotNull(toAddress))
+                }
+                TransferType.BIOMETRIC_ITEM -> {
+                    assetBiometricItem?.let { item ->
+                        when {
+                            item is WithdrawBiometricItem -> {
+                                titleView.setLabel(getString(R.string.Send_To_Title), addressLabel, "")
+                            }
+                            item is AddressTransferBiometricItem -> {
+                                titleView.setLabel(getString(R.string.Send_To_Title), null, (if (toAddress == null) item.address else "$toAddress${addressTag?.let { ":$it" } ?: ""}").formatPublicKey(16))
+                                renderTitle(toAddress ?: item.address, addressTag)
+                            }
+                            item is TransferBiometricItem -> {
+                                titleView.setSubTitle(getString(R.string.Send_To_Title), item.users) {
+                                    showUserList(item.users)
+                                }
+                            }
+
+                            else -> {
+                                titleView.setSubTitle(
+                                    getString(R.string.Send_To_Title),
+                                    ""
+                                )
+                            }
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun renderTitle(toAddress: String, tag: String? = null) {
+        lifecycleScope.launch {
+            val (label, wallet) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, false)
+            binding.titleView.setLabel(
+                getString(R.string.Send_To_Title),
+                label,
+                "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
+                wallet
+            )
+            label?.let {
+                addressLabel = label
+            }
         }
     }
 

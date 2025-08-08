@@ -42,7 +42,6 @@ import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
-import one.mixin.android.api.service.MemberService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
@@ -84,7 +83,6 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
-import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -96,7 +94,6 @@ import one.mixin.android.job.SyncInscriptionMessageJob
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.FilterParams
-import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.adapter.SnapshotsMediator
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertRequest
@@ -429,7 +426,9 @@ class TokenRepository
         ) =
             safeSnapshotDao.snapshotLocal(assetId, snapshotId)
 
-        fun findAddressByReceiver(receiver: String, tag: String) = addressDao.findAddressByReceiver(receiver, tag)
+        fun findAddressByDestination(receiver: String, tag: String, chainId: String) = addressDao.findAddressByDestination(receiver, tag, chainId)
+
+        fun findAddressByDestination(receiver: String, tag: String) = addressDao.findAddressByDestination(receiver, tag)
 
         fun insertSnapshot(snapshot: SafeSnapshot) = safeSnapshotDao.insert(snapshot)
 
@@ -515,11 +514,11 @@ class TokenRepository
                     val receiver = it.withdrawal!!.receiver
                     val index: Int = receiver.indexOf(":")
                     if (index == -1) {
-                        it.label = addressDao.findAddressByReceiver(receiver, "")
+                        it.label = addressDao.findAddressByDestination(receiver, "")
                     } else {
                         val destination: String = receiver.substring(0, index)
                         val tag: String = receiver.substring(index + 1)
-                        it.label = addressDao.findAddressByReceiver(destination, tag)
+                        it.label = addressDao.findAddressByDestination(destination, tag)
                     }
                 }
                 it

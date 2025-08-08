@@ -389,7 +389,7 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
-                    AnalyticsTracker.trackLoginVerifyPin("verify_pin")
+                    AnalyticsTracker.trackLoginPinVerify("verify_pin")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                         onDismissCallback = { success ->
                             if (success) {
@@ -951,7 +951,17 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
             bottomNav.setOnItemSelectedListener {
-                Timber.e("onItemSelected: ${it.itemId}")
+                Timber.e(
+                    "onItemSelected: ${
+                        when (it.itemId) {
+                            R.id.nav_chat -> "nav_chat"
+                            R.id.nav_wallet -> "nav_wallet"
+                            R.id.nav_collectibles -> "nav_collectibles"
+                            R.id.nav_more -> "nav_more"
+                            else -> "unknown"
+                        }
+                    }"
+                )
                 lifecycleScope.launch {
                     channel.send(it.itemId)
                 }

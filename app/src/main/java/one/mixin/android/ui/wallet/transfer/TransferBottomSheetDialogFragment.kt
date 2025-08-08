@@ -173,7 +173,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     lifecycleScope.launch {
                         withContext(Dispatchers.IO) {
                             item.safe.operation.transaction.recipients.forEach { item ->
-                                item.label = bottomViewModel.findAddressByReceiver(item.address, "")
+                                item.label = bottomViewModel.findAddressByDestination(item.address, "")
                             }
                         }
                         binding.content.render(item, emptyList(), emptyList()) {}

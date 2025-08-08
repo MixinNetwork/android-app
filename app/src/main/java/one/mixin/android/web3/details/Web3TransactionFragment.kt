@@ -166,8 +166,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     getString(R.string.Approval)
                 }
                 else -> {
-                    if ((transaction.transactionType == TransactionType.TRANSFER_OUT.value || transaction.transactionType == TransactionType.TRANSFER_IN.value) &&
-                        (transaction.senders.size > 1 || transaction.receivers.size > 1)) {
+                    if ((transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
                         valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                         valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
                         valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
@@ -269,7 +268,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
-                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                    if (transaction.senders.size > 1) {
                         avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
                     } else {
                         avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
@@ -277,7 +276,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
-                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                    if (transaction.receivers.size > 1) {
                         avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
                     } else {
                         avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
@@ -334,7 +333,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         approvals = transaction.approvals,
                     )
                 }
-            } else if (transaction.transactionType == TransactionType.SWAP.value || transaction.senders.size > 1 || transaction.receivers.size > 1) {
+            } else if (transaction.transactionType == TransactionType.SWAP.value || (transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
                 assetChangesLl.visibility = View.VISIBLE
                 assetChangesContainer.setContent {
                     AssetChangesList(

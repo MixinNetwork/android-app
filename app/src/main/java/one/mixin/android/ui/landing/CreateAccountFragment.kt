@@ -46,7 +46,7 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
         binding.compose.setContent {
             CreateAccountPage({ create ->
                 if (create) {
-                    AnalyticsTracker.trackSignUpStart("mobile_number")
+                    AnalyticsTracker.trackSignUpStart("phone_number")
                 }
                 activity?.addFragment(
                     this@CreateAccountFragment,

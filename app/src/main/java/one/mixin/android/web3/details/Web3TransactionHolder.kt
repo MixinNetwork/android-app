@@ -93,7 +93,7 @@ class Web3TransactionHolder(
                 }
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                    if (transaction.receivers.size > 1) {
                         amountAnimator.displayedChild = 1
                         val assetChanges = transaction.receivers.take(3)
                         binding.doubleLineComposeView.setContent {
@@ -109,7 +109,7 @@ class Web3TransactionHolder(
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
                     value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-                    if (transaction.senders.size > 1 || transaction.receivers.size > 1) {
+                    if (transaction.senders.size > 1) {
                         amountAnimator.displayedChild = 1
                         val assetChanges = (transaction.senders).take(3)
                         binding.doubleLineComposeView.setContent {
@@ -240,7 +240,7 @@ fun AmountRow(amount: String, symbol: String, isSender: Boolean) {
         modifier = Modifier.wrapContentWidth()
     ) {
         Text(
-            text = "${if (isSender) "+" else "-"}$amount",
+            text = "${if (isSender) "-" else "+"}$amount",
             color = colorResource(id = if (isSender) R.color.wallet_pink else R.color.wallet_green),
             fontSize = 16.sp,
             fontFamily = FontFamily(Font(R.font.mixin_font)),
