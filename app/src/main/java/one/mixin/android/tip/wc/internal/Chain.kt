@@ -58,7 +58,7 @@ sealed class Chain(
         }
 }
 // Chain.Blast
-internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Solana)
+internal val supportChainList = listOf(Chain.Solana, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum)
 internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum)
 
 internal fun String.getChain(): Chain? {

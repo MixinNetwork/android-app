@@ -641,5 +641,5 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun Wallet.Model.SessionProposal.getNamespaceProposal(): Wallet.Model.Namespace.Proposal? =
-        this.requiredNamespaces.values.firstOrNull() ?: this.optionalNamespaces.values.firstOrNull()
+        this.requiredNamespaces["solana"] ?: this.optionalNamespaces["solana"] ?: this.requiredNamespaces.values.firstOrNull() ?: this.optionalNamespaces.values.firstOrNull()
 }
