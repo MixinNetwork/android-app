@@ -104,7 +104,7 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 if (mnemonic.isNotBlank()) {
                     if (localMaxIndex == 0) {
-                        val names = web3Repository.getAllWalletNames(listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                        val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
                         val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
                         val regex = """^$commonWalletName (\d+)$""".toRegex()
                         localMaxIndex = names
@@ -347,7 +347,7 @@ class FetchWalletViewModel @Inject constructor(
                 if (address.isBlank()) {
                     throw IllegalArgumentException("Could not derive or find address.")
                 }
-                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
                 val walletName = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) { MixinApplication.appContext.getString(R.string.Watch_Wallet) } else { MixinApplication.appContext.getString(R.string.Common_Wallet) }
                 val regex = """^$walletName (\d+)$""".toRegex()
                 val maxIndex = names
@@ -456,7 +456,7 @@ class FetchWalletViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _state.value = FetchWalletState.IMPORTING
-                val names = web3Repository.getAllWalletNames(listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
                 val classicIndex = web3Repository.getClassicWalletMaxIndex() + 1
                 val walletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
                 val regex = """^$walletName (\d+)$""".toRegex()
@@ -484,7 +484,7 @@ class FetchWalletViewModel @Inject constructor(
                 saveImportedWallet(walletRequest, null)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallet")
-                _state.value = FetchWalletState.SELECT
+                _state.value = FetchWalletState.IMPORT_ERROR
             }
         }
     }

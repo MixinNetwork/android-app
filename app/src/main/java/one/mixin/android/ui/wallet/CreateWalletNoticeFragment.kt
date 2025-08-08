@@ -34,7 +34,7 @@ class CreateWalletNoticeFragment : BaseFragment(R.layout.fragment_compose) {
                     createWallet = {
                         lifecycleScope.launch {
                             navTo(
-                                ImportingWalletFragment.newInstance(),
+                                ImportingWalletFragment.newInstance(WalletSecurityActivity.Mode.CREATE_WALLET),
                                 ImportingWalletFragment.TAG
                             )
                             viewModel.createClassicWallet()
