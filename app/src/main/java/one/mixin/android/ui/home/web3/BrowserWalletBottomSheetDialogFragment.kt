@@ -166,7 +166,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 if (signMessage.isSolMessage() && JsSigner.solanaAddress.isBlank()) {
                     toast(getString(R.string.not_support_network, currentChain.symbol))
                     dismiss()
-                } else if (signMessage.isSolMessage().not() && JsSigner.evmAddress.isBlank()) {
+                } else if (signMessage.isEvmMessage() && JsSigner.evmAddress.isBlank()) {
                     toast(getString(R.string.not_support_network, currentChain.symbol))
                     dismiss()
                 } else {

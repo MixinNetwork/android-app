@@ -31,7 +31,9 @@ class JsSignMessage(
 
     }
 
+    // TYPE_MESSAGE Any chain could be
     fun isSolMessage() = type == TYPE_RAW_TRANSACTION || type == TYPE_SIGN_IN
+    fun isEvmMessage() = type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_TRANSACTION
 
     val reviewData: String?
         get() {

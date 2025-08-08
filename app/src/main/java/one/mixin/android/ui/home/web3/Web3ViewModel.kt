@@ -466,10 +466,10 @@ internal constructor(
         }
     }
 
-    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String?): Pair<String, Boolean>? {
+    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Boolean>? {
         return withContext(Dispatchers.IO) {
 
-            if (chainId != null && tag.isNullOrBlank()) {
+            if (tag.isNullOrBlank()) {
                 val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
                 if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), true)
             }
@@ -482,7 +482,7 @@ internal constructor(
                 return@withContext Pair(wallet.name, false)
             }
 
-            tokenRepository.findAddressByDestination(destination, tag ?: "")?.let { label ->
+            tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->
                 return@withContext Pair(label, false)
             }
             return@withContext null
