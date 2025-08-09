@@ -67,11 +67,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
         lifecycleScope.launch {
             val asset = t.token
             val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
-            val walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
-                getString(R.string.Common_Wallet)
-            } else {
-                wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
-            }
+            val walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
             binding.walletTv.text = walletName
             if (asset.assetId in Constants.usdIds) {
                 val u = transferViewModel.findTopWeb3UsdBalanceAsset(asset.assetId)

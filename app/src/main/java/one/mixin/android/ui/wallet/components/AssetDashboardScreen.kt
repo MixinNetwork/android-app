@@ -179,6 +179,7 @@ fun AssetDashboardScreen(
                         )
                     } else {
                         WalletCard(
+                            name = wallet.name,
                             destination = WalletDestination.Classic(wallet.id),
                             onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
                         )

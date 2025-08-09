@@ -29,4 +29,16 @@
         android:text="@string/Hidden_Assets"
         android:textColor="?attr/text_primary" />
 
+    <TextView
+        android:id="@+id/rename"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/rename_wallet"
+        android:textColor="?attr/text_primary" />
+
 </LinearLayout>

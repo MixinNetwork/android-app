@@ -131,11 +131,7 @@ fun SessionRequestPage(
     LaunchedEffect(Unit) {
         try {
             val wallet = viewModel.findWalletById(JsSigner.currentWalletId)
-            walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
-                context.getString(R.string.Common_Wallet)
-            } else {
-                wallet?.name?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.Common_Wallet)
-            }
+            walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.Common_Wallet)
         } catch (e: Exception) {
             walletName = context.getString(R.string.Common_Wallet)
         }

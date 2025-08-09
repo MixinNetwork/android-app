@@ -22,7 +22,7 @@ class Bip44Test {
     fun testBip44Ethereum() {
         val seed = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768"
         val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed.hexStringToByteArray())
-        val key = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+        val key = generateBip44Key(masterKeyPair, Bip44Path.ethereum(0))
         val address = Keys.toChecksumAddress(Keys.getAddress(key.publicKey))
 
         assertContentEquals(key.publicKey.toByteArray(), "6defa9e4188f3ca577c40895358391ec58c54f7455d5d83b8c883f018a8e01fe7ab418019f5e9bd7de0a43dd08ee68f60a8ed1d5df62aed19d99f4a187d85f4e".hexStringToByteArray())
@@ -33,7 +33,7 @@ class Bip44Test {
     fun testBip44Solana() {
         val priv = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768".hexStringToByteArray()
         val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
-        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(0))
         val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
         val kp = Keypair.fromSecretKey(seed)
         assertEquals("CNH3eKGGKVTP8PiZyZdgc4Pc9jshFzr3bR1u1RtCCmEK", kp.publicKey.toBase58())
@@ -44,7 +44,7 @@ class Bip44Test {
     fun testBip44Solana1() {
         val priv = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768".hexStringToByteArray()
         val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
-        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(0))
         val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
         val kp = Keypair.fromSecretKey(seed)
         assertEquals("CNH3eKGGKVTP8PiZyZdgc4Pc9jshFzr3bR1u1RtCCmEK", kp.publicKey.toBase58())
@@ -62,7 +62,7 @@ class Bip44Test {
     fun tesSolTransfer() {
         val priv = "f01a27c0cafc921b3a1e1e4bd5c8cc9e1fe8e7cf2edcd9a846233d1e55462768".hexStringToByteArray()
         val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
-        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+        val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(0))
         val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
         val sender = Keypair.fromSecretKey(seed)
 
