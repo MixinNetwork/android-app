@@ -54,6 +54,10 @@ class RefreshWeb3TransactionsJob(
                 if (result.isNullOrEmpty()) {
                     Timber.d("No transactions returned from API for address $destination")
                 } else {
+                    if (!web3AddressDao.addressMatch(destination)) {
+                        Timber.d("Address $destination does not exist in local database, skipping transaction sync")
+                        return@requestRouteAPI null
+                    }
                     web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }
