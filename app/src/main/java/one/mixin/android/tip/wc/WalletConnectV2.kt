@@ -19,6 +19,8 @@ import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.tip.wc.internal.WcInstruction
+import one.mixin.android.tip.wc.internal.WcInstructionDeserializer
 import one.mixin.android.tip.wc.internal.WcSignature
 import one.mixin.android.tip.wc.internal.WcSolanaMessage
 import one.mixin.android.tip.wc.internal.WcSolanaTransaction
@@ -48,6 +50,7 @@ object WalletConnectV2 : WalletConnect() {
         GsonBuilder()
             .serializeNulls()
             .registerTypeAdapter(ethTransactionSerializer)
+            .registerTypeAdapter(WcInstruction::class.java, WcInstructionDeserializer())
             .create()
 
     init {
