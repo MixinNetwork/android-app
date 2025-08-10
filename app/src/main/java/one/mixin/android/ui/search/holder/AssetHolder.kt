@@ -25,7 +25,6 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
     ) {
         binding.avatar.loadToken(asset)
         binding.root.setOnClickListener { onItemClickListener?.onAssetClick(asset) }
-
         binding.balance.text = asset.balance + " " + asset.symbol
         binding.balance.highLight(target)
         binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
@@ -34,7 +33,7 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         if (chainNetwork != null) {
             binding.networkTv.text = chainNetwork
         }
-        if (asset.priceUsd != "0") {
+        if (asset.priceUsd == "0") {
             binding.naTv.visibility = View.VISIBLE
             binding.priceTv.visibility = View.GONE
             binding.changeTv.visibility = View.GONE
