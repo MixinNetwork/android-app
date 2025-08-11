@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -407,22 +408,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         closeMenu()
     }
 
-    private suspend fun switchToClassicWallet(destination: WalletDestination) {
-        if (destination is WalletDestination.Classic) {
-            selectedWalletDestination = destination
-            saveSelectedWalletDestination(destination)
-            val walletId = destination.walletId
-            val wallet = walletViewModel.findWalletById(walletId)
-            if (wallet != null) {
-                JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
-                    runBlocking { walletViewModel.getAddresses(queryWalletId) }
-                }
-                reloadWebViewInClips()
-                PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
-            }
-        }
-    }
-
     override fun onResume() {
         super.onResume()
         if (classicWalletFragment.isVisible) classicWalletFragment.update()
@@ -542,24 +527,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             ).apply {
                 disableToast = true
             }.setOnPinSuccess { _ ->
-                val dialog = indeterminateProgressDialog(R.string.Please_wait_a_bit).apply {
-                    setCancelable(false)
-                }
-                this@WalletFragment.lifecycleScope.launch {
-                    dialog.show()
-                    try {
-                        val dest = selectedWalletDestination
-                        if (dest is WalletDestination.Import) {
-                            walletViewModel.deleteWallet(dest.walletId)
-                            this@WalletFragment.switchToClassicWallet(WalletDestination.Classic(JsSigner.classicWalletId))
-                        } else if (dest is WalletDestination.Watch) {
-                            walletViewModel.deleteWallet(dest.walletId)
-                            this@WalletFragment.switchToClassicWallet(WalletDestination.Classic(JsSigner.classicWalletId))
-                        }
-                    } finally {
-                        dialog.dismiss()
-                    }
-                }
+                deleteWallet()
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
             bottomSheet.dismiss()
         }
@@ -585,6 +553,36 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             bottomSheet.dismiss()
         }
         bottomSheet.show()
+    }
+
+    private fun deleteWallet() {
+        val dialog = indeterminateProgressDialog(R.string.Please_wait_a_bit).apply {
+            setCancelable(false)
+        }
+        dialog.show()
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            dialog.dismiss()
+            Timber.e(error)
+        }) {
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Import) {
+                walletViewModel.deleteWallet(dest.walletId)
+                selectedWalletDestination = WalletDestination.Classic(JsSigner.classicWalletId)
+            } else if (dest is WalletDestination.Watch) {
+                walletViewModel.deleteWallet(dest.walletId)
+                selectedWalletDestination = WalletDestination.Classic(JsSigner.classicWalletId)
+            }
+            dialog.dismiss()
+            withContext(Dispatchers.IO) {
+                JsSigner.setWallet(JsSigner.classicWalletId, WalletCategory.CLASSIC.value) { queryWalletId ->
+                    runBlocking { walletViewModel.getAddresses(queryWalletId) }
+                }
+                withContext(Dispatchers.Main) {
+                    reloadWebViewInClips()
+                }
+                PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, JsSigner.classicWalletId)
+            }
+        }
     }
 
     private var _privacyBottomBinding: ViewPrivacyWalletBottomBinding? = null

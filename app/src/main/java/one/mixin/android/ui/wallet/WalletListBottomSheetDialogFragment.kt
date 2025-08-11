@@ -257,7 +257,7 @@ fun WalletListScreen(
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
-        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp).verticalScroll(rememberScrollState())) {
+        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp).fillMaxSize().verticalScroll(rememberScrollState())) {
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
                 when (item) {

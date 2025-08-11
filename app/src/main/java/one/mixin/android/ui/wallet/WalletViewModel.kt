@@ -457,7 +457,7 @@ internal constructor(
     suspend fun renameWallet(walletId: String, newName: String) {
         withContext(Dispatchers.IO) {
             try {
-                val request = WalletRequest(name = newName, category = null, addresses = null)
+                val request = WalletRequest(name = newName.trim(), category = null, addresses = null)
                 val response = web3Repository.updateWallet(walletId, request)
                 if (response.isSuccess && response.data != null) {
                     // Update local database
