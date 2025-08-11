@@ -89,7 +89,7 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val chainId: String by lazy {
-        requireArguments().getString(ARGS_CHAIN_ID) ?: ""
+        requireNotNull(requireArguments().getString(ARGS_CHAIN_ID))
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -297,10 +297,8 @@ fun WalletListScreen(
                         }
                     }
                 }
-                if (index < walletItems.size - 1) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
             }
+            Spacer(modifier = Modifier.height(10.dp))
 
             if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
                 Spacer(modifier = Modifier.weight(1f))
