@@ -31,7 +31,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
@@ -49,8 +48,6 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
-import one.mixin.android.ui.wallet.components.WalletDestination
-import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -71,8 +68,20 @@ import kotlin.math.abs
 class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
     companion object {
         const val TAG = "ClassicWalletFragment"
+        private const val KEY_WALLET_ID = "wallet_id"
+        @Volatile
+        private var instance: ClassicWalletFragment? = null
 
-        fun newInstance(): ClassicWalletFragment = ClassicWalletFragment()
+        fun newInstance(walletId: String? = null): ClassicWalletFragment =
+            instance ?: synchronized(this) {
+                instance ?: ClassicWalletFragment().apply {
+                    arguments = walletId?.let {
+                        Bundle().apply {
+                            putString(KEY_WALLET_ID, it)
+                        }
+                    }
+                }.also { instance = it }
+            }
     }
 
     @Inject
@@ -109,28 +118,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
         }
     }
-
-    private var selectedWalletDestination: WalletDestination? = null
-        set(value) {
-            if (value != field && value != null) {
-                field = value
-                when (value) {
-                    is WalletDestination.Classic -> {
-                        walletId = value.walletId
-                    }
-                    is WalletDestination.Import -> {
-                        walletId = value.walletId
-                    }
-                    is WalletDestination.Watch -> {
-                        walletId = value.walletId
-                    }
-                    is WalletDestination.Privacy -> {
-                        // No action needed for Privacy wallet
-                    }
-                }
-            }
-            Timber.e("Classic Selected wallet destination: $value")
-        }
     private val pendingTxCountLiveData by lazy {
         _walletId.switchMap { id ->
             if (id.isNullOrEmpty()) {
@@ -138,6 +125,13 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             } else {
                 web3ViewModel.getPendingTransactionCount(id)
             }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.getString(KEY_WALLET_ID)?.let {
+            walletId = it
         }
     }
 

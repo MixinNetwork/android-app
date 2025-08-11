@@ -64,7 +64,8 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     companion object {
         const val TAG = "PrivacyWalletFragment"
 
-        fun newInstance(): PrivacyWalletFragment = PrivacyWalletFragment()
+        private val instance by lazy { PrivacyWalletFragment() }
+        fun newInstance(): PrivacyWalletFragment = instance
     }
 
     @Inject

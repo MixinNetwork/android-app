@@ -70,13 +70,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         const val TAG = "WalletFragment"
         private const val ARG_WALLET_DESTINATION = "wallet_destination"
 
-        fun newInstance(walletDestination: WalletDestination? = null): WalletFragment = WalletFragment().apply {
-            arguments = Bundle().apply {
-                walletDestination?.let { destination ->
-                    putString(ARG_WALLET_DESTINATION, GsonHelper.customGson.toJson(destination))
-                }
+        @Volatile
+        private var instance: WalletFragment? = null
+
+        fun newInstance(walletDestination: WalletDestination? = null): WalletFragment =
+            instance ?: synchronized(this) {
+                instance ?: WalletFragment().apply {
+                    arguments = Bundle().apply {
+                        walletDestination?.let { destination ->
+                            putString(ARG_WALLET_DESTINATION, GsonHelper.customGson.toJson(destination))
+                        }
+                    }
+                }.also { instance = it }
             }
-        }
     }
 
     @Inject
