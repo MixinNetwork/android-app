@@ -139,6 +139,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private val classicWalletFragment by lazy { ClassicWalletFragment.newInstance() }
     private val privacyWalletFragment by lazy { PrivacyWalletFragment.newInstance() }
 
+    private var isComposeInitialized = false
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
         view: View,
@@ -208,16 +210,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     ) // Default
                 }
             }
-            compose.setContent {
-                AssetDashboardScreen(
-                    onWalletCardClick = ::handleWalletCardClick,
-                    onAddWalletClick = ::handleAddWalletClick
-                )
-            }
 
             titleRl.setOnClickListener {
                 badge.isVisible = false
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
+
+                if (!isComposeInitialized) {
+                    compose.setContent {
+                        AssetDashboardScreen(
+                            onWalletCardClick = ::handleWalletCardClick,
+                            onAddWalletClick = ::handleAddWalletClick
+                        )
+                    }
+                    isComposeInitialized = true
+                }
                 if (compose.isVisible.not()) {
                     compose.visibility = VISIBLE
                     val centerX = titleTv.x.toInt() + titleTv.width / 2
