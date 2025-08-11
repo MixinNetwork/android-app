@@ -33,16 +33,14 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.jakewharton.rxbinding3.material.itemSelections
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -314,7 +312,7 @@ class MainActivity : BlazeBaseActivity() {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
         }
 
-        initView()
+        initBottomNav()
         handlerCode(intent)
 
         checkAsync()
@@ -944,38 +942,31 @@ class MainActivity : BlazeBaseActivity() {
         CollectiblesFragment()
     }
 
-    private val channel = Channel<Int>(Channel.CONFLATED)
-
-    private fun initView() {
+    private fun initBottomNav() {
         binding.apply {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
-            bottomNav.setOnItemSelectedListener {
-                Timber.e(
-                    "onItemSelected: ${
-                        when (it.itemId) {
-                            R.id.nav_chat -> "nav_chat"
-                            R.id.nav_wallet -> "nav_wallet"
-                            R.id.nav_collectibles -> "nav_collectibles"
-                            R.id.nav_more -> "nav_more"
-                            else -> "unknown"
-                        }
-                    }"
-                )
-                lifecycleScope.launch {
-                    channel.send(it.itemId)
-                }
-                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_collectibles)
-            }
-        }
-        lifecycleScope.launch {
-            channel
-                .receiveAsFlow()
-                .distinctUntilChanged()
-                .collect { itemId ->
-                    handleNavigationItemSelected(itemId)
+
+            bottomNav.itemSelections()
+                .throttleFirst(400, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe { menuItem ->
+                    Timber.e(
+                        "onItemSelected: ${
+                            when (menuItem.itemId) {
+                                R.id.nav_chat -> "nav_chat"
+                                R.id.nav_wallet -> "nav_wallet"
+                                R.id.nav_collectibles -> "nav_collectibles"
+                                R.id.nav_more -> "nav_more"
+                                else -> "unknown"
+                            }
+                        }"
+                    )
+                    handleNavigationItemSelected(menuItem.itemId)
                 }
         }
+
         lifecycleScope.launch {
             val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
                     defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
