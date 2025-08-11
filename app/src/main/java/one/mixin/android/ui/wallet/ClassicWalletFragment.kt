@@ -115,7 +115,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         set(value) {
             if (value != field && value != null) {
                 field = value
-                when(value) {
+                when (value) {
                     is WalletDestination.Classic -> {
                         walletId = value.walletId
                     }
