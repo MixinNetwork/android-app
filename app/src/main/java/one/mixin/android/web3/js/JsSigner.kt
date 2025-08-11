@@ -348,7 +348,9 @@ object JsSigner {
     ): VersionedTransactionCompat {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
-        if (tx.onlyOneSigner() && tx.message.recentBlockhash.isBlank()) {
+        if (tx.onlyOneSigner() &&
+            (tx.message.recentBlockhash.isBlank() ||
+                    tx.message.recentBlockhash == holder.publicKey.toBase58())) { // inner transfer use address as temp blockhash
             tx.message.recentBlockhash = getBlockhash()
         }
         tx.sign(holder)
