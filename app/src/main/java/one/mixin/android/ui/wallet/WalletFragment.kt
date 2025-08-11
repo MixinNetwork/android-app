@@ -139,6 +139,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private val classicWalletFragment by lazy { ClassicWalletFragment.newInstance() }
     private val privacyWalletFragment by lazy { PrivacyWalletFragment.newInstance() }
 
+    private var isComposeInitialized = false
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
         view: View,
@@ -208,16 +210,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     ) // Default
                 }
             }
-            compose.setContent {
-                AssetDashboardScreen(
-                    onWalletCardClick = ::handleWalletCardClick,
-                    onAddWalletClick = ::handleAddWalletClick
-                )
-            }
 
             titleRl.setOnClickListener {
                 badge.isVisible = false
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
+
+                if (!isComposeInitialized) {
+                    compose.setContent {
+                        AssetDashboardScreen(
+                            onWalletCardClick = ::handleWalletCardClick,
+                            onAddWalletClick = ::handleAddWalletClick
+                        )
+                    }
+                    isComposeInitialized = true
+                }
                 if (compose.isVisible.not()) {
                     compose.visibility = VISIBLE
                     val centerX = titleTv.x.toInt() + titleTv.width / 2
@@ -294,10 +300,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         ClassicWalletFragment.TAG
                     )
                 }
+                binding.titleTv.setText(R.string.Watch_Wallet)
+                binding.tailIcon.isVisible = false
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
-                        binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
+                        binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Watch_Wallet) }
                     } ?: run {
                         binding.titleTv.setText(R.string.Watch_Wallet)
@@ -313,17 +321,20 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         ClassicWalletFragment.TAG
                     )
                 }
+                binding.titleTv.setText(R.string.Common_Wallet)
+                binding.tailIcon.isVisible = false
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
-                        binding.tailIcon.isVisible = false
+                        if (wallet.hasLocalPrivateKey.not()) {
+                            binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
+                        }
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
                     } ?: run {
                         binding.titleTv.setText(R.string.Common_Wallet)
                         binding.tailIcon.isVisible = false
                     }
                 }
-
             }
         }
     }
