@@ -152,9 +152,7 @@ fun AssetDashboardScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                key(refreshTrigger) {
-                    TotalAssetsCard()
-                }
+                TotalAssetsCard()
                 Spacer(modifier = Modifier.height(20.dp))
 
                 WalletCard(

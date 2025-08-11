@@ -79,19 +79,6 @@ suspend fun clearDatabase(context: Context) {
     } catch (e: Exception) {
         reportException(e)
     }
-
-    var db: SupportSQLiteDatabase? = null
-    try {
-        // Init database
-        MixinDatabase.getDatabase(context)
-        db = MixinDatabase.getWritableDatabase() ?: return
-        db.execSQL("DELETE FROM orders")
-    } catch (e: Exception) {
-        Timber.e(e)
-        reportException(e)
-    } finally {
-        db?.close()
-    }
 }
 
 @SuppressLint("ObsoleteSdkInt")

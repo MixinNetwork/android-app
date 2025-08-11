@@ -107,11 +107,22 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val searchQuery = remember { MutableStateFlow("") }
                     val wallets by viewModel.walletsFlow.collectAsState()
                     LaunchedEffect(Unit) {
-                        searchQuery
-                            .debounce(300)
-                            .collect { query ->
-                                viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                        launch {
+                            searchQuery.collect { query ->
+                                if (query.isEmpty()) {
+                                    viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                                }
                             }
+                        }
+                        launch {
+                            searchQuery
+                                .debounce(300)
+                                .collect { query ->
+                                    if (query.isNotEmpty()) {
+                                        viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                                    }
+                                }
+                        }
                     }
 
                     WalletListScreen(
@@ -205,6 +216,11 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 }
 
+sealed class WalletListItem {
+    object PrivacyWallet : WalletListItem()
+    data class RegularWallet(val wallet: Web3Wallet) : WalletListItem() // common wallet or imported wallet
+}
+
 @Composable
 fun WalletListScreen(
     wallets: List<Web3Wallet>,
@@ -218,6 +234,18 @@ fun WalletListScreen(
     var query by remember { mutableStateOf("") }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
+
+    val walletItems = remember(wallets, excludeWalletId, query) {
+        buildList {
+            if (excludeWalletId != null && query.isEmpty()) {
+                add(WalletListItem.PrivacyWallet)
+            }
+            wallets.forEach { wallet ->
+                add(WalletListItem.RegularWallet(wallet))
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             query = query,
@@ -229,42 +257,49 @@ fun WalletListScreen(
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
-        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp).verticalScroll(rememberScrollState())) {
-            if (excludeWalletId != null && query.isEmpty()) {
-                WalletCard(
-                    name = stringResource(id = R.string.Privacy_Wallet),
-                    destination = WalletDestination.Privacy,
-                    onClick = {
-                        onWalletClick.invoke(null)
+        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp).fillMaxSize().verticalScroll(rememberScrollState())) {
+            // Render unified wallet items
+            walletItems.forEachIndexed { index, item ->
+                when (item) {
+                    is WalletListItem.PrivacyWallet -> {
+                        WalletCard(
+                            name = stringResource(id = R.string.Privacy_Wallet),
+                            destination = WalletDestination.Privacy,
+                            onClick = {
+                                onWalletClick.invoke(null)
+                            }
+                        )
                     }
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-            wallets.forEach { wallet ->
-                if (wallet.isImported()) {
-                    val destination = WalletDestination.Import(wallet.id, wallet.category)
-                    WalletCard(
-                        name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
-                        destination = destination,
-                        hasLocalPrivateKey = wallet.hasLocalPrivateKey,
-                        onClick = { onWalletClick(wallet) }
-                    )
-                } else if (wallet.isWatch()) {
-                    val destination = WalletDestination.Watch(wallet.id, wallet.category)
-                    WalletCard(
-                        name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
-                        destination = destination,
-                        onClick = { onWalletClick(wallet) }
-                    )
-                } else {
-                    val destination = WalletDestination.Classic(wallet.id)
-                    WalletCard(
-                        name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
-                        destination = destination,
-                        onClick = { onWalletClick(wallet) }
-                    )
+                    is WalletListItem.RegularWallet -> {
+                        val wallet = item.wallet
+                        if (wallet.isImported()) {
+                            val destination = WalletDestination.Import(wallet.id, wallet.category)
+                            WalletCard(
+                                name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                                destination = destination,
+                                hasLocalPrivateKey = wallet.hasLocalPrivateKey,
+                                onClick = { onWalletClick(wallet) }
+                            )
+                        } else if (wallet.isWatch()) {
+                            val destination = WalletDestination.Watch(wallet.id, wallet.category)
+                            WalletCard(
+                                name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                                destination = destination,
+                                onClick = { onWalletClick(wallet) }
+                            )
+                        } else {
+                            val destination = WalletDestination.Classic(wallet.id)
+                            WalletCard(
+                                name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                                destination = destination,
+                                onClick = { onWalletClick(wallet) }
+                            )
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                if (index < walletItems.size - 1) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
 
             if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {

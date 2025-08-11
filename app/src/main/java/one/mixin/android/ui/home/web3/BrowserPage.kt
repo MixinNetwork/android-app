@@ -63,6 +63,7 @@ import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
+import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
@@ -109,8 +110,8 @@ fun BrowserPage(
     val context = LocalContext.current
     var showWarning by remember { mutableStateOf(false) }
     var walletName by remember { mutableStateOf<String?>(null) }
-    var addressDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
-    var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var addressDisplayInfo by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
 
     LaunchedEffect(parsedTx) {
         showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
@@ -346,12 +347,18 @@ fun BrowserPage(
                     val displayInfo = addressDisplayInfo
                     if (displayInfo != null) {
                         val (displayName, isAddress) = displayInfo
-                        ItemContent(
-                            title = stringResource(id = R.string.Receivers).uppercase(), 
-                            subTitle = toAddress, 
-                            label = displayName,
-                            isAddress = isAddress,
-                        )
+                        if (displayName == null) {
+                            ItemWalletContent(
+                                title = stringResource(id = R.string.Receivers).uppercase(),
+                            )
+                        } else {
+                            ItemContent(
+                                title = stringResource(id = R.string.Receivers).uppercase(),
+                                subTitle = toAddress,
+                                label = displayName,
+                                isAddress = isAddress,
+                            )
+                        }
                     } else {
                         ItemContent(
                             title = stringResource(id = R.string.Receivers).uppercase(), 

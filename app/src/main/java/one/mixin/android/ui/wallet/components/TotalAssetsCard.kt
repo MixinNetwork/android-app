@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,8 +32,14 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.components.Tooltip
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -45,8 +53,29 @@ fun TotalAssetsCard(
     var combinedDistribution by remember { mutableStateOf<List<AssetDistribution>>(emptyList()) }
     var totalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
     var showTooltip by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var refreshTrigger by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                refreshTrigger++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
 
-    LaunchedEffect(viewModel) {
+        val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { event ->
+                refreshTrigger++
+            }
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            disposable.dispose()
+        }
+    }
+
+    LaunchedEffect(refreshTrigger) {
         combinedDistribution = viewModel.getTokenDistribution()
         totalBalance = viewModel.getTokenTotalBalance()
     }

@@ -63,7 +63,12 @@ class SearchExploreDataPackage(
             marketList?.size ?: 0
         }
 
-    private fun dappCount() = dappList?.size ?: 0
+    private fun dappCount() =
+        if (dappLimit) {
+            min(dappList?.size ?: 0, LIMIT_COUNT)
+        } else {
+            dappList?.size ?: 0
+        }
 
     private fun botCount() =
         if (botLimit) {
