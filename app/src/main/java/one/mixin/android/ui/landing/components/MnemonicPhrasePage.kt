@@ -40,7 +40,7 @@ fun MnemonicPhrasePage(
     val viewModel = hiltViewModel<MobileViewModel>()
     val mnemonicPhraseState by viewModel.mnemonicPhraseState.observeAsState(MnemonicPhraseState.Initial)
     MixinAppTheme {
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 20.dp).fillMaxWidth()) {
             Spacer(modifier = Modifier.height(120.dp))
             Icon(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
