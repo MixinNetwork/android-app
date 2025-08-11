@@ -8,6 +8,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -91,6 +92,12 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                     )
             }
             nameEt.addTextChangedListener(mWatcher)
+            nameEt.setOnEditorActionListener {  _, _, _ ->
+                if (nameEt.text.isNotBlank()) {
+                    nameFab.performClick()
+                }
+                true
+            }
             nameCover.isClickable = true
 
             nameEt.postDelayed({
