@@ -107,11 +107,22 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val searchQuery = remember { MutableStateFlow("") }
                     val wallets by viewModel.walletsFlow.collectAsState()
                     LaunchedEffect(Unit) {
-                        searchQuery
-                            .debounce(300)
-                            .collect { query ->
-                                viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                        launch {
+                            searchQuery.collect { query ->
+                                if (query.isEmpty()) {
+                                    viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                                }
                             }
+                        }
+                        launch {
+                            searchQuery
+                                .debounce(300)
+                                .collect { query ->
+                                    if (query.isNotEmpty()) {
+                                        viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                                    }
+                                }
+                        }
                     }
 
                     WalletListScreen(
