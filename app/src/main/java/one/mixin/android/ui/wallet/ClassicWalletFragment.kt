@@ -132,28 +132,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
             Timber.e("Classic Selected wallet destination: $value")
         }
-
-    private fun loadSelectedWalletDestination() {
-        val walletPref = defaultSharedPreferences.getString(
-            Constants.Account.PREF_USED_WALLET, null
-        )
-
-        val initialWalletDestination = walletPref?.let { pref ->
-            try {
-                gson.fromJson(pref, WalletDestination::class.java)
-            } catch (_: Exception) {
-                WalletDestination.Privacy
-            }
-        } ?: WalletDestination.Privacy
-
-        selectedWalletDestination = initialWalletDestination
-        Timber.e("Classic Loaded selected wallet destination: $selectedWalletDestination")
-    }
-
-    private val gson = GsonBuilder()
-        .registerTypeHierarchyAdapter(WalletDestination::class.java, WalletDestinationTypeAdapter())
-        .create()
-
     private val pendingTxCountLiveData by lazy {
         _walletId.switchMap { id ->
             if (id.isNullOrEmpty()) {
@@ -179,7 +157,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        loadSelectedWalletDestination()
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {

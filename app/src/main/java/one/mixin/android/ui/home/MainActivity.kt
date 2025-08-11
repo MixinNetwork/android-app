@@ -167,8 +167,10 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
+import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -933,7 +935,8 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private val walletFragment by lazy {
-        WalletFragment()
+        val initialWalletDestination = loadInitialWalletDestination()
+        WalletFragment.newInstance(initialWalletDestination)
     }
 
     private val exploreFragment by lazy {
@@ -998,6 +1001,19 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    private fun loadInitialWalletDestination(): WalletDestination {
+        val walletPref = defaultSharedPreferences.getString(
+            Account.PREF_USED_WALLET, null
+        )
+
+        return walletPref?.let { pref ->
+            try {
+                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
+            } catch (_: Exception) {
+                WalletDestination.Privacy
+            }
+        } ?: WalletDestination.Privacy
+    }
 
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
