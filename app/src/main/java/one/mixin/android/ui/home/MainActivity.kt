@@ -162,8 +162,6 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
-import one.mixin.android.ui.wallet.ClassicWalletFragment
-import one.mixin.android.ui.wallet.PrivacyWalletFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
@@ -306,11 +304,6 @@ class MainActivity : BlazeBaseActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Pre-init
-        WalletFragment.newInstance(loadInitialWalletDestination())
-        ClassicWalletFragment.newInstance()
-        PrivacyWalletFragment.newInstance()
 
         if (savedInstanceState == null) {
             navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
@@ -939,16 +932,17 @@ class MainActivity : BlazeBaseActivity() {
         ConversationListFragment()
     }
 
+    private val walletFragment by lazy {
+        val initialWalletDestination = loadInitialWalletDestination()
+        WalletFragment.newInstance(initialWalletDestination)
+    }
+
     private val exploreFragment by lazy {
         ExploreFragment()
     }
 
     private val collectiblesFragment by lazy {
         CollectiblesFragment()
-    }
-
-    private val walletFragment by lazy {
-        WalletFragment.newInstance()
     }
 
     private fun initBottomNav() {
