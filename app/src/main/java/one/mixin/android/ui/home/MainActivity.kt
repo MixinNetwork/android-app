@@ -948,13 +948,14 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 
             bottomNav.itemSelections()
-                .throttleFirst(400, TimeUnit.MILLISECONDS)
+                .map { it.itemId }
+                .distinctUntilChanged()
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
-                .subscribe { menuItem ->
+                .subscribe { itemId ->
                     Timber.e(
                         "onItemSelected: ${
-                            when (menuItem.itemId) {
+                            when (itemId) {
                                 R.id.nav_chat -> "nav_chat"
                                 R.id.nav_wallet -> "nav_wallet"
                                 R.id.nav_collectibles -> "nav_collectibles"
@@ -963,7 +964,7 @@ class MainActivity : BlazeBaseActivity() {
                             }
                         }"
                     )
-                    handleNavigationItemSelected(menuItem.itemId)
+                    handleNavigationItemSelected(itemId)
                 }
         }
 
