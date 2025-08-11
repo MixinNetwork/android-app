@@ -255,6 +255,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             assetsAdapter.onItemListener = this@ClassicWalletFragment
 
             coinsRv.adapter = assetsAdapter
+            setEmpty()
             coinsRv.addOnScrollListener(
                 object : RecyclerView.OnScrollListener() {
                     override fun onScrolled(
