@@ -11,13 +11,13 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.switchMap
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -32,6 +32,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
@@ -49,6 +50,8 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
+import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -108,6 +111,49 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
     }
 
+    private var selectedWalletDestination: WalletDestination? = null
+        set(value) {
+            if (value != field && value != null) {
+                field = value
+                when(value) {
+                    is WalletDestination.Classic -> {
+                        walletId = value.walletId
+                    }
+                    is WalletDestination.Import -> {
+                        walletId = value.walletId
+                    }
+                    is WalletDestination.Watch -> {
+                        walletId = value.walletId
+                    }
+                    is WalletDestination.Privacy -> {
+                        // No action needed for Privacy wallet
+                    }
+                }
+            }
+            Timber.e("Classic Selected wallet destination: $value")
+        }
+
+    private fun loadSelectedWalletDestination() {
+        val walletPref = defaultSharedPreferences.getString(
+            Constants.Account.PREF_USED_WALLET, null
+        )
+
+        val initialWalletDestination = walletPref?.let { pref ->
+            try {
+                gson.fromJson(pref, WalletDestination::class.java)
+            } catch (_: Exception) {
+                WalletDestination.Privacy
+            }
+        } ?: WalletDestination.Privacy
+
+        selectedWalletDestination = initialWalletDestination
+        Timber.e("Classic Loaded selected wallet destination: $selectedWalletDestination")
+    }
+
+    private val gson = GsonBuilder()
+        .registerTypeHierarchyAdapter(WalletDestination::class.java, WalletDestinationTypeAdapter())
+        .create()
+
     private val pendingTxCountLiveData by lazy {
         _walletId.switchMap { id ->
             if (id.isNullOrEmpty()) {
@@ -133,6 +179,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        loadSelectedWalletDestination()
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
