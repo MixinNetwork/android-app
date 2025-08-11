@@ -26,7 +26,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.vo.WalletCategory
-import kotlin.getValue
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {

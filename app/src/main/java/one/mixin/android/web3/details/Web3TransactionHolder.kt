@@ -13,12 +13,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,9 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.isVisible
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.flow.firstOrNull
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
 import one.mixin.android.databinding.ItemWeb3TransactionsBinding
@@ -43,10 +35,9 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.colorAttr
-import one.mixin.android.extension.numberFormat12
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
-import one.mixin.android.ui.home.web3.Web3ViewModel
 
 class Web3TransactionHolder(
     val binding: ItemWeb3TransactionsBinding
@@ -54,7 +45,7 @@ class Web3TransactionHolder(
 
     fun formatAmountWithSign(amount: String?, positive: Boolean): String {
         if (amount.isNullOrEmpty()) return "N/A"
-        val formattedAmount = amount.numberFormat12()
+        val formattedAmount = amount.numberFormat8()
         return if (positive) {
             if (formattedAmount.startsWith("+")) formattedAmount else "+$formattedAmount"
         } else {
