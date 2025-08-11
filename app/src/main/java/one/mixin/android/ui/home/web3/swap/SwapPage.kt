@@ -270,11 +270,7 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = if (walletId.isNullOrBlank()) {
-                from.balance
-            } else {
-                viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
-            }
+            val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
 
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),
