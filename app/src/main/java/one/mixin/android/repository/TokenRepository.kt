@@ -299,6 +299,9 @@ class TokenRepository
                             a
                         }
                     },
+                    defaultErrorHandle = {
+                        Timber.e("Failed to sync asset $assetId: ${it.errorDescription}")
+                    }
                 ) ?: return null
 
             val exists = chainDao.checkExistsById(asset.chainId)
@@ -312,6 +315,9 @@ class TokenRepository
                             chainDao.upsertSuspend(c)
                         }
                     },
+                    defaultErrorHandle = {
+                        Timber.e("Failed to sync chain for asset $assetId: ${it.errorDescription}")
+                    }
                 )
             }
 
