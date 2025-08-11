@@ -54,6 +54,7 @@ import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -97,6 +98,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in PrivacyWalletFragment")
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
@@ -162,6 +164,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
+            Timber.e("observe assetItemsNotHidden data size: ${it.size}")
             if (it.isEmpty()) {
                 setEmpty()
             } else {

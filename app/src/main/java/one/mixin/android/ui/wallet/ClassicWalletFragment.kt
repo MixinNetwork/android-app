@@ -150,6 +150,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in ClassicWalletFragment")
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
