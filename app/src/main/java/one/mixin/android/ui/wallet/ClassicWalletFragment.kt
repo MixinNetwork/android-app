@@ -109,28 +109,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
         }
     }
-
-    private var selectedWalletDestination: WalletDestination? = null
-        set(value) {
-            if (value != field && value != null) {
-                field = value
-                when (value) {
-                    is WalletDestination.Classic -> {
-                        walletId = value.walletId
-                    }
-                    is WalletDestination.Import -> {
-                        walletId = value.walletId
-                    }
-                    is WalletDestination.Watch -> {
-                        walletId = value.walletId
-                    }
-                    is WalletDestination.Privacy -> {
-                        // No action needed for Privacy wallet
-                    }
-                }
-            }
-            Timber.e("Classic Selected wallet destination: $value")
-        }
     private val pendingTxCountLiveData by lazy {
         _walletId.switchMap { id ->
             if (id.isNullOrEmpty()) {
