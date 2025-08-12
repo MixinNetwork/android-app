@@ -705,23 +705,20 @@ class SwapFragment : BaseFragment() {
             val lastTo = lastSelectedPair?.getOrNull(1)
 
             fromToken = if (input != null) {
-                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!,input)?.toSwapToken()
+                if(inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!,input)?.toSwapToken()
             } else lastFrom
                 ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ETH_ID }
                     ?: tokens.firstOrNull())?.toSwapToken()
 
             toToken = if (output != null) {
-                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!,
-                    output
-                )?.toSwapToken()
+                if (inMixin()) swapViewModel.findToken(output)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, output)?.toSwapToken()
             } else if (input != null) {
                 val o = if (input == USDT_ASSET_ETH_ID) {
                     XIN_ASSET_ID
                 } else {
                     USDT_ASSET_ETH_ID
                 }
-                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(walletId!!, o)
-                    ?.toSwapToken()
+                if (inMixin()) swapViewModel.findToken(o)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, o)?.toSwapToken()
             } else lastTo
                 ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }
                     ?.toSwapToken()

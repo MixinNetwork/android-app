@@ -376,6 +376,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                             output = t.assetId,
+                                            walletId = JsSigner.currentWalletId,
+                                            inMixin = false,
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         view.navigate(
