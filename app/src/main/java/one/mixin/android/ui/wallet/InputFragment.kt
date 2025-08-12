@@ -59,7 +59,6 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
-import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
@@ -514,12 +513,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     toAddress = toAddress,
                                     chainToken = chainToken,
                                     onTxhash = { _, serializedTx ->
-                                        val txStateFragment =
-                                            TransactionStateFragment.newInstance(
-                                                serializedTx,
-                                                null
-                                            )
-                                        navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
                                     onDismiss = { isDone->
                                         if (isDone) {
