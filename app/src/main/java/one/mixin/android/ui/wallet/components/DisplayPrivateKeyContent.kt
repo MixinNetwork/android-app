@@ -47,7 +47,7 @@ fun DisplayPrivateKeyContent(
     ) {
         Spacer(modifier = Modifier.height(50.dp))
         Icon(
-            painter = painterResource(R.drawable.ic_web3_security),
+            painter = painterResource(R.drawable.ic_web3_proceed),
             tint = Color.Unspecified,
             contentDescription = null
         )

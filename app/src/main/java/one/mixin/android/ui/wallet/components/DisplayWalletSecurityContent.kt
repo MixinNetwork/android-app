@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.components
 
 import PageScaffold
 import androidx.compose.runtime.Composable
+import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
@@ -18,6 +19,7 @@ fun DisplayWalletSecurityContent(
         PageScaffold(
             title = "",
             verticalScrollable = false,
+            backIcon = R.drawable.ic_close_black,
             pop = pop,
         ) {
             if (mode == Mode.VIEW_PRIVATE_KEY) {

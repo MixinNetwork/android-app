@@ -102,6 +102,8 @@ internal constructor(
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
+    fun assetItemsNotHiddenRaw(): List<TokenItem> = tokenRepository.assetItemsNotHiddenRaw()
+
     fun hasAssetsWithValue() = assetRepository.hasAssetsWithValue()
 
     @ExperimentalPagingApi

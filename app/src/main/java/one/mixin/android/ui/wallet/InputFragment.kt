@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
@@ -57,7 +59,6 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
-import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
@@ -103,54 +104,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             WEB3,
             BIOMETRIC_ITEM
         }
-
-        fun newInstance(
-            fromAddress: String,
-            toAddress: String,
-            web3Token: Web3TokenItem,
-            chainToken: Web3TokenItem,
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    Timber.e("chain ${chainToken.name} ${web3Token.chainId} ${chainToken.chainId} $fromAddress $toAddress")
-                    putString(ARGS_FROM_ADDRESS, fromAddress)
-                    putString(ARGS_TO_ADDRESS, toAddress)
-                    putParcelable(ARGS_WEB3_TOKEN, web3Token)
-                    putParcelable(ARGS_WEB3_CHAIN_TOKEN, chainToken)
-                }
-            }
-
-        fun newInstance(
-            tokenItem: TokenItem,
-            toAddress: String,
-            tag: String? = null,
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_TOKEN, tokenItem)
-                    putString(ARGS_TO_ADDRESS, toAddress)
-                    putString(ARGS_TO_ADDRESS_TAG, tag)
-                }
-            }
-
-
-        fun newInstance(
-            tokenItem: TokenItem,
-            user: User
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_TOKEN, tokenItem)
-                    putParcelable(ARGS_TO_USER, user)
-                }
-            }
-
-        inline fun <reified T : BiometricItem> newInstance(t: T) =
-            InputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_BIOMETRIC_ITEM, t)
-                }
-            }
     }
 
     private val transferType: TransferType by lazy {
@@ -422,6 +375,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                             output = t.assetId,
+                                            walletId = JsSigner.currentWalletId,
+                                            inMixin = false,
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         view.navigate(
@@ -558,21 +513,42 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     toAddress = toAddress,
                                     chainToken = chainToken,
                                     onTxhash = { _, serializedTx ->
-                                        val txStateFragment =
-                                            TransactionStateFragment.newInstance(
-                                                serializedTx,
-                                                null
-                                            )
-                                        navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
                                     onDismiss = { isDone->
                                         if (isDone) {
-                                            this@InputFragment.parentFragmentManager.apply {
-                                                if (backStackEntryCount > 0) {
-                                                    popBackStack(
-                                                        null,
-                                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                                    )
+                                            val navController = findNavController()
+                                            val backStackEntryCount = parentFragmentManager.backStackEntryCount
+
+                                            // Check if current fragment is the start destination of navigation
+                                            val currentDestination = navController.currentDestination?.id
+                                            val startDestination = navController.graph.startDestinationId
+                                            val isStartDestination = currentDestination == startDestination || backStackEntryCount <= 1
+
+                                            if (isStartDestination) {
+                                                // If InputFragment or TransferDestinationInputFragment is start destination, exit activity
+                                                requireActivity().finish()
+                                            } else {
+                                                // Otherwise, navigate back to TransferDestinationInputFragment and pop it
+                                                parentFragmentManager.apply {
+                                                    // Pop all fragments back to TransferDestinationInputFragment
+                                                    var foundTransferDestFragment = false
+                                                    val fragmentCount = backStackEntryCount
+                                                    for (i in 0 until fragmentCount) {
+                                                        val topFragment = fragments.lastOrNull()
+                                                        if (topFragment is TransferDestinationInputFragment) {
+                                                            // Found TransferDestinationInputFragment, pop it too
+                                                            popBackStackImmediate()
+                                                            foundTransferDestFragment = true
+                                                            break
+                                                        } else {
+                                                            popBackStackImmediate()
+                                                        }
+                                                    }
+
+                                                    // If no TransferDestinationInputFragment found in stack, just pop all
+                                                    if (!foundTransferDestFragment) {
+                                                        popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                                    }
                                                 }
                                             }
                                         }
@@ -1167,16 +1143,34 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
                         if (success) {
-                            parentFragmentManager.apply {
-                                if (backStackEntryCount > 0) {
-                                    popBackStack(
-                                        null,
-                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                    )
-                                }
-                                val activity = requireActivity()
-                                if (backStackEntryCount == 0 && activity is WalletActivity) { // Only pop if no other fragments in back stack
-                                    activity.onBackPressedDispatcher.onBackPressed()
+                            val navController = findNavController()
+                            val backStackEntryCount = parentFragmentManager.backStackEntryCount
+
+                            val currentDestination = navController.currentDestination?.id
+                            val startDestination = navController.graph.startDestinationId
+                            val isStartDestination = currentDestination == startDestination || backStackEntryCount <= 1
+
+                            if (isStartDestination) {
+                                requireActivity().finish()
+                            } else {
+                                parentFragmentManager.apply {
+                                    var foundTransferDestFragment = false
+                                    val fragmentCount = backStackEntryCount
+                                    for (i in 0 until fragmentCount) {
+                                        val topFragment = fragments.lastOrNull()
+                                        if (topFragment is TransferDestinationInputFragment) {
+                                            // Found TransferDestinationInputFragment, pop it too
+                                            popBackStackImmediate()
+                                            foundTransferDestFragment = true
+                                            break
+                                        } else {
+                                            popBackStackImmediate()
+                                        }
+                                    }
+
+                                    if (!foundTransferDestFragment) {
+                                        popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                    }
                                 }
                             }
                         }

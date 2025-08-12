@@ -203,7 +203,7 @@ fun ImportWalletDetailPage(
     }
 
     MixinAppTheme {
-        PageScaffold(title = title, pop = pop, actions = {
+        PageScaffold(title = title, pop = pop, backIcon = R.drawable.ic_close_black, actions = {
             IconButton(onClick = { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),

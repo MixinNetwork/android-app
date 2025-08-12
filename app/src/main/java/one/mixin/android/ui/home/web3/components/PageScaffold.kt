@@ -1,3 +1,4 @@
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
@@ -55,6 +56,7 @@ fun PageScaffold(
     verticalScrollable: Boolean = true,
     pop: (() -> Unit)?,
     actions: @Composable RowScope.() -> Unit = {},
+    backIcon: Int = R.drawable.ic_back,
     body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -76,7 +78,7 @@ fun PageScaffold(
                     pop?.let { pop ->
                         IconButton(onClick = { pop() }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_back),
+                                painter = painterResource(id = backIcon),
                                 contentDescription = null,
                                 tint = MixinAppTheme.colors.icon,
                             )

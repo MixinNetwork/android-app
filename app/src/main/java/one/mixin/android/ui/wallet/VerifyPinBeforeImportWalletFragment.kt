@@ -49,6 +49,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
             setContent {
                 VerifyPinBeforeImportWalletPage(
                     tip = tip,
+                    mode = mode,
                     pop = {
                         activity?.finish()
                     },
