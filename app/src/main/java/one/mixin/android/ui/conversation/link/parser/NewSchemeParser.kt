@@ -388,7 +388,9 @@ class NewSchemeParser(
             val destination = result.destination
             if (amount == null) {
                 // This only exists when processing External URL within the App
-                bottomSheet.navTo(InputFragment.newInstance(asset, destination, null), InputFragment.TAG)
+                bottomSheet.requireActivity().let {
+                    WalletActivity.showInputForAddress(it, asset, destination, null)
+                }
                 bottomSheet.dismiss()
                 return
             }

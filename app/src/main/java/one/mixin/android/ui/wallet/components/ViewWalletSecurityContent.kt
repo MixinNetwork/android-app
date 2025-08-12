@@ -37,22 +37,17 @@ fun ViewWalletSecurityContent(mode: WalletSecurityActivity.Mode, pop: () -> Unit
         PageScaffold(
             title = "",
             verticalScrollable = false,
+            backIcon = R.drawable.ic_close_black,
             pop = pop,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(50.dp))
-                Icon(painter = painterResource(R.drawable.ic_web3_security), tint = Color.Unspecified, contentDescription = null)
+                Icon(painter = painterResource(R.drawable.ic_web3_proceed), tint = Color.Unspecified, contentDescription = null)
                 Spacer(modifier = Modifier.height(30.dp))
                 Text(
                     stringResource(R.string.Before_you_proceed), fontSize = 18.sp,
                     fontWeight = FontWeight.W600,
                     color = MixinAppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    stringResource(R.string.wallet_security_subtitle, keyword), fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(24.dp))

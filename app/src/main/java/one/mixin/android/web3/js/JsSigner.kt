@@ -26,7 +26,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.foursquare.Category
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount
@@ -142,10 +141,10 @@ object JsSigner {
             val addresses = queryAddress(walletId)
             path = addresses.firstOrNull()?.path ?:""
             evmAddress =
-                addresses.firstOrNull { it.chainId != Constants.ChainId.SOLANA_CHAIN_ID }?.destination
+                addresses.firstOrNull { it.chainId != SOLANA_CHAIN_ID }?.destination
                     ?: ""
             solanaAddress =
-                addresses.firstOrNull { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }?.destination
+                addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
                     ?: ""
             address = evmAddress
         } else {
@@ -348,7 +347,9 @@ object JsSigner {
     ): VersionedTransactionCompat {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
-        if (tx.onlyOneSigner() && tx.message.recentBlockhash.isBlank()) {
+        if (tx.onlyOneSigner() &&
+            (tx.message.recentBlockhash.isBlank() ||
+                    tx.message.recentBlockhash == holder.publicKey.toBase58())) { // inner transfer use address as temp blockhash
             tx.message.recentBlockhash = getBlockhash()
         }
         tx.sign(holder)

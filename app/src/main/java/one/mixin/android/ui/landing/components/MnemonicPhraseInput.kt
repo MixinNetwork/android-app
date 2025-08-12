@@ -443,14 +443,14 @@ fun MnemonicPhraseInput(
                                             val words = pastedText.split(" ")
                                             when {
                                                 words.size == (if (state == MnemonicState.Import) 24 else 25) && isMnemonicValid(
-                                                    words
+                                                    if (state == MnemonicState.Import) words else words.subList(0, 24)
                                                 ) -> {
                                                     legacy = true
                                                     inputs = words
                                                 }
 
                                                 words.size == (if (state == MnemonicState.Import) 12 else 13) && isMnemonicValid(
-                                                    words
+                                                    if (state == MnemonicState.Import) words else words.subList(0, 12)
                                                 ) -> {
                                                     legacy = false
                                                     inputs = words

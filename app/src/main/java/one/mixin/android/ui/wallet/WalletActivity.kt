@@ -24,6 +24,7 @@ import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.User
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -163,6 +164,10 @@ class WalletActivity : BlazeBaseActivity() {
                     wallet?.let { wallet -> putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet) }
                 })
             }
+            is Destination.Input -> {
+                navGraph.setStartDestination(R.id.input_fragment)
+                navController.setGraph(navGraph, intent.extras)
+            }
             is Destination.InputWithBiometricItem -> {
                 navGraph.setStartDestination(R.id.input_fragment)
                 val biometricItem = intent.getParcelableExtraCompat(InputFragment.ARGS_BIOMETRIC_ITEM, BiometricItem::class.java)
@@ -193,6 +198,7 @@ class WalletActivity : BlazeBaseActivity() {
         object Address : Destination()
         object Web3Transactions : Destination()
         object Web3TransferDestinationInput : Destination()
+        object Input : Destination()
         object InputWithBiometricItem : Destination()
     }
 
@@ -316,6 +322,54 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(WEB3_TOKEN, web3Token)
                     putExtra(ADDRESS, address)
                 },
+            )
+        }
+
+        fun showInputForWeb3(
+            activity: Activity,
+            fromAddress: String,
+            toAddress: String,
+            web3Token: Web3TokenItem,
+            chainToken: Web3TokenItem,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.Input)
+                    putExtra(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                    putExtra(InputFragment.ARGS_TO_ADDRESS, toAddress)
+                    putExtra(InputFragment.ARGS_WEB3_TOKEN, web3Token)
+                    putExtra(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
+                }
+            )
+        }
+
+        fun showInputForAddress(
+            activity: Activity,
+            tokenItem: TokenItem,
+            toAddress: String,
+            tag: String? = null,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.Input)
+                    putExtra(InputFragment.ARGS_TOKEN, tokenItem)
+                    putExtra(InputFragment.ARGS_TO_ADDRESS, toAddress)
+                    putExtra(InputFragment.ARGS_TO_ADDRESS_TAG, tag)
+                }
+            )
+        }
+
+        fun showInputForUser(
+            activity: Activity,
+            tokenItem: TokenItem,
+            user: User
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.Input)
+                    putExtra(InputFragment.ARGS_TOKEN, tokenItem)
+                    putExtra(InputFragment.ARGS_TO_USER, user)
+                }
             )
         }
 

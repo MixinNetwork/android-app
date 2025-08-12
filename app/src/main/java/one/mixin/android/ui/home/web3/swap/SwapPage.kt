@@ -122,7 +122,8 @@ fun SwapPage(
     LaunchedEffect(walletId) {
         if (walletId != null) {
             viewModel.findWeb3WalletById(walletId)?.let {
-                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                if (it.category == WalletCategory.CLASSIC.value ||
+                    it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
                     it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
                     it.category == WalletCategory.WATCH_ADDRESS.value) {
                     walletDisplayName = it.name
@@ -270,11 +271,7 @@ fun SwapPage(
         },
     ) {
         fromToken?.let { from ->
-            val fromBalance = if (walletId.isNullOrBlank()) {
-                from.balance
-            } else {
-                viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
-            }
+            val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
 
             KeyboardAwareBox(
                 modifier = Modifier.fillMaxHeight(),

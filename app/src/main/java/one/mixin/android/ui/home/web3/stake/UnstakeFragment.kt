@@ -23,7 +23,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.JsSigner
@@ -98,17 +97,6 @@ class UnstakeFragment : BaseFragment() {
                 onTxhash = { _, serializedTx ->
                     lifecycleScope.launch {
                         activity?.onBackPressedDispatcher?.onBackPressed()
-                        val txStateFragment =
-                            TransactionStateFragment.newInstance(serializedTx, null).apply {
-                                setCloseAction {
-                                    parentFragmentManager.popBackStackImmediate()
-                                    parentFragmentManager.popBackStackImmediate()
-                                    parentFragmentManager.findFragmentByTag(TransactionStateFragment.TAG)?.let { fragment ->
-                                        parentFragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
-                                    }
-                                }
-                            }
-                        navTo(txStateFragment, TransactionStateFragment.TAG)
                     }
                 },
             )

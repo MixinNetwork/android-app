@@ -4,11 +4,14 @@ import android.content.Context
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -22,6 +25,7 @@ import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.Web3FilterParams
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,7 +55,19 @@ constructor(
     fun web3Tokens(walletId: String) = web3TokenDao.web3TokenItems(walletId)
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
-    
+
+    fun web3TokensExcludeHiddenRaw(walletId: String) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
+        RoomRawQuery(
+            """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
+        WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL) 
+        ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
+        """, onBindStatement = {
+                it.bindText(1, walletId)
+            })
+    )
+
     fun hiddenAssetItems(walletId: String) = web3TokenDao.hiddenAssetItems(walletId)
     
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {
@@ -171,6 +187,33 @@ constructor(
     }
 
     suspend fun getAllWalletNames(categories :List<String>) = web3WalletDao.getAllWalletNames(categories)
+
+    suspend fun getClassicWalletMaxIndex(): Int {
+        return try {
+            val classicWallets = web3WalletDao.getAllClassicWallets()
+
+            if (classicWallets.isEmpty()) {
+                return 0
+            }
+
+            var maxIndex = 0
+            for (wallet in classicWallets) {
+                val addresses = web3AddressDao.getAddressesByWalletId(wallet.id)
+                for (address in addresses) {
+                    address.path?.let { path ->
+                        val index = CryptoWalletHelper.extractIndexFromPath(path)
+                        if (index != null && index > maxIndex) {
+                            maxIndex = index
+                        }
+                    }
+                }
+            }
+            maxIndex
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get classic wallet max index")
+            0
+        }
+    }
 
     suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
 }

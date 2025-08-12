@@ -53,6 +53,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import org.sol4k.Base58
+import org.web3j.crypto.Keys
 import org.web3j.crypto.WalletUtils
 import timber.log.Timber
 
@@ -202,7 +203,7 @@ fun ImportWalletDetailPage(
     }
 
     MixinAppTheme {
-        PageScaffold(title = title, pop = pop, actions = {
+        PageScaffold(title = title, pop = pop, backIcon = R.drawable.ic_close_black, actions = {
             IconButton(onClick = { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
@@ -407,7 +408,13 @@ fun ImportWalletDetailPage(
                         .padding(horizontal = 48.dp)
                         .height(48.dp),
                     onClick = {
-                        onConfirmClick(currentChainId, text)
+                        onConfirmClick(
+                            currentChainId, if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
+                                Keys.toChecksumAddress(text)
+                            } else {
+                                text
+                            }
+                        )
                     },
                     enabled = isButtonEnabled,
                     colors = ButtonDefaults.buttonColors(

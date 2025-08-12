@@ -77,7 +77,8 @@ fun SwapOrderDetailPage(
     LaunchedEffect(walletId) {
         if (walletId != null) {
             viewModel.findWeb3WalletById(walletId)?.let {
-                if (it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                if (it.category == WalletCategory.CLASSIC.value ||
+                    it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
                     it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
                     it.category == WalletCategory.WATCH_ADDRESS.value) {
                     walletDisplayName = it.name

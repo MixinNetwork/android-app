@@ -53,10 +53,11 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.util.ErrorHandler
 
 @Composable
-fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
+fun VerifyPinBeforeImportWalletPage(tip: Tip, mode: WalletSecurityActivity.Mode, pop: () -> Unit, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var isLoading by remember { mutableStateOf(false) }
@@ -101,6 +102,7 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) ->
         PageScaffold(
             title = "",
             verticalScrollable = false,
+            backIcon = R.drawable.ic_close_black,
             pop = pop,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -162,7 +164,7 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, pop: () -> Unit, next: (String) ->
                         )
                     } else {
                         Text(
-                            text = stringResource(R.string.Continue),
+                            text = stringResource(if (mode == WalletSecurityActivity.Mode.CREATE_WALLET) R.string.create_new_wallet else R.string.Continue),
                             color = Color.White
                         )
                     }

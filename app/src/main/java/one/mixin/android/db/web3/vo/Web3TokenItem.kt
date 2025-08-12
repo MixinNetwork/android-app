@@ -289,7 +289,7 @@ suspend fun Web3TokenItem.buildTransaction(
         }
         val transaction =
             Transaction(
-                toAddress, // use address as temp placeholder, will replace when signing
+                fromAddress, // use address as temp placeholder, will replace when signing
                 instructions,
                 sender,
             )

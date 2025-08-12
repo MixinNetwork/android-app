@@ -102,6 +102,8 @@ internal constructor(
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
+    fun assetItemsNotHiddenRaw(): List<TokenItem> = tokenRepository.assetItemsNotHiddenRaw()
+
     fun hasAssetsWithValue() = assetRepository.hasAssetsWithValue()
 
     @ExperimentalPagingApi
@@ -242,11 +244,6 @@ internal constructor(
                     tokenRepository.findOrSyncAsset(id)
                 }
             }
-        }
-
-    fun upsetAsset(asset: Token) =
-        viewModelScope.launch(Dispatchers.IO) {
-            tokenRepository.insert(asset)
         }
 
     fun observeTopAssets() = tokenRepository.observeTopAssets()
@@ -462,7 +459,7 @@ internal constructor(
     suspend fun renameWallet(walletId: String, newName: String) {
         withContext(Dispatchers.IO) {
             try {
-                val request = WalletRequest(name = newName, category = null, addresses = null)
+                val request = WalletRequest(name = newName.trim(), category = null, addresses = null)
                 val response = web3Repository.updateWallet(walletId, request)
                 if (response.isSuccess && response.data != null) {
                     // Update local database
@@ -511,9 +508,6 @@ internal constructor(
 
             val wallet = web3Repository.getWalletByDestination(destination)
             if (wallet != null) {
-                if (wallet.category == WalletCategory.CLASSIC.value) {
-                    return@withContext Pair(MixinApplication.appContext.getString(R.string.Common_Wallet), false)
-                }
                 return@withContext Pair(wallet.name, true)
             }
             return@withContext null

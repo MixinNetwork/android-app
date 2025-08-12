@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_HAS_USED_BUY
@@ -54,10 +55,12 @@ import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
@@ -96,6 +99,27 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in PrivacyWalletFragment")
+        lifecycleScope.launch(Dispatchers.IO) {
+            measureTime {
+                val data = walletViewModel.assetItemsNotHiddenRaw()
+                assets = data
+                assetsAdapter.setAssetList(data)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
+                var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+                if (bitcoin == null) {
+                    bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                }
+                renderPie(assets, bitcoin)
+                Timber.e("assetItemsNotHiddenRaw data size: ${data.size}")
+            }.also { duration ->
+                Timber.e("assetItemsNotHiddenRaw took: $duration")
+            }
+        }
+
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
@@ -161,6 +185,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
+            Timber.e("observe assetItemsNotHidden data size: ${it.size}")
             if (it.isEmpty()) {
                 setEmpty()
             } else {

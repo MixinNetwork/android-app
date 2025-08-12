@@ -152,9 +152,7 @@ fun AssetDashboardScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                key(refreshTrigger) {
-                    TotalAssetsCard()
-                }
+                TotalAssetsCard()
                 Spacer(modifier = Modifier.height(20.dp))
 
                 WalletCard(
@@ -179,6 +177,7 @@ fun AssetDashboardScreen(
                         )
                     } else {
                         WalletCard(
+                            name = wallet.name,
                             destination = WalletDestination.Classic(wallet.id),
                             onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
                         )

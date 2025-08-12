@@ -33,16 +33,14 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.jakewharton.rxbinding3.material.itemSelections
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -167,8 +165,10 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
+import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -314,7 +314,7 @@ class MainActivity : BlazeBaseActivity() {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
         }
 
-        initView()
+        initBottomNav()
         handlerCode(intent)
 
         checkAsync()
@@ -933,7 +933,8 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private val walletFragment by lazy {
-        WalletFragment()
+        val initialWalletDestination = loadInitialWalletDestination()
+        WalletFragment.newInstance(initialWalletDestination)
     }
 
     private val exploreFragment by lazy {
@@ -944,38 +945,32 @@ class MainActivity : BlazeBaseActivity() {
         CollectiblesFragment()
     }
 
-    private val channel = Channel<Int>(Channel.CONFLATED)
-
-    private fun initView() {
+    private fun initBottomNav() {
         binding.apply {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
-            bottomNav.setOnItemSelectedListener {
-                Timber.e(
-                    "onItemSelected: ${
-                        when (it.itemId) {
-                            R.id.nav_chat -> "nav_chat"
-                            R.id.nav_wallet -> "nav_wallet"
-                            R.id.nav_collectibles -> "nav_collectibles"
-                            R.id.nav_more -> "nav_more"
-                            else -> "unknown"
-                        }
-                    }"
-                )
-                lifecycleScope.launch {
-                    channel.send(it.itemId)
-                }
-                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_collectibles)
-            }
-        }
-        lifecycleScope.launch {
-            channel
-                .receiveAsFlow()
+
+            bottomNav.itemSelections()
+                .map { it.itemId }
                 .distinctUntilChanged()
-                .collect { itemId ->
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe { itemId ->
+                    Timber.e(
+                        "onItemSelected: ${
+                            when (itemId) {
+                                R.id.nav_chat -> "nav_chat"
+                                R.id.nav_wallet -> "nav_wallet"
+                                R.id.nav_collectibles -> "nav_collectibles"
+                                R.id.nav_more -> "nav_more"
+                                else -> "unknown"
+                            }
+                        }"
+                    )
                     handleNavigationItemSelected(itemId)
                 }
         }
+
         lifecycleScope.launch {
             val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
                     defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
@@ -998,6 +993,19 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    private fun loadInitialWalletDestination(): WalletDestination {
+        val walletPref = defaultSharedPreferences.getString(
+            Account.PREF_USED_WALLET, null
+        )
+
+        return walletPref?.let { pref ->
+            try {
+                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
+            } catch (_: Exception) {
+                WalletDestination.Privacy
+            }
+        } ?: WalletDestination.Privacy
+    }
 
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {

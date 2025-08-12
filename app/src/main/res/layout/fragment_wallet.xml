@@ -64,6 +64,7 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="8dp"
                     android:layout_toEndOf="@id/title_tv"
+                    android:visibility="gone"
                     android:src="@drawable/ic_wallet_privacy" />
 
             </RelativeLayout>

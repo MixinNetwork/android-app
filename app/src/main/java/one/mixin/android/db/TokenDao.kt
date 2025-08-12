@@ -3,6 +3,8 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -85,6 +87,9 @@ interface TokenDao : BaseDao<Token> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
     fun assetItemsNotHidden(): LiveData<List<TokenItem>>
+
+    @RawQuery
+    fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
