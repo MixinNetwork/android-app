@@ -297,6 +297,9 @@ fun WalletListScreen(
                         }
                     }
                 }
+                if (index < walletItems.size - 1) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
             }
             Spacer(modifier = Modifier.height(10.dp))
 
