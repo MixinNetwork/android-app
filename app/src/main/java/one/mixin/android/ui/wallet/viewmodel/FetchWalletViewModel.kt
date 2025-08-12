@@ -22,6 +22,7 @@ import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
@@ -474,11 +475,11 @@ class FetchWalletViewModel @Inject constructor(
                     addresses = listOf(Web3AddressRequest(
                         destination = evmAddress,
                         chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                        path = "m/44'/60'/0'/0/${classicIndex}"
+                        path = Bip44Path.ethereumPathString(classicIndex)
                     ), Web3AddressRequest(
                         destination = solAddress,
                         chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                        path = "m/44'/501'/${classicIndex}'/0'"
+                        path = Bip44Path.solanaPathString(classicIndex)
                     ))
                 )
                 saveImportedWallet(walletRequest, null)

@@ -11,6 +11,7 @@ import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
@@ -66,7 +67,7 @@ object CryptoWalletHelper {
 
     fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
-            val path = "m/44'/60'/0'/0/$index"
+            val path = Bip44Path.ethereumPathString(index)
             val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
                 ?: throw IllegalArgumentException("Private key generation failed")
             val address = EthKeyGenerator.privateKeyToAddress(privateKey)
@@ -85,7 +86,7 @@ object CryptoWalletHelper {
 
     fun mnemonicToSolanaWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
-            val path = "m/44'/501'/$index'/0'"
+            val path = Bip44Path.solanaPathString(index)
             val privateKey = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
             val keyPair = newKeyPairFromSeed(privateKey)
             val address = keyPair.publicKey.encodeToBase58String()
