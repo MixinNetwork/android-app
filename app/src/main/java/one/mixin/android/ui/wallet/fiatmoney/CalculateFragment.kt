@@ -106,7 +106,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             return
         }
         val supportCurrencies = routeProfile.supportCurrencies
-        currencyName = getDefaultCurrency(requireContext(), supportCurrencies)
+        currencyName = runCatching { getDefaultCurrency(requireContext(), supportCurrencies) }.getOrDefault("")
 
         fiatMoneyViewModel.currency = supportCurrencies.find {
             it.name == currencyName
