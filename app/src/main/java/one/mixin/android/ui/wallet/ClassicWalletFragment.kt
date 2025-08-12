@@ -20,8 +20,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -66,6 +68,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
@@ -135,6 +138,23 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     ) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in ClassicWalletFragment")
+        lifecycleScope.launch(Dispatchers.IO) {
+            measureTime {
+                val data = web3ViewModel.web3TokensExcludeHiddenRaw(walletId)
+                assets = data
+                assetsAdapter.setAssetList(data)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
+                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                renderPie(assets, bitcoin)
+                Timber.e("web3TokensExcludeHiddenRaw data size: ${data.size}, walletId: $walletId")
+            }.also { duration ->
+                Timber.e("web3TokensExcludeHiddenRaw took: $duration")
+            }
+        }
+
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
@@ -239,7 +259,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             assetsAdapter.onItemListener = this@ClassicWalletFragment
 
             coinsRv.adapter = assetsAdapter
-            setEmpty()
             coinsRv.addOnScrollListener(
                 object : RecyclerView.OnScrollListener() {
                     override fun onScrolled(
@@ -307,7 +326,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 lastFiatCurrency = Session.getFiatCurrency()
                 assetsAdapter.notifyDataSetChanged()
             }
-            lifecycleScope.launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
                 renderPie(assets, bitcoin)
             }
@@ -357,7 +376,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         super.onDestroyView()
     }
 
-    private fun renderPie(
+    private suspend fun renderPie(
         assets: List<Web3TokenItem>,
         bitcoin: TokenItem?,
     ) {
@@ -374,44 +393,46 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
                     .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
         }
-        _headBinding?.apply {
-            totalAsTv.text =
-                try {
-                    if (totalBTC.numberFormat8().toFloat() == 0f) {
-                        "0.00"
-                    } else {
+        withContext(Dispatchers.Main) {
+            _headBinding?.apply {
+                totalAsTv.text =
+                    try {
+                        if (totalBTC.numberFormat8().toFloat() == 0f) {
+                            "0.00"
+                        } else {
+                            totalBTC.numberFormat8()
+                        }
+                    } catch (ignored: NumberFormatException) {
                         totalBTC.numberFormat8()
                     }
-                } catch (ignored: NumberFormatException) {
-                    totalBTC.numberFormat8()
-                }
-            totalTv.text =
-                try {
-                    if (totalFiat.numberFormat2().toFloat() == 0f) {
-                        "0.00"
-                    } else {
+                totalTv.text =
+                    try {
+                        if (totalFiat.numberFormat2().toFloat() == 0f) {
+                            "0.00"
+                        } else {
+                            totalFiat.numberFormat2()
+                        }
+                    } catch (ignored: NumberFormatException) {
                         totalFiat.numberFormat2()
                     }
-                } catch (ignored: NumberFormatException) {
-                    totalFiat.numberFormat2()
-                }
-            symbol.text = Fiats.getSymbol()
+                symbol.text = Fiats.getSymbol()
 
-            if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
-                pieItemContainer.visibility = GONE
-                percentView.visibility = GONE
+                if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
+                    pieItemContainer.visibility = GONE
+                    percentView.visibility = GONE
+                    btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
+                        bottomMargin = requireContext().dpToPx(32f)
+                    }
+                    return@withContext
+                }
+
                 btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
-                    bottomMargin = requireContext().dpToPx(32f)
+                    bottomMargin = requireContext().dpToPx(16f)
                 }
-                return
+                pieItemContainer.visibility = VISIBLE
+                percentView.visibility = VISIBLE
+                setPieView(assets, totalFiat)
             }
-
-            btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
-                bottomMargin = requireContext().dpToPx(16f)
-            }
-            pieItemContainer.visibility = VISIBLE
-            percentView.visibility = VISIBLE
-            setPieView(assets, totalFiat)
         }
     }
 

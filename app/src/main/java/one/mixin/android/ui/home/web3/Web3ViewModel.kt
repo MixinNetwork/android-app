@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.sqlite.db.SupportSQLiteQuery
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -85,6 +86,8 @@ internal constructor(
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
+
+    fun web3TokensExcludeHiddenRaw(walletId: String) = web3Repository.web3TokensExcludeHiddenRaw(walletId)
 
     fun hiddenAssetItems(walletId: String) = web3Repository.hiddenAssetItems(walletId)
 

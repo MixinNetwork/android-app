@@ -3,6 +3,8 @@ package one.mixin.android.db.web3
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao
@@ -49,6 +51,10 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
     """)
     fun web3TokenItemsExcludeHidden(walletId: String): LiveData<List<Web3TokenItem>>
+
+
+    @RawQuery
+    fun web3TokenItemsExcludeHiddenRaw(query: RoomRawQuery): List<Web3TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE te.hidden = 1 AND (:walletId IS NULL OR t.wallet_id = :walletId) ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC""")
