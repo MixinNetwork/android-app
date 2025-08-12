@@ -10,6 +10,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.liveData
+import androidx.room.RoomRawQuery
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -64,6 +65,8 @@ import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SwapOrderDao
 import one.mixin.android.db.TokenDao
+import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM_NOT_HIDDEN
+import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.db.TokensExtraDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
@@ -476,6 +479,10 @@ class TokenRepository
         suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
 
         fun assetItemsNotHidden() = tokenDao.assetItemsNotHidden()
+        fun assetItemsNotHiddenRaw() = tokenDao.assetItemsNotHiddenRaw(
+            RoomRawQuery(
+            "$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN", onBindStatement = {}
+        ))
 
         fun assetItems() = tokenDao.assetItems()
 
