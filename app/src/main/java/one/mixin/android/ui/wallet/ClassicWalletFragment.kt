@@ -139,20 +139,21 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in ClassicWalletFragment")
         lifecycleScope.launch(Dispatchers.IO) {
-            measureTime {
+            val queryDuration = measureTime {
                 val data = web3ViewModel.web3TokensExcludeHiddenRaw(walletId)
                 assets = data
-                assetsAdapter.setAssetList(data)
-                if (lastFiatCurrency != Session.getFiatCurrency()) {
-                    lastFiatCurrency = Session.getFiatCurrency()
-                    assetsAdapter.notifyDataSetChanged()
-                }
-                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-                renderPie(assets, bitcoin)
-                Timber.e("web3TokensExcludeHiddenRaw data size: ${data.size}, walletId: $walletId")
-            }.also { duration ->
-                Timber.e("web3TokensExcludeHiddenRaw took: $duration")
+                Timber.e("web3TokensExcludeHiddenRaw query completed: data size: ${data.size}, walletId: $walletId")
             }
+            Timber.e("web3TokensExcludeHiddenRaw query took: $queryDuration")
+            
+            assetsAdapter.setAssetList(assets)
+            if (lastFiatCurrency != Session.getFiatCurrency()) {
+                lastFiatCurrency = Session.getFiatCurrency()
+                assetsAdapter.notifyDataSetChanged()
+            }
+
+            val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+            renderPie(assets, bitcoin)
         }
 
         binding.apply {
