@@ -58,6 +58,7 @@ class RefreshWeb3Job : BaseJob(
                         it.path == null || it.path.isBlank()
                     }) {
                     routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    RxBus.publish(WalletRefreshedEvent(wallet.id))
                     fetchWalletAddresses(wallet)
                 }
             }

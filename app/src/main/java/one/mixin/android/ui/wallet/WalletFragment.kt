@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
@@ -35,6 +36,7 @@ import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
@@ -267,6 +269,17 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             migrateEnable = it
         }
         checkPin()
+        RxBus.listen(WalletRefreshedEvent::class.java)
+            .autoDispose(stopScope)
+            .subscribe { event ->
+                if (selectedWalletDestination is WalletDestination.Classic) {
+                    updateUi(selectedWalletDestination as WalletDestination.Classic)
+                } else if (selectedWalletDestination is WalletDestination.Import) {
+                    updateUi(selectedWalletDestination as WalletDestination.Import)
+                } else if (selectedWalletDestination is WalletDestination.Watch) {
+                    updateUi(selectedWalletDestination as WalletDestination.Watch)
+                }
+            }
     }
 
     private fun updateUi(destination: WalletDestination) {
