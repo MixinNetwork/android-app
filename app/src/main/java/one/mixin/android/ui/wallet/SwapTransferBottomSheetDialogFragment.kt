@@ -279,11 +279,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     LaunchedEffect(Unit) {
                         if (source == "web3") {
                             val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
-                            walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
-                                context.getString(R.string.Common_Wallet)
-                            } else {
-                                wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
-                            }
+                            walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
                         }
                     }
                     Column(
@@ -751,11 +747,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         when (source) {
             "web3" -> {
                 val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
-                walletName = if (wallet?.category == WalletCategory.CLASSIC.value) {
-                    getString(R.string.Common_Wallet)
-                } else {
-                    wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
-                }
+                walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
                 depositDestination?.let { depositDestination->
                     val token = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId, inAsset.assetId)
                     if (token != null) {

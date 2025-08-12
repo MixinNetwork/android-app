@@ -127,6 +127,16 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                             .remove(this@VerifyPinBeforeImportWalletFragment)
                                             .commit()
                                     }
+                                    WalletSecurityActivity.Mode.CREATE_WALLET -> {
+                                        navTo(
+                                            CreateWalletNoticeFragment.newInstance(),
+                                            CreateWalletNoticeFragment.TAG
+                                        )
+                                        requireActivity().supportFragmentManager
+                                            .beginTransaction()
+                                            .remove(this@VerifyPinBeforeImportWalletFragment)
+                                            .commit()
+                                    }
                                 }
                             } else {
                                 requireActivity().finish()

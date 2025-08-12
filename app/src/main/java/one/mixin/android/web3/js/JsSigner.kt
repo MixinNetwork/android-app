@@ -141,10 +141,10 @@ object JsSigner {
             val addresses = queryAddress(walletId)
             path = addresses.firstOrNull()?.path ?:""
             evmAddress =
-                addresses.firstOrNull { it.chainId != Constants.ChainId.SOLANA_CHAIN_ID }?.destination
+                addresses.firstOrNull { it.chainId != SOLANA_CHAIN_ID }?.destination
                     ?: ""
             solanaAddress =
-                addresses.firstOrNull { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }?.destination
+                addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
                     ?: ""
             address = evmAddress
         } else {

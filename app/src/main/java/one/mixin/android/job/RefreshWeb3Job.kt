@@ -6,6 +6,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
@@ -16,8 +17,9 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.R
+import one.mixin.android.tip.bip44.Bip44Path
 import timber.log.Timber
-
 class RefreshWeb3Job : BaseJob(
     Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
 ) {
@@ -37,19 +39,28 @@ class RefreshWeb3Job : BaseJob(
                 return@runBlocking
             }
             createWallet(
-                "ClassicWallet", WalletCategory.CLASSIC.value, listOf(
+                applicationContext.getString(R.string.Common_Wallet), WalletCategory.CLASSIC.value, listOf(
                     Web3AddressRequest(
                         destination = erc20Address,
                         chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                        path = "m/44'/60'/0'/0/0"
+                        path = Bip44Path.ethereumPathString()
                     ),
                     Web3AddressRequest(
                         destination = solAddress,
                         chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                        path = "m/44'/501'/0'/0'"
+                        path = Bip44Path.solanaPathString()
                     )
                 )
             )
+        } else {
+            wallets.forEach { wallet ->
+                if (web3AddressDao.getAddressesByWalletId(wallet.id).any {
+                        it.path == null || it.path.isBlank()
+                    }) {
+                    routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    fetchWalletAddresses(wallet)
+                }
+            }
         }
     }
 

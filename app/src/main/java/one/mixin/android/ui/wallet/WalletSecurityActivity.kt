@@ -25,6 +25,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                 Mode.VIEW_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.VIEW_PRIVATE_KEY, chainId = chainId, walletId = walletId)
                 Mode.IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.IMPORT_PRIVATE_KEY)
                 Mode.ADD_WATCH_ADDRESS -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.ADD_WATCH_ADDRESS)
+                Mode.CREATE_WALLET -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.CREATE_WALLET)
             }
 
             supportFragmentManager.beginTransaction()
@@ -55,6 +56,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         ADD_WATCH_ADDRESS,
         RE_IMPORT_MNEMONIC,
         RE_IMPORT_PRIVATE_KEY,
+        CREATE_WALLET,
     }
 
     override fun onBackPressed() {
