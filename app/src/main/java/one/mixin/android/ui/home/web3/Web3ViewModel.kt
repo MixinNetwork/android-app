@@ -476,9 +476,6 @@ internal constructor(
 
             val wallet = web3Repository.getWalletByDestination(destination)
             if (wallet != null) {
-                if (wallet.category == WalletCategory.CLASSIC.value) {
-                    return@withContext Pair(MixinApplication.appContext.getString(R.string.Common_Wallet), true)
-                }
                 return@withContext Pair(wallet.name, true)
             }
 

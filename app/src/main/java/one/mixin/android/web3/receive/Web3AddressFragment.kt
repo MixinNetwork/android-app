@@ -66,7 +66,7 @@ class Web3AddressFragment : BaseFragment() {
         lifecycleScope.launch {
             val wallet = walletViewModel.getWalletByDestination(address)
             if (wallet != null) {
-                binding.title.setSubTitle(getString(R.string.Receive), if (wallet.category == WalletCategory.CLASSIC.value) getString(R.string.Common_Wallet) else wallet.name)
+                binding.title.setSubTitle(getString(R.string.Receive), wallet.name)
             }
             binding.copy.setOnClickListener {
                 context?.heavyClickVibrate()

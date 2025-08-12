@@ -275,7 +275,7 @@ fun WalletListScreen(
                         if (wallet.isImported()) {
                             val destination = WalletDestination.Import(wallet.id, wallet.category)
                             WalletCard(
-                                name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                                name = wallet.name,
                                 destination = destination,
                                 hasLocalPrivateKey = wallet.hasLocalPrivateKey,
                                 onClick = { onWalletClick(wallet) }
@@ -283,14 +283,14 @@ fun WalletListScreen(
                         } else if (wallet.isWatch()) {
                             val destination = WalletDestination.Watch(wallet.id, wallet.category)
                             WalletCard(
-                                name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                                name = wallet.name,
                                 destination = destination,
                                 onClick = { onWalletClick(wallet) }
                             )
                         } else {
                             val destination = WalletDestination.Classic(wallet.id)
                             WalletCard(
-                                name = if (wallet.category == WalletCategory.CLASSIC.value) stringResource(R.string.Common_Wallet) else wallet.name,
+                                name = wallet.name,
                                 destination = destination,
                                 onClick = { onWalletClick(wallet) }
                             )
