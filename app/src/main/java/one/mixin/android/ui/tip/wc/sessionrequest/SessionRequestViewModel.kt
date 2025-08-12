@@ -106,11 +106,11 @@ class SessionRequestViewModel
             web3Repository.findWalletById(walletId)
         }
 
-        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
+        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String?, Boolean>? {
             return withContext(Dispatchers.IO) {
                 if (chainId != null) {
                     val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
-                    if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), false)
+                    if (existsInAddresses) return@withContext Pair(null, false) // If the address exists in the deposit addresses, we don't need to show the name
                 }
 
                 val wallet = web3Repository.getWalletByDestination(destination)

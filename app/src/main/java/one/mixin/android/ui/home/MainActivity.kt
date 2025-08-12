@@ -162,11 +162,15 @@ import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Compani
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.ClassicWalletFragment
+import one.mixin.android.ui.wallet.PrivacyWalletFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
+import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -302,6 +306,11 @@ class MainActivity : BlazeBaseActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Pre-init
+        WalletFragment.newInstance(loadInitialWalletDestination())
+        ClassicWalletFragment.newInstance()
+        PrivacyWalletFragment.newInstance()
 
         if (savedInstanceState == null) {
             navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
@@ -930,16 +939,16 @@ class MainActivity : BlazeBaseActivity() {
         ConversationListFragment()
     }
 
-    private val walletFragment by lazy {
-        WalletFragment()
-    }
-
     private val exploreFragment by lazy {
         ExploreFragment()
     }
 
     private val collectiblesFragment by lazy {
         CollectiblesFragment()
+    }
+
+    private val walletFragment by lazy {
+        WalletFragment.newInstance()
     }
 
     private fun initBottomNav() {
@@ -990,6 +999,19 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    private fun loadInitialWalletDestination(): WalletDestination {
+        val walletPref = defaultSharedPreferences.getString(
+            Account.PREF_USED_WALLET, null
+        )
+
+        return walletPref?.let { pref ->
+            try {
+                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
+            } catch (_: Exception) {
+                WalletDestination.Privacy
+            }
+        } ?: WalletDestination.Privacy
+    }
 
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {

@@ -11,7 +11,6 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -69,8 +68,20 @@ import kotlin.math.abs
 class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
     companion object {
         const val TAG = "ClassicWalletFragment"
+        private const val KEY_WALLET_ID = "wallet_id"
+        @Volatile
+        private var instance: ClassicWalletFragment? = null
 
-        fun newInstance(): ClassicWalletFragment = ClassicWalletFragment()
+        fun newInstance(walletId: String? = null): ClassicWalletFragment =
+            instance ?: synchronized(this) {
+                instance ?: ClassicWalletFragment().apply {
+                    arguments = walletId?.let {
+                        Bundle().apply {
+                            putString(KEY_WALLET_ID, it)
+                        }
+                    }
+                }.also { instance = it }
+            }
     }
 
     @Inject
@@ -107,7 +118,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
         }
     }
-
     private val pendingTxCountLiveData by lazy {
         _walletId.switchMap { id ->
             if (id.isNullOrEmpty()) {
@@ -115,6 +125,13 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             } else {
                 web3ViewModel.getPendingTransactionCount(id)
             }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.getString(KEY_WALLET_ID)?.let {
+            walletId = it
         }
     }
 
@@ -133,6 +150,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in ClassicWalletFragment")
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
@@ -237,6 +255,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             assetsAdapter.onItemListener = this@ClassicWalletFragment
 
             coinsRv.adapter = assetsAdapter
+            setEmpty()
             coinsRv.addOnScrollListener(
                 object : RecyclerView.OnScrollListener() {
                     override fun onScrolled(

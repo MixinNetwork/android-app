@@ -26,7 +26,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.foursquare.Category
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount

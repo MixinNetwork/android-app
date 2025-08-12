@@ -476,7 +476,7 @@ internal constructor(
 
             val wallet = web3Repository.getWalletByDestination(destination)
             if (wallet != null) {
-                return@withContext Pair(wallet.name, false)
+                return@withContext Pair(wallet.name, true)
             }
 
             tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->
