@@ -34,11 +34,12 @@ fun CreateWalletNoticePage(
         PageScaffold(
             title = "",
             verticalScrollable = false,
+            backIcon = R.drawable.ic_close_black,
             pop = pop,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(50.dp))
-                Icon(painter = painterResource(R.drawable.ic_wallet_create), tint = Color.Unspecified, contentDescription = null)
+                Icon(painter = painterResource(R.drawable.ic_web3_proceed), tint = Color.Unspecified, contentDescription = null)
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     stringResource(R.string.create_new_wallet), fontSize = 18.sp,
