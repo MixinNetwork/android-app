@@ -50,14 +50,7 @@ class RefreshWeb3Job : BaseJob(
                     )
                 )
             )
-        } else {
-            fetchChain()
-            wallets.forEach { wallet ->
-                fetchWalletAssets(wallet)
-                RxBus.publish(WalletRefreshedEvent(wallet.id))
-            }
         }
-        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
     }
 
     private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>) {
