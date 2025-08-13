@@ -7,6 +7,7 @@ import androidx.security.crypto.MasterKey
 import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
+import one.mixin.android.MixinApplication
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.putString
@@ -40,8 +41,12 @@ object CryptoWalletHelper {
         }.getOrNull()
     }
 
+    private val secureStorage by lazy {
+        getSecureStorage(MixinApplication.appContext)
+    }
+
     fun hasPrivateKey(context: Context, walletId: String): Boolean {
-        return getSecureStorage(context)?.contains(walletId) ?: false
+        return secureStorage?.contains(walletId) ?: false
     }
 
     fun extractIndexFromPath(path: String): Int? {
