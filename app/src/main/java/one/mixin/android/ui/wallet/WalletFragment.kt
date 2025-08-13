@@ -270,14 +270,31 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         checkPin()
         RxBus.listen(WalletRefreshedEvent::class.java)
-            .autoDispose(stopScope)
+            .autoDispose(destroyScope)
             .subscribe { event ->
-                if (selectedWalletDestination is WalletDestination.Classic) {
-                    updateUi(selectedWalletDestination as WalletDestination.Classic)
-                } else if (selectedWalletDestination is WalletDestination.Import) {
-                    updateUi(selectedWalletDestination as WalletDestination.Import)
-                } else if (selectedWalletDestination is WalletDestination.Watch) {
-                    updateUi(selectedWalletDestination as WalletDestination.Watch)
+                val currentDestination = selectedWalletDestination
+                when (currentDestination) {
+                    is WalletDestination.Classic -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    is WalletDestination.Import -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    is WalletDestination.Watch -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    else -> {
+                        // Do nothing for Privacy wallet or null destination
+                    }
                 }
             }
     }
