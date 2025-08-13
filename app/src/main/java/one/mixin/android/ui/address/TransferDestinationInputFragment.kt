@@ -13,7 +13,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -59,7 +58,6 @@ import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.components.AssetDistributionViewModel
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
@@ -106,7 +104,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
-    private val assetDistributionViewModel by activityViewModels<AssetDistributionViewModel>()
 
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
@@ -163,7 +160,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        assetDistributionViewModel.loadWallets()
         jobManager.addJobInBackground(SyncOutputJob())
         (token?.chainId ?: web3Token?.chainId)?.let {
             jobManager.addJobInBackground(RefreshAddressJob(it))

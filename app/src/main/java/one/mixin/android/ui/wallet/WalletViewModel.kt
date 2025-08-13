@@ -84,6 +84,15 @@ internal constructor(
     private val pinCipher: PinCipher,
 ) : ViewModel() {
 
+    private val _walletsFlow = MutableStateFlow<List<Web3Wallet>>(emptyList())
+    val walletsFlow: StateFlow<List<Web3Wallet>> = _walletsFlow
+
+    fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
+        viewModelScope.launch {
+            _walletsFlow.value = getWalletsExcluding(excludeWalletId, chainId, query)
+        }
+    }
+
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)
@@ -436,6 +445,8 @@ internal constructor(
     }
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
+    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
 

@@ -1,8 +1,5 @@
 package one.mixin.android.ui.wallet.components
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,10 +14,8 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.vo.safe.UnifiedAssetItem
-import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
-import kotlin.time.measureTime
 
 
 @HiltViewModel
@@ -32,20 +27,9 @@ class AssetDistributionViewModel @Inject constructor(
     private val _wallets = MutableStateFlow<List<Web3Wallet>>(emptyList())
     val wallets: StateFlow<List<Web3Wallet>> = _wallets
 
-    private val _walletsIds = MutableStateFlow<List<String>>(emptyList())
-    val walletsIds: StateFlow<List<String>> = _walletsIds
-
     fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {
             _wallets.value = web3Repository.getAllWallets()
-        }
-    }
-
-    suspend fun getAvailableWalletIds(excludeWalletId: String, chainId: String) = web3Repository.getAvailableWalletIds(excludeWalletId, chainId)
-
-    fun loadAvailableWalletIds(excludeWalletId: String, chainId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _walletsIds.value = getAvailableWalletIds(excludeWalletId, chainId)
         }
     }
 
@@ -198,3 +182,6 @@ class AssetDistributionViewModel @Inject constructor(
 
     suspend fun getAddresses(walletId:String) = web3Repository.getAddresses(walletId)
 }
+
+
+
