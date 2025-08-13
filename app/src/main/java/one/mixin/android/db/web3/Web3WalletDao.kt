@@ -73,14 +73,18 @@ fun List<Web3Wallet>.updateWithLocalKeyInfo(context: Context): List<Web3Wallet> 
 }
 
 fun Web3Wallet.updateWithLocalKeyInfo(context: Context): Web3Wallet {
-    if (this.category == WalletCategory.WATCH_ADDRESS.value) {
-        this.hasLocalPrivateKey = false
-        return this
-    }else if (this.category == WalletCategory.CLASSIC.value) {
-        this.hasLocalPrivateKey = true
-        return this
-    }else {
-        this.hasLocalPrivateKey = CryptoWalletHelper.hasPrivateKey(context, this.id)
-        return this
+    when (this.category) {
+        WalletCategory.WATCH_ADDRESS.value -> {
+            this.hasLocalPrivateKey = false
+            return this
+        }
+        WalletCategory.CLASSIC.value -> {
+            this.hasLocalPrivateKey = true
+            return this
+        }
+        else -> {
+            this.hasLocalPrivateKey = CryptoWalletHelper.hasPrivateKey(context, this.id)
+            return this
+        }
     }
 }
