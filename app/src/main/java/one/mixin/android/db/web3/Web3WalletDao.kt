@@ -20,10 +20,10 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     suspend fun getWalletsWithRawQuery(query: RoomRawQuery): List<String>
 
     suspend fun getAvailableWalletIdsByName(excludeWalletId: String, chainId: String): List<String> {
-        val sql = "SELECT DISTINCT a.wallet_id FROM addresses a WHERE a.wallet_id != ? AND a.chain_id = ?"
+        val sql = "SELECT DISTINCT a.wallet_id FROM addresses a WHERE a.chain_id = ? AND a.wallet_id != ?"
         return getWalletsWithRawQuery(RoomRawQuery(sql, onBindStatement = {
-            it.bindText(1, excludeWalletId)
-            it.bindText(2,chainId)
+            it.bindText(1,chainId)
+            it.bindText(2, excludeWalletId)
         }))
     }
 
