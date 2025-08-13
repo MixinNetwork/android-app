@@ -28,9 +28,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,20 +50,25 @@ import androidx.compose.ui.unit.sp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.edit
 import androidx.core.view.doOnPreDraw
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.dp as dip
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
@@ -71,6 +77,7 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.components.AssetDistributionViewModel
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
 import one.mixin.android.ui.wallet.components.PREF_NAME
@@ -78,12 +85,12 @@ import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletInfoCard
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.WalletCategory
+import timber.log.Timber
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
-    private val viewModel by viewModels<WalletViewModel>()
+    private val viewModel by activityViewModels<AssetDistributionViewModel>()
     private var onWalletClickListener: ((Web3Wallet?) -> Unit)? = null
     private var behavior: BottomSheetBehavior<*>? = null
 
@@ -107,35 +114,33 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             roundTopOrBottom(12.dip.toFloat(), top = true, bottom = false)
             setContent {
+                val wallets by viewModel.wallets.collectAsStateWithLifecycle()
+                val walletsIds by viewModel.walletsIds.collectAsStateWithLifecycle()
+                LaunchedEffect(wallets.isEmpty()) {
+                    if (wallets.isEmpty()) {
+                        viewModel.loadWallets()
+                    }
+                }
+                LaunchedEffect(Unit) {
+                    if (walletsIds.isEmpty()) {
+                        viewModel.loadAvailableWalletIds(excludeWalletId ?: "", chainId)
+                    }
+                }
+
                 MixinAppTheme {
-                    val searchQuery = remember { MutableStateFlow("") }
-                    val wallets by viewModel.walletsFlow.collectAsState()
-                    LaunchedEffect(Unit) {
-                        launch {
-                            searchQuery.collect { query ->
-                                if (query.isEmpty()) {
-                                    viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
-                                }
-                            }
-                        }
-                        launch {
-                            searchQuery
-                                .debounce(150)
-                                .collect { query ->
-                                    if (query.isNotEmpty()) {
-                                        viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
-                                    }
-                                }
+                    var query by remember { mutableStateOf("") }
+                    val filteredWallets = remember(wallets, walletsIds, query) {
+                        if (query.isBlank()) {
+                            wallets.filter { it.id in walletsIds }
+                        } else {
+                            wallets.filter { it.id in walletsIds && it.name.contains(query, true) }
                         }
                     }
-
                     WalletListScreen(
-                        wallets = wallets,
+                        wallets = filteredWallets,
                         excludeWalletId = excludeWalletId,
-                        onQueryChanged = { query ->
-                            lifecycleScope.launch {
-                                searchQuery.emit(query)
-                            }
+                        onQueryChanged = {
+                            query = it
                         },
                         onWalletClick = { wallet ->
                             if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {

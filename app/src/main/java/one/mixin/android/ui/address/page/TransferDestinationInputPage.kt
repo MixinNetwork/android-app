@@ -68,6 +68,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openUrl
+import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
@@ -354,7 +355,9 @@ fun TransferDestinationInputPage(
                                     isPrivacy = false
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                            } else if (account.isNotBlank()) {
+                            } else if (token?.chainId == ChainId.SOLANA_CHAIN_ID ||
+                                token?.chainId in Constants.Web3ChainIds
+                            ) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
                                     stringResource(R.string.My_Wallet),

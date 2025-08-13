@@ -3,6 +3,8 @@ package one.mixin.android.db.web3
 import android.content.Context
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
@@ -14,9 +16,16 @@ import one.mixin.android.vo.WalletCategory
 @Dao
 interface Web3WalletDao : BaseDao<Web3Wallet> {
 
-    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("SELECT * FROM wallets w WHERE w.wallet_id != :excludeWalletId AND w.name LIKE '%' || :query || '%' AND EXISTS (SELECT 1 FROM addresses a WHERE a.wallet_id = w.wallet_id AND a.chain_id = :chainId) ORDER BY w.created_at ASC")
-    suspend fun getWalletsExcludingByName(excludeWalletId: String, chainId: String, query: String): List<Web3Wallet>
+    @RawQuery
+    suspend fun getWalletsWithRawQuery(query: RoomRawQuery): List<String>
+
+    suspend fun getAvailableWalletIdsByName(excludeWalletId: String, chainId: String): List<String> {
+        val sql = "SELECT DISTINCT a.wallet_id FROM addresses a WHERE a.wallet_id != ? AND a.chain_id = ?"
+        return getWalletsWithRawQuery(RoomRawQuery(sql, onBindStatement = {
+            it.bindText(1, excludeWalletId)
+            it.bindText(2,chainId)
+        }))
+    }
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM wallets ORDER BY created_at ASC")
