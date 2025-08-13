@@ -67,7 +67,7 @@ fun WalletCard(
 ) {
     var web3TokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
     var tokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
-    var assets by remember { mutableStateOf(emptyList<AssetDistribution>()) }
+    var assets by remember { mutableStateOf<List<AssetDistribution>?>(null) }
     var refreshTrigger by remember { mutableIntStateOf(0) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -242,8 +242,10 @@ fun WalletCard(
                     Text(Fiats.getAccountCurrencyAppearance(), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                if (assets.isNotEmpty()) {
-                    Distribution(assets, destination = destination)
+                if (assets == null) {
+                    Spacer(modifier = Modifier.height(18.dp))
+                } else if (assets.isNullOrEmpty().not()) {
+                    Distribution(assets!!, destination = destination)
                 } else {
                     var chains by remember(destination) { mutableStateOf<List<Int>?>(null) }
                     LaunchedEffect(refreshTrigger) {
