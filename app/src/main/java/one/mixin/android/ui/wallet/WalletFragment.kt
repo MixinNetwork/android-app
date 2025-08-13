@@ -36,6 +36,7 @@ import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
