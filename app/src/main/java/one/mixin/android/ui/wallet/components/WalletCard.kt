@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -264,7 +265,8 @@ fun WalletCard(
                                     R.drawable.ic_chain_polygon,
                                     R.drawable.ic_chain_bsc,
                                     R.drawable.ic_chain_base,
-                                    R.drawable.ic_chain_arbitrum_eth
+                                    R.drawable.ic_chain_arbitrum_eth,
+                                    R.drawable.ic_chain_optimism,
                                 )
                             }
                         } else {
@@ -283,9 +285,11 @@ fun WalletCard(
                                     painter = painterResource(id = iconRes),
                                     contentDescription = null,
                                     modifier = Modifier
-                                        .size(18.dp)
+                                        .size(19.dp)
                                         .offset(x = (-6 * index).dp)
+                                        .clip(CircleShape)
                                         .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                                        .padding(0.5.dp)
                                 )
                             }
                         }
