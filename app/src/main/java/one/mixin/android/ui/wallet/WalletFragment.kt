@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
@@ -35,6 +36,8 @@ import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.event.WalletOperationType
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
@@ -267,6 +270,35 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             migrateEnable = it
         }
         checkPin()
+        RxBus.listen(WalletRefreshedEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (event.type != WalletOperationType.RENAME) return@subscribe
+                val currentDestination = selectedWalletDestination
+                when (currentDestination) {
+                    is WalletDestination.Classic -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    is WalletDestination.Import -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    is WalletDestination.Watch -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    else -> {
+                        // Do nothing for Privacy wallet or null destination
+                    }
+                }
+            }
     }
 
     private fun updateUi(destination: WalletDestination) {

@@ -17,6 +17,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -79,7 +80,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 onComplete = { words ->
                     viewModel.saveWeb3PrivateKey(requireContext(), viewModel.getSpendKey()!!, walletId!!, words)
                     toast(R.string.Success)
-                    RxBus.publish(WalletRefreshedEvent(walletId))
+                    RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.CREATE))
                     activity?.finish()
                 },
                 onScan = { getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true)) },

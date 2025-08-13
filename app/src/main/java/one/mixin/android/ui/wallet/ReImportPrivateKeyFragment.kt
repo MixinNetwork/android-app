@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.Tip
@@ -52,7 +53,7 @@ class ReImportPrivateKeyFragment : BaseFragment(R.layout.fragment_compose) {
                     },
                     onConfirmClick = { _, text ->
                         viewModel.savePrivateKey(requireNotNull(walletId), text)
-                        RxBus.publish(WalletRefreshedEvent(requireNotNull(walletId)))
+                        RxBus.publish(WalletRefreshedEvent(requireNotNull(walletId), WalletOperationType.CREATE))
                         toast(R.string.Success)
                         activity?.finish()
                     }

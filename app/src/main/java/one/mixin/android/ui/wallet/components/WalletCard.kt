@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -67,7 +68,7 @@ fun WalletCard(
 ) {
     var web3TokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
     var tokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
-    var assets by remember { mutableStateOf(emptyList<AssetDistribution>()) }
+    var assets by remember { mutableStateOf<List<AssetDistribution>?>(null) }
     var refreshTrigger by remember { mutableIntStateOf(0) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -242,8 +243,10 @@ fun WalletCard(
                     Text(Fiats.getAccountCurrencyAppearance(), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                if (assets.isNotEmpty()) {
-                    Distribution(assets, destination = destination)
+                if (assets == null) {
+                    Spacer(modifier = Modifier.height(18.dp))
+                } else if (assets.isNullOrEmpty().not()) {
+                    Distribution(assets!!, destination = destination)
                 } else {
                     var chains by remember(destination) { mutableStateOf<List<Int>?>(null) }
                     LaunchedEffect(refreshTrigger) {
@@ -262,7 +265,8 @@ fun WalletCard(
                                     R.drawable.ic_chain_polygon,
                                     R.drawable.ic_chain_bsc,
                                     R.drawable.ic_chain_base,
-                                    R.drawable.ic_chain_arbitrum_eth
+                                    R.drawable.ic_chain_arbitrum_eth,
+                                    R.drawable.ic_chain_optimism,
                                 )
                             }
                         } else {
@@ -281,9 +285,11 @@ fun WalletCard(
                                     painter = painterResource(id = iconRes),
                                     contentDescription = null,
                                     modifier = Modifier
-                                        .size(18.dp)
+                                        .size(19.dp)
                                         .offset(x = (-6 * index).dp)
+                                        .clip(CircleShape)
                                         .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                                        .padding(0.5.dp)
                                 )
                             }
                         }
@@ -305,6 +311,8 @@ val privacyChain = listOf(
     R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_ton,
     R.drawable.ic_chain_base,
+    R.drawable.ic_chain_arbitrum_eth,
+    R.drawable.ic_chain_optimism,
 )
 
 val classicChain = listOf(
@@ -313,6 +321,7 @@ val classicChain = listOf(
     R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_base,
     R.drawable.ic_chain_arbitrum_eth,
+    R.drawable.ic_chain_optimism,
     // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
 )

@@ -3,6 +3,8 @@ package one.mixin.android.db.web3
 import android.content.Context
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
@@ -64,14 +66,18 @@ fun List<Web3Wallet>.updateWithLocalKeyInfo(context: Context): List<Web3Wallet> 
 }
 
 fun Web3Wallet.updateWithLocalKeyInfo(context: Context): Web3Wallet {
-    if (this.category == WalletCategory.WATCH_ADDRESS.value) {
-        this.hasLocalPrivateKey = false
-        return this
-    }else if (this.category == WalletCategory.CLASSIC.value) {
-        this.hasLocalPrivateKey = true
-        return this
-    }else {
-        this.hasLocalPrivateKey = CryptoWalletHelper.hasPrivateKey(context, this.id)
-        return this
+    when (this.category) {
+        WalletCategory.WATCH_ADDRESS.value -> {
+            this.hasLocalPrivateKey = false
+            return this
+        }
+        WalletCategory.CLASSIC.value -> {
+            this.hasLocalPrivateKey = true
+            return this
+        }
+        else -> {
+            this.hasLocalPrivateKey = CryptoWalletHelper.hasPrivateKey(context, this.id)
+            return this
+        }
     }
 }

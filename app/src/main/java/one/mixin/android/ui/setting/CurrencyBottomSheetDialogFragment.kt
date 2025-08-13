@@ -11,6 +11,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentCurrencyBottomSheetBinding
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -96,7 +97,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 successBlock = {
                     it.data?.let { account ->
                         Session.storeAccount(account)
-                        RxBus.publish(WalletRefreshedEvent(""))
+                        RxBus.publish(WalletRefreshedEvent("", WalletOperationType.OTHER))
                         callback?.onCurrencyClick(currency)
                         toast(R.string.Save_success)
                         dismiss()

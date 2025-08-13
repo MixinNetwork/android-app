@@ -18,6 +18,7 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.R
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.tip.bip44.Bip44Path
 import timber.log.Timber
 class RefreshWeb3Job : BaseJob(
@@ -58,6 +59,7 @@ class RefreshWeb3Job : BaseJob(
                         it.path == null || it.path.isBlank()
                     }) {
                     routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
                     fetchWalletAddresses(wallet)
                 }
             }

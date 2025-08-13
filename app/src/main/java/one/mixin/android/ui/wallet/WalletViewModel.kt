@@ -36,6 +36,7 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -74,7 +75,6 @@ import javax.inject.Inject
 class WalletViewModel
 @Inject
 internal constructor(
-    private val tip: Tip,
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
     private val web3Repository: Web3Repository,
@@ -97,7 +97,6 @@ internal constructor(
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)
         }
-
     suspend fun  web3TokenItemById(walletId: String, assetId: String) = web3Repository.web3TokenItemById(walletId, assetId)
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
@@ -212,12 +211,6 @@ internal constructor(
 
     suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> = tokenRepository.queryAsset(walletId, query, web3)
 
-    fun saveAssets(hotAssetList: List<TopAssetItem>) {
-        hotAssetList.forEach {
-            jobManager.addJobInBackground(RefreshTokensJob(it.assetId))
-        }
-    }
-
     suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
     suspend fun findOrSyncAsset(
@@ -314,48 +307,9 @@ internal constructor(
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
         tokenRepository.findSnapshotById(snapshotId)
 
-    suspend fun getFees(
-        assetId: String,
-        destination: String,
-    ) = tokenRepository.getFees(assetId, destination)
-
     suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
-
-    suspend fun findBotPublicKey(
-        conversationId: String,
-        botId: String,
-    ) = userRepository.findBotPublicKey(conversationId, botId)
-
-    suspend fun saveSession(participantSession: ParticipantSession) {
-        userRepository.saveSession(participantSession)
-    }
-
-    suspend fun deleteSessionByUserId(
-        conversationId: String,
-        userId: String,
-    ) =
-        withContext(Dispatchers.IO) {
-            userRepository.deleteSessionByUserId(conversationId, userId)
-        }
-
-    fun insertDeposit(data: List<DepositEntry>) {
-        tokenRepository.insertDeposit(data)
-    }
-
-    suspend fun checkHasOldAsset(): Boolean {
-        return handleMixinResponse(
-            invokeNetwork = {
-                tokenRepository.findOldAssets()
-            },
-            successBlock = {
-                return@handleMixinResponse it.data?.any { asset ->
-                    BigDecimal(asset.balance) != BigDecimal.ZERO
-                } ?: false
-            },
-        ) ?: false
-    }
 
     suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
 
@@ -454,8 +408,6 @@ internal constructor(
         pin: String,
     ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
 
-    suspend fun searchAssetsByAddresses(addresses: List<String>) = web3Repository.searchAssetsByAddresses(addresses)
-
     suspend fun renameWallet(walletId: String, newName: String) {
         withContext(Dispatchers.IO) {
             try {
@@ -464,7 +416,7 @@ internal constructor(
                 if (response.isSuccess && response.data != null) {
                     // Update local database
                     web3Repository.updateWalletName(walletId, newName)
-                    RxBus.publish(WalletRefreshedEvent(walletId))
+                    RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.RENAME))
                     Timber.d("Successfully renamed wallet $walletId to $newName")
                 } else {
                     Timber.e("Failed to rename wallet: ${response.errorCode} - ${response.errorDescription}")
@@ -485,7 +437,7 @@ internal constructor(
                 web3Repository.deleteHiddenTokens(walletId)
                 web3Repository.deleteWallet(walletId)
                 CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
-                RxBus.publish(WalletRefreshedEvent(walletId))
+                RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.DELETE))
             }
         } catch (e: Exception) {
             Timber.e(e)

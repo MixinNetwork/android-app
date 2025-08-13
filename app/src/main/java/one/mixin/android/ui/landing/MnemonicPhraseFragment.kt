@@ -24,6 +24,7 @@ import one.mixin.android.api.request.AnonymousMessage
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.doAnonymousPOW
 import one.mixin.android.crypto.CryptoPreference
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
@@ -304,6 +305,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     withContext(Dispatchers.IO) {
                         clearDatabase(requireContext())
                     }
+                    CryptoWalletHelper.clear(requireContext())
                     defaultSharedPreferences.clear()
                 }
                 val privateKey = sessionKey.privateKey
