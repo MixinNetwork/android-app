@@ -276,9 +276,13 @@ class TokenRepository
 
         suspend fun findDepositEntry(chainId: String) = depositDao.findDepositEntry(chainId)
 
+        suspend fun findAndSyncDepositEntry(chainId: String, assetId: String): DepositEntry? {
+            return depositDao.findDepositEntry(chainId) ?: syncDepositEntry(chainId, assetId).first
+        }
+
         suspend fun findDepositEntryDestinations() = depositDao.findDepositEntryDestinations()
 
-        suspend fun findAndSyncDepositEntry(chainId: String, assetId: String): Triple<DepositEntry?, Boolean, Int> {
+        suspend fun findAndCheckDepositEntry(chainId: String, assetId: String): Triple<DepositEntry?, Boolean, Int> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
             val (newDeposit, code) = syncDepositEntry(chainId, assetId)
             val result =

@@ -27,7 +27,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.ExportRequest
@@ -48,27 +47,21 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
-import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -224,6 +217,11 @@ internal constructor(
     suspend fun findDepositEntry(chainId: String) = tokenRepository.findDepositEntry(chainId)
 
     suspend fun findDepositEntryDestinations() = tokenRepository.findDepositEntryDestinations()
+
+    suspend fun findAndCheckDepositEntry(chainId: String, assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndCheckDepositEntry(chainId, assetId)
+        }
 
     suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) =
         withContext(Dispatchers.IO) {
