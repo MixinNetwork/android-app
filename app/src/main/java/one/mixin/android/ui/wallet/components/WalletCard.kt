@@ -307,6 +307,7 @@ val privacyChain = listOf(
     R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_ton,
     R.drawable.ic_chain_base,
+    R.drawable.ic_web3_chain_optimism_eth,
 )
 
 val classicChain = listOf(
@@ -315,6 +316,7 @@ val classicChain = listOf(
     R.drawable.ic_chain_bsc,
     R.drawable.ic_chain_base,
     R.drawable.ic_chain_arbitrum_eth,
+    R.drawable.ic_chain_optimism,
     // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
 )
