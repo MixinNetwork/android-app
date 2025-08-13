@@ -225,7 +225,7 @@ internal constructor(
 
     suspend fun findDepositEntryDestinations() = tokenRepository.findDepositEntryDestinations()
 
-    suspend fun findAndSyncDepositEntry(chainId: String, assetId: String?) =
+    suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) =
         withContext(Dispatchers.IO) {
             tokenRepository.findAndSyncDepositEntry(chainId, assetId)
         }

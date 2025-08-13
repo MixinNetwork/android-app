@@ -241,7 +241,7 @@ class TokenRepository
             return assetItem
         }
 
-        suspend fun syncDepositEntry(chainId: String, assetId: String?): Pair<DepositEntry?, Int> {
+        suspend fun syncDepositEntry(chainId: String, assetId: String): Pair<DepositEntry?, Int> {
             var code = 200
             val depositEntry =
                 handleMixinResponse(
@@ -278,7 +278,7 @@ class TokenRepository
 
         suspend fun findDepositEntryDestinations() = depositDao.findDepositEntryDestinations()
 
-        suspend fun findAndSyncDepositEntry(chainId: String, assetId: String?): Triple<DepositEntry?, Boolean, Int> {
+        suspend fun findAndSyncDepositEntry(chainId: String, assetId: String): Triple<DepositEntry?, Boolean, Int> {
             val oldDeposit = depositDao.findDepositEntry(chainId)
             val (newDeposit, code) = syncDepositEntry(chainId, assetId)
             val result =
