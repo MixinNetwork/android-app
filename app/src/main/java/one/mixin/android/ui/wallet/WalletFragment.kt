@@ -272,6 +272,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         RxBus.listen(WalletRefreshedEvent::class.java)
             .autoDispose(destroyScope)
             .subscribe { event ->
+                if (event.type != 0) return@subscribe
                 val currentDestination = selectedWalletDestination
                 when (currentDestination) {
                     is WalletDestination.Classic -> {

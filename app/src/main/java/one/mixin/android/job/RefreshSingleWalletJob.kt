@@ -8,6 +8,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
@@ -31,7 +32,7 @@ class RefreshSingleWalletJob(
             fetchChain()
             fetchWalletAddresses(wallet)
             fetchWalletAssets(wallet)
-            RxBus.publish(WalletRefreshedEvent(walletId))
+            RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.OTHER))
             Timber.e("Successfully refreshed wallet: $walletId")
             jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
         } catch (e: Exception) {
