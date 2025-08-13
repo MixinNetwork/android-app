@@ -29,9 +29,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Price
+import java.io.IOException
 
 sealed class Result<out T> {
     data object Loading : Result<Nothing>()
@@ -152,7 +154,13 @@ fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighli
                     Box(modifier = Modifier
                         .wrapContentSize()
                         .padding(20.dp)) {
-                        Text(text = response.exception.message ?: stringResource(R.string.Unknown), color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp)
+                        Text(
+                            text = if (response.exception is IOException) {
+                                stringResource(R.string.Network_error)
+                            } else {
+                                stringResource(R.string.Unknown)
+                            }, color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp
+                        )
                     }
                 }
             }

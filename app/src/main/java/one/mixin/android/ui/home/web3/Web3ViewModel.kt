@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.sqlite.db.SupportSQLiteQuery
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -50,7 +49,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.User
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeCollectible
@@ -194,7 +192,7 @@ internal constructor(
 
     suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndSyncDepositEntry(token.chainId, token.assetId).first
+            tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
         }
 
     suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)

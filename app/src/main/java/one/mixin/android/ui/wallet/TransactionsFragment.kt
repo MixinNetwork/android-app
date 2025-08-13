@@ -262,7 +262,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
         walletViewModel.refreshAsset(asset.assetId)
         lifecycleScope.launch {
-            val (depositEntry, _, _) = walletViewModel.findAndSyncDepositEntry(asset.chainId, null)
+            val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry != null && depositEntry.destination.isNotBlank()) {
                 refreshPendingDeposits(asset, depositEntry)
             }
