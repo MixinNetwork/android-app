@@ -3,8 +3,10 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.Token
+import timber.log.Timber
 
 class RefreshTokensJob(
     private val assetId: String? = null,
@@ -40,8 +42,8 @@ class RefreshTokensJob(
                 if (response.isSuccess && response.data != null) {
                     val list = response.data as List<Token>
                     assetRepo.insertList(list)
+                    refreshChains(list.map { it.chainId }.distinct())
                 }
-                refreshChains()
                 refreshFiats()
             }
         }
@@ -63,17 +65,11 @@ class RefreshTokensJob(
         }
     }
 
-    private suspend fun refreshChains() {
-        val resp = tokenService.getChains()
-        if (resp.isSuccess) {
-            resp.data?.let { chains ->
-                chains.subtract(chainDao.getChains().toSet()).let {
-                    chainDao.insertList(it.toList())
-                }
-            }
+    private suspend fun refreshChains(chainIds: List<String>) {
+        chainIds.forEach { chainId ->
+            refreshChainById(chainId)
         }
     }
-
     private suspend fun refreshChainById(chainId: String) {
         val resp = tokenService.getChainById(chainId)
         if (resp.isSuccess) {
