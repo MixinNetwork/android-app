@@ -14,8 +14,10 @@ import androidx.fragment.app.activityViewModels
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.holder.TimeBubble
 import one.mixin.android.ui.wallet.components.DisplayWalletSecurityContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
+import timber.log.Timber
 
 class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
 
@@ -49,6 +51,7 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
                             viewModel.getWeb3Mnemonic(requireContext()) ?: throw IllegalArgumentException("Mnemonic not found")
                         }
                         WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
+                            Timber.e("chainId = $chainId, walletId = $walletId")
                             viewModel.getWeb3Priva(requireContext(), chainId, walletId) ?: throw IllegalArgumentException("Private key not found")
                         }
                         else -> throw IllegalArgumentException("Unsupported mode: $mode")
@@ -72,6 +75,7 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     companion object {
+        const val TAG = "DisplayWalletSecurityFragment"
         private const val ARG_MODE = "arg_mode"
         private const val ARG_CHAIN_ID = "arg_chain_id"
         private const val ARG_WALLET_ID = "arg_wallet_id"

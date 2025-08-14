@@ -2084,4 +2084,8 @@
     <string name="import_private_key_url">https://support.mixin.one/en/article/how-to-import-private-keys-w7wn4w/</string>
     <string name="Import_Failed">Import Failed</string>
     <string name="partial_import_successful">Partial Import Successful</string>
+    <string name="Proceed">Proceed</string>
+    <string name="watch_address_notice_1">Easily monitor the balance and transaction history of a specified address.</string>
+    <string name="watch_address_notice_2">Supports multiple networks such as Ethereum, Base, and Solana.</string>
+    <string name="watch_address_notice_3">Cannot transfer funds or interact with on-chain applications or DeFi projects.</string>
 </resources>

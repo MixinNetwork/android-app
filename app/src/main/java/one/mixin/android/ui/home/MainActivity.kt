@@ -314,6 +314,10 @@ class MainActivity : BlazeBaseActivity() {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
         }
 
+        lifecycleScope.launch(Dispatchers.IO) {
+            initWalletConnect()
+        }
+
         initBottomNav()
         handlerCode(intent)
 
@@ -522,7 +526,6 @@ class MainActivity : BlazeBaseActivity() {
                 ExistingPeriodicWorkPolicy.UPDATE,
                 periodicWorkRequest
             )
-            initWalletConnect()
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {

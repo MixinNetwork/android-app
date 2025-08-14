@@ -18,14 +18,14 @@ class WalletSecurityActivity : BlazeBaseActivity() {
             val walletId = intent.getStringExtra(EXTRA_WALLET_ID)
 
             val fragment = when (mode) {
-                Mode.IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.IMPORT_MNEMONIC)
+                Mode.CREATE_WALLET -> WalletNoticeFragment.newInstance(Mode.CREATE_WALLET)
+                Mode.IMPORT_MNEMONIC -> WalletNoticeFragment.newInstance(Mode.IMPORT_MNEMONIC)
+                Mode.IMPORT_PRIVATE_KEY -> WalletNoticeFragment.newInstance(Mode.IMPORT_PRIVATE_KEY)
+                Mode.ADD_WATCH_ADDRESS -> WalletNoticeFragment.newInstance(Mode.ADD_WATCH_ADDRESS)
+                Mode.VIEW_MNEMONIC -> ViewWalletSecurityFragment.newInstance(mode, walletId = walletId)
+                Mode.VIEW_PRIVATE_KEY -> ViewWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId)
                 Mode.RE_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_MNEMONIC, walletId = walletId)
                 Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
-                Mode.VIEW_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.VIEW_MNEMONIC, walletId = walletId)
-                Mode.VIEW_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.VIEW_PRIVATE_KEY, chainId = chainId, walletId = walletId)
-                Mode.IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.IMPORT_PRIVATE_KEY)
-                Mode.ADD_WATCH_ADDRESS -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.ADD_WATCH_ADDRESS)
-                Mode.CREATE_WALLET -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.CREATE_WALLET)
             }
 
             supportFragmentManager.beginTransaction()
@@ -64,4 +64,3 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         finish()
     }
 }
-

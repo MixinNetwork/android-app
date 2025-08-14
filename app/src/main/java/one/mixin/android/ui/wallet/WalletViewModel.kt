@@ -448,6 +448,8 @@ internal constructor(
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
 
+    suspend fun getClassicWalletId() = web3Repository.getClassicWalletId()
+
     suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
         return withContext(Dispatchers.IO) {
 

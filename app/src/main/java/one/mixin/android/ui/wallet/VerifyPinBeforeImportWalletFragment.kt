@@ -79,7 +79,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
                                     WalletSecurityActivity.Mode.VIEW_MNEMONIC -> {
                                         navTo(
-                                            ViewWalletSecurityFragment.newInstance(mode, walletId = walletId), "ViewWalletSecurityFragment"
+                                            DisplayWalletSecurityFragment.newInstance(mode, walletId = walletId), DisplayWalletSecurityFragment.TAG
                                         )
                                         requireActivity().supportFragmentManager
                                             .beginTransaction()
@@ -89,7 +89,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
                                     WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
                                         navTo(
-                                            ViewWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId), "ViewWalletSecurityFragment"
+                                            DisplayWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId), DisplayWalletSecurityFragment.TAG
                                         )
 
                                         requireActivity().supportFragmentManager
@@ -130,9 +130,10 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                     }
                                     WalletSecurityActivity.Mode.CREATE_WALLET -> {
                                         navTo(
-                                            CreateWalletNoticeFragment.newInstance(),
-                                            CreateWalletNoticeFragment.TAG
+                                            ImportingWalletFragment.newInstance(WalletSecurityActivity.Mode.CREATE_WALLET),
+                                            ImportingWalletFragment.TAG
                                         )
+                                        viewModel.createClassicWallet()
                                         requireActivity().supportFragmentManager
                                             .beginTransaction()
                                             .remove(this@VerifyPinBeforeImportWalletFragment)
