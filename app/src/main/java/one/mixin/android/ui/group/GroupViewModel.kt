@@ -13,7 +13,6 @@ import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.sha256
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
@@ -27,6 +26,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
+import one.mixin.android.util.ConversationIdUtil
 import java.util.UUID
 import javax.inject.Inject
 
@@ -38,25 +38,6 @@ class GroupViewModel
         private val conversationRepository: ConversationRepository,
         private val jobManager: MixinJobManager,
     ) : ViewModel() {
-
-    private fun uniqueConversationId(source: String, input: String): String {
-        return (source + input).sha256().let { bytes ->
-            UUID.nameUUIDFromBytes(bytes).toString()
-        }
-    }
-
-    private fun generateGroupConversationId(ownerId: String, groupName: String, participants: List<String>, randomId: String): String {
-        val validRandomId = UUID.fromString(randomId).toString()
-
-        var gid = uniqueConversationId(ownerId, groupName)
-        gid = uniqueConversationId(gid, validRandomId)
-
-        val sortedParticipants = participants.sorted()
-        for (participant in sortedParticipants) {
-            gid = uniqueConversationId(gid, participant)
-        }
-        return gid
-    }
 
     fun getFriends() = userRepository.findFriends()
 
@@ -70,7 +51,12 @@ class GroupViewModel
         withContext(Dispatchers.IO) {
             val participants = users.map { it.userId }
             val randomId = UUID.randomUUID().toString()
-            val conversationId = generateGroupConversationId(sender.userId, groupName, participants, randomId)
+            val conversationId = ConversationIdUtil.generateGroupConversationId(
+                ownerId = sender.userId,
+                groupName = groupName,
+                participants = participants,
+                randomId = randomId
+            )
 
             val createdAt = nowInUtc()
             val conversation =
