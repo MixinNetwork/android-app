@@ -100,6 +100,8 @@ object Constants {
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
+        const val PREF_SESSION_UPDATE = "pref_session_update"
+
         const val PREF_HAS_USED_BUY = "pref_has_used_buy"
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
@@ -371,6 +373,7 @@ object Constants {
     const val INTERVAL_10_MINS: Long = (1000 * 60 * 10).toLong()
     const val INTERVAL_30_MINS: Long = (1000 * 60 * 30).toLong()
     const val INTERVAL_1_MIN: Long = (1000 * 60).toLong()
+    const val INTERVAL_6_HOURS: Long = (1000 * 60 * 60 * 6).toLong()
     const val INTERVAL_7_DAYS: Long = INTERVAL_24_HOURS * 7
     const val DELAY_SECOND = 60
     const val ALLOW_INTERVAL: Long = (5 * 60 * 1000).toLong()

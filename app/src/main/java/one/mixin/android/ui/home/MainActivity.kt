@@ -21,9 +21,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -55,16 +52,19 @@ import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
+import one.mixin.android.Constants.Account.PREF_SESSION_UPDATE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
+import one.mixin.android.Constants.INTERVAL_6_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
@@ -182,9 +182,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.JsSigner
-import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -518,14 +516,8 @@ class MainActivity : BlazeBaseActivity() {
 
             jobManager.addJobInBackground(RefreshContactJob())
 
-            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
-                6, TimeUnit.HOURS
-            ).build()
-            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
-                "SessionWorker",
-                ExistingPeriodicWorkPolicy.UPDATE,
-                periodicWorkRequest
-            )
+            updateSessionIfNeeded()
+
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
@@ -546,6 +538,33 @@ class MainActivity : BlazeBaseActivity() {
               jobManager.addJobInBackground(RefreshWeb3Job())
             }
         }
+
+    private suspend fun updateSessionIfNeeded() {
+        val lastUpdateTime = defaultSharedPreferences.getLong(PREF_SESSION_UPDATE, 0)
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastUpdateTime < INTERVAL_6_HOURS) {
+            Timber.d("Session update skipped, last update was ${(currentTime - lastUpdateTime) / (1000 * 60)} minutes ago")
+            return
+        }
+
+        try {
+            val account = Session.getAccount()
+            if (account == null) {
+                Timber.w("Session update failed: No active account")
+                return
+            }
+
+            val response = accountRepo.updateSession(SessionRequest())
+            if (response.isSuccess) {
+                defaultSharedPreferences.putLong(PREF_SESSION_UPDATE, currentTime)
+                Timber.e("Session updated successfully")
+            } else {
+                Timber.e("Session update failed with error code: ${response.errorCode}")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating session")
+        }
+    }
 
     private fun handleTipEvent(
         e: TipEvent,
