@@ -64,7 +64,6 @@ import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.Constants.INTERVAL_24_HOURS
-import one.mixin.android.Constants.INTERVAL_6_HOURS
 import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -564,7 +563,7 @@ class MainActivity : BlazeBaseActivity() {
     private suspend fun updateSessionIfNeeded() {
         val lastUpdateTime = defaultSharedPreferences.getLong(PREF_SESSION_UPDATE, 0)
         val currentTime = System.currentTimeMillis()
-        if (currentTime - lastUpdateTime < INTERVAL_6_HOURS) {
+        if (lastUpdateTime > 0) {
             Timber.d("Session update skipped, last update was ${(currentTime - lastUpdateTime) / (1000 * 60)} minutes ago")
             return
         }
