@@ -274,6 +274,9 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)
 
+    @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
+    fun deleteConversationByConversationId(conversationId: String)
+
     @Query(
         """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.name AS groupName, (SELECT count(user_id) from participants where conversation_id = c.conversation_id) AS memberCount
