@@ -21,7 +21,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -171,6 +173,7 @@ import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
@@ -523,6 +526,10 @@ class MainActivity : BlazeBaseActivity() {
 
             val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
                 6, TimeUnit.HOURS
+            ).setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
             ).build()
             WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
                 "SessionWorker",
@@ -571,6 +578,9 @@ class MainActivity : BlazeBaseActivity() {
             if (response.isSuccess) {
                 defaultSharedPreferences.putLong(PREF_SESSION_UPDATE, currentTime)
                 Timber.e("Session updated successfully")
+            } else if (response.errorCode >= SERVER) {
+                delay(1000)
+                updateSessionIfNeeded()
             } else {
                 Timber.e("Session update failed with error code: ${response.errorCode}")
             }
