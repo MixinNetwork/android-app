@@ -40,6 +40,9 @@ interface Web3AddressDao : BaseDao<Web3Address> {
     @Query("SELECT EXISTS(SELECT 1 FROM addresses WHERE wallet_id = :walletId AND destination = :address)")
     suspend fun isAddressMatch(walletId: String, address: String): Boolean
 
+    @Query("SELECT EXISTS(SELECT 1 FROM addresses WHERE destination = :address)")
+    suspend fun addressMatch(address: String): Boolean
+
     @Query("SELECT w.* FROM wallets w INNER JOIN addresses a ON w.wallet_id = a.wallet_id WHERE a.destination = :destination LIMIT 1")
     suspend fun getWalletByDestination(destination: String): Web3Wallet?
 }
