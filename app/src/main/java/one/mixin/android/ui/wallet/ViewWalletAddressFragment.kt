@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -88,6 +89,7 @@ class ViewWalletAddressFragment : BaseFragment() {
 
 @Composable
 fun ViewAddressScreen(walletId: String, learnMoreAction: () -> Unit, pop: () -> Unit) {
+    val context = LocalContext.current
     val viewModel = hiltViewModel<Web3ViewModel>()
     var addresses by remember { mutableStateOf(emptyList<Web3Address>()) }
 
@@ -100,6 +102,15 @@ fun ViewAddressScreen(walletId: String, learnMoreAction: () -> Unit, pop: () -> 
             title = "",
             verticalScrollable = true,
             pop = pop,
+            actions = {
+                IconButton(onClick = { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_support),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon
+                    )
+                }
+            }
         ) {
             Spacer(modifier = Modifier.height(10.dp))
             Column(
