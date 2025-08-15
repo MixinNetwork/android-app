@@ -14,7 +14,6 @@ import androidx.fragment.app.activityViewModels
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.holder.TimeBubble
 import one.mixin.android.ui.wallet.components.DisplayWalletSecurityContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import timber.log.Timber

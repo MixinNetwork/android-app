@@ -43,7 +43,6 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager

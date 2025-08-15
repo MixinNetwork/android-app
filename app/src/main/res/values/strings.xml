@@ -1156,6 +1156,7 @@
     <string name="Waiting">Waiting</string>
     <string name="Waiting_for_this_message">Waiting for this message.</string>
     <string name="Wallet">Wallet</string>
+    <string name="wallet_address">Wallet Address</string>
     <string name="Wallets">Wallets</string>
     <string name="wallet_add_asset_already_hidden">Assets %1$s have been hidden by you, want to show them immediately on the wallet homepage?</string>
     <string name="wallet_address_add_tip">Mixin does not support withdrawal to the</string>
@@ -2088,4 +2089,6 @@
     <string name="watch_address_notice_1">Easily monitor the balance and transaction history of a specified address.</string>
     <string name="watch_address_notice_2">Supports multiple networks such as Ethereum, Base, and Solana.</string>
     <string name="watch_address_notice_3">Cannot transfer funds or interact with on-chain applications or DeFi projects.</string>
+    <string name="watch_address_description">You are unable to control assets in a watch-only wallet, but you can track them. Learn More</string>
+    <string name="watch_wallet_url">https://support.mixin.one/en/article/what-is-a-watch-only-wallet-13bo2l8</string>
 </resources>

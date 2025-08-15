@@ -29,7 +29,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat12
@@ -40,7 +39,6 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
-import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session

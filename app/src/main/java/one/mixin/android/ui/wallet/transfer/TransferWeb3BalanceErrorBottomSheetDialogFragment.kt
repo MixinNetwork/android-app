@@ -22,7 +22,6 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3AddressActivity
 import one.mixin.android.widget.BottomSheet
