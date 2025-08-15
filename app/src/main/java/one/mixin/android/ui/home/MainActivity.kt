@@ -536,7 +536,9 @@ class MainActivity : BlazeBaseActivity() {
                 ExistingPeriodicWorkPolicy.UPDATE,
                 periodicWorkRequest
             )
-            updateSessionIfNeeded()
+            lifecycleScope.launch {
+                updateSessionIfNeeded()
+            }
 
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
