@@ -23,6 +23,8 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="12dp"
                 android:padding="4dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:foreground="?android:attr/selectableItemBackground">
 
                 <ImageView
