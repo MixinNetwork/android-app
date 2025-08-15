@@ -685,9 +685,15 @@ class SwapFragment : BaseFragment() {
                 return
             }
             swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
+            if (swappable.isEmpty()) {
+                swappable = swapViewModel.findWeb3AssetItems(walletId!!)
+            }
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.findAssetItemsWithBalance()
+            if (swappable.isEmpty()) {
+                swappable = swapViewModel.findAssetItems()
+            }
             tokenItems = swappable
         }
         swappable.map { it.toSwapToken() }.toList().let {
@@ -705,32 +711,26 @@ class SwapFragment : BaseFragment() {
             val lastTo = lastSelectedPair?.getOrNull(1)
 
             fromToken = if (input != null) {
-                if(inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!,input)?.toSwapToken()
-            } else lastFrom
-                ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ETH_ID }
-                    ?: tokens.firstOrNull())?.toSwapToken()
-
+                if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
+            } else {
+                lastFrom ?: (tokens.firstOrNull { t -> t.getUnique() in Constants.usdIds })?.toSwapToken()
+            }
             toToken = if (output != null) {
                 if (inMixin()) swapViewModel.findToken(output)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, output)?.toSwapToken()
             } else if (input != null) {
-                val o = if (input == USDT_ASSET_ETH_ID) {
+                val o = if (input in Constants.usdIds) {
                     XIN_ASSET_ID
                 } else {
                     USDT_ASSET_ETH_ID
                 }
                 if (inMixin()) swapViewModel.findToken(o)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, o)?.toSwapToken()
-            } else lastTo
-                ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }
-                    ?.toSwapToken()
+            } else {
+                lastTo ?: (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds } ) ?.toSwapToken()
+            }
             if (toToken?.getUnique() == fromToken?.getUnique()) {
-                toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
+                toToken = (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() })?.toSwapToken()
             }
         }
-    }
-
-    private val saveSwapTokens by lazy {
-        if (inMixin()) defaultSharedPreferences.getList(Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Account.PREF_TO_SWAP, SwapToken::class.java)
-        else emptyList()
     }
 
     private suspend fun refreshTokens() {
