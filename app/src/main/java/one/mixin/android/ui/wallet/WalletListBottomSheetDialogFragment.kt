@@ -63,7 +63,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
-import one.mixin.android.extension.dp as dip
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -78,7 +77,7 @@ import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletInfoCard
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.WalletCategory
+import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {

@@ -100,11 +100,15 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     ) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in PrivacyWalletFragment")
-        lifecycleScope.launch(Dispatchers.IO) {
-            measureTime {
+        lifecycleScope.launch {
+            val queryDuration = measureTime {
                 val data = walletViewModel.assetItemsNotHiddenRaw()
                 assets = data
-                assetsAdapter.setAssetList(data)
+                Timber.e("assetItemsNotHiddenRaw query completed: data size: ${data.size}")
+            }
+            Timber.e("assetItemsNotHiddenRaw query took: $queryDuration")
+            if (isAdded) {
+                assetsAdapter.setAssetList(assets)
                 if (lastFiatCurrency != Session.getFiatCurrency()) {
                     lastFiatCurrency = Session.getFiatCurrency()
                     assetsAdapter.notifyDataSetChanged()
@@ -114,9 +118,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
                 }
                 renderPie(assets, bitcoin)
-                Timber.e("assetItemsNotHiddenRaw data size: ${data.size}")
-            }.also { duration ->
-                Timber.e("assetItemsNotHiddenRaw took: $duration")
             }
         }
 

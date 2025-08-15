@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
@@ -18,8 +19,10 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.tip.bip44.Bip44Path
+import one.mixin.android.web3.js.JsSigner
 import timber.log.Timber
 class RefreshWeb3Job : BaseJob(
     Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
@@ -89,6 +92,14 @@ class RefreshWeb3Job : BaseJob(
                     }
                     fetchChain()
                     fetchWalletAssets(w)
+                    JsSigner.init(
+                        { w.id },
+                        { walletId ->
+                            runBlocking(Dispatchers.IO) { web3AddressDao.getAddressesByWalletId(walletId) }
+                        }, { walletId ->
+                            w
+                        }
+                    )
                 } else {
                     Timber.e("Failed to create $category wallet: response data is null")
                 }

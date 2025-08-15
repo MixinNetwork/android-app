@@ -14,8 +14,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.switchMap
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,7 +33,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
@@ -51,8 +50,6 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
-import one.mixin.android.ui.wallet.components.WalletDestination
-import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -138,22 +135,23 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     ) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in ClassicWalletFragment")
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             val queryDuration = measureTime {
                 val data = web3ViewModel.web3TokensExcludeHiddenRaw(walletId)
                 assets = data
                 Timber.e("web3TokensExcludeHiddenRaw query completed: data size: ${data.size}, walletId: $walletId")
             }
             Timber.e("web3TokensExcludeHiddenRaw query took: $queryDuration")
-            
-            assetsAdapter.setAssetList(assets)
-            if (lastFiatCurrency != Session.getFiatCurrency()) {
-                lastFiatCurrency = Session.getFiatCurrency()
-                assetsAdapter.notifyDataSetChanged()
-            }
+            if (isAdded) {
+                assetsAdapter.setAssetList(assets)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
 
-            val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
-            renderPie(assets, bitcoin)
+                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                renderPie(assets, bitcoin)
+            }
         }
 
         binding.apply {
@@ -277,6 +275,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
+        _headBinding?.watchLayout?.setOnClickListener {
+            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_ADDRESS, walletId = walletId)
+        }
         _walletId.observe(viewLifecycleOwner) { id ->
             if (id.isNotEmpty()) {
                 lifecycleScope.launch {

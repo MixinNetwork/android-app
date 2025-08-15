@@ -6,18 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import one.mixin.android.R
+import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.ViewWalletSecurityContent
 
 class ViewWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
-
+    private var chainId: String? = null
+    private var walletId: String? = null
     private var mode: WalletSecurityActivity.Mode = WalletSecurityActivity.Mode.VIEW_MNEMONIC
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             val modeOrdinal = it.getInt(ARG_MODE)
-            mode = WalletSecurityActivity.Mode.values()[modeOrdinal]
+            mode = WalletSecurityActivity.Mode.entries[modeOrdinal]
+            chainId = it.getString(ARG_CHAIN_ID)
+            walletId = it.getString(ARG_WALLET_ID)
         }
     }
 
@@ -25,24 +29,19 @@ class ViewWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val chainId = arguments?.getString(ARG_CHAIN_ID)
-        val walletId = arguments?.getString(ARG_WALLET_ID)
         return ComposeView(requireContext()).apply {
             setContent {
                 ViewWalletSecurityContent(
                     mode = mode,
                     pop = {
-                        requireActivity()?.finish()
+                        requireActivity().finish()
                     },
                     next = {
-                        val verifyPinMode = when (mode) {
-                            WalletSecurityActivity.Mode.VIEW_MNEMONIC -> WalletSecurityActivity.Mode.VIEW_MNEMONIC
-                            WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY
-                            else -> throw IllegalArgumentException("Unsupported mode: $mode")
-                        }
+                        navTo(
+                            VerifyPinBeforeImportWalletFragment.newInstance(mode, walletId = walletId, chainId = chainId), "VerifyPinBeforeImportWalletFragment"
+                        )
                         parentFragmentManager.beginTransaction()
-                            .replace(R.id.container, DisplayWalletSecurityFragment.newInstance(verifyPinMode, chainId, walletId))
-                            .addToBackStack(null)
+                            .remove(this@ViewWalletSecurityFragment)
                             .commit()
                     }
                 )

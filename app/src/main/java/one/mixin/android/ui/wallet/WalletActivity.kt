@@ -22,9 +22,9 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARK
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
+import one.mixin.android.vo.User
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.User
 import javax.inject.Inject
 
 @AndroidEntryPoint

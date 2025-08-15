@@ -1,19 +1,26 @@
 package one.mixin.android.ui.wallet
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.components.ImportWalletDetailPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import javax.inject.Inject
@@ -28,6 +35,15 @@ class ReImportPrivateKeyFragment : BaseFragment(R.layout.fragment_compose) {
 
     private var walletId: String? = null
     private var chainId: String? = null
+
+    private var scannedText by mutableStateOf("")
+
+    private val scanLauncher =
+        registerForActivityResult(CaptureActivity.CaptureContract()) { intent ->
+            intent?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)?.let {
+                scannedText = it
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +67,15 @@ class ReImportPrivateKeyFragment : BaseFragment(R.layout.fragment_compose) {
                     pop = {
                         activity?.finish()
                     },
+                    onScan = {
+                        scanLauncher.launch(
+                            Pair(
+                                CaptureActivity.ARGS_FOR_SCAN_RESULT,
+                                true
+                            )
+                        )
+                    },
+                    contentText = scannedText,
                     onConfirmClick = { _, text ->
                         viewModel.savePrivateKey(requireNotNull(walletId), text)
                         RxBus.publish(WalletRefreshedEvent(requireNotNull(walletId), WalletOperationType.CREATE))
