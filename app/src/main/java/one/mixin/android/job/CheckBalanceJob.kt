@@ -30,11 +30,11 @@ class CheckBalanceJob(
                 val tokensExtra = tokensExtraDao.findByAsset(asset)
                 val token = tokenDao.findTokenByAsset(asset) ?: continue
                 mixinDatabase.withTransaction {
-                    val value = calcBalanceByAssetId(asset)
+                    val amount = calcBalanceByAssetId(asset)
                     if (tokensExtra == null) {
-                        tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
+                        tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, amount.toPlainString(), nowInUtc()))
                     } else {
-                        tokensExtraDao.updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
+                        tokensExtraDao.updateBalanceByAssetId(token.assetId, amount.toPlainString(), nowInUtc())
                     }
                 }
             }
@@ -50,9 +50,7 @@ class CheckBalanceJob(
         return
     }
 
-    private suspend fun calcBalanceByAssetId(
-        asset: String
-    ): BigDecimal {
+    private suspend fun calcBalanceByAssetId(asset: String): BigDecimal {
         var offset = 0
         var total = BigDecimal.ZERO
 
@@ -69,5 +67,4 @@ class CheckBalanceJob(
         }
         return total
     }
-
 }
