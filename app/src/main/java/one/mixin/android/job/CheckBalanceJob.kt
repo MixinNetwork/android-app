@@ -50,24 +50,24 @@ class CheckBalanceJob(
         return
     }
 
-    private tailrec suspend fun calcBalanceByAssetId(
-        asset: String,
-        offset: Int = 0,
-        amount: BigDecimal = BigDecimal.ZERO,
+    private suspend fun calcBalanceByAssetId(
+        asset: String
     ): BigDecimal {
-        var result = amount
-        val outputs =
-            if (offset == 0) {
+        var offset = 0
+        var total = BigDecimal.ZERO
+
+        while (true) {
+            val outputs = if (offset == 0) {
                 outputDao.findUnspentOutputsByAsset(BALANCE_LIMIT, asset)
             } else {
                 outputDao.findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
             }
-        if (outputs.isEmpty()) return result
-        result += outputs.map { BigDecimal(it.amount) }.sumOf { it }
-        return if (outputs.size >= BALANCE_LIMIT) {
-            calcBalanceByAssetId(asset, offset + BALANCE_LIMIT, result)
-        } else {
-            result
+            if (outputs.isEmpty()) break
+            total += outputs.sumOf { BigDecimal(it.amount) }
+            if (outputs.size < BALANCE_LIMIT) break
+            offset += BALANCE_LIMIT
         }
+        return total
     }
+
 }
