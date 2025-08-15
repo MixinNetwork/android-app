@@ -94,7 +94,9 @@ internal constructor(
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
-    fun assetItemsNotHiddenRaw(): List<TokenItem> = tokenRepository.assetItemsNotHiddenRaw()
+    suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
+        return@withContext tokenRepository.assetItemsNotHiddenRaw()
+    }
 
     fun hasAssetsWithValue() = assetRepository.hasAssetsWithValue()
 

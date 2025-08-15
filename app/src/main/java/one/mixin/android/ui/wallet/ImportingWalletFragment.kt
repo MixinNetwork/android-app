@@ -24,6 +24,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+        binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0

@@ -122,7 +122,6 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.User
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser

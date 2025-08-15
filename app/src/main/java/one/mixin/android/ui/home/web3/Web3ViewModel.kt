@@ -85,7 +85,9 @@ internal constructor(
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
 
-    fun web3TokensExcludeHiddenRaw(walletId: String) = web3Repository.web3TokensExcludeHiddenRaw(walletId)
+    suspend fun web3TokensExcludeHiddenRaw(walletId: String) = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.web3TokensExcludeHiddenRaw(walletId)
+    }
 
     fun hiddenAssetItems(walletId: String) = web3Repository.hiddenAssetItems(walletId)
 
