@@ -62,7 +62,7 @@ class CheckBalanceJob(
             } else {
                 outputDao.findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
             }
-        if (outputs.isEmpty()) return amount
+        if (outputs.isEmpty()) return result
         result += outputs.map { BigDecimal(it.amount) }.sumOf { it }
         return if (outputs.size >= BALANCE_LIMIT) {
             calcBalanceByAssetId(asset, offset + BALANCE_LIMIT, result)
