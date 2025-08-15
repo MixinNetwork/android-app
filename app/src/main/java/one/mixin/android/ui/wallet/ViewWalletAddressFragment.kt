@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import PageScaffold
-import android.R.attr.onClick
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -11,7 +10,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -46,7 +54,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import kotlin.collections.any
 
 @AndroidEntryPoint
 class ViewWalletAddressFragment : BaseFragment() {
