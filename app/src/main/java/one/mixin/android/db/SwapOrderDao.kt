@@ -43,4 +43,10 @@ interface SwapOrderDao : BaseDao<SwapOrder> {
     """
     )
     suspend fun lastOrderCreatedAt(): String?
+
+    @Query(
+        """
+        UPDATE swap_orders SET state = :state WHERE order_id = :orderId
+    """
+    )fun updateStatusById(orderId: String, state: String)
 }
