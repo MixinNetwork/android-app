@@ -109,7 +109,7 @@ buildscript {
         ext.composeVersion = '1.9.0'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
-        ext.sol4kVersion = '0.5.16'
+        ext.sol4kVersion = '0.5.17'
 
         ext.sumsubVersion = '1.36.1'
         ext.checkoutFramesVersion = '4.2.3'
