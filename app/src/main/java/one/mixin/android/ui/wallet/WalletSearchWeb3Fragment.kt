@@ -224,7 +224,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
                     val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)
                     Web3TokenItem(
-                        walletId = t?.walletId ?: "",
+                        walletId = walletId!!,
                         assetId = tokenItem.assetId,
                         chainId = tokenItem.chainId,
                         name = tokenItem.name,
@@ -236,14 +236,13 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         balance = t?.balance ?: "0",
                         priceUsd = tokenItem.priceUsd,
                         changeUsd = tokenItem.changeUsd,
-                        chainIcon = tokenItem.chainIconUrl,
+                        chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon,
                         chainName = tokenItem.chainName,
                         chainSymbol = tokenItem.chainSymbol,
                         hidden = false,
                         level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
-                
                 val currentList = searchAdapter.currentList
 
                 val combinedList = currentList + remoteWeb3Tokens.filter { remote ->
