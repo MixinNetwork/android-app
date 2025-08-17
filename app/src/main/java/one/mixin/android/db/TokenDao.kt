@@ -144,8 +144,6 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) $POSTFIX_ASSET_ITEM")
     suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem>
 
-    @Query("SELECT icon_url FROM tokens WHERE asset_id = :id")
-    suspend fun getIconUrl(id: String): String?
 
     @Query("SELECT asset_id FROM tokens WHERE asset_id = :id")
     fun checkExists(id: String): String?

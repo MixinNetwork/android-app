@@ -650,7 +650,7 @@ class TokenRepository
 
         private suspend fun queryAssets(query: String) = tokenService.queryAssets(query)
 
-        private suspend fun getIconUrl(id: String) = tokenDao.getIconUrl(id)
+        private suspend fun getIconUrl(id: String) = chainDao.getIconUrl(id)
 
         fun observeTopAssets() = hotAssetDao.topAssets()
 
