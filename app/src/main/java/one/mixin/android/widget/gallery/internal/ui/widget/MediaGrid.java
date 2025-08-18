@@ -8,7 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.recyclerview.widget.RecyclerView;
+
 import one.mixin.android.R;
 import one.mixin.android.widget.gallery.internal.entity.Item;
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;

@@ -11,6 +11,7 @@ import one.mixin.android.Constants.Scheme.HTTPS_SEND
 import one.mixin.android.Constants.Scheme.MIXIN_SEND
 import one.mixin.android.Constants.Scheme.SEND
 import one.mixin.android.crypto.Base64
+import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.toDrawable
 import kotlin.math.max
 
@@ -97,13 +98,13 @@ data class ActionButtonData(
     val action: String,
 ) : Parcelable {
     @IgnoredOnParcel
-    val externalLink:Boolean
+    val externalLink: Boolean
         get() {
-            return action.startsWith("http://", true) || action.startsWith("https://")
+            return (action.startsWith("http://", true) || action.startsWith("https://", true)) && action.isMixinUrl().not()
         }
 
     @IgnoredOnParcel
-    val sendLink:Boolean
+    val sendLink: Boolean
         get() {
             return action.isValidSendUrl()
         }

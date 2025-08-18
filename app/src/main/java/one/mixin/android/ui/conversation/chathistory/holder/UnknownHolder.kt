@@ -7,7 +7,6 @@ import androidx.core.view.isVisible
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatUnknownBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem

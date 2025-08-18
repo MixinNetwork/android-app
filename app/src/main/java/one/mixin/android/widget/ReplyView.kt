@@ -1,7 +1,6 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -38,7 +37,6 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.membershipIcon
 
 class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
     private val binding = ViewReplyBinding.inflate(LayoutInflater.from(context), this, true)

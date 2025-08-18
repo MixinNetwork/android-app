@@ -15,6 +15,8 @@ class JsSignMessage(
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
     val solanaTxSource: SolanaTxSource = SolanaTxSource.InnerTransfer,
+    val isSpeedUp: Boolean = false,
+    val isCancelTx: Boolean = false
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
@@ -26,7 +28,12 @@ class JsSignMessage(
 
         fun isSignMessage(type: Int): Boolean =
             type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
+
     }
+
+    // TYPE_MESSAGE Any chain could be
+    fun isSolMessage() = type == TYPE_RAW_TRANSACTION || type == TYPE_SIGN_IN
+    fun isEvmMessage() = type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_TRANSACTION
 
     val reviewData: String?
         get() {
@@ -55,4 +62,6 @@ enum class SolanaTxSource {
     InnerTransfer, InnerSwap, InnerStake, Web, Link, WalletConnect;
 
     fun isInnerTx() = this == InnerTransfer || this == InnerSwap || this == InnerStake
+
+    fun isConnectDapp() = this == Web || this == WalletConnect
 }

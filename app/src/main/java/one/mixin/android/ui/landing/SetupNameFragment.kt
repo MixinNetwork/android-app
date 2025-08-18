@@ -8,6 +8,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +25,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
@@ -63,6 +65,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                                 ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                                 return@subscribe
                             }
+                            AnalyticsTracker.trackSignUpFullName()
                             r.data?.let { data ->
                                 Session.storeAccount(data)
                                 mobileViewModel.insertUser(data.toUser())
@@ -89,6 +92,12 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                     )
             }
             nameEt.addTextChangedListener(mWatcher)
+            nameEt.setOnEditorActionListener {  _, _, _ ->
+                if (nameEt.text.isNotBlank()) {
+                    nameFab.performClick()
+                }
+                true
+            }
             nameCover.isClickable = true
 
             nameEt.postDelayed({

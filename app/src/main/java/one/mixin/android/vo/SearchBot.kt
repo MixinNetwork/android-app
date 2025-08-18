@@ -70,7 +70,7 @@ data class SearchBot(
     val membership: Membership? = null,
 ) : Parcelable {
     fun isBot(): Boolean {
-        return appId != null
+        return appId != null && identityNumber.isBotIdentityNumber()
     }
 
     fun isMembership(): Boolean {

@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="?attr/bg_white">
+    android:background="?attr/bg_white"
+    android:fitsSystemWindows="true">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"

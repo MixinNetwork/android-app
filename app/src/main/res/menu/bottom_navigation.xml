@@ -7,7 +7,7 @@
     <item
         android:id="@+id/nav_wallet"
         android:icon="@drawable/ic_tab_wallet"
-        android:title="@string/Wallet" />
+        android:title="@string/Wallets" />
     <item
         android:id="@+id/nav_collectibles"
         android:icon="@drawable/ic_tab_collectibles"

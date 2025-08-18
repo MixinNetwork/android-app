@@ -8,8 +8,10 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.animation.AnimationUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import one.mixin.android.widget.keyboard.CubicBezierInterpolator;
 
 public class PlayPauseDrawable extends Drawable {

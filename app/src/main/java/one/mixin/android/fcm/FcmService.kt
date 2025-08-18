@@ -24,7 +24,7 @@ class FcmService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
-            jobManager.addJobInBackground(RefreshFcmJob(token))
+            jobManager.addJobInBackground(RefreshFcmJob(notificationToken = token))
         }
     }
 }

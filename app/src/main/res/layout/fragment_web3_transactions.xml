@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:need_divider="false"
+        app:rightIcon="@drawable/ic_more"
+        app:titleText="@string/Transactions" />
+
+    <ScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/spam_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_token_spam"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/ic_spam"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_spam_token"
+                    android:layout_gravity="center"/>
+
+                <TextView
+                    android:id="@+id/total_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/reputation_spam_warning"
+                    android:textColor="#DB454F"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/top_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="10dp"
+                android:background="?attr/bg_market_card">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:id="@+id/top_rl"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:foreground="?android:attr/selectableItemBackground">
+
+                        <one.mixin.android.widget.BadgeCircleImageView
+                            android:id="@+id/avatar"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="26dp"
+                            android:layout_marginBottom="16dp"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:id="@+id/title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/avatar"
+                            android:layout_alignParentStart="true"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:text="@string/Balance"
+                            android:textColor="?attr/text_minor"
+                            android:textSize="14sp"
+                            tools:ignore="RelativeOverlap" />
+
+                        <TextView
+                            android:id="@+id/balance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/title"
+                            android:layout_alignParentStart="true"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginEnd="12dp"
+                            android:layout_toStartOf="@id/avatar"
+                            android:textIsSelectable="true"
+                            android:textSize="14sp"
+                            tools:ignore="RelativeOverlap" />
+
+                        <TextView
+                            android:id="@+id/balance_as"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/balance"
+                            android:layout_alignParentStart="true"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                            android:textColor="?attr/text_assist" />
+
+                    </RelativeLayout>
+
+                    <one.mixin.android.widget.SendReceiveView
+                        android:id="@+id/send_receive_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="30dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="24dp" />
+
+                    <View
+                        android:id="@+id/empty"
+                        android:visibility="gone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="30dp"/>
+
+                </LinearLayout>
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/market_rl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/contract_iv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="@dimen/margin16"
+                        android:src="@drawable/ic_arrow_gray_right"
+                        tools:ignore="ContentDescription" />
+
+                    <TextView
+                        android:id="@+id/market_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@+id/contract_iv"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:text="@string/Market"
+                        android:textColor="?attr/text_minor"
+                        android:textSize="14sp"
+                        tools:ignore="RelativeOverlap" />
+
+                    <TextView
+                        android:id="@+id/value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/market_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/N_A"
+                        android:textColor="?attr/text_primary"
+                        android:textFontWeight="600"
+                        android:textSize="18sp"
+                        tools:ignore="RelativeOverlap" />
+
+                    <TextView
+                        android:id="@+id/rise"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/value"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginBottom="@dimen/margin16"
+                        android:text="@string/N_A"
+                        android:textColor="@color/wallet_green" />
+
+                    <FrameLayout
+                        android:id="@+id/watch_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginBottom="24dp"
+                        android:layout_marginTop="30dp"
+                        android:background="@drawable/bg_round_window_btn"
+                        android:layout_gravity="center"
+                        android:padding="10dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:drawableStart="@drawable/ic_wallet_watch"
+                            android:id="@+id/watch_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_assist"
+                            android:layout_gravity="center"
+                            tools:ignore="UseCompatTextViewDrawableXml" />
+                    </FrameLayout>
+
+
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/market_view"
+                        android:layout_width="150dp"
+                        android:layout_height="48dp"
+                        android:layout_below="@id/contract_iv"
+                        android:layout_alignEnd="@id/contract_iv"
+                        android:layout_marginTop="10dp" />
+
+                </RelativeLayout>
+            </FrameLayout>
+
+            <include
+                android:id="@+id/stake"
+                layout="@layout/view_web3_sol_stake"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="10dp" />
+
+            <FrameLayout
+                android:id="@+id/bottom_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="10dp"
+                android:background="?attr/bg_market_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:id="@+id/transactions_title_ll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
+
+                        <ImageView
+                            android:id="@+id/transactions_iv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginEnd="@dimen/margin16"
+                            android:src="@drawable/ic_arrow_gray_right"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:id="@+id/transactions_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@+id/transactions_iv"
+                            android:layout_alignParentStart="true"
+                            android:layout_marginStart="@dimen/margin16"
+                            android:text="@string/Transactions"
+                            android:textColor="?attr/text_minor"
+                            android:textSize="14sp"
+                            tools:ignore="RelativeOverlap" />
+                    </RelativeLayout>
+
+                    <one.mixin.android.ui.wallet.Web3SnapshotLinearLayout
+                        android:id="@+id/transactions_rv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="10dp" />
+
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/bottom_rl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/bottom_iv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginTop="-18dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_empty_transaction" />
+
+                    <TextView
+                        android:id="@+id/wallet_transactions_empty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/bottom_iv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/No_transactions"
+                        android:textColor="?attr/text_assist" />
+                </RelativeLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

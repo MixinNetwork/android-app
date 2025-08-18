@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:background="@color/black"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:id="@+id/title"

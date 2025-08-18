@@ -15,10 +15,11 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import one.mixin.android.R;
-import timber.log.Timber;
 
 import java.util.ArrayList;
+
+import one.mixin.android.R;
+import timber.log.Timber;
 
 public class VideoTimelinePlayView extends View {
 

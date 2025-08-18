@@ -7,5 +7,7 @@
 google-services.json
 .DS_Store
 /.kotlin
+/apk
 .externalNativeBuild
 sentry.properties
+gemini.md

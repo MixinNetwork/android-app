@@ -6,10 +6,12 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RawQuery
+import androidx.room.Transaction
 import androidx.sqlite.db.SupportSQLiteQuery
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
+import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.SafeSnapshot
@@ -30,6 +32,12 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
                 LEFT JOIN inscription_items i on i.inscription_hash = s.inscription_hash
                 LEFT JOIN inscription_collections ic on i.collection_hash = ic.collection_hash
             """
+    }
+
+    @Transaction
+    suspend fun insertPendingDeposit(snapshots: List<SafeSnapshot>) {
+        clearAllPendingDeposits()
+        insertListSuspend(snapshots)
     }
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
@@ -110,6 +118,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByUserId(opponentId: String): DataSource.Factory<Int, SnapshotItem>
+
+    @Query("SELECT t.symbol, t.icon_url, s.amount, t.asset_id FROM safe_snapshots s LEFT JOIN tokens t ON t.asset_id = s.asset_id WHERE s.type = 'pending' AND t.symbol IS NOT NULL")
+    fun getPendingDisplays(): LiveData<List<PendingDisplay>>
 
     @Query("DELETE FROM safe_snapshots WHERE type = 'pending'")
     suspend fun clearAllPendingDeposits()

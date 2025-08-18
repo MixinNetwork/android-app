@@ -1,10 +1,10 @@
 package one.mixin.android.ui.player.internal
 
+import android.annotation.SuppressLint
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.LiveData
-import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagedList
 import androidx.paging.toLiveData
 import one.mixin.android.db.MixinDatabase
@@ -14,7 +14,8 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 
-@UnstableApi class ConversationLoader : MusicMetaLoader() {
+@SuppressLint("UnsafeOptInUsageError")
+class ConversationLoader : MusicMetaLoader() {
     fun conversationLiveData(
         conversationId: String,
         db: MixinDatabase,

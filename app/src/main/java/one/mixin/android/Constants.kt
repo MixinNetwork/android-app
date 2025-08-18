@@ -6,6 +6,12 @@ import com.checkout.base.model.Environment
 import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
+import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Base
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
 
@@ -44,6 +50,8 @@ object Constants {
         const val ALIAS_SPEND_SALT = "alias_spend_salt"
 
         const val ENCRYPTED_MNEMONIC = "encrypted_mnemonic"
+
+        const val ENCRYPTED_WEB3_KEY = "encrypted_web3_key"
     }
 
     object Account {
@@ -81,24 +89,34 @@ object Constants {
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
-        const val PREF_SWAP_LAST_SELECTED_PAIR = "pref_swap_last_selected_pair"
+        const val PREF_SWAP_LAST_PAIR = "pref_swap_last_pair"
+        const val PREF_WEB3_SWAP_LAST_PAIR = "pref_web3_swap_last_pair"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
         const val PREF_MARKET_TYPE = "pref_market_type"
         const val PREF_MARKET_ORDER = "pref_market_order"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
-        const val PREF_WEB3_BOT_PK = "pref_web3_bot_pk"
         const val PREF_GLOBAL_MARKET = "pref_global_market"
         const val PREF_MARKET_TOP_PERCENTAGE = "pref_market_top_percentage"
         const val PREF_QUOTE_COLOR = "pref_quote_color"
 
+        const val PREF_HAS_USED_BUY = "pref_has_used_buy"
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
+        const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+
+        const val PREF_USED_WALLET = "pref_used_wallet"
+
+        const val PREF_HAS_USED_WALLET_LIST = "pref_has_used_wallet_list"
+
+        const val PREF_HAS_USED_ADD_WALLET = "pref_has_used_add_wallet"
+
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
         const val PREF_TO_WEB3_SWAP = "pref_to_web3_swap"
         const val PREF_FROM_WEB3_SWAP = "pref_from_web3_swap"
-
+        const val PREF_WALLET_SEND = "pref_wallet_send"
+        const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
 
         object Migration {
             const val PREF_MIGRATION_ATTACHMENT = "pref_migration_attachment"
@@ -115,6 +133,8 @@ object Constants {
             const val EVM_ADDRESS = "evm_address"
             const val SOLANA_ADDRESS = "solana_address"
         }
+
+        const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
     }
 
     object Scheme {
@@ -150,6 +170,7 @@ object Constants {
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
         const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
         const val HTTPS_SWAP = "https://mixin.one/swap"
+        const val HTTPS_MEMBERSHIP = "https://mixin.one/membership"
 
         // web3
         const val HTTPS_MIXIN_WC = "https://mixin.one/wc"
@@ -160,15 +181,17 @@ object Constants {
         const val HTTPS_CODES = "https://mixin.one/codes"
 
         const val WALLET_CONNECT_PREFIX = "wc:"
+        const val DEBUG = "mixin://debug"
     }
 
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 63
+        const val CURRENT_VERSION = 66
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
+        const val WEB3_DB_NAME = "web3.db"
     }
 
     object Storage {
@@ -211,7 +234,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain)
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base, ChainId.Arbitrum, ChainId.Optimism)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
@@ -220,9 +243,11 @@ object Constants {
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
         const val SOLANA_CHAIN_ID = "64692c23-8971-4cf4-84a7-4dd1271dd887"
-
+        const val LIGHTNING_NETWORK_CHAIN_ID = "59c09123-95cc-3ffd-a659-0f9169074cee"
         const val MixinVirtualMachine = "a0ffd769-5850-4b48-9651-d2ae44a3e64d"
         const val Base = "3fb612c5-6844-3979-ae4a-5a84e79da870"
+        const val Arbitrum = "8c590110-1abc-3697-84f2-05214e6516aa"
+        const val Optimism = "60360611-370c-3b69-9826-b13db93f6aba"
         const val Litecoin = "76c802a2-7c88-447f-a93e-c29c9e5dd9c8"
         const val Dogecoin = "6770a1e5-6086-44d5-b60f-545f9d9e8ffd"
         const val Monero = "05c5ac01-31f9-4a69-aa8a-ab796de1d041"
@@ -230,18 +255,59 @@ object Constants {
         const val Solana = "64692c23-8971-4cf4-84a7-4dd1271dd887"
         const val Polygon = "b7938396-3f94-4e0a-9179-d3440718156f"
         const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
-        const val Avalanche = "cbc77539-0a20-4666-8c8a-4ded62b36f0a"
-        const val Arbitrum = "d0688ff7-6656-4a79-bd5f-d764bfa9bc46"
-        const val Optimism = "62d5b01f-24ee-4c96-8214-8e04981d05f2"
+        const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
+        const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
     }
 
     object AssetId {
         const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
         const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
-        const val USDT_ASSET_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
-        const val USDC_ASSET_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
         const val XIN_ASSET_ID = "c94ac88f-4671-3976-b60a-09064f1811e8"
+
+        const val USDT_ASSET_ETH_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+        const val USDC_ASSET_ETH_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
+
+        val usdcAssets =
+            mapOf(
+                "9b180ab6-6abe-3dc0-a13f-04169eb34bfa" to "ERC-20",
+                "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
+                "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
+                "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon",
+                "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
+            )
+
+        val usdtAssets =
+            mapOf(
+                "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
+                "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
+                "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
+                "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
+                "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
+            )
+
+        val ethAssets = mapOf(
+            ETHEREUM_CHAIN_ID to "Ethereum",
+            Base to "Base",
+            Optimism to "Optimism",
+            Arbitrum to "Arbitrum"
+        )
+
+        val btcAssets = mapOf(
+            BITCOIN_CHAIN_ID to "Bitcoin",
+            LIGHTNING_NETWORK_CHAIN_ID to "Lightning",
+        )
+
+    }
+
+    val usdIds = AssetId.usdtAssets.keys.plus(AssetId.usdcAssets.keys).toList()
+
+    object AssetLevel {
+        const val GOOD = 12
+        const val VERIFIED = 11
+        const val UNKNOWN = 10
+        const val SPAM = 1
+        const val SCAM = 0
     }
 
     object Mute {
@@ -364,7 +430,10 @@ object Constants {
 
     const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 
-    const val SAFE_PUBLIC_KEY = "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d"
+    val SAFE_PUBLIC_KEY = listOf(
+        "8f94e89d03fa128a7081c5fe73c6814010c5ca74438411a42df87c6023dfa94d",
+        "2dc073588908a02284197ad78fc863e83c760dabcd5d9a508e09a799ebc1ecb8"
+    )
 
     // Only for third-party messenger user
     const val TEAM_BOT_ID = ""
@@ -391,6 +460,8 @@ object Constants {
         val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
 
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
+
+        const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
 
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 

@@ -7,7 +7,6 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.insertNoReplace
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.util.SINGLE_THREAD

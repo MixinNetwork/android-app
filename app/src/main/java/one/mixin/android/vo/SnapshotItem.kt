@@ -157,6 +157,8 @@ data class SnapshotItem(
             else -> false
         }
     }
+
+    fun isPendingWithdrawal() = withdrawal != null && withdrawal.withdrawalHash.isNullOrBlank()
 }
 
 @Parcelize

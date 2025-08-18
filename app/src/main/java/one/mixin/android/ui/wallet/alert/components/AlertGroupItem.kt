@@ -37,7 +37,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.AlertViewModel
-import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertGroup
 import java.math.BigDecimal

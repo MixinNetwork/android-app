@@ -12,7 +12,6 @@ import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatTextQuoteBinding
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.initChatMode
 import one.mixin.android.extension.maxItemWidth

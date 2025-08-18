@@ -12,8 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import one.mixin.android.R;
 import one.mixin.android.widget.gallery.internal.entity.Album;
 import one.mixin.android.widget.gallery.internal.entity.IncapableCause;

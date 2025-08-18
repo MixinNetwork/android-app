@@ -52,7 +52,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -326,9 +325,11 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(limit: Int = 50): String {
+fun String.formatPublicKey( limit: Int = 50, prefixLen: Int = 8, suffixLen: Int = 6): String {
     if (this.length <= limit) return this
-    return substring(0, 8) + "..." + substring(length - 6, length)
+    val prefix = substring(0, prefixLen.coerceAtMost(length))
+    val suffix = substring(length - suffixLen.coerceAtLeast(0), length)
+    return "$prefix...$suffix"
 }
 
 fun String.numberFormat(): String {
@@ -415,6 +416,10 @@ fun BigDecimal.numberFormat12(): String {
     } catch (e: IllegalArgumentException) {
         this.toPlainString()
     }
+}
+
+fun String.numberFormat12(): String {
+    return runCatching { BigDecimal(this).numberFormat12() }.getOrNull() ?: this
 }
 
 fun BigDecimal.priceFormat2(): String {
@@ -788,7 +793,7 @@ fun BigDecimal.currencyFormat(): String {
 
 fun String?.isValidMao(): Boolean {
     if (this.isNullOrBlank()) return false
-    val text = this.trimEnd('.')
+    val text = this.trimEnd('.').lowercase()
     if (text.all { it.isDigit() }) return false
     val regex = Regex("^[^\\sA-Z]{1,128}$")
     return regex.matches(text)

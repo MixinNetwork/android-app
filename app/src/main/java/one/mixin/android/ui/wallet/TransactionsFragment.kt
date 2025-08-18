@@ -9,11 +9,12 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -25,7 +26,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
@@ -45,12 +45,14 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
-import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
@@ -76,7 +78,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
 
     @Inject
     lateinit var tip: Tip
@@ -127,12 +128,21 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
                     val assets = walletViewModel.allAssetItems()
-                    val output = if (asset.assetId == USDT_ASSET_ID) {
+                    val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {
-                        USDT_ASSET_ID
+                        USDT_ASSET_ETH_ID
                     }
-                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
+                    AnalyticsTracker.trackSwapStart("mixin", "market")
+                    SwapActivity.show(
+                        requireActivity(),
+                        inMixin = true,
+                        tokens = assets.filter {
+                            (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
+                        },
+                        input = asset.assetId,
+                        output = output
+                    )
                 }
             }
             value.text = try {
@@ -252,7 +262,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
         walletViewModel.refreshAsset(asset.assetId)
         lifecycleScope.launch {
-            val depositEntry = walletViewModel.findDepositEntry(asset.chainId)
+            val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry != null && depositEntry.destination.isNotBlank()) {
                 refreshPendingDeposits(asset, depositEntry)
             }
@@ -263,7 +273,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     override fun onDestroyView() {
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 
@@ -277,21 +286,29 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 invokeNetwork = {
                     walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
                 },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {
-                        walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                        val pendingDeposits = list.data
-                        if (pendingDeposits.isNullOrEmpty()) {
-                            return@withContext
-                        }
-
-                        pendingDeposits.chunked(100) { chunk ->
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                chunk.map {
-                                    it.toSnapshot()
-                                }.let {
-                                    walletViewModel.insertPendingDeposit(it)
+                        val pendingDeposits = list.data ?: emptyList()
+                        val destinationTags = walletViewModel.findDepositEntryDestinations()
+                        pendingDeposits.filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }.map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear token pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
+                                return@let
+                            }
+                            lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct().forEach {
+                                    walletViewModel.findOrSyncAsset(it)
                                 }
+                                walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
                     }
@@ -326,7 +343,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
-                putParcelable(ARGS_ASSET, asset)
+                putParcelable(TransactionsFragment.ARGS_ASSET, asset)
             },
         )
     }
@@ -357,6 +374,15 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         )
     }
 
+    private fun navigateToTransferDestination(asset: TokenItem) {
+        findNavController().navigate(
+            R.id.action_transactions_to_transfer_destination,
+            Bundle().apply {
+                putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+            }
+        )
+    }
+
     private fun bindHeader() {
         binding.apply {
             if (asset.collectionHash.isNullOrEmpty()) {
@@ -367,7 +393,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                sendBottomSheet.show(asset)
+                navigateToTransferDestination(asset)
             }
             sendReceiveView.receive.setOnClickListener {
                 if (!Session.saltExported() && Session.isAnonymous()) {

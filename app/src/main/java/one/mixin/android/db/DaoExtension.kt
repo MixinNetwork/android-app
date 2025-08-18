@@ -9,8 +9,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isMine
-import one.mixin.android.vo.safe.Output
-import timber.log.Timber
 
 fun MixinDatabase.clearParticipant(
     conversationId: String,
@@ -28,19 +26,6 @@ fun JobDao.insertNoReplace(job: Job) {
         insert(job)
     }
 }
-
-suspend fun OutputDao.insertUnspentOutputs(outputs: List<Output>) =
-    runInTransaction {
-        val signed = findSignedOutput(outputs.map { it.outputId })
-        if (signed.isEmpty()) {
-            insertList(outputs)
-        } else {
-            Timber.e("Insert filter ${signed.joinToString(", ")}")
-            // Exclude signed data
-            val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
-            insertList(unsignedData)
-        }
-    }
 
 // Delete SQL
 fun MixinDatabase.deleteMessageById(messageId: String) {

@@ -123,9 +123,9 @@ interface AccountService {
     ): MixinResponse<Account>
 
     @POST("session")
-    fun updateSession(
+    suspend fun updateSession(
         @Body request: SessionRequest,
-    ): Observable<MixinResponse<Account>>
+    ): MixinResponse<Account>
 
     @GET("stickers/albums")
     suspend fun getStickerAlbums(): MixinResponse<List<StickerAlbum>>
@@ -236,6 +236,7 @@ interface AccountService {
     @GET("external/addresses/check")
     suspend fun validateExternalAddress(
         @Query("asset") assetId: String,
+        @Query("chain") chain: String,
         @Query("destination") destination: String,
         @Query("tag") tag: String?,
     ): MixinResponse<AddressResponse>

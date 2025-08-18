@@ -3,10 +3,12 @@ package one.mixin.android.ui.wallet.transfer.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.annotation.StringRes
 import androidx.core.view.isInvisible
 import androidx.core.view.setPadding
+import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferBottomBinding
 import one.mixin.android.extension.dp
@@ -15,6 +17,7 @@ import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 class TransferBottom : ViewAnimator {
     private val _binding: ViewTransferBottomBinding
     private val dp16 = 16.dp
+    private val dp20 = 20.dp
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
@@ -34,8 +37,12 @@ class TransferBottom : ViewAnimator {
         _binding.retry.setOnClickListener(confirmClickListener)
     }
 
-    fun setText(@StringRes res:Int) {
+    fun setText(@StringRes res: Int) {
         _binding.confirmButton.setText(res)
+    }
+
+    fun setText(text: String) {
+        _binding.confirmButton.text = text
     }
 
     fun updateStatus(
@@ -46,17 +53,29 @@ class TransferBottom : ViewAnimator {
             TransferStatus.AWAITING_CONFIRMATION -> {
                 isInvisible = false
                 displayedChild = 0
+                updateLayoutParams {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                requestLayout()
             }
 
             TransferStatus.IN_PROGRESS -> {
                 isInvisible = true
                 displayedChild = 0
+                updateLayoutParams {
+                    height = dp20
+                }
+                requestLayout()
             }
 
-            TransferStatus.SUCCESSFUL, TransferStatus.SIGNED  -> {
+            TransferStatus.SUCCESSFUL, TransferStatus.SIGNED -> {
                 isInvisible = false
                 displayedChild = 1
                 _binding.doneBtn.setText(R.string.Done)
+                updateLayoutParams {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                requestLayout()
             }
 
             TransferStatus.FAILED -> {
@@ -67,6 +86,10 @@ class TransferBottom : ViewAnimator {
                     displayedChild = 1
                     _binding.doneBtn.setText(R.string.Got_it)
                 }
+                updateLayoutParams {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                requestLayout()
             }
         }
     }

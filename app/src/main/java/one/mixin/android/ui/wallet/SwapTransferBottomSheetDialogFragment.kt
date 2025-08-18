@@ -37,6 +37,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,27 +65,43 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.buildTransaction
+import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.isTipNodeException
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
@@ -92,21 +109,35 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.biometric.isUtxoException
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
+import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.User
 import one.mixin.android.vo.membershipIcon
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
+import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.JsSigner
+import org.sol4kt.VersionedTransactionCompat
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
+import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -114,33 +145,77 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "SwapTransferBottomSheetDialogFragment"
         private const val ARGS_LINK = "args_link"
+        private const val ARGS_ADDRESS = "args_address"
         private const val ARGS_IN_AMOUNT = "args_in_amount"
         private const val ARGS_IN_ASSET = "args_in_asset"
         private const val ARGS_OUT_AMOUNT = "args_out_amount"
         private const val ARGS_OUT_ASSET = "args_out_asset"
+        private const val ARGS_SOURCE = "args_source"
+        private const val ARGS_DISPLAY_USER_ID = "args_display_user_id"
+        
         fun newInstance(swapResult: SwapResponse, inAsset: SwapToken, outAssetItem: SwapToken): SwapTransferBottomSheetDialogFragment {
             return SwapTransferBottomSheetDialogFragment()
                 .withArgs {
                     putString(ARGS_LINK, swapResult.tx)
+                    putString(ARGS_ADDRESS, swapResult.depositDestination)
                     putParcelable(ARGS_IN_ASSET, inAsset)
                     putParcelable(ARGS_OUT_ASSET, outAssetItem)
                     putString(ARGS_IN_AMOUNT, swapResult.quote.inAmount)
                     putString(ARGS_OUT_AMOUNT, swapResult.quote.outAmount)
+                    putString(ARGS_SOURCE, swapResult.source)
+                    putString(ARGS_DISPLAY_USER_ID, swapResult.displayUserId)
                 }
         }
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
 
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(
+        dialog: Dialog,
+        style: Int,
+    ) {
+        super.setupDialog(dialog, R.style.MixinBottomSheet)
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().isNightMode())
+        }
+        dialog.window?.setGravity(Gravity.BOTTOM)
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
+            )
+        }
+    }
+
+
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     enum class Step {
         Pending,
         Sending,
         Done,
         Error,
+    }
+
+    private val source by lazy {
+        requireNotNull(requireArguments().getString(ARGS_SOURCE))
+    }
+
+    private val depositDestination by lazy {
+        requireArguments().getString(ARGS_ADDRESS)
     }
 
     private val inAsset by lazy {
@@ -171,8 +246,24 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var parsedLink: ParsedLink? = null
     private var receiver: User? by mutableStateOf(null)
-
     private var errorInfo: String? by mutableStateOf(null)
+
+    @Inject
+    lateinit var rpc: Rpc
+
+    @Inject
+    lateinit var tokenRepository: TokenRepository
+
+    private var web3Transaction: JsSignMessage? by mutableStateOf(null)
+    private var tipGas: TipGas? by mutableStateOf(null)
+    private var solanaFee: BigDecimal? by mutableStateOf(null)
+
+    private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
+    private var asset: TokenItem? by mutableStateOf(null)
+    private var chainToken: Web3TokenItem? by mutableStateOf(null)
+    private var token: Web3TokenItem? by mutableStateOf(null)
+    private var insufficientGas by mutableStateOf(false)
+    private var walletName by mutableStateOf<String?>(null)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -180,17 +271,25 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
+            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {
+                    LaunchedEffect(Unit) {
+                        if (source == "web3") {
+                            val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+                            walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+                        }
+                    }
                     Column(
                         modifier =
                         Modifier
-                            .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                            .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .background(MixinAppTheme.colors.background),
                     ) {
+                        WalletLabel(walletName = walletName, isWeb3 = source == "web3")
                         Column(
                             modifier =
                             Modifier
@@ -235,7 +334,11 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                             Modifier
                                                 .size(70.dp)
                                                 .offset(x = (-27).dp)
-                                                .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
+                                                .border(
+                                                    1.5.dp,
+                                                    MixinAppTheme.colors.background,
+                                                    CircleShape
+                                                )
                                         ) {
                                             CoilImage(
                                                 model = inAsset.icon,
@@ -251,7 +354,11 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                             Modifier
                                                 .size(70.dp)
                                                 .offset(x = 27.dp)
-                                                .border(1.5.dp, MixinAppTheme.colors.background, CircleShape)
+                                                .border(
+                                                    1.5.dp,
+                                                    MixinAppTheme.colors.background,
+                                                    CircleShape
+                                                )
                                         ) {
                                             CoilImage(
                                                 model = outAsset.icon,
@@ -321,11 +428,37 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             Box(modifier = Modifier.height(20.dp))
                             ItemPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
                             Box(modifier = Modifier.height(20.dp))
-                            FeeInfo("0", BigDecimal("0"))
+                            if (source == "web3") {
+                                if (tipGas != null || solanaFee != null) {
+                                    val transaction = web3Transaction?.wcEthereumTransaction
+                                    val fee = solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                                    if (fee == BigDecimal.ZERO) {
+                                        FeeInfo(
+                                            amount = "$fee",
+                                            fee = fee.multiply(asset?.priceUsd?.toBigDecimal()?: BigDecimal.ZERO),
+                                        )
+                                    } else {
+                                        FeeInfo(
+                                            amount = "$fee ${asset?.symbol ?: ""}",
+                                            fee = fee.multiply(asset?.priceUsd?.toBigDecimal()?: BigDecimal.ZERO),
+                                            gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
+                                        )
+                                    }
+                                } else {
+                                    FeeInfo("0", BigDecimal("0"))
+                                }
+                            } else {
+                                FeeInfo("0", BigDecimal("0"))
+                            }
                             Box(modifier = Modifier.height(20.dp))
-                            ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), self)
+                            if (source == "web3") {
+                                ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), null,
+                                    if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) JsSigner.solanaAddress else JsSigner.evmAddress)
+                            } else {
+                                ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), self, null)
+                            }
                             Box(modifier = Modifier.height(20.dp))
-                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver)
+                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver, null)
                             Box(modifier = Modifier.height(16.dp))
                         }
 
@@ -398,7 +531,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
 
-            parseLink()
+            parse()
         }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -430,61 +563,92 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
-
-    inner class ParsedLink(
-        val assetId: String,
-        val amount: String,
-        val receiverIds: List<String>,
-        val memo: String?,
-        val traceId: String,
-    )
-
-    private fun parseLink() = lifecycleScope.launch {
-        val assetId = requireNotNull(link.getQueryParameter("asset"))
-        val amount = requireNotNull(link.getQueryParameter("amount"))
-        val receiverId = requireNotNull(link.lastPathSegment)
-        receiver = bottomViewModel.refreshUser(receiverId)
-        val receiverIds = listOf(receiverId)
-        val memo = link.getQueryParameter("memo")
-        val traceId = link.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-        parsedLink = ParsedLink(assetId, amount, receiverIds, memo, traceId)
-    }
-
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val parsedLink = this@SwapTransferBottomSheetDialogFragment.parsedLink ?: return@launch
                 step = Step.Sending
-                val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsedLink.assetId, parsedLink.amount)
-                val token = bottomViewModel.findAssetItemById(parsedLink.assetId)
-                if (consolidationAmount != null && token != null) {
-                    UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
-                        .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
-                    step = Step.Pending
-                    return@launch
-                } else if (token == null) {
-                    errorInfo = getString(R.string.Data_error)
-                    step = Step.Error
-                    return@launch
-                }
-                val response = bottomViewModel.kernelTransaction(parsedLink.assetId, parsedLink.receiverIds, 1.toByte(), parsedLink.amount, pin, parsedLink.traceId, parsedLink.memo)
-                if (response.isSuccess) {
-                    defaultSharedPreferences.putLong(
-                        Constants.BIOMETRIC_PIN_CHECK,
-                        System.currentTimeMillis(),
-                    )
-                    context?.updatePinCheck()
-                    step = Step.Done
+                if (source == "web3" && web3Transaction != null) {
+                    try {
+                        when (web3Transaction!!.type) {
+                            JsSignMessage.TYPE_RAW_TRANSACTION -> {
+                                val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
+                                val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
+                                    val blockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
+                                    return@signSolanaTransaction blockhash
+                                }
+                                val sig = tx.signatures.first()
+                                val rawTx = tx.serialize().base64Encode()
+                                val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58(), null)
+                                val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), inAsset.assetId)
+                                defaultSharedPreferences.putLong(
+                                    Constants.BIOMETRIC_PIN_CHECK,
+                                    System.currentTimeMillis(),
+                                )
+                                context?.updatePinCheck()
+                                step = Step.Done
+                                AnalyticsTracker.trackSwapSend()
+                            }
+                            JsSignMessage.TYPE_TRANSACTION -> {
+                                val transaction = requireNotNull(web3Transaction!!.wcEthereumTransaction)
+                                val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
+                                val pair = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
+                                    val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
+                                    return@ethSignTransaction nonce
+                                }
+                                val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, inAsset.assetId)
+                                defaultSharedPreferences.putLong(
+                                    Constants.BIOMETRIC_PIN_CHECK,
+                                    System.currentTimeMillis(),
+                                )
+                                context?.updatePinCheck()
+                                step = Step.Done
+                                AnalyticsTracker.trackSwapSend()
+                            }
+                            else -> {
+                                throw IllegalArgumentException("invalid signMessage type ${web3Transaction!!.type}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        handleException(e)
+                        return@launch
+                    }
                 } else {
-                    errorInfo = handleError(response.error) ?: response.errorDescription
-                    step = Step.Error
+                    val parsedLink = this@SwapTransferBottomSheetDialogFragment.parsedLink ?: return@launch
+                    val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsedLink.assetId, parsedLink.amount)
+                    val token = bottomViewModel.findAssetItemById(parsedLink.assetId)
+                    if (consolidationAmount != null && token != null) {
+                        UtxoConsolidationBottomSheetDialogFragment.newInstance(buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null))
+                            .show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+                        step = Step.Pending
+                        return@launch
+                    } else if (token == null) {
+                        errorInfo = getString(R.string.Data_error)
+                        step = Step.Error
+                        return@launch
+                    }
+                    val response = bottomViewModel.kernelTransaction(parsedLink.assetId, parsedLink.receiverIds, 1.toByte(), parsedLink.amount, pin, parsedLink.traceId, parsedLink.memo)
+                    handleTransactionResponse(response)
                 }
-
             } catch (e: Exception) {
                 handleException(e)
             }
         }
-
+        
+    private suspend fun handleTransactionResponse(response: MixinResponse<*>) {
+        if (response.isSuccess) {
+            defaultSharedPreferences.putLong(
+                Constants.BIOMETRIC_PIN_CHECK,
+                System.currentTimeMillis(),
+            )
+            context?.updatePinCheck()
+            step = Step.Done
+            AnalyticsTracker.trackSwapSend()
+        } else {
+            errorInfo = handleError(response.error) ?: response.errorDescription
+            step = Step.Error
+        }
+    }
+    
     private suspend fun handleError(
         error: ResponseError?,
     ): String? {
@@ -531,23 +695,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             "",
             "",
         )
-
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(
-        dialog: Dialog,
-        style: Int,
-    ) {
-        super.setupDialog(dialog, R.style.MixinBottomSheet)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-        }
-        dialog.window?.setGravity(Gravity.BOTTOM)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
-    }
-
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(
@@ -567,16 +714,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.let { window ->
-            SystemUIManager.lightUI(
-                window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night),
-            )
-        }
-    }
-
     override fun onDetach() {
         super.onDetach()
         if (activity is WalletConnectActivity || activity is UrlInterpreterActivity) {
@@ -593,12 +730,168 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun dismiss() {
         dismissAllowingStateLoss()
     }
+
+    inner class ParsedLink(
+        val assetId: String,
+        val amount: String,
+        val receiverIds: List<String>,
+        val memo: String?,
+        val traceId: String,
+    )
+
+    private fun parse() = lifecycleScope.launch {
+        val swapLink = requireArguments().getString(ARGS_LINK)
+        val displayUserId = requireArguments().getString(ARGS_DISPLAY_USER_ID)
+        
+        when (source) {
+            "web3" -> {
+                val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+                walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
+                depositDestination?.let { depositDestination->
+                    val token = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId, inAsset.assetId)
+                    if (token != null) {
+                        try {
+                            val transaction = token.buildTransaction(
+                                rpc, 
+                                if (token.chainId == Constants.ChainId.Solana) JsSigner.solanaAddress else JsSigner.evmAddress,
+                                depositDestination, 
+                                requireArguments().getString(ARGS_IN_AMOUNT)!!
+                            )
+                            web3Transaction = transaction
+                            this@SwapTransferBottomSheetDialogFragment.token = token
+
+                            val chain = token.getChainFromName()
+                            refreshEstimatedGasAndAsset(chain)
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to build transaction")
+                            errorInfo = e.message
+                            step = Step.Error
+                        }
+                    }
+                }
+                displayUserId?.let { userId ->
+                    receiver = bottomViewModel.refreshUser(userId)
+                }
+            }
+            else -> {
+                val uri = if (swapLink != null) {
+                    Uri.parse(swapLink)
+                } else {
+                    link
+                }
+                
+                val assetId = requireNotNull(uri.getQueryParameter("asset"))
+                val amount = requireNotNull(uri.getQueryParameter("amount"))
+                val receiverId = requireNotNull(uri.lastPathSegment)
+                receiver = bottomViewModel.refreshUser(receiverId)
+                val receiverIds = listOf(receiverId)
+                val memo = uri.getQueryParameter("memo")
+                val traceId = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+                parsedLink = ParsedLink(assetId, amount, receiverIds, memo, traceId)
+            }
+        }
+    }
+    
+    private fun refreshEstimatedGasAndAsset(chain: Chain) {
+        if (chain == Chain.Solana) {
+            refreshSolana()
+            return
+        }
+        
+        val assetId = chain.assetId
+        val transaction = web3Transaction?.wcEthereumTransaction ?: return
+        
+        tickerFlow(15.seconds)
+            .onEach {
+                asset = bottomViewModel.refreshAsset(assetId)
+                try {
+                    tipGas = withContext(Dispatchers.IO) {
+                        val r = bottomViewModel.estimateFee(
+                            EstimateFeeRequest(
+                                assetId,
+                                transaction.data,
+                                transaction.from,
+                                transaction.to,
+                            )
+                        )
+                        if (!r.isSuccess) {
+                            step = Step.Error
+                            errorInfo = r.errorDescription
+                            return@withContext null
+                        }
+                        buildTipGas(chain.chainId, r.data!!)
+                    } ?: return@onEach
+                    chainToken = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId,token?.chainId ?: "")
+                    insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
+                    if (insufficientGas) {
+                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))
+                    }
+                    
+                    val hex = JsSigner.ethPreviewTransaction(
+                        JsSigner.evmAddress,
+                        transaction,
+                        tipGas!!,
+                        chain = token?.getChainFromName()
+                    ) { _ ->
+                        val nonce = rpc.nonceAt(chain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
+                        return@ethPreviewTransaction nonce
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+            }
+            .launchIn(lifecycleScope)
+    }
+
+    private fun refreshSolana() {
+        tickerFlow(15.seconds)
+            .onEach {
+                try {
+                    if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
+                        val tx = solanaTx ?: VersionedTransactionCompat.from(web3Transaction?.data ?: "").apply {
+                            solanaTx = this
+                        }
+                        solanaFee = solanaTx?.calcFee(tx.message.accounts[0].toBase58())
+                    }
+                } catch (e: Exception) {
+                    handleException(e)
+                }
+                asset = bottomViewModel.refreshAsset(Constants.ChainId.SOLANA_CHAIN_ID)
+            }.launchIn(lifecycleScope)
+    }
+
+
+    private fun checkGas(
+        web3Token: Web3TokenItem?,
+        chainToken: Web3TokenItem?,
+        tipGas: TipGas?,
+        value: String?,
+        maxFeePerGas: String?
+    ): Boolean {
+        return if (web3Token != null) {
+            if (chainToken == null) {
+                true
+            } else if (tipGas != null) {
+                val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
+                if (web3Token.assetId == chainToken.assetId && web3Token.chainId == chainToken.chainId) {
+                    Convert.fromWei(Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
+                } else {
+                    maxGas > BigDecimal(chainToken.balance)
+                }
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
 }
 
 @Composable
 fun ItemUserContent(
     title: String,
     user: User?,
+    address: String?
 ) {
     Column(
         modifier =
@@ -613,12 +906,22 @@ fun ItemUserContent(
             maxLines = 1,
         )
         Box(modifier = Modifier.height(4.dp))
-        if (user == null) {
+        if (user == null && address == null) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
                 color = MixinAppTheme.colors.accent,
             )
-        } else {
+        } else if (address != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = address,
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W400
+                )
+            }
+        } else if (user != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CoilImage(
                     model = user.avatarUrl,
@@ -737,36 +1040,7 @@ fun AssetChanges(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(
-            modifier =
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            CoilImage(
-                model = outAsset.icon,
-                modifier =
-                Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder,
-            )
-            Box(modifier = Modifier.width(12.dp))
-            Text(
-                text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
-                color = MixinAppTheme.colors.green,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W600
-            )
-            Box(modifier = Modifier.weight(1f))
-            Text(
-                text = outAsset.chain.name,
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 14.sp,
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier =
-            Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
@@ -787,6 +1061,33 @@ fun AssetChanges(
             Box(modifier = Modifier.weight(1f))
             Text(
                 text = inAsset.chain.name,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 14.sp,
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CoilImage(
+                model = outAsset.icon,
+                modifier =
+                Modifier
+                    .size(24.dp)
+                    .clip(CircleShape),
+                placeholder = R.drawable.ic_avatar_place_holder,
+            )
+            Box(modifier = Modifier.width(12.dp))
+            Text(
+                text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
+                color = MixinAppTheme.colors.green,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W600
+            )
+            Box(modifier = Modifier.weight(1f))
+            Text(
+                text = outAsset.chain.name,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )

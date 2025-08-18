@@ -7,7 +7,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentDeleteAccountPinBottomSheetBinding
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.BiometricInfo

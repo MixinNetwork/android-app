@@ -16,7 +16,7 @@ class MaoUser(
     val membership: Membership? = null,
 ) {
     fun isBot(): Boolean {
-        return appId != null
+        return appId != null && identityNumber.isBotIdentityNumber()
     }
 
     fun isMembership(): Boolean {
@@ -27,20 +27,22 @@ class MaoUser(
         return membership?.isProsperity() == true
     }
 }
-fun User.toMaoUser(maoName: String) :MaoUser{
-    return MaoUser(maoName = maoName, userId, identityNumber, fullName, avatarUrl, isVerified, appId, membership)
+
+fun User.toMaoUser(maoName: String): MaoUser {
+    return MaoUser(maoName = maoName, userId, identityNumber, fullName, avatarUrl, isVerified, appId ?: app?.appId, membership)
 }
 
 fun String.completeMao(): String {
-    return if (isMao())
-        this
+    val text = this.lowercase()
+    return if (text.isMao())
+        text
     else {
         when {
-            endsWith(".mao") -> this
-            endsWith(".") -> "${this}mao"
-            endsWith(".m") -> "${this}ao"
-            endsWith(".ma") -> "${this}o"
-            else -> "${this}.mao"
+            endsWith(".mao") -> text
+            endsWith(".") -> "${text}mao"
+            endsWith(".m") -> "${text}ao"
+            endsWith(".ma") -> "${text}o"
+            else -> "${text}.mao"
         }
     }
 }

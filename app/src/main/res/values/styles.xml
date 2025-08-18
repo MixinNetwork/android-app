@@ -50,7 +50,6 @@
         <item name="bg_menu_border">@color/bgMenuBorder</item>
         <item name="flag_night">false</item>
         <item name="bg_gray_light">@color/bgGrayLight</item>
-        <item name="bg_confirmation">@color/bgConfirmation</item>
         <item name="bg_block">@color/bgBlock</item>
         <item name="bg_post">@color/bgPost</item>
         <item name="bg_clip">@color/bgClip</item>
@@ -70,9 +69,6 @@
         <item name="bg_tip_warning">@color/bgTipWarning</item>
         <item name="bg_tip_warning_border">@color/bgTipWarningBorder</item>
 
-        <item name="ic_wallet_receive">#0FB321</item>
-        <item name="ic_wallet_send">#3D75E3</item>
-        <item name="ic_wallet_swap">#8A6BFF</item>
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>
         <item name="music_buffered">@color/musicBuffered</item>
@@ -352,6 +348,14 @@
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
 
+    <style name="AppTheme.MaterialOrangeButton">
+        <item name="android:background">@drawable/bg_round_orange_btn</item>
+        <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
+    </style>
+
     <style name="AppTheme.MaterialOutlineButton">
         <item name="android:background">@drawable/bg_round_blue_outline_btn</item>
         <item name="android:textColor">@color/colorBlue</item>
@@ -476,5 +480,25 @@
         <item name="android:maxLines">1</item>
         <item name="android:autoSizeTextType" tools:ignore="NewApi">uniform</item>
     </style>
+
+    <style name="DatabaseSpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:dropDownWidth">200dp</item>
+        <item name="android:popupBackground">?attr/bg_white</item>
+        <item name="android:dropDownVerticalOffset">4dp</item>
+        <item name="android:textColor">?attr/text_primary</item>
+    </style>
+
+    <style name="DatabaseSpinnerDropDownStyle" parent="Widget.AppCompat.DropDownItem.Spinner">
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
 
 </resources>

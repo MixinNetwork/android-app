@@ -16,6 +16,7 @@ import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseFragment
@@ -70,7 +71,7 @@ fun handleResult(
         } else {
             Intent()
         }
-    if (content.isExternalScheme(activity) || content.isExternalTransferUrl()) {
+    if (content.isExternalScheme(activity) || content.isExternalTransferUrl() || content.isLightningUrl()) {
         result.putExtra(MainActivity.URL, content)
     } else if (content.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX) && WalletConnect.isEnabled()) {
         result.putExtra(MainActivity.WALLET_CONNECT, content)

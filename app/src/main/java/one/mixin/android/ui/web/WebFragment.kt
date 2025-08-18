@@ -15,7 +15,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.net.http.SslError
@@ -61,10 +60,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import coil.annotation.ExperimentalCoilApi
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.uber.autodispose.autoDispose
@@ -75,16 +75,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AuthorizationResponse
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.alert
@@ -101,6 +100,8 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isDarkColor
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
@@ -137,7 +138,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.MusicService.Companion.MUSIC_PLAYLIST
@@ -317,7 +318,7 @@ class WebFragment : BaseFragment() {
 
                         if (isDetached) return@launch
                         if (result !is SuccessResult) return@launch
-                        val bitmap = (result.drawable as BitmapDrawable).bitmap
+                        val bitmap = result.image.toBitmap()
                         processor.detect(
                             lifecycleScope,
                             bitmap,
@@ -463,6 +464,10 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
+        activity?.window?.let { window->
+            SystemUIManager.setSystemUiColor(requireActivity().window, requireContext().colorFromAttribute(R.color.bgWhite))
+            SystemUIManager.lightUI(window , requireContext().isNightMode().not())
+        }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
                 override fun onBackClick() {
@@ -931,7 +936,7 @@ class WebFragment : BaseFragment() {
                         lifecycleScope.launch {
                             if (viewDestroyed()) return@launch
 
-                            showBrowserBottomSheetDialogFragment(
+                            showGasCheckAndBrowserBottomSheetDialogFragment(
                                 requireActivity(),
                                 message,
                                 currentUrl = currentUrl,
@@ -1022,7 +1027,7 @@ class WebFragment : BaseFragment() {
             }
         }
         lifecycleScope.launch {
-            WalletConnectTIP.peer = getPeerUI(PropertyHelper.findValueByKey(EVM_ADDRESS, ""))
+            WalletConnectTIP.peer = getPeerUI(JsSigner.evmAddress)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -1055,9 +1060,13 @@ class WebFragment : BaseFragment() {
         callbackFunction: String,
     ) {
         if (viewDestroyed()) return
-        app ?: return
 
         lifecycleScope.launch {
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+
             val sameHost =
                 try {
                     Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
@@ -1113,9 +1122,13 @@ class WebFragment : BaseFragment() {
                     }
                 },
                 callback = {
-                    val sig = TipSignSpec.Ecdsa.Secp256k1.sign(tipPrivToPrivateKey(it, chainId), message.toByteArray())
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                    if (isAdded) {
+                        val spendKey = it
+                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId))
+                        val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+                        lifecycleScope.launch {
+                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                        }
                     }
                 },
             )
@@ -1645,8 +1658,8 @@ class WebFragment : BaseFragment() {
     ) {
         if (viewDestroyed()) return
 
-        requireActivity().window.statusBarColor = color
         requireActivity().window?.let {
+            SystemUIManager.setSystemUiColor(it, color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
@@ -1765,7 +1778,7 @@ class WebFragment : BaseFragment() {
                 return true
             }
 
-            if (url.isMixinUrl()) {
+            if (url.isMixinUrl() || url.isExternalTransferUrl() || url.isLightningUrl()) {
                 if (url == lastHandleUrl?.first && System.currentTimeMillis() - (lastHandleUrl?.second ?: 0) <= 1000L) {
                     return true
                 }

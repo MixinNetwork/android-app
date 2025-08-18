@@ -370,7 +370,7 @@ private fun formatTimestamp(unix: Long, type: String?): String {
     return when (type) {
         "1D" -> SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
         "1W", "1M" -> SimpleDateFormat("M/d, HH:mm", Locale.getDefault()).format(date)
-        "YTD", "ALL" -> SimpleDateFormat("M/d, yyyy", Locale.getDefault()).format(date)
+        "1Y", "ALL" -> SimpleDateFormat("M/d, yyyy", Locale.getDefault()).format(date)
         else -> "Invalid type"
     }
 }

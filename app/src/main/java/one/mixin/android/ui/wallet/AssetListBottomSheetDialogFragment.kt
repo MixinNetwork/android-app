@@ -3,7 +3,10 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
+import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +17,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
@@ -21,15 +26,19 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
+import one.mixin.android.extension.addToList
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
+import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
@@ -52,6 +61,8 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_FROM_RECEIVE = 1
         const val TYPE_FROM_TRANSFER = 2
 
+        const val ASSET_PREFERENCE = "TRANSFER_ASSET"
+
         fun newInstance(
             fromType: Int,
             assets: ArrayList<String>? = null,
@@ -68,6 +79,14 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val fromType: Int by lazy {
         requireArguments().getInt(ARGS_FOR_TYPE)
+    }
+
+    private val key by lazy {
+        when (fromType) {
+            TYPE_FROM_SEND, TYPE_FROM_TRANSFER -> Constants.Account.PREF_WALLET_SEND
+            TYPE_FROM_RECEIVE -> Constants.Account.PREF_WALLET_RECEIVE
+            else -> Constants.Account.PREF_WALLET_SEND
+        }
     }
 
     private val adapter by lazy { SearchAdapter(requireArguments().getString(ARGS_ASSET_ID)) }
@@ -89,6 +108,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             radioAll.isVisible = true
             radioEth.isVisible = true
             radioTron.isVisible = true
+            radioBase.isVisible = true
             radioBsc.isVisible = true
             radioPolygon.isVisible = true
             radioGroup.setOnCheckedChangeListener { _, id ->
@@ -99,6 +119,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                     R.id.radio_solana -> {
                         SOLANA_CHAIN_ID
+                    }
+
+                    R.id.radio_base -> {
+                        Base
                     }
 
                     R.id.radio_tron -> {
@@ -150,12 +174,20 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         tokenItem: TokenItem?,
                     ) {
                         binding.searchEt.hideKeyboard()
-                        tokenItem?.let { onAsset?.invoke(it) }
+                        tokenItem?.let {
+                            if (asyncOnAsset != null) {
+                                asyncClick(it)
+                            } else {
+                                defaultSharedPreferences.addToList(key, it.assetId)
+                                onAsset?.invoke(it)
+                            }
+                        }
                         dismiss()
                     }
                 }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             if (fromType == TYPE_FROM_SEND) {
+                depositTv.isVisible = onDeposit != null
                 depositTv.setOnClickListener {
                     onDeposit?.invoke()
                     dismiss()
@@ -221,6 +253,49 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private val composeId by lazy {
+        View.generateViewId()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        binding.apply {
+            root.findViewById<ComposeView>(composeId).let {
+                if (it == null) {
+                    val composeView = ComposeView(requireContext()).apply {
+                        id = View.generateViewId()
+                        setContent {
+                            RecentTokens (false, key) {
+                                defaultSharedPreferences.addToList(key, it.assetId)
+                                if (asyncOnAsset != null) {
+                                    asyncClick(it)
+                                } else {
+                                    this@AssetListBottomSheetDialogFragment.onAsset?.invoke(it)
+                                    dismiss()
+                                }
+                            }
+                        }
+                    }
+
+                    root.addView(
+                        composeView,
+                        RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.MATCH_PARENT,
+                            RelativeLayout.LayoutParams.WRAP_CONTENT
+                        ).apply {
+                            addRule(RelativeLayout.BELOW, searchView.id)
+                        })
+
+                    radio.updateLayoutParams<RelativeLayout.LayoutParams> {
+                        addRule(RelativeLayout.BELOW, composeView.id)
+                    }
+                    root.requestLayout()
+                    root.invalidate()
+                }
+            }
+        }
+    }
+
     private fun filter(s: String) {
         val assetList =
             defaultAssets.filter {
@@ -254,7 +329,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 adapter.submitList(localAssets)
 
-                val remoteAssets = bottomViewModel.queryAsset(query).filter { item ->
+                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).filter { item ->
                     ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                 }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
@@ -280,6 +355,20 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return this
     }
 
+    private fun asyncClick(token: TokenItem) {
+        lifecycleScope.launch {
+            val dialog =
+                indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                }
+            asyncOnAsset?.invoke(token)
+            dialog.dismiss()
+            dismiss()
+        }
+    }
+
     private var onAsset: ((TokenItem) -> Unit)? = null
     private var onDeposit: (() -> Unit)? = null
+
+    var asyncOnAsset: (suspend (TokenItem) -> Unit)? = null
 }

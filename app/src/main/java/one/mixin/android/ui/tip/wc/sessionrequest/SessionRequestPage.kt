@@ -23,10 +23,16 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -36,12 +42,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.checkout.threedsobfuscation.ac
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.currencyFormat
+import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.numberFormat12
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
@@ -55,8 +65,12 @@ import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.ui.wallet.components.WalletLabel
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.js.JsSigner
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -81,6 +95,11 @@ fun SessionRequestPage(
     showPin: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionRequestViewModel>()
+    val context = LocalContext.current
+    var walletName by remember { mutableStateOf<String?>(null) }
+    val walletViewModel = hiltViewModel<WalletViewModel>()
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+
     if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
         Loading()
         return
@@ -90,6 +109,7 @@ fun SessionRequestPage(
         Loading()
         return
     }
+
     val signType =
         if ((sessionRequestUI.data as? WCEthereumSignMessage)?.type == WCEthereumSignMessage.WCSignType.PERSONAL_MESSAGE) {
             0
@@ -99,15 +119,37 @@ fun SessionRequestPage(
             1
         }
 
+    LaunchedEffect(account) {
+        try {
+            walletDisplayInfo = walletViewModel.checkAddressAndGetDisplayName(account,null)
+        } catch (e: Exception) {
+            walletDisplayInfo = null
+        }
+    }
+
+
+    LaunchedEffect(Unit) {
+        try {
+            val wallet = viewModel.findWalletById(JsSigner.currentWalletId)
+            walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.Common_Wallet)
+        } catch (e: Exception) {
+            walletName = context.getString(R.string.Common_Wallet)
+        }
+    }
+
     MixinAppTheme {
         Column(
             modifier =
             Modifier
-                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .background(MixinAppTheme.colors.background),
         ) {
+            WalletLabel(
+                walletName = walletName,
+                isWeb3 = true
+            )
             Column(
                 modifier =
                 Modifier
@@ -280,13 +322,18 @@ fun SessionRequestPage(
                             } else {
                                 null
                             }
-                        )?.toPlainString(),
+                        )?.numberFormat12()
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+                walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                    val (displayName, _) = walletDisplayInfo
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
+                }, {
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
+                })
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(

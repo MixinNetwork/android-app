@@ -23,6 +23,7 @@ import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.ExpiredMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
@@ -101,6 +102,7 @@ class TransferClient
     @Inject
     internal constructor(
         val context: Application,
+        val appDatabase: MixinDatabase,
         val assetDao: AssetDao,
         val conversationDao: ConversationDao,
         val conversationExtDao: ConversationExtDao,
@@ -146,7 +148,9 @@ class TransferClient
 
         private val syncChannel = Channel<ByteArray>()
 
-        private val transferInserter = TransferInserter()
+        private val transferInserter by lazy {
+            TransferInserter(appDatabase)
+        }
 
         private val singleTransferThread by lazy {
             Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()

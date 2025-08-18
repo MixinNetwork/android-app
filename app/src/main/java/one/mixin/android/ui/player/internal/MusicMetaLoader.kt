@@ -1,9 +1,9 @@
 package one.mixin.android.ui.player.internal
 
+import android.annotation.SuppressLint
 import android.util.LruCache
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Metadata
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.MetadataRetriever
 import androidx.media3.extractor.metadata.flac.PictureFrame
 import androidx.media3.extractor.metadata.id3.ApicFrame
@@ -19,13 +19,14 @@ import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-@UnstableApi abstract class MusicMetaLoader {
+abstract class MusicMetaLoader {
     val unknownString = getLocalString(MixinApplication.appContext, R.string.Unknown)
 
     val ignoreSet = mutableSetOf<String>()
 
     private val metaCache = LruCache<String, MusicMeta>(100 * 1024)
 
+    @SuppressLint("UnsafeOptInUsageError")
     protected fun retrieveMetadata(
         id: String,
         url: String,
@@ -68,6 +69,7 @@ import java.util.concurrent.TimeoutException
         return null
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
     private fun decodeMetadata(
         id: String,
         url: String,

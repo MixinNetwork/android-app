@@ -22,6 +22,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
@@ -62,6 +63,15 @@ class TransferContent : LinearLayout {
                 renderAddressManage(transferItem)
             }
         }
+    }
+
+    fun render(
+        invoice: MixinInvoice,
+        tokens: List<TokenItem>,
+        receivers: List<User>?,
+        userClick: (User) -> Unit,
+    ) {
+        renderInvoice(invoice, tokens, receivers, userClick)
     }
 
     fun render(
@@ -144,7 +154,7 @@ class TransferContent : LinearLayout {
             address.isVisible = false
             receive.isVisible = true
             sender.isVisible = true
-            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+            sender.setContent(R.string.Sender)
             receive.setContent(R.plurals.Receiver_title, transferBiometricItem.users, transferBiometricItem.threshold.toInt(), userClick)
             total.isVisible = true
             total.setContent(R.string.Total, "${transferBiometricItem.amount} ${transferBiometricItem.asset?.symbol}", amountAs(transferBiometricItem.amount, transferBiometricItem.asset!!))
@@ -159,6 +169,62 @@ class TransferContent : LinearLayout {
 
             val tokenItem = transferBiometricItem.asset!!
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+        }
+    }
+
+    private fun renderInvoice(
+        invoice: MixinInvoice,
+        tokens: List<TokenItem>,
+        receivers: List<User>?,
+        userClick: (User) -> Unit,
+    ) {
+        _binding.apply {
+            val amounts = invoice.entries.filter { it.isStorage().not() }.map { it.amountString() }
+            val assetIds = invoice.entries.filter { it.isStorage().not() }.map { it.assetId }
+            amount.isVisible = true
+
+            sender.isVisible = true
+            total.isVisible = false
+
+            val totalFiat = amounts.mapIndexed { index, amount ->
+                val token = tokens.find { it.assetId == assetIds[index] }
+                try {
+                    if (token != null) {
+                        BigDecimal(amount) * token.priceFiat()
+                    } else {
+                        BigDecimal.ZERO
+                    }
+                } catch (e: Exception) {
+                    BigDecimal.ZERO
+                }
+            }.sumOf { it }
+
+            amount.setContent(
+                R.string.Total,
+                "${Fiats.getSymbol()}${totalFiat.numberFormat2()}",
+                null,
+            )
+            
+            sender.setContent(R.plurals.Sender_title, listOf(Session.getAccount()!!.toUser()), 1, {})
+            if (receivers.isNullOrEmpty()) {
+                address.isVisible = true
+                receive.isVisible = false
+                address.setContent(R.string.Receiver, invoice.recipient.xinMembers.first().toString())
+            } else {
+                address.isVisible = false
+                receive.isVisible = true
+                receive.setContent(R.plurals.Receiver_title, receivers, invoice.recipient.threshold.toInt(), userClick)
+            }
+
+            networkFee.isVisible = true
+            if (invoice.entries.any { it.isStorage() }) {
+                val sum = invoice.entries.filter { it.isStorage() }.sumOf { it.amountString()?.toBigDecimalOrNull()?: BigDecimal.ZERO }
+                networkFee.setContent(R.string.Fee, sum?.stripTrailingZeros()?.toPlainString() ?: "0", "XIN")
+            } else {
+                networkFee.setContent(R.string.Fee, "0", "")
+            }
+            assetContainer.isVisible = true
+            assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens.filterIndexed { index, _ -> invoice.entries[index].isStorage().not() })
         }
     }
 
@@ -188,7 +254,7 @@ class TransferContent : LinearLayout {
             } else {
                 receive.isVisible = true
                 sender.isVisible = true
-                sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+                sender.setContent(R.string.Sender)
                 receive.setContent(R.plurals.Receiver_title, nftBiometricItem.receivers, null, userClick)
             }
 
@@ -208,7 +274,7 @@ class TransferContent : LinearLayout {
         _binding.apply {
             amount.setContent(R.string.Label, addressManageBiometricItem.label ?: "")
             sender.isVisible = true
-            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+            sender.setContent(R.string.Sender)
             address.isVisible = true
             address.setContent(R.string.Address, addressManageBiometricItem.destination ?: "")
             val tokenItem = addressManageBiometricItem.asset!!
@@ -304,6 +370,10 @@ class TransferContent : LinearLayout {
             total.setContent(R.string.Total, "${addressTransferBiometricItem.amount} ${addressTransferBiometricItem.asset?.symbol}", amountAs(addressTransferBiometricItem.amount, addressTransferBiometricItem.asset!!))
 
             val tokenItem = addressTransferBiometricItem.asset!!
+            if (!addressTransferBiometricItem.memo.isNullOrBlank()) {
+                memo.isVisible = true
+                memo.setContent(R.string.Memo, addressTransferBiometricItem.memo ?: "")
+            }
             network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
         }
     }
@@ -318,12 +388,12 @@ class TransferContent : LinearLayout {
 
             val label = withdrawBiometricItem.label
             if (label != null) {
-                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label)
+                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
             } else {
                 address.setContent(R.string.Receiver, withdrawBiometricItem.displayAddress())
             }
 
-            sender.setContent(R.string.Sender, Session.getAccount()!!.toUser()) {}
+            sender.setContent(R.string.Sender)
 
             val (totalAmount, totalPrice) = formatWithdrawBiometricItem(withdrawBiometricItem)
             total.setContent(R.string.Total, totalAmount, totalPrice)

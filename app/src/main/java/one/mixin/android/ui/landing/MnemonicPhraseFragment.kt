@@ -24,6 +24,7 @@ import one.mixin.android.api.request.AnonymousMessage
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.doAnonymousPOW
 import one.mixin.android.crypto.CryptoPreference
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
@@ -52,6 +53,7 @@ import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.util.database.getLastUserId
@@ -160,6 +162,11 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 failureBlock = { r ->
                     if (r.errorCode == NEED_CAPTCHA) {
+                        if (words.isNullOrEmpty()) {
+                            AnalyticsTracker.trackSignUpCaptcha("mnemonic_phrase")
+                        } else {
+                            AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
+                        }
                         initAndLoadCaptcha(sessionKey, edKey, messageHex, signature.hexString())
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
@@ -298,6 +305,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     withContext(Dispatchers.IO) {
                         clearDatabase(requireContext())
                     }
+                    CryptoWalletHelper.clear(requireContext())
                     defaultSharedPreferences.clear()
                 }
                 val privateKey = sessionKey.privateKey

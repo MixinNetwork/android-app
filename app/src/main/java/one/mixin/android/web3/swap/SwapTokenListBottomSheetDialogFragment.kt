@@ -20,6 +20,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Polygon
@@ -31,32 +32,37 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.containsIgnoreCase
-import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.swap.Components.RecentTokens
+import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val ARGS_TOKENS = "args_tokens"
         const val ARGS_KEY = "args_key"
         const val ARGS_UNIQUE = "args_unique"
+        const val ARGS_IS_FROM = "args_is_from"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
-        fun newInstance(key: String, tokens: ArrayList<SwapToken>, selectUnique: String? = null) =
+        fun newInstance(
+            key: String,
+            tokens: ArrayList<SwapToken>,
+            selectUnique: String? = null,
+            isFrom: Boolean = true
+        ) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
-                putParcelableArrayList(ARGS_TOKENS, tokens)
                 putString(ARGS_KEY, key)
                 putString(ARGS_UNIQUE, selectUnique)
+                putBoolean(ARGS_IS_FROM, isFrom)
+            }.also { fragment ->
+                fragment.setTokens(tokens)
             }
     }
 
@@ -73,6 +79,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         requireArguments().getString(ARGS_UNIQUE)
     }
 
+    private val isFrom by lazy {
+        requireArguments().getBoolean(ARGS_IS_FROM, true)
+    }
+
     private val adapter by lazy {
         SwapTokenAdapter(selectUnique)
     }
@@ -80,11 +90,22 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var isLoading = false
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setLoading(loading: Boolean, list: List<SwapToken>? = null) {
+    fun setTokens(newTokens: List<SwapToken>) {
+        tokens = newTokens
+        adapter.notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setLoading(loading: Boolean, list: List<SwapToken>? = null, remote: List<SwapToken>? = null) {
         if (isLoading == loading) return
         isLoading = loading
-        if (list != null) {
+        if (list != null && isFrom) {
             tokens = list
+            binding.radio.isVisible = !isLoading
+            initRadio()
+            filter(binding.searchEt.et.text?.toString() ?: "")
+        } else if (remote != null && !isFrom) {
+            tokens = remote
             binding.radio.isVisible = !isLoading
             initRadio()
             filter(binding.searchEt.et.text?.toString() ?: "")
@@ -93,48 +114,41 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private fun initRadio() {
         binding.apply {
-            if (!inMixin()) { // only solana network
-                radioSolana.isChecked = true
-                radioAll.isVisible = false
-                radioEth.isVisible = false
+            if (!inMixin()) {
                 radioTron.isVisible = false
-                radioBsc.isVisible = false
-                radioPolygon.isVisible = false
-            } else {
-                radioAll.isChecked = true
-                radioAll.isVisible = true
-                radioEth.isVisible = true
-                radioTron.isVisible = true
-                radioBsc.isVisible = true
-                radioPolygon.isVisible = true
-                radioGroup.setOnCheckedChangeListener { _, id ->
-                    currentChain = when (id) {
-                        R.id.radio_eth -> {
-                            ETHEREUM_CHAIN_ID
-                        }
-
-                        R.id.radio_solana -> {
-                            SOLANA_CHAIN_ID
-                        }
-
-                        R.id.radio_tron -> {
-                            TRON_CHAIN_ID
-                        }
-
-                        R.id.radio_bsc -> {
-                            BinanceSmartChain
-                        }
-
-                        R.id.radio_polygon -> {
-                            Polygon
-                        }
-
-                        else -> {
-                            null
-                        }
+            }
+            radioAll.isChecked = true
+            radioGroup.setOnCheckedChangeListener { _, id ->
+                currentChain = when (id) {
+                    R.id.radio_eth -> {
+                        ETHEREUM_CHAIN_ID
                     }
-                    filter(searchEt.et.text?.toString() ?: "")
+
+                    R.id.radio_solana -> {
+                        SOLANA_CHAIN_ID
+                    }
+
+                    R.id.radio_base -> {
+                        Base
+                    }
+
+                    R.id.radio_tron -> {
+                        TRON_CHAIN_ID
+                    }
+
+                    R.id.radio_bsc -> {
+                        BinanceSmartChain
+                    }
+
+                    R.id.radio_polygon -> {
+                        Polygon
+                    }
+
+                    else -> {
+                        null
+                    }
                 }
+                filter(searchEt.et.text?.toString() ?: "")
             }
         }
     }
@@ -153,7 +167,6 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     ) {
         dialog.setViewTreeOwners()
         super.setupDialog(dialog, style)
-        tokens = requireArguments().getParcelableArrayListCompat(ARGS_TOKENS, SwapToken::class.java)!!
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
@@ -164,7 +177,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
         binding.apply {
             assetRv.adapter = adapter
-            adapter.tokens = tokens
+            adapter.tokens = tokens.sortByKeywordAndBalance()
             radio.isVisible = !isLoading
             initRadio()
             searchEt.et.setHint(if (inMixin()) R.string.search_placeholder_asset else R.string.search_swap_token)
@@ -206,7 +219,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     val composeView = ComposeView(requireContext()).apply {
                         id = View.generateViewId()
                         setContent {
-                            RecentTokens(key) {
+                            RecentSwapTokens(key) {
+                                AnalyticsTracker.trackSwapCoinSwitch(AnalyticsTracker.SwapCoinSwitchMethod.RECENT_CLICK)
                                 adapter.onClick(it)
                             }
                         }
@@ -234,11 +248,16 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var searchJob: Job? = null
 
     private var currentChain: String? = null
+        set(value) {
+            field = value
+            adapter.all = currentChain == null
+        }
 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null) {
-                adapter.tokens = tokens
+                adapter.tokens = tokens.sortByKeywordAndBalance()
+                adapter.isSearch = false
                 if (isLoading) {
                     binding.rvVa.displayedChild = 3
                 } else if (tokens.isEmpty()) {
@@ -255,6 +274,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
             val total = search(s, assetList, currentChain, inMixin())
             adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
+            adapter.isSearch = true
             if (!isAdded) {
                 return@launch
             }
@@ -265,6 +285,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             } else {
                 binding.rvVa.displayedChild = 0
             }
+            binding.assetRv.scrollToPosition(0)
+            binding.pb.isVisible = false
         }
 
     private suspend fun search(
@@ -274,18 +296,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         inMixin: Boolean,
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
-        if (localTokens.isEmpty()) binding.pb.isVisible = true
+        binding.pb.isVisible = true
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { token ->
-                    if (inMixin) {
-                        token.copy(address = "")
-                    } else {
-                        token.copy(assetId = "")
-                    }
-                }?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.getUnique() == ra.getUnique() }?.let {
+                return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { ra ->
+                    localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
                         return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
                     }
                     return@map ra

@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.AlertType
 
 @Composable
@@ -71,7 +70,7 @@ fun Modifier.cardBackground(
     borderWidth: Dp = 0.8.dp,
     cornerRadius: Dp = 8.dp,
 ): Modifier = this
-    .border(width = borderWidth, borderColor, RoundedCornerShape(cornerRadius))
     .background(
-        color = backgroundColor
+        color = backgroundColor, RoundedCornerShape(cornerRadius)
     )
+    .border(width = borderWidth, borderColor, RoundedCornerShape(cornerRadius))

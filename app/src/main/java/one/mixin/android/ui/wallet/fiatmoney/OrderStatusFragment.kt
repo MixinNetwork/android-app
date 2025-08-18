@@ -136,7 +136,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                         failed()
                     }
                     else -> {
-                        // do noting
+                        // do nothing
                     }
                 }
             }
@@ -256,7 +256,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     }
 
                     else -> {
-                        // do noting
+                        // do nothing
                     }
                 }
             }
@@ -423,7 +423,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (status == OrderStatus.PROCESSING) {
-                    // do noting
+                    // do nothing
                 } else if (status == OrderStatus.SUCCESS) {
                     requireActivity().finish()
                 } else if (status == OrderStatus.FAILED) {

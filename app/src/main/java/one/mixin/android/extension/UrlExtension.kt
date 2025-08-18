@@ -30,6 +30,8 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
@@ -40,6 +42,8 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getShareCategory
+import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
 
 fun String.openAsUrlOrWeb(
@@ -92,7 +96,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
-        startsWith(Constants.Scheme.MIXIN_SWAP, true)
+        startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
+        startsWith(Constants.Scheme.DEBUG, true)
     ) {
         true
     } else {
@@ -140,6 +145,8 @@ fun String.openAsUrl(
                 Timber.e(IllegalStateException(err))
             },
         )
+    } else if (startsWith(Constants.Scheme.DEBUG, true)) {
+        SettingActivity.showDebug(context)
     } else if (startsWith(Constants.Scheme.INFO, true)) {
         val content = """
 Brand: ${Build.BRAND} 
@@ -154,6 +161,8 @@ Version Code: ${Build.VERSION.RELEASE}
 User ID: ${Session.getAccountId()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
+Solana Address: ${JsSigner.solanaAddress}
+EVM Address: ${JsSigner.address}
 """
         context.alert(content).setPositiveButton(android.R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(
@@ -169,9 +178,12 @@ User-agent: ${WebView(context).settings.userAgentString}
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(context, supportFragmentManager, scope)
-    } else if(isConversationScheme()) {
+    } else if (isMembershipScheme()) {
+        MixinMemberUpgradeBottomSheetDialogFragment.newInstance(Session.getAccount()?.membership?.plan).showNow(supportFragmentManager,
+            MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+    } else if (isConversationScheme()) {
         checkConversation(context, scope) {
-            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
+            if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl() || isLightningUrl()) {
                 LinkBottomSheetDialogFragment.newInstance(this)
                     .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             } else {
@@ -255,7 +267,7 @@ fun String.checkUserOrApp(
 fun String.checkConversation(
     context: Context,
     scope: CoroutineScope,
-    elseAction: () -> Unit
+    elseAction: () -> Unit,
 ) {
     val uri = Uri.parse(this)
     val segments = uri.pathSegments
@@ -284,11 +296,16 @@ fun String.isValidStartParam(): Boolean {
     return this.length <= 64
 }
 
-fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:") }
+fun String.isExternalTransferUrl() = externalTransferAssetIdMap.keys.any { startsWith("$it:", ignoreCase = true) }
+
+fun String.isLightningUrl() = startsWith("lnbc", true)  || startsWith("lnurl", true) || startsWith("lightning:", true)
 
 private fun String.isUserScheme() =
     startsWith(Constants.Scheme.USERS, true) ||
         startsWith(Constants.Scheme.HTTPS_USERS, true)
+
+private fun String.isMembershipScheme() =
+    startsWith(Constants.Scheme.HTTPS_MEMBERSHIP, true)
 
 private fun String.isInscriptionScheme() = startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true)
 
@@ -413,8 +430,32 @@ fun Uri.getCapturedImage(contentResolver: ContentResolver): Bitmap =
             @Suppress("DEPRECATION")
             MediaStore.Images.Media.getBitmap(contentResolver, this)
         }
+
         else -> {
             val source = ImageDecoder.createSource(contentResolver, this)
             ImageDecoder.decodeBitmap(source)
         }
     }
+
+fun Uri.isVideo(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.MPEG.toString())
+        || mimeType.equals(MimeType.MP4.toString())
+        || mimeType.equals(MimeType.QUICKTIME.toString())
+        || mimeType.equals(MimeType.THREEGPP.toString())
+        || mimeType.equals(MimeType.THREEGPP2.toString())
+        || mimeType.equals(MimeType.MKV.toString())
+        || mimeType.equals(MimeType.WEBM.toString())
+        || mimeType.equals(MimeType.TS.toString())
+        || mimeType.equals(MimeType.AVI.toString())
+}
+
+fun Uri.isWebp(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.WEBP.toString(), true)
+}
+
+fun Uri.isGif(context: Context): Boolean {
+    val mimeType = context.contentResolver.getType(this)
+    return mimeType.equals(MimeType.GIF.toString(), true)
+}

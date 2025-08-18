@@ -38,7 +38,6 @@ interface CircleDao : BaseDao<Circle> {
         }
     }
 
-
     @Query(
         """
         SELECT c.* FROM circle_conversations cc
@@ -91,11 +90,17 @@ interface CircleDao : BaseDao<Circle> {
     )
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
-    @Query("DELETE FROM circles WHERE circle_id = :circleId")
-    suspend fun deleteCircleByIdSuspend(circleId: String)
+    @Transaction
+    fun deleteCircleById(circleId: String) {
+        deleteCircleByCircleId(circleId)
+        deleteCircleConversationById(circleId)
+    }
 
     @Query("DELETE FROM circles WHERE circle_id = :circleId")
-    fun deleteCircleById(circleId: String)
+    fun deleteCircleByCircleId(circleId: String)
+
+    @Query("DELETE FROM circle_conversations WHERE circle_id = :circleId")
+    fun deleteCircleConversationById(circleId: String)
 
     @Query("SELECT * FROM circles WHERE circle_id = :circleId")
     fun findCircleById(circleId: String): Circle?
@@ -123,6 +128,13 @@ interface CircleDao : BaseDao<Circle> {
 
     @Update(entity = Circle::class)
     fun updateOrderAt(circleOrder: CircleOrder)
+
+    @Transaction
+    fun updateAll(list: List<CircleOrder>?) {
+        list?.forEach {
+            updateOrderAt(it)
+        }
+    }
 
     @Query(
         """

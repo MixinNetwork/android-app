@@ -23,7 +23,7 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import timber.log.Timber
 
-class TransferInserter {
+class TransferInserter(val db: MixinDatabase) {
     var primaryId: String? = null // Save the currently inserted primary key id
         private set(value) {
             field = value
@@ -38,7 +38,7 @@ class TransferInserter {
         }
 
     private val writableDatabase by lazy {
-        requireNotNull(MixinDatabase.getWritableDatabase())
+        db.openHelper.writableDatabase
     }
 
     fun insertMessages(messages: List<Message>) {

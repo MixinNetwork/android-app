@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
@@ -31,6 +32,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
+import okio.Timeout
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
@@ -39,10 +41,8 @@ import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
-import one.mixin.android.Constants.RouteConfig.WEB3_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -60,6 +60,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.MemberService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.api.service.RouteService
@@ -69,7 +70,6 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.PinCipher
@@ -79,6 +79,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getStringDeviceId
@@ -109,15 +110,18 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.route.serializer.SafeBoxSerializer
+import one.mixin.android.web3.Rpc
 import one.mixin.android.webrtc.CallDebugLiveData
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.inject.Singleton
 import kotlin.math.abs
 
@@ -176,7 +180,11 @@ object AppModule {
             reportException(e)
             null
         } catch (e: Exception) {
-            reportException(e)
+            if (e is TimeoutException || e is Timeout) {
+                Timber.e(e)
+            } else {
+                reportException(e)
+            }
             null
         }
     }
@@ -232,7 +240,11 @@ object AppModule {
 
                 var jwtResult: JwtResult? = null
                 response.body?.run {
-                    val bytes = this.bytes()
+                    val bytes = runCatching {
+                        this.bytes()
+                    }.onFailure { e ->
+                        Timber.d(e, "Unable to read response body, likely a WebSocket or streaming response")
+                    }.getOrNull() ?: return@run
                     val body = bytes.toResponseBody(this.contentType())
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
@@ -525,48 +537,6 @@ object AppModule {
         return retrofit.create(RouteService::class.java)
     }
 
-    @Singleton
-    @Provides
-    fun provideWeb3Service(
-        resolver: ContentResolver,
-        httpLoggingInterceptor: HttpLoggingInterceptor?,
-        @ApplicationContext appContext: Context,
-    ): Web3Service {
-        val builder = OkHttpClient.Builder()
-        builder.connectTimeout(15, TimeUnit.SECONDS)
-        builder.writeTimeout(15, TimeUnit.SECONDS)
-        builder.readTimeout(15, TimeUnit.SECONDS)
-        builder.dns(DNS)
-        val client =
-            builder.apply {
-                addInterceptor { chain ->
-                    val requestId = UUID.randomUUID().toString()
-                    val sourceRequest = chain.request()
-                    val b = sourceRequest.newBuilder()
-                    b.addHeader("User-Agent", API_UA)
-                        .addHeader("Accept-Language", Locale.getDefault().language)
-                        .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
-                        .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getBotSignature(appContext.defaultSharedPreferences.getString(PREF_WEB3_BOT_PK, null), sourceRequest)
-                    b.addHeader(mwAccessTimestamp, ts.toString())
-                    b.addHeader(mwAccessSign, signature)
-                    val request = b.build()
-                    return@addInterceptor chain.proceed(request)
-                }
-                httpLoggingInterceptor?.let { interceptor ->
-                    addNetworkInterceptor(interceptor)
-                }
-            }.build()
-        val retrofit =
-            Retrofit.Builder()
-                .baseUrl(WEB3_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(CoroutineCallAdapterFactory())
-                .client(client)
-                .build()
-        return retrofit.create(Web3Service::class.java)
-    }
-
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
@@ -642,6 +612,10 @@ object AppModule {
     @Singleton
     fun provideTransferStatus() = TransferStatusLiveData()
 
+    @Provides
+    @Singleton
+    fun providesRpc(routerService: RouteService, web3RawTransactionDao: Web3RawTransactionDao) = Rpc(routerService, web3RawTransactionDao)
+
     @DefaultDispatcher
     @Provides
     fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
@@ -708,4 +682,13 @@ object AppModule {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
         )
     }
+
+    @Singleton
+    @Provides
+    fun provideMemberService(retrofit: Retrofit): MemberService =
+        retrofit.create(MemberService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(app: Application): SharedPreferences = app.defaultSharedPreferences
 }

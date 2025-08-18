@@ -7,6 +7,9 @@ import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
+import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferReceiveContentBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
@@ -47,6 +50,22 @@ class TransferContentReceiveItem : LinearLayout {
 
     @SuppressLint("SetTextI18n")
     fun setContent(
+        @StringRes titleRes: Int,
+        privacy: Boolean = true
+    ) {
+        _binding.apply {
+            title.text = context.getString(titleRes).uppercase()
+            userContainer.isVisible = false
+            privacyTv.isVisible = true
+            val drawable = ContextCompat.getDrawable(context, R.drawable.ic_wallet_privacy)
+            drawable?.setBounds(0, 0, 22.dp, 22.dp)
+            privacyTv.compoundDrawablePadding = 4.dp
+            privacyTv.setCompoundDrawablesRelative(null, null, drawable, null)
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun setContent(
         @PluralsRes titleRes: Int,
         users: List<User>,
         threshold: Int? = null,
@@ -54,8 +73,12 @@ class TransferContentReceiveItem : LinearLayout {
         signers: List<String>? = null
     ) {
         _binding.apply {
-            if (threshold != null && users.size > 1) {
-                title.text = "${context.resources.getQuantityString(titleRes, users.size).uppercase()} ($threshold/${users.size})"
+            if (threshold == 1 && users.size == 1) {
+                title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
+            } else if (threshold != null && users.size > 1) {
+                title.text = "${
+                    context.resources.getQuantityString(titleRes, users.size).uppercase()
+                } ($threshold/${users.size})"
             } else {
                 title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
             }

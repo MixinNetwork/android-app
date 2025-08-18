@@ -216,8 +216,6 @@
     </plurals>
     <string name="deposit_tip_btc">Alamat ini hanya menyokong BTC.</string>
     <string name="deposit_tip_common">Alamat ini hanya menyokong %1$s.</string>
-    <string name="deposit_tip_eos">Alamat ini menyokong semua asas pada token EOS, seperti EOS, IQ, dll.</string>
-    <string name="deposit_tip_eth">Alamat ini menyokong semua token ERC-20, seperti ETH, XIN, dll.</string>
     <string name="deposit_tip_trx">Alamat ini menyokong semua token TRC-10 dan TRC-20, seperti TRX, BTT, USDT-TRON, dll.</string>
     <string name="desktop">desktop</string>
     <string name="desktop_upgrade">Sila tingkatkan Mixin Messenger Desktop kepada versi terkini.</string>

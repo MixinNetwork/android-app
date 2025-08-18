@@ -9,7 +9,7 @@ import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
 
 @Composable
-fun MnemonicPhraseBackupShownPage(mnemonicList: List<String>, pop: () -> Unit, next: (List<String>) -> Unit) {
+fun MnemonicPhraseBackupShownPage(mnemonicList: List<String>, pop: () -> Unit, next: (List<String>) -> Unit, onQrCode: (List<String>) -> Unit) {
 
     MixinAppTheme {
         PageScaffold(
@@ -17,7 +17,7 @@ fun MnemonicPhraseBackupShownPage(mnemonicList: List<String>, pop: () -> Unit, n
             verticalScrollable = false,
             pop = pop,
         ) {
-            MnemonicPhraseInput(MnemonicState.Display, mnemonicList = mnemonicList, onComplete = { next.invoke(mnemonicList) })
+            MnemonicPhraseInput(MnemonicState.Display, mnemonicList = mnemonicList, onComplete = { next.invoke(mnemonicList) }, onQrCode = onQrCode)
         }
     }
 }

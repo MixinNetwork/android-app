@@ -7,11 +7,13 @@ import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.moveTo
+import one.mixin.android.session.Session
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.io.File
 
@@ -47,25 +49,37 @@ suspend fun getLastUserId(context: Context): String? =
 
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearDatabase(context: Context) {
-        try {
-            clearFts(context)
-            clearPending(context)
-            val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-            if (!dbFile.exists()) {
-                return
-            }
-            dbFile.parent?.let {
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
-            }
-            do {
-                dbFile.delete()
-            } while (dbFile.exists())
-        } catch (e: Exception) {
-            Timber.e(e)
+    try {
+        clearFts(context)
+        clearPending(context)
+        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
+        if (!dbFile.exists()) {
+            return
         }
+        dbFile.parent?.let {
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
+            File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
+        }
+        do {
+            dbFile.delete()
+        } while (dbFile.exists())
+    } catch (e: Exception) {
+        Timber.e(e)
     }
+
+    try {
+        if (Build.VERSION.SDK_INT >= 28) {
+            context.getDatabasePath(Constants.DataBase.DB_NAME).delete()
+            context.getDatabasePath(Constants.DataBase.DB_NAME + "-shm").delete()
+            context.getDatabasePath(Constants.DataBase.DB_NAME + "-wal").delete()
+        } else {
+            SQLiteDatabase.deleteDatabase(context.getDatabasePath(Constants.DataBase.DB_NAME))
+        }
+    } catch (e: Exception) {
+        reportException(e)
+    }
+}
 
 @SuppressLint("ObsoleteSdkInt")
 suspend fun clearPending(context: Context) =
@@ -129,4 +143,62 @@ suspend fun clearJobsAndRawTransaction(context: Context) {
                 db?.execSQL("PRAGMA foreign_keys = TRUE")
             }
         }
+}
+
+fun dbDir(context: Context, identityNumber: String? = null): File {
+    val baseDir = File(context.filesDir.parent, "databases")
+    val dir = File(baseDir, identityNumber ?: Session.getAccount()?.identityNumber ?: "temp")
+    if (!dir.exists()) {
+        dir.mkdirs()
+    }
+    return dir
+}
+
+fun legacyDatabaseExists(context: Context): Boolean {
+    val dbFile = legacyDatabaseFile(context)
+    return dbFile.exists() && dbFile.length() > 0
+}
+
+fun legacyDatabaseFile(context: Context): File {
+    return context.getDatabasePath(Constants.DataBase.DB_NAME)
+}
+
+fun databaseFile(context: Context): File {
+    return File(dbDir(context), Constants.DataBase.DB_NAME)
+}
+
+fun moveLegacyDatabaseFile(context: Context, account: Account) {
+    val dbFile = legacyDatabaseFile(context)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
+        return
+    }
+    var c: Cursor? = null
+    var db: SQLiteDatabase? = null
+    try {
+        db =
+            SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY,
+            )
+        c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
+        var userId: String? = null
+        if (c.moveToFirst()) {
+            userId = c.getString(0)
+        }
+        if (account.userId == userId){
+            val dir = dbDir(context)
+            if (!dir.exists()) dir.mkdirs()
+            c?.close()
+            c = null
+            db?.close()
+            db = null
+            dbFile.moveTo(databaseFile(context))
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
+    } finally {
+        c?.close()
+        db?.close()
+    }
 }

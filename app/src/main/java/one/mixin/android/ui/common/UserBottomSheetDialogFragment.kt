@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -22,8 +21,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
@@ -47,6 +48,7 @@ import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
@@ -56,11 +58,11 @@ import one.mixin.android.extension.localTime
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -69,11 +71,16 @@ import one.mixin.android.ui.common.info.menuGroup
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.InputFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.addPinShortcut
@@ -221,10 +228,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
         binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(buildEmptyTransferBiometricItem(user))
-                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                    .apply {
+                        setOnAssetClick { selectedAsset ->
+                            requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                            WalletActivity.showInputForUser(requireActivity(), selectedAsset, user)
+                        }
+                    }.show(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                this@UserBottomSheetDialogFragment.dismiss()
                 RxBus.publish(BotCloseEvent())
-                dismiss()
             } else {
                 toast(R.string.transfer_without_pin)
             }
@@ -635,6 +647,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             null,
                             user.fullName,
                             user.avatarUrl,
+                            user.identityNumber,
                             null,
                             false,
                             null
@@ -646,6 +659,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             it.name,
                             0,
                             "",
+                            null,
                             null,
                             null,
                             null,
@@ -777,6 +791,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
             binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             binding.name.setName(user)
+            binding.name.setOnIconClickListener {
+                user.membership?.plan?.let { plan ->
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(
+                        parentFragmentManager,
+                        MixinMemberUpgradeBottomSheetDialogFragment.TAG,
+                    )
+                }
+            }
             binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
             binding.idTv.setOnLongClickListener {
                 context?.getClipboardManager()
@@ -810,11 +832,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             updateUserStatus(user.relationship)
             binding.opLl.isVisible = true
-            if (user.isBot()) {
+            if (user.isBot() && user.appId != null) {
                 binding.openFl.visibility = VISIBLE
                 binding.transferFl.visibility = GONE
                 binding.shareFl.isVisible = false
-                bottomViewModel.findAppById(user.appId!!)?.let { app ->
+                bottomViewModel.findAppById(user.appId ?: "")?.let { app ->
                     binding.openFl.clicks()
                         .observeOn(AndroidSchedulers.mainThread())
                         .throttleFirst(1, TimeUnit.SECONDS)
@@ -1033,14 +1055,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         lifecycleScope.launch {
             val loader = requireContext().imageLoader
             val request = ImageRequest.Builder(requireContext()).data(user.avatarUrl).build()
-            val result = loader.execute(request).drawable as BitmapDrawable? ?: return@launch
+            val bitmap = (loader.execute(request).request as? SuccessResult)?.image?.toBitmap()  ?: return@launch
             user.fullName?.let {
                 val conversationId = conversationId
                 addPinShortcut(
                     requireContext(),
                     conversationId,
                     it,
-                    result.bitmap,
+                    bitmap,
                     ConversationActivity.getShortcutIntent(
                         requireContext(),
                         conversationId,

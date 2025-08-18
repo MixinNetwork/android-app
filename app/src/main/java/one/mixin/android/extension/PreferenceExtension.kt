@@ -131,3 +131,23 @@ fun <T> SharedPreferences.getList(key: String, clazz: Class<T>): List<T> {
         gson.fromJson(it, TypeTokenCache.getListType(clazz))
     } ?: emptyList()
 }
+
+fun SharedPreferences.addToList(key: String, item: String, limit: Int = 6) {
+    val currentList = getStringList(key) ?: emptyList()
+    currentList.toMutableList().apply {
+        remove(item)
+        add(0, item)
+    }.let {
+        putStringList(key, it.take(6))
+    }
+}
+
+fun SharedPreferences.putStringList(key: String, list: List<String>) {
+    putString(key, list.joinToString(","))
+}
+
+fun SharedPreferences.getStringList(key: String): List<String>? {
+    return getString(key, null)?.let {
+        return it.split(",")
+    }
+}

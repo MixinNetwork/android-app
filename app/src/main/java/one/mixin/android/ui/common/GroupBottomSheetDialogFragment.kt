@@ -116,10 +116,6 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     ) {
         super.setupDialog(dialog, style)
         binding.title.rightIv.setOnClickListener { dismiss() }
-        binding.memberFl.setOnClickListener {
-            GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
-            dismiss()
-        }
         binding.sendFl.setOnClickListener {
             if (conversationId != MixinApplication.conversationId) {
                 ConversationActivity.showAndClear(requireContext(), conversationId)
@@ -209,10 +205,21 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         if (me != null) {
             binding.opsLl.isVisible = true
             binding.scrollView.isEnabled = true
+            binding.memberFl.setOnClickListener {
+                GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
+                dismiss()
+            }
+            binding.memberTv.isVisible = false
         } else {
             val withoutCode = conversation.status == ConversationStatus.QUIT.ordinal
             binding.scrollView.isEnabled = withoutCode
             binding.opsLl.isVisible = withoutCode
+            binding.memberIv.setImageResource(R.drawable.ic_search_home)
+            binding.memberFl.setOnClickListener {
+                startSearchConversation()
+                dismiss()
+            }
+            binding.memberTv.isVisible = true
         }
 
         contentView.doOnPreDraw {
@@ -420,6 +427,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                         it.name,
                         0,
                         "",
+                        null,
                         null,
                         null,
                         null,

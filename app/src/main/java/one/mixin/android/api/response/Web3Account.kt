@@ -1,6 +1,7 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.db.web3.vo.Web3Token
 
 class Web3Account(
     val address: String,

@@ -50,7 +50,6 @@ import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.networkConnected
@@ -75,10 +74,10 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
-import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment.PopupType
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -350,6 +349,15 @@ class ConversationListFragment : LinkFragment() {
             }
 
         initSearch()
+        analytics()
+    }
+
+    private fun analytics() {
+        lifecycleScope.launch{
+            val totalUsd = conversationListViewModel.findTotalUSDBalance()
+            AnalyticsTracker.setAssetLevel(totalUsd)
+            AnalyticsTracker.setNotificationAuthStatus(requireContext())
+        }
     }
 
     private fun openSearch() {
@@ -1243,7 +1251,7 @@ class ConversationListFragment : LinkFragment() {
                 getString(R.string.one_year),
             )
         var duration = MUTE_8_HOURS
-        var whichItem = 0
+        var whichItem = 1 // default choice
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.Cancel) { dialog, _ ->
@@ -1294,7 +1302,7 @@ class ConversationListFragment : LinkFragment() {
 
                 dialog.dismiss()
             }
-            .setSingleChoiceItems(choices, 1) { _, which ->
+            .setSingleChoiceItems(choices, whichItem) { _, which ->
                 whichItem = which
                 when (which) {
                     0 -> duration = MUTE_1_HOUR

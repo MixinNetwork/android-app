@@ -4,35 +4,30 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
+import timber.log.Timber
 
 @Dao
 interface OutputDao : BaseDao<Output> {
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit")
+    @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY CASE WHEN state = 'pending' THEN 1 ELSE 0 END, sequence ASC LIMIT :limit")
     suspend fun findUnspentOutputsByAsset(
         limit: Int,
         asset: String,
     ): List<Output>
 
-    // Determine the UTXO  can spend
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') AND sequence > 0 ORDER BY sequence ASC LIMIT :limit")
-    suspend fun findDeterminedOutputsByAsset(
-        limit: Int,
-        asset: String,
-    ): List<Output>
-
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY sequence ASC LIMIT :limit OFFSET :offset")
     suspend fun findUnspentOutputsByAssetOffset(
         limit: Int,
         asset: String,
         offset: Int,
     ): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE state = 'unspent' AND asset = :asset AND inscription_hash = :inscriptionHash ORDER BY sequence ASC LIMIT :limit")
+    @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND inscription_hash = :inscriptionHash ORDER BY CASE WHEN state = 'pending' THEN 1 ELSE 0 END, sequence ASC LIMIT :limit")
     suspend fun findUnspentInscriptionByAssetHash(
         limit: Int,
         asset: String,
@@ -51,7 +46,7 @@ interface OutputDao : BaseDao<Output> {
     @Query("UPDATE outputs SET state = 'signed' WHERE output_id IN (:outputIds)")
     fun updateUtxoToSigned(outputIds: List<String>): Int
 
-    @Query("SELECT output_id FROM outputs WHERE state != 'signed' AND output_id IN (:outputIds)")
+    @Query("SELECT output_id FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND output_id IN (:outputIds)")
     fun getUnsignedOutputs(outputIds: List<String>): List<String>
 
     @Query("SELECT * FROM outputs WHERE asset = :asset ORDER BY created_at DESC, rowid DESC")
@@ -72,7 +67,7 @@ interface OutputDao : BaseDao<Output> {
         INNER JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
         INNER JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
         INNER JOIN tokens t on t.collection_hash = i.collection_hash
-        WHERE o.state = 'unspent'  
+        WHERE (o.state = 'unspent' OR o.state = 'pending')
         ORDER BY 
             CASE 
                 WHEN :orderBy = 'Recent' THEN o.sequence 
@@ -90,7 +85,7 @@ interface OutputDao : BaseDao<Output> {
         INNER JOIN inscription_items i ON i.inscription_hash == o.inscription_hash
         INNER JOIN inscription_collections ic on ic.collection_hash = i.collection_hash
         INNER JOIN tokens t on t.collection_hash = i.collection_hash
-        WHERE o.state = 'unspent' AND ic.collection_hash = :collectionHash
+        WHERE (o.state = 'unspent' OR o.state = 'pending') AND ic.collection_hash = :collectionHash
         ORDER BY i.sequence ASC
         """,
     )
@@ -102,7 +97,7 @@ interface OutputDao : BaseDao<Output> {
         FROM outputs o
         INNER JOIN inscription_items i ON i.inscription_hash = o.inscription_hash
         INNER JOIN inscription_collections ic ON ic.collection_hash = i.collection_hash
-        WHERE o.state = 'unspent'
+        WHERE (o.state = 'unspent' OR o.state = 'pending')
         GROUP BY ic.collection_hash 
          ORDER BY 
             CASE 
@@ -117,7 +112,7 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
-        SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, COUNT(CASE WHEN o.state = 'unspent' THEN o.inscription_hash END) AS inscription_count
+        SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, COUNT(CASE WHEN (o.state = 'unspent' OR o.state = 'pending') THEN o.inscription_hash END) AS inscription_count
         FROM inscription_collections ic 
         INNER JOIN inscription_items i ON ic.collection_hash = i.collection_hash
         LEFT JOIN outputs o ON o.inscription_hash = i.inscription_hash
@@ -143,7 +138,7 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
-        SELECT * FROM outputs WHERE inscription_hash = :inscriptionHash AND state = 'unspent'
+        SELECT * FROM outputs WHERE inscription_hash = :inscriptionHash AND (state = 'unspent' OR state = 'pending')
     """,
     )
     suspend fun findUnspentOutputByHash(inscriptionHash: String): Output?
@@ -158,9 +153,21 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
-        SELECT DISTINCT inscription_hash FROM outputs WHERE inscription_hash IS NOT NULL AND state = 'unspent' 
+        SELECT DISTINCT inscription_hash FROM outputs WHERE inscription_hash IS NOT NULL AND (state = 'unspent' OR state = 'pending') 
     """,
     )
     suspend fun findUnspentInscriptionHash(): List<String>
 
+    @Transaction
+    fun insertUnspentOutputs(outputs: List<Output>) {
+        val signed = findSignedOutput(outputs.map { it.outputId })
+        if (signed.isEmpty()) {
+            insertList(outputs)
+        } else {
+            Timber.d("Insert filter ${signed.joinToString(", ")}")
+            // Exclude signed data
+            val unsignedData = outputs.filterNot { signed.contains(it.outputId) }
+            insertList(unsignedData)
+        }
+    }
 }

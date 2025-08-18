@@ -4,6 +4,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.api.response.WithdrawalResponse
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.InscriptionCollection
@@ -41,6 +42,11 @@ interface TokenService {
     suspend fun getAssetPrecisionById(
         @Path("id") id: String,
     ): MixinResponse<AssetPrecision>
+
+    @GET("safe/addresses")
+    suspend fun addresses(
+        @Query("chain") chainId: String,
+    ): MixinResponse<List<Address>>
 
     @GET("safe/assets/{id}/fees")
     suspend fun getFees(

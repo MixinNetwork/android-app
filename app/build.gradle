@@ -12,22 +12,25 @@ plugins {
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
 
-    id 'io.sentry.android.gradle' version '4.14.1'
+    id 'io.sentry.android.gradle' version '5.7.0'
 }
 
-def versionMajor = 2
-def versionMinor = 0
-def versionPatch = 6
-def versionBuild = 0
+def versionMajor = 3
+def versionMinor = 2
+def versionPatch = 3
+def versionBuild = 2
+
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdk 35
+    compileSdk 36
     ndkVersion "27.0.12077973"
     namespace "one.mixin.android"
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -112,7 +115,17 @@ android {
         }
     }
 
+    flavorDimensions += "channel"
     productFlavors {
+        googlePlay {
+            dimension "channel"
+            buildConfigField "boolean", "IS_GOOGLE_PLAY", "true"
+        }
+
+        otherChannel {
+            dimension "channel"
+            buildConfigField "boolean", "IS_GOOGLE_PLAY", "false"
+        }
     }
 
     signingConfigs {
@@ -135,17 +148,24 @@ android {
     testBuildType "staging"
 
     buildTypes {
-        if (project.hasProperty("RELEASE_STORE_FILE")) {
-            release {
-                ndk {
-                    abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
-                }
-                debuggable false
-                jniDebuggable false
-                shrinkResources true
-                minifyEnabled true
-                proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        release {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+            }
+            debuggable false
+            jniDebuggable false
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
                 signingConfig signingConfigs.release
+                firebaseCrashlytics {
+                    mappingFileUploadEnabled = true
+                }
+            } else {
+                firebaseCrashlytics {
+                    mappingFileUploadEnabled = false
+                }
             }
         }
         debug {
@@ -159,6 +179,7 @@ android {
         staging {
             initWith debug
             applicationIdSuffix ".test"
+            matchingFallbacks = ['debug']
         }
     }
 
@@ -208,8 +229,8 @@ dependencies {
     implementation("org.bitcoinj:bitcoinj-core:${bitcoinVersion}") {
         exclude group: 'net.jcip', module: 'jcip-annotations'
     }
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
-    implementation platform("com.google.firebase:firebase-bom:33.7.0")
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:${desugarJdkLibsVersion}"
+    implementation platform("com.google.firebase:firebase-bom:${firebaseBomVersion}")
     implementation("com.google.firebase:firebase-perf")
     implementation fileTree(include: ['*.aar'], dir: 'libs')
     implementation "androidx.fragment:fragment-ktx:${fragmentVersion}"
@@ -228,10 +249,10 @@ dependencies {
     implementation "androidx.sharetarget:sharetarget:${sharetargetVersion}"
     implementation "androidx.coordinatorlayout:coordinatorlayout:${coordinatorVersion}"
     implementation "androidx.biometric:biometric:${biometricVersion}"
-    implementation "androidx.security:security-crypto:1.0.0"
+    implementation "androidx.security:security-crypto:1.1.0"
 
-    implementation 'org.sol4k:tweetnacl:0.1.6'
-    implementation 'org.sol4k:utilities:0.1.0'
+    implementation "org.sol4k:tweetnacl:${tweetnaclVersion}"
+    implementation "org.sol4k:utilities:${sol4kUtilitiesVersion}"
 
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
@@ -243,10 +264,12 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-compose:${navigationVersion}"
-    implementation "io.coil-kt:coil-compose:${coilVersion}"
-    implementation "io.coil-kt:coil-svg:${coilVersion}"
-    implementation "io.coil-kt:coil-video:${coilVersion}"
-    implementation "io.coil-kt:coil-gif:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-compose:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-okhttp:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-svg:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-network-cache-control:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-video:${coilVersion}"
+    implementation "io.coil-kt.coil3:coil-gif:${coilVersion}"
     // Architecture components
     implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
     implementation "androidx.paging:paging-common-ktx:${pagingVersion}"
@@ -305,6 +328,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:${retrofitVersion}")
     implementation("com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}")
     implementation "com.jakewharton.rxbinding3:rxbinding:${rxbindingVersion}"
+    implementation "com.jakewharton.rxbinding3:rxbinding-material:${rxbindingVersion}"
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}")
 
     implementation "com.google.net.cronet:cronet-okhttp:${cronetOkhttpVersion}"
@@ -313,10 +337,9 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
 
-    implementation "com.google.firebase:firebase-messaging-ktx"
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
-    implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+    implementation "com.google.firebase:firebase-messaging"
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics'
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
@@ -324,11 +347,11 @@ dependencies {
         }
     }
 
+    implementation "com.android.billingclient:billing-ktx:${billingKtxVersion}"
     implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation "com.google.android.play:app-update-ktx:${playVersion}"
-    implementation "com.google.android.gms:play-services-safetynet:${googlePlayServicesVersion}"
-    implementation "com.google.android.gms:play-services-maps:19.0.0"
-    implementation "com.google.android.gms:play-services-location:21.3.0"
+    implementation "com.google.android.gms:play-services-maps:${playServicesMapsVersion}"
+    implementation "com.google.android.gms:play-services-location:${playServicesLocationVersion}"
     implementation "com.google.android.gms:play-services-cronet:${googlePlayServicesVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
@@ -336,7 +359,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
-    implementation "com.github.zjupure:webpdecoder:2.6.4.16.0"
+    implementation "com.github.zjupure:webpdecoder:${webpdecoderVersion}"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
     ksp "com.github.bumptech.glide:ksp:$glideVersion"
@@ -372,8 +395,7 @@ dependencies {
     implementation "dnsjava:dnsjava:${dnsVersion}"
     implementation "com.github.SeniorZhai:audioswitch:${audioSwitchVersion}"
     implementation "com.github.skydoves:balloon:$balloonVersion"
-    implementation "com.mapbox.maps:android:${mapboxSdkVersion}"
-    implementation "com.mapbox.plugin:maps-lifecycle:${mapboxSdkVersion}"
+    implementation "org.osmdroid:osmdroid-android:$streetMapVersion"
     implementation "com.mattprecious.swirl:swirl:$swirlVersion"
     implementation "com.github.SeniorZhai:IndicatorSeekBar:${indicatorseekbarVersion}"
     implementation "org.jetbrains:markdown:${markdownVersion}"
@@ -389,8 +411,10 @@ dependencies {
     implementation "androidx.compose.runtime:runtime:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-livedata:${composeVersion}"
     implementation "androidx.compose.runtime:runtime-rxjava2:${composeVersion}"
+    implementation "androidx.compose.foundation:foundation:${composeVersion}"
+    implementation platform("androidx.compose:compose-bom:${composeBomVersion}")
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
-    implementation 'androidx.activity:activity-compose:1.9.3'
+    implementation "androidx.activity:activity-compose:${activityComposeVersion}"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
     
     // accompanist
@@ -399,13 +423,18 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager-indicators:${accompanistVersion}"
 
     // wallet connect && web3j
-    implementation "org.web3j:core:4.11.0" // ⚠️ dependabot unexpected behavior update to version 5.0.0
-    implementation "org.web3j:crypto:4.11.0"
-    implementation platform("com.reown:android-bom:1.0.4")
+    implementation "org.web3j:core:${web3jCoreVersion}" // ⚠️ dependabot unexpected behavior update to version 5.0.0
+    implementation "org.web3j:crypto:${web3jCryptoVersion}"
+    implementation platform("com.reown:android-bom:${reownBomVersion}")
     implementation "com.reown:android-core"
+    testImplementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
-    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
+    implementation "org.sol4k:sol4k:${sol4kVersion}"
+
+    implementation "com.github.salomonbrys.kotson:kotson:${kotsonVersion}"
+
+    implementation "com.airbnb.android:lottie-compose:${lottieComposeVersion}"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
@@ -440,7 +469,7 @@ dependencies {
     kspAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
     // ML Kit
-    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta5'
+    implementation 'com.google.mlkit:entity-extraction:16.0.0-beta6'
 
     testImplementation("com.google.protobuf:protobuf-javalite") {
         version {
@@ -475,6 +504,8 @@ dependencies {
         exclude group: 'com.squareup.leakcanary', module: 'leakcanary-android-process'
     }
     implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
+    implementation "com.android.billingclient:billing:$billingVersion"
+    implementation "com.android.billingclient:billing-ktx:$billingVersion"
 }
 
 composeCompiler {
@@ -491,9 +522,6 @@ secrets {
 configurations.all {
     exclude group: 'org.jetbrains', module: 'annotations-java5'
 }
-
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
 
 task allTests(dependsOn: ['testStagingUnitTest', 'connectedStagingAndroidTest']) {
     description = "Run unit tests and instrumentation tests"
@@ -523,13 +551,18 @@ task syncStrings {
 }
 
 
+import io.sentry.android.gradle.extensions.InstrumentationFeature
 sentry {
     org = "mcwm"
     projectName = "android"
 
+    autoUploadProguardMapping = false
+    autoUploadNativeSymbols = false
+
     tracingInstrumentation {
         enabled = true
-
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.OKHTTP
+        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.FILE_IO
         logcat {
             enabled = false
         }

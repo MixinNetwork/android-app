@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatActionBinding
 import one.mixin.android.extension.bottomPadding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.leftPadding
 import one.mixin.android.extension.rightPadding
 import one.mixin.android.extension.topPadding

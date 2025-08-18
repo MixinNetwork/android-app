@@ -7,9 +7,7 @@ import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.MixinResponseException
@@ -25,7 +23,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.putString
@@ -78,7 +75,9 @@ class UserRepository
         ): List<SearchBot> =
             DataProvider.fuzzySearchBots(query, query, Session.getAccountId() ?: "", appDatabase, cancellationSignal)
 
-        suspend fun searchSuspend(query: String): MixinResponse<User> = userService.searchSuspend(query)
+        suspend fun searchSuspend(query: String): MixinResponse<User> {
+            return userService.searchSuspend(query)
+        }
 
         suspend fun fuzzySearchGroupUser(
             conversationId: String,
@@ -217,6 +216,8 @@ class UserRepository
 
         suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 
+        suspend fun findFriendsAndMyBot() = userDao.findFriendsAndMyBot(Session.getAccountId()!!)
+
         fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 
         suspend fun findBotsByIds(appIds: Set<String>) = userDao.findMultiUsersByIds(appIds)
@@ -261,7 +262,7 @@ class UserRepository
 
         suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
 
-        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleByIdSuspend(circleId)
+        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
 
         suspend fun findConversationItemByCircleId(circleId: String) =
             circleDao.findConversationItemByCircleId(circleId)
@@ -274,11 +275,7 @@ class UserRepository
 
         suspend fun sortCircleConversations(list: List<CircleOrder>?) =
             withContext(Dispatchers.IO) {
-                runInTransaction {
-                    list?.forEach {
-                        circleDao.updateOrderAt(it)
-                    }
-                }
+                circleDao.updateAll(list)
             }
 
         suspend fun deleteCircleConversation(
@@ -286,9 +283,6 @@ class UserRepository
             circleId: String,
         ) =
             circleConversationDao.deleteByIdsSuspend(conversationId, circleId)
-
-        suspend fun deleteByCircleId(circleId: String) =
-            circleConversationDao.deleteByCircleIdSuspend(circleId)
 
         suspend fun insertCircleConversation(circleConversation: CircleConversation) =
             circleConversationDao.insertSuspend(circleConversation)
@@ -364,7 +358,7 @@ class UserRepository
 
         @Suppress("KotlinConstantConditions")
         suspend fun getBotPublicKey(botId: String, force: Boolean) {
-            if (botId != ROUTE_BOT_USER_ID && botId != WEB3_BOT_USER_ID) return
+            if (botId != ROUTE_BOT_USER_ID) return
 
             val key =
                 findBotPublicKey(
@@ -377,8 +371,6 @@ class UserRepository
             if (key != null && !force) {
                 if (botId == ROUTE_BOT_USER_ID) {
                     MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
-                } else if (botId == WEB3_BOT_USER_ID) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
                 }
             } else {
                 val sessionResponse = fetchSessionsSuspend(listOf(botId))
@@ -397,8 +389,6 @@ class UserRepository
                     )
                     if (botId == ROUTE_BOT_USER_ID) {
                         MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    } else if (botId == WEB3_BOT_USER_ID) {
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
                     }
                 } else {
                     throw MixinResponseException(

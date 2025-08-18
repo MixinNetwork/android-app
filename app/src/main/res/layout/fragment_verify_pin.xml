@@ -6,7 +6,8 @@
     android:clickable="true"
     android:focusable="true"
     android:background="?attr/bg_white"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
     <ImageView
         android:id="@+id/close_iv"
@@ -39,7 +40,7 @@
 
     <one.mixin.android.widget.PinView
         android:id="@+id/pin"
-        android:layout_width="180dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_centerHorizontal="true"

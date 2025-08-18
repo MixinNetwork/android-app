@@ -43,6 +43,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
     val cursorIndexOfName = getColumnIndexOrThrow(cursor, "name")
     val cursorIndexOfOwnerVerified = getColumnIndexOrThrow(cursor, "ownerVerified")
     val cursorIndexOfOwnerMuteUntil = getColumnIndexOrThrow(cursor, "ownerMuteUntil")
+    val cursorIndexOfOwnerIdentityNumber = getColumnIndexOrThrow(cursor, "ownerIdentityNumber")
     val cursorIndexOfAppId = getColumnIndexOrThrow(cursor, "appId")
     val cursorIndexOfContent = getColumnIndexOrThrow(cursor, "content")
     val cursorIndexOfContentType = getColumnIndexOrThrow(cursor, "contentType")
@@ -87,6 +88,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
             }
         tmpOwnerVerified = if (tmp == null) null else tmp != 0
         val tmpOwnerMuteUntil = cursor.getString(cursorIndexOfOwnerMuteUntil)
+        val tmpOwnerIdentityNumber = cursor.getString(cursorIndexOfOwnerIdentityNumber)
         val tmpAppId = cursor.getString(cursorIndexOfAppId)
         val tmpContent = cursor.getString(cursorIndexOfContent)
         val tmpContentType = cursor.getString(cursorIndexOfContentType)
@@ -129,6 +131,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
                 tmpParticipantUserId,
                 tmpOwnerMuteUntil,
                 tmpOwnerVerified,
+                tmpOwnerIdentityNumber,
                 tmpMuteUntil,
                 tmpAppId,
                 tmpMentions,
@@ -759,11 +762,10 @@ fun callableTokenItem(
             val cursorIndexOfChainIconUrl = 12
             val cursorIndexOfChainSymbol = 13
             val cursorIndexOfChainName = 14
-            val cursorIndexOfChainPriceUsd = 15
-            val cursorIndexOfAssetKey = 16
-            val cursorIndexOfDust = 17
-            val cursorIndexOfWithdrawalMemoPossibility = 18
-            val cursorIndexOfCollectionHash = 19
+            val cursorIndexOfAssetKey = 15
+            val cursorIndexOfDust = 16
+            val cursorIndexOfWithdrawalMemoPossibility = 17
+            val cursorIndexOfCollectionHash = 18
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -836,12 +838,6 @@ fun callableTokenItem(
                         cursor.getInt(cursorIndexOfHidden)
                     }
                 tmpHidden = if (tmp == null) null else tmp != 0
-                val tmpChainPriceUsd: String? =
-                    if (cursor.isNull(cursorIndexOfChainPriceUsd)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfChainPriceUsd)
-                    }
                 val tmpConfirmations: Int = cursor.getInt(cursorIndexOfConfirmations)
                 val tmpChainIconUrl: String? =
                     if (cursor.isNull(cursorIndexOfChainIconUrl)) {
@@ -903,11 +899,11 @@ fun callableTokenItem(
                         tmpChainIconUrl,
                         tmpChainSymbol,
                         tmpChainName,
-                        tmpChainPriceUsd,
                         tmpAssetKey,
                         tmpDust,
                         tmpDepositWithdrawalMemoPossibility,
                         tmpCollectionHash,
+                        null
                     )
                 result.add(item)
             }
@@ -936,9 +932,10 @@ fun callableSearchMessageItem(
             val cursorIndexOfUserId = 5
             val cursorIndexOfAppId = 6
             val cursorIndexOfUserAvatarUrl = 7
-            val cursorIndexOfUserFullName = 8
-            val cursorIndexOfUserIsVerified = 9
-            val cursorIndexOfUserMembership = 10
+            val cursorIndexOfUserIdentityNumber = 8
+            val cursorIndexOfUserFullName = 9
+            val cursorIndexOfUserIsVerified = 10
+            val cursorIndexOfUserMembership = 11
             val result: MutableList<SearchMessageItem> =
                 java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -986,6 +983,12 @@ fun callableSearchMessageItem(
                     } else {
                         cursor.getString(cursorIndexOfUserAvatarUrl)
                     }
+                val tmpUserIdentityNumber: String? =
+                    if (cursor.isNull(cursorIndexOfUserIdentityNumber)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfUserIdentityNumber)
+                    }
                 val tmpUserFullName: String? =
                     if (cursor.isNull(cursorIndexOfUserFullName)) {
                         null
@@ -1016,6 +1019,7 @@ fun callableSearchMessageItem(
                         tempAppId,
                         tmpUserFullName,
                         tmpUserAvatarUrl,
+                        tmpUserIdentityNumber,
                         tmpConversationAvatarUrl,
                         tmpIsVerified,
                         membershipConverter.revertData(tmpUserMembership)

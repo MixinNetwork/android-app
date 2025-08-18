@@ -42,9 +42,9 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    override fun getTitleResId() = if (send)R.string.Send else R.string.Share_Contact
+    override fun getTitleResId() = if (send) R.string.Send else R.string.Share_Contact
 
-    override suspend fun getFriends() = if (send) viewModel.findFriendsNotBot() else viewModel.getFriends()
+    override suspend fun getFriends() = if (send) viewModel.findFriendsAndMyBot() else viewModel.getFriends()
 
     private var friendClick: ((User) -> Unit)? = null
 

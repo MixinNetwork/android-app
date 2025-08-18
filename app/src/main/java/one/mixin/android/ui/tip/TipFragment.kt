@@ -15,6 +15,10 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -25,12 +29,14 @@ import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentTipBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
@@ -48,8 +54,11 @@ import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.js.JsSigner
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -92,6 +101,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+            if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
+                AnalyticsTracker.trackSignUpPinSet()
+            }
             closeIv.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
@@ -267,6 +279,18 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     bottomHintTv.text = tipStep.reason
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
                 }
+                is LegacyPIN -> {
+                    setTitle(forRecover)
+                    tipsTv.isVisible = true
+                    bottomVa.displayedChild = 0
+                    innerVa.displayedChild = 0
+                    innerTv.text = getString(R.string.View_Document)
+                    innerTv.setOnClickListener {
+                        context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    }
+                    bottomHintTv.text = tipStep.message
+                    bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))
+                }
             }
         }
     }
@@ -280,7 +304,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 is TryConnecting, is RetryConnect, is ReadyStart -> {
                     forRecover || !tipBundle.forChange()
                 }
-                is RetryProcess, is Processing, is RetryRegister -> {
+                is RetryProcess, is Processing, is RetryRegister, is LegacyPIN -> {
                     true
                 }
             }
@@ -386,6 +410,18 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val pin = requireNotNull(tipBundle.pin) { "process tip step pin can not be null" }
             val oldPin = tipBundle.oldPin
             Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
+
+            when(tipBundle.tipType) {
+                TipType.Change -> {
+                    AnalyticsTracker.trackLoginPinVerify("change_pin")
+                }
+                TipType.Upgrade -> {
+                    AnalyticsTracker.trackLoginPinVerify("pin_upgrade")
+                }
+                else -> {
+                    // do nothing
+                }
+            }
 
             tip.addObserver(tipObserver)
             when {
@@ -497,6 +533,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
         }
 
+        if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
+            AnalyticsTracker.trackSignUpEnd()
+        }
         if (activity?.isTaskRoot == true) {
             MainActivity.show(requireContext())
         }
@@ -555,11 +594,21 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                         ),
                 )
             return@runCatching if (registerResp.isSuccess) {
+                val solAddress = viewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
+                PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
+                JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, solAddress)
+                val evmAddress = viewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
+                PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
+                JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, evmAddress)
                 Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
                 if (Session.hasPhone()) { // Only clear Phone user
                     removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                 }
                 true
+            } else if (registerResp.errorCode == ErrorHandler.INVALID_PIN_FORMAT) {
+                tipBundle.oldPin = null
+                updateTipStep(LegacyPIN(getString(R.string.error_legacy_pin)))
+                false
             } else {
                 tipBundle.oldPin = null
                 val error = requireNotNull(registerResp.error) { "error can not be null" }

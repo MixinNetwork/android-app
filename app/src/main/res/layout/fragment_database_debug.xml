@@ -5,49 +5,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/app_name" />
+        app:titleText="@string/Debug_database" />
 
     <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:layout_margin="8dp">
 
         <androidx.appcompat.widget.AppCompatSpinner
-                android:id="@+id/spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:entries="@array/database"
-                style="@style/common_spinner"/>
+            android:id="@+id/database_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/database"
+            android:spinnerMode="dropdown"
+            style="@style/DatabaseSpinnerStyle"/>
 
         <EditText
-                android:id="@+id/sql"
-                style="@style/NormalTextStyle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="@drawable/bg_input"
-                android:hint="type raw sql"
-                android:padding="12dp"
-                android:maxLines="5"
-                tools:ignore="Autofill,HardcodedText,TextFields" />
+            android:id="@+id/sql"
+            style="@style/NormalTextStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_input"
+            android:hint="type raw sql"
+            android:padding="12dp"
+            android:lines="3"
+            android:gravity="start|top"
+            android:maxLines="5"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_assist"
+            tools:ignore="Autofill,HardcodedText,TextFields" />
     </LinearLayout>
 
     <Button
         android:id="@+id/run_bn"
         style="@style/AppTheme.MaterialButton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:text="run"
-        tools:ignore="HardcodedText" />
+        android:layout_gravity="center_horizontal"
+        android:text="Run" />
 
     <ScrollView
         android:layout_width="match_parent"

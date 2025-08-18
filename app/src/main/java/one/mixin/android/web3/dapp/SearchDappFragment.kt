@@ -20,8 +20,6 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.home.exploreEvm
-import one.mixin.android.ui.home.exploreSolana
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
@@ -74,18 +72,20 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_dapps) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        chainId = if (exploreSolana(requireContext())) {
-            Chain.Solana.chainId
-        } else {
-            Chain.Ethereum.chainId
-        }
+        // chainId = if (exploreSolana(requireContext())) {
+        //     Chain.Solana.chainId
+        // } else {
+        //     Chain.Ethereum.chainId
+        // }
+        chainId = Chain.Ethereum.chainId
         view.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
             }
         }
-        binding.radioEth.isChecked = exploreEvm(requireContext())
-        binding.radioSolana.isChecked = exploreSolana(requireContext())
+        // Todo
+        // binding.radioEth.isChecked = exploreEvm(requireContext())
+        // binding.radioSolana.isChecked = exploreSolana(requireContext())
         binding.radioNetwork.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.radio_eth -> {

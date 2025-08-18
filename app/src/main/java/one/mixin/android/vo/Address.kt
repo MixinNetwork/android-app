@@ -4,13 +4,19 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@Entity(tableName = "addresses")
+@Entity(
+    tableName = "addresses",
+    indices = [
+        Index(value = ["chain_id", "updated_at"])
+    ]
+)
 data class Address(
     @PrimaryKey
     @ColumnInfo(name = "address_id")
@@ -21,6 +27,9 @@ data class Address(
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
     val assetId: String,
+    @ColumnInfo(name = "chain_id")
+    @SerializedName("chain_id")
+    val chainId: String,
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,

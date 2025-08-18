@@ -21,6 +21,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupBeforePage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPage
 import one.mixin.android.ui.setting.ui.page.MnemonicPhraseBackupPinPage
@@ -59,6 +60,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
         binding.compose.setContent {
             MixinAppTheme(
                 darkTheme = requireContext().isNightMode(),
+                skip = true,
             ) {
                 val navController = rememberNavController()
                 NavHost(
@@ -135,6 +137,11 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                             handleBack()
                         }, {
                             navController.navigate(MnemonicPhraseBackupStep.MnemonicPhraseVerify.name)
+                        }, {
+                            QrBottomSheetDialogFragment.newInstance(
+                                mnemonic.joinToString(" "),
+                                QrBottomSheetDialogFragment.TYPE_MNEMONIC_QR,
+                            ).show(childFragmentManager, QrBottomSheetDialogFragment.TAG)
                         })
                     }
 

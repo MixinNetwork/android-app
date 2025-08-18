@@ -26,17 +26,11 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.biometric.NftBiometricItem
-import one.mixin.android.ui.conversation.ConversationViewModel
-import one.mixin.android.ui.conversation.link.parser.NewSchemeParser.Companion.INSCRIPTION_NOT_FOUND
-import one.mixin.android.ui.conversation.link.parser.ParserError
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.transfer.widget.TransferBottom
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 
 @AndroidEntryPoint
 class CollectionBottomSheetDialogFragment : BottomSheetDialogFragment() {

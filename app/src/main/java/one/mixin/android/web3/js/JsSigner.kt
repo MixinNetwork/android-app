@@ -5,34 +5,34 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.Buffer
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
-import org.sol4k.Connection
-import org.sol4k.Constants
 import org.sol4k.Keypair
-import org.sol4k.RpcUrl
-import org.sol4k.SignInAccount
-import org.sol4k.SignInInput
-import org.sol4k.SignInOutput
-import org.sol4k.VersionedTransaction
-import org.sol4k.api.Commitment
-import org.sol4k.exception.MaliciousInstructionException
+import org.sol4kt.SignInAccount
+import org.sol4kt.SignInInput
+import org.sol4kt.SignInOutput
+import org.sol4kt.VersionedTransactionCompat
+import org.sol4kt.exception.MaliciousInstructionException
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -40,13 +40,13 @@ import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.Web3j
-import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.Response
 import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
 import java.util.concurrent.TimeUnit
+import org.sol4k.Constants as ConstantsSolana
 
 object JsSigner {
     sealed class JsSignerNetwork(val name: String) {
@@ -85,12 +85,21 @@ object JsSigner {
         return builder.build()
     }
 
+    lateinit var address: String
+        private set
     lateinit var evmAddress: String
         private set
     lateinit var solanaAddress: String
         private set
 
-    lateinit var address: String
+    lateinit var path: String
+        private set
+    lateinit var currentWalletId: String
+        private set
+    lateinit var currentWalletCategory: String
+        private set
+
+    lateinit var classicWalletId: String
         private set
 
     fun updateAddress(
@@ -102,7 +111,6 @@ object JsSigner {
         } else {
             evmAddress = address
         }
-        JsSigner.address = address
     }
 
     fun useEvm() {
@@ -125,10 +133,50 @@ object JsSigner {
     // now only ETH and SOL
     var currentNetwork = JsSignerNetwork.Ethereum.name
 
-    suspend fun init() {
-        evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-        solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-        address = evmAddress
+    private suspend fun updateAddressesAndPaths(
+        walletId: String,
+        queryAddress: (String) -> List<Web3Address>
+    ) {
+        if (walletId.isNotBlank()) {
+            val addresses = queryAddress(walletId)
+            path = addresses.firstOrNull()?.path ?:""
+            evmAddress =
+                addresses.firstOrNull { it.chainId != SOLANA_CHAIN_ID }?.destination
+                    ?: ""
+            solanaAddress =
+                addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
+                    ?: ""
+            address = evmAddress
+        } else {
+            evmAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+            solanaAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+            address = evmAddress
+        }
+
+        if (WalletConnect.isEnabled()) {
+            if (currentChain.assetId == SOLANA_CHAIN_ID) {
+                WalletConnectV2.switchAccount(solanaAddress)
+            } else {
+                WalletConnectV2.switchAccount(evmAddress)
+            }
+        }
+    }
+
+    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> Web3Wallet?) {
+        classicWalletId = classicQuery() ?: ""
+        currentWalletId = PropertyHelper.findValueByKey(
+            Constants.Account.SELECTED_WEB3_WALLET_ID,
+            classicWalletId
+        )
+        currentWalletCategory = queryWallet(currentWalletId)?.category ?: WalletCategory.CLASSIC.value
+        updateAddressesAndPaths(currentWalletId, queryAddress)
+    }
+
+    suspend fun setWallet(walletId: String, category: String, queryAddress: (String) -> List<Web3Address>) {
+        if (category == WalletCategory.WATCH_ADDRESS.value) return
+        currentWalletId = walletId
+        currentWalletCategory = category
+        updateAddressesAndPaths(walletId, queryAddress)
     }
 
     fun switchChain(switchChain: SwitchChain): Result<String> {
@@ -162,10 +210,6 @@ object JsSigner {
                 currentChain = Chain.BinanceSmartChain
                 Result.success(Chain.BinanceSmartChain.name)
             }
-            Chain.Avalanche.hexReference -> {
-                currentChain = Chain.Avalanche
-                Result.success(Chain.Avalanche.name)
-            }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana
                 currentNetwork = JsSignerNetwork.Solana.name
@@ -177,40 +221,21 @@ object JsSigner {
         }
     }
 
-    fun sendTransaction(
-        signedTransactionData: String,
-        chain: Chain?,
-    ): String? {
-        val tx = getWeb3j(chain ?: currentChain).ethSendRawTransaction(signedTransactionData).send()
-        if (tx.hasError()) {
-            val msg = "error code: ${tx.error.code}, message: ${tx.error.message}"
-            Timber.d("$TAG transactionHash is null, $msg")
-            throw WalletConnectException(tx.error.code, tx.error.message)
-        }
-        val transactionHash = tx.transactionHash
-        Timber.d("$TAG sendTransaction $transactionHash")
-        return transactionHash
-    }
-
-    fun ethSignTransaction(
+    suspend fun ethSignTransaction(
         priv: ByteArray,
         transaction: WCEthereumTransaction,
         tipGas: TipGas,
         chain: Chain?,
-    ): String {
+        getNonce: suspend (String) -> BigInteger,
+    ): Pair<String, String> {
         val value = transaction.value ?: "0x0"
         val keyPair = ECKeyPair.create(priv)
         val credential = Credentials.create(keyPair)
-        val transactionCount =
-            getWeb3j(chain ?: currentChain).ethGetTransactionCount(credential.address, DefaultBlockParameterName.LATEST).send()
-        if (transactionCount.hasError()) {
-            throwError(transactionCount.error)
-        }
-        val nonce = transactionCount.transactionCount
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(credential.address)
         val v = Numeric.decodeQuantity(value)
 
         val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
-        val maxFeePerGas = tipGas.maxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
+        val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
         val gasLimit = tipGas.gasLimit
         Timber.e(
             "$TAG dapp gas: ${transaction.gas?.let { Numeric.decodeQuantity(it) }} gasLimit: ${transaction.gasLimit?.let { Numeric.decodeQuantity(it) }} maxFeePerGas: ${transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) }} maxPriorityFeePerGas: ${
@@ -233,11 +258,39 @@ object JsSigner {
                 maxPriorityFeePerGas,
                 maxFeePerGas,
             )
-
         val signedMessage = TransactionEncoder.signMessage(rawTransaction, (chain ?: currentChain).chainReference.toLong(), credential)
         val hexMessage = Numeric.toHexString(signedMessage)
         Timber.d("$TAG signTransaction $hexMessage")
-        return hexMessage
+        return Pair(hexMessage, credential.address)
+    }
+
+    suspend fun ethPreviewTransaction(
+        address: String,
+        transaction: WCEthereumTransaction,
+        tipGas: TipGas,
+        chain: Chain?,
+        getNonce: suspend (String) -> BigInteger,
+    ): String {
+        val value = transaction.value ?: "0x0"
+        val nonce = transaction.nonce?.toBigIntegerOrNull() ?: getNonce(address)
+        val v = Numeric.decodeQuantity(value)
+
+        val maxPriorityFeePerGas = tipGas.maxPriorityFeePerGas
+        val maxFeePerGas = tipGas.selectMaxFeePerGas(transaction.maxFeePerGas?.let { Numeric.decodeQuantity(it) } ?: BigInteger.ZERO)
+        val gasLimit = tipGas.gasLimit
+
+        val rawTransaction =
+            RawTransaction.createTransaction(
+                (chain ?: currentChain).chainReference.toLong(),
+                nonce,
+                gasLimit,
+                transaction.to,
+                v,
+                transaction.data ?: "",
+                maxPriorityFeePerGas,
+                maxFeePerGas,
+            )
+        return Numeric.toHexString(TransactionEncoder.encode(rawTransaction))
     }
 
     fun signMessage(
@@ -287,24 +340,20 @@ object JsSigner {
         return sig.toHex()
     }
 
-    fun signSolanaTransaction(
+    suspend fun signSolanaTransaction(
         priv: ByteArray,
-        tx: org.sol4k.VersionedTransaction,
-    ): org.sol4k.VersionedTransaction {
+        tx: VersionedTransactionCompat,
+        getBlockhash: suspend () -> String,
+    ): VersionedTransactionCompat {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
-        if (tx.signatures.size <= 1) {
-            val blockhash = getSolanaRpc().getLatestBlockhash(Commitment.CONFIRMED)
-            tx.message.recentBlockhash = blockhash
+        if (tx.onlyOneSigner() &&
+            (tx.message.recentBlockhash.isBlank() ||
+                    tx.message.recentBlockhash == holder.publicKey.toBase58())) { // inner transfer use address as temp blockhash
+            tx.message.recentBlockhash = getBlockhash()
         }
         tx.sign(holder)
         return tx
-    }
-
-    fun sendSolanaTransaction(tx: org.sol4k.VersionedTransaction): String {
-        val hash = getSolanaRpc().sendTransaction(tx.serialize())
-        Timber.d("sendTransaction $hash")
-        return hash
     }
 
     fun solanaSignIn(
@@ -338,14 +387,11 @@ object JsSigner {
     }
 }
 
-fun getSolanaRpc(): Connection =
-    Connection(MixinApplication.appContext.defaultSharedPreferences.getString(Chain.Solana.chainId, null) ?: RpcUrl.MAINNNET.value)
-
-fun VersionedTransaction.throwIfAnyMaliciousInstruction() {
+fun VersionedTransactionCompat.throwIfAnyMaliciousInstruction() {
     val accounts = message.accounts
     for (i in message.instructions) {
         val program = accounts[i.programIdIndex]
-        if (program != Constants.TOKEN_PROGRAM_ID) {
+        if (program != ConstantsSolana.TOKEN_PROGRAM_ID) {
             continue
         }
         val d = Buffer()

@@ -19,7 +19,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.maxLeftAmount
 import one.mixin.android.web3.js.JsSignMessage
@@ -105,16 +104,7 @@ class StakeFragment : BaseFragment() {
                 requireActivity(),
                 signMessage,
                 onTxhash = { _, serializedTx ->
-                    lifecycleScope.launch {
-                        val txStateFragment =
-                            TransactionStateFragment.newInstance(serializedTx, null).apply {
-                                setCloseAction {
-                                    parentFragmentManager.popBackStackImmediate()
-                                    parentFragmentManager.popBackStackImmediate()
-                                }
-                            }
-                        navTo(txStateFragment, TransactionStateFragment.TAG)
-                    }
+
                 },
             )
         }

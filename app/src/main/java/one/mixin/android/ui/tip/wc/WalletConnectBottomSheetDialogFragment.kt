@@ -29,15 +29,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -48,6 +48,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
+import one.mixin.android.tip.wc.WalletConnectV2.getNamespaceProposal
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -55,7 +56,6 @@ import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.getChainByChainId
-import one.mixin.android.tip.wc.internal.walletConnectChainIdMap
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
@@ -67,14 +67,19 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
+import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
+import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
@@ -133,6 +138,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var account: String by mutableStateOf("")
     private var signedTransactionData: Any? = null
 
+    @Inject
+    lateinit var rpc: Rpc
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -140,6 +148,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            roundTopOrBottom(11.dp.toFloat(), top = true, bottom = false)
             step =
                 when (requestType) {
                     RequestType.Connect -> Step.Connecting
@@ -264,7 +273,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 RequestType.SessionProposal -> {
                     sessionProposal =
                         viewModel.getV2SessionProposal(topic)?.apply {
-                            requiredNamespaces.values.firstOrNull()?.chains?.firstOrNull()?.getChain()?.let { chain = it }
+                            this.getNamespaceProposal()?.chains?.firstOrNull {
+                                c -> c.getChain() != null
+                            }?.getChain()?.let { chain = it }
                         }
                 }
                 RequestType.SessionRequest -> {
@@ -278,9 +289,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             account =
                 if (chain != Chain.Solana) {
-                    PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                    JsSigner.evmAddress
                 } else {
-                    PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                    JsSigner.solanaAddress
                 }
 
             if (requestType != RequestType.SessionRequest) return@launch
@@ -308,7 +319,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val m = signData.signMessage
             if (m is WCEthereumTransaction) {
                 refreshEstimatedGasAndAsset(chain)
-            } else if (m is VersionedTransaction) {
+            } else if (m is VersionedTransactionCompat) {
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
                 try {
                     m.throwIfAnyMaliciousInstruction()
@@ -323,7 +334,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         val tx = signData.signMessage
         if (tx !is WCEthereumTransaction) return
-        val assetId = walletConnectChainIdMap[chain.symbol]
+        val assetId = chain.getWeb3ChainId()
         if (assetId == null) {
             Timber.d("$TAG refreshEstimatedGasAndAsset assetId not support")
             return
@@ -334,10 +345,25 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 if (version == WalletConnect.Version.V2) {
                     try {
-                        tipGas = withContext(Dispatchers.IO) {
-                            buildTipGas(chain.chainId, chain, tx)
-                        } ?: return@onEach
-                        (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                        val r =
+                            viewModel.estimateFee(
+                                EstimateFeeRequest(
+                                    assetId,
+                                    tx.data,
+                                    tx.from,
+                                    tx.to,
+                                )
+                            )
+                        if (r.isSuccess.not()){
+                            step = Step.Error
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                            tipGas = null
+                        } else {
+                            tipGas = buildTipGas(chain.chainId, r.data!!)
+                        }
+                        if (tipGas != null) {
+                            (signData as? WalletConnect.WCSignData.V2SignData)?.tipGas = tipGas
+                        }
                     } catch (e: Exception) {
                         Timber.e(e)
                     }
@@ -368,7 +394,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     withContext(Dispatchers.IO) {
                                         val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@withContext "sessionRequest is null"
                                         val signedTransactionData = this@WalletConnectBottomSheetDialogFragment.signedTransactionData ?: return@withContext "signedTransactionData is null"
-                                        viewModel.sendTransaction(signedTransactionData, chain, sessionRequest)
+                                        viewModel.sendTransaction(signedTransactionData, chain, sessionRequest, account, null)
                                     }
                                 if (sendError == null) {
                                     processCompleted = true
@@ -396,7 +422,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
 
-    private fun approveWithPriv(priv: ByteArray): String? {
+    private suspend fun approveWithPriv(priv: ByteArray): String? {
         when (version) {
             WalletConnect.Version.V2 -> {
                 when (requestType) {
@@ -406,7 +432,13 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     }
                     RequestType.SessionRequest -> {
                         val signData = this.signData ?: return "SignData is null"
-                        signedTransactionData = WalletConnectV2.approveRequest(priv, chain, topic, signData)
+                        signedTransactionData = WalletConnectV2.approveRequest(priv, chain, topic, signData, {
+                            val latestBlockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
+                            return@approveRequest latestBlockhash
+                        }, { address ->
+                            val nonce = rpc.nonceAt(chain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
+                            return@approveRequest nonce
+                        })
                     }
                 }
             }

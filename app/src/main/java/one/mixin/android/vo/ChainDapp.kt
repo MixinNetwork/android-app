@@ -8,7 +8,4 @@ class ChainDapp(
     @SerializedName("rpc_urls")
     val rpcUrls: List<String>,
     val dapps: List<Dapp>,
-
-    @Deprecated("use rpcUrls")
-    val rpc: String,
 )

@@ -61,7 +61,9 @@ data class Account(
     @SerializedName("system")
     val system: AppVersion?,
     @SerializedName("salt_exported_at")
-    val saltExportedAt: String?
+    val saltExportedAt: String?,
+    @SerializedName("level")
+    val level: Int?,
 )
 
 fun Account.toUser(): User {

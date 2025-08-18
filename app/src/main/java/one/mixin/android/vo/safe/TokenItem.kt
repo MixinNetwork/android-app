@@ -23,18 +23,18 @@ data class TokenItem(
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
-    val changeUsd: String,
+    var changeUsd: String,
     val changeBtc: String,
     var hidden: Boolean?,
     val confirmations: Int,
     var chainIconUrl: String?,
     var chainSymbol: String?,
     var chainName: String?,
-    var chainPriceUsd: String?,
     val assetKey: String?,
     val dust: String?,
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
     val collectionHash: String?,
+    val level: Int?,
 ) : Parcelable, Swappable {
     fun fiat(): BigDecimal {
         return try {
@@ -49,13 +49,6 @@ data class TokenItem(
             BigDecimal.ZERO
         } else {
             BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
-        }
-
-    fun chainPriceFiat(): BigDecimal =
-        if (chainPriceUsd == null || chainPriceUsd == "0") {
-            BigDecimal.ZERO
-        } else {
-            BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
         }
 
     fun btc(): BigDecimal =
@@ -74,7 +67,8 @@ data class TokenItem(
 
     override fun toSwapToken(): SwapToken {
         return SwapToken(
-            address = "",
+            walletId = null,
+            address = assetKey ?: "",
             assetId = assetId,
             decimals = 0,
             name = name,
@@ -83,7 +77,6 @@ data class TokenItem(
             chain =
             SwapChain(
                 chainId = chainId,
-                decimals = 0,
                 name = chainName ?: "",
                 symbol = chainSymbol ?: "",
                 icon = chainIconUrl ?: "",
@@ -115,6 +108,8 @@ data class TokenItem(
                     oldItem == newItem
             }
     }
+
+
 }
 
 fun TokenItem.toPriceAndChange(): PriceAndChange {

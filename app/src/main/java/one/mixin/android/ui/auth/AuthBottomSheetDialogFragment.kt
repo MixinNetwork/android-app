@@ -40,6 +40,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
@@ -142,6 +143,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
             setContent {
                 AuthBottomSheetDialogCompose(
                     name = "$appName($appNumber)",

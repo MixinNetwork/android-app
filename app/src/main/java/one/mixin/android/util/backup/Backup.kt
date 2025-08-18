@@ -16,7 +16,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deleteOnExists
@@ -67,10 +66,8 @@ suspend fun backup(
     val copyPath = "$backupDir${File.separator}$tmpName"
     var result: File? = null
     try {
-        runInTransaction {
-            MixinDatabase.checkPoint()
-            result = dbFile.copyTo(File(copyPath), overwrite = true)
-        }
+        MixinDatabase.checkPoint()
+        result = dbFile.copyTo(File(copyPath), overwrite = true)
         context.getOldBackupPath(false)?.deleteRecursively()
     } catch (e: Exception) {
         result?.delete()
@@ -103,6 +100,8 @@ suspend fun backup(
         db.execSQL("DELETE FROM jobs")
         db.execSQL("DELETE FROM flood_messages")
         db.execSQL("DELETE FROM offsets")
+        db.execSQL("DELETE FROM outputs")
+        db.execSQL("DELETE FROM tokens_extra")
     } catch (ignored: Exception) {
         Timber.e(ignored)
     } finally {
@@ -207,10 +206,8 @@ suspend fun backupApi29(
         val tmpFile = File(context.getMediaPath(), DB_NAME)
         try {
             val inputStream = dbFile.inputStream()
-            runInTransaction {
-                MixinDatabase.checkPoint()
-                tmpFile.outputStream().use { output -> inputStream.copyTo(output) }
-            }
+            MixinDatabase.checkPoint()
+            tmpFile.outputStream().use { output -> inputStream.copyTo(output) }
             var db: SQLiteDatabase? = null
             try {
                 db =
@@ -233,6 +230,8 @@ suspend fun backupApi29(
                 db.execSQL("DELETE FROM jobs")
                 db.execSQL("DELETE FROM flood_messages")
                 db.execSQL("DELETE FROM offsets")
+                db.execSQL("DELETE FROM outputs")
+                db.execSQL("DELETE FROM tokens_extra")
             } catch (ignored: Exception) {
             } finally {
                 db.close()

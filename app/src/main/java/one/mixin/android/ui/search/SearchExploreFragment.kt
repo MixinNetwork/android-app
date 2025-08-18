@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.View
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +15,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -46,6 +48,7 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -80,6 +83,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
     private val binding by viewBinding(FragmentSearchExploreBinding::bind)
 
+    @ExperimentalLayoutApi
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -130,11 +134,15 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         searchAdapter.onItemClickListener =
             object : SearchFragment.OnSearchClickListener {
                 override fun onUserClick(user: User) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onUserClick(user: MaoUser) {
-                    // do noting
+                    // do nothing
+                }
+
+                override fun onMaoAppClick(userId: String) {
+                    // do nothing
                 }
 
                 override fun onBotClick(bot: SearchBot) {
@@ -144,15 +152,15 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onAssetClick(tokenItem: TokenItem) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onDappClick(dapp: Dapp) {
@@ -161,7 +169,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onTipClick() {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onMarketClick(market: Market) {
@@ -178,7 +186,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
-                    // do noting
+                    // do nothing
                     return false
                 }
             }
@@ -253,7 +261,9 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     }
 
     private fun fuzzySearch(keyword: String?) =
-        lifecycleScope.launch {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, e ->
+            Timber.e(e)
+        }) {
             if (viewDestroyed()) return@launch
             if (keyword.isNullOrBlank()) {
                 binding.va.displayedChild = 2

@@ -190,10 +190,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
-        hedwig.takeOff()
-        startObserveAck()
-        startObserveStatus()
-        startObserveExpired()
+        lifecycleScope.launch(Dispatchers.IO) {
+            hedwig.takeOff()
+            startObserveAck()
+            startObserveStatus()
+            startObserveExpired()
+        }
         runExpiredJob()
         networkUtil.setListener(this)
         if (disposable == null) {
@@ -253,7 +255,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     override fun onDestroy() {
         super.onDestroy()
-        hedwig.land()
+        lifecycleScope.launch(Dispatchers.IO) {
+            hedwig.land()
+        }
         stopObserveAck()
         stopObserveStatus()
         stopObserveExpired()

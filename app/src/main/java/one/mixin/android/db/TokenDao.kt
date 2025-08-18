@@ -3,14 +3,18 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.TokenEntry
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.UnifiedAssetItem
 
 @Dao
 interface TokenDao : BaseDao<Token> {
@@ -20,20 +24,22 @@ interface TokenDao : BaseDao<Token> {
             SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance,
             a1.price_btc AS priceBtc, a1.price_usd AS priceUsd,
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
-            a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName, a2.price_usd as chainPriceUsd,
+            a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName,
             a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash 
             FROM tokens a1 
-            LEFT JOIN tokens a2 ON a1.chain_id = a2.asset_id
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
         const val POSTFIX =
-            " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, a1.rowid DESC"
+            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, a1.rowid DESC"
         const val POSTFIX_ASSET_ITEM =
-            " ORDER BY ae.balance * a1.price_usd DESC, cast(ae.balance AS REAL) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
+            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE ae.hidden IS NULL OR NOT ae.hidden $POSTFIX_ASSET_ITEM"
     }
+
+    @Query("$PREFIX_ASSET_ITEM")
+    fun assetFlow(): Flow<List<TokenItem>>
 
     @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
     fun assets(): LiveData<List<Token>>
@@ -81,6 +87,9 @@ interface TokenDao : BaseDao<Token> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
     fun assetItemsNotHidden(): LiveData<List<TokenItem>>
+
+    @RawQuery
+    fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
@@ -132,8 +141,9 @@ interface TokenDao : BaseDao<Token> {
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
     suspend fun findAssetItemsWithBalance(): List<TokenItem>
 
-    @Query("SELECT icon_url FROM tokens WHERE asset_id = :id")
-    suspend fun getIconUrl(id: String): String?
+    @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) $POSTFIX_ASSET_ITEM")
+    suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem>
+
 
     @Query("SELECT asset_id FROM tokens WHERE asset_id = :id")
     fun checkExists(id: String): String?
@@ -176,4 +186,13 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("SELECT count(1) FROM tokens WHERE rowid > :rowId")
     fun countTokens(rowId: Long): Long
+
+    @Query(
+        """SELECT a1.* FROM tokens a1 
+           LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
+           WHERE a1.asset_id IN (:usdIds) AND a1.asset_id != :excludeId 
+           ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC 
+           LIMIT 1"""
+    )
+    suspend fun findTopUsdBalanceAsset(usdIds: List<String>, excludeId: String): Token?
 }

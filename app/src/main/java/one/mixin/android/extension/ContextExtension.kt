@@ -27,6 +27,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -78,6 +79,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -127,7 +129,7 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 }
 
 fun Context.isScreenWideColorGamut(): Boolean {
-    return resources.configuration.isScreenWideColorGamut()
+    return runCatching { resources.configuration.isScreenWideColorGamut }.getOrDefault(false)
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater
@@ -273,6 +275,43 @@ fun Context.vibrate(
     }
 }
 
+
+fun Context.startVibration(
+    effect: VibrationEffect? = null,
+    pattern: LongArray = longArrayOf(0, 1000), 
+) {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    if (effect != null && Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(effect)
+    } else if (Build.VERSION.SDK_INT >= 26) {
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, 0))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(pattern, -1)
+    }
+}
+
+fun Context.stopVibration() {
+    val vibrator =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
+    vibrator.cancel()
+}
+
 fun Context.tickVibrate() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         vibrate(VibrationEffect.createPredefined(EFFECT_TICK))
@@ -376,12 +415,21 @@ fun Context.appCompatActionBarHeight(): Int {
     theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
     return resources.getDimensionPixelSize(tv.resourceId)
 }
-
-@Suppress("DEPRECATION")
 fun Context.networkConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val activeNetwork = connectivityManager.activeNetworkInfo ?: return false
-    return activeNetwork.isConnectedOrConnecting
+    return isInternetConnectivityValidated(connectivityManager)
+}
+
+private fun isInternetConnectivityValidated(connectivityManager: ConnectivityManager): Boolean {
+    val activeNetwork = connectivityManager.activeNetwork ?: return false
+    return try {
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true ||
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+    } catch (e: SecurityException) {
+        // Workaround for https://issuetracker.google.com/issues/175055271.
+        true
+    }
 }
 
 fun Context.realSize(): Point {
@@ -978,6 +1026,17 @@ fun supportsOreo(
     }
 }
 
+fun supportsVanillaIceCream(
+    code: () -> Unit,
+    elseAction: (() -> Unit),
+) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        code()
+    } else {
+        elseAction.invoke()
+    }
+}
+
 @SuppressLint("ObsoleteSdkInt")
 inline fun supportsNougat(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -1003,10 +1062,8 @@ fun Context.isFirebaseDecodeAvailable() =
 fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
-        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
-        Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.deposit_tip_eos)
         Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
-        else -> getString(R.string.deposit_tip_common, asset.symbol)
+        else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey?:""))
     }
 
 fun Context.showConfirmDialog(
@@ -1144,7 +1201,7 @@ fun PackageManager.getPackageInfoCompat(
     }
 
 fun Context.openMarket() {
-    if (isPlayStoreInstalled()) {
+    if (BuildConfig.IS_GOOGLE_PLAY && isPlayStoreInstalled()) {
         try {
             val intent = Intent(Intent.ACTION_VIEW)
             intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")

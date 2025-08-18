@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.view.View
 import android.webkit.WebViewClient
 import androidx.annotation.ColorInt
+import androidx.annotation.MainThread
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -208,4 +209,11 @@ fun releaseAll() {
     saveJob = null
     MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
     FloatingWebClip.getInstance().hide()
+}
+
+@MainThread
+fun reloadWebViewInClips() {
+    clips.forEach { clip ->
+        clip.webView?.reload()
+    }
 }

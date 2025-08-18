@@ -44,6 +44,7 @@ import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import javax.inject.Inject
@@ -68,6 +69,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().isOnline.set(true)
+        AnalyticsTracker.trackLoginSignalInit()
         checkAndLoad()
     }
 
@@ -115,7 +117,8 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 if (deviceId == null) {
                     deviceId = requireActivity().getStringDeviceId()
                 }
-                TipActivity.show(requireActivity(), TipBundle(TipType.Create, deviceId, TryConnecting, null))
+                val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
+                TipActivity.show(requireActivity(), tipType, shouldWatch = true)
             }
             activity?.finish()
         }

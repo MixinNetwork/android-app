@@ -9,13 +9,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
-import one.mixin.android.MixinApplication
+import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
@@ -64,7 +63,11 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_59_60
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_60_61
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_61_62
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_62_63
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_63_64
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_64_65
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_65_66
 import one.mixin.android.db.converter.DepositEntryListConverter
+import one.mixin.android.db.converter.FiatOrderConverter
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
@@ -121,6 +124,7 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
+import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -181,11 +185,25 @@ import kotlin.math.min
         (MarketCoin::class),
         (MarketFavored::class),
         (Alert::class),
-        (MarketCapRank::class)
+        (MarketCapRank::class),
+        (SwapOrder::class),
+        (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(MessageStatusConverter::class, DepositEntryListConverter::class, WithdrawalMemoPossibilityConverter::class, SafeDepositConverter::class, SafeWithdrawalConverter::class, RawTransactionTypeConverter::class, OutputStateConverter::class, TreasuryConverter::class, PriceListConverter::class, MembershipConverter::class)
+@TypeConverters(
+    MessageStatusConverter::class,
+    DepositEntryListConverter::class,
+    WithdrawalMemoPossibilityConverter::class,
+    SafeDepositConverter::class,
+    SafeWithdrawalConverter::class,
+    RawTransactionTypeConverter::class,
+    OutputStateConverter::class,
+    TreasuryConverter::class,
+    PriceListConverter::class,
+    MembershipConverter::class,
+    FiatOrderConverter::class
+)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
 
@@ -277,6 +295,10 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
+    abstract fun swapOrderDao(): SwapOrderDao
+
+    abstract fun memberOrderDao(): MembershipOrderDao
+
     companion object {
         private var INSTANCE: MixinDatabase? = null
 
@@ -356,6 +378,9 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_60_61,
                                 MIGRATION_61_62,
                                 MIGRATION_62_63,
+                                MIGRATION_63_64,
+                                MIGRATION_64_65,
+                                MIGRATION_65_66,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
@@ -431,12 +456,4 @@ abstract class MixinDatabase : RoomDatabase() {
                 }
             }
     }
-}
-
-fun runInTransaction(block: () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
-}
-
-suspend fun withTransaction(block: suspend () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
 }

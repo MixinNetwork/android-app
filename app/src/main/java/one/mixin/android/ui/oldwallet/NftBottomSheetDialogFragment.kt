@@ -138,7 +138,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         val t = this.t
         return BiometricInfo(
             requireContext().getString(
-                if (t.action == SignatureAction.unlock.name) {
+                if (t.action == SignatureAction.revoke.name) {
                     R.string.Revoke_multisig_transaction
                 } else {
                     R.string.Multisig_Transaction
@@ -155,7 +155,7 @@ class NftBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             SignatureAction.sign.name -> {
                 bottomViewModel.signCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestSign(t.requestId)))
             }
-            SignatureAction.unlock.name -> {
+            SignatureAction.revoke.name -> {
                 bottomViewModel.unlockCollectibleTransfer(t.requestId, getRequest(TipBody.forCollectibleRequestUnlock(t.requestId)))
             }
             else -> {

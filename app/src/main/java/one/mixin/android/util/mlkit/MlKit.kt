@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.isLowDisk
 import one.mixin.android.util.reportException
+import timber.log.Timber
 
 private val mlExtractor by lazy {
     return@lazy try {
@@ -17,7 +18,7 @@ private val mlExtractor by lazy {
             EntityExtractorOptions.Builder(EntityExtractorOptions.ENGLISH).build(),
         )
     } catch (e: Exception) {
-        reportException(e)
+        Timber.e(e)
         null
     }
 }
@@ -30,7 +31,7 @@ suspend fun entityInitialize() {
                 Tasks.await(extractor.downloadModelIfNeeded(DownloadConditions.Builder().build()))
             }
         } catch (e: Exception) {
-            reportException(e)
+            Timber.e(e)
         }
     }
 }
@@ -47,7 +48,7 @@ suspend fun firstUrl(input: String): String? =
                 null
             }
         } catch (e: Throwable) {
-            reportException("MLKit firstUrl", e)
+            Timber.e(e)
             return@withContext null
         }
     }

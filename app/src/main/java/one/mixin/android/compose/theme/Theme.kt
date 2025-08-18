@@ -1,6 +1,9 @@
 package one.mixin.android.compose.theme
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.ExperimentalMaterialApi
@@ -13,15 +16,14 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
-import java.util.Locale
 
 val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 
@@ -35,6 +37,7 @@ class AppColors(
     val textBlue: Color = Color(0xFF3D75E3),
     val icon: Color,
     val iconGray: Color,
+    val iconAction: Color,
     val backgroundWindow: Color,
     val background: Color,
     val backgroundDark: Color,
@@ -68,6 +71,11 @@ class AppColors(
     val bgGradientStart: Color,
     val bgGradientEnd: Color,
     val borderColor: Color,
+    val walletBlue: Color,
+    val walletYellow: Color,
+    val walletPurple: Color,
+    val badgeRed: Color,
+    val warning: Color,
 )
 
 class AppDrawables(
@@ -93,6 +101,7 @@ private val LightColorPalette =
         textRemarks = Color(0xFFB3B3B3),
         icon = Color(0xFF000000),
         iconGray = Color(0xFFD2D4DA),
+        iconAction = Color(0xFF9B9B9B),
         backgroundWindow = Color(0xFFF6F7FA),
         background = Color(0xFFFFFFFF),
         backgroundDark = Color(0xFF999999),
@@ -105,6 +114,11 @@ private val LightColorPalette =
         bgGradientStart = Color(0xFFFFFFFF),
         bgGradientEnd = Color(0xFFE7EFFF),
         borderColor = Color(0xFFE5E8EE),
+        walletBlue = Color(0xFF1A73E8),
+        walletYellow = Color(0xFFFFC107),
+        walletPurple = Color(0xFF9C27B0),
+        badgeRed = Color(0xFFDB454F),
+        warning = Color(0xFFF6A417),
     )
 
 private val DarkColorPalette =
@@ -117,6 +131,7 @@ private val DarkColorPalette =
         textRemarks = Color(0xFF6E7073),
         icon = Color(0xFFEAEAEB),
         iconGray = Color(0xFF808691),
+        iconAction = Color(0xFFFFFFFF),
         backgroundWindow = Color(0xFF23272B),
         background = Color(0xFF2c3136),
         backgroundDark = Color(0xFF121212),
@@ -129,6 +144,11 @@ private val DarkColorPalette =
         bgGradientStart = Color(0xFF2C3136),
         bgGradientEnd = Color(0xFF1C2029),
         borderColor = Color(0xFF6E7073),
+        walletBlue = Color(0xFF64B5F6),
+        walletYellow = Color(0xFFFFEE58),
+        walletPurple = Color(0xFFBA68C8),
+        badgeRed = Color(0xFFF67070),
+        warning = Color(0xFFF6A417),
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
@@ -136,6 +156,7 @@ private val LocalColors = compositionLocalOf { LightColorPalette }
 @Composable
 fun MixinAppTheme(
     darkTheme: Boolean = MixinApplication.get().isNightMode(),
+    skip: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors =
@@ -152,8 +173,8 @@ fun MixinAppTheme(
 
     @OptIn(ExperimentalMaterialApi::class)
     val rippleConfiguration = RippleConfiguration(
-        color = Color.White,
-        rippleAlpha = RippleDefaults.rippleAlpha(Color.White, true),
+        color = if (darkTheme) Color.White else Color.LightGray,
+        rippleAlpha = RippleDefaults.rippleAlpha(if (darkTheme) Color.White else Color.LightGray, !darkTheme),
     )
 
     @OptIn(ExperimentalMaterialApi::class)
@@ -163,9 +184,18 @@ fun MixinAppTheme(
         CompositionLocalProvider(
             LocalColors provides colors,
             LocalTextSelectionColors provides textSelectionColors,
-            LocalRippleConfiguration provides rippleConfiguration,
-            content = content,
-        )
+            LocalRippleConfiguration provides rippleConfiguration
+        ) {
+            if (skip) {
+                content()
+            } else {
+                Box(modifier = Modifier
+                    .background(colors.background)
+                    .systemBarsPadding()) {
+                    content()
+                }
+            }
+        }
     }
 }
 

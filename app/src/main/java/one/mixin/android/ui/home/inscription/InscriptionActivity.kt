@@ -35,9 +35,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
@@ -248,7 +249,7 @@ class InscriptionActivity : BaseActivity() {
         _bottomBinding = ViewInscriptionMenuBinding.bind(View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_inscription_menu, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
-        val isOwner = inscriptionState.state == "unspent"
+        val isOwner = inscriptionState.state == "unspent" || inscriptionState.state == "pending"
         val isImage = inscriptionState.contentType?.startsWith("image", true) == true
         bottomBinding.setAvatarTv.isVisible = isOwner && isImage
         bottomBinding.saveTv.isVisible = isOwner && isImage
@@ -342,8 +343,8 @@ class InscriptionActivity : BaseActivity() {
         }
         val request =
             ImageRequest.Builder(applicationContext)
-                .data(url)
                 .allowHardware(false) // Disable hardware bitmaps since we're getting a Bitmap
+                .data(url)
                 .build()
 
         val result = applicationContext.imageLoader.execute(request)

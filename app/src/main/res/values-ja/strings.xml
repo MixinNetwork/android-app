@@ -296,8 +296,6 @@
     <string name="deposit_notice">%1$sをあなたのアドレスに入金するためには、メモと入金先アドレスの両方の記入が必要です</string>
     <string name="deposit_tip_btc">このアドレスはビットコインのみサポートしています</string>
     <string name="deposit_tip_common">このアドレスは%1$sのみサポートしています</string>
-    <string name="deposit_tip_eos">このアドレスはEOSベースの全てのトークンをサポートしています</string>
-    <string name="deposit_tip_eth">このアドレスはETHやXINなど全てのERC-20トークンをサポートしています</string>
     <string name="deposit_tip_trx">このアドレスは全てのTRC-10/TRC-20トークンをサポートしています</string>
     <string name="desktop">デスクトップ</string>
     <string name="desktop_login_no_pin">アカウントの安全を保つために、デスクトップアプリにログインする前にPINコードを設定してください</string>
@@ -468,7 +466,7 @@
     </plurals>
     <string name="I_know">わかりました</string>
     <string name="Immediately">すぐに</string>
-    <string name="Import">インポート</string>
+    <string name="Import_Chat">インポート</string>
     <string name="in_connecting">接続中…</string>
     <string name="Incognito_Keyboard">シークレットキーボード</string>
     <string name="Incoming_voice_call">着信</string>

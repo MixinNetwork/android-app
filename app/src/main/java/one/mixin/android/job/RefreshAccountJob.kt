@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
@@ -13,6 +14,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
@@ -32,6 +34,13 @@ class RefreshAccountJob(
             if (response != null && response.isSuccess && response.data != null) {
                 val account = response.data ?: return@runBlocking
                 updateAccount(account)
+                if (account.membership?.isMembership() == true) {
+                    RxBus.publish(MembershipEvent())
+                }
+                if (checkTip) { // from home page
+                    AnalyticsTracker.setHasEmergencyContact(account)
+                    AnalyticsTracker.setMembership(account)
+                }
 
                 if (checkTip && !tipCounterSynced.synced) {
                     tip.checkCounter(
