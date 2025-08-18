@@ -15,7 +15,7 @@ class CheckBalanceJob(
     ) {
     companion object {
         private const val serialVersionUID = 1L
-        private const val BALANCE_LIMIT = 3
+        private const val BALANCE_LIMIT = 100
         const val TAG = "CheckBalanceJob"
     }
 
