@@ -15,7 +15,7 @@ class CheckBalanceJob(
     ) {
     companion object {
         private const val serialVersionUID = 1L
-        private const val BALANCE_LIMIT = 100
+        private const val BALANCE_LIMIT = 3
         const val TAG = "CheckBalanceJob"
     }
 
@@ -56,9 +56,9 @@ class CheckBalanceJob(
 
         while (true) {
             val outputs = if (offset == 0) {
-                outputDao.findUnspentOutputsByAsset(BALANCE_LIMIT, asset)
+                outputDao.findUnspentOutputsByAssetOrderByRowId(BALANCE_LIMIT, asset)
             } else {
-                outputDao.findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
+                outputDao.findUnspentOutputsByAssetOrderByRowIdOffset(BALANCE_LIMIT, asset, offset)
             }
             if (outputs.isEmpty()) break
             total += outputs.sumOf { BigDecimal(it.amount) }
