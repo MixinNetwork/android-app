@@ -434,7 +434,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     withContext(Dispatchers.Main) {
                         reloadWebViewInClips()
                     }
-                    PropertyHelper.updateKeyValue(JsSigner.Keys.SELECTED_WEB3_WALLET_ID, walletId)
                 }
             }
         }
@@ -613,7 +612,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 withContext(Dispatchers.Main) {
                     reloadWebViewInClips()
                 }
-                PropertyHelper.updateKeyValue(JsSigner.Keys.SELECTED_WEB3_WALLET_ID, JsSigner.classicWalletId)
             }
         }
     }

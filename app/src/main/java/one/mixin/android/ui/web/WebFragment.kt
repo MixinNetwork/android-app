@@ -1234,7 +1234,6 @@ class WebFragment : BaseFragment() {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-        JsSigner.reset()
         super.onDestroyView()
         _binding = null
     }
