@@ -20,14 +20,14 @@ interface OutputDao : BaseDao<Output> {
         asset: String,
     ): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY rowid ASC LIMIT :limit")
-    suspend fun findUnspentOutputsByAssetOrderByRowId(
+    @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY created_at ASC LIMIT :limit")
+    suspend fun findUnspentOutputsByAssetOrderByCreatedAt(
         limit: Int,
         asset: String,
     ): List<Output>
 
-    @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY rowid ASC LIMIT :limit OFFSET :offset")
-    suspend fun findUnspentOutputsByAssetOrderByRowIdOffset(
+    @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY created_at ASC LIMIT :limit OFFSET :offset")
+    suspend fun findUnspentOutputsByAssetOrderByCreatedAtOffset(
         limit: Int,
         asset: String,
         offset: Int,

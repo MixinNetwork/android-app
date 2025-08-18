@@ -56,9 +56,9 @@ class CheckBalanceJob(
 
         while (true) {
             val outputs = if (offset == 0) {
-                outputDao.findUnspentOutputsByAssetOrderByRowId(BALANCE_LIMIT, asset)
+                outputDao.findUnspentOutputsByAssetOrderByCreatedAt(BALANCE_LIMIT, asset)
             } else {
-                outputDao.findUnspentOutputsByAssetOrderByRowIdOffset(BALANCE_LIMIT, asset, offset)
+                outputDao.findUnspentOutputsByAssetOrderByCreatedAtOffset(BALANCE_LIMIT, asset, offset)
             }
             if (outputs.isEmpty()) break
             total += outputs.sumOf { BigDecimal(it.amount) }
