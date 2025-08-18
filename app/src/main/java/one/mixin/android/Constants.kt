@@ -134,7 +134,6 @@ object Constants {
             const val SOLANA_ADDRESS = "solana_address"
         }
 
-        const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
     }
 
     object Scheme {

@@ -988,7 +988,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         }
     }
 
-    private fun handleTipSignScheme(uri: Uri): Boolean {
+    private suspend fun handleTipSignScheme(uri: Uri): Boolean {
         val chain = uri.getQueryParameter("chain")
         if (chain.isNullOrBlank() || !chain.equals(JsSigner.JsSignerNetwork.Solana.name, true)) {
             return false
