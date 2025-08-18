@@ -43,6 +43,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
+import one.mixin.android.ui.common.PendingDepositRefreshHelper
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.swap.SwapActivity
@@ -89,6 +90,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     lateinit var asset: TokenItem
 
+    private var pendingDepositRefreshJob: kotlinx.coroutines.Job? = null
+
     private val fromMarket by lazy {
         requireArguments().getBoolean(ARGS_FROM_MARKET, false)
     }
@@ -100,9 +103,19 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     private var scrollY = 0
 
+    override fun onResume() {
+        super.onResume()
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.startRefreshData(
+            fragment = this,
+            walletViewModel = walletViewModel,
+            refreshJob = pendingDepositRefreshJob
+        )
+    }
+
     override fun onPause() {
         super.onPause()
         scrollY = binding.scrollView.scrollY
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.cancelRefreshData(pendingDepositRefreshJob)
     }
 
     override fun onViewCreated(
@@ -261,12 +274,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
 
         walletViewModel.refreshAsset(asset.assetId)
-        lifecycleScope.launch {
-            val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
-            if (depositEntry != null && depositEntry.destination.isNotBlank()) {
-                refreshPendingDeposits(asset, depositEntry)
-            }
-        }
     }
 
     private var snapshotItems: List<SnapshotItem> = emptyList()
@@ -274,47 +281,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     override fun onDestroyView() {
         _bottomBinding = null
         super.onDestroyView()
-    }
-
-    private fun refreshPendingDeposits(
-        asset: TokenItem,
-        depositEntry: DepositEntry,
-    ) {
-        if (viewDestroyed()) return
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = {
-                    walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
-                },
-                exceptionBlock = { e ->
-                    reportException(e)
-                    false
-                },
-                successBlock = { list ->
-                    withContext(Dispatchers.IO) {
-                        val pendingDeposits = list.data ?: emptyList()
-                        val destinationTags = walletViewModel.findDepositEntryDestinations()
-                        pendingDeposits.filter { pd ->
-                            destinationTags.any { dt ->
-                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
-                            }
-                        }.map { pd -> pd.toSnapshot() }.let { snapshots ->
-                            // If there are no pending deposit snapshots belonging to the current user, clear token pending deposits
-                            if (snapshots.isEmpty()) {
-                                walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                                return@let
-                            }
-                            lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct().forEach {
-                                    walletViewModel.findOrSyncAsset(it)
-                                }
-                                walletViewModel.insertPendingDeposit(snapshots)
-                            }
-                        }
-                    }
-                },
-            )
-        }
     }
 
     @SuppressLint("InflateParams")

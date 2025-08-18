@@ -17,7 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_HAS_USED_BUY
@@ -42,6 +42,7 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PendingDepositRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
@@ -81,6 +82,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private var assets: List<TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
 
+    private var pendingDepositRefreshJob: Job? = null
     private var distance = 0
     private var snackBar: Snackbar? = null
 
@@ -243,7 +245,16 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         jobManager.addJobInBackground(RefreshTokensJob())
         jobManager.addJobInBackground(RefreshSnapshotsJob())
         jobManager.addJobInBackground(SyncOutputJob())
-        refreshAllPendingDeposit()
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.startRefreshData(
+            fragment = this,
+            walletViewModel = walletViewModel,
+            refreshJob = pendingDepositRefreshJob
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.cancelRefreshData(pendingDepositRefreshJob)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -253,40 +264,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             jobManager.addJobInBackground(SyncOutputJob())
         }
     }
-
-    private fun refreshAllPendingDeposit() =
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = { walletViewModel.allPendingDeposit() },
-                exceptionBlock = { e ->
-                    reportException(e)
-                    false
-                },
-                successBlock = {
-                    val pendingDeposits = it.data ?: emptyList()
-                    val destinationTags = walletViewModel.findDepositEntryDestinations()
-                    pendingDeposits
-                        .filter { pd ->
-                            destinationTags.any { dt ->
-                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
-                            }
-                        }
-                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
-                            // If there are no pending deposit snapshots belonging to the current user, clear all pending deposits
-                            if (snapshots.isEmpty()) {
-                                walletViewModel.clearAllPendingDeposits()
-                                return@let
-                            }
-                            lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct().forEach {
-                                    walletViewModel.findOrSyncAsset(it)
-                                }
-                                walletViewModel.insertPendingDeposit(snapshots)
-                            }
-                        }
-                },
-            )
-        }
 
     private var lastFiatCurrency :String? = null
 
