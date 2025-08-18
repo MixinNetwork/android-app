@@ -957,8 +957,17 @@ class WebFragment : BaseFragment() {
                     onEmptyAddress = { network ->
                         lifecycleScope.launch {
                             if (viewDestroyed()) return@launch
-
-                            WalletUnlockBottomSheetDialogFragment.getInstance(network).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            if (network.equals("solana", true)) {
+                                if (JsSigner.solanaAddress.isEmpty()) {
+                                    toast(getString(R.string.not_support_network, network))
+                                }
+                            } else if (network.equals("ethereum", true)) {
+                                if (JsSigner.evmAddress.isEmpty()) {
+                                    toast(getString(R.string.not_support_network, network))
+                                }
+                            } else {
+                                WalletUnlockBottomSheetDialogFragment.getInstance(network).showIfNotShowing(parentFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
+                            }
                         }
                     },
                 ),
