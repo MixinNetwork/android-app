@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -290,7 +291,7 @@ fun ImportErrorContent(
                     stringResource(R.string.Import_Failed)
                 },
                 fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary
             )
 
@@ -303,8 +304,8 @@ fun ImportErrorContent(
                     errorMessage ?: stringResource(R.string.Import_Failed)
                 },
                 fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                color = MixinAppTheme.colors.red,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -339,7 +340,8 @@ fun ImportErrorContent(
                 ) {
                     Text(
                         text = stringResource(id = R.string.Done),
-                        color = MixinAppTheme.colors.accent
+                        color = MixinAppTheme.colors.accent,
+                        fontWeight = FontWeight.Medium,
                     )
                 }
             } else {
@@ -348,7 +350,8 @@ fun ImportErrorContent(
                 ) {
                     Text(
                         text = stringResource(id = R.string.Done),
-                        color = MixinAppTheme.colors.accent
+                        color = MixinAppTheme.colors.accent,
+                        fontWeight = FontWeight.Medium,
                     )
                 }
             }

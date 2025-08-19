@@ -322,6 +322,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleRl.requestLayout()
                     } ?: run {
                         binding.titleTv.setText(R.string.Common_Wallet)
                     }
@@ -339,6 +340,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Watch_Wallet) }
+                        binding.titleRl.requestLayout()
                     } ?: run {
                         binding.titleTv.setText(R.string.Watch_Wallet)
                         binding.tailIcon.isVisible = false
@@ -359,6 +361,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                             binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
                         }
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleRl.requestLayout()
                     } ?: run {
                         binding.titleTv.setText(R.string.Common_Wallet)
                         binding.tailIcon.isVisible = false
