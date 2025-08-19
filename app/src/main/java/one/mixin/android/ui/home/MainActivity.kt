@@ -57,7 +57,6 @@ import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_DEVICE_SDK
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
-import one.mixin.android.Constants.Account.PREF_SESSION_UPDATE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
@@ -107,7 +106,6 @@ import one.mixin.android.job.InscriptionMigrationJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshDappJob
@@ -451,13 +449,28 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkAsync() =
         lifecycleScope.launch(Dispatchers.IO) {
+            lifecycleScope.launch {
+                updateSessionIfNeeded()
+            }
+            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
+                6, TimeUnit.HOURS
+            ).setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            ).build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "SessionWorker",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                periodicWorkRequest
+            )
+
             checkRoot()
             checkStorage()
             checkVersion()
             refreshStickerAlbum()
             refreshExternalSchemes()
             cleanCache()
-            jobManager.addJobInBackground(RefreshAssetsJob())
             checkBatteryOptimization()
 
             if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
@@ -523,21 +536,6 @@ class MainActivity : BlazeBaseActivity() {
 
             jobManager.addJobInBackground(RefreshContactJob())
 
-            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
-                6, TimeUnit.HOURS
-            ).setConstraints(
-                Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build()
-            ).build()
-            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
-                "SessionWorker",
-                ExistingPeriodicWorkPolicy.UPDATE,
-                periodicWorkRequest
-            )
-            lifecycleScope.launch {
-                updateSessionIfNeeded()
-            }
 
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
@@ -561,13 +559,6 @@ class MainActivity : BlazeBaseActivity() {
         }
 
     private suspend fun updateSessionIfNeeded() {
-        val lastUpdateTime = defaultSharedPreferences.getLong(PREF_SESSION_UPDATE, 0)
-        val currentTime = System.currentTimeMillis()
-        if (lastUpdateTime > 0) {
-            Timber.d("Session update skipped, last update was ${(currentTime - lastUpdateTime) / (1000 * 60)} minutes ago")
-            return
-        }
-
         try {
             val account = Session.getAccount()
             if (account == null) {
@@ -577,7 +568,6 @@ class MainActivity : BlazeBaseActivity() {
 
             val response = accountRepo.updateSession(SessionRequest())
             if (response.isSuccess) {
-                defaultSharedPreferences.putLong(PREF_SESSION_UPDATE, currentTime)
                 Timber.e("Session updated successfully")
             } else if (response.errorCode >= SERVER) {
                 delay(1000)
