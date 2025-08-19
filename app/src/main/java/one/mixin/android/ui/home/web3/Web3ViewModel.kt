@@ -425,21 +425,11 @@ internal constructor(
         return web3Repository.getAddressesByChainId(walletId, chainId)
     }
 
-    suspend fun getClassicWalletId(): String? = web3Repository.getClassicWalletId()
-
-    suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
-
-    suspend fun findTokensByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
-        return@withContext web3Repository.findWeb3TokenItemsByIds(walletId, assetIds)
-    }
-
-    suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)
-
-    suspend fun getWalletName(walletId: String): String? = web3Repository.findWalletById(walletId)?.name
-
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    suspend fun getAllWallets() = web3Repository.getAllWallets()
 
     suspend fun getAddressesGroupedByDestination(walletId: String) = web3Repository.getAddressesGroupedByDestination(walletId)
 
