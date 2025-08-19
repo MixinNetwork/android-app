@@ -114,6 +114,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.compose.ItemContent
+import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.components.WalletLabel
@@ -470,7 +471,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account)
                                 })
                             } else {
-                                ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), self, null)
+                                ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
                             }
                             Box(modifier = Modifier.height(20.dp))
                             ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver, null)
