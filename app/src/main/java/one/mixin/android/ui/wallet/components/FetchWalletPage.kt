@@ -345,13 +345,26 @@ fun ImportErrorContent(
                     )
                 }
             } else {
-                TextButton(
+                Button(
                     onClick = onNotNow,
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MixinAppTheme.colors.accent
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(vertical = 12.dp),
+                    elevation = ButtonDefaults.elevation(
+                        pressedElevation = 0.dp,
+                        defaultElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                    ),
                 ) {
                     Text(
-                        text = stringResource(id = R.string.Done),
-                        color = MixinAppTheme.colors.accent,
-                        fontWeight = FontWeight.Medium,
+                        text = stringResource(R.string.Done),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
