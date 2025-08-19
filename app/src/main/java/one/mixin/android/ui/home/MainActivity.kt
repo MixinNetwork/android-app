@@ -21,7 +21,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -65,6 +67,7 @@ import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
@@ -103,7 +106,6 @@ import one.mixin.android.job.InscriptionMigrationJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshDappJob
@@ -168,6 +170,7 @@ import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
@@ -446,13 +449,26 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkAsync() =
         lifecycleScope.launch(Dispatchers.IO) {
+            updateSessionIfNeeded()
+            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
+                6, TimeUnit.HOURS
+            ).setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            ).build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "SessionWorker",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                periodicWorkRequest
+            )
+
             checkRoot()
             checkStorage()
             checkVersion()
             refreshStickerAlbum()
             refreshExternalSchemes()
             cleanCache()
-            jobManager.addJobInBackground(RefreshAssetsJob())
             checkBatteryOptimization()
 
             if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
@@ -518,14 +534,7 @@ class MainActivity : BlazeBaseActivity() {
 
             jobManager.addJobInBackground(RefreshContactJob())
 
-            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
-                6, TimeUnit.HOURS
-            ).build()
-            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
-                "SessionWorker",
-                ExistingPeriodicWorkPolicy.UPDATE,
-                periodicWorkRequest
-            )
+
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
@@ -546,6 +555,28 @@ class MainActivity : BlazeBaseActivity() {
               jobManager.addJobInBackground(RefreshWeb3Job())
             }
         }
+
+    private suspend fun updateSessionIfNeeded() {
+        try {
+            val account = Session.getAccount()
+            if (account == null) {
+                Timber.w("Session update failed: No active account")
+                return
+            }
+
+            val response = accountRepo.updateSession(SessionRequest())
+            if (response.isSuccess) {
+                Timber.e("Session updated successfully")
+            } else if (response.errorCode >= SERVER) {
+                delay(1000)
+                updateSessionIfNeeded()
+            } else {
+                Timber.e("Session update failed with error code: ${response.errorCode}")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating session")
+        }
+    }
 
     private fun handleTipEvent(
         e: TipEvent,

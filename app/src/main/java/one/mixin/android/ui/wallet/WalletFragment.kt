@@ -723,7 +723,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // 确保在销毁视图时取消钱包刷新任务
         walletRefreshJob = WalletRefreshHelper.cancelRefreshData(walletRefreshJob)
         _binding = null
         _privacyBottomBinding = null
