@@ -449,9 +449,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkAsync() =
         lifecycleScope.launch(Dispatchers.IO) {
-            lifecycleScope.launch {
-                updateSessionIfNeeded()
-            }
+            updateSessionIfNeeded()
             val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
                 6, TimeUnit.HOURS
             ).setConstraints(
