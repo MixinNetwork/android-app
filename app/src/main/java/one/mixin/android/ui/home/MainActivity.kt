@@ -576,7 +576,37 @@ class MainActivity : BlazeBaseActivity() {
                 Timber.e("Session update failed with error code: ${response.errorCode}")
             }
         } catch (e: Exception) {
-            Timber.e(e, "Error updating session")
+        val maxRetries = 5
+        var attempt = 0
+        while (attempt < maxRetries) {
+            try {
+                val account = Session.getAccount()
+                if (account == null) {
+                    Timber.w("Session update failed: No active account")
+                    return
+                }
+
+                val response = accountRepo.updateSession(SessionRequest())
+                if (response.isSuccess) {
+                    defaultSharedPreferences.putLong(PREF_SESSION_UPDATE, currentTime)
+                    Timber.e("Session updated successfully")
+                    return
+                } else if (response.errorCode >= SERVER) {
+                    attempt++
+                    if (attempt < maxRetries) {
+                        delay(1000)
+                        continue
+                    } else {
+                        Timber.e("Session update failed after $maxRetries attempts due to server error (error code: ${response.errorCode})")
+                    }
+                } else {
+                    Timber.e("Session update failed with error code: ${response.errorCode}")
+                    return
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error updating session")
+                return
+            }
         }
     }
 
