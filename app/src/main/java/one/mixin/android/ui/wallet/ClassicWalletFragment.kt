@@ -41,12 +41,11 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TokenJob
-import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PendingTransactionRefreshHelper
-import one.mixin.android.ui.common.WalletRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.refresh.PendingWeb3TransactionRefreshHelper
+import one.mixin.android.ui.common.refresh.WalletRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
@@ -54,7 +53,6 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.widget.PercentItemView
@@ -339,7 +337,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     fun update() {
-        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
         if (walletId.isEmpty().not()) {
             jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId))
         }
@@ -347,7 +344,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onResume() {
         super.onResume()
-        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+        refreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
             jobManager = jobManager,
@@ -362,7 +359,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onPause() {
         super.onPause()
-        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
+        refreshJob = PendingWeb3TransactionRefreshHelper.cancelRefreshData(refreshJob)
         refreshWalletJob = WalletRefreshHelper.cancelRefreshData(refreshJob)
     }
 

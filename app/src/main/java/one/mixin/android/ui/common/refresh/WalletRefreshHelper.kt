@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common
+package one.mixin.android.ui.common.refresh
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope

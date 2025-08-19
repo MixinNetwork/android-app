@@ -9,7 +9,6 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.pay.parseExternalTransferUri
@@ -30,7 +29,6 @@ import one.mixin.android.ui.conversation.link.CollectionBottomSheetDialogFragmen
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
-import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment

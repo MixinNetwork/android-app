@@ -53,7 +53,7 @@ import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PendingTransactionRefreshHelper
+import one.mixin.android.ui.common.refresh.PendingWeb3TransactionRefreshHelper
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.StakeAccountSummary
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -441,7 +441,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun onResume() {
         super.onResume()
-        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+        refreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
             jobManager = jobManager,
@@ -451,7 +451,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun onPause() {
         super.onPause()
-        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
+        refreshJob = PendingWeb3TransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     private suspend fun getStakeAccounts(address: String) {

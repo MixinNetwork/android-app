@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common
+package one.mixin.android.ui.common.refresh
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -12,7 +12,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.web3.js.JsSigner
 import timber.log.Timber
 
-object PendingTransactionRefreshHelper {
+object PendingWeb3TransactionRefreshHelper {
     
     fun startRefreshData(
         fragment: Fragment,

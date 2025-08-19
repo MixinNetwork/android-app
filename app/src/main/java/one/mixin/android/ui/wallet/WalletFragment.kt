@@ -51,7 +51,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
-import one.mixin.android.ui.common.WalletRefreshHelper
+import one.mixin.android.ui.common.refresh.WalletRefreshHelper
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen

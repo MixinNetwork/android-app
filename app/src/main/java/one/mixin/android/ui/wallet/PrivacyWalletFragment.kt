@@ -24,7 +24,6 @@ import one.mixin.android.Constants.Account.PREF_HAS_USED_BUY
 import one.mixin.android.Constants.Account.PREF_HAS_USED_SWAP
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.event.BadgeEvent
@@ -42,17 +41,15 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PendingDepositRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.refresh.PendingDepositRefreshHelper
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent

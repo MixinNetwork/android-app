@@ -34,7 +34,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.PendingDepositRefreshHelper
+import one.mixin.android.ui.common.refresh.PendingDepositRefreshHelper
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT

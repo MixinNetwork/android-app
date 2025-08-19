@@ -49,9 +49,7 @@ import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 
 @Composable

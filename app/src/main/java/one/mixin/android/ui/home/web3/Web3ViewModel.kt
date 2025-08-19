@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -24,6 +25,7 @@ import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -69,8 +71,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.db.web3.vo.Web3Chain
 
 @HiltViewModel
 class Web3ViewModel
