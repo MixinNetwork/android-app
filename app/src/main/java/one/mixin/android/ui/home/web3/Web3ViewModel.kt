@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -26,6 +27,7 @@ import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
@@ -43,6 +45,7 @@ import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.Account
@@ -66,6 +69,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.db.web3.vo.Web3Chain
 
 @HiltViewModel
 class Web3ViewModel
@@ -488,4 +493,117 @@ internal constructor(
             return@withContext null
         }
     }
+
+    suspend fun refreshWalletAddresses(walletId: String) = withContext(Dispatchers.IO) {
+        requestRouteAPI(
+            invokeNetwork = {
+                web3Repository.getWalletAddresses(walletId)
+            },
+            successBlock = { response ->
+                val addressesResponse = response
+                if (addressesResponse.data.isNullOrEmpty().not()) {
+                    Timber.d("Fetched ${addressesResponse.data?.size} addresses for wallet $walletId")
+                    val web3Addresses = addressesResponse.data!!
+                    web3Repository.insertWalletAddresses(web3Addresses)
+                    Timber.d("Inserted ${web3Addresses.size} addresses into database")
+                } else {
+                    Timber.d("No addresses found for wallet $walletId")
+                }
+                true
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to fetch addresses for wallet $walletId: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = {
+                userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            },
+            defaultErrorHandle = {}
+        )
+    }
+
+    suspend fun refreshWalletAssets(walletId: String) = withContext(Dispatchers.IO) {
+        requestRouteAPI(
+            invokeNetwork = {
+                web3Repository.getWalletAssets(walletId)
+            },
+            successBlock = { response ->
+                val assets = response.data
+                if (assets != null && assets.isNotEmpty()) {
+                    Timber.d("Fetched ${assets.size} assets for wallet $walletId")
+                    val assetIds = assets.map { it.assetId }
+                    web3Repository.updateBalanceToZeroForMissingAssets(walletId, assetIds)
+                    Timber.d("Updated missing assets to zero balance for wallet $walletId")
+
+                    val extrasToInsert = assets.filter { it.level < Constants.AssetLevel.UNKNOWN }
+                        .mapNotNull { asset ->
+                            val extra = web3Repository.findTokensExtraByAssetId(asset.assetId, walletId)
+                            if (extra == null) {
+                                Web3TokensExtra(
+                                    assetId = asset.assetId,
+                                    walletId = walletId,
+                                    hidden = true
+                                )
+                            } else {
+                                null
+                            }
+                        }
+                    if (extrasToInsert.isNotEmpty()) {
+                        web3Repository.insertTokensExtra(extrasToInsert)
+                    }
+
+                    web3Repository.insertWalletAssets(assets)
+                    refreshChains(assets.map { it.chainId }.distinct())
+                    Timber.d("Inserted ${assets.size} tokens into database")
+                } else {
+                    Timber.d("No assets found for wallet $walletId")
+                    web3Repository.updateAllBalancesToZero(walletId)
+                    Timber.d("Updated all assets to zero balance for wallet $walletId")
+                }
+                true
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to fetch assets for wallet $walletId: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = {
+                userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            },
+            defaultErrorHandle = {}
+        )
+    }
+
+    private suspend fun refreshChains(chainIds: List<String>) {
+        chainIds.forEach { chainId ->
+            try {
+                if (web3Repository.chainExists(chainId) == null) {
+                    val response = web3Repository.getChainById(chainId)
+                    if (response.isSuccess) {
+                        val chain = response.data
+                        if (chain != null) {
+                            web3Repository.insertChain(
+                                Web3Chain(
+                                    chainId = chain.chainId,
+                                    name = chain.name,
+                                    symbol = chain.symbol,
+                                    iconUrl = chain.iconUrl,
+                                    threshold = chain.threshold,
+                                )
+                            )
+                            Timber.d("Successfully inserted ${chain.name} chain into database")
+                        } else {
+                            Timber.d("No chain found for chainId: $chainId")
+                        }
+                    } else {
+                        Timber.e("Failed to fetch chain $chainId: ${response.errorCode} - ${response.errorDescription}")
+                    }
+                } else {
+                    Timber.d("Chain $chainId already exists in local database, skipping fetch")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception occurred while fetching chain $chainId")
+            }
+        }
+    }
 }
+

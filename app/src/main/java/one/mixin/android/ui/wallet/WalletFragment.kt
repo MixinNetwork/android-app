@@ -46,7 +46,6 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -416,8 +415,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             else -> {
                 null
             }
-        }?.let { wallet ->
-            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
         }
         if (destination is WalletDestination.Classic || destination is WalletDestination.Import) {
             val walletId = if (destination is WalletDestination.Classic) {

@@ -40,12 +40,12 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
+import one.mixin.android.ui.common.WalletRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
@@ -96,6 +96,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             if (value != field) {
                 field = value
                 _walletId.value = value
+                refreshWalletJob = WalletRefreshHelper.startRefreshData(
+                    fragment = this, web3ViewModel = web3ViewModel, walletId = field, refreshJob = refreshWalletJob
+                )
             }
             Timber.e("walletId set to $value")
         }
@@ -344,26 +347,25 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onResume() {
         super.onResume()
-        jobManager.addJobInBackground(RefreshSingleWalletJob(JsSigner.currentWalletId))
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
             jobManager = jobManager,
             refreshJob = refreshJob
         )
+        refreshWalletJob = WalletRefreshHelper.startRefreshData(
+            fragment = this, web3ViewModel = web3ViewModel, walletId = walletId, refreshJob = refreshWalletJob
+        )
     }
     private var refreshJob: Job? = null
+    private var refreshWalletJob: Job? = null
 
     override fun onPause() {
         super.onPause()
         refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
+        refreshWalletJob = WalletRefreshHelper.cancelRefreshData(refreshJob)
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        if (!hidden) {
-            jobManager.addJobInBackground(RefreshSingleWalletJob(JsSigner.currentWalletId))
-        }
-    }
 
     override fun onStop() {
         super.onStop()
