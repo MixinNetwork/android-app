@@ -5,6 +5,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.session.Session
 import one.mixin.android.util.ZipUtil
 import timber.log.Timber
 import java.io.File
@@ -18,6 +19,32 @@ class FileLogTree : Timber.Tree() {
         message: String,
         t: Throwable?,
     ) {
+        if (Session.getAccountId() == null || !Session.hasSafe()) {
+            if (priority >= Log.INFO) {
+                try {
+                    val directory = MixinApplication.appContext.cacheDir
+                    val file = File("${directory.absolutePath}${File.separator}$LOG_PRE_LOGIN_FILE_NAME")
+                    file.createNewFile()
+                    if (file.exists()) {
+                        if (file.length() >= MAX_LOGIN_SIZE) {
+                            file.delete()
+                            file.createNewFile()
+                        }
+                        if (file.length() == 0L) {
+                            file.outputStream().use {
+                                it.write("Mixin${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})\n".toByteArray(Charsets.UTF_8))
+                            }
+                        }
+                        val fos = FileOutputStream(file, true)
+                        fos.write("${nowInUtc()} $message\n".toByteArray(Charsets.UTF_8))
+                        fos.close()
+                    }
+                } catch (e: IOException) {
+                    Log.println(Log.ERROR, "FileLogTree", "Error while logging into pre-login file: $e")
+                }
+            }
+        }
+
         if (priority == Log.ERROR || priority == Log.ASSERT) {
             try {
                 val directory = MixinApplication.appContext.cacheDir
@@ -50,11 +77,13 @@ class FileLogTree : Timber.Tree() {
     }
 
     companion object {
-        private const val LOG_LOCAL_FILE_NAME = "mixin"
+        private const val LOG_PRE_LOGIN_FILE_NAME = "mixin_pre_login.log"
+        private const val LOG_LOCAL_FILE_NAME = "mixin.txt"
         private const val LOG_FILE_NAME = "mixin.log"
         private const val LOG_ZIP_FILE_NAME = "mixin.zip"
         private const val LOG_ZIP_FOLDER_NAME = "zip"
         private const val MAX_SIZE = 512 * 1024 * 1024
+        private const val MAX_LOGIN_SIZE = 256 * 1024
 
         fun getLogFile(): File {
             val directory = MixinApplication.appContext.cacheDir
@@ -73,6 +102,7 @@ class FileLogTree : Timber.Tree() {
                 lopFile.copy(File(zipFolder, LOG_FILE_NAME))
             }
             ZipUtil.zipFolder(zipFolder.absolutePath, zipFile.absolutePath)
+            file.deleteOnExit()
             zipFolder.deleteRecursively()
             return zipFile
         }
