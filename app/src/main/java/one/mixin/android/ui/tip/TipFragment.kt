@@ -52,6 +52,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -163,6 +164,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         binding.apply {
             val forRecover = tipBundle.forRecover()
             updateAllowClose(tipStep, forRecover)
+            logoIv.setOnLongClickListener {
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
+            }
             when (tipStep) {
                 is TryConnecting -> {
                     setTitle(forRecover)

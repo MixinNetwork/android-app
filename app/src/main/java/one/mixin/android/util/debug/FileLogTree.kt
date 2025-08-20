@@ -106,5 +106,11 @@ class FileLogTree : Timber.Tree() {
             zipFolder.deleteRecursively()
             return zipFile
         }
+
+        fun getPreLoginLogFile(): File? {
+            val directory = MixinApplication.appContext.cacheDir
+            val file = File("${directory.absolutePath}${File.separator}$LOG_PRE_LOGIN_FILE_NAME")
+            return if (file.exists()) file else null
+        }
     }
 }
