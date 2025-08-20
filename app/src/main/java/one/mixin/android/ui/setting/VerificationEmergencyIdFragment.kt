@@ -22,9 +22,11 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.FabLoadingFragment
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
+import timber.log.Timber
 
 @AndroidEntryPoint
 class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_verification_emergency_id) {
@@ -52,7 +54,12 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("VerificationEmergencyIdFragment onViewCreated")
         binding.backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.idTitleTv.setOnLongClickListener{
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         binding.verificationNextFab.setOnClickListener {
             sendCode(binding.idEt.text.toString())
         }

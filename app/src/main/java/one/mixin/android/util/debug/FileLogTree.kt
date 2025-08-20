@@ -1,5 +1,7 @@
 package one.mixin.android.util.debug
 
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
@@ -32,7 +34,16 @@ class FileLogTree : Timber.Tree() {
                         }
                         if (file.length() == 0L) {
                             file.outputStream().use {
-                                it.write("Mixin${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})\n".toByteArray(Charsets.UTF_8))
+                                it.write("Brand: ${Build.BRAND}".toByteArray(Charsets.UTF_8))
+                                it.write("App Version: ${BuildConfig.VERSION_CODE}".toByteArray(Charsets.UTF_8))
+                                it.write("App Version Code: ${BuildConfig.VERSION_NAME}".toByteArray(Charsets.UTF_8))
+                                it.write("App ID: ${BuildConfig.APPLICATION_ID}".toByteArray(Charsets.UTF_8))
+                                it.write("Device ID: ${Settings.Secure.getString(MixinApplication.appContext.contentResolver, Settings.Secure.ANDROID_ID)}".toByteArray(Charsets.UTF_8))
+                                it.write("Model: ${Build.MODEL}".toByteArray(Charsets.UTF_8))
+                                it.write("ID: ${Build.ID}".toByteArray(Charsets.UTF_8))
+                                it.write("SDK: ${Build.VERSION.SDK_INT}".toByteArray(Charsets.UTF_8))
+                                it.write("Incremental: ${Build.VERSION.INCREMENTAL}".toByteArray(Charsets.UTF_8))
+                                it.write("Version Code: ${Build.VERSION.RELEASE}".toByteArray(Charsets.UTF_8))
                             }
                         }
                         val fos = FileOutputStream(file, true)

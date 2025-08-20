@@ -101,6 +101,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("TipFragment onViewCreated ${tipBundle.tipType}")
         binding.apply {
             if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
                 AnalyticsTracker.trackSignUpPinSet()

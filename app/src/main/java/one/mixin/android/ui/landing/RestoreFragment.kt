@@ -25,10 +25,12 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
@@ -39,9 +41,15 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("RestoreFragment onViewCreated")
         binding.apply {
+            titleView.setOnLongClickListener {
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
+            }
             fromAnotherCl.setOnClickListener {
                 AnalyticsTracker.trackLoginRestore("another_phone")
+                Timber.e("RestoreFragment another_phone")
                 RxPermissions(requireActivity())
                     .request(
                         *mutableListOf(Manifest.permission.CAMERA).apply {
@@ -60,6 +68,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
             }
             fromLocalCl.setOnClickListener {
                 AnalyticsTracker.trackLoginRestore("local")
+                Timber.e("RestoreFragment local")
                 lifecycleScope.launch {
                     val localData = getLocalDataInfo()
                     val count = localData?.first
@@ -79,6 +88,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
             }
             skipTv.setOnClickListener {
                 AnalyticsTracker.trackLoginRestore("skip")
+                Timber.e("RestoreFragment skip")
                 InitializeActivity.showLoading(requireContext())
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 requireActivity().finish()

@@ -12,8 +12,10 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mnemonic_phrase) {
@@ -34,6 +36,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("LandingMnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -56,6 +59,8 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 } else {
                     toast(R.string.invalid_mnemonic_phrase)
                 }
+            }, onDebug = {
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             }
             )
         }

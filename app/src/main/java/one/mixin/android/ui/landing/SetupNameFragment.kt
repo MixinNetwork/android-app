@@ -24,12 +24,14 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -49,9 +51,14 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("SetupNameFragment onViewCreated")
         MixinApplication.get().isOnline.set(true)
         binding.apply {
             nameFab.visibility = GONE
+            nameTitleTv.setOnLongClickListener {
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
+            }
             nameFab.setOnClickListener {
                 nameFab.show()
                 nameCover.visibility = VISIBLE
