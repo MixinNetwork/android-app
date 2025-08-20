@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -282,6 +283,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         checkPin()
         RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe { event ->
                 if (event.type != WalletOperationType.RENAME) return@subscribe
