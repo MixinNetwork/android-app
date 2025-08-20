@@ -33,6 +33,7 @@ class FileLogTree : Timber.Tree() {
                             file.createNewFile()
                         }
                         if (file.length() == 0L) {
+                            val account = Session.getAccount()
                             file.outputStream().use {
                                 it.write("Brand: ${Build.BRAND}\n".toByteArray(Charsets.UTF_8))
                                 it.write("App Version: ${BuildConfig.VERSION_CODE}\n".toByteArray(Charsets.UTF_8))
@@ -44,6 +45,11 @@ class FileLogTree : Timber.Tree() {
                                 it.write("SDK: ${Build.VERSION.SDK_INT}\n".toByteArray(Charsets.UTF_8))
                                 it.write("Incremental: ${Build.VERSION.INCREMENTAL}\n".toByteArray(Charsets.UTF_8))
                                 it.write("Version Code: ${Build.VERSION.RELEASE}\n".toByteArray(Charsets.UTF_8))
+
+                                if (account != null) {
+                                    it.write("Account hasSafe: ${account.hasSafe}\n".toByteArray(Charsets.UTF_8))
+                                    it.write("Account tipCounter: ${account.tipCounter}\n".toByteArray(Charsets.UTF_8))
+                                }
                             }
                         }
                         val fos = FileOutputStream(file, true)
