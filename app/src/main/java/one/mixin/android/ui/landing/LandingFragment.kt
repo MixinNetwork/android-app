@@ -29,6 +29,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("\n-----------------------------------")
         Timber.e("MobileFragment onViewCreated")
         binding.imageView.setOnClickListener(
             object : DebugClickListener() {
