@@ -19,10 +19,10 @@ class FileLogTree : Timber.Tree() {
         message: String,
         t: Throwable?,
     ) {
+        val directory = MixinApplication.appContext.cacheDir
         if (Session.getAccountId() == null || !Session.hasSafe()) {
             if (priority >= Log.INFO) {
                 try {
-                    val directory = MixinApplication.appContext.cacheDir
                     val file = File("${directory.absolutePath}${File.separator}$LOG_PRE_LOGIN_FILE_NAME")
                     file.createNewFile()
                     if (file.exists()) {
@@ -47,8 +47,6 @@ class FileLogTree : Timber.Tree() {
 
         if (priority == Log.ERROR || priority == Log.ASSERT) {
             try {
-                val directory = MixinApplication.appContext.cacheDir
-
                 val file =
                     if (priority == Log.ERROR) {
                         File("${directory.absolutePath}${File.separator}$LOG_LOCAL_FILE_NAME")
