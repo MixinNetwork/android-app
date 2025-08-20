@@ -34,16 +34,16 @@ class FileLogTree : Timber.Tree() {
                         }
                         if (file.length() == 0L) {
                             file.outputStream().use {
-                                it.write("Brand: ${Build.BRAND}".toByteArray(Charsets.UTF_8))
-                                it.write("App Version: ${BuildConfig.VERSION_CODE}".toByteArray(Charsets.UTF_8))
-                                it.write("App Version Code: ${BuildConfig.VERSION_NAME}".toByteArray(Charsets.UTF_8))
-                                it.write("App ID: ${BuildConfig.APPLICATION_ID}".toByteArray(Charsets.UTF_8))
-                                it.write("Device ID: ${Settings.Secure.getString(MixinApplication.appContext.contentResolver, Settings.Secure.ANDROID_ID)}".toByteArray(Charsets.UTF_8))
-                                it.write("Model: ${Build.MODEL}".toByteArray(Charsets.UTF_8))
-                                it.write("ID: ${Build.ID}".toByteArray(Charsets.UTF_8))
-                                it.write("SDK: ${Build.VERSION.SDK_INT}".toByteArray(Charsets.UTF_8))
-                                it.write("Incremental: ${Build.VERSION.INCREMENTAL}".toByteArray(Charsets.UTF_8))
-                                it.write("Version Code: ${Build.VERSION.RELEASE}".toByteArray(Charsets.UTF_8))
+                                it.write("Brand: ${Build.BRAND}\n".toByteArray(Charsets.UTF_8))
+                                it.write("App Version: ${BuildConfig.VERSION_CODE}\n".toByteArray(Charsets.UTF_8))
+                                it.write("App Version Code: ${BuildConfig.VERSION_NAME}\n".toByteArray(Charsets.UTF_8))
+                                it.write("App ID: ${BuildConfig.APPLICATION_ID}\n".toByteArray(Charsets.UTF_8))
+                                it.write("Device ID: ${Settings.Secure.getString(MixinApplication.appContext.contentResolver, Settings.Secure.ANDROID_ID)}\n".toByteArray(Charsets.UTF_8))
+                                it.write("Model: ${Build.MODEL}\n".toByteArray(Charsets.UTF_8))
+                                it.write("ID: ${Build.ID}\n".toByteArray(Charsets.UTF_8))
+                                it.write("SDK: ${Build.VERSION.SDK_INT}\n".toByteArray(Charsets.UTF_8))
+                                it.write("Incremental: ${Build.VERSION.INCREMENTAL}\n".toByteArray(Charsets.UTF_8))
+                                it.write("Version Code: ${Build.VERSION.RELEASE}\n".toByteArray(Charsets.UTF_8))
                             }
                         }
                         val fos = FileOutputStream(file, true)

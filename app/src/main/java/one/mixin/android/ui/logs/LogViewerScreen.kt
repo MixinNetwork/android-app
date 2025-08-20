@@ -91,8 +91,8 @@ fun LogViewerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(MixinAppTheme.colors.background)
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                .padding(vertical = 24.dp, horizontal = 32.dp),
+                            horizontalArrangement = Arrangement.spacedBy(30.dp)
                         ) {
                             Button(
                                 modifier = Modifier
@@ -148,7 +148,7 @@ fun LogViewerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(MixinAppTheme.colors.background)
-                                .padding(16.dp)
+                                .padding(vertical = 24.dp, horizontal = 32.dp)
                         ) {
                             Button(
                                 modifier = Modifier
@@ -191,12 +191,13 @@ fun LogViewerScreen(
                                 LazyColumn(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(horizontal = 8.dp)
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
                                 ) {
                                     items(state.content.lines()) { line ->
                                         Text(
                                             text = line,
                                             color = MixinAppTheme.colors.textPrimary,
+                                            fontSize = 12.sp,
                                         )
                                     }
                                 }

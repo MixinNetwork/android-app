@@ -69,13 +69,11 @@ class LogViewerBottomSheet : BottomSheetDialogFragment() {
             roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MixinAppTheme {
-                    LogViewerScreen(
-                        onNavigateUp = {
-                            dismissAllowingStateLoss()
-                        }
-                    )
-                }
+                LogViewerScreen(
+                    onNavigateUp = {
+                        dismissAllowingStateLoss()
+                    }
+                )
             }
             doOnPreDraw {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
