@@ -20,7 +20,6 @@ import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.isActiveState
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment

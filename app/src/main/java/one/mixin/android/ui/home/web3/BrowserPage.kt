@@ -68,7 +68,6 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage

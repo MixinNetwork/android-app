@@ -46,7 +46,6 @@ import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
-import one.mixin.android.extension.getList
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
