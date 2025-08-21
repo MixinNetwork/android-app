@@ -339,7 +339,7 @@ class ConversationListFragment : LinkFragment() {
             .autoDispose(destroyScope)
             .subscribe {
                 if (it.circleId == this.circleId) {
-                    this.circleId = null
+                    selectCircle(null,null)
                 }
             }
         RxBus.listen(User::class.java)
@@ -619,10 +619,8 @@ class ConversationListFragment : LinkFragment() {
     private var conversationLiveData: LiveData<PagedList<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
-            if (field != value) {
-                field = value
-                selectCircle(circleId)
-            }
+            field = value
+            selectCircle(circleId)
         }
 
     private var scrollTop = false
@@ -638,22 +636,25 @@ class ConversationListFragment : LinkFragment() {
 
         binding.searchBar.hideContainer()
         setCircleName(name)
-        this.circleId = circleId
+        if (this.circleId != circleId) {
+            this.circleId = circleId
+        }
         observeOtherCircleUnread(circleId)
     }
 
-    fun setCircleName(name: String?) {
-        if (viewDestroyed()) return
-
-        binding.searchBar.logo.text = name ?: "Mixin"
-    }
-
+    // binding data
     private fun selectCircle(circleId: String?) {
         conversationLiveData?.removeObserver(observer)
         val liveData = conversationListViewModel.observeConversations(circleId)
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
         this.conversationLiveData = liveData
+    }
+
+    fun setCircleName(name: String?) {
+        if (viewDestroyed()) return
+
+        binding.searchBar.logo.text = name ?: "Mixin"
     }
 
     private fun animDownIcon(expand: Boolean) {
