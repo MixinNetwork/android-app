@@ -398,13 +398,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
 
         if (!Session.saltExported() && Session.isAnonymous()) {
-            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                .apply {
-                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-                    dialog.callback = callback
-                    dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance().apply {
+                laterCallback = {
+                    if (this@WalletFragment.isAdded) {
+                        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                        dialog.callback = callback
+                        dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+                    }
                 }
-                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+            }.show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
         } else {
             val dialog = AddWalletBottomSheetDialogFragment.newInstance()
             dialog.callback = callback
