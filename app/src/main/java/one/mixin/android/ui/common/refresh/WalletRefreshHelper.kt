@@ -2,6 +2,7 @@ package one.mixin.android.ui.common.refresh
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ object WalletRefreshHelper {
         onWalletUpdated: (() -> Unit)? = null
     ): Job? {
         refreshJob?.cancel()
-        return fragment.lifecycleScope.launch {
+        return fragment.lifecycleScope.launch(Dispatchers.IO) {
             refreshWalletData(
                 web3ViewModel,
                 walletId,
@@ -85,7 +86,7 @@ object WalletRefreshHelper {
                     }
                 }
 
-                delay(30_000) // 30 seconds refresh interval
+                delay(10_000) // 10 seconds refresh interval
             }
         } catch (e: Exception) {
             Timber.e(e, "Error in wallet refresh loop for walletId: $walletId")

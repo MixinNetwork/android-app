@@ -2,6 +2,7 @@ package one.mixin.android.ui.common.refresh
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ object PendingDepositRefreshHelper {
         onPendingDepositUpdated: (() -> Unit)? = null
     ): Job? {
         refreshJob?.cancel()
-        return fragment.lifecycleScope.launch {
+        return fragment.lifecycleScope.launch(Dispatchers.IO)  {
             refreshPendingDepositData(
                 walletViewModel,
                 onPendingDepositUpdated

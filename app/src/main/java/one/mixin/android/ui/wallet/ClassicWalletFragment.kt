@@ -94,9 +94,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             if (value != field) {
                 field = value
                 _walletId.value = value
-                refreshWalletJob = WalletRefreshHelper.startRefreshData(
-                    fragment = this, web3ViewModel = web3ViewModel, walletId = field, refreshJob = refreshWalletJob
-                )
             }
             Timber.e("walletId set to $value")
         }

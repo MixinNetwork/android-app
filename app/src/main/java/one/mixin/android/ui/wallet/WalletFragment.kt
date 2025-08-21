@@ -461,7 +461,38 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun closeMenu() {
-        walletRefreshJob = WalletRefreshHelper.cancelRefreshData(walletRefreshJob)
+        walletRefreshJob = when (selectedWalletDestination) {
+            is WalletDestination.Classic -> {
+                WalletRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    walletId = (selectedWalletDestination as WalletDestination.Classic).walletId,
+                    refreshJob = walletRefreshJob
+                )
+            }
+
+            is WalletDestination.Import -> {
+                WalletRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    walletId = (selectedWalletDestination as WalletDestination.Import).walletId,
+                    refreshJob = walletRefreshJob
+                )
+            }
+
+            is WalletDestination.Watch -> {
+                WalletRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    walletId = (selectedWalletDestination as WalletDestination.Watch).walletId,
+                    refreshJob = walletRefreshJob
+                )
+            }
+
+            else -> {
+                WalletRefreshHelper.cancelRefreshData(walletRefreshJob)
+            }
+        }
 
         val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
         val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2

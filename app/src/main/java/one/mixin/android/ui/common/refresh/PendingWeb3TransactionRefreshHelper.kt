@@ -2,6 +2,7 @@ package one.mixin.android.ui.common.refresh
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,7 +23,7 @@ object PendingWeb3TransactionRefreshHelper {
         onTransactionStatusUpdated: ((hash: String, newStatus: String) -> Unit)? = null
     ): Job? {
         refreshJob?.cancel()
-        return fragment.lifecycleScope.launch {
+        return fragment.lifecycleScope.launch(Dispatchers.IO)  {
             refreshTransactionData(
                 JsSigner.currentWalletId,
                 web3ViewModel,
@@ -74,7 +75,7 @@ object PendingWeb3TransactionRefreshHelper {
                             }
                         }
                     }
-                    delay(5_000)
+                    delay(10_000)
                 }
             }
         } catch (e: Exception) {
