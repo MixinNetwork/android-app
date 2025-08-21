@@ -114,6 +114,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.widget.picker.toTimeInterval
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -325,18 +326,20 @@ class ConversationListFragment : LinkFragment() {
                 navigationController.pushContacts()
             }
         }
-        val circleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
-        if (circleId == null) {
-            selectCircle(null)
+
+        this.circleId = if (savedInstanceState != null) {
+            val id = savedInstanceState.getString(CIRCLE_ID)
+            Timber.e("Restored circleId: $id")
+            id
         } else {
-            this.circleId = circleId
+            defaultSharedPreferences.getString(CIRCLE_ID, null)
         }
         RxBus.listen(CircleDeleteEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe {
                 if (it.circleId == this.circleId) {
-                    selectCircle(null, null)
+                    this.circleId = null
                 }
             }
         RxBus.listen(User::class.java)
@@ -1352,5 +1355,11 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(CIRCLE_ID, circleId)
+        Timber.e("onSaveInstanceState: $circleId")
     }
 }
