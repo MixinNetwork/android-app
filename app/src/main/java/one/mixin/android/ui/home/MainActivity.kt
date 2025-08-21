@@ -1218,6 +1218,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         outState.putInt(KEY_SELECTED_NAV_ITEM, binding.bottomNav.selectedItemId)
+        Timber.e("onSaveInstanceState: ${currentFragment?.tag} - ${binding.bottomNav.selectedItemId}")
     }
 
     private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
@@ -1231,6 +1232,7 @@ class MainActivity : BlazeBaseActivity() {
             binding.bottomNav.selectedItemId = savedNavItem
 
             restoreFragmentFromTag(savedFragmentTag, savedNavItem)
+            Timber.e("restoreFragmentFromTag: $savedFragmentTag - $savedNavItem")
         }
     }
 
