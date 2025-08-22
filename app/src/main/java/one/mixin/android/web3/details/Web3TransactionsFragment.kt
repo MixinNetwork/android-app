@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
@@ -356,11 +357,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             title.text = token.name
             addressTv.text = token.assetKey
             explorer.setOnClickListener {
-                if (token.isSolanaChain()) {
-                    context?.openUrl("https://solscan.io/token/" + token.assetKey)
-                } else {
-                    context?.openUrl("https://etherscan.io/token/" + token.assetKey)
-                }
+                val url = "${Constants.API.URL}external/explore/${token.chainId}/token/${token.assetKey}"
+                context?.openUrl(url)
                 bottomSheet.dismiss()
             }
             stakeSolTv.isVisible = token.isSolToken() && binding.stake.root.isVisible
