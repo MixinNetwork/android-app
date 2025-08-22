@@ -10,8 +10,6 @@ import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.vo.Fiats
-import org.sol4k.Convert.lamportToSol
-import org.sol4kt.VersionedTransactionCompat
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -113,7 +111,7 @@ data class Web3Token(
 }
 
 fun Web3TokenItem.isSolToken(): Boolean {
-    return isSolana() && assetId == Constants.ChainId.SOLANA_CHAIN_ID
+    return isSolanaChain() && assetId == Constants.ChainId.SOLANA_CHAIN_ID
 }
 fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
     return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)

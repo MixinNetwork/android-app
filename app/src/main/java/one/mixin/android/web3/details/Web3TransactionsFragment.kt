@@ -356,7 +356,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             title.text = token.name
             addressTv.text = token.assetKey
             explorer.setOnClickListener {
-                if (token.isSolana()) {
+                if (token.isSolanaChain()) {
                     context?.openUrl("https://solscan.io/token/" + token.assetKey)
                 } else {
                     context?.openUrl("https://etherscan.io/token/" + token.assetKey)

@@ -272,7 +272,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             override fun onTokenClick(token: Web3TokenItem) {
                 binding.searchEt.hideKeyboard()
                 lifecycleScope.launch {
-                    val address = if (token.isSolana()) {
+                    val address = if (token.isSolanaChain()) {
                         JsSigner.solanaAddress
                     } else {
                         JsSigner.evmAddress

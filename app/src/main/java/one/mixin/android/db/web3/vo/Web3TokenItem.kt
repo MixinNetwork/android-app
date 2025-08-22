@@ -89,7 +89,7 @@ data class Web3TokenItem(
         }
     }
     
-    fun isSolana(): Boolean {
+    fun isSolanaChain(): Boolean {
         return chainId.equals(Constants.ChainId.SOLANA_CHAIN_ID, true)
     }
     
@@ -217,7 +217,7 @@ suspend fun Web3TokenItem.buildTransaction(
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        if (isSolana()) {
+        if (isSolanaChain()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
