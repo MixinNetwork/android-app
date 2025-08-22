@@ -65,7 +65,7 @@ data class Web3Token(
     override fun toSwapToken(): SwapToken {
         return SwapToken(
             walletId = walletId,
-            address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
+            address = assetKey,
             assetId = assetId,
             decimals = precision,
             name = name,
@@ -113,41 +113,8 @@ data class Web3Token(
 }
 
 fun Web3TokenItem.isSolToken(): Boolean {
-    return isSolana() && (assetKey == solanaNativeTokenAssetKey || assetKey == wrappedSolTokenAssetKey)
+    return isSolana() && assetId == Constants.ChainId.SOLANA_CHAIN_ID
 }
-
-private fun Web3Token.getChainAssetKey(): String {
-    return if (chainId.equals("ethereum", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("base", true)) {
-        "0x0000000000000000000000000000000000000000"}
-    else if (chainId.equals("blast", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("arbitrum", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("optimism", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("polygon", true)) {
-        "0x0000000000000000000000000000000000001010"
-    } else if (chainId.equals("binance-smart-chain", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("avalanche", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("solana", true)) {
-        solanaNativeTokenAssetKey
-    } else {
-        ""
-    }
-}
-
-fun Web3TokenItem.calcSolBalanceChange(balanceChange: VersionedTransactionCompat.TokenBalanceChange): String {
-    return if (isSolToken()) {
-        lamportToSol(BigDecimal(balanceChange.change))
-    } else {
-        BigDecimal(balanceChange.change).divide(BigDecimal.TEN.pow(precision)).setScale(precision, RoundingMode.CEILING)
-    }.stripTrailingZeros().toPlainString()
-}
-
 fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
     return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)
 }

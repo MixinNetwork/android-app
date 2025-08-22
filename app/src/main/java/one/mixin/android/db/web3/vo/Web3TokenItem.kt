@@ -96,7 +96,7 @@ data class Web3TokenItem(
     override fun toSwapToken(): SwapToken {
         return SwapToken(
             walletId = walletId,
-            address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
+            address = assetKey,
             assetId = assetId,
             decimals = precision,
             name = name,
@@ -144,17 +144,6 @@ data class Web3TokenItem(
         "0" -> BigDecimal.ZERO
         "" -> BigDecimal.ZERO
         else -> BigDecimal(priceUsd).multiply(Fiats.getRate().toBigDecimal())
-    }
-
-    fun findChainToken(tokens: List<Web3TokenItem>): Web3TokenItem? {
-        val chainAssetKey = when {
-            // Todo
-            chainId.equals("solana", true) && assetKey == solanaNativeTokenAssetKey -> wrappedSolTokenAssetKey
-            else -> assetKey
-        }
-        return tokens.firstOrNull { token ->
-            token.chainId == chainId && token.assetKey == chainAssetKey
-        }
     }
 
     fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
@@ -228,7 +217,7 @@ suspend fun Web3TokenItem.buildTransaction(
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        if (isSolToken()) {
+        if (isSolana()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
