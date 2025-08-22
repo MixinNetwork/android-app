@@ -52,6 +52,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
+import one.mixin.android.ui.common.refresh.PendingWeb3TransactionRefreshHelper
 import one.mixin.android.ui.common.refresh.WalletRefreshHelper
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -64,6 +65,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.web3.details.Web3TransactionHolder
 import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
@@ -126,6 +128,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private var walletRefreshJob: Job? = null
+    private var transactionRefreshJob: Job? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -314,6 +318,48 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
     }
 
+    private fun triggerJob(destination: WalletDestination) {
+        when (destination) {
+            is WalletDestination.Privacy -> {
+                walletRefreshJob = WalletRefreshHelper.cancelRefreshData(walletRefreshJob)
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.cancelRefreshData(transactionRefreshJob)
+            }
+            is WalletDestination.Classic -> {
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    jobManager = jobManager,
+                    refreshJob = walletRefreshJob
+                )
+                walletRefreshJob = WalletRefreshHelper.startRefreshData(
+                    fragment = this, web3ViewModel = web3ViewModel, walletId = destination.walletId, refreshJob = walletRefreshJob
+                )
+            }
+            is WalletDestination.Watch ->{
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    jobManager = jobManager,
+                    refreshJob = walletRefreshJob
+                )
+                walletRefreshJob = WalletRefreshHelper.startRefreshData(
+                    fragment = this, web3ViewModel = web3ViewModel, walletId = destination.walletId, refreshJob = walletRefreshJob
+                )
+            }
+            is WalletDestination.Import ->{
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    jobManager = jobManager,
+                    refreshJob = walletRefreshJob
+                )
+                walletRefreshJob = WalletRefreshHelper.startRefreshData(
+                    fragment = this, web3ViewModel = web3ViewModel, walletId = destination.walletId, refreshJob = walletRefreshJob
+                )
+            }
+        }
+    }
+
     private fun updateUi(destination: WalletDestination) {
         Timber.e("updateUi called with destination: $destination")
         when (destination) {
@@ -380,6 +426,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 }
             }
         }
+        triggerJob(destination)
     }
 
     private var migrateEnable = false
@@ -461,39 +508,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun closeMenu() {
-        walletRefreshJob = when (selectedWalletDestination) {
-            is WalletDestination.Classic -> {
-                WalletRefreshHelper.startRefreshData(
-                    fragment = this,
-                    web3ViewModel = web3ViewModel,
-                    walletId = (selectedWalletDestination as WalletDestination.Classic).walletId,
-                    refreshJob = walletRefreshJob
-                )
-            }
-
-            is WalletDestination.Import -> {
-                WalletRefreshHelper.startRefreshData(
-                    fragment = this,
-                    web3ViewModel = web3ViewModel,
-                    walletId = (selectedWalletDestination as WalletDestination.Import).walletId,
-                    refreshJob = walletRefreshJob
-                )
-            }
-
-            is WalletDestination.Watch -> {
-                WalletRefreshHelper.startRefreshData(
-                    fragment = this,
-                    web3ViewModel = web3ViewModel,
-                    walletId = (selectedWalletDestination as WalletDestination.Watch).walletId,
-                    refreshJob = walletRefreshJob
-                )
-            }
-
-            else -> {
-                WalletRefreshHelper.cancelRefreshData(walletRefreshJob)
-            }
-        }
-
+        triggerJob(selectedWalletDestination ?: WalletDestination.Privacy)
         val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
         val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2
         val endRadius = hypot(

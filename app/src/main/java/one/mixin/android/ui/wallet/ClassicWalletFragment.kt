@@ -339,27 +339,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        refreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
-            fragment = this,
-            web3ViewModel = web3ViewModel,
-            jobManager = jobManager,
-            refreshJob = refreshJob
-        )
-        refreshWalletJob = WalletRefreshHelper.startRefreshData(
-            fragment = this, web3ViewModel = web3ViewModel, walletId = walletId, refreshJob = refreshWalletJob
-        )
-    }
-    private var refreshJob: Job? = null
-    private var refreshWalletJob: Job? = null
-
-    override fun onPause() {
-        super.onPause()
-        refreshJob = PendingWeb3TransactionRefreshHelper.cancelRefreshData(refreshJob)
-        refreshWalletJob = WalletRefreshHelper.cancelRefreshData(refreshJob)
-    }
-
 
     override fun onStop() {
         super.onStop()
