@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -311,9 +312,7 @@ class MainActivity : BlazeBaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-        }
+        initFragmentsFromSavedState(savedInstanceState)
 
         val account = Session.getAccount()
         account?.let {
@@ -1221,12 +1220,118 @@ class MainActivity : BlazeBaseActivity() {
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val currentFragment = getCurrentVisibleFragment()
+        currentFragment?.let { fragment ->
+            outState.putString(KEY_CURRENT_FRAGMENT_TAG, fragment.tag)
+        }
+
+        outState.putInt(KEY_SELECTED_NAV_ITEM, binding.bottomNav.selectedItemId)
+        Timber.e("onSaveInstanceState: ${currentFragment?.tag} - ${binding.bottomNav.selectedItemId}")
+    }
+
+    private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) {
+            navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            binding.bottomNav.selectedItemId = R.id.nav_chat
+        } else {
+            val savedFragmentTag = savedInstanceState.getString(KEY_CURRENT_FRAGMENT_TAG)
+            val savedNavItem = savedInstanceState.getInt(KEY_SELECTED_NAV_ITEM, R.id.nav_chat)
+
+            binding.bottomNav.selectedItemId = savedNavItem
+
+            restoreFragmentFromTag(savedFragmentTag, savedNavItem)
+            Timber.e("restoreFragmentFromTag: $savedFragmentTag - $savedNavItem")
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun restoreFragmentFromTag(fragmentTag: String?, navItemId: Int) {
+        when (fragmentTag) {
+            ConversationListFragment.TAG -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            }
+            WalletFragment.TAG -> {
+                if (Session.getAccount()?.hasPin == true) {
+                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                } else {
+                    navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                    binding.bottomNav.selectedItemId = R.id.nav_chat
+                }
+            }
+            CollectiblesFragment.TAG -> {
+                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+            }
+            ExploreFragment.TAG -> {
+                navigationController.navigate(NavigationController.Explore, exploreFragment)
+            }
+            else -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                binding.bottomNav.selectedItemId = R.id.nav_chat
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        ensureFragmentIsVisible()
+    }
+
+    private fun ensureFragmentIsVisible() {
+        val currentFragment = getCurrentVisibleFragment()
+        if (currentFragment == null || !currentFragment.isVisible) {
+            val selectedItemId = binding.bottomNav.selectedItemId
+            restoreFragmentByNavItem(selectedItemId)
+        }
+    }
+
+    private fun restoreFragmentByNavItem(itemId: Int) {
+        when (itemId) {
+            R.id.nav_chat -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            }
+            R.id.nav_wallet -> {
+                if (Session.getAccount()?.hasPin == true) {
+                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                } else {
+                    navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                    binding.bottomNav.selectedItemId = R.id.nav_chat
+                }
+            }
+            R.id.nav_collectibles -> {
+                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+            }
+            R.id.nav_more -> {
+                navigationController.navigate(NavigationController.Explore, exploreFragment)
+            }
+            else -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                binding.bottomNav.selectedItemId = R.id.nav_chat
+            }
+        }
+    }
+
+    private fun getCurrentVisibleFragment(): Fragment? {
+        return supportFragmentManager.fragments.find { fragment ->
+            fragment.isVisible && fragment.isAdded &&
+            (fragment.tag == ConversationListFragment.TAG ||
+             fragment.tag == WalletFragment.TAG ||
+             fragment.tag == CollectiblesFragment.TAG ||
+             fragment.tag == ExploreFragment.TAG)
+        }
+    }
+
     companion object {
         const val URL = "url"
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
+
+        private const val KEY_CURRENT_FRAGMENT_TAG = "current_fragment_tag"
+        private const val KEY_SELECTED_NAV_ITEM = "selected_nav_item"
 
         fun showWallet(
             context: Context,
