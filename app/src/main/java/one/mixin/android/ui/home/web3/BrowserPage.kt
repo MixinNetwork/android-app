@@ -395,7 +395,7 @@ fun BrowserPage(
                         Modifier
                             .align(Alignment.BottomCenter)
                             .background(MixinAppTheme.colors.background)
-                            .padding(20.dp)
+                            .padding(8.dp)
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
@@ -427,7 +427,7 @@ fun BrowserPage(
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
-            Box(modifier = Modifier.height(40.dp))
+            Box(modifier = Modifier.height(32.dp))
         }
     }
 }
