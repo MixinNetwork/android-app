@@ -17,4 +17,6 @@ class ConversationRequest(
     val participants: List<ParticipantRequest>? = null,
     @SerializedName("duration")
     val duration: Long? = null,
+    @SerializedName("random_id")
+    val randomId: String? = null,
 )
