@@ -29,6 +29,7 @@ import one.mixin.android.databinding.FragmentDepositBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.hexStringToByteArray
@@ -106,23 +107,18 @@ class DepositFragment : BaseFragment() {
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
                 if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
-                    networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.usdtAssets)
                 } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)){
-                    networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.usdcAssets)
                 } else if (Constants.AssetId.ethAssets.contains(asset.assetId)){
-                    networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.ethAssets)
                 } else if (Constants.AssetId.btcAssets.contains(asset.assetId)){
-                    networkTitle.isVisible = true
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.btcAssets)
                 } else {
-                    networkTitle.isVisible = false
                     networkChipGroup.isVisible = false
                 }
 
@@ -173,11 +169,17 @@ class DepositFragment : BaseFragment() {
                         val same = entry.key == asset.assetId
                         if (same) {
                             isChecked = true
-                            setTextColor(Color.WHITE)
-                            chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
+                            val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+                            setTextColor(accentColor)
+                            chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                            chipStrokeColor = ColorStateList.valueOf(accentColor)
+                            chipStrokeWidth = 1.dp.toFloat()
                         } else {
+                            isChecked = false
                             setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                            chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                            chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                            chipStrokeWidth = 1.dp.toFloat()
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
@@ -292,6 +294,7 @@ class DepositFragment : BaseFragment() {
     private fun showLoading() {
         binding.apply {
             loading.isVisible = true
+            bottom.isVisible = false
             addressView.isVisible = false
             addressTitle.isVisible = false
             tipTv.isVisible = false
@@ -303,6 +306,7 @@ class DepositFragment : BaseFragment() {
     private fun hideLoading() {
         binding.apply {
             loading.isVisible = false
+            bottom.isVisible = true
             addressView.isVisible = true
             addressTitle.isVisible = true
             tipTv.isVisible = true
@@ -389,12 +393,17 @@ class DepositFragment : BaseFragment() {
                 val same = clip.tag == asset.assetId
                 if (same) {
                     isChecked = true
-                    setTextColor(Color.WHITE)
-                    chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
+                    val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+                    setTextColor(accentColor)
+                    chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    chipStrokeColor = ColorStateList.valueOf(accentColor)
+                    chipStrokeWidth = 1.dp.toFloat()
                 } else {
+                    isChecked = false
                     setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                    chipBackgroundColor =
-                        ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                    chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                    chipStrokeWidth = 1.dp.toFloat()
                 }
             }
         }
