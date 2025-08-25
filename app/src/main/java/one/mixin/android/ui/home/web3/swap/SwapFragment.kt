@@ -39,8 +39,6 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
-import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
@@ -763,7 +761,7 @@ class SwapFragment : BaseFragment() {
             if (!inMixin()) {
                 remoteSwapTokens = remote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
-                        (web3Token.assetKey == token.address && web3Token.assetId == token.assetId) || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
+                        (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
                     } ?: return@map token
                     token.balance = t.balance
                     token

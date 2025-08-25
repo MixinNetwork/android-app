@@ -88,6 +88,8 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isPlayStoreInstalled
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
@@ -119,6 +121,7 @@ import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
+import one.mixin.android.pay.erc831.isEthereumURLString
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -957,8 +960,15 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun showScanBottom(scan: String) {
-        bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-        bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        if (scan.isLightningUrl() || scan.isExternalTransferUrl()) {
+            LinkBottomSheetDialogFragment.newInstance(scan).show(
+                supportFragmentManager,
+                LinkBottomSheetDialogFragment.TAG
+            )
+        } else {
+            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        }
     }
 
     private val conversationListFragment by lazy {
