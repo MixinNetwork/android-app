@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.annotation.StringRes
 import androidx.core.view.isInvisible
-import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePaddingRelative
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTransferBottomBinding
 import one.mixin.android.extension.dp
@@ -16,13 +16,13 @@ import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 
 class TransferBottom : ViewAnimator {
     private val _binding: ViewTransferBottomBinding
-    private val dp16 = 16.dp
-    private val dp20 = 20.dp
+    private val dp8 = 8.dp
+    private val dp24 = 24.dp
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         _binding = ViewTransferBottomBinding.inflate(LayoutInflater.from(context), this)
-        setPadding(dp16)
+        updatePaddingRelative(dp8, dp8, dp8, dp24)
     }
 
     fun setOnClickListener(
@@ -63,7 +63,7 @@ class TransferBottom : ViewAnimator {
                 isInvisible = true
                 displayedChild = 0
                 updateLayoutParams {
-                    height = dp20
+                    height = dp24
                 }
                 requestLayout()
             }
