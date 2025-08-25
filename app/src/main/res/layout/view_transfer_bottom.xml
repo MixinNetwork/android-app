@@ -12,9 +12,9 @@
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="20dp"
         android:clipToPadding="false"
         android:clipChildren="false"
+        android:padding="12dp"
         android:orientation="horizontal">
 
         <Button
@@ -53,7 +53,7 @@
         style="@style/AppTheme.MaterialButton"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_margin="24dp"
+        android:layout_margin="12dp"
         android:layout_gravity="center_horizontal"
         android:paddingStart="36dp"
         android:paddingEnd="36dp"
@@ -65,7 +65,7 @@
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="20dp"
+        android:padding="12dp"
         android:clipToPadding="false"
         android:clipChildren="false"
         android:orientation="horizontal">
