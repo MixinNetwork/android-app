@@ -62,8 +62,7 @@ class RefreshWeb3Job : BaseJob(
                         it.path == null || it.path.isBlank()
                     }) {
                     routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
-                    RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
-                    fetchWalletAddresses(wallet)
+                    fetchWallets(wallet.id)
                 }
             }
         }
@@ -142,7 +141,7 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
-    private suspend fun fetchWallets() {
+    private suspend fun fetchWallets(renameWalletId: String? = null) {
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getWallets()
@@ -152,6 +151,9 @@ class RefreshWeb3Job : BaseJob(
                 wallets?.let {
                     web3WalletDao.insertList(it)
                     wallets.forEach { wallet ->
+                        if (wallet.id == renameWalletId) {
+                            RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
+                        }
                         fetchWalletAddresses(wallet)
                     }
                 }

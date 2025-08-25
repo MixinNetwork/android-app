@@ -367,19 +367,19 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         toast("number error")
                     } else {
                         lifecycleScope.launch inner@{
-                            if (viewDestroyed()) return@inner
-                            val asset = fiatMoneyViewModel.asset ?: return@inner
-                            val destination = if (isWeb3) {
-                                val walletId = walletIdForCalculate ?: return@inner
-                                web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination ?: return@inner
-                            } else
-                                fiatMoneyViewModel.getAddressById(asset.chainId)?.destination ?: return@inner
+                            if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
                             try {
+                                val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
+                                val destination = if (isWeb3) {
+                                    val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
+                                    web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null for web3")
+                                } else
+                                    fiatMoneyViewModel.getAddressById(asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null")
                                 binding.continueVa.displayedChild = 1
                                 val response = fiatMoneyViewModel.rampWebUrl(
                                     amount,
                                     asset.assetId,
-                                    fiatMoneyViewModel.currency?.name ?: return@inner,
+                                    fiatMoneyViewModel.currency?.name ?: throw IllegalStateException("Currency name is null"),
                                     destination
                                 )
                                 if (response.isSuccess) {
@@ -388,6 +388,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                         response.data?.url ?: "",
                                         null
                                     )
+                                } else {
+                                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
                                 }
                                 binding.continueVa.displayedChild = 0
                             } catch (e: Exception) {

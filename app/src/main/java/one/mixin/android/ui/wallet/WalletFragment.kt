@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -270,6 +271,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         checkPin()
         RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe { event ->
                 if (event.type != WalletOperationType.RENAME) return@subscribe
@@ -384,13 +386,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
 
         if (!Session.saltExported() && Session.isAnonymous()) {
-            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                .apply {
-                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-                    dialog.callback = callback
-                    dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance().apply {
+                laterCallback = {
+                    if (this@WalletFragment.isAdded) {
+                        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                        dialog.callback = callback
+                        dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+                    }
                 }
-                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+            }.show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
         } else {
             val dialog = AddWalletBottomSheetDialogFragment.newInstance()
             dialog.callback = callback
