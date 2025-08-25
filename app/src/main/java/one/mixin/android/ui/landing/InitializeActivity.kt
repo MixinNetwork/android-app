@@ -4,9 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.databinding.ActivityLandingBinding
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.UpgradeFragment.Companion.TYPE_DB
@@ -21,12 +24,17 @@ class InitializeActivity : BaseActivity() {
         setContentView(binding.root)
         val setName = intent.getBooleanExtra(SET_NAME, false)
         val setPin = intent.getBooleanExtra(SET_PIN, false)
+        val showQuiz = intent.getBooleanExtra(SHOW_QUIZ, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
         val oldVersion = intent.getBooleanExtra(OLD_VERSION, false)
         val dbUpgrade = intent.getBooleanExtra(DB_UPGRADE, false)
         when {
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
             setPin -> replaceFragment(SetupPinFragment.newInstance(), R.id.container)
+            showQuiz -> replaceFragment(
+                SetupPinFragment.newInstance(SetupPinFragment.SetupPinDestination.Quiz.name),
+                R.id.container
+            )
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
             oldVersion -> replaceFragment(OldVersionFragment.newInstance(), R.id.container)
             dbUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_DB), R.id.container)
@@ -45,6 +53,7 @@ class InitializeActivity : BaseActivity() {
     companion object {
         const val SET_NAME = "set_name"
         const val SET_PIN = "set_pin"
+        const val SHOW_QUIZ = "show_quiz"
         const val WRONG_TIME = "wrong_time"
         const val OLD_VERSION = "old_version"
         const val DB_UPGRADE = "db_upgrade"
@@ -53,6 +62,7 @@ class InitializeActivity : BaseActivity() {
             context: Context,
             setName: Boolean = false,
             setPin: Boolean = false,
+            showQuiz: Boolean = false,
             wrongTime: Boolean = false,
             oldVersion: Boolean = false,
             dbUpgrade: Boolean = false,
@@ -60,6 +70,7 @@ class InitializeActivity : BaseActivity() {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
                 this.putExtra(SET_PIN, setPin)
+                this.putExtra(SHOW_QUIZ, showQuiz)
                 this.putExtra(WRONG_TIME, wrongTime)
                 this.putExtra(OLD_VERSION, oldVersion)
                 this.putExtra(DB_UPGRADE, dbUpgrade)
@@ -112,6 +123,10 @@ class InitializeActivity : BaseActivity() {
 
         fun showSetupPin(context: Context) {
             context.startActivity(getIntent(context, setPin = true))
+        }
+
+        fun showQuiz(context: Context) {
+            context.startActivity(getIntent(context, showQuiz = true))
         }
 
         fun showDBUpgrade(context: Context) {

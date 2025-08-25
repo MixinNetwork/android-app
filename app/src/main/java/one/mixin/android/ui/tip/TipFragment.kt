@@ -37,6 +37,7 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
@@ -52,6 +53,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -139,6 +141,8 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 TipType.Change -> titleTv.setText(R.string.Change_PIN)
                 TipType.Upgrade -> titleTv.setText(R.string.Upgrade_TIP)
             }
+
+            logoIv.setImageResource(if (tipBundle.tipType == TipType.Create) R.drawable.ic_set_up_pin else R.drawable.ic_tip_logo)
         }
 
         when (tipBundle.tipStep) {
@@ -536,7 +540,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
             AnalyticsTracker.trackSignUpEnd()
         }
-        if (activity?.isTaskRoot == true) {
+        if (tipBundle.tipType == TipType.Create) {
+            requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_QUIZ_PENDING, true)
+            InitializeActivity.showQuiz(requireContext())
+        } else if (activity?.isTaskRoot == true) {
             MainActivity.show(requireContext())
         }
         activity?.finish()

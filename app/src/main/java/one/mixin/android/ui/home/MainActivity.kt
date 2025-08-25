@@ -389,6 +389,8 @@ class MainActivity : BlazeBaseActivity() {
 
         if (Session.getAccount()?.hasPin != true) {
             TipActivity.show(this, TipType.Create, shouldWatch = true)
+        } else if (defaultSharedPreferences.getBoolean(Account.PREF_QUIZ_PENDING,false)) {
+            InitializeActivity.showQuiz(this)
         } else if (Session.getTipPub().isNullOrBlank()) {
             TipActivity.show(this, TipType.Upgrade, shouldWatch = true)
         } else {

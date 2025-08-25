@@ -71,7 +71,7 @@ fun QuizPage(next: () -> Unit) {
                     .fillMaxWidth()
                     .height(48.dp),
                 onClick = {
-
+                    next()
                 },
                 enabled = selectedOption == 1,
                 colors = ButtonDefaults.outlinedButtonColors(

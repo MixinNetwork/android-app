@@ -10,31 +10,62 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
+import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.api.request.RegisterRequest
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.crypto.initFromSeedAndSign
+import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hexString
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.toHex
+import one.mixin.android.session.Session
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.components.QuizPage
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
 import one.mixin.android.ui.landing.components.SetPinPage
 import one.mixin.android.ui.landing.components.SetupPinPage
+import one.mixin.android.ui.tip.LegacyPIN
+import one.mixin.android.ui.tip.Processing
+import one.mixin.android.ui.tip.RetryRegister
+import one.mixin.android.ui.tip.TipViewModel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.js.JsSigner
+import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG: String = "MnemonicPhraseFragment"
+        const val KEY_START_DESTINATION = "key_start_destination"
 
         fun newInstance(
+            startDestination: String = SetupPinDestination.Initial.name,
         ): SetupPinFragment =
             SetupPinFragment().apply {
-
+                arguments = Bundle().apply {
+                    putString(KEY_START_DESTINATION, startDestination)
+                }
             }
     }
 
-    private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
 
     enum class SetupPinDestination {
@@ -55,9 +86,12 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                 darkTheme = requireContext().isNightMode(),
             ) {
                 val navController = rememberNavController()
+                val startDestination =
+                    arguments?.getString(KEY_START_DESTINATION)
+                        ?: SetupPinDestination.Initial.name
                 NavHost(
                     navController = navController,
-                    startDestination = SetupPinDestination.Initial.name,
+                    startDestination = startDestination,
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Left,
@@ -92,18 +126,20 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                         SetupPinPage({
                             navController.navigate(SetupPinDestination.Initial.name)
                         }, {
+                            requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_QUIZ_PENDING, true)
                             navController.navigate(SetupPinDestination.Loading.name)
                         })
+                    }
+                    composable(SetupPinDestination.Quiz.name) {
+                        QuizPage {
+                            requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_QUIZ_PENDING, false)
+                            MainActivity.show(requireContext())
+                            requireActivity().finish()
+                        }
                     }
                     composable(SetupPinDestination.Loading.name) {
                         SetPinLoadingPage {
                             navController.navigate(SetupPinDestination.Quiz.name)
-                        }
-                    }
-                    composable(SetupPinDestination.Quiz.name) {
-                        QuizPage {
-                            // Todo
-                            navController.navigate(SetupPinDestination.Initial.name)
                         }
                     }
                 }
