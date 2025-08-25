@@ -60,7 +60,7 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setContent {
                 SwapTokenPage(token) {
                     val url =
-                        "${Constants.API.URL}external/explore/${token.chain.chainId}/token/${token.address}"
+                        "${Constants.API.URL}external/explore/${token.chain.chainId}/assets/${token.address}"
                     context?.openUrl(url)
                     dismiss()
                 }

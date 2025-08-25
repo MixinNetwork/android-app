@@ -357,7 +357,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             title.text = token.name
             addressTv.text = token.assetKey
             explorer.setOnClickListener {
-                val url = "${Constants.API.URL}external/explore/${token.chainId}/token/${token.assetKey}"
+                val url = "${Constants.API.URL}external/explore/${token.chainId}/assets/${token.assetKey}"
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
