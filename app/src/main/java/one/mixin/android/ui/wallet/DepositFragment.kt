@@ -25,6 +25,7 @@ import one.mixin.android.Constants.AssetId.BYTOM_CLASSIC_ASSET_ID
 import one.mixin.android.Constants.AssetId.MGD_ASSET_ID
 import one.mixin.android.Constants.AssetId.OMNI_USDT_ASSET_ID
 import one.mixin.android.R
+import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.databinding.FragmentDepositBinding
@@ -377,7 +378,9 @@ class DepositFragment : BaseFragment() {
                     toast(R.string.copied_to_clipboard)
                 }
                 binding.amount.setOnClickListener {
-                    // Todo
+                    InputAmountBottomSheetDialogFragment.newInstance(
+                        asset
+                    ).showNow(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
                 }
                 binding.share.setOnClickListener {
                     val shareView = binding.sv
