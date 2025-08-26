@@ -1598,6 +1598,7 @@
     <string name="View_on_Explorer">在浏览器中查看</string>
     <string name="malicious_instruction_token_set_authority">此交易将更改 SPL 代币的所有者。这将允许新的所有者在未经您允许的情况下转让代币。</string>
     <string name="Assets">资产</string>
+    <string name="ASSET">资产</string>
     <string name="Recipients">收款人</string>
     <string name="Opponents">收发人</string>
     <string name="Oldest">最早</string>
@@ -2040,4 +2041,8 @@
     <string name="watch_address_description">您无法控制观察钱包中的资产，但您可以跟踪它们。了解更多</string>
     <string name="watch_wallet_url">https://support.mixin.one/zh/article/5lua5lmi5piv6kec5af6zkx5yyf77yf-t42h5u/</string>
     <string name="Set_Amount">设置金额</string>
+    <string name="BLOCK_CONFIRMATIONS">最小区块确认</string>
+    <string name="MINIMUM_DEPOSIT">最小充值数</string>
+    <string name="Deposit_to_Mixin">充值 %1$s 到 Mixin</string>
+    <string name="Deposit_to_Mixin_sub">扫码充值 %1$s</string>
 </resources>

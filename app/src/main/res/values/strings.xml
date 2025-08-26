@@ -1637,6 +1637,7 @@
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction change the owner of your SPL tokens. This allow the new owner to transfer the tokens without your permission.</string>
     <string name="Assets">Assets</string>
+    <string name="ASSET">ASSET</string>
     <string name="Recipients">Recipients</string>
     <string name="Opponents">Opponents</string>
     <string name="No_users">No users</string>
@@ -2092,4 +2093,8 @@
     <string name="watch_address_description">You are unable to control assets in a watch-only wallet, but you can track them. Learn More</string>
     <string name="watch_wallet_url">https://support.mixin.one/en/article/what-is-a-watch-only-wallet-13bo2l8</string>
     <string name="Set_Amount">Set Amount</string>
+    <string name="BLOCK_CONFIRMATIONS">BLOCK CONFIRMATIONS</string>
+    <string name="MINIMUM_DEPOSIT">MINIMUM DEPOSIT</string>
+    <string name="Deposit_to_Mixin">Deposit %1$s to Mixin</string>
+    <string name="Deposit_to_Mixin_sub">Scan the QR Code to send me %1$s</string>
 </resources>

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -9,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -30,8 +32,10 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highlightStarTag
@@ -44,6 +48,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
+import one.mixin.android.util.getChainName
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 
@@ -124,27 +130,10 @@ class DepositFragment : BaseFragment() {
 
                 notSupportLl.isVisible = false
                 sv.isVisible = true
-                val dustTip =
-                    if (asset.hasDust()) {
-                        getString(R.string.deposit_dust, asset.dust, asset.symbol)
-                            .highLight(requireContext(), "${asset.dust} ${asset.symbol}")
-                    } else {
-                        SpannableStringBuilder()
-                    }
-                val confirmation =
-                    requireContext().resources.getQuantityString(
-                        R.plurals.deposit_confirmation,
-                        asset.confirmations,
-                        asset.confirmations,
-                    )
-                        .highLight(requireContext(), asset.confirmations.toString())
-                tipTv.text =
-                    buildBulletLines(
-                        requireContext(),
-                        SpannableStringBuilder(getTipsByAsset(asset)),
-                        confirmation,
-                        dustTip,
-                    )
+                binding.assetName.text = asset.name
+                binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+                binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
+                binding.blockConfirmationsValue.text = asset.confirmations.toString()
             }
         }
 
@@ -178,7 +167,7 @@ class DepositFragment : BaseFragment() {
                             isChecked = false
                             setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                             chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                            chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                            chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_window))
                             chipStrokeWidth = 1.dp.toFloat()
                         }
                         setOnClickListener {
@@ -297,7 +286,7 @@ class DepositFragment : BaseFragment() {
             bottom.isVisible = false
             addressView.isVisible = false
             addressTitle.isVisible = false
-            tipTv.isVisible = false
+            tipLl.isVisible = false
             memoTitle.isVisible = false
             memoView.isVisible = false
         }
@@ -306,10 +295,9 @@ class DepositFragment : BaseFragment() {
     private fun hideLoading() {
         binding.apply {
             loading.isVisible = false
-            bottom.isVisible = true
             addressView.isVisible = true
             addressTitle.isVisible = true
-            tipTv.isVisible = true
+            tipLl.isVisible = true
         }
     }
 
@@ -363,6 +351,7 @@ class DepositFragment : BaseFragment() {
                         } else {
                             getString(R.string.deposit_memo_notice)
                         },
+                        hideCopy = noTag
                     )
                 }
                 addressView.setAsset(
@@ -379,14 +368,37 @@ class DepositFragment : BaseFragment() {
                     } else {
                         getString(R.string.deposit_notice, asset.symbol)
                     },
+                    hideCopy = noTag
                 )
+
+                binding.copy.setOnClickListener {
+                    context?.heavyClickVibrate()
+                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositEntry.destination))
+                    toast(R.string.copied_to_clipboard)
+                }
+                binding.amount.setOnClickListener {
+                    // Todo
+                }
+                binding.share.setOnClickListener {
+                    val shareView = binding.sv
+                    val bitmap = shareView.drawToBitmap()
+                    DepositShareActivity.show(
+                        requireContext(),
+                        bitmap,
+                        asset,
+                        depositEntry.destination,
+                    )
+                }
+                bottom.isVisible = noTag
             }
         } else {
             binding.apply {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
                 notSupportTv.setText(R.string.verification_failed)
+                bottom.isVisible = false
             }
+
         }
         binding.networkChipGroup.children.forEach { clip ->
             (clip as? Chip)?.apply {
@@ -402,31 +414,14 @@ class DepositFragment : BaseFragment() {
                     isChecked = false
                     setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                    chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_window))
                     chipStrokeWidth = 1.dp.toFloat()
                 }
             }
         }
-        val dustTip =
-            if (asset.hasDust()) {
-                getString(R.string.deposit_dust, asset.dust, asset.symbol)
-                    .highLight(requireContext(), "${asset.dust} ${asset.symbol}")
-            } else {
-                SpannableStringBuilder()
-            }
-        val confirmation =
-            requireContext().resources.getQuantityString(
-                R.plurals.deposit_confirmation,
-                asset.confirmations,
-                asset.confirmations,
-            )
-                .highLight(requireContext(), asset.confirmations.toString())
-        binding.tipTv.text =
-            buildBulletLines(
-                requireContext(),
-                SpannableStringBuilder(getTipsByAsset(asset)),
-                confirmation,
-                dustTip,
-            )
+        binding.assetName.text = asset.name
+        binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+        binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
+        binding.blockConfirmationsValue.text = asset.confirmations.toString()
     }
 }

@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
@@ -41,6 +42,7 @@ class ContentQRView : ViewAnimator {
         selectedDestination: String?,
         isTag: Boolean,
         warning: String? = null,
+        hideCopy: Boolean = false,
     ) {
         binding.apply {
             val showPb =
@@ -61,10 +63,19 @@ class ContentQRView : ViewAnimator {
             val destination = selectedDestination ?: depositEntry.destination
             val content = if (isTag) depositEntry.tag else destination
             contentTv.text = content
-            copyIv.setOnClickListener {
-                context.heavyClickVibrate()
-                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, content))
-                toast(R.string.copied_to_clipboard)
+            if (hideCopy) {
+                copyIv.isVisible = false
+                contentTv.updateLayoutParams<MarginLayoutParams> {
+                    marginEnd = 16.dp
+                    marginStart = 16.dp
+                }
+            } else {
+                copyIv.isVisible = true
+                copyIv.setOnClickListener {
+                    context.heavyClickVibrate()
+                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, content))
+                    toast(R.string.copied_to_clipboard)
+                }
             }
             if (warning.isNullOrBlank()) {
                 warningTv.isVisible = false

@@ -100,7 +100,7 @@
                     android:id="@+id/memo_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginTop="8dp"
                     android:text="@string/withdrawal_memo"
                     android:textColor="?attr/text_assist"
@@ -116,9 +116,10 @@
                     android:id="@+id/address_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginTop="20dp"
                     android:text="@string/Address"
+                    android:textSize="16sp"
                     android:textColor="?attr/text_assist" />
 
                 <one.mixin.android.widget.ContentQRView
@@ -176,7 +177,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/receive"
+                        android:id="@+id/copy"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -200,7 +201,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/send"
+                        android:id="@+id/amount"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -224,7 +225,7 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/swap"
+                        android:id="@+id/share"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -264,17 +265,90 @@
                 </FrameLayout>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tip_tv"
+            <LinearLayout
+                android:id="@+id/tip_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
+                android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card"
-                android:gravity="start"
-                android:padding="10dp"
-                android:textColor="?attr/text_assist"
-                android:textSize="13sp" />
+                android:orientation="vertical"
+                android:paddingEnd="16dp"
+                android:paddingStart="16dp"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp">
+                <TextView
+                    android:id="@+id/asset_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ASSET"
+                    android:textColor="?attr/text_assist"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/asset_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp" />
+
+                <!-- Network -->
+                <TextView
+                    android:id="@+id/network_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/network"
+                    android:textColor="?attr/text_assist"
+                    android:layout_marginTop="20dp"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/network_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp" />
+
+                <!-- Minimum Deposit -->
+                <TextView
+                    android:id="@+id/minimum_deposit_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/MINIMUM_DEPOSIT"
+                    android:textColor="?attr/text_assist"
+                    android:layout_marginTop="20dp"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/minimum_deposit_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_primary"
+                    android:layout_marginTop="8dp"
+                    android:textSize="14sp" />
+
+                <!-- Block Confirmations -->
+                <TextView
+                    android:id="@+id/block_confirmations_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/BLOCK_CONFIRMATIONS"
+                    android:textColor="?attr/text_assist"
+                    android:layout_marginTop="20dp"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/block_confirmations_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
