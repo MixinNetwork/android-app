@@ -109,6 +109,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             closeIv.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
+            support.setOnClickListener {
+                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            }
 
             val tip1 = SpannableStringBuilder(getString(R.string.Please_use_when_network_is_connected))
             val tip2 = SpannableStringBuilder(getString(R.string.Please_keep_app_in_foreground))
@@ -165,7 +168,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         binding.apply {
             val forRecover = tipBundle.forRecover()
             updateAllowClose(tipStep, forRecover)
-            logoIv.setOnLongClickListener {
+            title.setOnLongClickListener {
                 LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
                 true
             }

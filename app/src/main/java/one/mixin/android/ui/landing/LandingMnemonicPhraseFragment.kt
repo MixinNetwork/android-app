@@ -2,6 +2,8 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -50,6 +52,10 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
             }
             navTo(WebFragment.newInstance(bundle), WebFragment.TAG)
         }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         binding.compose.setContent {
             MnemonicPhraseInput(MnemonicState.Input, onComplete = {
                 val list = ArrayList<String>()
@@ -59,8 +65,6 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 } else {
                     toast(R.string.invalid_mnemonic_phrase)
                 }
-            }, onDebug = {
-                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             }
             )
         }

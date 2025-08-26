@@ -117,7 +117,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             if (pin != null) {
                 titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
             }
-            mobileTv.setOnLongClickListener{
+            titleView.setOnLongClickListener{
                 LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
                 true
             }

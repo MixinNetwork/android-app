@@ -22,6 +22,7 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.ui.common.BaseFragment
@@ -46,6 +47,9 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
             titleView.setOnLongClickListener {
                 LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
                 true
+            }
+            support.setOnClickListener {
+                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
             }
             fromAnotherCl.setOnClickListener {
                 AnalyticsTracker.trackLoginRestore("another_phone")

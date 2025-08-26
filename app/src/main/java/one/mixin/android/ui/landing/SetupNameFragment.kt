@@ -55,7 +55,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
         MixinApplication.get().isOnline.set(true)
         binding.apply {
             nameFab.visibility = GONE
-            nameTitleTv.setOnLongClickListener {
+            debug.setOnLongClickListener {
                 LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
                 true
             }

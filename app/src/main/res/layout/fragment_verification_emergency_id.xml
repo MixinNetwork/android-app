@@ -17,6 +17,13 @@
         android:contentDescription="@string/Landing_back"
         app:srcCompat="@drawable/ic_arrow_back" />
 
+    <View
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignTop="@id/back_iv"
+        android:layout_toEndOf="@id/back_iv"/>
+
     <TextView
         android:id="@+id/id_title_tv"
         android:layout_width="wrap_content"

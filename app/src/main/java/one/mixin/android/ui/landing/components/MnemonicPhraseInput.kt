@@ -90,7 +90,6 @@ fun MnemonicPhraseInput(
     title: @Composable (() -> Unit)? = null,
     onScan: (() -> Unit)? = null,
     validate: ((List<String>) -> String?)? = null,
-    onDebug: (() -> Unit)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
     var inputs by remember {
@@ -147,13 +146,6 @@ fun MnemonicPhraseInput(
                 )
                 Spacer(modifier = Modifier.height(30.dp))
                 Text(
-                    modifier = Modifier.apply {
-                        if (MnemonicState.Input == state) {
-                            combinedClickable(
-                                onClick = { },
-                                onLongClick = onDebug)
-                        }
-                    },
                     text = when (state) {
                         MnemonicState.Input -> stringResource(R.string.log_in_whit_mnemonic_phrase)
                         MnemonicState.Import -> stringResource(R.string.import_mnemonic_phrase)

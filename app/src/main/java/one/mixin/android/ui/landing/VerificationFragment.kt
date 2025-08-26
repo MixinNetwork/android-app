@@ -119,7 +119,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         Timber.e("VerificationFragment onViewCreated")
         hasEmergencyContact = requireArguments().getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
         binding.pinVerificationTitleTv.text = getString(R.string.landing_validation_title, phoneNum)
-        binding.pinVerificationTitleTv.setOnLongClickListener {
+        binding.title.setOnLongClickListener {
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             true
         }

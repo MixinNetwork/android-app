@@ -56,7 +56,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment(R.layout.fragment_ver
         super.onViewCreated(view, savedInstanceState)
         Timber.e("VerificationEmergencyIdFragment onViewCreated")
         binding.backIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-        binding.idTitleTv.setOnLongClickListener{
+        binding.title.setOnLongClickListener{
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             true
         }
