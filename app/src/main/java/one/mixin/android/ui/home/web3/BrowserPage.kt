@@ -68,7 +68,6 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
@@ -396,7 +395,7 @@ fun BrowserPage(
                         Modifier
                             .align(Alignment.BottomCenter)
                             .background(MixinAppTheme.colors.background)
-                            .padding(20.dp)
+                            .padding(8.dp)
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
@@ -428,7 +427,7 @@ fun BrowserPage(
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
-            Box(modifier = Modifier.height(40.dp))
+            Box(modifier = Modifier.height(32.dp))
         }
     }
 }

@@ -105,7 +105,7 @@ class ConversationRepository
         ): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
         fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> =
-            if (circleId == null) {
+            if (circleId.isNullOrBlank()) {
                 DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext))
             } else {
                 DataProvider.observeConversationsByCircleId(circleId, MixinDatabase.getDatabase(MixinApplication.appContext))

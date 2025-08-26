@@ -4,8 +4,6 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
-import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
 
@@ -57,7 +55,7 @@ data class SwapToken(
     }
 
     private val assetKey: String
-        get() = if (address == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else address
+        get() = address
 
     override fun equals(other: Any?): Boolean {
         if (other !is SwapToken) return false

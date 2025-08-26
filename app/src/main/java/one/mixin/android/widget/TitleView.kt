@@ -165,10 +165,15 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         binding.titleTv.setTextOnly(title)
         binding.subTitleTv.visibility = VISIBLE
         if (label != null) {
-            val spannableString = SpannableString("$label ")
+            val displayContent = if (label.length > 8) {
+                "${label.take(4)}...${label.takeLast(4)}"
+            } else {
+                label
+            }
+            val spannableString = SpannableString("$displayContent ")
             val backgroundColor: Int = if (toWallet) Color.parseColor("#B34B7CDD") else Color.parseColor("#8DCC99")
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
-            val endIndex = label.length
+            val endIndex = displayContent.length
             if (endIndex > 0) {
                 spannableString.setSpan(RelativeSizeSpan(0.8f), 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 spannableString.setSpan(backgroundColorSpan, 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

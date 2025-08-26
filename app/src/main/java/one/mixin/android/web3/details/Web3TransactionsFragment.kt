@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
@@ -24,7 +25,7 @@ import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isImported
-import one.mixin.android.db.web3.vo.isSolToken
+import one.mixin.android.db.web3.vo.isNativeSolToken
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
@@ -131,7 +132,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             val wallet = web3ViewModel.findWalletById(token.walletId)
             binding.sendReceiveView.isVisible = wallet?.isWatch() != true
             binding.empty.isVisible = wallet?.isWatch() == true
-            if (token.isSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
+            if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
                 binding.stake.root.visibility = View.VISIBLE
                 getStakeAccounts(address)
             } else{
@@ -181,7 +182,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         )
                     }
                 }
-                if (token.isSolToken()) {
+                if (token.isNativeSolToken()) {
                     stake.root.visibility = View.VISIBLE
                     lifecycleScope.launch {
                         getStakeAccounts(address)
@@ -356,14 +357,11 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             title.text = token.name
             addressTv.text = token.assetKey
             explorer.setOnClickListener {
-                if (token.isSolana()) {
-                    context?.openUrl("https://solscan.io/token/" + token.assetKey)
-                } else {
-                    context?.openUrl("https://etherscan.io/token/" + token.assetKey)
-                }
+                val url = "${Constants.API.URL}external/explore/${token.chainId}/assets/${token.assetKey}"
+                context?.openUrl(url)
                 bottomSheet.dismiss()
             }
-            stakeSolTv.isVisible = token.isSolToken() && binding.stake.root.isVisible
+            stakeSolTv.isVisible = token.isNativeSolToken() && binding.stake.root.isVisible
             stakeSolTv.setOnClickListener {
                 this@Web3TransactionsFragment.navTo(
                     ValidatorsFragment.newInstance().apply {
