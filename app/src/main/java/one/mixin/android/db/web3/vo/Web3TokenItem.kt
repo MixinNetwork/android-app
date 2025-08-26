@@ -217,7 +217,7 @@ suspend fun Web3TokenItem.buildTransaction(
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        if (isSolanaChain()) {
+        if (isSolToken()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
