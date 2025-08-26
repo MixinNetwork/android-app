@@ -110,7 +110,7 @@ data class Web3Token(
     fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
 }
 
-fun Web3TokenItem.isSolToken(): Boolean {
+fun Web3TokenItem.isNativeSolToken(): Boolean {
     return isSolanaChain() && assetId == Constants.ChainId.SOLANA_CHAIN_ID
 }
 fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
