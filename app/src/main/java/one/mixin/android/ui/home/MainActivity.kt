@@ -326,6 +326,7 @@ class MainActivity : BlazeBaseActivity() {
         initBottomNav()
         handlerCode(intent)
 
+        updateSessionWhenOpen()
         checkAsync()
 
         RxBus.listen(TipEvent::class.java)
@@ -449,7 +450,7 @@ class MainActivity : BlazeBaseActivity() {
         appUpdateManager.unregisterListener(updatedListener)
     }
 
-    private fun checkAsync() =
+    private fun updateSessionWhenOpen() {
         lifecycleScope.launch(Dispatchers.IO) {
             updateSessionIfNeeded()
             val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
@@ -464,7 +465,11 @@ class MainActivity : BlazeBaseActivity() {
                 ExistingPeriodicWorkPolicy.UPDATE,
                 periodicWorkRequest
             )
+        }
+    }
 
+    private fun checkAsync() =
+        lifecycleScope.launch(Dispatchers.IO) {
             checkRoot()
             checkStorage()
             checkVersion()
