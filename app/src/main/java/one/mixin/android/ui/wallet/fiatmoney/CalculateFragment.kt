@@ -373,8 +373,9 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 val destination = if (isWeb3) {
                                     val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
                                     web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null for web3")
-                                } else
-                                    fiatMoneyViewModel.getAddressById(asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null")
+                                } else {
+                                    fiatMoneyViewModel.getDepositEntry(asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null")
+                                }
                                 binding.continueVa.displayedChild = 1
                                 val response = fiatMoneyViewModel.rampWebUrl(
                                     amount,
