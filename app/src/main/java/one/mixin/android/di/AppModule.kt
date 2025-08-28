@@ -519,10 +519,8 @@ object AppModule {
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, requestId)
                     val (ts, signature) = Session.getBotSignature(appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null), sourceRequest)
-                    if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
-                        b.addHeader(mrAccessTimestamp, ts.toString())
-                        b.addHeader(mrAccessSign, signature)
-                    }
+                    b.addHeader(mrAccessTimestamp, ts.toString())
+                    b.addHeader(mrAccessSign, signature)
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
                 }
