@@ -323,6 +323,24 @@ class DepositFragment : BaseFragment() {
         val verify = pubs.any { pub -> verifyCurve25519Signature(message, signature, pub) }
         if (verify) {
             val noTag = tag.isNullOrBlank()
+
+            // Check if asset supports amount input (QR code generation)
+            val supportsAmountInput = when (asset.chainId) {
+                Constants.ChainId.BITCOIN_CHAIN_ID,
+                Constants.ChainId.ETHEREUM_CHAIN_ID,
+                Constants.ChainId.Base,
+                Constants.ChainId.Arbitrum,
+                Constants.ChainId.Optimism,
+                Constants.ChainId.BinanceSmartChain,
+                Constants.ChainId.Polygon,
+                Constants.ChainId.Litecoin,
+                Constants.ChainId.Dogecoin,
+                Constants.ChainId.Dash,
+                Constants.ChainId.Monero,
+                Constants.ChainId.Solana -> true
+                else -> false
+            }
+
             binding.apply {
                 if (noTag) {
                     memoView.isVisible = false
@@ -377,11 +395,22 @@ class DepositFragment : BaseFragment() {
                     context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositEntry.destination))
                     toast(R.string.copied_to_clipboard)
                 }
-                binding.amount.setOnClickListener {
-                    InputAmountBottomSheetDialogFragment.newInstance(
-                        asset
-                    ).showNow(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
+
+                // Only show amount button for supported chains
+                if (supportsAmountInput) {
+                    binding.amount.isVisible = true
+                    binding.bottom.weightSum = 3f
+                    binding.amount.setOnClickListener {
+                        InputAmountBottomSheetDialogFragment.newInstance(
+                            asset,
+                            depositEntry.destination
+                        ).showNow(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    binding.amount.isVisible = false
+                    binding.bottom.weightSum = 2f
                 }
+
                 binding.share.setOnClickListener {
                     val shareView = binding.sv
                     val bitmap = shareView.drawToBitmap()

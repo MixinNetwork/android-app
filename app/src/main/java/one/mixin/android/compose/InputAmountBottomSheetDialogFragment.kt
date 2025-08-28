@@ -7,7 +7,10 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -27,24 +30,30 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
-import java.util.Locale
 
 @AndroidEntryPoint
 class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "InputAmountBottomSheetDialogFragment"
         private const val ARGS_TOKEN = "args_token"
+        private const val ARGS_ADDRESS = "args_address"
 
         fun newInstance(
-            token: TokenItem
+            token: TokenItem,
+            address: String? = null
         ) = InputAmountBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_TOKEN, token)
+            putString(ARGS_ADDRESS, address)
         }
     }
 
     private val token by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
             ?: throw IllegalArgumentException("TokenItem is required")
+    }
+
+    private val address by lazy {
+        requireArguments().getString(ARGS_ADDRESS)
     }
 
     // Calculate USD price from token
@@ -106,37 +115,42 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     } else {
                         // Calculate primary from minor
                         val minorValue = inputAmount.toDoubleOrNull() ?: 0.0
-                        val primaryValue = if (price > 0) minorValue * price else 0.0
+                        val primaryValue = if (price > 0) minorValue / price else 0.0
                         formatAmount(primaryValue.toString(), token.symbol)
                     }
                 }
 
                 val formattedMinorAmount = remember(inputAmount, isPrimaryMode) {
                     if (!isPrimaryMode) {
-                        formatAmount(inputAmount, Fiats.getSymbol())
+                        formatAmount(inputAmount, Fiats.getAccountCurrencyAppearance())
                     } else {
                         // Calculate minor from primary
                         val primaryValue = inputAmount.toDoubleOrNull() ?: 0.0
-                        val minorValue = if (price > 0) primaryValue / price else 0.0
-                        formatAmount(minorValue.toString(), Fiats.getSymbol())
+                        val minorValue = if (price > 0) primaryValue * price else 0.0
+                        formatAmount(minorValue.toString(), Fiats.getAccountCurrencyAppearance())
                     }
                 }
 
                 MixinAppTheme {
-                    InputAmountScreen(
+                    InputAmountFlow(
                         primaryAmount = formattedPrimaryAmount,
                         minorAmount = formattedMinorAmount,
+                        token = token,
+                        address = address,
                         onNumberClick = { number ->
-                            inputAmount = handleNumberInput(inputAmount, number)
+                            val currentCurrency = if (isPrimaryMode) null else Fiats.getAccountCurrencyAppearance()
+                            inputAmount = AmountInputHandler.handleNumberInput(inputAmount, number, currentCurrency)
+                            onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
                             onNumberClick?.invoke(number)
                         },
                         onDeleteClick = {
-                            inputAmount = handleDeleteInput(inputAmount)
+                            inputAmount = AmountInputHandler.handleDeleteInput(inputAmount)
+                            onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
                             onDeleteClick?.invoke()
                         },
                         onSwitchClick = {
                             isPrimaryMode = !isPrimaryMode
-                            // Convert current input to the other currency
+                            // Convert current input to the other currency when switching
                             val currentValue = inputAmount.toDoubleOrNull() ?: 0.0
                             inputAmount = if (isPrimaryMode) {
                                 // Switched to primary mode, convert from minor to primary
@@ -144,6 +158,10 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             } else {
                                 // Switched to minor mode, convert from primary to minor
                                 if (price > 0) (currentValue * price).toString() else "0"
+                            }
+                            // Reset to "0" if conversion results in very small numbers
+                            if (inputAmount.toDoubleOrNull()?.let { it < 0.000001 } == true) {
+                                inputAmount = "0"
                             }
                             onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
                             onSwitchClick?.invoke()
@@ -183,42 +201,33 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
 
-    private fun handleNumberInput(currentAmount: String, number: String): String {
-        return when {
-            number == "." -> {
-                if (!currentAmount.contains(".")) {
-                    if (currentAmount == "0") "0." else "$currentAmount."
-                } else {
-                    currentAmount
-                }
-            }
-            currentAmount == "0" && number != "." -> {
-                number
-            }
-            else -> {
-                "$currentAmount$number"
-            }
-        }
-    }
-
-    private fun handleDeleteInput(currentAmount: String): String {
-        return when {
-            currentAmount.length <= 1 -> "0"
-            else -> currentAmount.dropLast(1)
-        }
-    }
-
     private fun formatAmount(amount: String, symbol: String): String {
         val value = amount.toDoubleOrNull() ?: 0.0
-        return if (value == 0.0) {
+        return if (amount == "0") {
             "0 $symbol"
         } else {
-            val formatted = if (value % 1.0 == 0.0) {
-                String.format(Locale.US, "%.0f", value)
-            } else {
-                String.format(Locale.US, "%.8f", value).trimEnd('0').trimEnd('.')
+            // Handle special decimal cases following CalculateFragment logic
+            val formatted = when {
+                amount.endsWith(".") -> {
+                    val baseNumber = amount.substringBefore(".")
+                    "$baseNumber. $symbol"
+                }
+                amount.endsWith(".00") -> {
+                    val baseNumber = amount.substringBefore(".")
+                    "$baseNumber.00 $symbol"
+                }
+                amount.endsWith(".0") -> {
+                    val baseNumber = amount.substringBefore(".")
+                    "$baseNumber.0 $symbol"
+                }
+                amount.contains(".") -> {
+                    "$amount $symbol"
+                }
+                else -> {
+                    "$amount $symbol"
+                }
             }
-            "$formatted $symbol"
+            formatted
         }
     }
 
