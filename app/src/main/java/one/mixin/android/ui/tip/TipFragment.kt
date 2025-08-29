@@ -52,6 +52,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -100,12 +101,16 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("$TAG onViewCreated type: ${tipBundle.tipType}, event: ${tipBundle.tipEvent}")
         binding.apply {
             if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
                 AnalyticsTracker.trackSignUpPinSet()
             }
             closeIv.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+            support.setOnClickListener {
+                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
             }
 
             val tip1 = SpannableStringBuilder(getString(R.string.Please_use_when_network_is_connected))
@@ -163,6 +168,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         binding.apply {
             val forRecover = tipBundle.forRecover()
             updateAllowClose(tipStep, forRecover)
+            title.setOnLongClickListener {
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
+            }
             when (tipStep) {
                 is TryConnecting -> {
                     setTitle(forRecover)
@@ -409,7 +418,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             val failedSigners = tipBundle.tipEvent?.failedSigners
             val pin = requireNotNull(tipBundle.pin) { "process tip step pin can not be null" }
             val oldPin = tipBundle.oldPin
-            Timber.d("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
+            Timber.e("tip nodeCounter $nodeCounter, tipCounter $tipCounter, signers size ${failedSigners?.size}")
 
             when(tipBundle.tipType) {
                 TipType.Change -> {
@@ -547,7 +556,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         tipPriv: ByteArray?,
     ): Result<Boolean> =
         kotlin.runCatching {
-            Timber.d("Tip start registerPublicKey")
+            Timber.e("$TAG start registerPublicKey")
             updateTipStep(Processing.Registering)
 
             val meResp = accountService.getMeSuspend()
@@ -623,6 +632,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         title: String? = null,
         onVerifySuccess: suspend (String) -> Unit,
     ) {
+        Timber.e("$TAG showVerifyPin")
         VerifyBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_old_PIN), true).setOnPinSuccess { pin ->
             lifecycleScope.launch {
                 onVerifySuccess(pin)
@@ -634,6 +644,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         title: String? = null,
         onInputComplete: suspend (String) -> Unit,
     ) {
+        Timber.e("$TAG showInputPin")
         PinInputBottomSheetDialogFragment.newInstance(title ?: getString(R.string.Enter_your_new_PIN)).setOnPinComplete { pin ->
             lifecycleScope.launch {
                 onInputComplete(pin)

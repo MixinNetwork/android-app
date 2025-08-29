@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -150,9 +151,10 @@ fun MnemonicPhraseInput(
                         MnemonicState.Import -> stringResource(R.string.import_mnemonic_phrase)
                         MnemonicState.Display -> stringResource(R.string.write_down_mnemonic_phrase)
                         MnemonicState.Verify -> stringResource(R.string.check_mnemonic_phrase)
-                    }, fontSize = 18.sp,
+                    },
+                    fontSize = 18.sp,
                     color = MixinAppTheme.colors.textPrimary,
-                    fontWeight = SemiBold
+                    fontWeight = SemiBold,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 

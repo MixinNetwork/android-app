@@ -13,6 +13,7 @@ import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.DebugClickListener
+import timber.log.Timber
 
 class LandingFragment : Fragment(R.layout.fragment_landing) {
     companion object {
@@ -28,7 +29,8 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-
+        Timber.e("\n-----------------------------------")
+        Timber.e("MobileFragment onViewCreated")
         binding.imageView.setOnClickListener(
             object : DebugClickListener() {
                 override fun onDebugClick() {

@@ -12,6 +12,21 @@
         android:layout_height="wrap_content"
         android:visibility="gone"/>
 
+    <FrameLayout
+        android:id="@+id/debug"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/support"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_support" />
+    </FrameLayout>
+
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"

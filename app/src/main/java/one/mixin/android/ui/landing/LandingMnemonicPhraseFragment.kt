@@ -2,6 +2,8 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -12,8 +14,10 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mnemonic_phrase) {
@@ -34,6 +38,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("LandingMnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -46,6 +51,10 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 putBoolean(WebFragment.ARGS_INJECTABLE, false)
             }
             navTo(WebFragment.newInstance(bundle), WebFragment.TAG)
+        }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
         }
         binding.compose.setContent {
             MnemonicPhraseInput(MnemonicState.Input, onComplete = {
