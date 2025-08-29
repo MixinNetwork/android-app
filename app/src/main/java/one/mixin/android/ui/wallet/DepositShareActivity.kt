@@ -46,14 +46,17 @@ class DepositShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_TOKEN = "token"
         private const val ARGS_ADDRESS = "address"
+        private const val ARGS_AMOUNT = "amount"
+
         private var cover: Bitmap? = null
 
-        fun show(context: Context, cover: Bitmap, token: TokenItem, address: String) {
+        fun show(context: Context, cover: Bitmap, token: TokenItem, address: String, amount: String? = null) {
             refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, DepositShareActivity::class.java).apply {
                 putExtra(ARGS_TOKEN, token)
                 putExtra(ARGS_ADDRESS, address)
+                putExtra(ARGS_AMOUNT, amount)
             })
         }
     }
@@ -68,6 +71,10 @@ class DepositShareActivity : BaseActivity() {
     }
     private val address by lazy {
         intent.getStringExtra(ARGS_ADDRESS)
+    }
+
+    private val amount by lazy {
+        intent.getStringExtra(ARGS_AMOUNT)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,7 +149,12 @@ class DepositShareActivity : BaseActivity() {
 
             binding.networkText.text = tokenItem.chainName
 
-            binding.minimumDepositText.text = "${tokenItem.dust} ${tokenItem.symbol}"
+            if (amount != null) {
+                binding.minimumDepositTitle.setText(R.string.Amount)
+                binding.minimumDepositText.text = "$amount ${tokenItem.symbol}"
+            } else {
+                binding.minimumDepositText.text = "${tokenItem.dust} ${tokenItem.symbol}"
+            }
         }
     }
 

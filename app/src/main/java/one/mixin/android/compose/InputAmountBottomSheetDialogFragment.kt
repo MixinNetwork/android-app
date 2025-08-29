@@ -27,6 +27,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
@@ -68,6 +69,8 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
     var onSwitchClick: (() -> Unit)? = null
     var onDismiss: (() -> Unit)? = null
     var onAmountChanged: ((primary: String, minor: String) -> Unit)? = null
+    var onShareClick: ((amount: String, depositUri: String) -> Unit)? = null
+    var onCopyClick: ((depositUri: String) -> Unit)? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -165,7 +168,18 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                             onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
                             onSwitchClick?.invoke()
-                        }
+                        },
+                        onCopyClick = { depositUri ->
+                            onCopyClick?.invoke(depositUri)
+                            dismiss()
+                        },
+                        onCloseClick = {
+                            dismiss()
+                        },
+                        onShareClick = { depositUri ->
+                            onShareClick?.invoke(formattedPrimaryAmount, depositUri)
+                            dismiss()
+                        },
                     )
                 }
             }

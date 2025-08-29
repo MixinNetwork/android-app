@@ -63,6 +63,9 @@ fun InputAmountFlow(
     onNumberClick: (String) -> Unit,
     onDeleteClick: () -> Unit,
     onSwitchClick: () -> Unit,
+    onShareClick: (String) -> Unit,
+    onCopyClick: (String) -> Unit,
+    onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     token: TokenItem? = null,
     address: String? = null,
@@ -94,12 +97,9 @@ fun InputAmountFlow(
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onCloseClick = {
-
-                },
-                onConfirmClick = {
-                    // TODO: Handle final confirmation
-                }
+                onCloseClick = onCloseClick,
+                onShareClick = onShareClick,
+                onCopyClick = onCopyClick
             )
         }
     }
@@ -326,11 +326,15 @@ fun InputAmountPreviewScreen(
     primaryAmount: String,
     onBackClick: () -> Unit,
     onCloseClick: () -> Unit,
-    onConfirmClick: () -> Unit,
+    onShareClick: (String) -> Unit,
+    onCopyClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     token: TokenItem? = null,
     address: String? = null,
 ) {
+    // Generate deposit URI for copy and share operations
+    val depositUri = generateDepositUri(token, address, primaryAmount) ?: (address ?: "")
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -494,7 +498,7 @@ fun InputAmountPreviewScreen(
         ) {
             OutlinedButton(
                 onClick = {
-                    // TODO: Implement copy functionality
+                    onCopyClick(depositUri)
                 },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(24.dp),
@@ -508,7 +512,9 @@ fun InputAmountPreviewScreen(
             }
 
             Button(
-                onClick = onConfirmClick,
+                onClick = {
+                    onShareClick(depositUri)
+                },
                 modifier = Modifier.weight(2f),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),

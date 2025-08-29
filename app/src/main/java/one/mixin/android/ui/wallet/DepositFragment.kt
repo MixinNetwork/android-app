@@ -53,6 +53,7 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
@@ -404,7 +405,29 @@ class DepositFragment : BaseFragment() {
                         InputAmountBottomSheetDialogFragment.newInstance(
                             asset,
                             depositEntry.destination
-                        ).showNow(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
+                        ).apply {
+                            this.onCopyClick = { address ->
+                                this@DepositFragment.lifecycleScope.launch {
+                                    context?.heavyClickVibrate()
+                                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
+                                    toast(R.string.copied_to_clipboard)
+                                }
+                            }
+                            this.onShareClick = { amount, address ->
+                                Timber.e("$amount $address")
+                                this@DepositFragment.lifecycleScope.launch {
+                                    val shareView = binding.sv
+                                    val bitmap = shareView.drawToBitmap()
+                                    DepositShareActivity.show(
+                                        requireContext(),
+                                        bitmap,
+                                        asset,
+                                        address,
+                                        amount
+                                    )
+                                }
+                            }
+                        }.showNow(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
                     }
                 } else {
                     binding.amount.isVisible = false
