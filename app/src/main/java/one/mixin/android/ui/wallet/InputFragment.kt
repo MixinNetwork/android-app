@@ -22,7 +22,7 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
-import one.mixin.android.db.web3.vo.isSolToken
+import one.mixin.android.db.web3.vo.isNativeSolToken
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -947,7 +947,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private suspend fun checkSolanaToExists() {
         val token = web3Token ?: return
         val to = toAddress ?: return
-        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isSolToken()) return
+        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isNativeSolToken()) return
 
         val toAccount = withContext(Dispatchers.IO) {
             rpc.getAccountInfo(PublicKey(to))
