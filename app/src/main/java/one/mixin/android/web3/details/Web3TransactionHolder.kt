@@ -94,7 +94,7 @@ class Web3TransactionHolder(
                         amountAnimator.displayedChild = 0
                         value.textColorResource = R.color.wallet_green
                         value.text = formatAmountWithSign(amount, true)
-                        symbolTv.text = transaction.receiveAssetSymbol ?: ""
+                        symbolTv.text = getFormattedSymbol(transaction.receiveAssetSymbol) ?: ""
                     }
                     avatar.loadUrl(transaction)
                 }
@@ -110,7 +110,7 @@ class Web3TransactionHolder(
                         amountAnimator.displayedChild = 0
                         value.textColorResource = R.color.wallet_pink
                         value.text = formatAmountWithSign(amount, false)
-                        symbolTv.text = transaction.sendAssetSymbol ?: ""
+                        symbolTv.text = getFormattedSymbol(transaction.sendAssetSymbol) ?: ""
                     }
                     avatar.loadUrl(transaction)
                 }
@@ -126,7 +126,7 @@ class Web3TransactionHolder(
                         amountAnimator.displayedChild = 0
                         value.textColorResource = R.color.wallet_green
                         value.text = formatAmountWithSign(amount, true)
-                        symbolTv.text = transaction.receiveAssetSymbol ?: ""
+                        symbolTv.text = getFormattedSymbol(transaction.receiveAssetSymbol) ?: ""
                     }
                     avatar.loadUrl(transaction)
                 }
@@ -143,16 +143,16 @@ class Web3TransactionHolder(
                         if (isUnlimited) {
                             value.textColorResource = R.color.wallet_pink
                             value.text = itemView.context.getString(R.string.unlimited)
-                            symbolTv.text = transaction.sendAssetSymbol ?: ""
+                            symbolTv.text = getFormattedSymbol(transaction.sendAssetSymbol) ?: ""
                         } else {
                             value.textColorResource = R.color.wallet_pink
                             value.text = itemView.context.getString(R.string.Approved)
-                            symbolTv.text = "${approvalAssetChange.amount} ${transaction.sendAssetSymbol ?: ""}"
+                            symbolTv.text = "${approvalAssetChange.amount} ${getFormattedSymbol(transaction.sendAssetSymbol) ?: ""}"
                         }
                     } else {
                         value.textColorResource = R.color.wallet_pink
                         value.text = itemView.context.getString(R.string.Approved)
-                        symbolTv.text = transaction.sendAssetSymbol ?: ""
+                        symbolTv.text = getFormattedSymbol(transaction.sendAssetSymbol) ?: ""
                     }
                 }
                 else -> {
@@ -178,6 +178,11 @@ class Web3TransactionHolder(
                 }
             }
         }
+    }
+
+    private fun getFormattedSymbol(symbol: String?): String? {
+        symbol ?: return null
+        return if (symbol.length > 8) "${symbol.take(8)}…" else symbol
     }
 }
 
@@ -231,7 +236,7 @@ fun AmountRow(amount: String, symbol: String, isSender: Boolean) {
         modifier = Modifier.wrapContentWidth()
     ) {
         Text(
-            text = "${if (isSender) "-" else "+"}$amount",
+            text = "${if (isSender) "-" else "+"}${amount.numberFormat8()}",
             color = colorResource(id = if (isSender) R.color.wallet_pink else R.color.wallet_green),
             fontSize = 16.sp,
             fontFamily = FontFamily(Font(R.font.mixin_font)),

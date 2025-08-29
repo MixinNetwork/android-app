@@ -651,12 +651,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun renderTitle(toAddress: String, tag: String? = null) {
         lifecycleScope.launch {
-            val (label, wallet) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, false)
+            val (label, index) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, 0)
             binding.titleView.setLabel(
                 getString(R.string.Send_To_Title),
                 label,
-                "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
-                wallet
+                content = "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
+                index = index
             )
             label?.let {
                 addressLabel = label
@@ -908,7 +908,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 if (length <= 12) {
                     40f
                 } else {
-                    max(40f - 1 * (length - 8), 16f)
+                    max(40f - (length - 8), 16f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }

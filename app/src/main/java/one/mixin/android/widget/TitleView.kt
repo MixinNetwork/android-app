@@ -160,18 +160,24 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         title: String,
         label: String?,
         content: String,
-        toWallet: Boolean = false,
+        index: Int = 0,
     ) {
         binding.titleTv.setTextOnly(title)
         binding.subTitleTv.visibility = VISIBLE
-        if (label != null) {
+        if (index != 0) {
+            if (index == 1) {
+                setSubTitle(title, label ?: "", R.drawable.ic_wallet_privacy)
+            } else {
+                setSubTitle(title, label ?: "")
+            }
+        } else if (label != null) {
             val displayContent = if (label.length > 8) {
                 "${label.take(4)}...${label.takeLast(4)}"
             } else {
                 label
             }
             val spannableString = SpannableString("$displayContent ")
-            val backgroundColor: Int = if (toWallet) Color.parseColor("#B34B7CDD") else Color.parseColor("#8DCC99")
+            val backgroundColor: Int = Color.parseColor("#8DCC99")
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
             val endIndex = displayContent.length
             if (endIndex > 0) {

@@ -135,11 +135,12 @@
             <TextView
                 android:layout_gravity="center"
                 android:id="@+id/watch_tv"
-                android:drawablePadding="3dp"
+                android:drawablePadding="6dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/text_assist"
-                app:drawableStartCompat="@drawable/ic_wallet_watch" />
+                app:drawableStartCompat="@drawable/ic_wallet_watch"
+                app:drawableEndCompat="@drawable/ic_watch_arrow"/>
         </FrameLayout>
 
         <View
