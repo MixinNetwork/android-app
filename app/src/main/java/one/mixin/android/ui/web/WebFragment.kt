@@ -122,7 +122,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
 import one.mixin.android.tip.privateKeyToAddress
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction

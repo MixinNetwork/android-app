@@ -15,21 +15,24 @@ import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+
+import java.util.concurrent.ExecutionException;
+
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
 import one.mixin.android.widget.imageeditor.model.EditorElement;
 import one.mixin.android.widget.imageeditor.model.EditorModel;
 import timber.log.Timber;
-
-import java.util.concurrent.ExecutionException;
 
 /**
  * Uses Glide to load an image and implements a {@link Renderer}.

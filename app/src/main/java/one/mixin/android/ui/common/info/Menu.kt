@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
-import com.sumsub.sns.internal.features.data.model.common.remote.B
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutMenuBinding
 import one.mixin.android.extension.colorAttr
@@ -20,7 +19,6 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.textColor
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
-import one.mixin.android.vo.Plan
 import one.mixin.android.vo.membershipIcon
 import one.mixin.android.widget.FlowLayout
 import one.mixin.android.widget.lottie.RLottieDrawable

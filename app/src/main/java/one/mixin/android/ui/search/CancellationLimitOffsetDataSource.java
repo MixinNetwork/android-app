@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.os.CancellationSignal;
 import android.os.OperationCanceledException;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
@@ -11,13 +12,14 @@ import androidx.paging.PositionalDataSource;
 import androidx.room.InvalidationTracker;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
-import one.mixin.android.util.CrashExceptionReportKt;
-import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import one.mixin.android.util.CrashExceptionReportKt;
+import timber.log.Timber;
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

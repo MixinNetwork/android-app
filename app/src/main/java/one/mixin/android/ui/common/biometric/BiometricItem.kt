@@ -1,6 +1,5 @@
 package one.mixin.android.ui.common.biometric
 
-import android.annotation.SuppressLint
 import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -10,7 +9,6 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
-import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem

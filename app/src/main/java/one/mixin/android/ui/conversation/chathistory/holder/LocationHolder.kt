@@ -1,6 +1,5 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
-import android.graphics.ColorFilter
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout

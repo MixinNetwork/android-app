@@ -14,7 +14,6 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSigner
 import javax.inject.Inject
 

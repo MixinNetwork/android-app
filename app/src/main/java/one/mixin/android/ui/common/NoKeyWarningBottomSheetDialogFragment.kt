@@ -2,7 +2,6 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentNoKeyWarningBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3Wallet

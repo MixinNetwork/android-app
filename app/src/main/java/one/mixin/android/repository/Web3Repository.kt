@@ -11,9 +11,11 @@ import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
@@ -34,11 +36,13 @@ class Web3Repository
 @Inject
 constructor(
     @ApplicationContext private val context: Context,
+    val tokenService: TokenService,
     val routeService: RouteService,
     val web3TokenDao: Web3TokenDao,
     val web3TransactionDao: Web3TransactionDao,
     val web3TokensExtraDao: Web3TokensExtraDao,
     val web3AddressDao: Web3AddressDao,
+    val web3ChainDao: Web3ChainDao,
     val web3WalletDao: Web3WalletDao,
     val userRepository: UserRepository
 ) {
@@ -205,4 +209,40 @@ constructor(
     }
 
     suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
+
+    suspend fun getWalletAddresses(walletId: String) = routeService.getWalletAddresses(walletId)
+
+    suspend fun getWalletAssets(walletId: String) = routeService.getWalletAssets(walletId)
+
+    suspend fun insertWalletAddresses(addresses: List<Web3Address>) {
+        web3AddressDao.insertList(addresses)
+    }
+
+    suspend fun insertWalletAssets(assets: List<Web3Token>) {
+        web3TokenDao.insertList(assets)
+    }
+
+    suspend fun updateBalanceToZeroForMissingAssets(walletId: String, assetIds: List<String>) {
+        web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
+    }
+
+    suspend fun updateAllBalancesToZero(walletId: String) {
+        web3TokenDao.updateAllBalancesToZero(walletId)
+    }
+
+    suspend fun insertTokensExtra(extras: List<Web3TokensExtra>) {
+        web3TokensExtraDao.insertList(extras)
+    }
+
+    suspend fun findTokensExtraByAssetId(assetId: String, walletId: String): Web3TokensExtra? {
+        return web3TokensExtraDao.findByAssetId(assetId, walletId)
+    }
+
+    suspend fun chainExists(chainId: String) = web3ChainDao.chainExists(chainId)
+
+    suspend fun insertChain(chain: one.mixin.android.db.web3.vo.Web3Chain) {
+        web3ChainDao.insert(chain)
+    }
+
+    suspend fun getChainById(chainId: String) = tokenService.getChainById(chainId)
 }

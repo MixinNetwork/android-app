@@ -2,10 +2,10 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.core.content.ContextCompat
 import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse

@@ -42,7 +42,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.checkout.threedsobfuscation.ac
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
@@ -67,7 +66,6 @@ import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSigner

@@ -20,10 +20,10 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.dpToPx
@@ -34,13 +34,13 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.refresh.PendingDepositRefreshHelper
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
-import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
@@ -48,7 +48,6 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -71,6 +70,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     private val binding by viewBinding(FragmentAllTransactionsBinding::bind)
 
     private val adapter = SnapshotPagedAdapter()
+
+    private var pendingDepositRefreshJob: Job? = null
 
     private val userItem by lazy {
         requireArguments().getParcelableCompat(ARGS_USER, UserItem::class.java)
@@ -169,7 +170,20 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
             loadFilter()
         }
-        refreshAllPendingDeposit()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.startRefreshData(
+            fragment = this,
+            walletViewModel = walletViewModel,
+            refreshJob = pendingDepositRefreshJob
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.cancelRefreshData(pendingDepositRefreshJob)
     }
 
     private fun loadFilter() {
@@ -245,40 +259,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     override fun onApplyClick() {
         // Do noting
     }
-
-    private fun refreshAllPendingDeposit() =
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = { walletViewModel.allPendingDeposit() },
-                exceptionBlock = { e ->
-                    reportException(e)
-                    false
-                },
-                successBlock = {
-                    val pendingDeposits = it.data ?: emptyList()
-                    val destinationTags = walletViewModel.findDepositEntryDestinations()
-                    pendingDeposits
-                        .filter { pd ->
-                            destinationTags.any { dt ->
-                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
-                            }
-                        }
-                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
-                            // If there are no pending deposit snapshots belonging to the current user, clear all pending deposits
-                            if (snapshots.isEmpty()) {
-                                walletViewModel.clearAllPendingDeposits()
-                                return@let
-                            }
-                            lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct().forEach {
-                                    walletViewModel.findOrSyncAsset(it)
-                                }
-                                walletViewModel.insertPendingDeposit(snapshots)
-                            }
-                        }
-                },
-            )
-        }
 
     private fun bindLiveData() {
         bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, filterParams))
