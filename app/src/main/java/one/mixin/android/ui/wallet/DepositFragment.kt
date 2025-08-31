@@ -422,6 +422,7 @@ class DepositFragment : BaseFragment() {
                                         requireContext(),
                                         bitmap,
                                         asset,
+                                        depositEntry.destination,
                                         address,
                                         amount
                                     )

@@ -47,16 +47,18 @@ class DepositShareActivity : BaseActivity() {
         private const val ARGS_TOKEN = "token"
         private const val ARGS_ADDRESS = "address"
         private const val ARGS_AMOUNT = "amount"
+        private const val ARGS_AMOUNT_URL = "amount_url"
 
         private var cover: Bitmap? = null
 
-        fun show(context: Context, cover: Bitmap, token: TokenItem, address: String, amount: String? = null) {
+        fun show(context: Context, cover: Bitmap, token: TokenItem, address: String? = null, amountUrl: String? = null, amount: String? = null) {
             refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, DepositShareActivity::class.java).apply {
                 putExtra(ARGS_TOKEN, token)
                 putExtra(ARGS_ADDRESS, address)
                 putExtra(ARGS_AMOUNT, amount)
+                putExtra(ARGS_AMOUNT_URL, amountUrl)
             })
         }
     }
@@ -71,6 +73,10 @@ class DepositShareActivity : BaseActivity() {
     }
     private val address by lazy {
         intent.getStringExtra(ARGS_ADDRESS)
+    }
+
+    private val amountUrl by lazy {
+        intent.getStringExtra(ARGS_AMOUNT_URL)
     }
 
     private val amount by lazy {
@@ -133,25 +139,19 @@ class DepositShareActivity : BaseActivity() {
     private fun setupUI() {
         token?.let { tokenItem ->
             binding.title.text = getString(R.string.Deposit)
-
-            address?.let { addr ->
+            (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(120.dp, 8.dp).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.addressText.text = addr
                 binding.icon.loadImage(token?.iconUrl)
             }
 
-            if (tokenItem.assetId == Constants.ChainId.EOS_CHAIN_ID) {
-                binding.addressTitle.setText(R.string.Account)
-            } else {
-                binding.addressTitle.setText(R.string.Address)
-            }
-
+            binding.addressText.text = address ?: ""
+            binding.addressTitle.setText(R.string.Address)
             binding.networkText.text = tokenItem.chainName
 
             if (amount != null) {
                 binding.minimumDepositTitle.setText(R.string.Amount)
-                binding.minimumDepositText.text = "$amount ${tokenItem.symbol}"
+                binding.minimumDepositText.text = "$amount"
             } else {
                 binding.minimumDepositText.text = "${tokenItem.dust} ${tokenItem.symbol}"
             }
