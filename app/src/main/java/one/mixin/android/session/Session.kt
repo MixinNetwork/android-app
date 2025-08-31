@@ -410,8 +410,8 @@ object Session {
         publicKey: String?,
         request: Request,
     ): Pair<Long, String> {
-        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
         val botPk = publicKey?.base64RawURLDecode() ?: return Pair(0L, "")
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
         val private = privateKeyToCurve25519(edKeyPair.privateKey)
         val sharedKey = calculateAgreement(botPk, private)
         val ts = currentTimeSeconds()
