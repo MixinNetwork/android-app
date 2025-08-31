@@ -511,14 +511,14 @@ object AppModule {
                     addNetworkInterceptor(interceptor)
                 }
                 addInterceptor { chain ->
-                    val requestId = UUID.randomUUID().toString()
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
                         .addHeader("Accept-Language", Locale.getDefault().language)
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
-                        .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getBotSignature(appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null), sourceRequest)
+                        .addHeader(xRequestId, UUID.randomUUID().toString())
+                    val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null)
+                    val (ts, signature) = Session.getBotSignature(botPublicKey, sourceRequest)
                     b.addHeader(mrAccessTimestamp, ts.toString())
                     b.addHeader(mrAccessSign, signature)
                     val request = b.build()
