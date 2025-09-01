@@ -7,11 +7,10 @@ import android.os.Message;
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 
-import io.sentry.android.core.internal.util.Debouncer;
 import okio.Throttler;
 
 /**
- * Mixes the behavior of {@link Throttler} and {@link Debouncer}.
+ * Mixes the behavior of {@link Throttler}.
  *
  * Like a throttler, it will limit the number of runnables to be executed to be at most once every
  * specified interval, while allowing the first runnable to be run immediately.
