@@ -129,6 +129,8 @@
     <string name="background_preview">背景预览</string>
     <string name="Backup_success">备份成功</string>
     <string name="Block">屏蔽用户</string>
+    <string name="block_confirmations">区块确认</string>
+    <string name="block_confirmations_content">存款将在至少 %1$d 个区块确认后到账。</string>
     <string name="block_tip">被屏蔽的用户不能给你发送消息或者邀请你加入群聊</string>
     <string name="Blocked">已屏蔽</string>
     <string name="Blocked_Users">屏蔽名单</string>
@@ -323,6 +325,7 @@
     <string name="Delete_Synced_Contact">删除已同步的通讯录</string>
     <string name="Delete_withdraw_Address">删除 %1$s 地址</string>
     <string name="Deposit">充值</string>
+    <string name="Deposit_Token">充值 %1$s</string>
     <string name="Pending">确认中</string>
     <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址和 Memo（备注）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
     <string name="deposit_attention">首次充值建议小额尝试！</string>
@@ -514,6 +517,7 @@
     <string name="swap_send">支付</string>
     <string name="swap_receive">获得</string>
     <string name="Generating_keys">正在创建密钥…</string>
+    <string name="Generating">正在创建…</string>
     <string name="Get_a_new_wallet">创建钱包</string>
     <string name="Go">导航</string>
     <string name="Go_settings">去设置</string>
@@ -715,7 +719,7 @@
     <string name="Not_support">不支持备份</string>
     <string name="not_supported_deposit">Mixin 已停止支持 %1$s 的充值服务。您可以继续提现和转账钱包余额中的 %2$s。**了解更多**请阅读文档。</string>
     <string name="not_supported_deposit_url">https://support.mixin.one/zh/article/5ywz5lqo5pq56en6lwe5lqn5lin5psv5oyb5ywf5yc855qe6k05pio-1sh1z50</string>
-    <string name="suspended_deposit">%1$s 充值已暂停，可能的原因是因为使用率太低、节点故障、区块链网络硬分叉或者拥堵，注意已转入的 %2$s 资产可以继续转账。</string>
+    <string name="suspended_deposit">%1$s 充值已暂停，可能的原因包括：\n · 节点故障\n · 网络硬分叉\n · 网络拥堵\n · 使用率较低\n注意已转入的 %2$s 资产可以继续转账。</string>
     <string name="Notice">注意</string>
     <string name="Notification_and_Confirmation">通知和确认</string>
     <string name="notification_channel_description">显示 Mixin Messenger 中正在播放的音乐</string>
@@ -2045,4 +2049,11 @@
     <string name="MINIMUM_DEPOSIT">最小充值数</string>
     <string name="Deposit_to_Mixin">充值 %1$s 到 Mixin</string>
     <string name="Deposit_to_Mixin_sub">扫码充值 %1$s</string>
+    <string name="LIGHTNING_ADDRESS">闪电网络地址</string>
+    <string name="lightning_address_description">%1$s 是您的闪电网络地址，通过该地址，您可以便捷、安全地接收支付：</string>
+    <string name="lightning_address_tip_1">地址格式类似邮箱，简单好记。</string>
+    <string name="lightning_address_tip_2">可重复使用，无需每次生成新的。</string>
+    <string name="lightning_address_tip_3">主流闪电网络钱包都支持。</string>
+    <string name="lightning_address_mao_tip">每一个 MAO 域名对应一个闪电网络地址，如果您拥有 MAO 域名，可以按 name@mao.id 格式接收闪电网络转账。了解更多</string>
+    <string name="Copy_Address">复制地址</string>
 </resources>

@@ -5,7 +5,6 @@ import android.content.ClipData
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,27 +29,25 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.databinding.FragmentDepositBinding
 import one.mixin.android.extension.alertDialogBuilder
-import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.hexStringToByteArray
-import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BlockConfirmationsBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.util.getChainName
-import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -105,7 +102,7 @@ class DepositFragment : BaseFragment() {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
-            title.setSubTitle(getString(R.string.Deposit), asset.symbol)
+            title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
             if (notSupport) {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
@@ -117,13 +114,13 @@ class DepositFragment : BaseFragment() {
                 if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.usdtAssets)
-                } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)){
+                } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)) {
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.usdcAssets)
-                } else if (Constants.AssetId.ethAssets.contains(asset.assetId)){
+                } else if (Constants.AssetId.ethAssets.contains(asset.assetId)) {
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.ethAssets)
-                } else if (Constants.AssetId.btcAssets.contains(asset.assetId)){
+                } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
                     networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.btcAssets)
                 } else {
@@ -273,7 +270,7 @@ class DepositFragment : BaseFragment() {
             } else {
                 localMap[asset.assetId] = depositEntry
                 showDepositChooseNetworkBottomSheetDialog(asset, depositEntry)
-                if (different) {
+                if (different && asset.assetId != Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
                     AddressChangedBottomSheet.newInstance(asset).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
                 }
                 updateUI(asset, depositEntry)
@@ -338,7 +335,9 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Dogecoin,
                 Constants.ChainId.Dash,
                 Constants.ChainId.Monero,
-                Constants.ChainId.Solana -> true
+                Constants.ChainId.Solana,
+                    -> true
+
                 else -> false
             }
 
@@ -479,5 +478,30 @@ class DepositFragment : BaseFragment() {
         binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
         binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
         binding.blockConfirmationsValue.text = asset.confirmations.toString()
+        binding.blockConfirmations.setOnClickListener {
+            BlockConfirmationsBottomSheetDialogFragment.newInstance(asset.confirmations).showNow(parentFragmentManager, BlockConfirmationsBottomSheetDialogFragment.TAG)
+        }
+        if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
+            val address = "${Session.getAccount()?.identityNumber}@mixin.id"
+            binding.lightningAddressTitle.isVisible = true
+            binding.lightningAddressTip.isVisible = true
+            binding.lightningAddressTv.text = address
+            binding.lightningAddressCopy.setOnClickListener {
+                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
+                toast(R.string.copied_to_clipboard)
+            }
+
+            binding.lightningAddressTip.setOnClickListener {
+                LightningAddressBottomSheetDialogFragment.newInstance(address).apply {
+                    copyCallback = {
+                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, it))
+                        toast(R.string.copied_to_clipboard)
+                    }
+                }.showNow(parentFragmentManager, LightningAddressBottomSheetDialogFragment.TAG)
+            }
+        } else {
+            binding.lightningAddressTitle.isVisible = false
+            binding.lightningAddressTip.isVisible = false
+        }
     }
 }
