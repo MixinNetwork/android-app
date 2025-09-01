@@ -570,6 +570,7 @@ class ConversationListFragment : LinkFragment() {
         }
 
     override fun onDestroyView() {
+        Timber.e("onDestroyView")
         if (isAdded) {
             messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
@@ -737,6 +738,10 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onResume() {
         super.onResume()
+        if (messageAdapter.itemCount <= 0) {
+            Timber.e("onResume reset")
+            this.circleId = circleId
+        }
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
             ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
