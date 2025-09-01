@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -85,6 +86,9 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         Spacer(modifier = Modifier.height(22.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                             Image(
+                                modifier = Modifier.clickable {
+                                    dismiss()
+                                },
                                 painter = painterResource(R.drawable.ic_circle_close),
                                 contentDescription = null,
                             )

@@ -75,7 +75,11 @@
                         android:layout_gravity="center" />
 
                 </FrameLayout>
-
+                <LinearLayout
+                    android:id="@+id/container_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
                 <!-- Address Title -->
                 <TextView
                     android:id="@+id/addressTitle"
@@ -159,7 +163,7 @@
                             android:textSize="14sp" />
 
                     </LinearLayout>
-
+                </LinearLayout>
                 </LinearLayout>
 
                 <RelativeLayout

@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,7 +50,7 @@ class DepositShareActivity : BaseActivity() {
 
         private var cover: Bitmap? = null
 
-        fun show(context: Context, cover: Bitmap, token: TokenItem, address: String? = null, amountUrl: String? = null, amount: String? = null) {
+        fun show(context: Context, cover: Bitmap, token: TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null) {
             refreshScreenshot(context, 0x33000000)
             this.cover = cover
             context.startActivity(Intent(context, DepositShareActivity::class.java).apply {
@@ -135,7 +136,12 @@ class DepositShareActivity : BaseActivity() {
     }
 
     private fun setupUI() {
-        token?.let { tokenItem ->
+        val tokenItem = token
+        if (tokenItem == null) {
+            binding.title.text = Session.getAccount()?.fullName
+            binding.subTitleTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber?:"")
+            binding.containerLl.isVisible = false
+        } else {
             binding.title.text = getString(R.string.Deposit)
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(120.dp, 8.dp).first

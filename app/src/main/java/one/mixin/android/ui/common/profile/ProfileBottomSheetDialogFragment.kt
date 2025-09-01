@@ -48,6 +48,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.AvatarActivity
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
@@ -259,10 +260,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     menu {
                         title = getString(R.string.Receive_Money)
                         action = {
-                            QrBottomSheetDialogFragment.newInstance(
-                                account.userId,
-                                QrBottomSheetDialogFragment.TYPE_RECEIVE_QR,
-                            ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                            ReceiveQrActivity.show(requireContext(), account.userId)
                         }
                     }
                 }

@@ -47,6 +47,7 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
@@ -878,10 +879,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     override
     fun onWalletClick() {
-        QrBottomSheetDialogFragment.newInstance(
-            Session.getAccountId()!!,
-            TYPE_RECEIVE_QR
-        ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+        ReceiveQrActivity.show(requireContext(), Session.getAccountId()!!)
     }
 
     private fun getNumberFormat(value: String): String {

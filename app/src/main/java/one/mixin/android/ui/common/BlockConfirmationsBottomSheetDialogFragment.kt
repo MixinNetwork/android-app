@@ -2,7 +2,6 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBlockConfirmationsBottomSheetBinding
 import one.mixin.android.extension.withArgs
