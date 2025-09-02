@@ -16,7 +16,7 @@ class RoundBackgroundColorSpan(private val bgColor: Int, private val textColor: 
         end: Int,
         fm: FontMetricsInt?,
     ): Int {
-        return (paint.measureText(text, start, end).toInt() + 8.dp)
+        return (paint.measureText(text, start, end).toInt() + 12.dp)
     }
 
     override fun draw(

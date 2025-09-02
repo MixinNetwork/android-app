@@ -1,5 +1,6 @@
 package one.mixin.android.session
 
+import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import ed25519.Ed25519
@@ -8,8 +9,6 @@ import io.jsonwebtoken.EdDSAPrivateKey
 import io.jsonwebtoken.EdDSAPublicKey
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
-import io.sentry.Sentry
-import io.sentry.protocol.User
 import jwt.Jwt
 import okhttp3.Request
 import okio.ByteString.Companion.encode
@@ -71,12 +70,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.copy(salt = null)))
 
-        val user = User().apply {
-            id = account.userId
-            username = account.identityNumber
-        }
-        Sentry.setUser(user)
-
+        Bugsnag.setUser(account.userId, account.identityNumber, account.fullName)
         val salt = account.salt
         if (salt.isNullOrEmpty()) {
             return
@@ -128,10 +122,7 @@ object Session {
         self = null
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
-        
-        Sentry.configureScope { scope ->
-            scope.user = null
-        }
+        Bugsnag.setUser(null, null, null)
     }
 
     fun storeEd25519Seed(token: String) {
@@ -410,8 +401,8 @@ object Session {
         publicKey: String?,
         request: Request,
     ): Pair<Long, String> {
-        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
         val botPk = publicKey?.base64RawURLDecode() ?: return Pair(0L, "")
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
         val private = privateKeyToCurve25519(edKeyPair.privateKey)
         val sharedKey = calculateAgreement(botPk, private)
         val ts = currentTimeSeconds()

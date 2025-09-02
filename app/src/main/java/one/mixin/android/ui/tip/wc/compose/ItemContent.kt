@@ -43,6 +43,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun ItemWalletContent(
     title: String,
+    fontSize: TextUnit = 14.sp,
 ) {
     Column(
         modifier =
@@ -61,7 +62,7 @@ fun ItemWalletContent(
             Text(
                 text = stringResource(R.string.Privacy_Wallet),
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
+                fontSize = fontSize,
             )
             Spacer(modifier = Modifier.width(4.dp))
 
@@ -75,6 +76,7 @@ fun ItemWalletContent(
         }
     }
 }
+
 @Composable
 fun ItemContent(
     title: String,
