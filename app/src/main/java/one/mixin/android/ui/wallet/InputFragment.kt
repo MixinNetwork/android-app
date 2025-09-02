@@ -282,7 +282,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 )
                 binding.addTv.setOnClickListener {
                     if (insufficientBalance.isVisible) {
-                        if (web3Token != null) {
+                        if (web3Token != null) { // Insufficient web token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(web3Token!!)
                                 .apply {
                                     onWeb3Action = { type, t ->
@@ -311,7 +311,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     parentFragmentManager,
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
-                        } else if (token != null) {
+                        } else if (token != null) { // Insufficient token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(token!!)
                                 .apply {
                                     onAction = { type, t ->
@@ -337,7 +337,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
                         }
-                    } else if (gas != null && chainToken != null) {
+                    } else if (gas != null && chainToken != null) { // Insufficient gas Balance
                         AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
                             .apply {
                                 onWeb3Action = { type, t ->
@@ -364,7 +364,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 parentFragmentManager,
                                 AddFeeBottomSheetDialogFragment.TAG
                             )
-                    } else if (currentFee != null) {
+                    } else if (currentFee != null) { // Insufficient fee Balance
                         AddFeeBottomSheetDialogFragment.newInstance(currentFee!!.token)
                             .apply {
                                 onAction = { type, t ->
@@ -373,8 +373,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                             output = t.assetId,
-                                            walletId = JsSigner.currentWalletId,
-                                            inMixin = false,
+                                            null,
+                                            null
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         view.navigate(
