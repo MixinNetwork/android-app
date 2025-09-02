@@ -65,18 +65,12 @@ class TransferContentItem : RelativeLayout {
         _binding.apply {
             title.text = context.getString(titleResId).uppercase()
             footer.isVisible = false
-
-            val displayContent = if (label.length > 8) {
-                "${label.take(4)}...${contentStr.takeLast(4)}"
-            } else {
-                label
-            }
-            val fullText = "$contentStr $displayContent"
+            val fullText = "$contentStr $label"
 
             val spannableString = SpannableString(fullText)
 
-            val start = fullText.lastIndexOf(displayContent)
-            val end = start + displayContent.length
+            val start = fullText.lastIndexOf(label)
+            val end = start + label.length
 
             val backgroundColor: Int = if (toWallet) Color.parseColor("#B34B7CDD") else Color.parseColor("#8DCC99")
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
