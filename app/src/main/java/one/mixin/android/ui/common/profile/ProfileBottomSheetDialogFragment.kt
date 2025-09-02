@@ -101,7 +101,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 if (uri != null) {
                     val options = UCrop.Options()
                     options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-                    options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
                     options.setToolbarWidgetColor(Color.WHITE)
                     options.setHideBottomControls(true)
                     UCrop.of(uri, imageUri)
@@ -319,7 +318,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             val options = UCrop.Options()
             options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-            options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
             options.setToolbarWidgetColor(Color.WHITE)
             options.setHideBottomControls(true)
             UCrop.of(selectedImageUri, imageUri)
