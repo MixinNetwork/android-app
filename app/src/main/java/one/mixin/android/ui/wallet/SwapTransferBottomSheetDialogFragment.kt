@@ -89,6 +89,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
@@ -112,6 +113,8 @@ import one.mixin.android.ui.common.biometric.isUtxoException
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
+import one.mixin.android.ui.tip.wc.compose.ItemContent
+import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.components.WalletLabel
@@ -210,6 +213,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         Error,
     }
 
+    var walletDisplayInfo by mutableStateOf<Pair<String, Int>?>(null)
     private val source by lazy {
         requireNotNull(requireArguments().getString(ARGS_SOURCE))
     }
@@ -452,10 +456,22 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                             Box(modifier = Modifier.height(20.dp))
                             if (source == "web3") {
-                                ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), null,
-                                    if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) JsSigner.solanaAddress else JsSigner.evmAddress)
+                                val account = if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) JsSigner.solanaAddress else JsSigner.evmAddress
+                                LaunchedEffect(account) {
+                                    try {
+                                        walletDisplayInfo = web3ViewModel.checkAddressAndGetDisplayName(account, null, inAsset.chain.chainId)
+                                    } catch (e: Exception) {
+                                        walletDisplayInfo = null
+                                    }
+                                }
+                                walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                                    val (displayName, _) = walletDisplayInfo
+                                    ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account, displayName)
+                                }, {
+                                    ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account)
+                                })
                             } else {
-                                ItemUserContent(title = stringResource(id = R.string.Senders).uppercase(), self, null)
+                                ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
                             }
                             Box(modifier = Modifier.height(20.dp))
                             ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver, null)
