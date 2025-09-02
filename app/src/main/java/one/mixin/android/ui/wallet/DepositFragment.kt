@@ -46,6 +46,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BlockConfirmationsBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.DepositEntry
@@ -414,11 +415,8 @@ class DepositFragment : BaseFragment() {
                             }
                             this.onShareClick = { amount, address ->
                                 this@DepositFragment.lifecycleScope.launch {
-                                    val shareView = binding.sv
-                                    val bitmap = shareView.drawToBitmap()
                                     DepositShareActivity.show(
                                         requireContext(),
-                                        bitmap,
                                         asset,
                                         depositEntry.destination,
                                         address,
@@ -434,11 +432,9 @@ class DepositFragment : BaseFragment() {
                 }
 
                 binding.share.setOnClickListener {
-                    val shareView = binding.sv
-                    val bitmap = shareView.drawToBitmap()
+                    refreshScreenshot(requireContext(), 0x66FF0000)
                     DepositShareActivity.show(
                         requireContext(),
-                        bitmap,
                         asset,
                         depositEntry.destination,
                     )

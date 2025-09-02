@@ -2,11 +2,10 @@ package one.mixin.android.ui.common
 
 import android.Manifest
 import android.content.ClipData
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
-import androidx.activity.viewModels
-import androidx.core.view.drawToBitmap
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.android.lifecycle.autoDispose
@@ -30,7 +29,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.MainActivity.Companion.SCAN
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
@@ -39,8 +37,8 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.util.rxpermission.RxPermissions
+import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BadgeCircleImageView
-import timber.log.Timber
 
 @AndroidEntryPoint
 class ReceiveQrActivity : BaseActivity() {
@@ -48,7 +46,7 @@ class ReceiveQrActivity : BaseActivity() {
     companion object {
         const val ARGS_USER_ID = "args_user_id"
 
-        fun show(context: android.content.Context, userId: String) {
+        fun show(context: Context, userId: String) {
             val intent = Intent(context, ReceiveQrActivity::class.java)
             intent.putExtra(ARGS_USER_ID, userId)
             context.startActivity(intent)
@@ -131,11 +129,8 @@ class ReceiveQrActivity : BaseActivity() {
                     }
                 }
                 share.setOnClickListener {
-                    val shareView = binding.bottomLl
-                    val bitmap = shareView.drawToBitmap()
                     DepositShareActivity.show(
                         this@ReceiveQrActivity,
-                        bitmap,
                         null,
                         "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}",
                     )
@@ -189,15 +184,13 @@ class ReceiveQrActivity : BaseActivity() {
                     }
                     this.onShareClick = { amount, address ->
                         this@ReceiveQrActivity.lifecycleScope.launch {
-                            val shareView = binding.bottomLl
-                            val bitmap = shareView.drawToBitmap()
                             DepositShareActivity.show(
                                 requireContext(),
-                                bitmap,
                                 asset,
                                 "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}",
                                         address,
-                                amount
+                                amount,
+                                user = Session.getAccount()?.toUser(),
                             )
                         }
                     }

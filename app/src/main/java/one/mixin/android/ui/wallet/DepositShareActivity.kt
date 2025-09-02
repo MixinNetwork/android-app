@@ -36,9 +36,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
 import java.io.File
 import java.io.FileOutputStream
+import androidx.core.graphics.drawable.toDrawable
 
 @AndroidEntryPoint
 class DepositShareActivity : BaseActivity() {
@@ -48,16 +51,17 @@ class DepositShareActivity : BaseActivity() {
         private const val ARGS_AMOUNT = "amount"
         private const val ARGS_AMOUNT_URL = "amount_url"
 
-        private var cover: Bitmap? = null
+        private const val ARGS_USER = "user"
 
-        fun show(context: Context, cover: Bitmap, token: TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null) {
+
+        fun show(context: Context, token: TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null, user: User? = null) {
             refreshScreenshot(context, 0x33000000)
-            this.cover = cover
             context.startActivity(Intent(context, DepositShareActivity::class.java).apply {
                 putExtra(ARGS_TOKEN, token)
                 putExtra(ARGS_ADDRESS, address)
                 putExtra(ARGS_AMOUNT, amount)
                 putExtra(ARGS_AMOUNT_URL, amountUrl)
+                putExtra(ARGS_USER, user)
             })
         }
     }
@@ -69,6 +73,9 @@ class DepositShareActivity : BaseActivity() {
     private lateinit var binding: ActivityDepositShareBinding
     private val token: TokenItem? by lazy {
         intent.extras?.getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
+    }
+    private val user: User? by lazy {
+        intent.extras?.getParcelableCompat(ARGS_USER, User::class.java)
     }
     private val address by lazy {
         intent.getStringExtra(ARGS_ADDRESS)
@@ -89,10 +96,10 @@ class DepositShareActivity : BaseActivity() {
 
         getScreenshot()?.let {
             supportsS({
-                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.background = it.toDrawable(resources)
                 binding.background.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR))
             }, {
-                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+                binding.container.background = it.blurBitmap(25).toDrawable(resources)
             })
         }
 
@@ -135,14 +142,21 @@ class DepositShareActivity : BaseActivity() {
 
     private fun setupUI() {
         val tokenItem = token
-        if (tokenItem == null) {
-            binding.titleTv.text = Session.getAccount()?.fullName
-            binding.subTitleTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber?:"")
+        if (user != null || tokenItem ==null) {
+            val u = user ?: Session.getAccount()?.toUser()
+            binding.titleTv.text = u?.fullName
+            binding.subTitleTv.text = getString(R.string.contact_mixin_id, u?.identityNumber ?: "")
             binding.containerLl.isVisible = false
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(120.dp, 8.dp).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.icon.loadImage(Session.getAccount()?.avatarUrl)
+                binding.icon.loadImage(u?.avatarUrl)
+            }
+            binding.bottomTv.isVisible = true
+            if (tokenItem != null) {
+                binding.bottomTv.setText(getString(R.string.transfer_qrcode_prompt_amount, "$amount"))
+            } else {
+                binding.bottomTv.setText(getString(R.string.transfer_qrcode_prompt))
             }
         } else {
             binding.titleTv.text = getString(R.string.Deposit_to_Mixin, token?.symbol ?: "")
@@ -172,22 +186,6 @@ class DepositShareActivity : BaseActivity() {
             .alpha(1f)
             .setDuration(500)
             .setListener(null)
-    }
-
-    private fun cropAndScaleBitmap(original: Bitmap, cropHeight: Int, y: Int): Bitmap {
-        val croppedBitmap = Bitmap.createBitmap(
-            original,
-            0,
-            0,
-            original.width,
-            original.height - cropHeight
-        )
-        val targetWidth = croppedBitmap.width - y
-        val scale = targetWidth.toFloat() / croppedBitmap.width.toFloat()
-        val targetHeight = (croppedBitmap.height * scale).toInt()
-        val scaledBitmap = Bitmap.createScaledBitmap(croppedBitmap, targetWidth, targetHeight, true)
-
-        return scaledBitmap
     }
 
     private val onShare: () -> Unit = {
