@@ -283,7 +283,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 )
                 binding.addTv.setOnClickListener {
                     if (insufficientBalance.isVisible) {
-                        if (web3Token != null) {
+                        if (web3Token != null) { // Insufficient web token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(web3Token!!)
                                 .apply {
                                     onWeb3Action = { type, t ->
@@ -312,7 +312,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     parentFragmentManager,
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
-                        } else if (token != null) {
+                        } else if (token != null) { // Insufficient token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(token!!)
                                 .apply {
                                     onAction = { type, t ->
@@ -338,7 +338,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
                         }
-                    } else if (gas != null && chainToken != null) {
+                    } else if (gas != null && chainToken != null) { // Insufficient gas Balance
                         AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
                             .apply {
                                 onWeb3Action = { type, t ->
@@ -365,7 +365,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 parentFragmentManager,
                                 AddFeeBottomSheetDialogFragment.TAG
                             )
-                    } else if (currentFee != null) {
+                    } else if (currentFee != null) { // Insufficient fee Balance
                         AddFeeBottomSheetDialogFragment.newInstance(currentFee!!.token)
                             .apply {
                                 onAction = { type, t ->
@@ -374,8 +374,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                             output = t.assetId,
-                                            walletId = JsSigner.currentWalletId,
-                                            inMixin = false,
+                                            null,
+                                            null
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         view.navigate(
@@ -652,12 +652,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun renderTitle(toAddress: String, tag: String? = null) {
         lifecycleScope.launch {
-            val (label, wallet) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, false)
+            val (label, index) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, 0)
             binding.titleView.setLabel(
                 getString(R.string.Send_To_Title),
                 label,
-                "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
-                wallet
+                content = "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
+                index = index
             )
             label?.let {
                 addressLabel = label
@@ -906,7 +906,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 if (length <= 12) {
                     40f
                 } else {
-                    max(40f - 1 * (length - 8), 16f)
+                    max(40f - (length - 8), 16f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }

@@ -518,14 +518,13 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAP_KEY}" />
-<!--        <meta-data-->
-<!--            android:name="com.google.android.gms.car.application"-->
-<!--            android:resource="@xml/automotive_app_desc" />-->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
 
-        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+        <meta-data
+            android:name="com.bugsnag.android.API_KEY"
+            android:value="${BUGSNAG_KEY}"/>
 
     </application>
 
