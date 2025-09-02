@@ -1089,6 +1089,7 @@
     <string name="transfer_memo">Memo (optional)</string>
     <string name="Transfer_Notifications">Transfer Notifications</string>
     <string name="transfer_qrcode_prompt">Scan the QR Code to transfer me on Mixin</string>
+    <string name="transfer_qrcode_prompt_amount">Scan the QR Code to transfer me %1$s on Mixin</string>
     <string name="transfer_to">Transfer to %1$s</string>
     <string name="transfer_without_pin">You must setup PIN for transfer</string>
     <string name="Trending">Trending</string>

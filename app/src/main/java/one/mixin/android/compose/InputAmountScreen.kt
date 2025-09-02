@@ -43,12 +43,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.session.Session
 import one.mixin.android.vo.safe.TokenItem
 
 object InputAmountDestinations {
@@ -65,11 +67,12 @@ fun InputAmountFlow(
     onSwitchClick: () -> Unit,
     onShareClick: (String) -> Unit,
     onCopyClick: (String) -> Unit,
+    onForward: (String) -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     token: TokenItem? = null,
     address: String? = null,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ) {
     NavHost(
         navController = navController,
@@ -99,7 +102,8 @@ fun InputAmountFlow(
                 },
                 onCloseClick = onCloseClick,
                 onShareClick = onShareClick,
-                onCopyClick = onCopyClick
+                onCopyClick = onCopyClick,
+                onForward = onForward
             )
         }
     }
@@ -113,7 +117,7 @@ fun InputAmountScreen(
     onDeleteClick: () -> Unit,
     onSwitchClick: () -> Unit,
     onContinueClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
@@ -132,7 +136,6 @@ fun InputAmountScreen(
 
             IconButton(
                 onClick = {},
-                modifier = Modifier.size(32.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_close_black),
@@ -224,7 +227,11 @@ fun InputAmountScreen(
 
 // Helper function to generate deposit URI based on token chain and address
 private fun generateDepositUri(token: TokenItem?, address: String?, amount: String): String? {
-    if (token == null || address.isNullOrBlank() || amount == "0") return null
+    if (token == null || amount == "0") return null
+    if (address == null) {
+        val code = "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}?asset=${token.assetId}&amount=$amount"
+        return code
+    }
 
     val cleanAmount = amount.replace(Regex("[^0-9.]"), "") // Remove symbol and spaces
     if (cleanAmount.isEmpty() || cleanAmount.toDoubleOrNull() == 0.0) return null
@@ -328,6 +335,7 @@ fun InputAmountPreviewScreen(
     onCloseClick: () -> Unit,
     onShareClick: (String) -> Unit,
     onCopyClick: (String) -> Unit,
+    onForward: (String) -> Unit,
     modifier: Modifier = Modifier,
     token: TokenItem? = null,
     address: String? = null,
@@ -349,7 +357,6 @@ fun InputAmountPreviewScreen(
         ) {
             IconButton(
                 onClick = onBackClick,
-                modifier = Modifier.size(32.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_back),
@@ -362,7 +369,6 @@ fun InputAmountPreviewScreen(
 
             IconButton(
                 onClick = onCloseClick,
-                modifier = Modifier.size(32.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_close_black),
@@ -379,20 +385,37 @@ fun InputAmountPreviewScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(54.dp))
-            Text(
-                text = stringResource(R.string.Deposit_to_Mixin, token?.symbol ?: ""),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MixinAppTheme.colors.textPrimary,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.Deposit_to_Mixin_sub, token?.symbol ?: ""),
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-                textAlign = TextAlign.Center,
-            )
+            if (address == null) {
+                Text(
+                    text = Session.getAccount()?.fullName ?: "",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.contact_mixin_id, Session.getAccount()?.identityNumber ?: ""),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    textAlign = TextAlign.Center,
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.Deposit_to_Mixin, token?.symbol ?: ""),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.Deposit_to_Mixin_sub, token?.symbol ?: ""),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    textAlign = TextAlign.Center,
+                )
+            }
             Spacer(modifier = Modifier.height(20.dp))
 
             Box(
@@ -432,6 +455,14 @@ fun InputAmountPreviewScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+            if (address == null) {
+                Text(
+                    text = stringResource(R.string.transfer_qrcode_prompt_amount, "$primaryAmount"),
+                    fontSize = 12.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            }
             address?.let { addr ->
                 Column(
                     horizontalAlignment = Alignment.Start
@@ -448,85 +479,120 @@ fun InputAmountPreviewScreen(
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                 }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.Start
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
                 ) {
-                    Text(
-                        text = stringResource(R.string.network),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(
-                        text = token?.chainName ?: "Unknown",
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-                }
+                    Column(
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = stringResource(R.string.network),
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = token?.chainName ?: "Unknown",
+                            color = MixinAppTheme.colors.textPrimary
+                        )
+                    }
 
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = stringResource(R.string.Amount),
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(
-                        text = primaryAmount,
-                        color = MixinAppTheme.colors.textPrimary,
-                        textAlign = TextAlign.End
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Amount),
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = primaryAmount,
+                            color = MixinAppTheme.colors.textPrimary,
+                            textAlign = TextAlign.End
+                        )
+                    }
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(20.dp))
         Spacer(modifier = Modifier.weight(1f))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(
-                onClick = {
-                    onCopyClick(depositUri)
-                },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
-            ) {
-                Text(
-                    text = stringResource(R.string.Copy),
-                    fontSize = 16.sp,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-            }
+            if (address == null) {
+                Button(
+                    onClick = {
+                        onShareClick(depositUri)
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
+                    contentPadding = PaddingValues(vertical = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.Share),
+                        fontSize = 16.sp,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                }
 
-            Button(
-                onClick = {
-                    onShareClick(depositUri)
-                },
-                modifier = Modifier.weight(2f),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
-                contentPadding = PaddingValues(vertical = 12.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.Share),
-                    fontSize = 16.sp,
-                    color = Color.White,
-                )
+                Button(
+                    onClick = {
+                        onForward(depositUri)
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
+                    contentPadding = PaddingValues(vertical = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.Forward),
+                        fontSize = 16.sp,
+                        color = Color.White,
+                    )
+                }
+            } else {
+                Button(
+                    onClick = {
+                        onCopyClick(depositUri)
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
+                    contentPadding = PaddingValues(vertical = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.Copy),
+                        fontSize = 16.sp,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        onShareClick(depositUri)
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
+                    contentPadding = PaddingValues(vertical = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.Share),
+                        fontSize = 16.sp,
+                        color = Color.White,
+                    )
+                }
             }
         }
+        Spacer(modifier = Modifier.height(10.dp))
     }
 }
 
@@ -534,7 +600,7 @@ fun InputAmountPreviewScreen(
 fun NumberKeyboard(
     onNumberClick: (String) -> Unit,
     onDeleteClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val keys = listOf(
@@ -621,7 +687,7 @@ object AmountInputHandler {
     fun handleNumberInput(
         currentValue: String,
         inputValue: String,
-        currencyName: String? = null
+        currencyName: String? = null,
     ): String {
         return when {
             // Handle decimal point

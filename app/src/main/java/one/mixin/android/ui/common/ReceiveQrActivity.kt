@@ -29,6 +29,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.MainActivity.Companion.SCAN
 import one.mixin.android.ui.qr.CaptureActivity
@@ -107,72 +108,66 @@ class ReceiveQrActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             finish()
         }
-        viewModel.findUserById(userId).observe(
-            this,
-        ) { user ->
-            if (user == null) {
-                viewModel.refreshUser(userId, true)
-            } else {
-                binding.apply {
-                    scan.setOnClickListener {
-                        RxPermissions(this@ReceiveQrActivity).request(Manifest.permission.CAMERA)
-                            .autoDispose(stopScope).subscribe { granted ->
-                                if (granted) {
-                                    showCapture(true)
-                                } else {
-                                    this@ReceiveQrActivity.openPermissionSetting()
+        Session.getAccount()?.let { user ->
+            binding.apply {
+                scan.setOnClickListener {
+                    RxPermissions(this@ReceiveQrActivity).request(Manifest.permission.CAMERA)
+                        .autoDispose(stopScope).subscribe { granted ->
+                            if (granted) {
+                                showCapture(true)
+                            } else {
+                                this@ReceiveQrActivity.openPermissionSetting()
+                            }
+                        }
+                }
+                amount.setOnClickListener {
+                    if (!Session.saltExported() && Session.isAnonymous()) {
+                        BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
+                            .apply {
+                                laterCallback = {
+                                    showReceiveAssetList()
                                 }
                             }
+                            .show(supportFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+                    } else {
+                        showReceiveAssetList()
                     }
-                    amount.setOnClickListener {
-                        if (!Session.saltExported() && Session.isAnonymous()) {
-                            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                                .apply {
-                                    laterCallback = {
-                                        showReceiveAssetList()
+                }
+                share.setOnClickListener {
+                    val shareView = binding.container
+                    val bitmap = shareView.drawToBitmap()
+                    DepositShareActivity.show(
+                        this@ReceiveQrActivity,
+                        bitmap,
+                        null,
+                        "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}",
+                    )
+                }
+                badgeView.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
+                nameTv.text = user.fullName
+                numberTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+                badgeView.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
+                badgeView.pos = BadgeCircleImageView.END_BOTTOM
+                qr.post {
+                    Observable.create<Pair<Bitmap, Int>> { e ->
+                        val code = "${Constants.Scheme.HTTPS_PAY}/${user.userId}"
+                        val r = code.generateQRCode(binding.qr.width)
+                        e.onNext(r)
+                    }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDispose(this@ReceiveQrActivity)
+                        .subscribe(
+                            { r ->
+                                badgeView.layoutParams =
+                                    badgeView.layoutParams.apply {
+                                        width = r.second
+                                        height = r.second
                                     }
-                                }
-                                .show(supportFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
-                        } else {
-                            showReceiveAssetList()
-                        }
-                    }
-                    share.setOnClickListener {
-                        val shareView = binding.container
-                        val bitmap = shareView.drawToBitmap()
-                        DepositShareActivity.show(
-                            this@ReceiveQrActivity,
-                            bitmap,
-                            null,
-                            "${Constants.Scheme.HTTPS_PAY}/${Session.getSessionId()}",
+                                qr.setImageBitmap(r.first)
+                            },
+                            {
+                            },
                         )
-                    }
-                    badgeView.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
-                    nameTv.text = user.fullName
-                    numberTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
-                    badgeView.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
-                    badgeView.pos = BadgeCircleImageView.END_BOTTOM
-                    qr.post {
-                        Observable.create<Pair<Bitmap, Int>> { e ->
-                            val code = "${Constants.Scheme.HTTPS_PAY}/${user.userId}"
-                            val r = code.generateQRCode(binding.qr.width)
-                            e.onNext(r)
-                        }.subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDispose(this@ReceiveQrActivity)
-                            .subscribe(
-                                { r ->
-                                    badgeView.layoutParams =
-                                        badgeView.layoutParams.apply {
-                                            width = r.second
-                                            height = r.second
-                                        }
-                                    qr.setImageBitmap(r.first)
-                                },
-                                {
-                                },
-                            )
-                    }
                 }
             }
         }
@@ -183,7 +178,7 @@ class ReceiveQrActivity : BaseActivity() {
             .setOnAssetClick { asset ->
                 InputAmountBottomSheetDialogFragment.newInstance(
                     asset,
-                    "${Constants.Scheme.HTTPS_PAY}/${Session.getSessionId()}"
+                    null,
                 ).apply {
                     this.onCopyClick = { address ->
                         this@ReceiveQrActivity.lifecycleScope.launch {
@@ -191,6 +186,9 @@ class ReceiveQrActivity : BaseActivity() {
                             context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                             toast(R.string.copied_to_clipboard)
                         }
+                    }
+                    this.onForwardClick = { address ->
+                        ForwardActivity.show(requireContext(), address)
                     }
                     this.onShareClick = { amount, address ->
                         this@ReceiveQrActivity.lifecycleScope.launch {
@@ -200,7 +198,7 @@ class ReceiveQrActivity : BaseActivity() {
                                 requireContext(),
                                 bitmap,
                                 asset,
-                                "${Constants.Scheme.HTTPS_PAY}/${Session.getSessionId()}",
+                                "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}",
                                         address,
                                 amount
                             )

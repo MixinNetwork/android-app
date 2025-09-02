@@ -109,8 +109,6 @@ class DepositShareActivity : BaseActivity() {
         setupUI()
 
         binding.apply {
-            titleTv.text = getString(R.string.Deposit_to_Mixin, token?.symbol ?: "")
-            subTitleTv.text = getString(R.string.Deposit_to_Mixin_sub, token?.symbol ?: "")
             share.setOnClickListener {
                 onShare()
             }
@@ -138,11 +136,17 @@ class DepositShareActivity : BaseActivity() {
     private fun setupUI() {
         val tokenItem = token
         if (tokenItem == null) {
-            binding.title.text = Session.getAccount()?.fullName
+            binding.titleTv.text = Session.getAccount()?.fullName
             binding.subTitleTv.text = getString(R.string.contact_mixin_id, Session.getAccount()?.identityNumber?:"")
             binding.containerLl.isVisible = false
+            (amountUrl ?: address)?.let { addr ->
+                val qrCode = addr.generateQRCode(120.dp, 8.dp).first
+                binding.qrCode.setImageBitmap(qrCode)
+                binding.icon.loadImage(Session.getAccount()?.avatarUrl)
+            }
         } else {
-            binding.title.text = getString(R.string.Deposit)
+            binding.titleTv.text = getString(R.string.Deposit_to_Mixin, token?.symbol ?: "")
+            binding.subTitleTv.text = getString(R.string.Deposit_to_Mixin_sub, token?.symbol ?: "")
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(120.dp, 8.dp).first
                 binding.qrCode.setImageBitmap(qrCode)

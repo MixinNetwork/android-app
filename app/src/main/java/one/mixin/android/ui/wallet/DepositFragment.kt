@@ -413,7 +413,6 @@ class DepositFragment : BaseFragment() {
                                 }
                             }
                             this.onShareClick = { amount, address ->
-                                Timber.e("$amount $address")
                                 this@DepositFragment.lifecycleScope.launch {
                                     val shareView = binding.sv
                                     val bitmap = shareView.drawToBitmap()

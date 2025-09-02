@@ -70,6 +70,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
     var onDismiss: (() -> Unit)? = null
     var onAmountChanged: ((primary: String, minor: String) -> Unit)? = null
     var onShareClick: ((amount: String, depositUri: String) -> Unit)? = null
+    var onForwardClick: ((depositUri: String) -> Unit)? = null
     var onCopyClick: ((depositUri: String) -> Unit)? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -180,6 +181,10 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             onShareClick?.invoke(formattedPrimaryAmount, depositUri)
                             dismiss()
                         },
+                        onForward =  { depositUri ->
+                            onForwardClick?.invoke(depositUri)
+                            dismiss()
+                        }
                     )
                 }
             }
