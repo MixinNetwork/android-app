@@ -47,6 +47,8 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
+import org.koin.core.time.Timer
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -147,6 +149,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 } else {
                     val code = response.errorCode
                     reportException("Update EdDSA key", IllegalStateException("errorCode: $code, errorDescription: ${response.errorDescription}"))
+                    Timber.e("errorCode: $code, errorDescription: ${response.errorDescription}")
                     ErrorHandler.handleMixinError(code, response.errorDescription)
 
                     if (code == ErrorHandler.AUTHENTICATION || code == FORBIDDEN) {
@@ -156,6 +159,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 }
             } catch (t: Throwable) {
                 reportException("$TAG Update EdDSA key", t)
+                Timber.e(t)
                 ErrorHandler.handleError(t)
             }
 
@@ -171,6 +175,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         } catch (e: Exception) {
             ErrorHandler.handleError(e)
             reportException("$TAG syncSession", e)
+            Timber.e(e)
         }
     }
 
@@ -218,6 +223,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             } catch (e: Exception) {
                 ErrorHandler.handleError(e)
                 reportException("$TAG pushAsyncSignalKeys", e)
+
                 load()
             }
         }

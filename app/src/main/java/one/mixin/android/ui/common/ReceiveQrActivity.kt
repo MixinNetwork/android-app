@@ -49,16 +49,13 @@ class ReceiveQrActivity : BaseActivity() {
         const val ARGS_USER_ID = "args_user_id"
 
         fun show(context: android.content.Context, userId: String) {
-            val intent = android.content.Intent(context, ReceiveQrActivity::class.java)
+            val intent = Intent(context, ReceiveQrActivity::class.java)
             intent.putExtra(ARGS_USER_ID, userId)
             context.startActivity(intent)
         }
     }
 
     private val binding by lazy { ActivityReceiveQrBinding.inflate(layoutInflater) }
-    private val viewModel: BottomSheetViewModel by viewModels()
-
-    private val userId: String by lazy { intent.getStringExtra(ARGS_USER_ID)!! }
 
     private val getScanResult =
         registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
@@ -134,7 +131,7 @@ class ReceiveQrActivity : BaseActivity() {
                     }
                 }
                 share.setOnClickListener {
-                    val shareView = binding.container
+                    val shareView = binding.bottomLl
                     val bitmap = shareView.drawToBitmap()
                     DepositShareActivity.show(
                         this@ReceiveQrActivity,
@@ -192,7 +189,7 @@ class ReceiveQrActivity : BaseActivity() {
                     }
                     this.onShareClick = { amount, address ->
                         this@ReceiveQrActivity.lifecycleScope.launch {
-                            val shareView = binding.container
+                            val shareView = binding.bottomLl
                             val bitmap = shareView.drawToBitmap()
                             DepositShareActivity.show(
                                 requireContext(),
