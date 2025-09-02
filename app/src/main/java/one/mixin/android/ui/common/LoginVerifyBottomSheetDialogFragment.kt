@@ -8,6 +8,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -18,6 +19,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.databinding.FragmentLoginVerifyBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.TipEvent
+import one.mixin.android.extension.openUrl
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
@@ -25,6 +27,7 @@ import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
@@ -57,6 +60,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         style: Int,
     ) {
         super.setupDialog(dialog, style)
+        Timber.e("LoginVerifyBottomSheetDialogFragment setupDialog")
         contentView = binding.root
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
@@ -66,6 +70,13 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         binding.biometricLayout.apply {
             pin.isEnabled = false
             measureAllChildren = false
+        }
+        binding.debug.setOnLongClickListener{
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
+        binding.support.setOnClickListener {
+            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
         }
         lifecycleScope.launch {
             checkTipCounter(Session.getAccount()!!)

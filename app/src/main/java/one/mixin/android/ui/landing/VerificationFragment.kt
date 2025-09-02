@@ -49,6 +49,7 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_A
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING_CREATE
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -58,6 +59,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -114,8 +116,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("VerificationFragment onViewCreated")
         hasEmergencyContact = requireArguments().getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
         binding.pinVerificationTitleTv.text = getString(R.string.landing_validation_title, phoneNum)
+        binding.title.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         binding.verificationResendTv.setOnClickListener { sendVerification() }
         binding.verificationNeedHelpTv.setOnClickListener { showBottom() }
 

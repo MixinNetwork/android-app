@@ -14,6 +14,7 @@ import one.mixin.android.ui.landing.components.CreateAccountPage
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
     companion object {
@@ -29,6 +30,7 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("CreateAccountFragment onViewCreated")
         binding.titleView.setSubTitle(requireContext().getString(R.string.Create_Account), "")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
