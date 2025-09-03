@@ -17,7 +17,7 @@ plugins {
 
 def versionMajor = 3
 def versionMinor = 3
-def versionPatch = 1
+def versionPatch = 2
 def versionBuild = 1
 
 apply plugin: 'com.google.gms.google-services'
@@ -420,7 +420,7 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
     implementation "androidx.activity:activity-compose:${activityComposeVersion}"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
-    
+
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
     implementation "com.google.accompanist:accompanist-pager:${accompanistVersion}"
