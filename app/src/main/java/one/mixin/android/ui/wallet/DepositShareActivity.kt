@@ -96,10 +96,10 @@ class DepositShareActivity : BaseActivity() {
 
         getScreenshot()?.let {
             supportsS({
-                binding.background.background = it.toDrawable(resources)
-                binding.background.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.MIRROR))
+                binding.background.setImageBitmap(it)
+                binding.background.setRenderEffect(RenderEffect.createBlurEffect(25f, 25f, Shader.TileMode.REPEAT))
             }, {
-                binding.container.background = it.blurBitmap(25).toDrawable(resources)
+                binding.background.setImageBitmap(it.blurBitmap(25))
             })
         }
 
@@ -150,7 +150,7 @@ class DepositShareActivity : BaseActivity() {
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(120.dp, 8.dp).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.icon.loadImage(u?.avatarUrl)
+                binding.icon.loadImage(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
             }
             binding.bottomTv.isVisible = true
             if (tokenItem != null) {

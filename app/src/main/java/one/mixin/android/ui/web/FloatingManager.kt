@@ -29,6 +29,8 @@ import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 import androidx.core.graphics.scale
 import androidx.core.graphics.toColorInt
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.statusBarHeight
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null

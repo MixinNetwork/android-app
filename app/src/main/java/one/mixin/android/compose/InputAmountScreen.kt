@@ -210,7 +210,7 @@ fun InputAmountScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
             contentPadding = PaddingValues(vertical = 12.dp),
         ) {
