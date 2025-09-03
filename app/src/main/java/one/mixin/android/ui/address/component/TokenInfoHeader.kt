@@ -68,7 +68,7 @@ fun TokenInfoHeader(
             modifier = Modifier
                 .padding(start = 4.dp)
                 .wrapContentWidth()
-                .widthIn(max = 80.dp),
+                .widthIn(max = 100.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

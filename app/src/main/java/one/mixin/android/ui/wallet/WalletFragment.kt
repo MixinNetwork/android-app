@@ -359,9 +359,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
-                        if (wallet.hasLocalPrivateKey.not()) {
-                            binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
-                        }
+                        binding.tailIcon.isVisible = false
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
                         binding.titleRl.requestLayout()
                     } ?: run {

@@ -15,61 +15,72 @@
             android:layout_height="?actionBarSize"
             android:background="?attr/bg_white">
 
-            <RelativeLayout
+
+            <LinearLayout
                 android:id="@+id/title_rl"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="12dp"
-                android:padding="4dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:foreground="?android:attr/selectableItemBackground">
+                android:layout_toStartOf="@id/search_ib"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="4dp">
 
-                <ImageView
-                    android:id="@+id/head_icon"
+                <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_wallet_menu" />
+                    android:layout_marginEnd="8dp">
 
-                <View
-                    android:id="@+id/badge"
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_alignTop="@id/head_icon"
-                    android:layout_alignEnd="@id/head_icon"
-                    android:background="@drawable/bg_red_dot"
-                    android:visibility="gone" />
+                    <ImageView
+                        android:id="@+id/head_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_wallet_menu" />
 
-                <TextView
-                    android:id="@+id/title_tv"
-                    android:layout_width="wrap_content"
+                    <View
+                        android:id="@+id/badge"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/bg_red_dot"
+                        android:visibility="gone" />
+
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_toEndOf="@+id/head_icon"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:includeFontPadding="false"
-                    android:maxWidth="240dp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    tools:ignore="RelativeOverlap" />
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/title_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
 
                 <ImageView
                     android:id="@+id/tail_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@id/title_tv"
-                    android:visibility="gone"
-                    android:src="@drawable/ic_wallet_privacy" />
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_wallet_privacy"
+                    android:visibility="visible" />
 
-            </RelativeLayout>
+            </LinearLayout>
 
             <ImageButton
                 android:id="@+id/search_ib"
