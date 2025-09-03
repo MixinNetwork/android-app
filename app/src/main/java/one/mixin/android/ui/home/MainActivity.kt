@@ -121,7 +121,6 @@ import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
-import one.mixin.android.pay.erc831.isEthereumURLString
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -188,7 +187,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -758,7 +757,7 @@ class MainActivity : BlazeBaseActivity() {
         if (!WalletConnect.isEnabled()) return
         WalletConnectV2
         val classicWalletId = web3Repository.getClassicWalletId()
-        JsSigner.init(
+        Web3Signer.init(
             { classicWalletId },
             { walletId ->
                 runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }

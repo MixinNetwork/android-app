@@ -45,7 +45,6 @@ import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
