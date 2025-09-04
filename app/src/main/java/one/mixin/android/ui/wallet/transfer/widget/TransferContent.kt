@@ -273,8 +273,7 @@ class TransferContent : LinearLayout {
     private fun renderAddressManage(addressManageBiometricItem: AddressManageBiometricItem) {
         _binding.apply {
             amount.setContent(R.string.Label, addressManageBiometricItem.label ?: "")
-            sender.isVisible = true
-            sender.setContent(R.string.Sender)
+            sender.isVisible = false
             address.isVisible = true
             address.setContent(R.string.Address, addressManageBiometricItem.destination ?: "")
             val tokenItem = addressManageBiometricItem.asset!!

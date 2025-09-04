@@ -299,6 +299,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             value: String,
                         ) {
                             context?.tickVibrate()
+                            val currencyName = fiatMoneyViewModel.currency?.name ?: return
                             if (position == 11) {
                                 v =
                                     if (v == "0") {
@@ -315,14 +316,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     // do nothing
                                     return
                                 } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(
-                                        fiatMoneyViewModel.currency!!.name
+                                        currencyName
                                     ))
                                 ) {
                                     // do nothing
                                     return
                                 } else if (AmountUtil.illegal(
                                         v,
-                                        fiatMoneyViewModel.currency!!.name
+                                        currencyName
                                     )
                                 ) {
                                     binding.primaryTv.shaking()
