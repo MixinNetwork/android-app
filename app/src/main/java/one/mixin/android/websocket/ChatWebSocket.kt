@@ -81,6 +81,7 @@ class ChatWebSocket(
     @Synchronized
     fun connect() {
         if (client == null) {
+            Timber.e("connect")
             connected = false
             homeUrl =
                 if (hostFlag) {
@@ -95,6 +96,7 @@ class ChatWebSocket(
     @Synchronized
     fun disconnect() {
         if (client != null) {
+            Timber.e("disconnect")
             closeInternal(quitCode)
             transactions.clear()
             connectTimer?.dispose()
@@ -163,6 +165,7 @@ class ChatWebSocket(
         response: Response,
     ) {
         if (client != null) {
+            Timber.e("onPen $homeUrl")
             connected = true
             client = webSocket
             webSocketObserver?.onSocketOpen()
@@ -184,6 +187,7 @@ class ChatWebSocket(
             try {
                 val json = bytes.ungzip()
                 val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)
+                Timber.e("onMessage ${blazeMessage.action} ${blazeMessage.id} ${blazeMessage.error}")
                 if (blazeMessage.error == null) {
                     if (transactions[blazeMessage.id] != null) {
                         transactions[blazeMessage.id]!!.success.success(blazeMessage)
@@ -216,6 +220,7 @@ class ChatWebSocket(
                     }
                 }
             } catch (e: GzipException) {
+                Timber.e(e)
                 reportException(e)
             }
         }
@@ -229,6 +234,7 @@ class ChatWebSocket(
         reason: String,
     ) {
         connected = false
+        Timber.e("onClosed")
         if (code == failCode) {
             closeInternal(code)
             jobManager.stop()

@@ -101,11 +101,13 @@ class HedwigImp(
         }
 
     private fun startObserveFlood() {
+        Timber.e("startObserveFlood")
         runFloodJob()
         pendingDatabase.addObserver(floodObserver)
     }
 
     private fun stopObserveFlood() {
+        Timber.e("stopObserveFlood")
         pendingDatabase.removeObserver(floodObserver)
     }
 
@@ -151,6 +153,7 @@ class HedwigImp(
 
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = pendingDatabase.findFloodMessages()
+        Timber.e("processFloodMessage size=${messages.size}")
         return if (messages.isNotEmpty()) {
             messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
@@ -177,11 +180,13 @@ class HedwigImp(
         }
 
     private fun startObservePending() {
+        Timber.e("startObservePending")
         runPendingJob()
         pendingDatabase.addObserver(pendingObserver)
     }
 
     private fun stopObservePending() {
+        Timber.e("stopObservePending")
         pendingDatabase.removeObserver(pendingObserver)
     }
 
@@ -194,6 +199,7 @@ class HedwigImp(
             lifecycleScope.launch(PENDING_DB_THREAD) {
                 try {
                     val list = pendingDatabase.getPendingMessages()
+                    Timber.e("runPendingJob size=${list.size}")
                     list.groupBy { it.conversationId }.filter { (conversationId, _) ->
                         conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
                     }.forEach { (conversationId, messages) ->
