@@ -124,22 +124,20 @@ fun InputAmountScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp)
     ) {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 2.dp)
         ) {
             IconButton(
                 onClick = {},
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = "close",
-                    modifier = Modifier.size(24.dp).alpha(0f)
+                    contentDescription = "back",
+                    modifier = Modifier.alpha(0f)
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -157,19 +155,19 @@ fun InputAmountScreen(
                 Image(
                     painter = painterResource(id = R.drawable.ic_close_black),
                     contentDescription = "close",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier
                 )
             }
 
         }
-        // Primary amount display
-        Box(
+        Column (
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
                 .padding(horizontal = 32.dp),
-            contentAlignment = Alignment.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(
                 text = primaryAmount,
                 fontSize = getPrimaryTextSize(primaryAmount),
@@ -177,36 +175,35 @@ fun InputAmountScreen(
                 color = MixinAppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center
             )
-        }
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Minor amount display with switch button
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp)
-        ) {
-            Text(
-                text = minorAmount,
-                fontSize = 16.sp,
-                color = MixinAppTheme.colors.textPrimary,
-                textAlign = TextAlign.Center
-            )
-
-            IconButton(
-                onClick = onSwitchClick,
+            // Minor amount display with switch button
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape)
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_switch),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
+                Text(
+                    text = minorAmount,
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center
                 )
+
+                IconButton(
+                    onClick = onSwitchClick,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_switch),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
 
@@ -472,6 +469,7 @@ fun InputAmountPreviewScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.weight(1f))
             if (address == null) {
                 Text(
                     text = stringResource(R.string.transfer_qrcode_prompt_amount, "$primaryAmount"),
@@ -704,6 +702,7 @@ object AmountInputHandler {
     fun handleNumberInput(
         currentValue: String,
         inputValue: String,
+        isPrimary: Boolean,
         currencyName: String? = null,
     ): String {
         return when {
@@ -720,8 +719,8 @@ object AmountInputHandler {
             currentValue == "0" && inputValue != "." -> {
                 inputValue
             }
-            // Check if already has two decimal places
-            isTwoDecimal(currentValue) -> {
+            // Check if already has max decimal places
+            hasMaxDecimalPlaces(currentValue, isPrimary) -> {
                 currentValue
             }
             // Check for illegal input
@@ -745,8 +744,13 @@ object AmountInputHandler {
         }
     }
 
-    private fun isTwoDecimal(value: String): Boolean {
-        return value.matches(Regex("\\d+\\.\\d{2}"))
+    private fun hasMaxDecimalPlaces(value: String, isPrimary: Boolean): Boolean {
+        val regex = if (isPrimary) {
+            Regex("\\d+\\.\\d{8}")
+        } else {
+            Regex("\\d+\\.\\d{2}")
+        }
+        return value.matches(regex)
     }
 
     private fun isFullCurrency(currencyName: String?): Boolean {

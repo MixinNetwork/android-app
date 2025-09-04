@@ -143,7 +143,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         address = address,
                         onNumberClick = { number ->
                             val currentCurrency = if (isPrimaryMode) null else Fiats.getAccountCurrencyAppearance()
-                            inputAmount = AmountInputHandler.handleNumberInput(inputAmount, number, currentCurrency)
+                            inputAmount = AmountInputHandler.handleNumberInput(inputAmount, number, isPrimaryMode, currentCurrency)
                             onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
                             onNumberClick?.invoke(number)
                         },
