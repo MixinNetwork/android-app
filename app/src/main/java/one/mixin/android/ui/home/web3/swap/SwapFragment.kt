@@ -79,7 +79,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
@@ -251,7 +251,7 @@ class SwapFragment : BaseFragment() {
                                         deposit(token.assetId)
                                     } else {
                                         navTo(
-                                            Web3AddressFragment.newInstance(if (token.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress),
+                                            Web3AddressFragment.newInstance(if (token.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress),
                                             Web3AddressFragment.TAG
                                         )
                                     }
@@ -356,7 +356,7 @@ class SwapFragment : BaseFragment() {
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        navTo(Web3AddressFragment.newInstance(JsSigner.evmAddress), Web3AddressFragment.TAG)
+                        navTo(Web3AddressFragment.newInstance(Web3Signer.evmAddress), Web3AddressFragment.TAG)
                         dismissNow()
                     }
                     setOnClickListener { token, alert ->
@@ -618,7 +618,7 @@ class SwapFragment : BaseFragment() {
                         quote.payload,
                         getSource(),
                         if (inMixin()) null else {
-                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                         },
                         getReferral(),
                     )
@@ -825,7 +825,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
-    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${JsSigner.currentWalletId}"}
+    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"}
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
     private fun getReferral(): String? = arguments?.getString(ARGS_REFERRAL)

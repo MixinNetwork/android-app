@@ -141,7 +141,7 @@ import one.mixin.android.vo.safe.toAssetItem
 import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -554,7 +554,7 @@ class TokenRepository
             web3WalletDao.deleteAllWallets()
         }
 
-        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(JsSigner.currentWalletId, hash, chainId)
+        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(Web3Signer.currentWalletId, hash, chainId)
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
