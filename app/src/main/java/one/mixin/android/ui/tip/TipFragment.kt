@@ -59,7 +59,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -605,10 +605,10 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             return@runCatching if (registerResp.isSuccess) {
                 val solAddress = viewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                 PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
-                JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, solAddress)
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
                 val evmAddress = viewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                 PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
-                JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, evmAddress)
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
                 Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
                 if (Session.hasPhone()) { // Only clear Phone user
                     removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)

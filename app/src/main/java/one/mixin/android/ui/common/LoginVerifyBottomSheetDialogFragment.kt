@@ -31,7 +31,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import javax.inject.Inject
@@ -136,10 +136,10 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         if (r.isSuccess) {
             val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
             PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
-            JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, solAddress)
+            Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
             PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
-            JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, evmAddress)
+            Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
             AnalyticsTracker.trackLoginEnd()
         }
         return r

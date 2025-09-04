@@ -61,7 +61,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import javax.inject.Inject
@@ -434,7 +434,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             lifecycleScope.launch(Dispatchers.IO) {
                 val wallet = walletViewModel.findWalletById(walletId)
                 if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
-                    JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
+                    Web3Signer.setWallet(walletId, wallet.category) { queryWalletId ->
                         runBlocking { walletViewModel.getAddresses(queryWalletId) }
                     }
                     withContext(Dispatchers.Main) {
@@ -605,14 +605,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Import) {
                 walletViewModel.deleteWallet(dest.walletId)
-                selectedWalletDestination = WalletDestination.Classic(JsSigner.classicWalletId)
+                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
             } else if (dest is WalletDestination.Watch) {
                 walletViewModel.deleteWallet(dest.walletId)
-                selectedWalletDestination = WalletDestination.Classic(JsSigner.classicWalletId)
+                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
             }
             dialog.dismiss()
             withContext(Dispatchers.IO) {
-                JsSigner.setWallet(JsSigner.classicWalletId, WalletCategory.CLASSIC.value) { queryWalletId ->
+                Web3Signer.setWallet(Web3Signer.classicWalletId, WalletCategory.CLASSIC.value) { queryWalletId ->
                     runBlocking { walletViewModel.getAddresses(queryWalletId) }
                 }
                 withContext(Dispatchers.Main) {

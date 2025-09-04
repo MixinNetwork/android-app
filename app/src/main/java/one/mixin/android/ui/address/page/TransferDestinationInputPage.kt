@@ -68,7 +68,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openUrl
-import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
@@ -78,7 +77,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 
 @Composable
 fun TransferDestinationInputPage(
@@ -125,8 +124,8 @@ fun TransferDestinationInputPage(
 
     LaunchedEffect(token?.chainId) {
         account = when {
-            token?.chainId == ChainId.SOLANA_CHAIN_ID -> JsSigner.solanaAddress
-            token?.chainId in Constants.Web3ChainIds -> JsSigner.evmAddress
+            token?.chainId == ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+            token?.chainId in Constants.Web3ChainIds -> Web3Signer.evmAddress
             else -> ""
         }
     }

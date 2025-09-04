@@ -32,7 +32,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.sol4k.Keypair
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -302,7 +302,7 @@ class FetchWalletViewModel @Inject constructor(
             Timber.e("Chain ID is null, cannot get private key.")
             return null
         }
-        if (walletId != JsSigner.currentWalletId) {
+        if (walletId != Web3Signer.currentWalletId) {
             Timber.e("Wallet ID does not match current wallet ID, cannot get private key.")
             return null
         }
@@ -322,7 +322,7 @@ class FetchWalletViewModel @Inject constructor(
             Timber.e("Spend key is null, cannot save wallets.")
             return null
         }
-        return CryptoWalletHelper.getWeb3Mnemonic(context, currentSpendKey, JsSigner.currentWalletId)
+        return CryptoWalletHelper.getWeb3Mnemonic(context, currentSpendKey, Web3Signer.currentWalletId)
     }
 
     fun importWallet(key: String, chainId: String, mode: WalletSecurityActivity.Mode) {

@@ -6,7 +6,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.web3.RpcRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.web3.Web3RawTransactionDao
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.sol4k.PublicKey
 import org.sol4k.api.AccountInfo
 import org.sol4k.rpc.TokenAmount
@@ -29,7 +29,7 @@ class Rpc(
     }
 
     private suspend fun getNonce(chainId: String): BigInteger? = web3RawTransactionDao.getNonce(
-        JsSigner.currentWalletId, chainId)?.toBigIntegerOrNull()
+        Web3Signer.currentWalletId, chainId)?.toBigIntegerOrNull()
 
     suspend fun nonceAt(chainId: String, address: String): BigInteger? {
         val remote = handleMixinResponse(

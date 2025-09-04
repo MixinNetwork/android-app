@@ -5,7 +5,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.Buffer
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -50,14 +49,14 @@ import java.math.BigInteger
 import java.util.concurrent.TimeUnit
 import org.sol4k.Constants as ConstantsSolana
 
-object JsSigner {
+object Web3Signer {
     sealed class JsSignerNetwork(val name: String) {
         data object Ethereum : JsSignerNetwork("ethereum")
 
         data object Solana : JsSignerNetwork("solana")
     }
 
-    private const val TAG = "JsSigner"
+    private const val TAG = "Web3Signer"
 
     private val sp by lazy {
         MixinApplication.appContext.defaultSharedPreferences

@@ -17,7 +17,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
@@ -213,7 +213,7 @@ suspend fun Web3TokenItem.buildTransaction(
     v: String,
 ): JsSignMessage {
     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-        JsSigner.useSolana()
+        Web3Signer.useSolana()
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
@@ -286,7 +286,7 @@ suspend fun Web3TokenItem.buildTransaction(
         val tx = transaction.serialize().base64Encode()
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
     } else {
-        JsSigner.useEvm()
+        Web3Signer.useEvm()
         // (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
             if ((chainId == Constants.ChainId.Base && assetKey == "0x0000000000000000000000000000000000000000") ||
