@@ -63,9 +63,7 @@
                         android:id="@+id/qrCode"
                         android:layout_width="200dp"
                         android:layout_height="200dp"
-                        android:layout_gravity="center"
-                        android:background="@drawable/bg_round_white"
-                        android:padding="8dp" />
+                        android:layout_gravity="center" />
 
                     <one.mixin.android.widget.CircleImageView
                         android:id="@+id/icon"

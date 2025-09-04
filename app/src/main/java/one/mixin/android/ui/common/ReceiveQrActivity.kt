@@ -19,12 +19,15 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.ActivityReceiveQrBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -36,6 +39,7 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
+import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BadgeCircleImageView
@@ -103,6 +107,9 @@ class ReceiveQrActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             finish()
         }
+        binding.titleView.rightIb.setOnClickListener {
+            openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+        }
         Session.getAccount()?.let { user ->
             binding.apply {
                 scan.setOnClickListener {
@@ -143,7 +150,7 @@ class ReceiveQrActivity : BaseActivity() {
                 qr.post {
                     Observable.create<Pair<Bitmap, Int>> { e ->
                         val code = "${Constants.Scheme.HTTPS_PAY}/${user.userId}"
-                        val r = code.generateQRCode(binding.qr.width)
+                        val r = code.generateQRCode(binding.qrFl.measuredWidth)
                         e.onNext(r)
                     }.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())

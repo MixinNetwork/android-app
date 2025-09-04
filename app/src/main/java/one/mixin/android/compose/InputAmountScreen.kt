@@ -53,6 +53,7 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 
 object InputAmountDestinations {
     const val INPUT = "input"
@@ -89,7 +90,8 @@ fun InputAmountFlow(
                 onSwitchClick = onSwitchClick,
                 onContinueClick = {
                     navController.navigate(InputAmountDestinations.PREVIEW)
-                }
+                },
+                onCloseClick = onCloseClick,
             )
         }
 
@@ -118,6 +120,7 @@ fun InputAmountScreen(
     onDeleteClick: () -> Unit,
     onSwitchClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -129,6 +132,7 @@ fun InputAmountScreen(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
+                .padding(vertical = 20.dp)
                 .fillMaxWidth()
         ) {
             IconButton(
@@ -150,7 +154,7 @@ fun InputAmountScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             IconButton(
-                onClick = {},
+                onClick = onCloseClick,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_close_black),
@@ -160,7 +164,8 @@ fun InputAmountScreen(
             }
 
         }
-        Column (
+        Spacer(modifier = Modifier.weight(1f))
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -223,7 +228,7 @@ fun InputAmountScreen(
             onClick = onContinueClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 48.dp),
             shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
             contentPadding = PaddingValues(vertical = 12.dp),
@@ -243,7 +248,8 @@ fun InputAmountScreen(
 private fun generateDepositUri(token: TokenItem?, address: String?, amount: String): String? {
     if (token == null || amount == "0") return null
     if (address == null) {
-        val code = "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}?asset=${token.assetId}&amount=$amount"
+        val code =
+            "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}?asset=${token.assetId}&amount=$amount"
         return code
     }
 
@@ -335,8 +341,12 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
 
 // Helper function to generate QR code bitmap from deposit URI
 @Composable
-private fun generateQrCodeBitmap(token: TokenItem?, address: String?, amount: String): android.graphics.Bitmap {
-    val depositUri = generateDepositUri(token, address, amount)
+private fun generateQrCodeBitmap(
+    token: TokenItem?,
+    address: String?,
+    amount: String
+): android.graphics.Bitmap {
+    val depositUri = generateDepositUri(token, address, amount.split(" ").first())
     return depositUri?.generateQRCode(200, 8)?.first
         ?: // Generate a fallback QR code with the address if URI generation fails
         (address ?: "").generateQRCode(200, 8).first
@@ -361,13 +371,12 @@ fun InputAmountPreviewScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(vertical = 8.dp)
         ) {
             IconButton(
                 onClick = onBackClick,
@@ -375,7 +384,6 @@ fun InputAmountPreviewScreen(
                 Image(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = "Back",
-                    modifier = Modifier.size(24.dp)
                 )
             }
 
@@ -387,7 +395,6 @@ fun InputAmountPreviewScreen(
                 Image(
                     painter = painterResource(id = R.drawable.ic_close_black),
                     contentDescription = "close",
-                    modifier = Modifier.size(24.dp)
                 )
             }
 
@@ -409,7 +416,10 @@ fun InputAmountPreviewScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.contact_mixin_id, Session.getAccount()?.identityNumber ?: ""),
+                    text = stringResource(
+                        R.string.contact_mixin_id,
+                        Session.getAccount()?.identityNumber ?: ""
+                    ),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     textAlign = TextAlign.Center,
@@ -442,7 +452,11 @@ fun InputAmountPreviewScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        bitmap = generateQrCodeBitmap(token, address, primaryAmount).asImageBitmap(),
+                        bitmap = generateQrCodeBitmap(
+                            token,
+                            address,
+                            primaryAmount
+                        ).asImageBitmap(),
                         contentDescription = "QR Code",
                         modifier = Modifier.fillMaxSize()
                     )
@@ -469,7 +483,6 @@ fun InputAmountPreviewScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-            Spacer(modifier = Modifier.weight(1f))
             if (address == null) {
                 Text(
                     text = stringResource(R.string.transfer_qrcode_prompt_amount, "$primaryAmount"),
@@ -480,6 +493,7 @@ fun InputAmountPreviewScreen(
             }
             address?.let { addr ->
                 Column(
+                    modifier = Modifier.padding(horizontal = 20.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
@@ -493,41 +507,41 @@ fun InputAmountPreviewScreen(
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.Start
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
                     ) {
-                        Text(
-                            text = stringResource(R.string.network),
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        Text(
-                            text = token?.chainName ?: "Unknown",
-                            color = MixinAppTheme.colors.textPrimary
-                        )
-                    }
+                        Column(
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                text = stringResource(R.string.network),
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            Text(
+                                text = token?.chainName ?: "Unknown",
+                                color = MixinAppTheme.colors.textPrimary
+                            )
+                        }
 
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Text(
-                            text = stringResource(R.string.Amount),
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        Text(
-                            text = primaryAmount,
-                            color = MixinAppTheme.colors.textPrimary,
-                            textAlign = TextAlign.End
-                        )
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text(
+                                text = stringResource(R.string.Amount),
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            Text(
+                                text = primaryAmount,
+                                color = MixinAppTheme.colors.textPrimary,
+                                textAlign = TextAlign.End
+                            )
+                        }
                     }
                 }
             }

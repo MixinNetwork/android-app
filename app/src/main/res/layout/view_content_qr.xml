@@ -16,7 +16,6 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="64dp"
             android:layout_marginTop="4dp"
-            android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="?attr/text_primary"
             app:layout_constraintTop_toTopOf="parent"
