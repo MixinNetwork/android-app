@@ -35,6 +35,7 @@ import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BotCloseEvent
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
@@ -154,6 +155,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (item.safe != null) {
                 binding.bottom.setText(if (item.action == SignatureAction.sign.name) R.string.Approve else R.string.Reject)
             }
+        }
+        if (t is AddressManageBiometricItem) {
+            binding.walletLabel.setBackgroundColor(requireContext().colorFromAttribute(R.attr.bg_white))
         }
 
         if (!isSuccess) {

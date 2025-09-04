@@ -981,11 +981,17 @@ class ConversationFragment() :
 
     private fun createImageUri() = Uri.fromFile(context?.getOtherPath()?.createImageTemp())
 
-    private val conversationId: String by lazy<String> {
+    private val conversationId: String by lazy {
         var cid = requireArguments().getString(CONVERSATION_ID)
         if (cid.isNullOrBlank()) {
             isFirstMessage = true
-            cid = generateConversationId(sender.userId, recipient!!.userId)
+            val recipientId = recipient?.userId
+            if (recipientId == null) {
+                reportException(IllegalStateException("no conversationId and no recipient"))
+                requireActivity().finish()
+                return@lazy ""
+            }
+            cid = generateConversationId(sender.userId, recipientId)
         }
         cid
     }

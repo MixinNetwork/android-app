@@ -325,6 +325,18 @@ class WalletActivity : BlazeBaseActivity() {
             )
         }
 
+        fun showDeposit(
+            activity: Activity,
+            tokenItem: TokenItem,
+        ) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.Deposit)
+                    putExtra(ASSET, tokenItem)
+                },
+            )
+        }
+
         fun showInputForWeb3(
             activity: Activity,
             fromAddress: String,
