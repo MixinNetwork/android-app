@@ -26,33 +26,18 @@
         android:layout_centerVertical="true" />
 
     <TextView
-        android:id="@+id/balance"
+        android:id="@+id/name_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/avatar"
         android:layout_toEndOf="@id/avatar"
-        android:layout_marginStart="@dimen/margin16"
-        android:layout_marginEnd="2dp"
-        android:layout_marginTop="2dp"
-        android:ellipsize="end"
-        android:fontFamily="@font/mixin_font"
-        android:maxWidth="240dp"
-        android:maxLines="1"
-        android:textColor="?attr/text_primary"
-        android:textSize="19sp" />
-
-    <TextView
-        android:id="@+id/name_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/balance"
-        android:layout_toEndOf="@id/balance"
         android:maxWidth="200dp"
         android:minWidth="30dp"
         android:textColor="?attr/text_primary"
         android:textSize="12sp"
         android:singleLine="true"
-        android:translationY="-1dp" />
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp" />
 
     <TextView
         android:id="@+id/network_tv"
@@ -79,10 +64,10 @@
         android:layout_height="wrap_content"
         android:minWidth="50dp"
         android:maxWidth="200dp"
-        android:layout_below="@+id/balance"
+        android:layout_below="@+id/name_tv"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_alignStart="@id/balance"
-        android:layout_marginTop="6dp"
+        android:layout_alignStart="@id/name_tv"
+        android:layout_marginTop="8dp"
         android:maxLines="1"
         android:ellipsize="end"
         android:layout_toEndOf="@id/avatar"
