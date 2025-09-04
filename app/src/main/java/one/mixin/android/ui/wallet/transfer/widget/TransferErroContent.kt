@@ -17,7 +17,7 @@ import one.mixin.android.util.getChainName
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 
 class TransferErrorContent : LinearLayout {
@@ -155,7 +155,7 @@ class TransferErrorContent : LinearLayout {
             } else {
                 total.isVisible = false
             }
-            sender.setContent(R.string.Sender, JsSigner.evmAddress)
+            sender.setContent(R.string.Sender, Web3Signer.evmAddress)
             network.setContent(R.string.network, getChainName(asset.chainId, asset.chainName, asset.assetKey) ?: "")
         }
     }

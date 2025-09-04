@@ -71,7 +71,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -117,7 +117,7 @@ fun BrowserPage(
     }
 
     LaunchedEffect(Unit) {
-        val wallet = viewModel.findWalletById(JsSigner.currentWalletId)
+        val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
         walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
     }
 

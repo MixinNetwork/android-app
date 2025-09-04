@@ -40,7 +40,7 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.widget.BottomSheet
 import org.web3j.crypto.TransactionDecoder
@@ -328,7 +328,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(JsSigner.currentWalletId, assetId)
+                            web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId)
                         },
                         approvals = transaction.approvals,
                     )
@@ -341,7 +341,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         senders = if (transaction.transactionType == TransactionType.TRANSFER_IN.value) emptyList() else transaction.senders,
                         receivers = if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) emptyList() else transaction.receivers,
                         fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(JsSigner.currentWalletId, assetId)
+                            web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId)
                         }
                     )
                 }

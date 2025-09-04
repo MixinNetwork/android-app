@@ -130,7 +130,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -281,7 +281,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 MixinAppTheme {
                     LaunchedEffect(Unit) {
                         if (source == "web3") {
-                            val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+                            val wallet = web3ViewModel.findWalletById(Web3Signer.currentWalletId)
                             walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
                         }
                     }
@@ -456,7 +456,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             }
                             Box(modifier = Modifier.height(20.dp))
                             if (source == "web3") {
-                                val account = if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) JsSigner.solanaAddress else JsSigner.evmAddress
+                                val account = if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) Web3Signer.solanaAddress else Web3Signer.evmAddress
                                 LaunchedEffect(account) {
                                     try {
                                         walletDisplayInfo = web3ViewModel.checkAddressAndGetDisplayName(account, null, inAsset.chain.chainId)
@@ -588,7 +588,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         when (web3Transaction!!.type) {
                             JsSignMessage.TYPE_RAW_TRANSACTION -> {
                                 val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
-                                val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
+                                val tx = Web3Signer.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
                                     val blockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
                                     return@signSolanaTransaction blockhash
                                 }
@@ -607,7 +607,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             JsSignMessage.TYPE_TRANSACTION -> {
                                 val transaction = requireNotNull(web3Transaction!!.wcEthereumTransaction)
                                 val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
-                                val pair = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
+                                val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
                                     val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
                                     return@ethSignTransaction nonce
                                 }
@@ -761,15 +761,15 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         
         when (source) {
             "web3" -> {
-                val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+                val wallet = web3ViewModel.findWalletById(Web3Signer.currentWalletId)
                 walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
                 depositDestination?.let { depositDestination->
-                    val token = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId, inAsset.assetId)
+                    val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
                             val transaction = token.buildTransaction(
                                 rpc, 
-                                if (token.chainId == Constants.ChainId.Solana) JsSigner.solanaAddress else JsSigner.evmAddress,
+                                if (token.chainId == Constants.ChainId.Solana) Web3Signer.solanaAddress else Web3Signer.evmAddress,
                                 depositDestination, 
                                 requireArguments().getString(ARGS_IN_AMOUNT)!!
                             )
@@ -837,19 +837,19 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                         buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
-                    chainToken = bottomViewModel.web3TokenItemById(JsSigner.currentWalletId,token?.chainId ?: "")
+                    chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId,token?.chainId ?: "")
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))
                     }
                     
-                    val hex = JsSigner.ethPreviewTransaction(
-                        JsSigner.evmAddress,
+                    val hex = Web3Signer.ethPreviewTransaction(
+                        Web3Signer.evmAddress,
                         transaction,
                         tipGas!!,
                         chain = token?.getChainFromName()
                     ) { _ ->
-                        val nonce = rpc.nonceAt(chain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
+                        val nonce = rpc.nonceAt(chain.assetId, Web3Signer.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethPreviewTransaction nonce
                     }
                 } catch (e: Exception) {
