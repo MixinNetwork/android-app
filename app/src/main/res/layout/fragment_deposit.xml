@@ -252,6 +252,7 @@
                 android:paddingBottom="20dp"
                 android:paddingTop="20dp">
                 <RelativeLayout
+                    android:id="@+id/lightning_rl"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="20dp">

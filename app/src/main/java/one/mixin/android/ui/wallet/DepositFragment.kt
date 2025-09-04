@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
-import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -51,7 +50,6 @@ import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
-import timber.log.Timber
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
@@ -477,9 +475,9 @@ class DepositFragment : BaseFragment() {
             BlockConfirmationsBottomSheetDialogFragment.newInstance(asset.confirmations).showNow(parentFragmentManager, BlockConfirmationsBottomSheetDialogFragment.TAG)
         }
         if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
+            binding.addressTitle.setText(R.string.Invoice)
+            binding.lightningRl.isVisible = true
             val address = "${Session.getAccount()?.identityNumber}@mixin.id"
-            binding.lightningAddressTitle.isVisible = true
-            binding.lightningAddressTip.isVisible = true
             binding.lightningAddressTv.text = address
             binding.lightningAddressCopy.setOnClickListener {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
@@ -495,8 +493,8 @@ class DepositFragment : BaseFragment() {
                 }.showNow(parentFragmentManager, LightningAddressBottomSheetDialogFragment.TAG)
             }
         } else {
-            binding.lightningAddressTitle.isVisible = false
-            binding.lightningAddressTip.isVisible = false
+            binding.addressTitle.setText(R.string.Address)
+            binding.lightningRl.isVisible = false
         }
     }
 }

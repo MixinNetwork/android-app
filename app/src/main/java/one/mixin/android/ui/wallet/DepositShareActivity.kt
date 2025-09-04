@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import android.graphics.drawable.BitmapDrawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.view.View
@@ -41,7 +40,6 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import java.io.File
 import java.io.FileOutputStream
-import androidx.core.graphics.drawable.toDrawable
 
 @AndroidEntryPoint
 class DepositShareActivity : BaseActivity() {

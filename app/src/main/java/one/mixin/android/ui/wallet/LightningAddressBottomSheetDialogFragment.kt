@@ -83,7 +83,7 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(22.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                             Image(
                                 modifier = Modifier.clickable {

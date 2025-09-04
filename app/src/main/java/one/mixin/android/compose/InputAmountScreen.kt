@@ -29,6 +29,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -130,8 +131,24 @@ fun InputAmountScreen(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(vertical = 2.dp)
         ) {
+            IconButton(
+                onClick = {},
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_back),
+                    contentDescription = "close",
+                    modifier = Modifier.size(24.dp).alpha(0f)
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(R.string.Enter_Amount),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = MixinAppTheme.colors.textPrimary,
+            )
             Spacer(modifier = Modifier.weight(1f))
 
             IconButton(

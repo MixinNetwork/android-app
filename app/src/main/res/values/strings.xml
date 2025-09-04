@@ -2109,4 +2109,5 @@
     <string name="lightning_address_tip_3">Supported by mainstream Lightning Network wallets.</string>
     <string name="lightning_address_mao_tip">Each MAO domain corresponds to a Lightning Network address. If you own a MAO domain, you can receive Lightning Network transfers in the format name@mao.id. Learn More</string>
     <string name="Copy_Address">Copy Address</string>
+    <string name="Enter_Amount">Enter Amount</string>
 </resources>
