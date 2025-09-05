@@ -22,6 +22,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 import kotlin.math.max
@@ -114,4 +115,54 @@ class ContentQRView : ViewAnimator {
             }
         }
     }
+
+    fun loadAddress(
+        scopeProvider: ScopeProvider,
+        destination: String,
+        icon: Int,
+        warning: String? = null,
+    ) {
+        binding.apply {
+            (binding.root as ViewAnimator).displayedChild = 0
+
+            qrAvatar.apply {
+                bg.setImageResource(icon)
+                setBorder()
+            }
+            contentTv.text = destination
+            copyIv.isVisible = false
+            contentTv.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = 16.dp
+                marginStart = 16.dp
+            }
+            if (warning.isNullOrBlank()) {
+                warningTv.isVisible = false
+            } else {
+                warningTv.text = warning
+                warningTv.isVisible = true
+            }
+
+            qr.post {
+                Observable.create<Pair<Bitmap, Int>> { e ->
+                    val r = destination.generateQRCode(max(qr.width, 240.dp))
+                    e.onNext(r)
+                }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(scopeProvider)
+                    .subscribe(
+                        { r ->
+                            qrAvatar.layoutParams =
+                                qrAvatar.layoutParams.apply {
+                                    width = r.second
+                                    height = r.second
+                                }
+                            qr.setImageBitmap(r.first)
+                        },
+                        {
+                        },
+                    )
+            }
+        }
+    }
+
 }

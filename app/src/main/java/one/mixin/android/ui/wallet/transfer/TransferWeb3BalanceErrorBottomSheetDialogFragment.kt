@@ -115,7 +115,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                                     val addresses = transferViewModel.getAddressesByChainId(asset.walletId, asset.chainId)
                                     val address = addresses?.destination
                                     if (address != null) {
-                                        Web3AddressActivity.show(requireActivity(), address)
+                                        Web3AddressActivity.show(requireActivity(), asset, address)
                                     }
                                     this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
                                 }

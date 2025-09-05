@@ -250,10 +250,10 @@ class SwapFragment : BaseFragment() {
                                     if (inMixin()) {
                                         deposit(token.assetId)
                                     } else {
-                                        navTo(
-                                            Web3AddressFragment.newInstance(if (token.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress),
-                                            Web3AddressFragment.TAG
-                                        )
+//                                        navTo(
+//                                            Web3AddressFragment.newInstance(token, if (token.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress),
+//                                            Web3AddressFragment.TAG
+//                                        )
                                     }
                                 },
                                 onOrderList = {
@@ -356,7 +356,8 @@ class SwapFragment : BaseFragment() {
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        navTo(Web3AddressFragment.newInstance(Web3Signer.evmAddress), Web3AddressFragment.TAG)
+                        // todo
+                        // navTo(Web3AddressFragment.newInstance(token, Web3Signer.evmAddress), Web3AddressFragment.TAG)
                         dismissNow()
                     }
                     setOnClickListener { token, alert ->

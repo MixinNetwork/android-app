@@ -20,6 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
@@ -27,7 +28,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
@@ -37,6 +37,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "InputAmountBottomSheetDialogFragment"
         private const val ARGS_TOKEN = "args_token"
+        private const val ARGS_WEB3_TOKEN = "args_web3_token"
         private const val ARGS_ADDRESS = "args_address"
 
         fun newInstance(
@@ -46,11 +47,22 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
             putParcelable(ARGS_TOKEN, token)
             putString(ARGS_ADDRESS, address)
         }
+
+        fun newInstance(
+            web3Token: Web3TokenItem,
+            address: String? = null
+        ) = InputAmountBottomSheetDialogFragment().withArgs {
+            putParcelable(ARGS_WEB3_TOKEN, web3Token)
+            putString(ARGS_ADDRESS, address)
+        }
     }
 
     private val token by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
-            ?: throw IllegalArgumentException("TokenItem is required")
+    }
+
+    private val web3Token by lazy {
+        requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
     }
 
     private val address by lazy {
@@ -59,7 +71,36 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     // Calculate USD price from token
     private val price by lazy {
-        (token.priceUsd.toDoubleOrNull() ?: 1.0) * Fiats.getRate()
+        val priceUsd = token?.priceUsd ?: web3Token?.priceUsd ?: "0"
+        (priceUsd.toDoubleOrNull() ?: 1.0) * Fiats.getRate()
+    }
+
+    private val tokenSymbol by lazy {
+        token?.symbol ?: web3Token?.symbol ?: ""
+    }
+
+    private val tokenIconUrl by lazy {
+        token?.iconUrl ?: web3Token?.iconUrl
+    }
+
+    private val chainIconUrl by lazy {
+        token?.chainIconUrl ?: web3Token?.chainIcon ?: ""
+    }
+
+    private val chainName by lazy {
+        token?.chainName ?: web3Token?.chainName ?: ""
+    }
+
+    private val assetId by lazy {
+        token?.assetId ?: web3Token?.assetId
+    }
+
+    private val chainId by lazy {
+        token?.chainId ?: web3Token?.chainId
+    }
+
+    private val assetKey by lazy {
+        token?.assetKey ?: web3Token?.assetKey
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
@@ -115,7 +156,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                 val formattedPrimaryAmount = remember(inputAmount, isPrimaryMode) {
                     if (isPrimaryMode) {
-                        formatAmount(inputAmount, token.symbol)
+                        formatAmount(inputAmount, tokenSymbol)
                     } else {
                         // Calculate primary from minor
                         val minorValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
@@ -123,7 +164,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val primaryValue = if (priceDecimal > java.math.BigDecimal.ZERO) {
                             minorValue.divide(priceDecimal, 8, java.math.RoundingMode.DOWN).stripTrailingZeros().toPlainString()
                         } else "0"
-                        formatAmount(primaryValue, token.symbol)
+                        formatAmount(primaryValue, tokenSymbol)
                     }
                 }
 
@@ -147,6 +188,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         minorAmount = if (isPrimaryMode) formattedMinorAmount else formattedPrimaryAmount,
                         tokenAmount = formattedPrimaryAmount,
                         token = token,
+                        web3Token = web3Token,
                         address = address,
                         onNumberClick = { number ->
                             val currentCurrency = if (isPrimaryMode) null else Fiats.getAccountCurrencyAppearance()
@@ -160,22 +202,29 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             onDeleteClick?.invoke()
                         },
                         onSwitchClick = {
-                            isPrimaryMode = !isPrimaryMode
-                            // Convert current input to the other currency when switching
-                            val currentValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
-                            val priceDecimal = price.toBigDecimal()
-                            inputAmount = if (isPrimaryMode) {
-                                // Switched to primary mode, convert from minor to primary
-                                if (priceDecimal > java.math.BigDecimal.ZERO) {
-                                    currentValue.divide(priceDecimal, 16, java.math.RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                                } else "0"
+                            val currentPrimaryValue = if (isPrimaryMode) {
+                                inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
                             } else {
-                                // Switched to minor mode, convert from primary to minor
+                                val minorValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                                val priceDecimal = price.toBigDecimal()
                                 if (priceDecimal > java.math.BigDecimal.ZERO) {
-                                    currentValue.multiply(priceDecimal).setScale(2, java.math.RoundingMode.DOWN).toPlainString()
+                                    minorValue.divide(priceDecimal, 8, java.math.RoundingMode.DOWN)
+                                } else {
+                                    java.math.BigDecimal.ZERO
+                                }
+                            }
+
+                            isPrimaryMode = !isPrimaryMode
+
+                            inputAmount = if (isPrimaryMode) {
+                                currentPrimaryValue.stripTrailingZeros().toPlainString()
+                            } else {
+                                val priceDecimal = price.toBigDecimal()
+                                if (priceDecimal > java.math.BigDecimal.ZERO) {
+                                    currentPrimaryValue.multiply(priceDecimal).setScale(2, java.math.RoundingMode.DOWN).toPlainString()
                                 } else "0"
                             }
-                            // Reset to "0" if conversion results in very small numbers
+
                             if (inputAmount.toBigDecimalOrNull()?.let { it < java.math.BigDecimal("0.000001") } == true) {
                                 inputAmount = "0"
                             }

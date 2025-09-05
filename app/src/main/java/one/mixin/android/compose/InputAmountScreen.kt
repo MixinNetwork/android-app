@@ -53,6 +53,7 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import timber.log.Timber
 
 object InputAmountDestinations {
@@ -74,9 +75,19 @@ fun InputAmountFlow(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     token: TokenItem? = null,
+    web3Token: Web3TokenItem? = null,
     address: String? = null,
     navController: NavHostController = rememberNavController(),
 ) {
+    // Get unified token information from either TokenItem or Web3TokenItem
+    val tokenSymbol = token?.symbol ?: web3Token?.symbol ?: ""
+    val tokenIconUrl = token?.iconUrl ?: web3Token?.iconUrl
+    val tokenChainIconUrl = token?.chainIconUrl ?: web3Token?.chainIcon
+    val tokenChainName = token?.chainName ?: web3Token?.chainName
+    val tokenAssetId = token?.assetId ?: web3Token?.assetId ?: ""
+    val tokenAssetKey = token?.assetKey ?: web3Token?.assetKey
+    val tokenChainId = token?.chainId ?: web3Token?.chainId ?: ""
+
     NavHost(
         navController = navController,
         startDestination = InputAmountDestinations.INPUT,
@@ -99,7 +110,13 @@ fun InputAmountFlow(
         composable(InputAmountDestinations.PREVIEW) {
             InputAmountPreviewScreen(
                 primaryAmount = tokenAmount,
-                token = token,
+                tokenSymbol = tokenSymbol,
+                tokenIconUrl = tokenIconUrl,
+                tokenChainIconUrl = tokenChainIconUrl,
+                tokenChainName = tokenChainName,
+                tokenAssetId = tokenAssetId,
+                tokenAssetKey = tokenAssetKey,
+                tokenChainId = tokenChainId,
                 address = address,
                 onBackClick = {
                     navController.popBackStack()
@@ -362,11 +379,42 @@ fun InputAmountPreviewScreen(
     onCopyClick: (String) -> Unit,
     onForward: (String) -> Unit,
     modifier: Modifier = Modifier,
-    token: TokenItem? = null,
+    tokenSymbol: String = "",
+    tokenIconUrl: String? = null,
+    tokenChainIconUrl: String? = null,
+    tokenChainName: String? = null,
+    tokenAssetId: String = "",
+    tokenAssetKey: String? = null,
+    tokenChainId: String = "",
     address: String? = null,
 ) {
     // Generate deposit URI for copy and share operations
-    val depositUri = generateDepositUri(token, address, primaryAmount) ?: (address ?: "")
+    val depositUri = generateDepositUri(
+        token = if (tokenAssetId.isNotEmpty()) TokenItem(
+            assetId = tokenAssetId,
+            symbol = tokenSymbol,
+            name = tokenSymbol, // Use symbol as name fallback
+            iconUrl = tokenIconUrl ?: "",
+            balance = "0", // Default balance
+            priceBtc = "0", // Default BTC price
+            priceUsd = "0", // Default USD price
+            chainId = tokenChainId,
+            changeUsd = "0", // Default change
+            changeBtc = "0", // Default BTC change
+            hidden = false, // Default visibility
+            confirmations = 0, // Default confirmations
+            chainIconUrl = tokenChainIconUrl,
+            chainSymbol = null, // Chain symbol not available
+            chainName = tokenChainName,
+            assetKey = tokenAssetKey,
+            dust = null, // Dust not available
+            withdrawalMemoPossibility = null, // Memo possibility not available
+            collectionHash = null, // Collection hash not available
+            level = null // Level not available
+        ) else null,
+        address = address,
+        amount = primaryAmount
+    ) ?: (address ?: "")
 
     Column(
         modifier = modifier
@@ -427,7 +475,7 @@ fun InputAmountPreviewScreen(
                 )
             } else {
                 Text(
-                    text = stringResource(R.string.Deposit_to_Mixin, token?.symbol ?: ""),
+                    text = stringResource(R.string.Deposit_to_Mixin, tokenSymbol),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MixinAppTheme.colors.textPrimary,
@@ -435,7 +483,7 @@ fun InputAmountPreviewScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.Deposit_to_Mixin_sub, token?.symbol ?: ""),
+                    text = stringResource(R.string.Deposit_to_Mixin_sub, tokenSymbol),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     textAlign = TextAlign.Center,
@@ -454,8 +502,29 @@ fun InputAmountPreviewScreen(
                 ) {
                     Image(
                         bitmap = generateQrCodeBitmap(
-                            token,
-                            address,
+                            token = if (tokenAssetId.isNotEmpty()) TokenItem(
+                                assetId = tokenAssetId,
+                                symbol = tokenSymbol,
+                                name = tokenSymbol, // Use symbol as name fallback
+                                iconUrl = tokenIconUrl ?: "",
+                                balance = "0", // Default balance
+                                priceBtc = "0", // Default BTC price
+                                priceUsd = "0", // Default USD price
+                                chainId = tokenChainId,
+                                changeUsd = "0", // Default change
+                                changeBtc = "0", // Default BTC change
+                                hidden = false, // Default visibility
+                                confirmations = 0, // Default confirmations
+                                chainIconUrl = tokenChainIconUrl,
+                                chainSymbol = null, // Chain symbol not available
+                                chainName = tokenChainName,
+                                assetKey = tokenAssetKey,
+                                dust = null, // Dust not available
+                                withdrawalMemoPossibility = null, // Memo possibility not available
+                                collectionHash = null, // Collection hash not available
+                                level = null // Level not available
+                            ) else null,
+                            address = address,
                             primaryAmount
                         ).asImageBitmap(),
                         contentDescription = "QR Code",
@@ -466,14 +535,14 @@ fun InputAmountPreviewScreen(
                 // Token icon in the center
                 Box {
                     CoilImage(
-                        model = token?.iconUrl,
+                        model = tokenIconUrl,
                         modifier = Modifier
                             .size(44.dp)
                             .clip(CircleShape),
                         placeholder = R.drawable.ic_avatar_place_holder
                     )
                     CoilImage(
-                        model = token?.chainIconUrl,
+                        model = tokenChainIconUrl,
                         modifier = Modifier
                             .size(13.dp)
                             .offset(x = 0.dp, y = (31).dp)
@@ -522,7 +591,7 @@ fun InputAmountPreviewScreen(
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                             Text(
-                                text = token?.chainName ?: "Unknown",
+                                text = tokenChainName ?: "Unknown",
                                 color = MixinAppTheme.colors.textPrimary
                             )
                         }

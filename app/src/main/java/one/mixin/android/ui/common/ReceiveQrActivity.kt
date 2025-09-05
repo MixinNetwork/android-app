@@ -138,7 +138,7 @@ class ReceiveQrActivity : BaseActivity() {
                 share.setOnClickListener {
                     DepositShareActivity.show(
                         this@ReceiveQrActivity,
-                        null,
+                        token = null,
                         "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}",
                     )
                 }

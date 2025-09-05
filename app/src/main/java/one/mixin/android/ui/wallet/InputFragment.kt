@@ -302,6 +302,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 R.id.action_input_fragment_to_web3_address_fragment,
                                                 Bundle().apply {
                                                     putString("address", address)
+                                                    // todo
                                                 }
                                             )
                                         }
@@ -355,6 +356,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
                                                 putString("address", address)
+                                                // todo
                                             }
                                         )
                                     }
@@ -857,6 +859,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         R.id.action_input_fragment_to_web3_address_fragment,
                         Bundle().apply {
                             putString("address", address)
+                            // todo
                         }
                     )
                 }

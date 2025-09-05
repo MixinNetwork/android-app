@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +23,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityDepositShareBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
@@ -46,12 +48,11 @@ import java.io.FileOutputStream
 class DepositShareActivity : BaseActivity() {
     companion object {
         private const val ARGS_TOKEN = "token"
+        private const val ARGS_WEB3_TOKEN = "web3_token"
         private const val ARGS_ADDRESS = "address"
         private const val ARGS_AMOUNT = "amount"
         private const val ARGS_AMOUNT_URL = "amount_url"
-
         private const val ARGS_USER = "user"
-
 
         fun show(context: Context, token: TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null, user: User? = null) {
             refreshScreenshot(context, 0x33000000)
@@ -63,6 +64,16 @@ class DepositShareActivity : BaseActivity() {
                 putExtra(ARGS_USER, user)
             })
         }
+
+        fun show(context: Context, web3Token: Web3TokenItem?, address: String? = null, amountUrl: String? = null, amount: String? = null) {
+            refreshScreenshot(context, 0x33000000)
+            context.startActivity(Intent(context, DepositShareActivity::class.java).apply {
+                putExtra(ARGS_WEB3_TOKEN, web3Token)
+                putExtra(ARGS_ADDRESS, address)
+                putExtra(ARGS_AMOUNT, amount)
+                putExtra(ARGS_AMOUNT_URL, amountUrl)
+            })
+        }
     }
 
     override fun getNightThemeId(): Int = R.style.AppTheme_Night_Blur
@@ -72,6 +83,9 @@ class DepositShareActivity : BaseActivity() {
     private lateinit var binding: ActivityDepositShareBinding
     private val token: TokenItem? by lazy {
         intent.extras?.getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
+    }
+    private val web3Token: Web3TokenItem? by lazy {
+        intent.extras?.getParcelableCompat(ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
     }
     private val user: User? by lazy {
         intent.extras?.getParcelableCompat(ARGS_USER, User::class.java)
@@ -87,6 +101,21 @@ class DepositShareActivity : BaseActivity() {
     private val amount by lazy {
         intent.getStringExtra(ARGS_AMOUNT)
     }
+
+    private val tokenSymbol: String?
+        get() = token?.symbol ?: web3Token?.symbol
+
+    private val tokenIconUrl: String?
+        get() = token?.iconUrl ?: web3Token?.iconUrl
+
+    private val tokenAssetId: String?
+        get() = token?.assetId ?: web3Token?.assetId
+
+    private val tokenChainName: String?
+        get() = token?.chainName ?: web3Token?.chainName
+
+    private val tokenDust: String?
+        get() = token?.dust ?: "0" // Web3TokenItem doesn't have dust, use default
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,7 +161,7 @@ class DepositShareActivity : BaseActivity() {
             }
         }
         Session.getAccount()?.identityNumber.let {
-            val qrcodeContent = "$HTTPS_MARKET/${token?.assetId}?ref=$it"
+            val qrcodeContent = "$HTTPS_MARKET/${tokenAssetId}?ref=$it"
             val qrCode = qrcodeContent.generateQRCode(200.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
@@ -140,8 +169,8 @@ class DepositShareActivity : BaseActivity() {
     }
 
     private fun setupUI() {
-        val tokenItem = token
-        if (user != null || tokenItem ==null) {
+        val hasToken = token != null || web3Token != null
+        if (user != null || !hasToken) {
             val u = user ?: Session.getAccount()?.toUser()
             binding.titleTv.text = u?.fullName
             binding.subTitleTv.text = getString(R.string.contact_mixin_id, u?.identityNumber ?: "")
@@ -152,18 +181,18 @@ class DepositShareActivity : BaseActivity() {
                 binding.icon.loadImage(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
             }
             binding.bottomTv.isVisible = true
-            if (tokenItem != null) {
-                binding.bottomTv.setText(getString(R.string.transfer_qrcode_prompt_amount, "$amount"))
+            if (hasToken) {
+                binding.bottomTv.text = getString(R.string.transfer_qrcode_prompt_amount, "$amount")
             } else {
-                binding.bottomTv.setText(getString(R.string.transfer_qrcode_prompt))
+                binding.bottomTv.setText(R.string.transfer_qrcode_prompt)
             }
         } else {
-            binding.titleTv.text = getString(R.string.Deposit_to_Mixin, token?.symbol ?: "")
-            binding.subTitleTv.text = getString(R.string.Deposit_to_Mixin_sub, token?.symbol ?: "")
+            binding.titleTv.text = getString(R.string.Deposit_to_Mixin, tokenSymbol ?: "")
+            binding.subTitleTv.text = getString(R.string.Deposit_to_Mixin_sub, tokenSymbol ?: "")
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(120.dp, 8.dp).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.icon.loadImage(token?.iconUrl)
+                binding.icon.loadImage(tokenIconUrl)
             }
 
             val addr = address ?: ""
@@ -186,13 +215,16 @@ class DepositShareActivity : BaseActivity() {
                 binding.addressText.text = addr
             }
             binding.addressTitle.setText(R.string.Address)
-            binding.networkText.text = tokenItem.chainName
+            binding.networkText.text = tokenChainName
 
             if (amount != null) {
                 binding.minimumDepositTitle.setText(R.string.Amount)
                 binding.minimumDepositText.text = "$amount"
-            } else {
-                binding.minimumDepositText.text = "${tokenItem.dust} ${tokenItem.symbol}"
+            } else if (token!=null){
+                binding.minimumDepositText.text = "${tokenDust} ${tokenSymbol}"
+            } else{
+                binding.minimumDepositTitle.isInvisible = true
+                binding.minimumDepositText.isInvisible = true
             }
         }
     }
@@ -208,7 +240,7 @@ class DepositShareActivity : BaseActivity() {
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
             val bitmap = binding.test.drawToBitmap()
-            val fileName = "${token?.symbol}_deposit.png"
+            val fileName = "${tokenSymbol}_deposit.png"
             val file = File(cacheDir, fileName)
             saveBitmapToFile(file, bitmap)
             val uri = FileProvider.getUriForFile(this@DepositShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
@@ -235,7 +267,7 @@ class DepositShareActivity : BaseActivity() {
             val bitmap = binding.test.drawToBitmap()
             val dir = getPublicDownloadPath()
             dir.mkdirs()
-            val fileName = "${token?.symbol}_deposit.png"
+            val fileName = "${tokenSymbol}_deposit.png"
             val file = File(dir, fileName)
             saveBitmapToFile(file, bitmap)
             MediaScannerConnection.scanFile(this@DepositShareActivity, arrayOf(file.toString()), null, null)

@@ -525,7 +525,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         toast(R.string.Data_error)
                         return@launch
                     }
-                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, WalletActivity.Destination.Address)
+                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, token, WalletActivity.Destination.Address)
                 }
                 dismissNow()
             }
