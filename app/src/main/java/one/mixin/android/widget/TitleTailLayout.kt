@@ -5,11 +5,12 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.R
+import androidx.core.view.isVisible
 
 class TitleTailLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : ViewGroup(context, attrs, defStyleAttr) {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -43,7 +44,7 @@ class TitleTailLayout @JvmOverloads constructor(
         
         var tailWidth = 0
         tailIcon?.let { tail ->
-            if (tail.visibility == View.VISIBLE) {
+            if (tail.isVisible) {
                 tailWidth = tail.measuredWidth + getLeftMargin(tail) + getRightMargin(tail)
             }
         }
@@ -56,8 +57,14 @@ class TitleTailLayout @JvmOverloads constructor(
                 maxHeight = maxOf(maxHeight, text.measuredHeight + getTopMargin(text) + getBottomMargin(text))
             }
         }
-        
-        totalWidth = paddingLeft + paddingRight + availableWidth
+
+        totalWidth = paddingLeft + paddingRight
+        for (i in 0 until childCount) {
+            val child = getChildAt(i)
+            if (child.visibility != GONE) {
+                totalWidth += child.measuredWidth + getLeftMargin(child) + getRightMargin(child)
+            }
+        }
         val totalHeight = paddingTop + paddingBottom + maxHeight
         
         setMeasuredDimension(totalWidth, totalHeight)
@@ -66,7 +73,6 @@ class TitleTailLayout @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val paddingLeft = paddingLeft
         val paddingTop = paddingTop
-        val paddingRight = paddingRight
         val paddingBottom = paddingBottom
         
         var currentLeft = paddingLeft
