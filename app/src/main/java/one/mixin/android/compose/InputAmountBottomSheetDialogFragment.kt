@@ -118,9 +118,12 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         formatAmount(inputAmount, token.symbol)
                     } else {
                         // Calculate primary from minor
-                        val minorValue = inputAmount.toDoubleOrNull() ?: 0.0
-                        val primaryValue = if (price > 0) minorValue / price else 0.0
-                        formatAmount(primaryValue.toString(), token.symbol)
+                        val minorValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                        val priceDecimal = price.toBigDecimal()
+                        val primaryValue = if (priceDecimal > java.math.BigDecimal.ZERO) {
+                            minorValue.divide(priceDecimal, 8, java.math.RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+                        } else "0"
+                        formatAmount(primaryValue, token.symbol)
                     }
                 }
 
@@ -129,16 +132,20 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         formatAmount(inputAmount, Fiats.getAccountCurrencyAppearance())
                     } else {
                         // Calculate minor from primary
-                        val primaryValue = inputAmount.toDoubleOrNull() ?: 0.0
-                        val minorValue = if (price > 0) primaryValue * price else 0.0
-                        formatAmount(minorValue.toString(), Fiats.getAccountCurrencyAppearance())
+                        val primaryValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                        val priceDecimal = price.toBigDecimal()
+                        val minorValue = if (priceDecimal > java.math.BigDecimal.ZERO) {
+                            primaryValue.multiply(priceDecimal).setScale(2, java.math.RoundingMode.DOWN).toPlainString()
+                        } else "0"
+                        formatAmount(minorValue, Fiats.getAccountCurrencyAppearance())
                     }
                 }
 
                 MixinAppTheme {
                     InputAmountFlow(
-                        primaryAmount = formattedPrimaryAmount,
-                        minorAmount = formattedMinorAmount,
+                        primaryAmount = if (isPrimaryMode) formattedPrimaryAmount else formattedMinorAmount,
+                        minorAmount = if (isPrimaryMode) formattedMinorAmount else formattedPrimaryAmount,
+                        tokenAmount = formattedPrimaryAmount,
                         token = token,
                         address = address,
                         onNumberClick = { number ->
@@ -155,16 +162,21 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         onSwitchClick = {
                             isPrimaryMode = !isPrimaryMode
                             // Convert current input to the other currency when switching
-                            val currentValue = inputAmount.toDoubleOrNull() ?: 0.0
+                            val currentValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                            val priceDecimal = price.toBigDecimal()
                             inputAmount = if (isPrimaryMode) {
                                 // Switched to primary mode, convert from minor to primary
-                                if (price > 0) (currentValue / price).toString() else "0"
+                                if (priceDecimal > java.math.BigDecimal.ZERO) {
+                                    currentValue.divide(priceDecimal, 16, java.math.RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+                                } else "0"
                             } else {
                                 // Switched to minor mode, convert from primary to minor
-                                if (price > 0) (currentValue * price).toString() else "0"
+                                if (priceDecimal > java.math.BigDecimal.ZERO) {
+                                    currentValue.multiply(priceDecimal).setScale(2, java.math.RoundingMode.DOWN).toPlainString()
+                                } else "0"
                             }
                             // Reset to "0" if conversion results in very small numbers
-                            if (inputAmount.toDoubleOrNull()?.let { it < 0.000001 } == true) {
+                            if (inputAmount.toBigDecimalOrNull()?.let { it < java.math.BigDecimal("0.000001") } == true) {
                                 inputAmount = "0"
                             }
                             onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)

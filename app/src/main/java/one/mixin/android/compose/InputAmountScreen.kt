@@ -64,6 +64,7 @@ object InputAmountDestinations {
 fun InputAmountFlow(
     primaryAmount: String,
     minorAmount: String,
+    tokenAmount: String,
     onNumberClick: (String) -> Unit,
     onDeleteClick: () -> Unit,
     onSwitchClick: () -> Unit,
@@ -97,7 +98,7 @@ fun InputAmountFlow(
 
         composable(InputAmountDestinations.PREVIEW) {
             InputAmountPreviewScreen(
-                primaryAmount = primaryAmount,
+                primaryAmount = tokenAmount,
                 token = token,
                 address = address,
                 onBackClick = {
@@ -402,7 +403,7 @@ fun InputAmountPreviewScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth().padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(54.dp))
@@ -759,12 +760,10 @@ object AmountInputHandler {
     }
 
     private fun hasMaxDecimalPlaces(value: String, isPrimary: Boolean): Boolean {
-        val regex = if (isPrimary) {
-            Regex("\\d+\\.\\d{8}")
-        } else {
-            Regex("\\d+\\.\\d{2}")
-        }
-        return value.matches(regex)
+        if (!value.contains(".")) return false
+        val decimalPart = value.substringAfter('.')
+        val limit = if (isPrimary) 8 else 2
+        return decimalPart.length >= limit
     }
 
     private fun isFullCurrency(currencyName: String?): Boolean {
