@@ -11,12 +11,15 @@ import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.FragmentWeb3AddressBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
@@ -51,7 +54,7 @@ class Web3AddressFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         address = arguments?.getString("address") ?: ""
-        web3Token = arguments?.getParcelable("web3_token") ?: throw IllegalArgumentException("web3Token is required")
+        web3Token = arguments?.getParcelableCompat("web3_token", Web3TokenItem::class.java) ?: throw IllegalArgumentException("web3Token is required")
     }
 
     override fun onCreateView(
@@ -63,6 +66,9 @@ class Web3AddressFragment : BaseFragment() {
         binding.root.setOnClickListener { }
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.title.rightIb.setOnClickListener {
+            requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+        }
         lifecycleScope.launch {
             val wallet = walletViewModel.getWalletByDestination(address)
             if (wallet != null) {

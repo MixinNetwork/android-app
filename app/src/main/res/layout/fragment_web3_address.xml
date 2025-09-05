@@ -13,7 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:need_divider="false"
-        app:titleText="@string/Receive" />
+        app:titleText="@string/Receive"
+        app:rightIcon="@drawable/ic_support" />
 
     <LinearLayout
         android:layout_width="match_parent"
