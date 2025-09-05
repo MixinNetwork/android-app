@@ -23,6 +23,7 @@ import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityDepositShareBinding
 import one.mixin.android.extension.blurBitmap
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
@@ -165,7 +166,25 @@ class DepositShareActivity : BaseActivity() {
                 binding.icon.loadImage(token?.iconUrl)
             }
 
-            binding.addressText.text = address ?: ""
+            val addr = address ?: ""
+            if (addr.length > 14) {
+                val spannable = android.text.SpannableStringBuilder(addr)
+                val black = colorFromAttribute(R.attr.text_primary)
+                val gray = colorFromAttribute(R.attr.text_assist)
+                val boldStyle = android.text.style.StyleSpan(android.graphics.Typeface.BOLD)
+
+                spannable.setSpan(android.text.style.ForegroundColorSpan(gray), 8, addr.length - 6, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                spannable.setSpan(android.text.style.ForegroundColorSpan(black), 0, 8, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(boldStyle, 0, 8, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                spannable.setSpan(android.text.style.ForegroundColorSpan(black), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                binding.addressText.text = spannable
+            } else {
+                binding.addressText.text = addr
+            }
             binding.addressTitle.setText(R.string.Address)
             binding.networkText.text = tokenItem.chainName
 

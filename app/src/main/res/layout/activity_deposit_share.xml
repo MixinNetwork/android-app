@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -98,20 +99,23 @@
                         android:layout_marginBottom="8dp"
                         android:text="@string/Address"
                         android:textColor="?attr/text_assist"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        app:minTextSize="10sp"
+                        app:maxTextSize="14sp" />
 
                     <!-- Address Text -->
-                    <TextView
+                    <one.mixin.android.widget.AddressTextView
                         android:id="@+id/addressText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginBottom="16dp"
-                        android:textColor="?attr/text_primary"
+                        android:textColor="?attr/text_minor"
                         android:textIsSelectable="true"
-                        android:textSize="14sp"
-                        android:typeface="monospace" />
+                        android:typeface="monospace"
+                        app:maxTextSize="14sp"
+                        app:minTextSize="10sp" />
 
                     <!-- Network and Minimum Deposit Row -->
                     <LinearLayout
@@ -142,7 +146,7 @@
                                 android:id="@+id/networkText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="?attr/text_primary"
+                                android:textColor="?attr/text_minor"
                                 android:textSize="14sp" />
 
                         </LinearLayout>
@@ -168,7 +172,7 @@
                                 android:id="@+id/minimumDepositText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="?attr/text_primary"
+                                android:textColor="?attr/text_minor"
                                 android:textSize="14sp" />
 
                         </LinearLayout>
