@@ -79,30 +79,6 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
         token?.symbol ?: web3Token?.symbol ?: ""
     }
 
-    private val tokenIconUrl by lazy {
-        token?.iconUrl ?: web3Token?.iconUrl
-    }
-
-    private val chainIconUrl by lazy {
-        token?.chainIconUrl ?: web3Token?.chainIcon ?: ""
-    }
-
-    private val chainName by lazy {
-        token?.chainName ?: web3Token?.chainName ?: ""
-    }
-
-    private val assetId by lazy {
-        token?.assetId ?: web3Token?.assetId
-    }
-
-    private val chainId by lazy {
-        token?.chainId ?: web3Token?.chainId
-    }
-
-    private val assetKey by lazy {
-        token?.assetKey ?: web3Token?.assetKey
-    }
-
     private var behavior: BottomSheetBehavior<*>? = null
 
     var onNumberClick: ((String) -> Unit)? = null

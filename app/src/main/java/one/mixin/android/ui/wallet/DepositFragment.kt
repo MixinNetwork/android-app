@@ -285,6 +285,7 @@ class DepositFragment : BaseFragment() {
             bottom.isVisible = false
             addressView.isVisible = false
             addressTitle.isVisible = false
+            addressDesc.isVisible = false
             tipLl.isVisible = false
             memoTitle.isVisible = false
             memoView.isVisible = false
@@ -296,6 +297,7 @@ class DepositFragment : BaseFragment() {
             loading.isVisible = false
             addressView.isVisible = true
             addressTitle.isVisible = true
+            addressDesc.isVisible = true
             tipLl.isVisible = true
         }
     }
