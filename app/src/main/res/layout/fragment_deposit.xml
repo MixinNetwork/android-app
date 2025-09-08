@@ -132,6 +132,14 @@
                     android:id="@+id/address_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+                
+                <TextView
+                    android:id="@+id/address_desc"
+                    android:textSize="16sp"
+                    android:layout_marginTop="16dp"
+                    android:textColor="?attr/text_assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
                 <LinearLayout
                     android:id="@+id/bottom"

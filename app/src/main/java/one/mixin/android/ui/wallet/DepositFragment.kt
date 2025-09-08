@@ -102,6 +102,7 @@ class DepositFragment : BaseFragment() {
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+            addressDesc.setText(getString(R.string.deposit_tip_common, asset.symbol))
             if (notSupport) {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
