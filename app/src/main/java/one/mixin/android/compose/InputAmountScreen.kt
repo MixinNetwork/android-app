@@ -291,7 +291,7 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
 
         ChainId.Arbitrum -> {
             if (token.assetId == ChainId.Arbitrum) {
-                "ethereum:$address?amount=$cleanAmount"
+                "ethereum:$address@42161?amount=$cleanAmount"
             } else {
                 "ethereum:${token.assetKey}@42161/transfer?address=$address&amount=$cleanAmount"
             }
@@ -299,7 +299,7 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
 
         ChainId.Optimism -> {
             if (token.assetId == ChainId.Optimism) {
-                "ethereum:$address?amount=$cleanAmount"
+                "ethereum:$address@10?amount=$cleanAmount"
             } else {
                 "ethereum:${token.assetKey}@10/transfer?address=$address&amount=$cleanAmount"
             }
@@ -307,7 +307,7 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
 
         ChainId.Base -> {
             if (token.assetId == ChainId.Base) {
-                "ethereum:$address?amount=$cleanAmount"
+                "ethereum:$address@8453?amount=$cleanAmount"
             } else {
                 "ethereum:${token.assetKey}@8453/transfer?address=$address&amount=$cleanAmount"
             }
@@ -315,7 +315,7 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
 
         ChainId.Polygon -> {
             if (token.assetId == ChainId.Polygon) {
-                "ethereum:$address?amount=$cleanAmount"
+                "ethereum:$address@137?amount=$cleanAmount"
             } else {
                 "ethereum:${token.assetKey}@137/transfer?address=$address&amount=$cleanAmount"
             }
@@ -323,7 +323,7 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
 
         ChainId.BinanceSmartChain -> {
             if (token.assetId == ChainId.BinanceSmartChain) {
-                "ethereum:$address?amount=$cleanAmount"
+                "ethereum:$address@56?amount=$cleanAmount"
             } else {
                 "ethereum:${token.assetKey}@56/transfer?address=$address&amount=$cleanAmount"
             }
