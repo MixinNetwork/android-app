@@ -24,7 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedButton
+import one.mixin.android.extension.dp as dip
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -366,9 +366,9 @@ private fun generateQrCodeBitmap(
     amount: String
 ): android.graphics.Bitmap {
     val depositUri = generateDepositUri(token, address, amount.split(" ").first())
-    return depositUri?.generateQRCode(200, 8)?.first
+    return depositUri?.generateQRCode(200, 32.dip, 0)?.first
         ?: // Generate a fallback QR code with the address if URI generation fails
-        (address ?: "").generateQRCode(200, 8).first
+        (address ?: "").generateQRCode(200, 32.dip, 0).first
 }
 
 @Composable

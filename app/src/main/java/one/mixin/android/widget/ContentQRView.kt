@@ -96,7 +96,7 @@ class ContentQRView : ViewAnimator {
                             requireNotNull(depositEntry.tag)
                         } else {
                             destination
-                        }.generateQRCode(max(qr.width, 240.dp))
+                        }.generateQRCode(max(qr.width, 240.dp), innerPadding = 32.dp, padding = 0)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -145,7 +145,7 @@ class ContentQRView : ViewAnimator {
 
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
-                    val r = destination.generateQRCode(max(qr.width, 240.dp))
+                    val r = destination.generateQRCode(max(qr.width, 240.dp), innerPadding = 32.dp, padding = 0)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())

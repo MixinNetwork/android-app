@@ -162,7 +162,7 @@ class DepositShareActivity : BaseActivity() {
         }
         Session.getAccount()?.identityNumber.let {
             val qrcodeContent = "$HTTPS_MARKET/${tokenAssetId}?ref=$it"
-            val qrCode = qrcodeContent.generateQRCode(200.dp, 8.dp).first
+            val qrCode = qrcodeContent.generateQRCode(200.dp, innerPadding = 32.dp, padding = 0).first
             binding.qr.setImageBitmap(qrCode)
         }
         applyFadeInAnimation(binding.root)
@@ -176,7 +176,7 @@ class DepositShareActivity : BaseActivity() {
             binding.subTitleTv.text = getString(R.string.contact_mixin_id, u?.identityNumber ?: "")
             binding.containerLl.isVisible = false
             (amountUrl ?: address)?.let { addr ->
-                val qrCode = addr.generateQRCode(120.dp, 8.dp).first
+                val qrCode = addr.generateQRCode(200.dp, innerPadding = 20.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
                 binding.icon.loadImage(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
             }
@@ -190,7 +190,7 @@ class DepositShareActivity : BaseActivity() {
             binding.titleTv.text = getString(R.string.Deposit_to_Mixin, tokenSymbol ?: "")
             binding.subTitleTv.text = getString(R.string.Deposit_to_Mixin_sub, tokenSymbol ?: "")
             (amountUrl ?: address)?.let { addr ->
-                val qrCode = addr.generateQRCode(120.dp, 8.dp).first
+                val qrCode = addr.generateQRCode(200.dp, innerPadding = 32.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
                 binding.icon.loadImage(tokenIconUrl)
             }

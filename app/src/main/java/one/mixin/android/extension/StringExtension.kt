@@ -54,13 +54,18 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.abs
 import kotlin.math.roundToInt
-
 private const val QUIET_ZONE_SIZE = 4
 private val radii = FloatArray(8)
 
 fun String.generateQRCode(
     qrSize: Int,
     padding: Int = 32.dp,
+): Pair<Bitmap, Int>  = generateQRCode(qrSize, padding, padding)
+
+fun String.generateQRCode(
+    qrSize: Int,
+    padding: Int = 32.dp,
+    innerPadding: Int = 0.dp,
 ): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }
     require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
@@ -108,9 +113,15 @@ fun String.generateQRCode(
     val rect = GradientDrawable()
     rect.shape = GradientDrawable.RECTANGLE
     rect.cornerRadii = radii
-    var imageIgnore = ((size - padding * 2) / 4.65f / multiple).roundToInt()
-    if (imageIgnore % 2 != inputWidth % 2) {
-        imageIgnore++
+
+    val imageIgnore = if (innerPadding == 0) {
+        0
+    } else {
+        var ignore = (innerPadding / multiple).coerceAtLeast(1)
+        if (ignore % 2 != inputWidth % 2) {
+            ignore++
+        }
+        ignore
     }
     val imageBlockX = (inputWidth - imageIgnore) / 2
     for (a in 0..2) {
