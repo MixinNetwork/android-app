@@ -20,6 +20,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.vo.Address
@@ -119,14 +120,14 @@ class ContentQRView : ViewAnimator {
     fun loadAddress(
         scopeProvider: ScopeProvider,
         destination: String,
-        icon: Int,
+        icon: String,
         warning: String? = null,
     ) {
         binding.apply {
             (binding.root as ViewAnimator).displayedChild = 0
 
             qrAvatar.apply {
-                bg.setImageResource(icon)
+                bg.loadImage(icon, R.drawable.ic_avatar_place_holder)
                 setBorder()
             }
             contentTv.text = destination

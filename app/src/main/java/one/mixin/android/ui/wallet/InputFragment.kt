@@ -302,7 +302,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 R.id.action_input_fragment_to_web3_address_fragment,
                                                 Bundle().apply {
                                                     putString("address", address)
-                                                    // todo
+                                                    putParcelable("web3_token", t)
                                                 }
                                             )
                                         }
@@ -356,7 +356,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
                                                 putString("address", address)
-                                                // todo
+                                                putParcelable("web3_token", t)
                                             }
                                         )
                                     }
@@ -854,12 +854,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    val address = if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                    val address = if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                     view?.navigate(
                         R.id.action_input_fragment_to_web3_address_fragment,
                         Bundle().apply {
                             putString("address", address)
-                            // todo
+                            putParcelable("web3_token", web3Token)
                         }
                     )
                 }

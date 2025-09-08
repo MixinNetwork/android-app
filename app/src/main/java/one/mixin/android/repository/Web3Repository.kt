@@ -11,7 +11,9 @@ import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.TokenDao
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -21,10 +23,12 @@ import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.vo.safe.toWeb3TokenItem
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,6 +44,7 @@ constructor(
     val web3TokensExtraDao: Web3TokensExtraDao,
     val web3AddressDao: Web3AddressDao,
     val web3WalletDao: Web3WalletDao,
+    val tokenRepository: TokenRepository,
     val userRepository: UserRepository
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
@@ -205,4 +210,20 @@ constructor(
     }
 
     suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
+
+    // Only deposit display
+    suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? {
+        val localToken = web3TokenDao.web3TokenItemById(walletId, assetId)
+        if (localToken != null) {
+            return localToken
+        }
+
+        return try {
+            val token = tokenRepository.findOrSyncAsset(assetId)
+            token?.toWeb3TokenItem(walletId)
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        }
+    }
 }

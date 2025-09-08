@@ -120,7 +120,7 @@ class Web3AddressFragment : BaseFragment() {
             binding.addressView.loadAddress(
                 scopeProvider,
                 address,
-                if(isSolana) R.drawable.ic_web3_logo_sol else R.drawable.ic_web3_logo_eth,
+                web3Token?.iconUrl?:"",
                 ""
             )
             binding.assetName.text = web3Token.name

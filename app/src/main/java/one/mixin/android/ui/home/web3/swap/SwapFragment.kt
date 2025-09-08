@@ -250,10 +250,11 @@ class SwapFragment : BaseFragment() {
                                     if (inMixin()) {
                                         deposit(token.assetId)
                                     } else {
-//                                        navTo(
-//                                            Web3AddressFragment.newInstance(token, if (token.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress),
-//                                            Web3AddressFragment.TAG
-//                                        )
+                                        this@SwapFragment.lifecycleScope.launch {
+                                            val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
+                                            val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                                            navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
+                                        }
                                     }
                                 },
                                 onOrderList = {
@@ -356,9 +357,17 @@ class SwapFragment : BaseFragment() {
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        // todo
-                        // navTo(Web3AddressFragment.newInstance(token, Web3Signer.evmAddress), Web3AddressFragment.TAG)
-                        dismissNow()
+                        this@SwapFragment.lifecycleScope.launch {
+                            val t = swapViewModel.getTokenByWalletAndAssetId(
+                                Web3Signer.currentWalletId, if (Web3Signer.evmAddress.isBlank()) {
+                                    Constants.ChainId.SOLANA_CHAIN_ID
+                                } else {
+                                    Constants.ChainId.ETHEREUM_CHAIN_ID
+                                }) ?: return@launch
+                            val address = if (t.isSolanaChain()) { Web3Signer.solanaAddress } else { Web3Signer.evmAddress }
+                            navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
+                            dismissNow()
+                        }
                     }
                     setOnClickListener { token, alert ->
                         if (alert) {
