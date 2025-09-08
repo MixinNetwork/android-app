@@ -96,18 +96,13 @@ class ContentQRView : ViewAnimator {
                             requireNotNull(depositEntry.tag)
                         } else {
                             destination
-                        }.generateQRCode(max(qr.width, 240.dp), innerPadding = 32.dp, padding = 0)
+                        }.generateQRCode(200.dp, innerPadding = 40.dp, padding = 0)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .autoDispose(scopeProvider)
                     .subscribe(
                         { r ->
-                            qrAvatar.layoutParams =
-                                qrAvatar.layoutParams.apply {
-                                    width = r.second
-                                    height = r.second
-                                }
                             qr.setImageBitmap(r.first)
                         },
                         {
@@ -145,18 +140,13 @@ class ContentQRView : ViewAnimator {
 
             qr.post {
                 Observable.create<Pair<Bitmap, Int>> { e ->
-                    val r = destination.generateQRCode(max(qr.width, 240.dp), innerPadding = 32.dp, padding = 0)
+                    val r = destination.generateQRCode(200.dp, innerPadding = 40.dp, padding = 0)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .autoDispose(scopeProvider)
                     .subscribe(
                         { r ->
-                            qrAvatar.layoutParams =
-                                qrAvatar.layoutParams.apply {
-                                    width = r.second
-                                    height = r.second
-                                }
                             qr.setImageBitmap(r.first)
                         },
                         {
