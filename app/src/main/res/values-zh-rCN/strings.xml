@@ -2057,5 +2057,8 @@
     <string name="lightning_address_tip_3">主流闪电网络钱包都支持。</string>
     <string name="lightning_address_mao_tip">每一个 MAO 域名对应一个闪电网络地址，如果您拥有 MAO 域名，可以按 name@mao.id 格式接收闪电网络转账。了解更多</string>
     <string name="Copy_Address">复制地址</string>
-    <string name="Enter_Amount">Enter Amount</string>
+    <string name="Enter_Amount">输入金额</string>
+    <string name="mixin_payment_title">📣 Mixin 收款</string>
+    <string name="payment_details">💰 金额：%1$s\n🌐 网络：%2$s\n🤝 收款人：%3$s</string>
+    <string name="pay_now">立刻支付</string>
 </resources>

@@ -54,6 +54,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.util.getChainName
 import timber.log.Timber
 
 object InputAmountDestinations {
@@ -71,7 +72,7 @@ fun InputAmountFlow(
     onSwitchClick: () -> Unit,
     onShareClick: (String) -> Unit,
     onCopyClick: (String) -> Unit,
-    onForward: (String) -> Unit,
+    onForward: (TokenItem, String, String) -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     token: TokenItem? = null,
@@ -377,7 +378,7 @@ fun InputAmountPreviewScreen(
     onCloseClick: () -> Unit,
     onShareClick: (String) -> Unit,
     onCopyClick: (String) -> Unit,
-    onForward: (String) -> Unit,
+    onForward: (TokenItem, String, String) -> Unit,
     modifier: Modifier = Modifier,
     tokenSymbol: String = "",
     tokenIconUrl: String? = null,
@@ -451,7 +452,8 @@ fun InputAmountPreviewScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxWidth().padding(horizontal = 32.dp),
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(54.dp))
@@ -644,7 +646,29 @@ fun InputAmountPreviewScreen(
 
                 Button(
                     onClick = {
-                        onForward(depositUri)
+                        val tokenItem = TokenItem(
+                            assetId = tokenAssetId,
+                            symbol = tokenSymbol,
+                            name = tokenSymbol,
+                            iconUrl = tokenIconUrl ?: "",
+                            balance = "0",
+                            priceBtc = "0",
+                            priceUsd = "0",
+                            chainId = tokenChainId,
+                            changeUsd = "0",
+                            changeBtc = "0",
+                            hidden = false,
+                            confirmations = 0,
+                            chainIconUrl = tokenChainIconUrl,
+                            chainSymbol = null,
+                            chainName = tokenChainName,
+                            assetKey = tokenAssetKey,
+                            dust = null,
+                            withdrawalMemoPossibility = null,
+                            collectionHash = null,
+                            level = null
+                        )
+                        onForward(tokenItem, depositUri, primaryAmount)
                     },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(24.dp),

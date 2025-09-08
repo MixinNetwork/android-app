@@ -41,6 +41,7 @@ import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogF
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.rxpermission.RxPermissions
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BadgeCircleImageView
 
@@ -186,8 +187,8 @@ class ReceiveQrActivity : BaseActivity() {
                             toast(R.string.copied_to_clipboard)
                         }
                     }
-                    this.onForwardClick = { address ->
-                        ForwardActivity.show(requireContext(), address)
+                    this.onForwardClick = { message ->
+                        ForwardActivity.show(requireContext(), arrayListOf(message), ForwardAction.App.Resultless())
                     }
                     this.onShareClick = { amount, address ->
                         this@ReceiveQrActivity.lifecycleScope.launch {

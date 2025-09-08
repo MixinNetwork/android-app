@@ -123,7 +123,7 @@ class Web3AddressFragment : BaseFragment() {
                 web3Token?.iconUrl?:"",
                 ""
             )
-            binding.assetName.text = web3Token.name
+            binding.assetName.text = web3Token.symbol
             binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
         }
         return binding.root

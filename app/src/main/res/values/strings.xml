@@ -2110,4 +2110,7 @@
     <string name="lightning_address_mao_tip">Each MAO domain corresponds to a Lightning Network address. If you own a MAO domain, you can receive Lightning Network transfers in the format name@mao.id. Learn More</string>
     <string name="Copy_Address">Copy Address</string>
     <string name="Enter_Amount">Enter Amount</string>
+    <string name="mixin_payment_title">📣 Mixin Payment</string>
+    <string name="payment_details">💰 Amount：%1$s\n🌐 Network：%2$s\n🤝 Receiver：%3$s</string>
+    <string name="pay_now">Pay Now</string>
 </resources>

@@ -18,6 +18,8 @@ import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -25,12 +27,22 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.getChainName
+import one.mixin.android.vo.ActionButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -87,7 +99,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
     var onDismiss: (() -> Unit)? = null
     var onAmountChanged: ((primary: String, minor: String) -> Unit)? = null
     var onShareClick: ((amount: String, depositUri: String) -> Unit)? = null
-    var onForwardClick: ((depositUri: String) -> Unit)? = null
+    var onForwardClick: ((message: ForwardMessage) -> Unit)? = null
     var onCopyClick: ((depositUri: String) -> Unit)? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -218,8 +230,8 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             onShareClick?.invoke(formattedPrimaryAmount, depositUri)
                             dismiss()
                         },
-                        onForward =  { depositUri ->
-                            onForwardClick?.invoke(depositUri)
+                        onForward = { token, depositUri, amount ->
+                            onForwardClick?.invoke(buildForwardMessage(token, depositUri, amount))
                             dismiss()
                         }
                     )
@@ -233,6 +245,35 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
         }
+
+    private fun buildForwardMessage(token: TokenItem, url: String, amount: String): ForwardMessage {
+        val description = buildString {
+            append(getString(R.string.payment_details, amount, "${token.name}(${getChainName(token.chainId, token.chainName, token.assetKey)})", Session.getAccount()?.fullName ?: ""))
+        }
+
+        val actions = listOf(
+            ActionButtonData(
+                label = getString(R.string.pay_now),
+                color = "#3D75E3",
+                action = url
+            ),
+        )
+
+        val appCard = AppCardData(
+            appId = ROUTE_BOT_USER_ID,
+            iconUrl = null,
+            coverUrl = null,
+            cover = null,
+            title = getString(R.string.mixin_payment_title),
+            description = description,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+            actions = actions,
+        )
+
+        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
+    }
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {
