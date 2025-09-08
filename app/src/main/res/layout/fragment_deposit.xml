@@ -136,10 +136,11 @@
                 <TextView
                     android:id="@+id/address_desc"
                     android:textSize="16sp"
-                    android:layout_marginTop="16dp"
                     android:textColor="?attr/text_assist"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"/>
 
                 <LinearLayout
                     android:id="@+id/bottom"

@@ -17,7 +17,7 @@ plugins {
 
 def versionMajor = 3
 def versionMinor = 3
-def versionPatch = 3
+def versionPatch = 4
 def versionBuild = 0
 
 apply plugin: 'com.google.gms.google-services'
