@@ -18,6 +18,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.AssetId.USDC_ASSET_BEP_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_ETH_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_POL_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_SOL_ID
+import one.mixin.android.Constants.AssetId.USDC_BASE_POL_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_BEP_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_POL_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_SOL_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_TRC_ID
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.FragmentWeb3AddressBinding
@@ -34,6 +44,7 @@ import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.getChainName
+import one.mixin.android.web3.js.Web3Signer
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {
@@ -56,8 +67,6 @@ class Web3AddressFragment : BaseFragment() {
     private val binding get() = requireNotNull(_binding)
     private lateinit var address: String
     private lateinit var web3Token: Web3TokenItem
-    private var currentId: String? = null
-
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,18 +134,51 @@ class Web3AddressFragment : BaseFragment() {
             }
 
             binding.addressTitle.setText(R.string.Address)
-            val isSolana = !address.startsWith("0x")
-            binding.addressView.loadAddress(
-                scopeProvider,
-                address,
-                web3Token.iconUrl ?:"",
-                ""
-            )
-            binding.assetName.text = web3Token.symbol
-            binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
-            if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
+
+            updateUI()
+            if (Constants.AssetId.usdtAssets.containsKey(web3Token.assetId)) {
                 binding.networkChipGroup.isVisible = true
-                initChips()
+                initChips(
+                    if (Web3Signer.evmAddress.isBlank()) {
+                        mapOf(
+                            USDT_ASSET_SOL_ID to "Solana",
+                            )
+                    } else if (Web3Signer.solanaAddress.isBlank()) {
+                        mapOf(
+                            USDT_ASSET_ETH_ID to "ERC-20",
+                            USDT_ASSET_POL_ID to "Polygon",
+                            USDT_ASSET_BEP_ID to "BEP-20",
+                        )
+                    } else {
+                        mapOf(
+                            USDT_ASSET_ETH_ID to "ERC-20",
+                            USDT_ASSET_SOL_ID to "Solana",
+                            USDT_ASSET_POL_ID to "Polygon",
+                            USDT_ASSET_BEP_ID to "BEP-20",
+                        )
+                    }
+                )
+            } else if (Constants.AssetId.usdcAssets.containsKey(web3Token.assetId)) {
+                binding.networkChipGroup.isVisible = true
+                initChips(
+                    if (Web3Signer.evmAddress.isBlank()) {
+                        mapOf(
+                            USDC_ASSET_SOL_ID to "Solana",
+                        )
+                    } else if (Web3Signer.solanaAddress.isBlank()) {
+                        mapOf(
+                            USDC_ASSET_ETH_ID to "ERC-20",
+                            USDC_BASE_POL_ID to "Base",
+                            USDC_ASSET_POL_ID to "Polygon",
+                            USDC_ASSET_BEP_ID to "BEP-20"
+                        )
+                    } else {
+                        Constants.AssetId.usdcAssets
+                    }
+                )
+            } else if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
+                binding.networkChipGroup.isVisible = true
+                initChips(Constants.AssetId.ethAssets)
             } else {
                 binding.networkChipGroup.isVisible = false
             }
@@ -144,20 +186,18 @@ class Web3AddressFragment : BaseFragment() {
         return binding.root
     }
 
-    private fun initChips() {
-        currentId = web3Token.assetId
+    private fun initChips(map:Map<String,String>) {
         binding.apply {
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
-            Constants.AssetId.ethAssets.entries.forEach { entry ->
+            map.entries.forEach { entry ->
                 val chip = Chip(requireContext()).apply {
                     tag = entry.key
-                    isChecked = entry.key == currentId
+                    isChecked = entry.key == web3Token.assetId
                     text = entry.value
                     isClickable = true
                     setOnClickListener {
-                        currentId = entry.key
-                        updateChips()
+                        selectToken(entry.key)
                     }
                 }
                 networkChipGroup.addView(chip)
@@ -166,10 +206,36 @@ class Web3AddressFragment : BaseFragment() {
         updateChips()
     }
 
+    private fun selectToken(id:String) {
+        lifecycleScope.launch {
+            walletViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId,id)?.let {
+                web3Token = it
+            }
+            if (web3Token.isSolanaChain()) {
+                address = Web3Signer.solanaAddress
+            } else {
+                address = Web3Signer.evmAddress
+            }
+            updateUI()
+            updateChips()
+        }
+    }
+
+    private fun updateUI() {
+        binding.addressView.loadAddress(
+            scopeProvider,
+            address,
+            web3Token,
+            ""
+        )
+        binding.assetName.text = web3Token.symbol
+        binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
+    }
+
     private fun updateChips() {
         binding.networkChipGroup.children.forEach {
             if (it is Chip) {
-                if (it.tag == currentId) {
+                if (it.tag == web3Token.assetId) {
                     val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
                     it.setTextColor(accentColor)
                     it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)

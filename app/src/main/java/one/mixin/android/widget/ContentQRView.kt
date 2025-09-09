@@ -16,6 +16,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewContentQrBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
@@ -115,14 +116,15 @@ class ContentQRView : ViewAnimator {
     fun loadAddress(
         scopeProvider: ScopeProvider,
         destination: String,
-        icon: String,
+        web3Token: Web3TokenItem,
         warning: String? = null,
     ) {
         binding.apply {
             (binding.root as ViewAnimator).displayedChild = 0
 
             qrAvatar.apply {
-                bg.loadImage(icon, R.drawable.ic_avatar_place_holder)
+                bg.loadImage(web3Token.iconUrl, R.drawable.ic_avatar_place_holder)
+                badge.loadImage(web3Token.chainIcon, R.drawable.ic_avatar_place_holder)
                 setBorder()
             }
             contentTv.text = destination
