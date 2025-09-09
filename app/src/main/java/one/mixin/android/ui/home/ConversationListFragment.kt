@@ -744,11 +744,13 @@ class ConversationListFragment : LinkFragment() {
         }
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
-                .let { type ->
-                    (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
-                    if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
-                }
+            if (isAdded) {
+                ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
+                    .let { type ->
+                        (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
+                        if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                    }
+            }
         }
     }
 
