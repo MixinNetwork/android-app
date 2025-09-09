@@ -218,24 +218,26 @@ class FloatingWebClip(private var isNightMode: Boolean) {
                 initParams(2, 40, if (isNightMode) appContext.getColor(R.color.bgWindowNight) else Color.WHITE)
             }
 
-        windowView?.addView(
-            FrameLayout(appContext).apply {
-                if (isNightMode) {
-                    setBackgroundResource(R.drawable.bg_floating_shadow_night)
-                } else {
-                    setBackgroundResource(R.drawable.bg_floating_shadow)
-                }
-                addView(
-                    avatarsView,
-                    FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        gravity = Gravity.CENTER
-                        marginStart = 6.dp
-                        marginEnd = 6.dp
-                    },
-                )
-            },
-            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT),
-        )
+        avatarsView?.let { avatarsView ->
+            windowView?.addView(
+                FrameLayout(appContext).apply {
+                    if (isNightMode) {
+                        setBackgroundResource(R.drawable.bg_floating_shadow_night)
+                    } else {
+                        setBackgroundResource(R.drawable.bg_floating_shadow)
+                    }
+                    addView(
+                        avatarsView,
+                        FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                            gravity = Gravity.CENTER
+                            marginStart = 6.dp
+                            marginEnd = 6.dp
+                        },
+                    )
+                },
+                ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT),
+            )
+        }
     }
 
     fun hide() {
