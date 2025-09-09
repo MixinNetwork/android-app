@@ -27,6 +27,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
+import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null
@@ -68,7 +69,7 @@ fun refreshScreenshot(context: Context, cover: Int? = null) {
 }
 
 fun expand(context: Context) {
-    refreshScreenshot(context)
+    runCatching { refreshScreenshot(context) }.onFailure { Timber.e(it) }
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }
