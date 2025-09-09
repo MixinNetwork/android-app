@@ -66,7 +66,7 @@
                         android:layout_height="200dp"
                         android:layout_gravity="center" />
 
-                    <one.mixin.android.widget.BadgeAvatarView
+                    <one.mixin.android.widget.BadgeCircleImageView
                         android:id="@+id/icon"
                         android:layout_width="45dp"
                         android:layout_height="45dp"
@@ -75,6 +75,7 @@
                         app:border_width="0.5dp" />
 
                 </FrameLayout>
+
 
                 <TextView
                     android:id="@+id/bottom_tv"

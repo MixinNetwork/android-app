@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.media.MediaScannerConnection
@@ -141,10 +142,12 @@ class DepositShareActivity : BaseActivity() {
                 )
         window.statusBarColor = android.graphics.Color.TRANSPARENT
 
+        binding.iconFl.round(6.dp)
+        binding.qrCode.round(14.dp)
+        binding.icon.badge.setBackgroundColor(Color.WHITE)
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
         }
-        binding.iconFl.round(4.dp)
 
         setupUI()
 
@@ -183,7 +186,8 @@ class DepositShareActivity : BaseActivity() {
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(200.dp, innerPadding = 20.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.icon.bg.loadUrl(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
+                binding.icon.bg.loadImage(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
+                binding.icon.badge.isVisible = false
             }
             binding.bottomTv.isVisible = true
             if (hasToken) {
@@ -197,7 +201,7 @@ class DepositShareActivity : BaseActivity() {
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(200.dp, innerPadding = 32.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.icon.bg.loadUrl(tokenIconUrl)
+                binding.icon.bg.loadImage(tokenIconUrl)
                 binding.icon.badge.loadImage(tokenChainUrl, R.drawable.ic_avatar_place_holder)
             }
 

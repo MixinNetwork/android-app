@@ -38,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -504,7 +505,7 @@ fun InputAmountPreviewScreen(
                             amount = primaryAmount
                         ).asImageBitmap(),
                         contentDescription = "QR Code",
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(14.dp))
                     )
                 }
 
@@ -750,9 +751,9 @@ fun NumberKeyboard(
 
 // Helper function to calculate text size based on content length
 @Composable
-private fun getPrimaryTextSize(text: String): androidx.compose.ui.unit.TextUnit {
+private fun getPrimaryTextSize(text: String): TextUnit {
     val length = text.length
-    val size = if (length <= 4) {
+    val size = if (length <= 8) {
         56f
     } else {
         56f - 2 * (length - 4)

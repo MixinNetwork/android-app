@@ -130,7 +130,7 @@ class DepositFragment : BaseFragment() {
 
                 notSupportLl.isVisible = false
                 sv.isVisible = true
-                binding.assetName.text = asset.name
+                binding.assetName.text = "${asset.name} (${asset.symbol})"
                 binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
                 binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
                 binding.blockConfirmationsValue.text = asset.confirmations.toString()
@@ -471,7 +471,7 @@ class DepositFragment : BaseFragment() {
                 }
             }
         }
-        binding.assetName.text = asset.symbol
+        binding.assetName.text = "${asset.name} (${asset.symbol})"
         binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
         binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
         binding.blockConfirmationsValue.text = asset.confirmations.toString()
