@@ -446,7 +446,7 @@ fun InputAmountPreviewScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(54.dp))
@@ -464,7 +464,7 @@ fun InputAmountPreviewScreen(
                         R.string.contact_mixin_id,
                         Session.getAccount()?.identityNumber ?: ""
                     ),
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     color = MixinAppTheme.colors.textAssist,
                     textAlign = TextAlign.Center,
                 )
@@ -532,7 +532,7 @@ fun InputAmountPreviewScreen(
             if (address == null) {
                 Text(
                     text = stringResource(R.string.transfer_qrcode_prompt_amount, "$primaryAmount"),
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
@@ -544,13 +544,14 @@ fun InputAmountPreviewScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.Address),
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                     )
 
                     Text(
                         text = addr,
                         color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 16.sp,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(
@@ -562,12 +563,13 @@ fun InputAmountPreviewScreen(
                         ) {
                             Text(
                                 text = stringResource(R.string.network),
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 color = MixinAppTheme.colors.textAssist,
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                             Text(
                                 text = tokenChainName ?: "Unknown",
+                                fontSize = 16.sp,
                                 color = MixinAppTheme.colors.textPrimary
                             )
                         }
@@ -578,12 +580,13 @@ fun InputAmountPreviewScreen(
                         ) {
                             Text(
                                 text = stringResource(R.string.Amount),
-                                fontSize = 12.sp,
+                                fontSize = 14.sp,
                                 color = MixinAppTheme.colors.textAssist,
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                             Text(
                                 text = primaryAmount,
+                                fontSize = 16.sp,
                                 color = MixinAppTheme.colors.textPrimary,
                                 textAlign = TextAlign.End
                             )

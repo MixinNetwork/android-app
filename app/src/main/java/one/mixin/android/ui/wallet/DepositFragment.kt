@@ -103,7 +103,7 @@ class DepositFragment : BaseFragment() {
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
-            addressDesc.setText(getTipsByAsset(asset))
+            addressDesc.text = getTipsByAsset(asset)
             if (notSupport) {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
@@ -475,9 +475,13 @@ class DepositFragment : BaseFragment() {
         binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
         binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
         binding.blockConfirmationsValue.text = asset.confirmations.toString()
+        binding.blockConfirmationsTitle.setOnClickListener {
+            BlockConfirmationsBottomSheetDialogFragment.newInstance(asset.confirmations).showNow(parentFragmentManager, BlockConfirmationsBottomSheetDialogFragment.TAG)
+        }
         binding.blockConfirmations.setOnClickListener {
             BlockConfirmationsBottomSheetDialogFragment.newInstance(asset.confirmations).showNow(parentFragmentManager, BlockConfirmationsBottomSheetDialogFragment.TAG)
         }
+        binding.addressDesc.text = getTipsByAsset(asset)
         if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
             binding.addressTitle.setText(R.string.Invoice)
             binding.lightningRl.isVisible = true
@@ -488,6 +492,14 @@ class DepositFragment : BaseFragment() {
                 toast(R.string.copied_to_clipboard)
             }
 
+            binding.lightningAddressTitle.setOnClickListener {
+                LightningAddressBottomSheetDialogFragment.newInstance(address).apply {
+                    copyCallback = {
+                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, it))
+                        toast(R.string.copied_to_clipboard)
+                    }
+                }.showNow(parentFragmentManager, LightningAddressBottomSheetDialogFragment.TAG)
+            }
             binding.lightningAddressTip.setOnClickListener {
                 LightningAddressBottomSheetDialogFragment.newInstance(address).apply {
                     copyCallback = {

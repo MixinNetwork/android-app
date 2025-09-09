@@ -32,6 +32,7 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.round
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -143,6 +144,7 @@ class DepositShareActivity : BaseActivity() {
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
         }
+        binding.iconFl.round(4.dp)
 
         setupUI()
 
