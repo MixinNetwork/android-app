@@ -36,15 +36,19 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
+import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.extension.dp as dip
@@ -119,13 +123,18 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         Spacer(modifier = Modifier.height(12.dp))
                         NumberedText(modifier = Modifier.fillMaxWidth(), numberStr = "3", instructionStr = stringResource(id = R.string.lightning_address_tip_3))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = stringResource(id = R.string.lightning_address_mao_tip),
+
+
+                        HighlightedTextWithClick(
+                            stringResource(id = R.string.lightning_address_mao_tip),
+                            modifier = Modifier.align(Alignment.Start),
+                            stringResource(R.string.Learn_More),
                             color = MixinAppTheme.colors.textMinor,
                             fontSize = 14.sp,
-                            lineHeight = 19.6.sp
-                        )
-
+                            lineHeight = 19.6.sp,
+                        ) {
+                            context.openUrl(getString(R.string.Lightning_link))
+                        }
                         Spacer(modifier = Modifier.height(120.dp))
                         Button(
                             onClick = {

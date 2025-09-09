@@ -113,19 +113,15 @@ class DepositFragment : BaseFragment() {
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
                 if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
-                    networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.usdtAssets)
                 } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)) {
-                    networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.usdcAssets)
                 } else if (Constants.AssetId.ethAssets.contains(asset.assetId)) {
-                    networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.ethAssets)
                 } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
-                    networkChipGroup.isVisible = true
                     initChips(asset, Constants.AssetId.btcAssets)
                 } else {
-                    networkChipGroup.isVisible = false
+                    initChips(asset, mapOf(asset.assetId to (asset.chainName ?: "")))
                 }
 
                 notSupportLl.isVisible = false

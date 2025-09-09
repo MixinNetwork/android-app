@@ -2109,6 +2109,7 @@
     <string name="lightning_address_tip_2">Reusable, no need to generate a new one each time.</string>
     <string name="lightning_address_tip_3">Supported by mainstream Lightning Network wallets.</string>
     <string name="lightning_address_mao_tip">Each MAO domain corresponds to a Lightning Network address. If you own a MAO domain, you can receive Lightning Network transfers in the format name@mao.id. Learn More</string>
+    <string name="Lightning_link">https://support.mixin.one/en/article/what-is-lightning-address-1i8733z//</string>
     <string name="Copy_Address">Copy Address</string>
     <string name="Enter_Amount">Enter Amount</string>
     <string name="mixin_payment_title">📣 Mixin Payment</string>
