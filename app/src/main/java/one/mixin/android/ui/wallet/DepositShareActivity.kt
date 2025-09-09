@@ -108,6 +108,9 @@ class DepositShareActivity : BaseActivity() {
     private val tokenIconUrl: String?
         get() = token?.iconUrl ?: web3Token?.iconUrl
 
+    private val tokenChainUrl: String?
+        get() = token?.chainIconUrl ?: web3Token?.chainIcon
+
     private val tokenAssetId: String?
         get() = token?.assetId ?: web3Token?.assetId
 
@@ -162,7 +165,7 @@ class DepositShareActivity : BaseActivity() {
         }
         Session.getAccount()?.identityNumber.let {
             val qrcodeContent = "$HTTPS_MARKET/${tokenAssetId}?ref=$it"
-            val qrCode = qrcodeContent.generateQRCode(200.dp, innerPadding = 32.dp, padding = 0).first
+            val qrCode = qrcodeContent.generateQRCode(200.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
         applyFadeInAnimation(binding.root)
@@ -178,7 +181,7 @@ class DepositShareActivity : BaseActivity() {
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(200.dp, innerPadding = 20.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.icon.loadImage(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
+                binding.icon.bg.loadUrl(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
             }
             binding.bottomTv.isVisible = true
             if (hasToken) {
@@ -192,7 +195,8 @@ class DepositShareActivity : BaseActivity() {
             (amountUrl ?: address)?.let { addr ->
                 val qrCode = addr.generateQRCode(200.dp, innerPadding = 32.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
-                binding.icon.loadImage(tokenIconUrl)
+                binding.icon.bg.loadUrl(tokenIconUrl)
+                binding.icon.badge.loadImage(tokenChainUrl, R.drawable.ic_avatar_place_holder)
             }
 
             val addr = address ?: ""

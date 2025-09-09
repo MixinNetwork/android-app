@@ -91,7 +91,7 @@ class MarketShareActivity : BaseActivity() {
         }
         Session.getAccount()?.identityNumber.let {
             val qrcodeContent = "$HTTPS_MARKET/$coinId?ref=$it"
-            val qrCode = qrcodeContent.generateQRCode(72.dp, innerPadding = 8.dp, padding = 0).first
+            val qrCode = qrcodeContent.generateQRCode(72.dp, 8.dp).first
             binding.qr.setImageBitmap(qrCode)
         }
         binding.apply {

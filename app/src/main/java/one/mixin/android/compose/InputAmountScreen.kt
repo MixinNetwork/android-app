@@ -147,11 +147,10 @@ fun InputAmountScreen(
             .fillMaxSize()
             .background(MixinAppTheme.colors.background)
     ) {
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(vertical = 20.dp)
+                .padding(vertical = 6.dp, horizontal = 4.dp)
                 .fillMaxWidth()
         ) {
             IconButton(
@@ -366,9 +365,9 @@ private fun generateQrCodeBitmap(
     amount: String
 ): android.graphics.Bitmap {
     val depositUri = generateDepositUri(token, address, amount.split(" ").first())
-    return depositUri?.generateQRCode(200, 32.dip, 0)?.first
+    return depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first
         ?: // Generate a fallback QR code with the address if URI generation fails
-        (address ?: "").generateQRCode(200, 32.dip, 0).first
+        (address ?: "").generateQRCode(200.dip, 0, 32.dip).first
 }
 
 @Composable
@@ -426,7 +425,7 @@ fun InputAmountPreviewScreen(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp)
+                .padding(vertical = 8.dp, horizontal = 4.dp)
         ) {
             IconButton(
                 onClick = onBackClick,
@@ -453,7 +452,7 @@ fun InputAmountPreviewScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(54.dp))
@@ -624,7 +623,7 @@ fun InputAmountPreviewScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 50.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (address == null) {
