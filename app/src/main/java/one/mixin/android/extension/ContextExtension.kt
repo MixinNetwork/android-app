@@ -1063,6 +1063,7 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
         else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey?:""))
     }
 

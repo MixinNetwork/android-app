@@ -32,6 +32,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.highlightStarTag
@@ -102,7 +103,7 @@ class DepositFragment : BaseFragment() {
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
-            addressDesc.setText(getString(R.string.deposit_tip_common, asset.symbol))
+            addressDesc.setText(getTipsByAsset(asset))
             if (notSupport) {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
