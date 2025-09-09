@@ -412,7 +412,12 @@ object Session {
                 content += bodyToString()
             }
         }
-        return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
+        val accountId = getAccountId()
+        return if (accountId == null) {
+            Pair(ts, "")
+        } else {
+            Pair(ts, (accountId.toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
+        }
     }
 
     fun getRegisterSignature(
