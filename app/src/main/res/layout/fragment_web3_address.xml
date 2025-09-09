@@ -22,6 +22,14 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/network_chip_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="20dp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -32,22 +40,6 @@
             android:layout_marginBottom="10dp"
             android:background="?attr/bg_market_card"
             android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/memo_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:text="@string/withdrawal_memo"
-                android:textColor="?attr/text_assist"
-                android:visibility="gone" />
-
-            <one.mixin.android.widget.ContentQRView
-                android:id="@+id/memo_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/address_title"
@@ -62,7 +54,8 @@
             <one.mixin.android.widget.ContentQRView
                 android:id="@+id/address_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"/>
 
             <LinearLayout
                 android:id="@+id/bottom"

@@ -1,5 +1,6 @@
 package one.mixin.android.compose
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
-import one.mixin.android.extension.dp as dip
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -48,14 +48,14 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
-import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.util.getChainName
-import timber.log.Timber
+import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.extension.dp as dip
 
 object InputAmountDestinations {
     const val INPUT = "input"
@@ -72,7 +72,7 @@ fun InputAmountFlow(
     onSwitchClick: () -> Unit,
     onShareClick: (String) -> Unit,
     onCopyClick: (String) -> Unit,
-    onForward: (TokenItem, String, String) -> Unit,
+    onForward: (String, String, String) -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     token: TokenItem? = null,
@@ -80,7 +80,6 @@ fun InputAmountFlow(
     address: String? = null,
     navController: NavHostController = rememberNavController(),
 ) {
-    // Get unified token information from either TokenItem or Web3TokenItem
     val tokenSymbol = token?.symbol ?: web3Token?.symbol ?: ""
     val tokenIconUrl = token?.iconUrl ?: web3Token?.iconUrl
     val tokenChainIconUrl = token?.chainIconUrl ?: web3Token?.chainIcon
@@ -263,69 +262,75 @@ fun InputAmountScreen(
 }
 
 // Helper function to generate deposit URI based on token chain and address
-private fun generateDepositUri(token: TokenItem?, address: String?, amount: String): String? {
-    if (token == null || amount == "0") return null
+private fun generateDepositUri(
+    assetId: String?,
+    chainId: String?,
+    assetKey: String?,
+    address: String?,
+    amount: String
+): String? {
+    if (assetId.isNullOrEmpty() || amount == "0") return null
     if (address == null) {
         val code =
-            "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}?asset=${token.assetId}&amount=$amount"
+            "${Constants.Scheme.HTTPS_PAY}/${Session.getAccountId()}?asset=${assetId}&amount=$amount"
         return code
     }
 
     val cleanAmount = amount.replace(Regex("[^0-9.]"), "") // Remove symbol and spaces
     if (cleanAmount.isEmpty() || cleanAmount.toDoubleOrNull() == 0.0) return null
 
-    return when (token.chainId) {
+    return when (chainId) {
         ChainId.BITCOIN_CHAIN_ID -> {
             "bitcoin:$address?amount=$cleanAmount"
         }
 
         ChainId.ETHEREUM_CHAIN_ID -> {
-            if (token.assetId == ChainId.ETHEREUM_CHAIN_ID) {
+            if (assetId == ChainId.ETHEREUM_CHAIN_ID) {
                 // Native ETH transfer
                 "ethereum:$address?amount=$cleanAmount"
             } else {
                 // ERC20 token transfer
-                "ethereum:${token.assetKey}@1/transfer?address=$address&amount=$cleanAmount"
+                "ethereum:${assetKey}@1/transfer?address=$address&amount=$cleanAmount"
             }
         }
 
         ChainId.Arbitrum -> {
-            if (token.assetId == ChainId.Arbitrum) {
+            if (assetId == ChainId.Arbitrum) {
                 "ethereum:$address@42161?amount=$cleanAmount"
             } else {
-                "ethereum:${token.assetKey}@42161/transfer?address=$address&amount=$cleanAmount"
+                "ethereum:${assetKey}@42161/transfer?address=$address&amount=$cleanAmount"
             }
         }
 
         ChainId.Optimism -> {
-            if (token.assetId == ChainId.Optimism) {
+            if (assetId == ChainId.Optimism) {
                 "ethereum:$address@10?amount=$cleanAmount"
             } else {
-                "ethereum:${token.assetKey}@10/transfer?address=$address&amount=$cleanAmount"
+                "ethereum:${assetKey}@10/transfer?address=$address&amount=$cleanAmount"
             }
         }
 
         ChainId.Base -> {
-            if (token.assetId == ChainId.Base) {
+            if (assetId == ChainId.Base) {
                 "ethereum:$address@8453?amount=$cleanAmount"
             } else {
-                "ethereum:${token.assetKey}@8453/transfer?address=$address&amount=$cleanAmount"
+                "ethereum:${assetKey}@8453/transfer?address=$address&amount=$cleanAmount"
             }
         }
 
         ChainId.Polygon -> {
-            if (token.assetId == ChainId.Polygon) {
+            if (assetId == ChainId.Polygon) {
                 "ethereum:$address@137?amount=$cleanAmount"
             } else {
-                "ethereum:${token.assetKey}@137/transfer?address=$address&amount=$cleanAmount"
+                "ethereum:${assetKey}@137/transfer?address=$address&amount=$cleanAmount"
             }
         }
 
         ChainId.BinanceSmartChain -> {
-            if (token.assetId == ChainId.BinanceSmartChain) {
+            if (assetId == ChainId.BinanceSmartChain) {
                 "ethereum:$address@56?amount=$cleanAmount"
             } else {
-                "ethereum:${token.assetKey}@56/transfer?address=$address&amount=$cleanAmount"
+                "ethereum:${assetKey}@56/transfer?address=$address&amount=$cleanAmount"
             }
         }
 
@@ -346,10 +351,10 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
         }
 
         ChainId.Solana -> {
-            if (token.assetKey.isNullOrBlank()) {
+            if (assetKey.isNullOrBlank()) {
                 "solana:$address?amount=$cleanAmount"
             } else {
-                "solana:$address?amount=$cleanAmount&spl-token=${token.assetKey}"
+                "solana:$address?amount=$cleanAmount&spl-token=${assetKey}"
             }
         }
 
@@ -360,11 +365,19 @@ private fun generateDepositUri(token: TokenItem?, address: String?, amount: Stri
 // Helper function to generate QR code bitmap from deposit URI
 @Composable
 private fun generateQrCodeBitmap(
-    token: TokenItem?,
+    assetId: String,
+    chainId: String,
+    assetKey: String?,
     address: String?,
     amount: String
-): android.graphics.Bitmap {
-    val depositUri = generateDepositUri(token, address, amount.split(" ").first())
+): Bitmap {
+    val depositUri = generateDepositUri(
+        assetId = assetId,
+        chainId = chainId,
+        assetKey = assetKey,
+        address = address,
+        amount = amount.split(" ").first()
+    )
     return depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first
         ?: // Generate a fallback QR code with the address if URI generation fails
         (address ?: "").generateQRCode(200.dip, 0, 32.dip).first
@@ -377,7 +390,7 @@ fun InputAmountPreviewScreen(
     onCloseClick: () -> Unit,
     onShareClick: (String) -> Unit,
     onCopyClick: (String) -> Unit,
-    onForward: (TokenItem, String, String) -> Unit,
+    onForward: (String, String, String) -> Unit,
     modifier: Modifier = Modifier,
     tokenSymbol: String = "",
     tokenIconUrl: String? = null,
@@ -390,30 +403,11 @@ fun InputAmountPreviewScreen(
 ) {
     // Generate deposit URI for copy and share operations
     val depositUri = generateDepositUri(
-        token = if (tokenAssetId.isNotEmpty()) TokenItem(
-            assetId = tokenAssetId,
-            symbol = tokenSymbol,
-            name = tokenSymbol, // Use symbol as name fallback
-            iconUrl = tokenIconUrl ?: "",
-            balance = "0", // Default balance
-            priceBtc = "0", // Default BTC price
-            priceUsd = "0", // Default USD price
-            chainId = tokenChainId,
-            changeUsd = "0", // Default change
-            changeBtc = "0", // Default BTC change
-            hidden = false, // Default visibility
-            confirmations = 0, // Default confirmations
-            chainIconUrl = tokenChainIconUrl,
-            chainSymbol = null, // Chain symbol not available
-            chainName = tokenChainName,
-            assetKey = tokenAssetKey,
-            dust = null, // Dust not available
-            withdrawalMemoPossibility = null, // Memo possibility not available
-            collectionHash = null, // Collection hash not available
-            level = null // Level not available
-        ) else null,
+        assetId = tokenAssetId,
+        chainId = tokenChainId,
+        assetKey = tokenAssetKey,
         address = address,
-        amount = primaryAmount
+        amount = primaryAmount.split(" ").first()
     ) ?: (address ?: "")
 
     Column(
@@ -503,30 +497,11 @@ fun InputAmountPreviewScreen(
                 ) {
                     Image(
                         bitmap = generateQrCodeBitmap(
-                            token = if (tokenAssetId.isNotEmpty()) TokenItem(
-                                assetId = tokenAssetId,
-                                symbol = tokenSymbol,
-                                name = tokenSymbol, // Use symbol as name fallback
-                                iconUrl = tokenIconUrl ?: "",
-                                balance = "0", // Default balance
-                                priceBtc = "0", // Default BTC price
-                                priceUsd = "0", // Default USD price
-                                chainId = tokenChainId,
-                                changeUsd = "0", // Default change
-                                changeBtc = "0", // Default BTC change
-                                hidden = false, // Default visibility
-                                confirmations = 0, // Default confirmations
-                                chainIconUrl = tokenChainIconUrl,
-                                chainSymbol = null, // Chain symbol not available
-                                chainName = tokenChainName,
-                                assetKey = tokenAssetKey,
-                                dust = null, // Dust not available
-                                withdrawalMemoPossibility = null, // Memo possibility not available
-                                collectionHash = null, // Collection hash not available
-                                level = null // Level not available
-                            ) else null,
+                            assetId = tokenAssetId,
+                            chainId = tokenChainId,
+                            assetKey = tokenAssetKey,
                             address = address,
-                            primaryAmount
+                            amount = primaryAmount
                         ).asImageBitmap(),
                         contentDescription = "QR Code",
                         modifier = Modifier.fillMaxSize()
@@ -645,29 +620,8 @@ fun InputAmountPreviewScreen(
 
                 Button(
                     onClick = {
-                        val tokenItem = TokenItem(
-                            assetId = tokenAssetId,
-                            symbol = tokenSymbol,
-                            name = tokenSymbol,
-                            iconUrl = tokenIconUrl ?: "",
-                            balance = "0",
-                            priceBtc = "0",
-                            priceUsd = "0",
-                            chainId = tokenChainId,
-                            changeUsd = "0",
-                            changeBtc = "0",
-                            hidden = false,
-                            confirmations = 0,
-                            chainIconUrl = tokenChainIconUrl,
-                            chainSymbol = null,
-                            chainName = tokenChainName,
-                            assetKey = tokenAssetKey,
-                            dust = null,
-                            withdrawalMemoPossibility = null,
-                            collectionHash = null,
-                            level = null
-                        )
-                        onForward(tokenItem, depositUri, primaryAmount)
+                        val tokenDisplayName = "${tokenSymbol}(${getChainName(tokenChainId, tokenChainName, tokenAssetKey)})"
+                        onForward(tokenDisplayName, depositUri, primaryAmount)
                     },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(24.dp),

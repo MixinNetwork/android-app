@@ -230,8 +230,8 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             onShareClick?.invoke(formattedPrimaryAmount, depositUri)
                             dismiss()
                         },
-                        onForward = { token, depositUri, amount ->
-                            onForwardClick?.invoke(buildForwardMessage(token, depositUri, amount))
+                        onForward = { tokenDisplayName, depositUri, amount ->
+                            onForwardClick?.invoke(buildForwardMessage(tokenDisplayName, depositUri, amount))
                             dismiss()
                         }
                     )
@@ -246,9 +246,9 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
 
-    private fun buildForwardMessage(token: TokenItem, url: String, amount: String): ForwardMessage {
+    private fun buildForwardMessage(tokenDisplayName: String, url: String, amount: String): ForwardMessage {
         val description = buildString {
-            append(getString(R.string.payment_details, amount, "${token.name}(${getChainName(token.chainId, token.chainName, token.assetKey)})", Session.getAccount()?.fullName ?: ""))
+            append(getString(R.string.payment_details, amount, tokenDisplayName, Session.getAccount()?.fullName ?: ""))
         }
 
         val actions = listOf(

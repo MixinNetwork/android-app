@@ -2,20 +2,28 @@ package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
 import android.content.ClipData
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.chip.Chip
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.FragmentWeb3AddressBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
@@ -48,6 +56,7 @@ class Web3AddressFragment : BaseFragment() {
     private val binding get() = requireNotNull(_binding)
     private lateinit var address: String
     private lateinit var web3Token: Web3TokenItem
+    private var currentId: String? = null
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
@@ -120,13 +129,60 @@ class Web3AddressFragment : BaseFragment() {
             binding.addressView.loadAddress(
                 scopeProvider,
                 address,
-                web3Token?.iconUrl?:"",
+                web3Token.iconUrl ?:"",
                 ""
             )
             binding.assetName.text = web3Token.symbol
             binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
+            if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
+                binding.networkChipGroup.isVisible = true
+                initChips()
+            } else {
+                binding.networkChipGroup.isVisible = false
+            }
         }
         return binding.root
+    }
+
+    private fun initChips() {
+        currentId = web3Token.assetId
+        binding.apply {
+            networkChipGroup.isSingleSelection = true
+            networkChipGroup.removeAllViews()
+            Constants.AssetId.ethAssets.entries.forEach { entry ->
+                val chip = Chip(requireContext()).apply {
+                    tag = entry.key
+                    isChecked = entry.key == currentId
+                    text = entry.value
+                    isClickable = true
+                    setOnClickListener {
+                        currentId = entry.key
+                        updateChips()
+                    }
+                }
+                networkChipGroup.addView(chip)
+            }
+        }
+        updateChips()
+    }
+
+    private fun updateChips() {
+        binding.networkChipGroup.children.forEach {
+            if (it is Chip) {
+                if (it.tag == currentId) {
+                    val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+                    it.setTextColor(accentColor)
+                    it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    it.chipStrokeColor = ColorStateList.valueOf(accentColor)
+                    it.chipStrokeWidth = 1.dp.toFloat()
+                } else {
+                    it.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+                    it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    it.chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_window))
+                    it.chipStrokeWidth = 1.dp.toFloat()
+                }
+            }
+        }
     }
 
     @SuppressLint("SetTextI18n")
