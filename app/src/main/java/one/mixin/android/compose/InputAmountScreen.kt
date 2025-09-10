@@ -711,7 +711,7 @@ fun InputAmountPreviewScreen(
 
                 Button(
                     onClick = {
-                        val tokenDisplayName = "${tokenSymbol}(${getChainName(tokenChainId, tokenChainName, tokenAssetKey)})"
+                        val tokenDisplayName = "${getChainName(tokenChainId, tokenChainName, tokenAssetKey)}"
                         onForward(tokenDisplayName, depositUri, primaryAmount)
                     },
                     modifier = Modifier.weight(1f),

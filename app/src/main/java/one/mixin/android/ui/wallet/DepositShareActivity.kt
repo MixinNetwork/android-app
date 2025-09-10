@@ -7,8 +7,11 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
+import android.graphics.Typeface
 import android.media.MediaScannerConnection
 import android.os.Bundle
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import androidx.core.content.FileProvider
@@ -209,15 +212,15 @@ class DepositShareActivity : BaseActivity() {
                 val spannable = android.text.SpannableStringBuilder(addr)
                 val black = colorFromAttribute(R.attr.text_primary)
                 val gray = colorFromAttribute(R.attr.text_assist)
-                val boldStyle = android.text.style.StyleSpan(android.graphics.Typeface.BOLD)
+                val boldStyle = StyleSpan(Typeface.BOLD)
 
-                spannable.setSpan(android.text.style.ForegroundColorSpan(gray), 8, addr.length - 6, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(ForegroundColorSpan(gray), 8, addr.length - 6, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-                spannable.setSpan(android.text.style.ForegroundColorSpan(black), 0, 8, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(ForegroundColorSpan(black), 0, 8, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 spannable.setSpan(boldStyle, 0, 8, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-                spannable.setSpan(android.text.style.ForegroundColorSpan(black), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannable.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(ForegroundColorSpan(black), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                spannable.setSpan(StyleSpan(android.graphics.Typeface.BOLD), addr.length - 6, addr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
                 binding.addressText.text = spannable
             } else {

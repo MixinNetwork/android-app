@@ -248,7 +248,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun buildForwardMessage(tokenDisplayName: String, url: String, amount: String): ForwardMessage {
         val description = buildString {
-            append(getString(R.string.payment_details, amount, tokenDisplayName, Session.getAccount()?.fullName ?: ""))
+            append(getString(R.string.payment_details, amount, tokenDisplayName, "${Session.getAccount()?.fullName}(${Session.getAccount()?.identityNumber})"))
         }
 
         val actions = listOf(
