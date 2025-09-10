@@ -67,7 +67,7 @@ fun refreshScreenshot(context: Context, cover: Int? = null) {
 }
 
 fun expand(context: Context) {
-    refreshScreenshot(context)
+    runCatching { refreshScreenshot(context) }.onFailure { Timber.e(it) }
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }
