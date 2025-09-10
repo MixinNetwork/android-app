@@ -419,7 +419,7 @@ private fun generateDepositUri(
                 val tonAmount = try {
                     val nanoAmount = BigDecimal(cleanAmount)
                     val divisor = BigDecimal("1000000000") // 1e9 without scientific notation
-                    nanoAmount.divide(divisor, 9, RoundingMode.DOWN).toPlainString()
+                    nanoAmount.multiply(divisor).stripTrailingZeros().toPlainString()
                 } catch (_: Exception) {
                     cleanAmount
                 }
