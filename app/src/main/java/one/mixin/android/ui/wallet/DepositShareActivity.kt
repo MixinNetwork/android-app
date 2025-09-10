@@ -146,7 +146,6 @@ class DepositShareActivity : BaseActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
 
         binding.iconFl.round(6.dp)
-        binding.qrCode.round(14.dp)
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
         }

@@ -22,13 +22,10 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.round
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
-import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
-import kotlin.math.max
 
 class ContentQRView : ViewAnimator {
     constructor(context: Context) : this(context, null)
@@ -66,7 +63,6 @@ class ContentQRView : ViewAnimator {
             val destination = selectedDestination ?: depositEntry.destination
             val content = if (isTag) depositEntry.tag else destination
             contentTv.text = content
-            binding.qrFl.round(14.dp)
             if (hideCopy) {
                 copyIv.isVisible = false
                 contentTv.updateLayoutParams<MarginLayoutParams> {

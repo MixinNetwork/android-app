@@ -230,6 +230,7 @@ class Web3AddressFragment : BaseFragment() {
         )
         binding.assetName.text = "${web3Token.name} (${web3Token.symbol})"
         binding.addressDesc.text = getTipsByAsset(web3Token)
+        binding.addressDesc.isVisible = true
         binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
     }
 

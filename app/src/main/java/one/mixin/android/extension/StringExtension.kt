@@ -105,8 +105,8 @@ fun String.generateQRCode(
     blackPaint.style = Paint.Style.FILL
     canvas.drawRoundRect(
         RectF(padding / 2f, padding / 2f, size.toFloat() - padding / 2f, size.toFloat() - padding / 2f),
-        padding / 2f,
-        padding / 2f,
+        innerPadding / 2f,
+        innerPadding / 2f,
         blackPaint,
     )
     blackPaint.color = Color.BLACK

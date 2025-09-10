@@ -592,7 +592,6 @@ fun InputAmountPreviewScreen(
                         contentDescription = "QR Code",
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(RoundedCornerShape(14.dp))
                     )
                 }
 
