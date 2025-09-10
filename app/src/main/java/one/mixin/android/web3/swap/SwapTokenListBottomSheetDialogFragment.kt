@@ -27,6 +27,7 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -152,6 +153,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_optimism -> {
                         Optimism
+                    }
+
+                    R.id.radio_toncoin -> {
+                        TON_CHAIN_ID
                     }
 
                     else -> {

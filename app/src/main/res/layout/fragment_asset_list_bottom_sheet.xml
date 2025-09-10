@@ -128,28 +128,6 @@
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_base"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:text="@string/Base"
-                android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_tron"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:text="@string/Tron"
-                android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_bsc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -157,6 +135,17 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/BSC"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_base"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Base"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
@@ -172,13 +161,13 @@
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_optimism"
+                android:id="@+id/radio_tron"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
-                android:text="@string/Optimism"
+                android:text="@string/Tron"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
@@ -192,6 +181,29 @@
                 android:text="@string/Arbritrum"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_optimism"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Optimism"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_toncoin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Toncoin"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
 
         </RadioGroup>
     </HorizontalScrollView>

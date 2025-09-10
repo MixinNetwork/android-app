@@ -212,8 +212,8 @@ private fun Right(
         }
         Box(modifier = Modifier.width(8.dp))
         BasicText(
-            modifier = Modifier.widthIn(max = 60.dp),
             text = token?.symbol ?: "",
+            modifier = Modifier.widthIn(max = 62.dp),
             maxLines = 2,
             style = TextStyle(
                 fontSize = 16.sp,
