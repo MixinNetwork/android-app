@@ -89,28 +89,6 @@ class CollectiblesFragment : BaseFragment() {
                 // do nothing
             }
 
-            searchIb.setOnClickListener {
-                activity?.addFragment(
-                    this@CollectiblesFragment,
-                    SearchInscriptionFragment(),
-                    SearchInscriptionFragment.TAG,
-                    id= R.id.internal_container,
-                )
-            }
-
-            scanIb.setOnClickListener {
-                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
-                    if (granted) {
-                        (requireActivity() as? MainActivity)?.showCapture(true)
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
-            }
-
-            settingIb.setOnClickListener {
-                SettingActivity.show(requireContext(), compose = false)
-            }
             if (type == TYPE_COLLECTIBLES) {
                 radioCollectibles.isChecked = true
             } else {

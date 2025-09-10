@@ -14,6 +14,7 @@ import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ExploreFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
+import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
@@ -34,9 +35,9 @@ class NavigationController(mainActivity: MainActivity) {
 
     data object Explore : Destination(ExploreFragment.TAG)
 
-    data object Collectibles : Destination(CollectiblesFragment.TAG)
+    data object Market : Destination(MarketFragment.TAG)
 
-    private val destinations = listOf(ConversationList, Wallet, Collectibles, Explore)
+    private val destinations = listOf(ConversationList, Wallet, Market, Explore)
 
     fun navigate(
         destination: Destination,

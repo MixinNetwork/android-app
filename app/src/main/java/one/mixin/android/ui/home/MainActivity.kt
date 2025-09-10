@@ -148,6 +148,7 @@ import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -993,8 +994,8 @@ class MainActivity : BlazeBaseActivity() {
         ExploreFragment()
     }
 
-    private val collectiblesFragment by lazy {
-        CollectiblesFragment()
+    private val marketFragment by lazy {
+        MarketFragment()
     }
 
     private fun initBottomNav() {
@@ -1013,7 +1014,7 @@ class MainActivity : BlazeBaseActivity() {
                             when (itemId) {
                                 R.id.nav_chat -> "nav_chat"
                                 R.id.nav_wallet -> "nav_wallet"
-                                R.id.nav_collectibles -> "nav_collectibles"
+                                R.id.nav_market -> "nav_market"
                                 R.id.nav_more -> "nav_more"
                                 else -> "unknown"
                             }
@@ -1076,8 +1077,9 @@ class MainActivity : BlazeBaseActivity() {
                 conversationListFragment.hideCircles()
             }
 
-            R.id.nav_collectibles -> {
-                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+            R.id.nav_market -> {
+                navigationController.navigate(NavigationController.Market, marketFragment)
+                marketFragment.updateUI()
                 conversationListFragment.hideCircles()
             }
 
@@ -1270,7 +1272,7 @@ class MainActivity : BlazeBaseActivity() {
                 }
             }
             CollectiblesFragment.TAG -> {
-                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+                navigationController.navigate(NavigationController.Market, marketFragment)
             }
             ExploreFragment.TAG -> {
                 navigationController.navigate(NavigationController.Explore, exploreFragment)
@@ -1309,8 +1311,8 @@ class MainActivity : BlazeBaseActivity() {
                     binding.bottomNav.selectedItemId = R.id.nav_chat
                 }
             }
-            R.id.nav_collectibles -> {
-                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+            R.id.nav_market -> {
+                navigationController.navigate(NavigationController.Market, marketFragment)
             }
             R.id.nav_more -> {
                 navigationController.navigate(NavigationController.Explore, exploreFragment)

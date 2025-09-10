@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.os.Bundle
@@ -30,10 +31,12 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentMarketBinding
 import one.mixin.android.event.GlobalMarketEvent
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.job.MixinJobManager
@@ -42,6 +45,7 @@ import one.mixin.android.job.RefreshMarketsJob
 import one.mixin.android.job.UpdateFavoriteJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.Web3Fragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.market.PercentageMenuData
 import one.mixin.android.ui.home.web3.market.PercentageMenuType
 import one.mixin.android.ui.home.web3.market.TopMenuAdapter
@@ -49,10 +53,14 @@ import one.mixin.android.ui.home.web3.market.TopMenuData
 import one.mixin.android.ui.home.web3.market.TopPercentageAdapter
 import one.mixin.android.ui.home.web3.market.Web3MarketAdapter
 import one.mixin.android.ui.home.web3.widget.MarketSort
+import one.mixin.android.ui.search.SearchExploreFragment
+import one.mixin.android.ui.search.SearchInscriptionFragment
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.market.GlobalMarket
 import timber.log.Timber
@@ -82,6 +90,30 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+
+            searchIb.setOnClickListener {
+                activity?.addFragment(
+                    this@MarketFragment,
+                    SearchExploreFragment(),
+                    SearchExploreFragment.TAG,
+                    id= R.id.internal_container,
+                )
+            }
+
+            scanIb.setOnClickListener {
+                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
+                    if (granted) {
+                        (requireActivity() as? MainActivity)?.showCapture(true)
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+            }
+
+            settingIb.setOnClickListener {
+                SettingActivity.show(requireContext(), compose = false)
+            }
+
             watchlist.adapter = watchlistAdapter
             markets.adapter = marketsAdapter
             watchlist.itemAnimator = null
