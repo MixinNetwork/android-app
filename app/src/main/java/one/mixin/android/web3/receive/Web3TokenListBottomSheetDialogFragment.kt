@@ -18,6 +18,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
+import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -115,6 +117,14 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_polygon -> {
                         ChainId.Polygon
+                    }
+
+                    R.id.radio_arbritrum -> {
+                        Arbitrum
+                    }
+
+                    R.id.radio_optimism -> {
+                        Optimism
                     }
 
                     else -> {
