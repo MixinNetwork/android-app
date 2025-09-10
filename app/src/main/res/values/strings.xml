@@ -740,7 +740,7 @@
     <string name="Not_support">Not support</string>
     <string name="not_supported_deposit">Mixin ceases support for deposit service on the %1$s. You can continue to withdraw and transfer %2$s in the wallet balance. Read the document to **learn more**.</string>
     <string name="not_supported_deposit_url">https://support.mixin.one/en/article/the-explanation-about-mixin-stopped-support-for-some-assets-deposits-1im32px</string>
-    <string name="suspended_deposit">The %1$s deposit has been suspended for possible reasons including:\n · Node failure\n · Network hard fork\n · Network congestion\n · Low utilization\nNote that %2$s assets already transferred in can continue to be transferred.</string>
+    <string name="suspended_deposit">The %1$s deposit has been suspended for possible reasons including:\n · Node failure\n · Network hard fork\n · Network congestion\n · Low utilization\nNote that %2$s assets that have already been deposited can continue to be transferred.</string>
     <string name="Notice">Notice</string>
     <string name="Notification_and_Confirmation">Notification and Confirmation</string>
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>

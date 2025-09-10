@@ -31,6 +31,7 @@ import androidx.core.graphics.scale
 import androidx.core.graphics.toColorInt
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.statusBarHeight
+import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null

@@ -229,9 +229,9 @@ class DepositShareActivity : BaseActivity() {
             if (amount != null) {
                 binding.minimumDepositTitle.setText(R.string.Amount)
                 binding.minimumDepositText.text = "$amount"
-            } else if (token!=null){
+            } else if (token != null) {
                 binding.minimumDepositText.text = "${tokenDust} ${tokenSymbol}"
-            } else{
+            } else {
                 binding.minimumDepositTitle.isInvisible = true
                 binding.minimumDepositText.isInvisible = true
             }
