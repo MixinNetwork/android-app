@@ -271,6 +271,7 @@ object Constants {
         const val USDT_ASSET_SOL_ID = "cb54aed4-1893-3977-b739-ec7b2e04f0c5"
         const val USDT_ASSET_POL_ID = "218bc6f4-7927-3f8e-8568-3a3725b74361"
         const val USDT_ASSET_BEP_ID = "94213408-4ee7-3150-a9c4-9c5cce421c78"
+        const val USDT_ASSET_TON_ID = "7369eea0-0c69-3906-b419-e960e3595a4f"
 
         const val USDC_ASSET_ETH_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
         const val USDC_ASSET_SOL_ID = "de6fa523-c596-398e-b12f-6d6980544b59"
@@ -294,6 +295,7 @@ object Constants {
                 USDT_ASSET_SOL_ID to "Solana",
                 USDT_ASSET_POL_ID to "Polygon",
                 USDT_ASSET_BEP_ID to "BEP-20",
+                USDT_ASSET_TON_ID to "TON",
             )
 
         val ethAssets = mapOf(

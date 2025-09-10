@@ -1512,6 +1512,8 @@
     <string name="Solana">Solana</string>
     <string name="Base">Base</string>
     <string name="Tron">TRON</string>
+    <string name="Optimism">Optimism</string>
+    <string name="Arbritrum">Arbritrum</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access apps and DeFi projects.</string>
