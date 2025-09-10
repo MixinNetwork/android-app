@@ -355,7 +355,17 @@ private fun generateDepositUri(
             if (assetKey.isNullOrBlank()) {
                 "solana:$address?amount=$cleanAmount"
             } else {
-                "solana:$address?amount=$cleanAmount&spl-token=${assetKey}"
+                "solana:$address?amount=$cleanAmount&spl-token=${assetKey}&token=${assetKey}"
+            }
+        }
+
+        ChainId.TON_CHAIN_ID -> {
+            if (assetId == ChainId.TON_CHAIN_ID) {
+                // Native TON transfer - amount in nanotons
+                "ton://transfer/$address?amount=$cleanAmount"
+            } else {
+                // Jetton token transfer
+                "ton://transfer/$address?jetton=$assetKey&amount=$cleanAmount"
             }
         }
 

@@ -335,7 +335,7 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Dash,
                 Constants.ChainId.Monero,
                 Constants.ChainId.Solana,
-                    -> true
+                Constants.ChainId.TON_CHAIN_ID -> true
 
                 else -> false
             }

@@ -15,12 +15,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.AssetId.BYTOM_CLASSIC_ASSET_ID
-import one.mixin.android.Constants.AssetId.MGD_ASSET_ID
-import one.mixin.android.Constants.AssetId.OMNI_USDT_ASSET_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_BEP_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_POL_ID
@@ -30,16 +26,15 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_BEP_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_POL_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_SOL_ID
-import one.mixin.android.Constants.AssetId.USDT_ASSET_TRC_ID
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.FragmentWeb3AddressBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -50,8 +45,6 @@ import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.getChainName
-import one.mixin.android.vo.safe.DepositEntry
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.js.Web3Signer
 
 @AndroidEntryPoint
@@ -236,6 +229,7 @@ class Web3AddressFragment : BaseFragment() {
             ""
         )
         binding.assetName.text = web3Token.symbol
+        binding.addressDesc.text = getTipsByAsset(web3Token)
         binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
     }
 

@@ -144,7 +144,6 @@ class DepositShareActivity : BaseActivity() {
 
         binding.iconFl.round(6.dp)
         binding.qrCode.round(14.dp)
-        binding.icon.badge.setBackgroundColor(Color.WHITE)
         binding.content.updateLayoutParams<MarginLayoutParams> {
             topMargin = 20.dp
         }

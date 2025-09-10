@@ -71,7 +71,6 @@
                         android:layout_width="45dp"
                         android:layout_height="45dp"
                         android:layout_gravity="center"
-                        app:border_color="@color/white"
                         app:border_width="0.5dp" />
 
                 </FrameLayout>

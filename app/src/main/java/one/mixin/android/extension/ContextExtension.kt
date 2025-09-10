@@ -73,6 +73,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
@@ -1064,7 +1065,14 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, Constants.ChainId.Litecoin, Constants.ChainId.RIPPLE_CHAIN_ID, Constants.ChainId.Dogecoin, Constants.ChainId.Monero, Constants.ChainId.MobileCoin, -> getString(R.string.deposit_tip_common, asset.symbol)
         else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey?:""))
+    }
+
+fun Fragment.getTipsByAsset(asset: Web3TokenItem) =
+    when (asset.assetId) {
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
 
 fun Context.showConfirmDialog(
