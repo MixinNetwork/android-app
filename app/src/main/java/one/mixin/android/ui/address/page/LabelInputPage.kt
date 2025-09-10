@@ -68,7 +68,6 @@ fun LabelInputPage(
     val clipboardManager = LocalClipboardManager.current
     var label by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
