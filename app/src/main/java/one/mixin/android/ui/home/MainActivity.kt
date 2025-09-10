@@ -755,16 +755,21 @@ class MainActivity : BlazeBaseActivity() {
 
     private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
-        WalletConnectV2
-        val classicWalletId = web3Repository.getClassicWalletId()
-        Web3Signer.init(
-            { classicWalletId },
-            { walletId ->
-                runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
-            }, { walletId ->
-                runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
-            }
-        )
+        try {
+            WalletConnectV2
+            val classicWalletId = web3Repository.getClassicWalletId()
+            Web3Signer.init(
+                { classicWalletId },
+                { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
+                }, { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+                }
+            )
+        } catch (e: Exception) {
+            Timber.e("Failed to initialize WalletConnect: ${e.message}")
+            reportException(e)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
