@@ -33,6 +33,7 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.WalletOperationType
@@ -467,4 +468,9 @@ internal constructor(
     }
 
     suspend fun getWalletByDestination(destination: String) = web3Repository.getWalletByDestination(destination)
+
+    suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
+        web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
+    }
+
 }

@@ -41,9 +41,9 @@ import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
 import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
+import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet

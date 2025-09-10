@@ -27,6 +27,10 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
+import androidx.core.graphics.scale
+import androidx.core.graphics.toColorInt
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.statusBarHeight
 import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
@@ -41,12 +45,7 @@ fun refreshScreenshot(context: Context, cover: Int? = null) {
 
         val screenBitmap = rootView.drawToBitmap()
         val resultBitmap =
-            Bitmap.createScaledBitmap(
-                screenBitmap,
-                screenBitmap.width / 3,
-                screenBitmap.height / 3,
-                false,
-            )
+            screenBitmap.scale(screenBitmap.width / 3, screenBitmap.height / 3, false)
 
         val cv = Canvas(resultBitmap)
         cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
@@ -57,9 +56,9 @@ fun refreshScreenshot(context: Context, cover: Int? = null) {
             screenBitmap.height.toFloat(),
             Paint().apply {
                 color = cover ?: if (context.isNightMode()) {
-                    Color.parseColor("#CC1C1C1C")
+                    "#CC1C1C1C".toColorInt()
                 } else {
-                    Color.parseColor("#E6F6F7FA")
+                    "#E6F6F7FA".toColorInt()
                 }
             },
         )

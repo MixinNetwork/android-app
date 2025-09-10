@@ -45,8 +45,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
@@ -303,6 +302,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 R.id.action_input_fragment_to_web3_address_fragment,
                                                 Bundle().apply {
                                                     putString("address", address)
+                                                    putParcelable("web3_token", t)
                                                 }
                                             )
                                         }
@@ -356,6 +356,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
                                                 putString("address", address)
+                                                putParcelable("web3_token", t)
                                             }
                                         )
                                     }
@@ -853,11 +854,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    val address = if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                    val address = if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                     view?.navigate(
                         R.id.action_input_fragment_to_web3_address_fragment,
                         Bundle().apply {
                             putString("address", address)
+                            putParcelable("web3_token", web3Token)
                         }
                     )
                 }
@@ -878,10 +880,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     override
     fun onWalletClick() {
-        QrBottomSheetDialogFragment.newInstance(
-            Session.getAccountId()!!,
-            TYPE_RECEIVE_QR
-        ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+        ReceiveQrActivity.show(requireContext(), Session.getAccountId()!!)
     }
 
     private fun getNumberFormat(value: String): String {

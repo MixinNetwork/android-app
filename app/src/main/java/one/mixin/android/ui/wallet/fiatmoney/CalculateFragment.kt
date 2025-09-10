@@ -566,8 +566,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         key
                     )
                 } else {
-                    val sessionResponse =
-                        fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
+                    val sessionResponse = fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
                     if (sessionResponse.isSuccess) {
                         val sessionData = requireNotNull(sessionResponse.data)[0]
                         fiatMoneyViewModel.saveSession(
@@ -581,10 +580,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 publicKey = sessionData.publicKey,
                             ),
                         )
-                        MixinApplication.appContext.defaultSharedPreferences.putString(
-                            PREF_ROUTE_BOT_PK,
-                            sessionData.publicKey
-                        )
+                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
                     } else {
                         throw MixinResponseException(
                             sessionResponse.errorCode,
