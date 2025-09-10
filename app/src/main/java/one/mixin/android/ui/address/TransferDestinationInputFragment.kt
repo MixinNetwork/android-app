@@ -301,7 +301,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         )
                                     } else {
                                         val memoEnabled =
-                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE
                                         if (memoEnabled) {
                                             navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
                                         } else if (web3Token != null) {
@@ -394,7 +394,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 web3Token = web3Token,
                                 contentText = scannedAddress,
                                 onNext = { address ->
-                                    if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE)
+                                    if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE)
                                         navController.navigate("${TransferDestination.Memo.name}?address=$address")
                                     else
                                         navController.navigate("${TransferDestination.Label.name}?address=$address")
