@@ -256,6 +256,8 @@ object Constants {
         const val BinanceSmartChain = "1949e683-6a08-49e2-b087-d6b72398588f"
         const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
+        const val MobileCoin = "eea900a8-b327-488c-8d8d-1428702fe240"
+        const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }
 
     object AssetId {
@@ -283,6 +285,7 @@ object Constants {
                 "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
                 "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
                 "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
+                "7369eea0-0c69-3906-b419-e960e3595a4f" to "TON"
             )
 
         val ethAssets = mapOf(

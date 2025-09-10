@@ -69,7 +69,6 @@ fun AddressInputPage(
     }
 
     val context = LocalContext.current
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     PageScaffold(
         title = stringResource(R.string.Address),
         verticalScrollable = false,

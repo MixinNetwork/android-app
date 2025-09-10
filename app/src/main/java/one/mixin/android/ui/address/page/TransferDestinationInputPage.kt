@@ -97,7 +97,6 @@ fun TransferDestinationInputPage(
     onAddressClick: (Address) -> Unit,
 ) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val localLocalSoftwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
@@ -106,7 +105,6 @@ fun TransferDestinationInputPage(
         .collectAsState(initial = emptyList())
 
     var account by remember { mutableStateOf("") }
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(web3Token?.walletId) {
