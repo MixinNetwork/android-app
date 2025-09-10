@@ -283,6 +283,7 @@ object Constants {
                 "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
                 "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
                 "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
+                "7369eea0-0c69-3906-b419-e960e3595a4f" to "TON"
             )
 
         val ethAssets = mapOf(
