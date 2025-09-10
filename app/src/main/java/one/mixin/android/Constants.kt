@@ -186,7 +186,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 66
+        const val CURRENT_VERSION = 67
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -281,20 +281,20 @@ object Constants {
 
         val usdcAssets =
             mapOf(
-                USDC_ASSET_ETH_ID to "ERC-20",
+                USDC_ASSET_ETH_ID to "Ethereum",
                 USDC_ASSET_SOL_ID to "Solana",
                 USDC_BASE_POL_ID to "Base",
                 USDC_ASSET_POL_ID to "Polygon",
-                USDC_ASSET_BEP_ID to "BEP-20"
+                USDC_ASSET_BEP_ID to "BSC"
             )
 
         val usdtAssets =
             mapOf(
-                USDT_ASSET_ETH_ID to "ERC-20",
-                USDT_ASSET_TRC_ID to "TRC-20",
+                USDT_ASSET_ETH_ID to "Ethereum",
+                USDT_ASSET_TRC_ID to "TRON",
                 USDT_ASSET_SOL_ID to "Solana",
                 USDT_ASSET_POL_ID to "Polygon",
-                USDT_ASSET_BEP_ID to "BEP-20",
+                USDT_ASSET_BEP_ID to "BSC",
                 USDT_ASSET_TON_ID to "TON",
             )
 

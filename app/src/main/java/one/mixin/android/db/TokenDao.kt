@@ -25,7 +25,8 @@ interface TokenDao : BaseDao<Token> {
             a1.price_btc AS priceBtc, a1.price_usd AS priceUsd,
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName,
-            a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash 
+            a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash,
+            a1.precision 
             FROM tokens a1 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 

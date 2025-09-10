@@ -134,7 +134,7 @@
                 
                 <TextView
                     android:id="@+id/address_desc"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="?attr/text_assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

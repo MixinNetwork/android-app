@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -84,7 +85,7 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp),
+                            .padding(vertical = 20.dp, horizontal = 28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Spacer(modifier = Modifier.height(2.dp))
@@ -129,6 +130,7 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             stringResource(id = R.string.lightning_address_mao_tip),
                             modifier = Modifier.align(Alignment.Start),
                             stringResource(R.string.Learn_More),
+                            textAlign = TextAlign.Start,
                             color = MixinAppTheme.colors.textMinor,
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,

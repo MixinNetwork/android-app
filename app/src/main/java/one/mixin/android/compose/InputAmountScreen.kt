@@ -56,6 +56,9 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
+import java.math.RoundingMode
+import kotlin.math.pow
 import one.mixin.android.extension.dp as dip
 
 object InputAmountDestinations {
@@ -88,6 +91,7 @@ fun InputAmountFlow(
     val tokenAssetId = token?.assetId ?: web3Token?.assetId ?: ""
     val tokenAssetKey = token?.assetKey ?: web3Token?.assetKey
     val tokenChainId = token?.chainId ?: web3Token?.chainId ?: ""
+    val tokenPrecision = token?.precision ?: web3Token?.precision
 
     NavHost(
         navController = navController,
@@ -118,6 +122,7 @@ fun InputAmountFlow(
                 tokenAssetId = tokenAssetId,
                 tokenAssetKey = tokenAssetKey,
                 tokenChainId = tokenChainId,
+                tokenPrecision = tokenPrecision,
                 address = address,
                 onBackClick = {
                     navController.popBackStack()
@@ -268,7 +273,8 @@ private fun generateDepositUri(
     chainId: String?,
     assetKey: String?,
     address: String?,
-    amount: String
+    amount: String,
+    precision: Int? = null
 ): String? {
     if (assetId.isNullOrEmpty() || amount == "0") return null
     if (address == null) {
@@ -290,8 +296,16 @@ private fun generateDepositUri(
                 // Native ETH transfer
                 "ethereum:$address?amount=$cleanAmount"
             } else {
-                // ERC20 token transfer
-                "ethereum:${assetKey}@1/transfer?address=$address&amount=$cleanAmount"
+                // ERC20 token transfer - use precision for accurate conversion with BigDecimal
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18 // Default to 18 if precision not available
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@1/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
             }
         }
 
@@ -299,7 +313,15 @@ private fun generateDepositUri(
             if (assetId == ChainId.Arbitrum) {
                 "ethereum:$address@42161?amount=$cleanAmount"
             } else {
-                "ethereum:${assetKey}@42161/transfer?address=$address&amount=$cleanAmount"
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@42161/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
             }
         }
 
@@ -307,7 +329,15 @@ private fun generateDepositUri(
             if (assetId == ChainId.Optimism) {
                 "ethereum:$address@10?amount=$cleanAmount"
             } else {
-                "ethereum:${assetKey}@10/transfer?address=$address&amount=$cleanAmount"
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@10/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
             }
         }
 
@@ -315,7 +345,15 @@ private fun generateDepositUri(
             if (assetId == ChainId.Base) {
                 "ethereum:$address@8453?amount=$cleanAmount"
             } else {
-                "ethereum:${assetKey}@8453/transfer?address=$address&amount=$cleanAmount"
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@8453/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
             }
         }
 
@@ -323,7 +361,15 @@ private fun generateDepositUri(
             if (assetId == ChainId.Polygon) {
                 "ethereum:$address@137?amount=$cleanAmount"
             } else {
-                "ethereum:${assetKey}@137/transfer?address=$address&amount=$cleanAmount"
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@137/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
             }
         }
 
@@ -331,7 +377,15 @@ private fun generateDepositUri(
             if (assetId == ChainId.BinanceSmartChain) {
                 "ethereum:$address@56?amount=$cleanAmount"
             } else {
-                "ethereum:${assetKey}@56/transfer?address=$address&amount=$cleanAmount"
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@56/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
             }
         }
 
@@ -361,11 +415,30 @@ private fun generateDepositUri(
 
         ChainId.TON_CHAIN_ID -> {
             if (assetId == ChainId.TON_CHAIN_ID) {
-                // Native TON transfer - amount in nanotons
-                "ton://transfer/$address?amount=$cleanAmount"
+                // Native TON transfer - convert from nanotons to TON (divide by 1e9)
+                val tonAmount = try {
+                    val nanoAmount = BigDecimal(cleanAmount)
+                    val divisor = BigDecimal("1000000000") // 1e9 without scientific notation
+                    nanoAmount.divide(divisor, 9, RoundingMode.DOWN).toPlainString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ton://transfer/$address?amount=$tonAmount"
             } else {
-                // Jetton token transfer
-                "ton://transfer/$address?jetton=$assetKey&amount=$cleanAmount"
+                // Jetton token transfer - use precision for accurate conversion
+                val jettonAmount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: when (assetId) {
+                        Constants.AssetId.USDT_ASSET_TON_ID -> 6
+                        else -> 9 // TON standard
+                    }
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+
+                }
+                "ton://transfer/$address?jetton=$assetKey&amount=$jettonAmount"
             }
         }
 
@@ -410,6 +483,7 @@ fun InputAmountPreviewScreen(
     tokenAssetId: String = "",
     tokenAssetKey: String? = null,
     tokenChainId: String = "",
+    tokenPrecision: Int? = null,
     address: String? = null,
 ) {
     // Generate deposit URI for copy and share operations
@@ -418,7 +492,8 @@ fun InputAmountPreviewScreen(
         chainId = tokenChainId,
         assetKey = tokenAssetKey,
         address = address,
-        amount = primaryAmount.split(" ").first()
+        amount = primaryAmount.split(" ").first(),
+        precision = tokenPrecision
     ) ?: (address ?: "")
 
     Column(
