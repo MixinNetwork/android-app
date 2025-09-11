@@ -150,7 +150,13 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 null
             }
 
-            binding.content.render(invoice, tokenItems, receivers) { user ->
+            val xin = transferViewModel.findXIN()
+            if (xin == null) {
+                dismiss()
+                return@launch
+            }
+
+            binding.content.render(invoice, tokenItems, receivers, xin) { user ->
                 if (user.userId != Session.getAccountId()) {
                     showUserBottom(parentFragmentManager, user)
                 }
