@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
@@ -34,6 +35,8 @@ internal constructor(
     suspend fun findLastWithdrawalSnapshotByReceiver(formatDestination: String) = tokenRepository.findLastWithdrawalSnapshotByReceiver(formatDestination)
 
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
+
+    suspend fun findXIN(): TokenItem? = tokenRepository.findOrSyncAsset(Constants.AssetId.XIN_ASSET_ID)
 
     suspend fun findTokensExtra(asset: String) = tokenRepository.findTokensExtra(asset)
 

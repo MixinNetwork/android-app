@@ -295,7 +295,7 @@ object Constants {
                 USDT_ASSET_SOL_ID to "Solana",
                 USDT_ASSET_POL_ID to "Polygon",
                 USDT_ASSET_BEP_ID to "BSC",
-                USDT_ASSET_TON_ID to "Ton",
+                USDT_ASSET_TON_ID to "TON",
             )
 
         val ethAssets = mapOf(
