@@ -69,9 +69,10 @@ class TransferContent : LinearLayout {
         invoice: MixinInvoice,
         tokens: List<TokenItem>,
         receivers: List<User>?,
+        xin: TokenItem,
         userClick: (User) -> Unit,
     ) {
-        renderInvoice(invoice, tokens, receivers, userClick)
+        renderInvoice(invoice, tokens, receivers, userClick, xin)
     }
 
     fun render(
@@ -177,6 +178,7 @@ class TransferContent : LinearLayout {
         tokens: List<TokenItem>,
         receivers: List<User>?,
         userClick: (User) -> Unit,
+        xin: TokenItem,
     ) {
         _binding.apply {
             val amounts = invoice.entries.filter { it.isStorage().not() }.map { it.amountString() }
@@ -218,8 +220,9 @@ class TransferContent : LinearLayout {
 
             networkFee.isVisible = true
             if (invoice.entries.any { it.isStorage() }) {
-                val sum = invoice.entries.filter { it.isStorage() }.sumOf { it.amountString()?.toBigDecimalOrNull()?: BigDecimal.ZERO }
-                networkFee.setContent(R.string.Fee, sum?.stripTrailingZeros()?.toPlainString() ?: "0", "XIN")
+                val sum = invoice.entries.filter { it.isStorage() }.sumOf { it.amountString().toBigDecimalOrNull() ?: BigDecimal.ZERO }
+                val sumValue = sum.stripTrailingZeros()?.toPlainString() ?: "0"
+                networkFee.setContent(R.string.Fee, "$sumValue XIN" , amountAs(sumValue, xin))
             } else {
                 networkFee.setContent(R.string.Fee, "0", "")
             }
@@ -314,7 +317,6 @@ class TransferContent : LinearLayout {
 
             networkFee.isVisible = true
             networkFee.setContent(R.string.Fee, "0 ${safeMultisigsBiometricItem.asset?.symbol}", amountAs("0", safeMultisigsBiometricItem.asset!!))
-
             if (!safeMultisigsBiometricItem.memo.isNullOrBlank()) {
                 memo.isVisible = true
                 memo.setContent(R.string.Memo, safeMultisigsBiometricItem.memo ?: "")
