@@ -146,7 +146,6 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
-import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -1271,7 +1270,7 @@ class MainActivity : BlazeBaseActivity() {
                     binding.bottomNav.selectedItemId = R.id.nav_chat
                 }
             }
-            CollectiblesFragment.TAG -> {
+            MarketFragment.TAG -> {
                 navigationController.navigate(NavigationController.Market, marketFragment)
             }
             ExploreFragment.TAG -> {
@@ -1286,7 +1285,6 @@ class MainActivity : BlazeBaseActivity() {
 
     override fun onResume() {
         super.onResume()
-
         ensureFragmentIsVisible()
     }
 
@@ -1329,7 +1327,7 @@ class MainActivity : BlazeBaseActivity() {
             fragment.isVisible && fragment.isAdded &&
             (fragment.tag == ConversationListFragment.TAG ||
              fragment.tag == WalletFragment.TAG ||
-             fragment.tag == CollectiblesFragment.TAG ||
+             fragment.tag == MarketFragment.TAG ||
              fragment.tag == ExploreFragment.TAG)
         }
     }

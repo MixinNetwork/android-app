@@ -10,7 +10,6 @@ import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ExploreFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.wallet.WalletFragment
