@@ -21,7 +21,7 @@ import one.mixin.android.Constants.AssetId.USDC_ASSET_BEP_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_POL_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_SOL_ID
-import one.mixin.android.Constants.AssetId.USDC_BASE_POL_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_BASE_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_BEP_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_POL_ID
@@ -146,16 +146,17 @@ class Web3AddressFragment : BaseFragment() {
                             )
                     } else if (Web3Signer.solanaAddress.isBlank()) {
                         mapOf(
-                            USDT_ASSET_ETH_ID to "ERC-20",
+                            USDT_ASSET_ETH_ID to "Ethereum",
                             USDT_ASSET_POL_ID to "Polygon",
-                            USDT_ASSET_BEP_ID to "BEP-20",
+                            USDT_ASSET_BEP_ID to "BSC",
                         )
+
                     } else {
                         mapOf(
-                            USDT_ASSET_ETH_ID to "ERC-20",
+                            USDT_ASSET_ETH_ID to "Ethereum",
                             USDT_ASSET_SOL_ID to "Solana",
                             USDT_ASSET_POL_ID to "Polygon",
-                            USDT_ASSET_BEP_ID to "BEP-20",
+                            USDT_ASSET_BEP_ID to "BSC",
                         )
                     }
                 )
@@ -167,10 +168,10 @@ class Web3AddressFragment : BaseFragment() {
                         )
                     } else if (Web3Signer.solanaAddress.isBlank()) {
                         mapOf(
-                            USDC_ASSET_ETH_ID to "ERC-20",
-                            USDC_BASE_POL_ID to "Base",
+                            USDC_ASSET_ETH_ID to "Ethereum",
+                            USDC_ASSET_BASE_ID to "Base",
                             USDC_ASSET_POL_ID to "Polygon",
-                            USDC_ASSET_BEP_ID to "BEP-20"
+                            USDC_ASSET_BEP_ID to "BSC"
                         )
                     } else {
                         Constants.AssetId.usdcAssets

@@ -275,7 +275,7 @@ object Constants {
 
         const val USDC_ASSET_ETH_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
         const val USDC_ASSET_SOL_ID = "de6fa523-c596-398e-b12f-6d6980544b59"
-        const val USDC_BASE_POL_ID = "2f845564-3898-3d17-8c24-3275e96235b5"
+        const val USDC_ASSET_BASE_ID = "2f845564-3898-3d17-8c24-3275e96235b5"
         const val USDC_ASSET_POL_ID = "5fec1691-561d-339f-8819-63d54bf50b52"
         const val USDC_ASSET_BEP_ID = "3d3d69f1-6742-34cf-95fe-3f8964e6d307"
 
@@ -283,7 +283,7 @@ object Constants {
             mapOf(
                 USDC_ASSET_ETH_ID to "Ethereum",
                 USDC_ASSET_SOL_ID to "Solana",
-                USDC_BASE_POL_ID to "Base",
+                USDC_ASSET_BASE_ID to "Base",
                 USDC_ASSET_POL_ID to "Polygon",
                 USDC_ASSET_BEP_ID to "BSC"
             )
