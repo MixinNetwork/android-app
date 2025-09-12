@@ -17,6 +17,8 @@ import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
@@ -159,4 +161,8 @@ class SwapViewModel
     }
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+    suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
+        web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
+    }
 }

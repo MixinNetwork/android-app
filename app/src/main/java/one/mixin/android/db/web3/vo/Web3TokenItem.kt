@@ -173,7 +173,8 @@ data class Web3TokenItem(
             dust = null,
             withdrawalMemoPossibility = null,
             collectionHash = null,
-            level = level
+            level = level,
+            precision = precision
         )
     }
 }

@@ -3,10 +3,13 @@ package one.mixin.android.vo.safe
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
+import androidx.room.ColumnInfo
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.WithdrawalMemoPossibility
@@ -35,6 +38,7 @@ data class TokenItem(
     val withdrawalMemoPossibility: WithdrawalMemoPossibility?,
     val collectionHash: String?,
     val level: Int?,
+    val precision: Int,
 ) : Parcelable, Swappable {
     fun fiat(): BigDecimal {
         return try {
@@ -114,4 +118,26 @@ data class TokenItem(
 
 fun TokenItem.toPriceAndChange(): PriceAndChange {
     return PriceAndChange(assetId, priceBtc, priceUsd, changeUsd, changeBtc)
+}
+
+fun TokenItem.toWeb3TokenItem(walletId: String): Web3TokenItem {
+    return Web3TokenItem(
+        walletId = walletId,
+        assetId = assetId,
+        chainId = chainId,
+        name = name,
+        assetKey = assetKey ?: "",
+        symbol = symbol,
+        iconUrl = iconUrl,
+        precision = 18,
+        kernelAssetId = "",
+        balance = balance,
+        priceUsd = priceUsd,
+        changeUsd = (changeUsd.toBigDecimalOrNull()?.multiply(BigDecimal.TEN.pow(2))?.toPlainString()) ?: "0",
+        chainIcon = chainIconUrl,
+        chainName = chainName,
+        chainSymbol = chainSymbol,
+        hidden = hidden,
+        level = 0
+    )
 }

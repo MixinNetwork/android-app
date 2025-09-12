@@ -249,6 +249,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             R.id.action_web3_transactions_to_web3_address,
                             Bundle().apply {
                                 putString("address", address)
+                                putParcelable("web3_token", token)
                             }
                         )
                     }

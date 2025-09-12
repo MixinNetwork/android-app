@@ -654,8 +654,6 @@ class TokenRepository
 
         fun observeTopAssets() = hotAssetDao.topAssets()
 
-        fun checkExists(id: String) = tokenDao.checkExists(id)
-
         suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
 
         suspend fun findAssetItemByCollectionHash(collectionHash: String) = tokenDao.findAssetItemByCollectionHash(collectionHash)
@@ -663,9 +661,6 @@ class TokenRepository
         suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
 
         suspend fun findSnapshotById(snapshotId: String) = safeSnapshotDao.findSnapshotById(snapshotId)
-
-        suspend fun findSnapshotByTraceId(traceId: String) = safeSnapshotDao.findSnapshotByTraceId(traceId)
-
         suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
             var result: SnapshotItem? = null
             handleMixinResponse(
@@ -852,8 +847,6 @@ class TokenRepository
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
 
-        suspend fun findOutputByHash(inscriptionHash: String) = outputDao.findOutputByHash(inscriptionHash)
-
         fun findInscriptionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionByHash(inscriptionHash)
 
         fun findInscriptionCollectionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionCollectionByHash(inscriptionHash)
@@ -889,8 +882,6 @@ class TokenRepository
                 throw RuntimeException("Update failed, please try again")
             }
         }
-
-        suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
 
         fun insertSnapshotMessage(
             data: TransactionResponse,
