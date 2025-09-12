@@ -105,12 +105,6 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     return@launch
                 }
             }
-
-            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
-            if (TEAM_BOT_ID.isNotEmpty()) {
-                jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
-            }
-
             if (Session.hasSafe()) {
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
                 MainActivity.show(requireContext())
@@ -122,6 +116,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
                 TipActivity.show(requireActivity(), tipType, shouldWatch = true)
             }
+            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
             activity?.finish()
         }
 
