@@ -39,15 +39,12 @@ import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.tip.TipActivity
-import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import org.koin.core.time.Timer
 import timber.log.Timber
 import javax.inject.Inject
 

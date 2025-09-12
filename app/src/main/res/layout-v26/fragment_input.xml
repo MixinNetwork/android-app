@@ -238,14 +238,14 @@
                         android:textColor="?attr/text_primary"
                         tools:text="@string/Ethereum" />
 
-                    <TextView
+                    <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/balance"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignBottom="@id/avatar"
                         android:layout_marginStart="16dp"
-                        android:layout_marginEnd="16dp"
                         android:layout_toEndOf="@id/avatar"
+                        android:autoSizeTextType="uniform"
                         android:maxLines="1"
                         android:textColor="?attr/text_assist"
                         tools:text="1.2345678 ETH" />
