@@ -179,8 +179,6 @@ class Web3AddressFragment : BaseFragment() {
                 )
             } else if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
                 initChips(Constants.AssetId.ethAssets)
-            } else {
-                initChips(mapOf(web3Token.assetId to (web3Token.chainName ?: "")) )
             }
         }
         showDepositChooseNetworkBottomSheetDialog(web3Token)
@@ -189,6 +187,7 @@ class Web3AddressFragment : BaseFragment() {
 
     private fun initChips(map:Map<String,String>) {
         binding.apply {
+            networkChipGroup.isVisible = true
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
             map.entries.forEach { entry ->

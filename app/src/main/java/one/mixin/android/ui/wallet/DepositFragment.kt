@@ -120,8 +120,6 @@ class DepositFragment : BaseFragment() {
                     initChips(asset, Constants.AssetId.ethAssets)
                 } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
                     initChips(asset, Constants.AssetId.btcAssets)
-                } else {
-                    initChips(asset, mapOf(asset.assetId to (asset.chainName ?: "")))
                 }
 
                 notSupportLl.isVisible = false
@@ -142,6 +140,7 @@ class DepositFragment : BaseFragment() {
 
     private fun initChips(asset: TokenItem, uAssets: Map<String, String>) {
         binding.apply {
+            networkChipGroup.isVisible = true
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
             uAssets.entries.forEach { entry ->
