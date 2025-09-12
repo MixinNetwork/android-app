@@ -116,7 +116,7 @@ class ExploreFragment : BaseFragment() {
                 } else {
                     activity?.addFragment(
                         this@ExploreFragment,
-                        SearchExploreFragment(),
+                        SearchExploreFragment.newInstance(),
                         SearchExploreFragment.TAG,
                         id = R.id.internal_container,
                     )

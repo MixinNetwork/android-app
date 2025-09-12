@@ -62,6 +62,19 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     companion object {
         const val TAG = "SearchExploreFragment"
         const val SEARCH_DEBOUNCE = 300L
+        private const val ARG_HIDE_RECENT = "hide_recent"
+
+        fun newInstance(hideRecent: Boolean = false): SearchExploreFragment {
+            return SearchExploreFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean(ARG_HIDE_RECENT, hideRecent)
+                }
+            }
+        }
+    }
+
+    private val hideRecent: Boolean by lazy {
+        arguments?.getBoolean(ARG_HIDE_RECENT, false) ?: false
     }
 
     private var keyword: String? = null
@@ -200,48 +213,55 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 },
                 {},
             )
-        binding.recent.setContent {
-            RecentSearchPage ({ dapp ->
-                searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
-                WebActivity.show(requireContext(), dapp.homeUrl, null)
-            }, {search->
-                when(search.type){
-                    RecentSearchType.BOT-> {
-                        lifecycleScope.launch {
-                            searchViewModel.findUserByAppId(search.primaryKey!!)?.let { user ->
-                                val f = UserBottomSheetDialogFragment.newInstance(user)
-                                f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+
+        if (!hideRecent) {
+            binding.recent.setContent {
+                RecentSearchPage ({ dapp ->
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
+                    WebActivity.show(requireContext(), dapp.homeUrl, null)
+                }, {search->
+                    when(search.type){
+                        RecentSearchType.BOT-> {
+                            lifecycleScope.launch {
+                                searchViewModel.findUserByAppId(search.primaryKey!!)?.let { user ->
+                                    val f = UserBottomSheetDialogFragment.newInstance(user)
+                                    f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                }
+                            }
+                        }
+                        RecentSearchType.DAPP->{
+                            WebActivity.show(requireContext(), search.subTitle?:"", null)
+                        }
+                        RecentSearchType.LINK->{
+                            search.subTitle?.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
+                        }
+                        RecentSearchType.MARKET->{
+                            lifecycleScope.launch {
+                                searchViewModel.findMarketItemByCoinId(search.primaryKey!!)?.let { marketItem ->
+                                    WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                                }
                             }
                         }
                     }
-                    RecentSearchType.DAPP->{
-                        WebActivity.show(requireContext(), search.subTitle?:"", null)
-                    }
-                    RecentSearchType.LINK->{
-                        search.subTitle?.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
-                    }
-                    RecentSearchType.MARKET->{
-                        lifecycleScope.launch {
-                            searchViewModel.findMarketItemByCoinId(search.primaryKey!!)?.let { marketItem ->
-                                WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
-                            }
-                        }
-                    }
-                }
-            })
+                })
+            }
         }
+
         binding.va.displayedChild = 2
         lifecycleScope.launch {
             fuzzySearch(null)
         }
-        RxBus.listen(SearchEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                lifecycleScope.launch {
-                    searchViewModel.getRecentSearch(requireContext().defaultSharedPreferences)
+
+        if (!hideRecent) {
+            RxBus.listen(SearchEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe {
+                    lifecycleScope.launch {
+                        searchViewModel.getRecentSearch(requireContext().defaultSharedPreferences)
+                    }
                 }
-            }
+        }
     }
 
     private var searchJob: Job? = null
@@ -274,21 +294,33 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
             val cancellationSignal = CancellationSignal()
 
-            searchUrlJob =
-                launch {
-                    searchViewModel.fuzzySearchUrl(keyword).let { url ->
-                        searchAdapter.setUrlData(url)
+            if (!hideRecent) {
+                searchUrlJob =
+                    launch {
+                        searchViewModel.fuzzySearchUrl(keyword).let { url ->
+                            searchAdapter.setUrlData(url)
+                        }
+                        updateRv(searchUrlJob)
                     }
-                    updateRv(searchUrlJob)
-                }
 
-            searchBotsJob =
-                launch {
-                    searchViewModel.fuzzyBots(cancellationSignal, keyword).let { bots ->
-                        searchAdapter.setBots(bots)
+                searchBotsJob =
+                    launch {
+                        searchViewModel.fuzzyBots(cancellationSignal, keyword).let { bots ->
+                            searchAdapter.setBots(bots)
+                        }
+                        updateRv(searchBotsJob)
                     }
-                    updateRv(searchBotsJob)
-                }
+
+                searchDappsJob =
+                    launch {
+                        searchViewModel.getAllDapps().filter { dapp ->
+                            dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
+                        }.let { dapps ->
+                            searchAdapter.setDapps(dapps)
+                        }
+                        updateRv(searchDappsJob)
+                    }
+            }
 
             searchMarketsJob =
                 launch {
@@ -297,20 +329,16 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                     }
                     updateRv(searchMarketsJob)
                 }
-
-            searchDappsJob =
-                launch {
-                    searchViewModel.getAllDapps().filter { dapp ->
-                        dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
-                    }.let { dapps ->
-                        searchAdapter.setDapps(dapps)
-                    }
-                    updateRv(searchDappsJob)
-                }
         }
 
     private fun allJobIsCompleted(job: Job?): Boolean {
-        return listOf(searchUrlJob, searchMarketsJob, searchBotsJob, searchDappsJob).filter {
+        val jobsToCheck = if (hideRecent) {
+            listOf(searchMarketsJob)
+        } else {
+            listOf(searchUrlJob, searchMarketsJob, searchBotsJob, searchDappsJob)
+        }
+
+        return jobsToCheck.filter {
             job != it
         }.all { it?.isCompleted == true }
     }

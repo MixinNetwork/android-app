@@ -94,7 +94,7 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
             searchIb.setOnClickListener {
                 activity?.addFragment(
                     this@MarketFragment,
-                    SearchExploreFragment(),
+                    SearchExploreFragment.newInstance(true),
                     SearchExploreFragment.TAG,
                     id= R.id.internal_container,
                 )
