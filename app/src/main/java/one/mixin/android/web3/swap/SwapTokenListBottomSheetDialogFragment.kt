@@ -209,7 +209,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             }
             depositTv.setText(R.string.Receive)
             depositTv.setOnClickListener {
-                onDepositListener?.invoke()
+                lifecycleScope.launch {
+                    onDepositListener?.invoke()
+                }
             }
             searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())

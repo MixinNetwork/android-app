@@ -2,39 +2,60 @@ package one.mixin.android.web3.receive
 
 import android.annotation.SuppressLint
 import android.content.ClipData
-import android.graphics.Bitmap
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.chip.Chip
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
+import one.mixin.android.Constants.AssetId.USDC_ASSET_BEP_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_ETH_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_POL_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_SOL_ID
+import one.mixin.android.Constants.AssetId.USDC_ASSET_BASE_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_BEP_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_POL_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_SOL_ID
 import one.mixin.android.R
+import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.FragmentWeb3AddressBinding
-import one.mixin.android.extension.generateQRCode
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.DepositChooseNetworkBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.WalletViewModel
-import one.mixin.android.vo.WalletCategory
+import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.util.getChainName
+import one.mixin.android.web3.js.Web3Signer
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {
     companion object {
         const val TAG = "Web3ReceiveFragment"
 
-        fun newInstance(address: String): Web3AddressFragment {
+        fun newInstance(web3Token: Web3TokenItem, address: String): Web3AddressFragment {
             val fragment = Web3AddressFragment()
             val args = Bundle().apply {
+                putParcelable("web3_token", web3Token)
                 putString("address", address)
             }
             fragment.arguments = args
@@ -46,12 +67,13 @@ class Web3AddressFragment : BaseFragment() {
     private var _binding: FragmentWeb3AddressBinding? = null
     private val binding get() = requireNotNull(_binding)
     private lateinit var address: String
-
+    private lateinit var web3Token: Web3TokenItem
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         address = arguments?.getString("address") ?: ""
+        web3Token = arguments?.getParcelableCompat("web3_token", Web3TokenItem::class.java) ?: throw IllegalArgumentException("web3Token is required")
     }
 
     override fun onCreateView(
@@ -63,6 +85,9 @@ class Web3AddressFragment : BaseFragment() {
         binding.root.setOnClickListener { }
         binding.title.setOnClickListener { }
         binding.title.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
+        binding.title.rightIb.setOnClickListener {
+            requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+        }
         lifecycleScope.launch {
             val wallet = walletViewModel.getWalletByDestination(address)
             if (wallet != null) {
@@ -73,51 +98,171 @@ class Web3AddressFragment : BaseFragment() {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                 toast(R.string.copied_to_clipboard)
             }
-            binding.address.text = address
-            val qr = this@Web3AddressFragment.binding.qr
-            val qrAvatar = this@Web3AddressFragment.binding.qrAvatar
-            val isSolana = !address.startsWith("0x")
-            if (isSolana) {
-                qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_sol)
-                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_sol)
-                binding.avatar2.isVisible = false
-                binding.avatar3.isVisible = false
-                binding.avatar4.isVisible = false
-                binding.avatar5.isVisible = false
-                binding.avatar6.isVisible = false
-                binding.bottomHintTv.setText(R.string.web3_deposit_description_solana)
-            } else {
-                qrAvatar.bg.setImageResource(R.drawable.ic_web3_logo_eth)
-                binding.avatar1.setImageResource(R.drawable.ic_web3_chain_eth)
-                binding.avatar2.isVisible = true
-                binding.avatar3.isVisible = true
-                binding.avatar4.isVisible = true
-                binding.avatar5.isVisible = true
-                binding.avatar6.isVisible = true
-                binding.bottomHintTv.setText(R.string.web3_deposit_description_evm)
+            binding.amount.setOnClickListener {
+                InputAmountBottomSheetDialogFragment.newInstance(
+                    web3Token,
+                    address
+                ).apply {
+                    this.onCopyClick = { depositUri ->
+                        this@Web3AddressFragment.lifecycleScope.launch {
+                            context?.heavyClickVibrate()
+                            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositUri))
+                            toast(R.string.copied_to_clipboard)
+                        }
+                    }
+                    this.onShareClick = { amount, depositUri ->
+                        this@Web3AddressFragment.lifecycleScope.launch {
+                            DepositShareActivity.show(
+                                requireContext(),
+                                web3Token,
+                                address,
+                                depositUri,
+                                amount
+                            )
+                        }
+                    }
+                }.show(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
             }
-            qr.post {
-                Observable.create<Pair<Bitmap, Int>> { e ->
-                    val r = address.generateQRCode(qr.width)
-                    e.onNext(r)
-                }.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(scopeProvider)
-                    .subscribe(
-                        { r ->
-                            qrAvatar.layoutParams =
-                                qrAvatar.layoutParams.apply {
-                                    width = r.second
-                                    height = r.second
-                                }
-                            qr.setImageBitmap(r.first)
-                        },
-                        {
-                        },
-                    )
+
+            binding.share.setOnClickListener {
+                refreshScreenshot(requireContext(), 0x66FF0000)
+                DepositShareActivity.show(
+                    requireContext(),
+                    web3Token,
+                    address,
+                    address
+                )
+            }
+
+            binding.addressTitle.setText(R.string.Address)
+
+            updateUI()
+            if (Constants.AssetId.usdtAssets.containsKey(web3Token.assetId)) {
+                binding.networkChipGroup.isVisible = true
+                initChips(
+                    if (Web3Signer.evmAddress.isBlank()) {
+                        mapOf(
+                            USDT_ASSET_SOL_ID to "Solana",
+                            )
+                    } else if (Web3Signer.solanaAddress.isBlank()) {
+                        mapOf(
+                            USDT_ASSET_ETH_ID to "Ethereum",
+                            USDT_ASSET_POL_ID to "Polygon",
+                            USDT_ASSET_BEP_ID to "BSC",
+                        )
+
+                    } else {
+                        mapOf(
+                            USDT_ASSET_ETH_ID to "Ethereum",
+                            USDT_ASSET_SOL_ID to "Solana",
+                            USDT_ASSET_POL_ID to "Polygon",
+                            USDT_ASSET_BEP_ID to "BSC",
+                        )
+                    }
+                )
+            } else if (Constants.AssetId.usdcAssets.containsKey(web3Token.assetId)) {
+                initChips(
+                    if (Web3Signer.evmAddress.isBlank()) {
+                        mapOf(
+                            USDC_ASSET_SOL_ID to "Solana",
+                        )
+                    } else if (Web3Signer.solanaAddress.isBlank()) {
+                        mapOf(
+                            USDC_ASSET_ETH_ID to "Ethereum",
+                            USDC_ASSET_BASE_ID to "Base",
+                            USDC_ASSET_POL_ID to "Polygon",
+                            USDC_ASSET_BEP_ID to "BSC"
+                        )
+                    } else {
+                        Constants.AssetId.usdcAssets
+                    }
+                )
+            } else if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
+                initChips(Constants.AssetId.ethAssets)
             }
         }
+        showDepositChooseNetworkBottomSheetDialog(web3Token)
         return binding.root
+    }
+
+    private fun initChips(map:Map<String,String>) {
+        binding.apply {
+            networkChipGroup.isVisible = true
+            networkChipGroup.isSingleSelection = true
+            networkChipGroup.removeAllViews()
+            map.entries.forEach { entry ->
+                val chip = Chip(requireContext()).apply {
+                    tag = entry.key
+                    isChecked = entry.key == web3Token.assetId
+                    text = entry.value
+                    isClickable = true
+                    setOnClickListener {
+                        selectToken(entry.key)
+                    }
+                }
+                networkChipGroup.addView(chip)
+            }
+        }
+        updateChips()
+    }
+
+    private fun selectToken(id:String) {
+        lifecycleScope.launch {
+            walletViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId,id)?.let {
+                web3Token = it
+            }
+            if (web3Token.isSolanaChain()) {
+                address = Web3Signer.solanaAddress
+            } else {
+                address = Web3Signer.evmAddress
+            }
+            updateUI()
+            updateChips()
+        }
+    }
+
+    private fun updateUI() {
+        binding.addressView.loadAddress(
+            scopeProvider,
+            address,
+            web3Token,
+            ""
+        )
+        binding.assetName.text = "${web3Token.name} (${web3Token.symbol})"
+        binding.addressDesc.text = getTipsByAsset(web3Token)
+        binding.addressDesc.isVisible = true
+        binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
+    }
+
+    private fun updateChips() {
+        binding.networkChipGroup.children.forEach {
+            if (it is Chip) {
+                if (it.tag == web3Token.assetId) {
+                    val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+                    it.setTextColor(accentColor)
+                    it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    it.chipStrokeColor = ColorStateList.valueOf(accentColor)
+                    it.chipStrokeWidth = 1.dp.toFloat()
+                } else {
+                    it.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+                    it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    it.chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_window))
+                    it.chipStrokeWidth = 1.dp.toFloat()
+                }
+            }
+        }
+    }
+
+    private var showed = false
+    private fun showDepositChooseNetworkBottomSheetDialog(
+        asset: Web3TokenItem,
+    ) {
+        if (showed) return
+        showed = true // run only once
+        lifecycleScope.launch {
+            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset.toTokenItem())
+                .showNow(childFragmentManager, DepositFragment.Companion.TAG)
+        }
     }
 
     @SuppressLint("SetTextI18n")

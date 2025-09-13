@@ -532,6 +532,10 @@
         <argument
             android:name="address"
             app:argType="string" />
+
+        <argument
+            android:name="web3_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
     </fragment>
 
     <fragment

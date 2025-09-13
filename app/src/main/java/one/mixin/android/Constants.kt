@@ -186,7 +186,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 66
+        const val CURRENT_VERSION = 67
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -267,25 +267,35 @@ object Constants {
         const val XIN_ASSET_ID = "c94ac88f-4671-3976-b60a-09064f1811e8"
 
         const val USDT_ASSET_ETH_ID = "4d8c508b-91c5-375b-92b0-ee702ed2dac5"
+        const val USDT_ASSET_TRC_ID = "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b"
+        const val USDT_ASSET_SOL_ID = "cb54aed4-1893-3977-b739-ec7b2e04f0c5"
+        const val USDT_ASSET_POL_ID = "218bc6f4-7927-3f8e-8568-3a3725b74361"
+        const val USDT_ASSET_BEP_ID = "94213408-4ee7-3150-a9c4-9c5cce421c78"
+        const val USDT_ASSET_TON_ID = "7369eea0-0c69-3906-b419-e960e3595a4f"
+
         const val USDC_ASSET_ETH_ID = "9b180ab6-6abe-3dc0-a13f-04169eb34bfa"
+        const val USDC_ASSET_SOL_ID = "de6fa523-c596-398e-b12f-6d6980544b59"
+        const val USDC_ASSET_BASE_ID = "2f845564-3898-3d17-8c24-3275e96235b5"
+        const val USDC_ASSET_POL_ID = "5fec1691-561d-339f-8819-63d54bf50b52"
+        const val USDC_ASSET_BEP_ID = "3d3d69f1-6742-34cf-95fe-3f8964e6d307"
 
         val usdcAssets =
             mapOf(
-                "9b180ab6-6abe-3dc0-a13f-04169eb34bfa" to "ERC-20",
-                "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
-                "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
-                "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon",
-                "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
+                USDC_ASSET_ETH_ID to "Ethereum",
+                USDC_ASSET_SOL_ID to "Solana",
+                USDC_ASSET_BASE_ID to "Base",
+                USDC_ASSET_POL_ID to "Polygon",
+                USDC_ASSET_BEP_ID to "BSC"
             )
 
         val usdtAssets =
             mapOf(
-                "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
-                "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
-                "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
-                "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
-                "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
-                "7369eea0-0c69-3906-b419-e960e3595a4f" to "TON"
+                USDT_ASSET_ETH_ID to "Ethereum",
+                USDT_ASSET_TRC_ID to "TRON",
+                USDT_ASSET_SOL_ID to "Solana",
+                USDT_ASSET_POL_ID to "Polygon",
+                USDT_ASSET_BEP_ID to "BSC",
+                USDT_ASSET_TON_ID to "TON",
             )
 
         val ethAssets = mapOf(

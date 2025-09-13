@@ -2,85 +2,111 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/bg_white"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical">
-
-    <one.mixin.android.widget.TitleView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:need_divider="false"
-        app:titleText="@string/Receive"
-        app:rightIcon="@drawable/ic_support" />
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
+        android:fitsSystemWindows="true"
         android:orientation="vertical">
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/network_chip_group"
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="20dp"
-            android:visibility="gone" />
+            app:rightIcon="@drawable/ic_support"
+            app:need_divider="false"
+            app:titleText="@string/Receive_Money" />
+
 
         <LinearLayout
+            android:id="@+id/bottom_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
-            android:background="?attr/bg_market_card"
+            android:background="@drawable/bg_market_card"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/address_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="20dp"
-                android:text="@string/Address"
-                android:textSize="16sp"
-                android:textColor="?attr/text_assist" />
-
-            <one.mixin.android.widget.ContentQRView
-                android:id="@+id/address_view"
+                android:id="@+id/name_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="30dp"/>
+                android:layout_marginTop="36dp"
+                android:gravity="center_horizontal"
+                android:maxLines="1"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="?attr/text_primary"
+                android:textSize="20sp"
+                android:textFontWeight="600" />
 
             <TextView
-                android:id="@+id/address_desc"
-                android:textSize="14sp"
-                android:textColor="?attr/text_assist"
-                android:layout_width="wrap_content"
+                android:id="@+id/number_tv"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
                 android:gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="30dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:visibility="gone"/>
+                android:textColor="?attr/text_assist"
+                android:textSize="14sp" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/qr_fl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="60dp"
+                android:layout_marginEnd="60dp">
+
+                <ImageView
+                    android:id="@+id/qr"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:scaleType="fitXY"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    tools:ignore="ContentDescription" />
+
+                <one.mixin.android.widget.BadgeAvatarView
+                    android:id="@+id/badge_view"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    app:border_color="@color/white"
+                    app:border_width="2dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/tip_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="?attr/bg_white"
+                android:gravity="center_horizontal"
+                android:text="@string/transfer_qrcode_prompt"
+                android:textColor="?attr/text_assist"
+                android:textSize="13sp" />
 
             <LinearLayout
                 android:id="@+id/bottom"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="30dp"
                 android:orientation="horizontal"
-                android:weightSum="3"
-                android:layout_marginBottom="20dp">
+                android:weightSum="3">
 
                 <LinearLayout
-                    android:id="@+id/copy"
+                    android:id="@+id/scan"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -91,13 +117,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:foreground="@drawable/mixin_ripple_24"
-                        android:src="@drawable/ic_deposit_copy" />
+                        android:src="@drawable/ic_receive_scan" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="@string/copy"
+                        android:text="@string/Scan"
                         android:textColor="?attr/text_primary"
                         android:textFontWeight="600"
                         android:textSize="12sp" />
@@ -152,55 +178,5 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/tip_ll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
-            android:background="?attr/bg_market_card"
-            android:orientation="vertical"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:paddingBottom="20dp"
-            android:paddingTop="20dp">
-
-            <TextView
-                android:id="@+id/asset_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/ASSET"
-                android:textColor="?attr/text_assist"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/asset_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="?attr/text_primary"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp" />
-
-            <!-- Network -->
-            <TextView
-                android:id="@+id/network_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/network"
-                android:textColor="?attr/text_assist"
-                android:layout_marginTop="20dp"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/network_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="?attr/text_primary"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp" />
-        </LinearLayout>
-
     </LinearLayout>
 </LinearLayout>

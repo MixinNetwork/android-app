@@ -138,7 +138,11 @@ class WalletActivity : BlazeBaseActivity() {
             is Destination.Address -> {
                 navGraph.setStartDestination(R.id.web3_address_fragment)
                 val address = requireNotNull(intent.getStringExtra(ADDRESS)) { "required address can not be null" }
-                navController.setGraph(navGraph, Bundle().apply { putString(ADDRESS, address) })
+                val token = requireNotNull(intent.getParcelableExtraCompat(WEB3_TOKEN, Web3TokenItem::class.java)) { "required web3 token can not be null" }
+                navController.setGraph(navGraph, Bundle().apply {
+                    putString(ADDRESS, address)
+                    putParcelable(WEB3_TOKEN, token)
+                })
             }
             is Destination.Web3Transactions -> {
                 navGraph.setStartDestination(R.id.web3_transactions_fragment)
@@ -300,11 +304,13 @@ class WalletActivity : BlazeBaseActivity() {
         fun showWithAddress(
             activity: Activity,
             address: String,
+            web3TokenItem: Web3TokenItem,
             destination: Destination,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
+                    putExtra(WEB3_TOKEN, web3TokenItem)
                     putExtra(ADDRESS, address)
                 },
             )

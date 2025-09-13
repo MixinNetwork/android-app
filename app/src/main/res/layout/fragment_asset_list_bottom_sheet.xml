@@ -167,7 +167,7 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
-                android:text="@string/Tron"
+                android:text="@string/TRON"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
