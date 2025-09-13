@@ -29,7 +29,7 @@ android {
     namespace "one.mixin.android"
     defaultConfig {
         applicationId "one.mixin.messenger"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 35
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
