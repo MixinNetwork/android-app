@@ -47,7 +47,6 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import org.koin.core.time.Timer
 import timber.log.Timber
 import javax.inject.Inject
 
