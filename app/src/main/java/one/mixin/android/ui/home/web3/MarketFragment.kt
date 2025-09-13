@@ -90,7 +90,6 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-
             searchIb.setOnClickListener {
                 activity?.addFragment(
                     this@MarketFragment,
