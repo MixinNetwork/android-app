@@ -162,7 +162,7 @@ class DepositFragment : BaseFragment() {
                             isChecked = false
                             setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                             chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                            chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                            chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
                             chipStrokeWidth = 1.dp.toFloat()
                         }
                         setOnClickListener {
@@ -461,7 +461,7 @@ class DepositFragment : BaseFragment() {
                     isChecked = false
                     setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
                     chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_window))
+                    chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
                     chipStrokeWidth = 1.dp.toFloat()
                 }
             }
