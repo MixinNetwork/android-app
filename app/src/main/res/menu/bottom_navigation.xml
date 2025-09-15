@@ -11,7 +11,7 @@
     <item
         android:id="@+id/nav_market"
         android:icon="@drawable/ic_tab_market"
-        android:title="@string/Market" />
+        android:title="@string/Markets" />
     <item
         android:id="@+id/nav_more"
         android:icon="@drawable/ic_tab_more"
