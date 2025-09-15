@@ -30,6 +30,7 @@ import one.mixin.android.databinding.FragmentMobileBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
@@ -252,8 +253,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
-            } else {
+            } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
+            } else {
+              // Todo
             }
         }
         binding.continueBn.displayedChild = 1
@@ -262,7 +265,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
-                            initAndLoadCaptcha()
+                            initAndLoadCaptcha(r.errorDescription)
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -310,7 +313,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             )
     }
 
-    private fun initAndLoadCaptcha() =
+    private fun initAndLoadCaptcha(errorDescription: String) =
         lifecycleScope.launch {
             if (captchaView == null) {
                 captchaView =
@@ -337,7 +340,11 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             } else if (from == FROM_LANDING) {
                 AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase("GeeTest")) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase("hCaptcha")) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
     private fun hideLoading() {

@@ -34,6 +34,7 @@ import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
@@ -315,8 +316,10 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
-            } else {
+            } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
+            } else {
+               //Todo
             }
         }
         viewModel.verification(verificationRequest)
@@ -324,7 +327,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
-                            initAndLoadCaptcha()
+                            initAndLoadCaptcha(r.errorDescription)
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -344,7 +347,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
     }
 
-    private fun initAndLoadCaptcha() =
+    private fun initAndLoadCaptcha(errorDescription: String) =
         lifecycleScope.launch {
             if (captchaView == null) {
                 captchaView =
@@ -362,7 +365,11 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase("GeeTest")) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase("hCaptcha")) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
     private fun startCountDown() {

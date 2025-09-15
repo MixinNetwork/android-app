@@ -36,6 +36,7 @@ import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
@@ -168,7 +169,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         } else {
                             AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
                         }
-                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signature.hexString())
+                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signature.hexString(), r.errorDescription)
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                         mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
@@ -193,7 +194,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private var captchaView: CaptchaView? = null
-    private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String) =
+    private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String, errorDescription: String) =
         lifecycleScope.launch {
             if (captchaView == null) {
                 captchaView =
@@ -207,20 +208,24 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                             override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                                 val t = value.second
-                                reSend(sessionKey, edKey, messageHex, signatureHex, if (!value.first.isG()) t else null, if (value.first.isG()) t else null)
+                                reSend(sessionKey, edKey, messageHex, signatureHex, if (value.first.isH()) t else null, if (value.first.isG()) t else null, if (value.first.isGT()) t else null)
                             }
                         },
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase("GeeTest")) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase("hCaptcha")) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
-    private fun reSend(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null) {
+    private fun reSend(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null, gtRecaptchaResponse: String? = null) {
         lifecycleScope.launch {
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse)
+                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse, gtRecaptchaResponse)
                 },
 
                 successBlock = { r ->

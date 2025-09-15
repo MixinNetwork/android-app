@@ -2,6 +2,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    #gt
     <script type="text/javascript">
 
         var postToken = function (response) {
@@ -30,6 +31,22 @@
             hcaptcha.execute(widgetID);
         }
 
+        var initGTCaptcha = function() {
+            initGeetest4({
+                captchaId: '#apiKey',
+                product: 'bind'
+            }, function(captcha) {
+                captcha.onReady(function(){
+                    postMessage("challenge_change");
+                    captcha.showCaptcha();
+                }).onSuccess(function(){
+                    var result = captcha.getValidate();
+                    postToken(result);
+                }).onClose(function () {
+                    postMessage("gt_close");
+                });
+            });
+        };
     </script>
 </head>
 
@@ -40,5 +57,4 @@
 <script src="#src" async defer>
 </script>
 </body>
-
 </html>

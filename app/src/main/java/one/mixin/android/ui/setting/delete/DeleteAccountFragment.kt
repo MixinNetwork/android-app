@@ -17,6 +17,8 @@ import one.mixin.android.databinding.FragmentDeleteAccountBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.viewDestroyed
@@ -183,8 +185,9 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
-            } else {
+            } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
+            } else if (captchaResponse.first.isGT()) {
             }
         }
         binding.deleteCover.isVisible = true
@@ -211,7 +214,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             failureBlock = { r ->
                 if (viewDestroyed()) return@handleMixinResponse true
                 if (r.errorCode == ErrorHandler.NEED_CAPTCHA) {
-                    initAndLoadCaptcha()
+                    initAndLoadCaptcha(r.errorDescription)
                     return@handleMixinResponse true
                 }
                 binding.deleteCover.isVisible = false
@@ -225,7 +228,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         )
     }
 
-    private fun initAndLoadCaptcha() =
+    private fun initAndLoadCaptcha(errorDescription: String) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
 
@@ -253,7 +256,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                 )
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase("GeeTest")) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase("hCaptcha")) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
     private fun changeNumber() {
