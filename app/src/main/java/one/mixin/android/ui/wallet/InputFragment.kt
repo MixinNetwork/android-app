@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -258,7 +259,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                balanceTv.text = getString(R.string.available_balance, "${tokenBalance.let {
                     if (web3Token == null) {
                         it.numberFormat8()
                     } else {
@@ -981,17 +982,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
                     val balance = runCatching {
                         tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO)?.max(BigDecimal.ZERO)?.let {
-                            if (web3Token == null) {
-                                it.numberFormat8()
-                            } else {
-                                it.numberFormat12()
-                            }
-                        }
+                            if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     }.getOrDefault("0")
-
-                    binding.balance.text = getString(R.string.available_balance, "$balance $tokenSymbol")
+                    binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
                 } else {
-                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                    binding.balanceTv.text = getString(R.string.available_balance, "${tokenBalance.let {
                         if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     } $tokenSymbol")
                 }
@@ -1208,12 +1203,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
 
                 }.getOrDefault("0")
-                binding.balance.text = getString(
-                    R.string.available_balance,
-                    "$balance $tokenSymbol"
-                )
+                binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
             } else {
-                binding.balance.text = getString(
+                binding.balanceTv.text = getString(
                     R.string.available_balance,
                     "${
                         tokenBalance.let {

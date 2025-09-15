@@ -238,13 +238,20 @@
                         android:textColor="?attr/text_primary"
                         tools:text="@string/Ethereum" />
 
-                    <TextView
-                        android:id="@+id/balance"
-                        android:layout_width="wrap_content"
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/balance_tv"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignBottom="@id/avatar"
                         android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
                         android:layout_toEndOf="@id/avatar"
+                        android:autoSizeMaxTextSize="14sp"
+                        android:autoSizeMinTextSize="8sp"
+                        android:autoSizeStepGranularity="0.5sp"
+                        android:autoSizeTextType="uniform"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:textColor="?attr/text_assist"
                         tools:text="1.2345678 ETH" />
 
