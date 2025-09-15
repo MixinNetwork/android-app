@@ -259,7 +259,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                autoResizeText(
+                balanceTv.text =
                     getString(
                         R.string.available_balance, "${
                             tokenBalance.let {
@@ -271,7 +271,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             }
                         } $tokenSymbol"
                     )
-                )
                 max.setOnClickListener {
                     valueClick(BigDecimal.ONE)
                 }
@@ -612,21 +611,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             checkSolanaToExists()
             refreshFee()
         }
-    }
-
-    private fun autoResizeText(text: String) {
-        val textView = binding.balance
-        val maxWidth = textView.measuredWidth
-        var textSize = textView.textSize
-        val paint = textView.paint
-
-        while (paint.measureText(text) > maxWidth && textSize > 8f) {
-            textSize -= 1f
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize)
-            paint.textSize = textSize
-        }
-
-        textView.text = text
     }
 
     private var addressLabel:String? = null
@@ -1011,22 +995,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             }
                         }
                     }.getOrDefault("0")
-
-                    autoResizeText(getString(R.string.available_balance, "$balance $tokenSymbol"))
+                    binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
                 } else {
-                    autoResizeText(
-                        getString(
-                            R.string.available_balance, "${
-                                tokenBalance.let {
-                                    if (web3Token == null) {
-                                        it.numberFormat8()
-                                    } else {
-                                        it.numberFormat12()
-                                    }
-                                }
-                            } $tokenSymbol"
-                        )
-                    )
+                    binding.balanceTv.text = getString(
+                        R.string.available_balance, "${
+                        tokenBalance.let {
+                            if (web3Token == null) {
+                                it.numberFormat8()
+                            } else {
+                                it.numberFormat12()
+                            }
+                        }
+                    } $tokenSymbol")
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, value.token.symbol)
             }
@@ -1241,9 +1221,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
 
                 }.getOrDefault("0")
-                autoResizeText(getString(R.string.available_balance, "$balance $tokenSymbol"))
+                binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
             } else {
-                autoResizeText(getString(
+                binding.balanceTv.text = getString(
                     R.string.available_balance,
                     "${
                         tokenBalance.let {
@@ -1254,7 +1234,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             }
                         }
                     } $tokenSymbol"
-                ))
+                )
             }
             updateUI()
             binding.insufficientFeeBalance.text =
