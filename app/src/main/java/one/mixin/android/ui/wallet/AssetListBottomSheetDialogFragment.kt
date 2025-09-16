@@ -243,7 +243,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
             bottomViewModel.assetItemsWithBalance()
         } else {
-            bottomViewModel.assetItems()
+            bottomViewModel.assetItemsNotHidden()
         }.observe(this) {
             defaultAssets =
                 it.let { list ->
