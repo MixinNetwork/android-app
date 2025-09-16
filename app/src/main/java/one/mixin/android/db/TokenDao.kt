@@ -109,10 +109,6 @@ interface TokenDao : BaseDao<Token> {
     suspend fun findTokenItems(ids: List<String>): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.chain_id IN (:chainIds) AND balance > 0 $POSTFIX")
-    suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)

@@ -504,8 +504,6 @@ class TokenRepository
 
         suspend fun findWeb3AssetItemsWithBalance(walletId: String): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance(walletId)
 
-        suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
-
         fun web3TokenItems(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId)
 
         fun web3TokenItemsExcludeHidden(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
