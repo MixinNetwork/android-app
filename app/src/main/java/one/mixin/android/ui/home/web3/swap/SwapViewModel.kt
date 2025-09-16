@@ -145,8 +145,9 @@ class SwapViewModel
     }
 
     fun tokenExtraFlow(token: SwapToken): Flow<String?> {
-        return if (token.walletId.isNullOrBlank().not()) {
-            tokenRepository.web3TokenExtraFlow(token.walletId,token.assetId)
+        val walletId = token.walletId
+        return if (walletId.isNullOrBlank().not()) {
+            tokenRepository.web3TokenExtraFlow(walletId,token.assetId)
         } else {
             tokenRepository.tokenExtraFlow(token.assetId)
         }

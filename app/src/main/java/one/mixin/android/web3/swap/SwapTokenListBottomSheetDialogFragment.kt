@@ -42,8 +42,10 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -320,15 +322,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { ra ->
                     var localToken =
                         localTokens.find { swapToken -> swapToken.assetId == ra.assetId }
+                    Timber.e("localToken $localToken")
                     if (localToken == null) {
-                        if (ra.walletId != null) {
-                            localToken = swapViewModel.web3TokenItemById(ra.walletId, ra.assetId)?.toSwapToken()
+                        if (inMixin.not()) {
+                            Timber.e("search localToken web3 ${Web3Signer.currentWalletId} ${ra.assetId} ${ra.name} ${ra.assetId} ${ra.assetId}")
+                            localToken = swapViewModel.web3TokenItemById(Web3Signer.currentWalletId, ra.assetId)?.toSwapToken()
                         } else {
+                            Timber.e("search localToken swap ${ra.assetId}")
                             localToken = swapViewModel.findToken(ra.assetId)?.toSwapToken()
                         }
                     }
                     if (localToken != null) {
-                        return@map ra.copy(price = localToken.price, balance = localToken.balance, collectionHash = localToken.collectionHash)
+                        return@map ra.copy(price = localToken.price, balance = localToken.balance, collectionHash = localToken.collectionHash, walletId = Web3Signer.currentWalletId)
                     }
                     return@map ra
                 }

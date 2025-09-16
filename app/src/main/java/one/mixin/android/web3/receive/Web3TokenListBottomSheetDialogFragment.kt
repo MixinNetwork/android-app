@@ -41,6 +41,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
@@ -192,6 +193,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                     ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                                 })
                             } else {
+                                Timber.e("textChanges: $it")
                                 if (it.toString() != currentQuery) {
                                     currentQuery = it.toString()
                                     search(it.toString())
@@ -322,44 +324,41 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.rvVa.displayedChild = POS_RV
                 binding.pb.isVisible = true
 
-                val remoteAssets = if (type == TYPE_FROM_RECEIVE) {
-                    val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
-                    fuzzyResults.filter {
-                        it.chainId in listOf(
-                            SOLANA_CHAIN_ID,
-                            ETHEREUM_CHAIN_ID,
-                            Base,
-                            Optimism,
-                            Arbitrum,
-                            BinanceSmartChain,
-                            Polygon)
-                    }.map { item ->
-                        val local = defaultAssets.find { item.assetId == it.assetId } ?: bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId)
-                        local.let { local ->
-                            local
-                                ?: Web3TokenItem(
-                                    walletId = walletId ?: "",
-                                    assetId = item.assetId,
-                                    chainId = item.chainId,
-                                    name = item.name,
-                                    assetKey = item.assetKey ?: "",
-                                    symbol = item.symbol,
-                                    iconUrl = item.iconUrl,
-                                    precision = 9,
-                                    kernelAssetId = "",
-                                    balance = item.balance,
-                                    priceUsd = item.priceUsd,
-                                    changeUsd = item.changeUsd,
-                                    chainIcon = item.chainIconUrl,
-                                    chainName = item.chainName,
-                                    chainSymbol = item.chainSymbol,
-                                    hidden = item.hidden,
-                                    level = Constants.AssetLevel.VERIFIED
-                                )
-                        }
+                val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
+                val remoteAssets = fuzzyResults.filter {
+                    it.chainId in listOf(
+                        SOLANA_CHAIN_ID,
+                        ETHEREUM_CHAIN_ID,
+                        Base,
+                        Optimism,
+                        Arbitrum,
+                        BinanceSmartChain,
+                        Polygon
+                    )
+                }.map { item ->
+                    val local = defaultAssets.find { item.assetId == it.assetId } ?: bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId)
+                    local.let { local ->
+                        local
+                            ?: Web3TokenItem(
+                                walletId = walletId ?: "",
+                                assetId = item.assetId,
+                                chainId = item.chainId,
+                                name = item.name,
+                                assetKey = item.assetKey ?: "",
+                                symbol = item.symbol,
+                                iconUrl = item.iconUrl,
+                                precision = 9,
+                                kernelAssetId = "",
+                                balance = item.balance,
+                                priceUsd = item.priceUsd,
+                                changeUsd = item.changeUsd,
+                                chainIcon = item.chainIconUrl,
+                                chainName = item.chainName,
+                                chainSymbol = item.chainSymbol,
+                                hidden = item.hidden,
+                                level = Constants.AssetLevel.VERIFIED
+                            )
                     }
-                } else {
-                    emptyList()
                 }
 
                 val result = defaultAssets.plus(
