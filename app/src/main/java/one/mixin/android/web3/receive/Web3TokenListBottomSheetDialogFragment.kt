@@ -17,9 +17,13 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.ChainId
 import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Base
+import one.mixin.android.Constants.ChainId.BinanceSmartChain
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Optimism
+import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
@@ -101,23 +105,23 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
                     R.id.radio_eth -> {
-                        ChainId.ETHEREUM_CHAIN_ID
+                        ETHEREUM_CHAIN_ID
                     }
 
                     R.id.radio_solana -> {
-                        ChainId.SOLANA_CHAIN_ID
+                        SOLANA_CHAIN_ID
                     }
 
                     R.id.radio_base -> {
-                        ChainId.Base
+                        Base
                     }
 
                     R.id.radio_bsc -> {
-                        ChainId.BinanceSmartChain
+                        BinanceSmartChain
                     }
 
                     R.id.radio_polygon -> {
-                        ChainId.Polygon
+                        Polygon
                     }
 
                     R.id.radio_arbritrum -> {
@@ -199,11 +203,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         walletId?.let {
-            if (type == TYPE_FROM_RECEIVE) {
-                bottomViewModel.web3TokenItems(it, Constants.AssetLevel.VERIFIED)
-            } else {
-                bottomViewModel.web3TokenItems(it)
-            }.observe(this) { items ->
+            bottomViewModel.web3TokenItemsExcludeHidden(it).observe(this) { items ->
                 defaultAssets = items
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     adapter.tokens = ArrayList(defaultAssets.filter { item ->
@@ -326,13 +326,13 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
                     fuzzyResults.filter {
                         it.chainId in listOf(
-                            ChainId.SOLANA_CHAIN_ID,
-                            ChainId.ETHEREUM_CHAIN_ID,
-                            ChainId.Base,
-                            ChainId.Optimism,
-                            ChainId.Arbitrum,
-                            ChainId.BinanceSmartChain,
-                            ChainId.Polygon)
+                            SOLANA_CHAIN_ID,
+                            ETHEREUM_CHAIN_ID,
+                            Base,
+                            Optimism,
+                            Arbitrum,
+                            BinanceSmartChain,
+                            Polygon)
                     }.map { item ->
                         defaultAssets.find { item.assetId == it.assetId }.let { local ->
                             local
