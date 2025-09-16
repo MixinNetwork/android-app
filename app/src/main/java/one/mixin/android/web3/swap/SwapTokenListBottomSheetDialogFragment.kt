@@ -318,8 +318,17 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
                 return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
-                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                    var localToken =
+                        localTokens.find { swapToken -> swapToken.assetId == ra.assetId }
+                    if (localToken == null) {
+                        if (ra.walletId != null) {
+                            localToken = swapViewModel.web3TokenItemById(ra.walletId, ra.assetId)?.toSwapToken()
+                        } else {
+                            localToken = swapViewModel.findToken(ra.assetId)?.toSwapToken()
+                        }
+                    }
+                    if (localToken != null) {
+                        return@map ra.copy(price = localToken.price, balance = localToken.balance, collectionHash = localToken.collectionHash)
                     }
                     return@map ra
                 }

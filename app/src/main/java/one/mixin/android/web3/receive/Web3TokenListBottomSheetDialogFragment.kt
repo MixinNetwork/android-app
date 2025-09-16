@@ -334,7 +334,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             BinanceSmartChain,
                             Polygon)
                     }.map { item ->
-                        defaultAssets.find { item.assetId == it.assetId }.let { local ->
+                        val local = defaultAssets.find { item.assetId == it.assetId } ?: bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId)
+                        local.let { local ->
                             local
                                 ?: Web3TokenItem(
                                     walletId = walletId ?: "",
