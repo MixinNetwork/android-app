@@ -401,14 +401,14 @@ object Web3Signer {
         priv: ByteArray,
         message: String,
     ): String {
-        val holder = Keypair.fromSecretKey(priv)
+        val keyPair = Keypair.fromSecretKey(priv)
         val m =
             try {
                 message.decodeBase58()
             } catch (e: Exception) {
                 message.removePrefix("0x").hexStringToByteArray()
             }
-        val sig = holder.sign(m)
+        val sig = keyPair.sign(m)
         return sig.toHex()
     }
 
