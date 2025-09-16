@@ -98,6 +98,7 @@ class Web3AddressFragment : BaseFragment() {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                 toast(R.string.copied_to_clipboard)
             }
+            binding.networkTitle.setText(getString(R.string.network).uppercase())
             binding.amount.setOnClickListener {
                 InputAmountBottomSheetDialogFragment.newInstance(
                     web3Token,
