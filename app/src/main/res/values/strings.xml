@@ -1417,6 +1417,7 @@
     <string name="send_to_address_description">Send to an address in your Address Book, PIN-protected to prevent phishing.</string>
     <string name="send_to_my_wallet_description">Send to my other wallet using a crypto network.</string>
     <string name="send_to_contact_description">Send to your Mixin friends with privacy, zero fees, and instant delivery.</string>
+    <string name="send_to_mixin_contact_description">Send to your friends‘ Common Wallet with privacy and ease.</string>
     <string name="send_to_privacy_wallet_description">Send to your Privacy Wallet to keep your assets safe and hidden from potential risks.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
@@ -2045,6 +2046,8 @@
     <string name="Import_wallets_from_another_wallet">Import wallets from another wallet.</string>
     <string name="fetching_in_to_your_wallet">Fetching in to your wallet…</string>
     <string name="importing_into_your_wallet">Importing in to your wallet…</string>
+    <string name="Fetching_address">Fetching address…</string>
+    <string name="Fetch_Failed">Fetch Failed</string>
     <string name="fetching_shouldnt_take_long">This shouldn’t take long.</string>
     <plurals name="import_wallets">
         <item quantity="one">Import %1$d wallet</item>

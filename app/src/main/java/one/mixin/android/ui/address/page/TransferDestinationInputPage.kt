@@ -104,7 +104,6 @@ fun TransferDestinationInputPage(
     val addresses by viewModel.addressesFlow(token?.chainId ?: web3Token?.chainId ?: "")
         .collectAsState(initial = emptyList())
 
-    var account by remember { mutableStateOf("") }
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(web3Token?.walletId) {
@@ -117,14 +116,6 @@ fun TransferDestinationInputPage(
                     walletDisplayName = it.name
                 }
             }
-        }
-    }
-
-    LaunchedEffect(token?.chainId) {
-        account = when {
-            token?.chainId == ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-            token?.chainId in Constants.Web3ChainIds -> Web3Signer.evmAddress
-            else -> ""
         }
     }
 
@@ -340,12 +331,23 @@ fun TransferDestinationInputPage(
                                     }, true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
+                            } else  {
+                                DestinationMenu(
+                                    R.drawable.ic_destination_contact,
+                                    R.string.Mixin_Contact,
+                                    R.string.send_to_mixin_contact_description,
+                                    onClick = {
+                                        toContact.invoke()
+                                    }, false
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (web3Token != null) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
                                     R.string.My_Wallet,
                                     stringResource(R.string.send_to_my_wallet_description),
+                                    free = false,
                                     onClick = {
                                         toWallet.invoke(web3Token.walletId)
                                     },
