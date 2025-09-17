@@ -127,7 +127,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         binding.apply {
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
-                    val assets = walletViewModel.allAssetItems()
+
                     val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {
@@ -137,9 +137,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     SwapActivity.show(
                         requireActivity(),
                         inMixin = true,
-                        tokens = assets.filter {
-                            (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
-                        },
                         input = asset.assetId,
                         output = output
                     )
