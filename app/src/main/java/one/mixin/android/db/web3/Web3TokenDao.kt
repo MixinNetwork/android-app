@@ -92,15 +92,20 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id 
-        WHERE wallet_id = :walletId AND (t.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR t.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
-        ORDER BY t.symbol = :symbol COLLATE NOCASE OR t.name = :name COLLATE NOCASE DESC
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t 
+        LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
+        WHERE t.wallet_id = :walletId 
+        AND (t.symbol LIKE '%' || :query || '%' $ESCAPE_SUFFIX OR t.name LIKE '%' || :query || '%' $ESCAPE_SUFFIX)
+        AND (t.level >= 10 OR (t.level < 10 AND (te.hidden IS NULL OR te.hidden = 0)))
+        AND (:chainId IS NULL OR t.chain_id = :chainId)
+        ORDER BY t.symbol = :query COLLATE NOCASE OR t.name = :query COLLATE NOCASE DESC
         """,
     )
     suspend fun fuzzySearchAsset(
         walletId: String,
-        name: String,
-        symbol: String,
+        query: String,
+        chainId: String?,
     ): List<Web3TokenItem>
 
     @Query(

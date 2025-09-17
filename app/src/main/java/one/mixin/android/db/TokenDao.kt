@@ -123,6 +123,21 @@ interface TokenDao : BaseDao<Token> {
     ): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """$PREFIX_ASSET_ITEM 
+        WHERE (a1.symbol LIKE '%' || :query || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :query || '%' $ESCAPE_SUFFIX)
+        AND (:chainId IS NULL OR a1.chain_id = :chainId)
+        ORDER BY 
+            a1.symbol = :query COLLATE NOCASE OR a1.name = :query COLLATE NOCASE DESC,
+            a1.price_usd*ae.balance DESC
+        """,
+    )
+    suspend fun fuzzySearchAsset(
+        query: String,
+        chainId: String?,
+    ): List<TokenItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
     fun assetItem(id: String): LiveData<TokenItem>
 

@@ -286,10 +286,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }
                 return@launch
             }
-            val assetList =
-                tokens.filter {
-                    (currentChain != null && it.chain.chainId == currentChain) || currentChain == null
-                }.toMutableList()
+            val assetList = if (inMixin()) {
+                swapViewModel.fuzzySearchAsset(s, currentChain).map { it.toSwapToken() }.toMutableList()
+            } else {
+                swapViewModel.fuzzySearchWeb3Asset(Web3Signer.currentWalletId, s, currentChain)
+                    .map { it.toSwapToken() }.toMutableList()
+            }
 
             val total = search(s, assetList, currentChain, inMixin())
             adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
@@ -322,13 +324,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { ra ->
                     var localToken =
                         localTokens.find { swapToken -> swapToken.assetId == ra.assetId }
-                    Timber.e("localToken $localToken")
                     if (localToken == null) {
                         if (inMixin.not()) {
-                            Timber.e("search localToken web3 ${Web3Signer.currentWalletId} ${ra.assetId} ${ra.name} ${ra.assetId} ${ra.assetId}")
                             localToken = swapViewModel.web3TokenItemById(Web3Signer.currentWalletId, ra.assetId)?.toSwapToken()
                         } else {
-                            Timber.e("search localToken swap ${ra.assetId}")
                             localToken = swapViewModel.findToken(ra.assetId)?.toSwapToken()
                         }
                     }
@@ -342,7 +341,13 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )
-        return remoteList ?: emptyList()
+        val total = remoteList?.toMutableList() ?: mutableListOf()
+        localTokens.forEach { local ->
+            if (total.none { it.assetId == local.assetId && it.chain.chainId == local.chain.chainId }) {
+                total.add(local)
+            }
+        }
+        return total
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {

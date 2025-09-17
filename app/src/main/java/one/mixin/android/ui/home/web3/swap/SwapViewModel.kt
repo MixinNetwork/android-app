@@ -166,4 +166,10 @@ class SwapViewModel
     suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
         web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
     }
+
+    suspend fun fuzzySearchAsset(query: String, chainId: String?) =
+        tokenRepository.fuzzySearchAsset(query, chainId)
+
+    suspend fun fuzzySearchWeb3Asset(walletId: String, query: String, chainId: String?) =
+        web3Repository.fuzzySearchAsset(walletId, query, chainId)
 }

@@ -226,4 +226,7 @@ constructor(
             null
         }
     }
+
+    suspend fun fuzzySearchAsset(walletId: String, query: String, chainId: String?) =
+        web3TokenDao.fuzzySearchAsset(walletId, query, chainId)
 }
