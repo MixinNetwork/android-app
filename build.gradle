@@ -200,12 +200,5 @@ allprojects {
             }
         }
 
-        //noinspection JcenterRepositoryObsolete
-        jcenter() {
-            content {
-                includeModule("jp.wasabeef", "glide-transformations")
-            }
-        }
-
     }
 }
