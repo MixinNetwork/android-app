@@ -377,7 +377,7 @@ object Web3Signer {
         }
     }
 
-    private fun signEthMessage(
+    fun signEthMessage(
         priv: ByteArray,
         message: String,
         type: Int,
@@ -397,18 +397,25 @@ object Web3Signer {
         return Numeric.toHexString(b)
     }
 
-    private fun signSolanaMessage(
+    fun signSolanaMessage(
         priv: ByteArray,
         message: String,
     ): String {
-        val keyPair = Keypair.fromSecretKey(priv)
         val m =
             try {
                 message.decodeBase58()
             } catch (e: Exception) {
                 message.removePrefix("0x").hexStringToByteArray()
             }
-        val sig = keyPair.sign(m)
+        return signSolanaMessage(priv, m)
+    }
+
+    fun signSolanaMessage(
+        priv: ByteArray,
+        message: ByteArray,
+    ): String {
+        val keyPair = Keypair.fromSecretKey(priv)
+        val sig = keyPair.sign(message)
         return sig.toHex()
     }
 
