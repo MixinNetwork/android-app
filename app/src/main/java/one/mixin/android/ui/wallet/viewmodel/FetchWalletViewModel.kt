@@ -523,7 +523,7 @@ class FetchWalletViewModel @Inject constructor(
         return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
             val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
             createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
-        }else{
+        } else {
             val privateKeyBytes = Base58.decode(privateKey)
             createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
         }
