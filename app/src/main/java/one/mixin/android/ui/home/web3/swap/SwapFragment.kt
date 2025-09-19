@@ -91,7 +91,6 @@ class SwapFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
-        const val ARGS_TOKEN_ITEMS = "args_token_items"
         const val ARGS_INPUT = "args_input"
         const val ARGS_OUTPUT = "args_output"
         const val ARGS_AMOUNT = "args_amount"
@@ -107,7 +106,6 @@ class SwapFragment : BaseFragment() {
         const val maxLeftAmount = 0.01
 
         inline fun <reified T : Swappable> newInstance(
-            tokens: List<T>? = null,
             input: String? = null,
             output: String? = null,
             amount: String? = null,
@@ -116,23 +114,6 @@ class SwapFragment : BaseFragment() {
             walletId: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
-                when (T::class) {
-                    Web3TokenItem::class -> {
-                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply {
-                            if (tokens != null) {
-                                addAll(tokens)
-                            }
-                        })
-                    }
-
-                    TokenItem::class -> {
-                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply {
-                            if (tokens != null) {
-                                addAll(tokens)
-                            }
-                        })
-                    }
-                }
                 input?.let { putString(ARGS_INPUT, it) }
                 output?.let { putString(ARGS_OUTPUT, it) }
                 amount?.let { putString(ARGS_AMOUNT, it) }
@@ -684,7 +665,6 @@ class SwapFragment : BaseFragment() {
     }
 
     private suspend fun initFromTo() {
-        tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
         if (!inMixin() && web3tokens.isNullOrEmpty()) {
             if (walletId == null) {

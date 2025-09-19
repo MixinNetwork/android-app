@@ -4,7 +4,7 @@ buildscript {
         ext.bitcoinVersion ='0.17'
         ext.fragmentVersion = '1.8.9'
         ext.activity_version = '1.11.0'
-        ext.lifecycleVersion = '2.9.3'
+        ext.lifecycleVersion = '2.9.4'
         ext.appcompatVersion = '1.7.1'
         ext.pagingVersion = '3.3.6'
         ext.coilVersion = '3.3.0'
@@ -124,7 +124,7 @@ buildscript {
         ext.installreferrerVersion ='2.2'
         ext.billingVersion ='8.0.0'
 
-        ext.lottieComposeVersion = '6.6.7'
+        ext.lottieComposeVersion = '6.6.9'
         ext.composeBomVersion = '2025.09.00'
         ext.activityComposeVersion = '1.11.0'
         ext.web3jCoreVersion = '4.11.0'
@@ -133,7 +133,7 @@ buildscript {
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '19.2.0'
         ext.playServicesLocationVersion = '21.3.0'
-        firebaseBomVersion = "34.2.0"
+        firebaseBomVersion = "34.3.0"
         billingKtxVersion = "8.0.0"
         webpdecoderVersion = "2.7.4.16.0"
 
@@ -197,13 +197,6 @@ allprojects {
                 username = project.properties['GITHUB_ID']
                 password = project.properties['GITHUB_PACKAGES_TOKEN']
 
-            }
-        }
-
-        //noinspection JcenterRepositoryObsolete
-        jcenter() {
-            content {
-                includeModule("jp.wasabeef", "glide-transformations")
             }
         }
 

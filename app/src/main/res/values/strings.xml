@@ -1515,7 +1515,7 @@
     <string name="TRON">TRON</string>
     <string name="Optimism">Optimism</string>
     <string name="Arbitrum">Arbitrum</string>
-    <string name="Toncoin">Toncoin</string>
+    <string name="Toncoin">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access apps and DeFi projects.</string>
