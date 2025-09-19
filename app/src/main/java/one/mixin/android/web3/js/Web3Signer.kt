@@ -1,10 +1,6 @@
 package one.mixin.android.web3.js
 
-import android.util.LruCache
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import okio.Buffer
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -40,13 +36,10 @@ import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.crypto.TransactionEncoder
-import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.Response
-import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
-import java.util.concurrent.TimeUnit
 import org.sol4k.Constants as ConstantsSolana
 
 object Web3Signer {
@@ -60,34 +53,6 @@ object Web3Signer {
 
     private val sp by lazy {
         MixinApplication.appContext.defaultSharedPreferences
-    }
-
-    private var web3jPool = LruCache<Chain, Web3j>(3)
-
-    private fun getWeb3j(chain: Chain): Web3j {
-        val exists = web3jPool[chain]
-        return if (exists == null) {
-            val web3j = Web3j.build(HttpService(chain.rpcUrl, buildOkHttpClient()))
-            web3jPool.put(chain, web3j)
-            web3j
-        } else {
-            exists
-        }
-    }
-
-    private fun buildOkHttpClient(): OkHttpClient {
-        val builder = OkHttpClient.Builder()
-        builder.connectTimeout(15, TimeUnit.SECONDS)
-        builder.writeTimeout(15, TimeUnit.SECONDS)
-        builder.readTimeout(15, TimeUnit.SECONDS)
-        if (BuildConfig.DEBUG) {
-            builder.addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                },
-            )
-        }
-        return builder.build()
     }
 
     private object Keys {
