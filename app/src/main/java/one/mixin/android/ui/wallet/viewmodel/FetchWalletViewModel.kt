@@ -537,7 +537,7 @@ class FetchWalletViewModel @Inject constructor(
         category: String
     ): Web3AddressRequest {
         val selfId = Session.getAccountId()
-        if (category == WalletCategory.WATCH_ADDRESS.value || selfId == null) {
+        if (category == WalletCategory.WATCH_ADDRESS.value) {
             return Web3AddressRequest(
                 destination = destination,
                 chainId = chainId,
@@ -550,7 +550,7 @@ class FetchWalletViewModel @Inject constructor(
         val signature = if (privateKey != null) {
             val message = "$destination\n$selfId\n${now.epochSecond}"
             if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray(Charsets.UTF_8)))
+                Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
             } else {
                 Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
             }
