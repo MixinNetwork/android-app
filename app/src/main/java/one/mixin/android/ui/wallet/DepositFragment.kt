@@ -104,7 +104,6 @@ class DepositFragment : BaseFragment() {
             }
             title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
             addressDesc.text = getTipsByAsset(asset)
-            networkTitle.setText(getString(R.string.network).uppercase())
             if (notSupport) {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
