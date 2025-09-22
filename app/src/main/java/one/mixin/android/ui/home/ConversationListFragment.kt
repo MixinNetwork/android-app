@@ -747,12 +747,19 @@ class ConversationListFragment : LinkFragment() {
             if (isAdded) {
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
-                        (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
-                        if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                        val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
+                        existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
+
+                        if (type != null) {
+                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                            }
+                        }
                     }
             }
         }
     }
+
 
     private fun openCamera(scan: Boolean) {
         RxPermissions(requireActivity())
