@@ -43,7 +43,9 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -997,33 +999,25 @@ class MainActivity : BlazeBaseActivity() {
         MarketFragment()
     }
 
+    private val channel = Channel<Int>(Channel.CONFLATED)
+
     private fun initBottomNav() {
         binding.apply {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 
-            bottomNav.itemSelections()
-                .map { it.itemId }
-                .distinctUntilChanged()
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(destroyScope)
-                .subscribe { itemId ->
-                    Timber.e(
-                        "onItemSelected: ${
-                            when (itemId) {
-                                R.id.nav_chat -> "nav_chat"
-                                R.id.nav_wallet -> "nav_wallet"
-                                R.id.nav_market -> "nav_market"
-                                R.id.nav_more -> "nav_more"
-                                else -> "unknown"
-                            }
-                        }"
-                    )
-                    handleNavigationItemSelected(itemId)
+            bottomNav.setOnItemSelectedListener {
+                lifecycleScope.launch {
+                    channel.send(it.itemId)
                 }
+                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_market)
+            }
         }
 
         lifecycleScope.launch {
+            channel.receiveAsFlow().collect { itemId ->
+                handleNavigationItemSelected(itemId)
+            }
             val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_WALLET_LIST, true) || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_BUY, true) ||
                     defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true)
 
