@@ -31,7 +31,7 @@
                 android:drawablePadding="4dp"
                 android:text="@string/Privacy_Wallet"
                 android:textColor="@android:color/white"
-                android:drawableStart="@drawable/ic_wallet_privacy_white"
+                android:drawableEnd="@drawable/ic_wallet_privacy_white"
                 android:textSize="14sp"
                 android:gravity="center_vertical"
                 android:translationY="10dp"

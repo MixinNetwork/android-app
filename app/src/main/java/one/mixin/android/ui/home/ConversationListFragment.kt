@@ -740,7 +740,9 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        bottomSheet.show()
+        if (!parentFragmentManager.isStateSaved) {
+            bottomSheet.show()
+        }
     }
 
     override fun onResume() {
@@ -757,7 +759,7 @@ class ConversationListFragment : LinkFragment() {
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
                         existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
 
-                        if (type != null) {
+                        if (type != null && !parentFragmentManager.isStateSaved) {
                             if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
                                 ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
                             }

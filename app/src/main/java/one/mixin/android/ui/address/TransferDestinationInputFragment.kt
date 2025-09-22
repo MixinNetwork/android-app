@@ -59,7 +59,9 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.decodeICAP
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
@@ -597,7 +599,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             }
                         }
                     } else {
-                        errorInfo = response.errorDescription
+                        errorInfo = requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
                     }
                 }
             } catch (e: Exception) {
