@@ -99,7 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:textColor="?attr/text_primary"
-            app:maxWidth="240dp"
+            app:maxWidth="300dp"
             app:lines="1"
             app:textSize="18sp"
             app:ellipsize="end"/>
@@ -125,7 +125,7 @@
                 android:layout_gravity="center_horizontal"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
-                android:maxWidth="240dp"
+                android:maxWidth="300dp"
                 android:singleLine="true"
                 android:textColor="?attr/text_assist"
                 android:textSize="12sp"
