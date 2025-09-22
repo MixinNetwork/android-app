@@ -166,7 +166,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
 
             webView.clearCache(true)
             webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
-//            runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
+            runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
         }
     }
 
@@ -181,9 +181,9 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     fun postMessage(
         @Suppress("UNUSED_PARAMETER") value: String,
     ) {
-        Timber.e("postMessage: $value")
-//        cancelRunOnUiThread(stopWebViewRunnable)
-//        runOnUiThread(stopWebViewRunnable)
+        if (value.isBlank()) return
+        cancelRunOnUiThread(stopWebViewRunnable)
+        runOnUiThread(stopWebViewRunnable)
     }
 
     @Suppress("unused")

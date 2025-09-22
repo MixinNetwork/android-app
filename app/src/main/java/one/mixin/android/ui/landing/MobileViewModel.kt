@@ -98,7 +98,7 @@ internal constructor(
     }
 
     suspend fun anonymousRequest(publicKeyHex: String, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null, gtRecaptchaResponse: String? = null): MixinResponse<VerificationResponse> {
-//        val gt = gtRecaptchaResponse?.let { GTCaptcha4Utils.parseGTCaptchaResponse(it) }
+        val gt = gtRecaptchaResponse?.let { GTCaptcha4Utils.parseGTCaptchaResponse(it) }
         val r = accountRepository.verification(
             VerificationRequest(
                 purpose = VerificationPurpose.ANONYMOUS_SESSION.name,
@@ -107,10 +107,10 @@ internal constructor(
                 masterSignatureHex = signatureHex,
                 hCaptchaResponse = hCaptchaResponse,
                 gRecaptchaResponse = gRecaptchaResponse,
-//                lotNumber = gt?.lotNumber,
-//                captchaOutput = gt?.captchaOutput,
-//                passToken = gt?.passToken,
-//                genTime = gt?.genTime,
+                lotNumber = gt?.lotNumber,
+                captchaOutput = gt?.captchaOutput,
+                passToken = gt?.passToken,
+                genTime = gt?.genTime,
             )
         )
         return r

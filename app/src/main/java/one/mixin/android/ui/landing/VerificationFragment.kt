@@ -319,7 +319,11 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
             } else {
-               //Todo
+                val t = GTCaptcha4Utils.parseGTCaptchaResponse(captchaResponse.second)
+                verificationRequest.lotNumber = t?.lotNumber
+                verificationRequest.captchaOutput = t?.captchaOutput
+                verificationRequest.passToken = t?.passToken
+                verificationRequest.genTime = t?.genTime
             }
         }
         viewModel.verification(verificationRequest)

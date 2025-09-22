@@ -37,11 +37,10 @@
                 product: 'bind'
             }, function(captcha) {
                 captcha.onReady(function(){
-                    postMessage("challenge_change");
                     captcha.showCaptcha();
                 }).onSuccess(function(){
                     var result = captcha.getValidate();
-                    postToken(result);
+                    postToken(JSON.stringify(result));
                 }).onClose(function () {
                     postMessage("gt_close");
                 });

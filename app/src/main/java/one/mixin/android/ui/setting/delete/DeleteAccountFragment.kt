@@ -27,6 +27,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.GTCaptcha4Utils
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.setting.LogoutPinBottomSheetDialogFragment
@@ -188,6 +189,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
             } else if (captchaResponse.first.isGT()) {
+                val t = GTCaptcha4Utils.parseGTCaptchaResponse(captchaResponse.second)
+                verificationRequest.lotNumber = t?.lotNumber
+                verificationRequest.captchaOutput = t?.captchaOutput
+                verificationRequest.passToken = t?.passToken
+                verificationRequest.genTime = t?.genTime
             }
         }
         binding.deleteCover.isVisible = true
