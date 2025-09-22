@@ -1211,18 +1211,7 @@ fun PackageManager.getPackageInfoCompat(
     }
 
 fun Context.openMarket() {
-    if (BuildConfig.IS_GOOGLE_PLAY && isPlayStoreInstalled()) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
-            intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
-            startActivity(intent)
-        } catch (e: Exception) {
-            openExternalUrl(getString(R.string.website))
-        }
-    } else {
-        openExternalUrl(getString(R.string.website))
-    }
+    openExternalUrl(getString(R.string.website))
 }
 
 @Suppress("DEPRECATION") // Deprecated for third party Services.
