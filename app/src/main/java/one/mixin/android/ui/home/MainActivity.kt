@@ -983,7 +983,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private val conversationListFragment by lazy {
-        ConversationListFragment()
+        ConversationListFragment.getInstance()
     }
 
     private val walletFragment by lazy {
