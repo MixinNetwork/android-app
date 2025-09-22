@@ -72,10 +72,8 @@ import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.js.Web3Signer
 
