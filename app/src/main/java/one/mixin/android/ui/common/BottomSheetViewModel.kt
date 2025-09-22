@@ -779,7 +779,7 @@ class BottomSheetViewModel
                         Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db end")
                     }
                 }
-
+                jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(asset)))
                 val signedResponse = postTransactionWithRetry(signedTransaction.signResult.raw,signedTransaction.trace)
                 if (signedResponse.isSuccess) {
                     withContext(SINGLE_DB_THREAD) {
@@ -996,6 +996,11 @@ class BottomSheetViewModel
                         Timber.e("Kernel Invoice Transaction(${t.trace}): sign db end")
                     }
                 }
+            }
+            invoice.entries.map { assetIdToAsset(it.assetId) }.let {
+                val list = arrayListOf<String>()
+                list.addAll(it)
+                jobManager.addJobInBackground(CheckBalanceJob(list))
             }
             val signedResponse = tokenRepository.transactions(signedTransactions.map { TransactionRequest(it.signResult.raw, it.trace) })
             if (signedResponse.isSuccess) {
