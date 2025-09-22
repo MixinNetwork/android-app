@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -87,6 +88,8 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isPlayStoreInstalled
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
@@ -143,8 +146,8 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
-import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -184,7 +187,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -308,9 +311,7 @@ class MainActivity : BlazeBaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-        }
+        initFragmentsFromSavedState(savedInstanceState)
 
         val account = Session.getAccount()
         account?.let {
@@ -324,6 +325,7 @@ class MainActivity : BlazeBaseActivity() {
         initBottomNav()
         handlerCode(intent)
 
+        updateSessionWhenOpen()
         checkAsync()
 
         RxBus.listen(TipEvent::class.java)
@@ -447,7 +449,7 @@ class MainActivity : BlazeBaseActivity() {
         appUpdateManager.unregisterListener(updatedListener)
     }
 
-    private fun checkAsync() =
+    private fun updateSessionWhenOpen() {
         lifecycleScope.launch(Dispatchers.IO) {
             updateSessionIfNeeded()
             val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
@@ -462,7 +464,11 @@ class MainActivity : BlazeBaseActivity() {
                 ExistingPeriodicWorkPolicy.UPDATE,
                 periodicWorkRequest
             )
+        }
+    }
 
+    private fun checkAsync() =
+        lifecycleScope.launch(Dispatchers.IO) {
             checkRoot()
             checkStorage()
             checkVersion()
@@ -749,16 +755,21 @@ class MainActivity : BlazeBaseActivity() {
 
     private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
-        WalletConnectV2
-        val classicWalletId = web3Repository.getClassicWalletId()
-        JsSigner.init(
-            { classicWalletId },
-            { walletId ->
-                runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
-            }, { walletId ->
-                runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
-            }
-        )
+        try {
+            WalletConnectV2
+            val classicWalletId = web3Repository.getClassicWalletId()
+            Web3Signer.init(
+                { classicWalletId },
+                { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
+                }, { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+                }
+            )
+        } catch (e: Exception) {
+            Timber.e("Failed to initialize WalletConnect: ${e.message}")
+            reportException(e)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -958,8 +969,15 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun showScanBottom(scan: String) {
-        bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-        bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        if (scan.isLightningUrl() || scan.isExternalTransferUrl()) {
+            LinkBottomSheetDialogFragment.newInstance(scan).show(
+                supportFragmentManager,
+                LinkBottomSheetDialogFragment.TAG
+            )
+        } else {
+            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        }
     }
 
     private val conversationListFragment by lazy {
@@ -975,8 +993,8 @@ class MainActivity : BlazeBaseActivity() {
         ExploreFragment()
     }
 
-    private val collectiblesFragment by lazy {
-        CollectiblesFragment()
+    private val marketFragment by lazy {
+        MarketFragment()
     }
 
     private fun initBottomNav() {
@@ -995,7 +1013,7 @@ class MainActivity : BlazeBaseActivity() {
                             when (itemId) {
                                 R.id.nav_chat -> "nav_chat"
                                 R.id.nav_wallet -> "nav_wallet"
-                                R.id.nav_collectibles -> "nav_collectibles"
+                                R.id.nav_market -> "nav_market"
                                 R.id.nav_more -> "nav_more"
                                 else -> "unknown"
                             }
@@ -1058,8 +1076,9 @@ class MainActivity : BlazeBaseActivity() {
                 conversationListFragment.hideCircles()
             }
 
-            R.id.nav_collectibles -> {
-                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
+            R.id.nav_market -> {
+                navigationController.navigate(NavigationController.Market, marketFragment)
+                marketFragment.updateUI()
                 conversationListFragment.hideCircles()
             }
 
@@ -1211,12 +1230,117 @@ class MainActivity : BlazeBaseActivity() {
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val currentFragment = getCurrentVisibleFragment()
+        currentFragment?.let { fragment ->
+            outState.putString(KEY_CURRENT_FRAGMENT_TAG, fragment.tag)
+        }
+
+        outState.putInt(KEY_SELECTED_NAV_ITEM, binding.bottomNav.selectedItemId)
+        Timber.e("onSaveInstanceState: ${currentFragment?.tag} - ${binding.bottomNav.selectedItemId}")
+    }
+
+    private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) {
+            navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            binding.bottomNav.selectedItemId = R.id.nav_chat
+        } else {
+            val savedFragmentTag = savedInstanceState.getString(KEY_CURRENT_FRAGMENT_TAG)
+            val savedNavItem = savedInstanceState.getInt(KEY_SELECTED_NAV_ITEM, R.id.nav_chat)
+
+            binding.bottomNav.selectedItemId = savedNavItem
+
+            restoreFragmentFromTag(savedFragmentTag, savedNavItem)
+            Timber.e("restoreFragmentFromTag: $savedFragmentTag - $savedNavItem")
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun restoreFragmentFromTag(fragmentTag: String?, navItemId: Int) {
+        when (fragmentTag) {
+            ConversationListFragment.TAG -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            }
+            WalletFragment.TAG -> {
+                if (Session.getAccount()?.hasPin == true) {
+                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                } else {
+                    navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                    binding.bottomNav.selectedItemId = R.id.nav_chat
+                }
+            }
+            MarketFragment.TAG -> {
+                navigationController.navigate(NavigationController.Market, marketFragment)
+            }
+            ExploreFragment.TAG -> {
+                navigationController.navigate(NavigationController.Explore, exploreFragment)
+            }
+            else -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                binding.bottomNav.selectedItemId = R.id.nav_chat
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ensureFragmentIsVisible()
+    }
+
+    private fun ensureFragmentIsVisible() {
+        val currentFragment = getCurrentVisibleFragment()
+        if (currentFragment == null || !currentFragment.isVisible) {
+            val selectedItemId = binding.bottomNav.selectedItemId
+            restoreFragmentByNavItem(selectedItemId)
+        }
+    }
+
+    private fun restoreFragmentByNavItem(itemId: Int) {
+        when (itemId) {
+            R.id.nav_chat -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+            }
+            R.id.nav_wallet -> {
+                if (Session.getAccount()?.hasPin == true) {
+                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                } else {
+                    navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                    binding.bottomNav.selectedItemId = R.id.nav_chat
+                }
+            }
+            R.id.nav_market -> {
+                navigationController.navigate(NavigationController.Market, marketFragment)
+            }
+            R.id.nav_more -> {
+                navigationController.navigate(NavigationController.Explore, exploreFragment)
+            }
+            else -> {
+                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                binding.bottomNav.selectedItemId = R.id.nav_chat
+            }
+        }
+    }
+
+    private fun getCurrentVisibleFragment(): Fragment? {
+        return supportFragmentManager.fragments.find { fragment ->
+            fragment.isVisible && fragment.isAdded &&
+            (fragment.tag == ConversationListFragment.TAG ||
+             fragment.tag == WalletFragment.TAG ||
+             fragment.tag == MarketFragment.TAG ||
+             fragment.tag == ExploreFragment.TAG)
+        }
+    }
+
     companion object {
         const val URL = "url"
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
+
+        private const val KEY_CURRENT_FRAGMENT_TAG = "current_fragment_tag"
+        private const val KEY_SELECTED_NAV_ITEM = "selected_nav_item"
 
         fun showWallet(
             context: Context,

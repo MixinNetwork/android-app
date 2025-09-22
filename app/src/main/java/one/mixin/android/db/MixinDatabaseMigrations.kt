@@ -572,6 +572,13 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
+        val MIGRATION_66_67: Migration =
+            object : Migration(66, 67) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `tokens` ADD COLUMN `precision` INTEGER NOT NULL DEFAULT -1")
+                }
+            }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

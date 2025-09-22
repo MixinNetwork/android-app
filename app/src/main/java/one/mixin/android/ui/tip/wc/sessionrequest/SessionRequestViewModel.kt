@@ -16,7 +16,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.web3j.utils.Numeric
 import javax.inject.Inject
 
@@ -29,7 +29,7 @@ class SessionRequestViewModel
     ) : ViewModel() {
         private var account: String = ""
             get() {
-                return JsSigner.address
+                return Web3Signer.address
             }
 
 

@@ -27,6 +27,11 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
+import androidx.core.graphics.scale
+import androidx.core.graphics.toColorInt
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.statusBarHeight
+import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null
@@ -34,41 +39,40 @@ private var screenshot: Bitmap? = null
 fun getScreenshot() = screenshot
 
 fun refreshScreenshot(context: Context, cover: Int? = null) {
-    MixinApplication.get().currentActivity?.let { activity ->
-        val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
-        if (!rootView.isLaidOut) return@let
+    runCatching { 
+        MixinApplication.get().currentActivity?.let { activity ->
+            val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
+            if (!rootView.isLaidOut) return@let
 
-        val screenBitmap = rootView.drawToBitmap()
-        val resultBitmap =
-            Bitmap.createScaledBitmap(
-                screenBitmap,
-                screenBitmap.width / 3,
-                screenBitmap.height / 3,
-                false,
+            val screenBitmap = rootView.drawToBitmap()
+            val resultBitmap =
+                screenBitmap.scale(screenBitmap.width / 3, screenBitmap.height / 3, false)
+
+            val cv = Canvas(resultBitmap)
+            cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
+            cv.drawRect(
+                0f,
+                0f,
+                screenBitmap.width.toFloat(),
+                screenBitmap.height.toFloat(),
+                Paint().apply {
+                    color = cover ?: if (context.isNightMode()) {
+                        "#CC1C1C1C".toColorInt()
+                    } else {
+                        "#E6F6F7FA".toColorInt()
+                    }
+                },
             )
-
-        val cv = Canvas(resultBitmap)
-        cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
-        cv.drawRect(
-            0f,
-            0f,
-            screenBitmap.width.toFloat(),
-            screenBitmap.height.toFloat(),
-            Paint().apply {
-                color = cover ?: if (context.isNightMode()) {
-                    Color.parseColor("#CC1C1C1C")
-                } else {
-                    Color.parseColor("#E6F6F7FA")
-                }
-            },
-        )
-        screenshot = resultBitmap
+            screenshot = resultBitmap
+        }
+    }.onFailure {
+        Timber.e(it)
     }
     initRenderScript(context)
 }
 
 fun expand(context: Context) {
-    refreshScreenshot(context)
+    runCatching { refreshScreenshot(context) }.onFailure { Timber.e(it) }
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }

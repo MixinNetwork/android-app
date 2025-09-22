@@ -16,6 +16,13 @@
         android:visibility="invisible"
         app:srcCompat="@drawable/ic_arrow_back" />
 
+    <View
+        android:id="@+id/debug"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignTop="@id/ph"
+        android:layout_toEndOf="@id/ph"/>
+
     <TextView
         android:id="@+id/name_title_tv"
         android:layout_width="wrap_content"

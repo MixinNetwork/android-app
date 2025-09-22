@@ -17,5 +17,5 @@ data class TipSigner(
     val index: Int,
     val api: String,
 ) : Parcelable {
-    fun info() = "TipSigner(index: $index, api: $api)"
+    fun info() = "TipSigner(index: $index, node: ${api.split("/").lastOrNull() ?: ""})"
 }

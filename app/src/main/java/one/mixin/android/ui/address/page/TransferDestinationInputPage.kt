@@ -77,7 +77,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 
 @Composable
 fun TransferDestinationInputPage(
@@ -97,7 +97,6 @@ fun TransferDestinationInputPage(
     onAddressClick: (Address) -> Unit,
 ) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val localLocalSoftwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
@@ -106,7 +105,6 @@ fun TransferDestinationInputPage(
         .collectAsState(initial = emptyList())
 
     var account by remember { mutableStateOf("") }
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(web3Token?.walletId) {
@@ -124,8 +122,8 @@ fun TransferDestinationInputPage(
 
     LaunchedEffect(token?.chainId) {
         account = when {
-            token?.chainId == ChainId.SOLANA_CHAIN_ID -> JsSigner.solanaAddress
-            token?.chainId in Constants.Web3ChainIds -> JsSigner.evmAddress
+            token?.chainId == ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+            token?.chainId in Constants.Web3ChainIds -> Web3Signer.evmAddress
             else -> ""
         }
     }

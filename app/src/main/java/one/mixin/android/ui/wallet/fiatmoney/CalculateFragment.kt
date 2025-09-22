@@ -299,6 +299,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             value: String,
                         ) {
                             context?.tickVibrate()
+                            val currencyName = fiatMoneyViewModel.currency?.name ?: return
                             if (position == 11) {
                                 v =
                                     if (v == "0") {
@@ -315,14 +316,14 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                     // do nothing
                                     return
                                 } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(
-                                        fiatMoneyViewModel.currency!!.name
+                                        currencyName
                                     ))
                                 ) {
                                     // do nothing
                                     return
                                 } else if (AmountUtil.illegal(
                                         v,
-                                        fiatMoneyViewModel.currency!!.name
+                                        currencyName
                                     )
                                 ) {
                                     binding.primaryTv.shaking()
@@ -367,19 +368,20 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         toast("number error")
                     } else {
                         lifecycleScope.launch inner@{
-                            if (viewDestroyed()) return@inner
-                            val asset = fiatMoneyViewModel.asset ?: return@inner
-                            val destination = if (isWeb3) {
-                                val walletId = walletIdForCalculate ?: return@inner
-                                web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination ?: return@inner
-                            } else
-                                fiatMoneyViewModel.getAddressById(asset.chainId)?.destination ?: return@inner
+                            if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
                             try {
+                                val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
+                                val destination = if (isWeb3) {
+                                    val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
+                                    web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null for web3")
+                                } else {
+                                    fiatMoneyViewModel.getDepositEntry(asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null")
+                                }
                                 binding.continueVa.displayedChild = 1
                                 val response = fiatMoneyViewModel.rampWebUrl(
                                     amount,
                                     asset.assetId,
-                                    fiatMoneyViewModel.currency?.name ?: return@inner,
+                                    fiatMoneyViewModel.currency?.name ?: throw IllegalStateException("Currency name is null"),
                                     destination
                                 )
                                 if (response.isSuccess) {
@@ -388,6 +390,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                         response.data?.url ?: "",
                                         null
                                     )
+                                } else {
+                                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
                                 }
                                 binding.continueVa.displayedChild = 0
                             } catch (e: Exception) {
@@ -562,8 +566,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         key
                     )
                 } else {
-                    val sessionResponse =
-                        fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
+                    val sessionResponse = fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
                     if (sessionResponse.isSuccess) {
                         val sessionData = requireNotNull(sessionResponse.data)[0]
                         fiatMoneyViewModel.saveSession(
@@ -577,10 +580,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 publicKey = sessionData.publicKey,
                             ),
                         )
-                        MixinApplication.appContext.defaultSharedPreferences.putString(
-                            PREF_ROUTE_BOT_PK,
-                            sessionData.publicKey
-                        )
+                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
                     } else {
                         throw MixinResponseException(
                             sessionResponse.errorCode,

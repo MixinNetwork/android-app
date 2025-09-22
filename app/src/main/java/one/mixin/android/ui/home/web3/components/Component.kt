@@ -716,7 +716,7 @@ fun ActionBottom(
         modifier =
         modifier
             .background(MixinAppTheme.colors.background)
-            .padding(20.dp)
+            .padding(8.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {

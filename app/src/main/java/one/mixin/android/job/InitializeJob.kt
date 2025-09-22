@@ -7,7 +7,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 
 class InitializeJob(private val botId: String, private val botName: String) :
-    BaseJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP_ID).requireWebSocketConnected().persist()) {
+    BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).requireWebSocketConnected().persist()) {
     companion object {
         private var serialVersionUID: Long = 2L
         private const val GROUP_ID = "InitializeJob"

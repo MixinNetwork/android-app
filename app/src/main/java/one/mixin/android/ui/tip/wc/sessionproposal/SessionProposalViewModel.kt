@@ -14,7 +14,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,7 +26,7 @@ class SessionProposalViewModel
     ) : ViewModel() {
         private var account: String = ""
             get() {
-                return JsSigner.address
+                return Web3Signer.address
             }
 
         fun rejectSession(

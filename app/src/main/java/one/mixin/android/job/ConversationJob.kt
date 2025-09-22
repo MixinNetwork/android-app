@@ -27,6 +27,7 @@ class ConversationJob(
     private val participantRequests: List<ParticipantRequest>? = null,
     private val type: Int,
     private val recipientId: String? = null,
+    private val oldConversationId: String? = null,
 ) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), UUID.randomUUID().toString()) {
     companion object {
         const val GROUP = "ConversationJob"
@@ -78,7 +79,16 @@ class ConversationJob(
             val response =
                 when (type) {
                     TYPE_CREATE ->
-                        conversationApi.create(request!!).execute().body()
+                        if (oldConversationId != null) {
+                            val r = conversationApi.getConversation(oldConversationId).execute().body()
+                            if (r?.data != null) {
+                                r
+                            } else {
+                                conversationApi.create(request!!).execute().body()
+                            }
+                        } else {
+                            conversationApi.create(request!!).execute().body()
+                        }
                     TYPE_ADD ->
                         conversationApi.participants(
                             conversationId!!,
@@ -131,6 +141,10 @@ class ConversationJob(
         if (r != null && r.isSuccess && r.data != null) {
             val cr = r.data!!
             if (type == TYPE_CREATE) {
+                oldConversationId?.let {
+                    conversationDao.deleteConversationByConversationId(it)
+                    participantDao.deleteByConversationId(it)
+                }
                 conversationRepo.insertOrUpdateConversation(cr)
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) {

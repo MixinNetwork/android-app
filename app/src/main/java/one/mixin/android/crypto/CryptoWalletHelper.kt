@@ -17,7 +17,7 @@ import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.crypto.MnemonicCode
 import org.sol4k.Base58
 import org.sol4k.Keypair.Companion.fromSecretKey
@@ -201,13 +201,13 @@ object CryptoWalletHelper {
 
     fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
         return try {
-            val currentWalletId = JsSigner.currentWalletId
-            val currentCategory = JsSigner.currentWalletCategory
+            val currentWalletId = Web3Signer.currentWalletId
+            val currentCategory = Web3Signer.currentWalletCategory
 
             when {
                 currentCategory == WalletCategory.CLASSIC.value || currentWalletId.isEmpty() -> {
-                    val derivationIndex = extractIndexFromPath(JsSigner.path) ?: 0
-                    Timber.d("currentWalletId: ${JsSigner.currentWalletId}, currentWalletCategory: ${JsSigner.currentWalletCategory}, evmAddress: ${JsSigner.evmAddress}, solanaAddress: ${JsSigner.solanaAddress} derivationIndex: $derivationIndex")
+                    val derivationIndex = extractIndexFromPath(Web3Signer.path) ?: 0
+                    Timber.d("currentWalletId: ${Web3Signer.currentWalletId}, currentWalletCategory: ${Web3Signer.currentWalletCategory}, evmAddress: ${Web3Signer.evmAddress}, solanaAddress: ${Web3Signer.solanaAddress} derivationIndex: $derivationIndex")
                     tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
                 }
 
@@ -218,7 +218,7 @@ object CryptoWalletHelper {
                 else -> { // Mnemonic-derived wallet
                     val mnemonic = getWeb3Mnemonic(context, spendKey, currentWalletId)
                         ?: return null
-                    val derivationIndex = requireNotNull(extractIndexFromPath(JsSigner.path))
+                    val derivationIndex = requireNotNull(extractIndexFromPath(Web3Signer.path))
 
                     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                         SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
@@ -246,4 +246,5 @@ object CryptoWalletHelper {
     fun clear(context: Context) {
         context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
     }
+
 }

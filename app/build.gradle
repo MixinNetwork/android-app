@@ -11,14 +11,14 @@ plugins {
     id "com.google.protobuf" version "0.9.1"
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
+    id 'com.bugsnag.android.gradle'
 
-    id 'io.sentry.android.gradle' version '5.9.0'
 }
 
 def versionMajor = 3
-def versionMinor = 3
+def versionMinor = 4
 def versionPatch = 0
-def versionBuild = 14
+def versionBuild = 3
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -29,7 +29,7 @@ android {
     namespace "one.mixin.android"
     defaultConfig {
         applicationId "one.mixin.messenger"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 35
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -217,6 +217,10 @@ android {
             force "junit:junit:4.13.2"
         }
     }
+}
+
+bugsnag {
+    uploadNdkMappings = false
 }
 
 ksp {
@@ -416,7 +420,7 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
     implementation "androidx.activity:activity-compose:${activityComposeVersion}"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
-    
+
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
     implementation "com.google.accompanist:accompanist-pager:${accompanistVersion}"
@@ -506,6 +510,7 @@ dependencies {
     implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
     implementation "com.android.billingclient:billing:$billingVersion"
     implementation "com.android.billingclient:billing-ktx:$billingVersion"
+    implementation "com.bugsnag:bugsnag-android:$bugsnagVersion"
 }
 
 composeCompiler {
@@ -551,20 +556,4 @@ task syncStrings {
 }
 
 
-import io.sentry.android.gradle.extensions.InstrumentationFeature
-sentry {
-    org = "mcwm"
-    projectName = "android"
 
-    autoUploadProguardMapping = false
-    autoUploadNativeSymbols = false
-
-    tracingInstrumentation {
-        enabled = true
-        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.OKHTTP
-        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.FILE_IO
-        logcat {
-            enabled = false
-        }
-    }
-}

@@ -45,6 +45,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -101,12 +102,6 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     return@launch
                 }
             }
-
-            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
-            if (TEAM_BOT_ID.isNotEmpty()) {
-                jobManager.addJobInBackground(InitializeJob(TEAM_BOT_ID, TEAM_BOT_NAME))
-            }
-
             if (Session.hasSafe()) {
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
                 MainActivity.show(requireContext())
@@ -118,6 +113,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
                 TipActivity.show(requireActivity(), tipType, shouldWatch = true)
             }
+            jobManager.addJobInBackground(InitializeJob(TEAM_MIXIN_USER_ID, TEAM_MIXIN_USER_NAME))
             activity?.finish()
         }
 
@@ -145,6 +141,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 } else {
                     val code = response.errorCode
                     reportException("Update EdDSA key", IllegalStateException("errorCode: $code, errorDescription: ${response.errorDescription}"))
+                    Timber.e("errorCode: $code, errorDescription: ${response.errorDescription}")
                     ErrorHandler.handleMixinError(code, response.errorDescription)
 
                     if (code == ErrorHandler.AUTHENTICATION || code == FORBIDDEN) {
@@ -154,6 +151,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 }
             } catch (t: Throwable) {
                 reportException("$TAG Update EdDSA key", t)
+                Timber.e(t)
                 ErrorHandler.handleError(t)
             }
 
@@ -169,6 +167,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         } catch (e: Exception) {
             ErrorHandler.handleError(e)
             reportException("$TAG syncSession", e)
+            Timber.e(e)
         }
     }
 
@@ -216,6 +215,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             } catch (e: Exception) {
                 ErrorHandler.handleError(e)
                 reportException("$TAG pushAsyncSignalKeys", e)
+
                 load()
             }
         }

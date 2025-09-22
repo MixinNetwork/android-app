@@ -33,6 +33,7 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.WalletOperationType
@@ -56,7 +57,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
@@ -177,11 +177,6 @@ internal constructor(
         ).setInitialLoadKey(initialLoadKey).build()
 
     suspend fun allPendingDeposit() = tokenRepository.allPendingDeposit()
-
-    suspend fun refreshPendingDeposits(
-        assetId: String,
-        depositEntry: DepositEntry,
-    ) = tokenRepository.pendingDeposits(assetId, requireNotNull(depositEntry.destination) { "refreshPendingDeposit required destination not null" }, depositEntry.tag)
 
     fun getPendingDisplays() = tokenRepository.getPendingDisplays()
 
@@ -465,4 +460,9 @@ internal constructor(
     }
 
     suspend fun getWalletByDestination(destination: String) = web3Repository.getWalletByDestination(destination)
+
+    suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
+        web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
+    }
+
 }

@@ -65,7 +65,6 @@ class TransferContentItem : RelativeLayout {
         _binding.apply {
             title.text = context.getString(titleResId).uppercase()
             footer.isVisible = false
-
             val fullText = "$contentStr $label"
 
             val spannableString = SpannableString(fullText)

@@ -21,7 +21,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -44,8 +43,6 @@ import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
-import one.mixin.android.ui.common.refresh.PendingWeb3TransactionRefreshHelper
-import one.mixin.android.ui.common.refresh.WalletRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
@@ -339,7 +336,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
     }
 
-
     override fun onStop() {
         super.onStop()
         snackBar?.dismiss()
@@ -500,7 +496,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         toast(R.string.Data_error)
                         return@launch
                     }
-                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, WalletActivity.Destination.Address)
+                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, token, WalletActivity.Destination.Address)
                 }
                 dismissNow()
             }
