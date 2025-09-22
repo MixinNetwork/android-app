@@ -158,15 +158,6 @@ fun TransferDestinationInputPage(
                         else -> stringResource(R.string.Privacy_Wallet)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (name == null && web3Token == null) { // Privacy Wallet
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
                         Text(
                             text = subtitleText,
                             fontSize = 12.sp,
@@ -175,6 +166,15 @@ fun TransferDestinationInputPage(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                        if (name == null && web3Token == null) { // Privacy Wallet
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
                     }
                 },
                 verticalScrollable = false,

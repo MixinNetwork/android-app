@@ -5,6 +5,6 @@
     <padding
         android:bottom="1dp"
         android:left="4dp"
-        android:right="4.dp"
+        android:right="4dp"
         android:top="1dp" />
 </shape>

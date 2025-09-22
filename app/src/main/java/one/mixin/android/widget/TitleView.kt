@@ -110,7 +110,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             val drawable = ContextCompat.getDrawable(context, icon)
             drawable?.setBounds(0, 0, 12.dp, 12.dp)
             binding.subTitleTv.textView.compoundDrawablePadding = 4.dp
-            binding.subTitleTv.textView.setCompoundDrawablesRelative(drawable, null, null, null)
+            binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, drawable, null)
         }
     }
 
@@ -164,14 +164,14 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     ) {
         binding.titleTv.setTextOnly(title)
         if (index != 0) {
-            binding.subTitleTv.isVisible = false
+            binding.subTitleTv.isVisible = true
             if (index == 1) {
                 setSubTitle(title, label ?: "", R.drawable.ic_wallet_privacy)
             } else {
                 setSubTitle(title, label ?: "")
             }
         } else if (label != null) {
-            binding.subTitleTv.isVisible = true
+            binding.subTitleTv.isVisible = false
             binding.labelTitleTv.isVisible = true
             binding.labelTitleTv.text = label
         } else {

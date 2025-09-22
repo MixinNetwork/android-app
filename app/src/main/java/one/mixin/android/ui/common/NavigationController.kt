@@ -46,7 +46,7 @@ class NavigationController(mainActivity: MainActivity) {
             } else {
                 tx.show(f)
             }
-            fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag}.forEach { fragment ->
+            fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag }.forEach { fragment ->
                 tx.hide(fragment)
             }
             tx.commitNowAllowingStateLoss()
