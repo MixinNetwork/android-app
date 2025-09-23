@@ -109,6 +109,12 @@ fun MixinMemberCancelPage(
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = if (isLoading) Color.Gray else Color(0xFFDB454F),
                     disabledBackgroundColor = Color.Gray
+                ),
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
                 )
             ) {
                 if (isLoading) {
