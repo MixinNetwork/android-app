@@ -12,6 +12,7 @@ import one.mixin.android.vo.market.MarketItem
 
 @Dao
 interface MarketDao : BaseDao<Market> {
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     fun marketById(assetId: String): LiveData<MarketItem?>
 

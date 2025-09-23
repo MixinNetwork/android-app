@@ -177,7 +177,14 @@ class ConversationListFragment : LinkFragment() {
     private var enterJob: Job? = null
 
     companion object {
-        fun newInstance() = ConversationListFragment()
+        @Volatile
+        private var INSTANCE: ConversationListFragment? = null
+
+        fun getInstance(): ConversationListFragment {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: ConversationListFragment().also { INSTANCE = it }
+            }
+        }
 
         const val TAG = "ConversationListFragment"
 
@@ -733,7 +740,9 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        bottomSheet.show()
+        if (!parentFragmentManager.isStateSaved) {
+            bottomSheet.show()
+        }
     }
 
     override fun onResume() {
@@ -747,12 +756,19 @@ class ConversationListFragment : LinkFragment() {
             if (isAdded) {
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
-                        (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
-                        if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                        val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
+                        existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
+
+                        if (type != null && !parentFragmentManager.isStateSaved) {
+                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                            }
+                        }
                     }
             }
         }
     }
+
 
     private fun openCamera(scan: Boolean) {
         RxPermissions(requireActivity())

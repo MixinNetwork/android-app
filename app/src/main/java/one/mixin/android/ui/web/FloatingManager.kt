@@ -39,30 +39,34 @@ private var screenshot: Bitmap? = null
 fun getScreenshot() = screenshot
 
 fun refreshScreenshot(context: Context, cover: Int? = null) {
-    MixinApplication.get().currentActivity?.let { activity ->
-        val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
-        if (!rootView.isLaidOut) return@let
+    runCatching { 
+        MixinApplication.get().currentActivity?.let { activity ->
+            val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
+            if (!rootView.isLaidOut) return@let
 
-        val screenBitmap = rootView.drawToBitmap()
-        val resultBitmap =
-            screenBitmap.scale(screenBitmap.width / 3, screenBitmap.height / 3, false)
+            val screenBitmap = rootView.drawToBitmap()
+            val resultBitmap =
+                screenBitmap.scale(screenBitmap.width / 3, screenBitmap.height / 3, false)
 
-        val cv = Canvas(resultBitmap)
-        cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
-        cv.drawRect(
-            0f,
-            0f,
-            screenBitmap.width.toFloat(),
-            screenBitmap.height.toFloat(),
-            Paint().apply {
-                color = cover ?: if (context.isNightMode()) {
-                    "#CC1C1C1C".toColorInt()
-                } else {
-                    "#E6F6F7FA".toColorInt()
-                }
-            },
-        )
-        screenshot = resultBitmap
+            val cv = Canvas(resultBitmap)
+            cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
+            cv.drawRect(
+                0f,
+                0f,
+                screenBitmap.width.toFloat(),
+                screenBitmap.height.toFloat(),
+                Paint().apply {
+                    color = cover ?: if (context.isNightMode()) {
+                        "#CC1C1C1C".toColorInt()
+                    } else {
+                        "#E6F6F7FA".toColorInt()
+                    }
+                },
+            )
+            screenshot = resultBitmap
+        }
+    }.onFailure {
+        Timber.e(it)
     }
     initRenderScript(context)
 }

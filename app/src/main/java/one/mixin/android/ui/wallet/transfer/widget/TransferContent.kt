@@ -228,6 +228,7 @@ class TransferContent : LinearLayout {
             }
             assetContainer.isVisible = true
             assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens.filterIndexed { index, _ -> invoice.entries[index].isStorage().not() })
+            network.isVisible = false
         }
     }
 

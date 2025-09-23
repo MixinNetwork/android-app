@@ -14,6 +14,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewContentQrBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -93,7 +94,11 @@ class ContentQRView : ViewAnimator {
                         if (isTag) {
                             requireNotNull(depositEntry.tag)
                         } else {
-                            destination
+                            if (asset.chainId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
+                                destination.uppercase()
+                            } else {
+                                destination
+                            }
                         }.generateQRCode(200.dp, innerPadding = 40.dp, padding = 0)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())

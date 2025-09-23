@@ -10,5 +10,11 @@ data class Web3AddressRequest(
     val chainId: String,
 
     @SerializedName("path")
-    val path: String?
+    val path: String?,
+
+    @SerializedName("signature")
+    val signature: String? = null,
+
+    @SerializedName("timestamp")
+    val timestamp: String? = null
 )

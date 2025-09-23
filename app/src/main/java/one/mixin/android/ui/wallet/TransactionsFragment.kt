@@ -127,7 +127,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         binding.apply {
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
-                    val assets = walletViewModel.allAssetItems()
+
                     val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {
@@ -137,9 +137,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     SwapActivity.show(
                         requireActivity(),
                         inMixin = true,
-                        tokens = assets.filter {
-                            (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
-                        },
                         input = asset.assetId,
                         output = output
                     )
@@ -264,7 +261,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         lifecycleScope.launch {
             val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry != null && depositEntry.destination.isNotBlank()) {
-                refreshPendingDeposits(asset, depositEntry)
+                refreshPendingDeposits(asset)
             }
         }
     }
@@ -278,13 +275,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     private fun refreshPendingDeposits(
         asset: TokenItem,
-        depositEntry: DepositEntry,
     ) {
         if (viewDestroyed()) return
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = {
-                    walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
+                    walletViewModel.refreshPendingDeposits(asset.assetId)
                 },
                 exceptionBlock = { e ->
                     reportException(e)
