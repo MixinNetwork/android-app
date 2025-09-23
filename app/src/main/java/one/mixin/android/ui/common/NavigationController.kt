@@ -2,6 +2,8 @@ package one.mixin.android.ui.common
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity
+import android.content.Context
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -15,9 +17,7 @@ import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.wallet.WalletFragment
 import timber.log.Timber
 
-class NavigationController(mainActivity: MainActivity) {
-    private val fragmentManager: FragmentManager = mainActivity.supportFragmentManager
-    private val context = mainActivity
+class NavigationController() {
 
     sealed class Destination(val tag: String)
 
@@ -32,6 +32,7 @@ class NavigationController(mainActivity: MainActivity) {
     private val destinations = listOf(ConversationList.tag, Wallet.tag, Market.tag, Explore.tag)
 
     fun navigate(
+        fragmentManager: FragmentManager,
         destination: Destination,
         destinationFragment: Fragment,
     ) {
@@ -55,8 +56,8 @@ class NavigationController(mainActivity: MainActivity) {
         }
     }
 
-    fun pushContacts() {
-        ContactsActivity.show(context)
+    fun pushContacts(activity: Activity) {
+        ContactsActivity.show(activity)
     }
 
     fun showSearch(fm: FragmentManager) {
@@ -73,7 +74,7 @@ class NavigationController(mainActivity: MainActivity) {
         }
     }
 
-    fun hideSearch() {
+    fun hideSearch(fragmentManager: FragmentManager) {
         val f = fragmentManager.findFragmentByTag(SearchFragment.TAG)
         f?.view?.animate()?.apply {
             setListener(
@@ -87,7 +88,7 @@ class NavigationController(mainActivity: MainActivity) {
         }?.alpha(0f)?.start()
     }
 
-    fun removeSearch() {
+    fun removeSearch(fragmentManager: FragmentManager) {
         val f = fragmentManager.findFragmentByTag(SearchFragment.TAG) ?: return
         fragmentManager.beginTransaction().remove(f).commit()
     }
