@@ -274,10 +274,11 @@ private fun AddressListItem(
                     style = TextStyle(
                         fontSize = 16.sp,
                         color = MixinAppTheme.colors.textPrimary,
-                        lineHeight = 20.sp
-                    )
+                        lineHeight = 20.sp,
+                    ),
+                    modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = address.updatedAt.timeAgoDate(context),
                     color = MixinAppTheme.colors.textAssist,

@@ -352,6 +352,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     tx.data,
                                     tx.from,
                                     tx.to,
+                                    tx.value,
                                 )
                             )
                         if (r.isSuccess.not()){

@@ -29,7 +29,7 @@ class NavigationController(mainActivity: MainActivity) {
 
     data object Market : Destination(MarketFragment.TAG)
 
-    private val destinations = listOf(ConversationList, Wallet, Market, Explore)
+    private val destinations = listOf(ConversationList.tag, Wallet.tag, Market.tag, Explore.tag)
 
     fun navigate(
         destination: Destination,
@@ -46,10 +46,8 @@ class NavigationController(mainActivity: MainActivity) {
             } else {
                 tx.show(f)
             }
-            destinations.forEach { d ->
-                if (d != destination) {
-                    fragmentManager.findFragmentByTag(d.tag)?.let { tx.hide(it) }
-                }
+            fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag }.forEach { fragment ->
+                tx.hide(fragment)
             }
             tx.commitNowAllowingStateLoss()
         } catch (e: Exception) {

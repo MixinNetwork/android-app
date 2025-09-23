@@ -302,7 +302,9 @@ internal constructor(
                     EstimateFeeRequest(
                         token.chainId,
                         transaction.data,
-
+                        fromAddress,
+                        transaction.wcEthereumTransaction?.to,
+                        transaction.wcEthereumTransaction?.value,
                         )
                 )
             }

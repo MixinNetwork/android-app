@@ -212,15 +212,6 @@ fun SwapPage(
                 walletDisplayName ?: stringResource(id = R.string.Common_Wallet)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (walletId == null) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                        contentDescription = null,
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
                 Text(
                     text = text,
                     fontSize = 12.sp,
@@ -229,6 +220,15 @@ fun SwapPage(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                if (walletId == null) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
             }
         },
         verticalScrollable = true,

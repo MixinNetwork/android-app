@@ -262,6 +262,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         transaction.data,
                         transaction.from,
                         transaction.to,
+                        transaction.value,
                     )
                 )
                 if (r.isSuccess.not()) {
