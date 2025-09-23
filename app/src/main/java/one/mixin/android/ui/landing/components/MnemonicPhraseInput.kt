@@ -78,6 +78,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.home.web3.swap.KeyboardAwareBox
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
+import org.bitcoinj.crypto.MnemonicCode
 
 @Composable
 fun MnemonicPhraseInput(
@@ -285,6 +286,12 @@ fun MnemonicPhraseInput(
                                     )
                                 }
                             } else {
+                                val text = inputs[index]
+                                val textColor = if (index != focusIndex && text.isNotEmpty() && MnemonicCode.INSTANCE.wordList.contains(text).not()) {
+                                    MixinAppTheme.colors.tipError
+                                } else {
+                                    MixinAppTheme.colors.textMinor
+                                }
                                 BasicTextField(
                                     modifier = Modifier.onFocusChanged { focusState ->
                                         focusIndex = if (focusState.isFocused) {
@@ -302,7 +309,7 @@ fun MnemonicPhraseInput(
                                     singleLine = true,
                                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
                                     textStyle = LocalTextStyle.current.copy(
-                                        color = MixinAppTheme.colors.textMinor,
+                                        color = textColor,
                                         fontSize = 13.sp,
                                         fontWeight = W500
                                     ),
@@ -400,7 +407,7 @@ fun MnemonicPhraseInput(
                                         Row {
                                             Text(
                                                 "${index + 1}",
-                                                color = MixinAppTheme.colors.textPrimary,
+                                                color = textColor,
                                                 fontSize = 13.sp,
                                             )
                                             Spacer(Modifier.width(8.dp))
@@ -559,12 +566,19 @@ fun MnemonicPhraseInput(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
-
                 if (errorInfo.isNotBlank()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         modifier = Modifier.align(Alignment.Start),
                         text = errorInfo, fontSize = 14.sp,
+                        color = MixinAppTheme.colors.tipError,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                } else if (inputs.any { it.isNotEmpty() && MnemonicCode.INSTANCE.wordList.contains(it).not() }) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        modifier = Modifier.align(Alignment.Start),
+                        text = context.getString(R.string.invalid_mnemonic_phrase), fontSize = 14.sp,
                         color = MixinAppTheme.colors.tipError,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -575,7 +589,7 @@ fun MnemonicPhraseInput(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    enabled = state == MnemonicState.Display || inputs.all { it.isNotEmpty() },
+                    enabled = state == MnemonicState.Display || (inputs.all { it.isNotEmpty() && MnemonicCode.INSTANCE.wordList.contains(it) }),
                     onClick = {
                         val words = inputs.map { it.trim() }
                         validate?.invoke(words)?.let {
@@ -636,7 +650,7 @@ fun MnemonicPhraseInput(
                     },
                     colors =
                     ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (state == MnemonicState.Display || inputs.all { it.isNotEmpty() }) {
+                        backgroundColor = if (state == MnemonicState.Display || (inputs.all { it.isNotEmpty() && MnemonicCode.INSTANCE.wordList.contains(it) })) {
                             MixinAppTheme.colors.accent
                         } else {
                             MixinAppTheme.colors.backgroundGray
