@@ -257,6 +257,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 }
             } else {
                 if (r != null) {
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signatureHex, r.errorDescription)
+                        return@launch
+                    }
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 }
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
