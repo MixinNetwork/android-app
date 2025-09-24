@@ -488,6 +488,7 @@
     <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
+    <string name="error_watch_address_not_supported">ERROR 10633: Contract or exchange addresses is not supported for watching.</string>
     <string name="error_user_invalid_format">Invalid user id</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Withdrawal memo format incorrect.</string>
     <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
