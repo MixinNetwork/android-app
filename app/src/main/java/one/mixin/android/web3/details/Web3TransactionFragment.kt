@@ -32,7 +32,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PendingTransactionRefreshHelper
+import one.mixin.android.ui.common.refresh.PendingWeb3TransactionRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -405,7 +405,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     override fun onResume() {
         super.onResume()
-        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+        refreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
             jobManager = jobManager,
@@ -420,7 +420,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     override fun onPause() {
         super.onPause()
-        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
+        refreshJob = PendingWeb3TransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     private fun updateTransactionStatus(newStatus: String) {

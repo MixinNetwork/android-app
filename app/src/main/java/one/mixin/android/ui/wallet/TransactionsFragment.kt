@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.extension.buildAmountSymbol
@@ -34,7 +33,6 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
@@ -44,6 +42,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.refresh.PendingDepositRefreshHelper
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
@@ -52,16 +51,13 @@ import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainName
-import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
 import java.math.BigDecimal
@@ -89,6 +85,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     lateinit var asset: TokenItem
 
+    private var pendingDepositRefreshJob: kotlinx.coroutines.Job? = null
+
     private val fromMarket by lazy {
         requireArguments().getBoolean(ARGS_FROM_MARKET, false)
     }
@@ -100,9 +98,19 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     private var scrollY = 0
 
+    override fun onResume() {
+        super.onResume()
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.startRefreshData(
+            fragment = this,
+            walletViewModel = walletViewModel,
+            refreshJob = pendingDepositRefreshJob
+        )
+    }
+
     override fun onPause() {
         super.onPause()
         scrollY = binding.scrollView.scrollY
+        pendingDepositRefreshJob = PendingDepositRefreshHelper.cancelRefreshData(pendingDepositRefreshJob)
     }
 
     override fun onViewCreated(
@@ -258,12 +266,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
 
         walletViewModel.refreshAsset(asset.assetId)
-        lifecycleScope.launch {
-            val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
-            if (depositEntry != null && depositEntry.destination.isNotBlank()) {
-                refreshPendingDeposits(asset)
-            }
-        }
     }
 
     private var snapshotItems: List<SnapshotItem> = emptyList()
@@ -271,46 +273,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     override fun onDestroyView() {
         _bottomBinding = null
         super.onDestroyView()
-    }
-
-    private fun refreshPendingDeposits(
-        asset: TokenItem,
-    ) {
-        if (viewDestroyed()) return
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = {
-                    walletViewModel.refreshPendingDeposits(asset.assetId)
-                },
-                exceptionBlock = { e ->
-                    reportException(e)
-                    false
-                },
-                successBlock = { list ->
-                    withContext(Dispatchers.IO) {
-                        val pendingDeposits = list.data ?: emptyList()
-                        val destinationTags = walletViewModel.findDepositEntryDestinations()
-                        pendingDeposits.filter { pd ->
-                            destinationTags.any { dt ->
-                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
-                            }
-                        }.map { pd -> pd.toSnapshot() }.let { snapshots ->
-                            // If there are no pending deposit snapshots belonging to the current user, clear token pending deposits
-                            if (snapshots.isEmpty()) {
-                                walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                                return@let
-                            }
-                            lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct().forEach {
-                                    walletViewModel.findOrSyncAsset(it)
-                                }
-                                walletViewModel.insertPendingDeposit(snapshots)
-                            }
-                        }
-                    }
-                },
-            )
-        }
     }
 
     @SuppressLint("InflateParams")

@@ -23,6 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -46,12 +47,14 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
+import one.mixin.android.ui.common.refresh.PendingWeb3TransactionRefreshHelper
+import one.mixin.android.ui.common.refresh.WalletRefreshHelper
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
@@ -120,6 +123,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
+
+    private var walletRefreshJob: Job? = null
+    private var transactionRefreshJob: Job? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -237,6 +245,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
                 if (compose.isVisible.not()) {
                     compose.visibility = VISIBLE
+                    walletRefreshJob = WalletRefreshHelper.startRefreshData(
+                        fragment = this@WalletFragment,
+                        web3ViewModel = web3ViewModel,
+                        walletId = null,
+                        refreshJob = walletRefreshJob
+                    )
+
                     val centerX = titleTv.x.toInt() + titleTv.width / 2
                     val centerY = titleTv.y.toInt() + titleTv.height / 2
                     val startRadius = 0
@@ -299,6 +314,48 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     }
                 }
             }
+    }
+
+    private fun triggerJob(destination: WalletDestination) {
+        when (destination) {
+            is WalletDestination.Privacy -> {
+                walletRefreshJob = WalletRefreshHelper.cancelRefreshData(walletRefreshJob)
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.cancelRefreshData(transactionRefreshJob)
+            }
+            is WalletDestination.Classic -> {
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    jobManager = jobManager,
+                    refreshJob = walletRefreshJob
+                )
+                walletRefreshJob = WalletRefreshHelper.startRefreshData(
+                    fragment = this, web3ViewModel = web3ViewModel, walletId = destination.walletId, refreshJob = walletRefreshJob
+                )
+            }
+            is WalletDestination.Watch ->{
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    jobManager = jobManager,
+                    refreshJob = walletRefreshJob
+                )
+                walletRefreshJob = WalletRefreshHelper.startRefreshData(
+                    fragment = this, web3ViewModel = web3ViewModel, walletId = destination.walletId, refreshJob = walletRefreshJob
+                )
+            }
+            is WalletDestination.Import ->{
+                transactionRefreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
+                    fragment = this,
+                    web3ViewModel = web3ViewModel,
+                    jobManager = jobManager,
+                    refreshJob = walletRefreshJob
+                )
+                walletRefreshJob = WalletRefreshHelper.startRefreshData(
+                    fragment = this, web3ViewModel = web3ViewModel, walletId = destination.walletId, refreshJob = walletRefreshJob
+                )
+            }
+        }
     }
 
     private fun updateUi(destination: WalletDestination) {
@@ -368,6 +425,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 }
             }
         }
+        triggerJob(destination)
     }
 
     private var migrateEnable = false
@@ -420,8 +478,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             else -> {
                 null
             }
-        }?.let { wallet ->
-            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
         }
         if (destination is WalletDestination.Classic || destination is WalletDestination.Import) {
             val walletId = if (destination is WalletDestination.Classic) {
@@ -450,6 +506,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun closeMenu() {
+        triggerJob(selectedWalletDestination ?: WalletDestination.Privacy)
         val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
         val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2
         val endRadius = hypot(
@@ -713,6 +770,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        walletRefreshJob = WalletRefreshHelper.cancelRefreshData(walletRefreshJob)
+        _binding = null
         _privacyBottomBinding = null
         _classicBottomBinding = null
     }

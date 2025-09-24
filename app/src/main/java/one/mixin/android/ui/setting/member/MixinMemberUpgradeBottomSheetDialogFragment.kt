@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.isNightMode

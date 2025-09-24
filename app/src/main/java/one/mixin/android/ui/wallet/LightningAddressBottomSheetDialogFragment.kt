@@ -37,7 +37,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -48,7 +47,6 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.util.SystemUIManager

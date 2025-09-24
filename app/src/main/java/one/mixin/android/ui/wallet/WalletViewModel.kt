@@ -57,7 +57,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
@@ -179,15 +178,9 @@ internal constructor(
 
     suspend fun allPendingDeposit() = tokenRepository.allPendingDeposit()
 
-    suspend fun refreshPendingDeposits(
-        assetId: String,
-    ) = tokenRepository.pendingDeposits(assetId)
-
     fun getPendingDisplays() = tokenRepository.getPendingDisplays()
 
     suspend fun clearAllPendingDeposits() = tokenRepository.clearAllPendingDeposits()
-
-    suspend fun clearPendingDepositsByAssetId(assetId: String) = tokenRepository.clearPendingDepositsByAssetId(assetId)
 
     suspend fun insertPendingDeposit(snapshot: List<SafeSnapshot>) = tokenRepository.insertPendingDeposit(snapshot)
 

@@ -21,7 +21,6 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -40,12 +39,9 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshWeb3TokenJob
-import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
@@ -54,7 +50,6 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.widget.PercentItemView
@@ -336,32 +331,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     fun update() {
-        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
         if (walletId.isEmpty().not()) {
             jobManager.addJobInBackground(RefreshWeb3TokenJob(walletId = walletId))
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
-        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
-            fragment = this,
-            web3ViewModel = web3ViewModel,
-            jobManager = jobManager,
-            refreshJob = refreshJob
-        )
-    }
-    private var refreshJob: Job? = null
-
-    override fun onPause() {
-        super.onPause()
-        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        if (!hidden) {
-            jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
         }
     }
 

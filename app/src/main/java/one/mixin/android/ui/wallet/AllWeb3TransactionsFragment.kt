@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -35,7 +34,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.tip.wc.SortOrder
-import one.mixin.android.ui.common.PendingTransactionRefreshHelper
+import one.mixin.android.ui.common.refresh.PendingWeb3TransactionRefreshHelper
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
@@ -197,8 +196,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "AllWeb3TransactionsFragment resumed.")
-        refreshJob = PendingTransactionRefreshHelper.startRefreshData(
+        Timber.d("AllWeb3TransactionsFragment resumed.")
+        refreshJob = PendingWeb3TransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
             jobManager = jobManager,
@@ -208,7 +207,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
 
     override fun onPause() {
         super.onPause()
-        refreshJob = PendingTransactionRefreshHelper.cancelRefreshData(refreshJob)
+        refreshJob = PendingWeb3TransactionRefreshHelper.cancelRefreshData(refreshJob)
     }
 
     private fun loadFilter() {
@@ -403,4 +402,3 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
             })
     }
 }
-

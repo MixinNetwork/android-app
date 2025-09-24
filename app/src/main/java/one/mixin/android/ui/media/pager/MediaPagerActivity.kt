@@ -80,7 +80,6 @@ import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.reportEvent
-import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus

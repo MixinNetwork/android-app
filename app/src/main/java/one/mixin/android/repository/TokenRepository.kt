@@ -562,10 +562,6 @@ class TokenRepository
 
         fun getPendingDisplays() = safeSnapshotDao.getPendingDisplays()
 
-        suspend fun pendingDeposits(
-            asset: String,
-        ) = tokenService.pendingDeposits(asset)
-
         suspend fun clearAllPendingDeposits() = safeSnapshotDao.clearAllPendingDeposits()
 
         suspend fun clearPendingDepositsByAssetId(assetId: String) =
