@@ -825,6 +825,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val r = bottomViewModel.estimateFee(
                             EstimateFeeRequest(
                                 assetId,
+                                null,
                                 transaction.data,
                                 transaction.from,
                                 transaction.to,
