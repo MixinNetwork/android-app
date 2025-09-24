@@ -240,8 +240,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 failureBlock = { r ->
-                    errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signatureHex, r.errorDescription)
+                    } else {
+                        errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    }
                     true
                 }
             )
@@ -258,6 +263,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             } else {
                 if (r != null) {
                     if (r.errorCode == NEED_CAPTCHA) {
+                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
                         initAndLoadCaptcha(sessionKey, edKey, messageHex, signatureHex, r.errorDescription)
                         return@launch
                     }
