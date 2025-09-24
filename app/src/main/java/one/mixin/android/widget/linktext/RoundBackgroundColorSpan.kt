@@ -44,7 +44,7 @@ class RoundBackgroundColorSpan(private val bgColor: Int, private val textColor: 
             paint,
         )
         paint.color = textColor
-        canvas.drawText(text, start, end, (x + 5.dp), (y + paint.textSize * 0.05).toFloat(), paint)
+        canvas.drawText(text, start, end, (x + 5.dp), (y + paint.textSize * 0.04).toFloat(), paint)
         paint.color = originalColor
     }
 }

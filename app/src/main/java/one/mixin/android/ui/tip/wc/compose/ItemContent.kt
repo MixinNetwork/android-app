@@ -143,7 +143,7 @@ fun TextWithRoundedLabelInline(
                         (measureTextWidth(label, (16 * 0.8).sp) + 12.dp).toSp()
                     },
                     height = with(density) {
-                        (16.dp).toSp()
+                        16.5.sp
                     },
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
