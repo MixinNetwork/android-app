@@ -1,94 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:clipToPadding="false"
-    android:clipChildren="false">
+    android:layout_height="match_parent">
 
-    <ScrollView
+    <ImageView
+        android:id="@+id/ph"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/Landing_back"
+        android:padding="8dp"
+        android:visibility="invisible"
+        app:srcCompat="@drawable/ic_arrow_back" />
+
+    <View
+        android:id="@+id/debug"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="48dp"
+        android:layout_alignTop="@id/ph"
+        android:layout_toEndOf="@id/ph"/>
 
-        <RelativeLayout
+    <TextView
+        android:id="@+id/name_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ph"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/Whats_your_name"
+        android:textColor="?attr/text_primary"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/name_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name_title_tv"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name_title_tv">
+
+        <EditText
+            android:id="@+id/name_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="80dp">
-
-            <ImageView
-                android:id="@+id/ph"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:contentDescription="@string/Landing_back"
-                android:padding="8dp"
-                android:visibility="invisible"
-                app:srcCompat="@drawable/ic_arrow_back" />
-
-            <View
-                android:id="@+id/debug"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_alignTop="@id/ph"
-                android:layout_toEndOf="@id/ph"/>
-
-            <TextView
-                android:id="@+id/name_title_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/ph"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/Whats_your_name"
-                android:textColor="?attr/text_primary"
-                android:textSize="18sp" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/name_til"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/name_title_tv"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp">
-
-                <EditText
-                    android:id="@+id/name_et"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/Name"
-                    android:importantForAutofill="noExcludeDescendants"
-                    android:lines="1"
-                    android:textColor="?attr/text_primary"
-                    android:textColorHint="?attr/text_assist"
-                    android:textSize="16sp"
-                    tools:ignore="TextFields" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </RelativeLayout>
-    </ScrollView>
+            android:hint="@string/Name"
+            android:importantForAutofill="noExcludeDescendants"
+            android:lines="1"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_assist"
+            android:textSize="16sp"
+            tools:ignore="TextFields" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <one.mixin.android.widget.fabprogresscircle.FABProgressCircle
         android:id="@+id/name_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:clipToPadding="false"
-        android:clipChildren="false"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
         app:arcColor="@android:color/holo_blue_dark">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
             app:backgroundTint="@color/colorBlue"
             android:contentDescription="@string/Next" />
@@ -100,5 +88,4 @@
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         android:visibility="invisible" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>
