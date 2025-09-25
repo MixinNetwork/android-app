@@ -70,7 +70,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.privateKeyToAddress
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
@@ -125,7 +124,6 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
-import one.mixin.android.web3.js.JsSigner
 import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.io.File
@@ -781,7 +779,7 @@ class BottomSheetViewModel
                         Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db end")
                     }
                 }
-
+                jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(asset)))
                 val signedResponse = postTransactionWithRetry(signedTransaction.signResult.raw,signedTransaction.trace)
                 if (signedResponse.isSuccess) {
                     withContext(SINGLE_DB_THREAD) {
@@ -998,6 +996,11 @@ class BottomSheetViewModel
                         Timber.e("Kernel Invoice Transaction(${t.trace}): sign db end")
                     }
                 }
+            }
+            invoice.entries.map { assetIdToAsset(it.assetId) }.let {
+                val list = arrayListOf<String>()
+                list.addAll(it)
+                jobManager.addJobInBackground(CheckBalanceJob(list))
             }
             val signedResponse = tokenRepository.transactions(signedTransactions.map { TransactionRequest(it.signResult.raw, it.trace) })
             if (signedResponse.isSuccess) {
@@ -1734,7 +1737,7 @@ class BottomSheetViewModel
             return@withContext tokenRepository.refreshInscription(inscriptionHash)
         }
 
-        fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
+        fun findAddressByDestination(receiver: String, tag: String) = tokenRepository.findAddressByDestination(receiver, tag)
 
         suspend fun checkMarketById(id: String): MarketItem? = withContext(Dispatchers.IO) {
             tokenRepository.checkMarketById(id)
@@ -1757,6 +1760,8 @@ class BottomSheetViewModel
         }
 
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
+
+        fun web3TokenItems(walletId: String, level:Int) = tokenRepository.web3TokenItems(walletId, level)
 
         suspend fun getWeb3Priv(
             context: Context,

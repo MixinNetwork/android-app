@@ -49,6 +49,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
             setContent {
                 VerifyPinBeforeImportWalletPage(
                     tip = tip,
+                    mode = mode,
                     pop = {
                         activity?.finish()
                     },
@@ -78,9 +79,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
                                     WalletSecurityActivity.Mode.VIEW_MNEMONIC -> {
                                         navTo(
-                                            DisplayWalletSecurityFragment.newInstance(
-                                                WalletSecurityActivity.Mode.VIEW_MNEMONIC,
-                                            ), "DisplayWalletSecurityFragment"
+                                            DisplayWalletSecurityFragment.newInstance(mode, walletId = walletId), DisplayWalletSecurityFragment.TAG
                                         )
                                         requireActivity().supportFragmentManager
                                             .beginTransaction()
@@ -90,10 +89,9 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
 
                                     WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
                                         navTo(
-                                            DisplayWalletSecurityFragment.newInstance(
-                                                WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY, chainId
-                                            ), "DisplayWalletSecurityFragment"
+                                            DisplayWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId), DisplayWalletSecurityFragment.TAG
                                         )
+
                                         requireActivity().supportFragmentManager
                                             .beginTransaction()
                                             .remove(this@VerifyPinBeforeImportWalletFragment)
@@ -122,13 +120,27 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                     }
                                     WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                                         navTo(
-                                            ReImportPrivateKeyFragment.newInstance(walletId),
+                                            ReImportPrivateKeyFragment.newInstance(walletId, chainId),
                                             ReImportPrivateKeyFragment.TAG
                                         )
                                         requireActivity().supportFragmentManager
                                             .beginTransaction()
                                             .remove(this@VerifyPinBeforeImportWalletFragment)
                                             .commit()
+                                    }
+                                    WalletSecurityActivity.Mode.CREATE_WALLET -> {
+                                        navTo(
+                                            ImportingWalletFragment.newInstance(WalletSecurityActivity.Mode.CREATE_WALLET),
+                                            ImportingWalletFragment.TAG
+                                        )
+                                        viewModel.createClassicWallet()
+                                        requireActivity().supportFragmentManager
+                                            .beginTransaction()
+                                            .remove(this@VerifyPinBeforeImportWalletFragment)
+                                            .commit()
+                                    }
+                                    WalletSecurityActivity.Mode.VIEW_ADDRESS -> {
+                                       requireActivity().finish()
                                     }
                                 }
                             } else {

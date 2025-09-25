@@ -15,55 +15,59 @@
             android:layout_height="?actionBarSize"
             android:background="?attr/bg_white">
 
-            <RelativeLayout
+            <one.mixin.android.widget.TitleTailLayout
                 android:id="@+id/title_rl"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="12dp"
-                android:padding="4dp"
-                android:foreground="?android:attr/selectableItemBackground">
+                android:layout_toStartOf="@id/search_ib"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:padding="4dp">
 
-                <ImageView
-                    android:id="@+id/head_icon"
+                <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_wallet_menu" />
+                    android:layout_marginEnd="8dp">
 
-                <View
-                    android:id="@+id/badge"
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_alignTop="@id/head_icon"
-                    android:layout_alignEnd="@id/head_icon"
-                    android:background="@drawable/bg_red_dot"
-                    android:visibility="gone" />
+                    <ImageView
+                        android:id="@+id/head_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_wallet_menu" />
+
+                    <View
+                        android:id="@+id/badge"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/bg_red_dot"
+                        android:visibility="gone" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/title_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_toEndOf="@+id/head_icon"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:maxLines="1"
                     android:textColor="?attr/text_primary"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:includeFontPadding="false"
-                    tools:ignore="RelativeOverlap" />
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:id="@+id/tail_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@id/title_tv"
-                    android:src="@drawable/ic_wallet_privacy" />
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_wallet_privacy"
+                    android:visibility="visible" />
 
-            </RelativeLayout>
+            </one.mixin.android.widget.TitleTailLayout>
 
             <ImageButton
                 android:id="@+id/search_ib"
@@ -98,7 +102,7 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/mixin_ripple"
                 android:padding="8dp"
-                app:srcCompat="@drawable/ic_home_more"
+                app:srcCompat="@drawable/ic_more"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 

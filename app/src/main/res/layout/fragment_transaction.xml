@@ -20,7 +20,7 @@
         android:layout_below="@id/ph"
         app:need_divider="false"
         app:titleText="@string/Transaction"
-        app:rightIcon="@drawable/ic_support"/>
+        app:rightIcon="@drawable/ic_more" />
 
     <ScrollView
         android:layout_width="match_parent"

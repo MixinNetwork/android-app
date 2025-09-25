@@ -17,9 +17,7 @@ import one.mixin.android.tip.wc.internal.WalletConnectException
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.web3j.crypto.StructuredDataEncoder
-import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.Response
-import org.web3j.protocol.http.HttpService
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
@@ -87,19 +85,6 @@ abstract class WalletConnect {
         data class TIPSignData(
             override val signMessage: String,
         ) : WCSignData<String>(0L, signMessage)
-    }
-
-    private var web3jPool = LruCache<Chain, Web3j>(3)
-
-    protected fun getWeb3j(chain: Chain): Web3j {
-        val exists = web3jPool[chain]
-        return if (exists == null) {
-            val web3j = Web3j.build(HttpService(chain.rpcUrl, buildOkHttpClient()))
-            web3jPool.put(chain, web3j)
-            web3j
-        } else {
-            exists
-        }
     }
 
     private fun buildOkHttpClient(): OkHttpClient {

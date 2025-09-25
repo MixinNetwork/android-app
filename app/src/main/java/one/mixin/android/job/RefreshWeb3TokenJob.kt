@@ -44,7 +44,6 @@ class RefreshWeb3TokenJob(
                     val assetIds = assets.map { it.assetId }
                     web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
                     Timber.d("Updated missing assets to zero balance for wallet ${walletId}")
-                    web3TokenDao.insertList(assets)
                     val extrasToInsert = assets.filter { it.level < Constants.AssetLevel.UNKNOWN }
                         .mapNotNull { asset ->
                             val extra = web3TokensExtraDao.findByAssetId(asset.assetId, walletId)
@@ -61,6 +60,7 @@ class RefreshWeb3TokenJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
+                    web3TokenDao.insertList(assets)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {

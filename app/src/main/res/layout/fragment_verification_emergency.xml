@@ -5,14 +5,21 @@
     android:layout_height="match_parent"
     android:background="?attr/bg_white">
 
+    <View
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignTop="@id/back_iv"
+        android:layout_toEndOf="@id/back_iv" />
+
     <ImageView
         android:id="@+id/back_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin12"
-        android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/Landing_back"
+        android:padding="@dimen/margin12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.023"
         app:layout_constraintStart_toStartOf="parent"

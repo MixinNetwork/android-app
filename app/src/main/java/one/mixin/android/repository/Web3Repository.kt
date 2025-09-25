@@ -1,11 +1,16 @@
 package one.mixin.android.repository
 
 import android.content.Context
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
+import androidx.paging.DataSource
+import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
-import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.AddressSearchRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -14,9 +19,13 @@ import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokensExtra
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.vo.safe.toWeb3TokenItem
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,11 +40,10 @@ constructor(
     val web3TokensExtraDao: Web3TokensExtraDao,
     val web3AddressDao: Web3AddressDao,
     val web3WalletDao: Web3WalletDao,
+    val tokenRepository: TokenRepository,
     val userRepository: UserRepository
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
-
-    suspend fun insertWeb3Tokens(list: List<Web3Token>) = web3TokenDao.insertListSuspend(list)
 
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
@@ -43,10 +51,20 @@ constructor(
     
     suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds)
 
-    fun web3Tokens(walletId: String) = web3TokenDao.web3TokenItems(walletId)
-    
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
-    
+
+    fun web3TokensExcludeHiddenRaw(walletId: String) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
+        RoomRawQuery(
+            """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
+        WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL) 
+        ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
+        """, onBindStatement = {
+                it.bindText(1, walletId)
+            })
+    )
+
     fun hiddenAssetItems(walletId: String) = web3TokenDao.hiddenAssetItems(walletId)
     
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {
@@ -58,7 +76,45 @@ constructor(
         }
     }
 
-    fun web3Transactions(walletId:String, assetId: String) = web3TransactionDao.web3Transactions(walletId, assetId)
+    fun web3Transactions(walletId: String, assetId: String) =
+        web3TransactionDao.web3Transactions(walletId, assetId).switchMap { list ->
+            liveData {
+                val assetIds = list.flatMap { it.senders.map { it.assetId } + it.receivers.map { it.assetId } + (it.approvals?.map { it.assetId } ?: emptyList()) }.distinct()
+                val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
+                val result = list.map { transaction ->
+                    transaction.copy(
+                        senders = transaction.senders.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        receivers = transaction.receivers.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        approvals = transaction.approvals?.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        }
+                    )
+                }
+                emit(result)
+            }
+        }
+
+    fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
+        return web3TransactionDao.allTransactions(filterParams.buildQuery()).map { transaction ->
+            val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
+            val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(filterParams.walletId, assetIds.distinct()).associateBy { it.assetId }
+            transaction.copy(
+                senders = transaction.senders.map {
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
+                },
+                receivers = transaction.receivers.map {
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
+                },
+                approvals = transaction.approvals?.map {
+                    it.copy(symbol = tokens[it.assetId]?.symbol)
+                }
+            )
+        }
+    }
 
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()
 
@@ -111,13 +167,6 @@ constructor(
             .updateWithLocalKeyInfo(context)
 
     suspend fun getAllWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }
-
-    suspend fun countAddressesByWalletId(walletId: String) = web3AddressDao.countAddressesByWalletId(walletId)
-
-    suspend fun getFirstAddressByWalletId(walletId: String) = web3AddressDao.getFirstAddressByWalletId(walletId)
-
-    suspend fun getAddressesByWalletId(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
-
     suspend fun anyAddressExists(destinations: List<String>) = web3AddressDao.anyAddressExists(destinations)
 
     suspend fun allWeb3Tokens(walletIds: List<String>) = web3TokenDao.allWeb3Tokens(walletIds)
@@ -128,4 +177,49 @@ constructor(
     }
 
     suspend fun getAllWalletNames(categories :List<String>) = web3WalletDao.getAllWalletNames(categories)
+
+    suspend fun getClassicWalletMaxIndex(): Int {
+        return try {
+            val classicWallets = web3WalletDao.getAllClassicWallets()
+
+            if (classicWallets.isEmpty()) {
+                return 0
+            }
+
+            var maxIndex = 0
+            for (wallet in classicWallets) {
+                val addresses = web3AddressDao.getAddressesByWalletId(wallet.id)
+                for (address in addresses) {
+                    address.path?.let { path ->
+                        val index = CryptoWalletHelper.extractIndexFromPath(path)
+                        if (index != null && index > maxIndex) {
+                            maxIndex = index
+                        }
+                    }
+                }
+            }
+            maxIndex
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get classic wallet max index")
+            0
+        }
+    }
+
+    suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
+
+    // Only deposit display
+    suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? {
+        val localToken = web3TokenDao.web3TokenItemById(walletId, assetId)
+        if (localToken != null) {
+            return localToken
+        }
+
+        return try {
+            val token = tokenRepository.findOrSyncAsset(assetId)
+            token?.toWeb3TokenItem(walletId)
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        }
+    }
 }

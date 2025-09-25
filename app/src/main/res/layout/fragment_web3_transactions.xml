@@ -56,8 +56,7 @@
                     android:layout_marginStart="8dp"
                     android:text="@string/reputation_spam_warning"
                     android:textColor="#DB454F"
-                    android:textSize="14sp"
-                    android:drawableStart="@drawable/ic_spam_token"/>
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <FrameLayout

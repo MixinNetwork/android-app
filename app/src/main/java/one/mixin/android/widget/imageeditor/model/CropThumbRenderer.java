@@ -3,13 +3,15 @@ package one.mixin.android.widget.imageeditor.model;
 import android.graphics.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
+
+import java.util.UUID;
+
 import one.mixin.android.R;
 import one.mixin.android.widget.imageeditor.Bounds;
 import one.mixin.android.widget.imageeditor.Renderer;
 import one.mixin.android.widget.imageeditor.RendererContext;
-
-import java.util.UUID;
 
 /**
  * Hit tests a circle that is {@link R.dimen#crop_area_renderer_edge_size} in radius on the screen.

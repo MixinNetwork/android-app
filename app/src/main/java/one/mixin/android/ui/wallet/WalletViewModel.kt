@@ -24,17 +24,19 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.MIXIN_BOND_USER_ID
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.putString
@@ -46,14 +48,11 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
-import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.market.Market
@@ -61,18 +60,15 @@ import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
-import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel
 @Inject
 internal constructor(
-    private val tip: Tip,
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
     private val web3Repository: Web3Repository,
@@ -95,10 +91,13 @@ internal constructor(
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.upsert(user)
         }
-
     suspend fun  web3TokenItemById(walletId: String, assetId: String) = web3Repository.web3TokenItemById(walletId, assetId)
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
+
+    suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
+        return@withContext tokenRepository.assetItemsNotHiddenRaw()
+    }
 
     fun hasAssetsWithValue() = assetRepository.hasAssetsWithValue()
 
@@ -114,7 +113,7 @@ internal constructor(
             .cachedIn(viewModelScope)
 
     fun snapshotsLimit(id: String) = tokenRepository.snapshotsLimit(id)
-    fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByReceiver(receiver, tag)
+    fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByDestination(receiver, tag)
 
     suspend fun snapshotLocal(
         assetId: String,
@@ -170,7 +169,7 @@ internal constructor(
         filterParams: Web3FilterParams,
     ): LiveData<PagedList<Web3TransactionItem>> =
         LivePagedListBuilder(
-            tokenRepository.allWeb3Transaction(filterParams),
+            web3Repository.allWeb3Transaction(filterParams),
             PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
@@ -182,8 +181,7 @@ internal constructor(
 
     suspend fun refreshPendingDeposits(
         assetId: String,
-        depositEntry: DepositEntry,
-    ) = tokenRepository.pendingDeposits(assetId, requireNotNull(depositEntry.destination) { "refreshPendingDeposit required destination not null" }, depositEntry.tag)
+    ) = tokenRepository.pendingDeposits(assetId)
 
     fun getPendingDisplays() = tokenRepository.getPendingDisplays()
 
@@ -208,12 +206,6 @@ internal constructor(
 
     suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> = tokenRepository.queryAsset(walletId, query, web3)
 
-    fun saveAssets(hotAssetList: List<TopAssetItem>) {
-        hotAssetList.forEach {
-            jobManager.addJobInBackground(RefreshTokensJob(it.assetId))
-        }
-    }
-
     suspend fun findAssetItemById(assetId: String) = tokenRepository.findAssetItemById(assetId)
 
     suspend fun findOrSyncAsset(
@@ -228,7 +220,12 @@ internal constructor(
 
     suspend fun findDepositEntryDestinations() = tokenRepository.findDepositEntryDestinations()
 
-    suspend fun findAndSyncDepositEntry(chainId: String, assetId: String?) =
+    suspend fun findAndCheckDepositEntry(chainId: String, assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndCheckDepositEntry(chainId, assetId)
+        }
+
+    suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) =
         withContext(Dispatchers.IO) {
             tokenRepository.findAndSyncDepositEntry(chainId, assetId)
         }
@@ -240,11 +237,6 @@ internal constructor(
                     tokenRepository.findOrSyncAsset(id)
                 }
             }
-        }
-
-    fun upsetAsset(asset: Token) =
-        viewModelScope.launch(Dispatchers.IO) {
-            tokenRepository.insert(asset)
         }
 
     fun observeTopAssets() = tokenRepository.observeTopAssets()
@@ -315,48 +307,9 @@ internal constructor(
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
         tokenRepository.findSnapshotById(snapshotId)
 
-    suspend fun getFees(
-        assetId: String,
-        destination: String,
-    ) = tokenRepository.getFees(assetId, destination)
-
     suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
-
-    suspend fun findBotPublicKey(
-        conversationId: String,
-        botId: String,
-    ) = userRepository.findBotPublicKey(conversationId, botId)
-
-    suspend fun saveSession(participantSession: ParticipantSession) {
-        userRepository.saveSession(participantSession)
-    }
-
-    suspend fun deleteSessionByUserId(
-        conversationId: String,
-        userId: String,
-    ) =
-        withContext(Dispatchers.IO) {
-            userRepository.deleteSessionByUserId(conversationId, userId)
-        }
-
-    fun insertDeposit(data: List<DepositEntry>) {
-        tokenRepository.insertDeposit(data)
-    }
-
-    suspend fun checkHasOldAsset(): Boolean {
-        return handleMixinResponse(
-            invokeNetwork = {
-                tokenRepository.findOldAssets()
-            },
-            successBlock = {
-                return@handleMixinResponse it.data?.any { asset ->
-                    BigDecimal(asset.balance) != BigDecimal.ZERO
-                } ?: false
-            },
-        ) ?: false
-    }
 
     suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
 
@@ -455,17 +408,15 @@ internal constructor(
         pin: String,
     ): String = pinCipher.encryptPin(pin, TipBody.forExport(userId))
 
-    suspend fun searchAssetsByAddresses(addresses: List<String>) = web3Repository.searchAssetsByAddresses(addresses)
-
     suspend fun renameWallet(walletId: String, newName: String) {
         withContext(Dispatchers.IO) {
             try {
-                val request = WalletRequest(name = newName, category = null, addresses = null)
+                val request = WalletRequest(name = newName.trim(), category = null, addresses = null)
                 val response = web3Repository.updateWallet(walletId, request)
                 if (response.isSuccess && response.data != null) {
                     // Update local database
                     web3Repository.updateWalletName(walletId, newName)
-                    RxBus.publish(WalletRefreshedEvent(walletId))
+                    RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.RENAME))
                     Timber.d("Successfully renamed wallet $walletId to $newName")
                 } else {
                     Timber.e("Failed to rename wallet: ${response.errorCode} - ${response.errorDescription}")
@@ -486,7 +437,7 @@ internal constructor(
                 web3Repository.deleteHiddenTokens(walletId)
                 web3Repository.deleteWallet(walletId)
                 CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
-                RxBus.publish(WalletRefreshedEvent(walletId))
+                RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.DELETE))
             }
         } catch (e: Exception) {
             Timber.e(e)
@@ -498,4 +449,27 @@ internal constructor(
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String, Boolean>? {
+        return withContext(Dispatchers.IO) {
+
+            if (chainId != null) {
+                val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), false)
+            }
+
+            val wallet = web3Repository.getWalletByDestination(destination)
+            if (wallet != null) {
+                return@withContext Pair(wallet.name, true)
+            }
+            return@withContext null
+        }
+    }
+
+    suspend fun getWalletByDestination(destination: String) = web3Repository.getWalletByDestination(destination)
+
+    suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
+        web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
+    }
+
 }

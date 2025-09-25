@@ -40,7 +40,6 @@ class RefreshAssetsJob(
                     }
                     assetDao.insertList(list)
                 }
-                refreshChains()
                 refreshFiats()
             }
         }
@@ -50,17 +49,6 @@ class RefreshAssetsJob(
         if (resp.isSuccess) {
             resp.data?.let { fiatList ->
                 Fiats.updateFiats(fiatList)
-            }
-        }
-    }
-
-    private suspend fun refreshChains() {
-        val resp = assetService.getChains()
-        if (resp.isSuccess) {
-            resp.data?.let { chains ->
-                chains.subtract(chainDao.getChains().toSet()).let {
-                    chainDao.insertList(it.toList())
-                }
             }
         }
     }

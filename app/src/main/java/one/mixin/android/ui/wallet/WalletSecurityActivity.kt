@@ -18,13 +18,15 @@ class WalletSecurityActivity : BlazeBaseActivity() {
             val walletId = intent.getStringExtra(EXTRA_WALLET_ID)
 
             val fragment = when (mode) {
-                Mode.IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.IMPORT_MNEMONIC)
+                Mode.CREATE_WALLET -> WalletNoticeFragment.newInstance(Mode.CREATE_WALLET)
+                Mode.IMPORT_MNEMONIC -> WalletNoticeFragment.newInstance(Mode.IMPORT_MNEMONIC)
+                Mode.IMPORT_PRIVATE_KEY -> WalletNoticeFragment.newInstance(Mode.IMPORT_PRIVATE_KEY)
+                Mode.ADD_WATCH_ADDRESS -> WalletNoticeFragment.newInstance(Mode.ADD_WATCH_ADDRESS)
+                Mode.VIEW_MNEMONIC -> ViewWalletSecurityFragment.newInstance(mode, walletId = walletId)
+                Mode.VIEW_PRIVATE_KEY -> ViewWalletSecurityFragment.newInstance(mode, chainId = chainId, walletId = walletId)
                 Mode.RE_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_MNEMONIC, walletId = walletId)
-                Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId)
-                Mode.VIEW_MNEMONIC -> ViewWalletSecurityFragment.newInstance(Mode.VIEW_MNEMONIC)
-                Mode.VIEW_PRIVATE_KEY -> ViewWalletSecurityFragment.newInstance(Mode.VIEW_PRIVATE_KEY, chainId)
-                Mode.IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.IMPORT_PRIVATE_KEY)
-                Mode.ADD_WATCH_ADDRESS -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.ADD_WATCH_ADDRESS)
+                Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
+                Mode.VIEW_ADDRESS -> ViewWalletAddressFragment.newInstance(walletId)
             }
 
             supportFragmentManager.beginTransaction()
@@ -55,6 +57,8 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         ADD_WATCH_ADDRESS,
         RE_IMPORT_MNEMONIC,
         RE_IMPORT_PRIVATE_KEY,
+        CREATE_WALLET,
+        VIEW_ADDRESS,
     }
 
     override fun onBackPressed() {
@@ -62,4 +66,3 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         finish()
     }
 }
-

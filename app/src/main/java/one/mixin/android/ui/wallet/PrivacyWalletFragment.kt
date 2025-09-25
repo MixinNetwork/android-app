@@ -54,10 +54,12 @@ import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
@@ -96,6 +98,28 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in PrivacyWalletFragment")
+        lifecycleScope.launch {
+            val queryDuration = measureTime {
+                val data = walletViewModel.assetItemsNotHiddenRaw()
+                assets = data
+                Timber.e("assetItemsNotHiddenRaw query completed: data size: ${data.size}")
+            }
+            Timber.e("assetItemsNotHiddenRaw query took: $queryDuration")
+            if (isAdded) {
+                assetsAdapter.setAssetList(assets)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
+                var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+                if (bitcoin == null) {
+                    bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                }
+                renderPie(assets, bitcoin)
+            }
+        }
+
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
@@ -105,7 +129,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         WalletActivity.showBuy(requireActivity(), false, null, null)
                         defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
                         RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
-                        sendReceiveView.swapBadge.isVisible = false
+                        sendReceiveView.buyBadge.isVisible = false
                     }
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
@@ -161,6 +185,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
+            Timber.e("observe assetItemsNotHidden data size: ${it.size}")
             if (it.isEmpty()) {
                 setEmpty()
             } else {
@@ -237,11 +262,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     false
                 },
                 successBlock = {
-                    val pendingDeposits = it.data
-                    if (pendingDeposits.isNullOrEmpty()) {
-                        walletViewModel.clearAllPendingDeposits()
-                        return@handleMixinResponse
-                    }
+                    val pendingDeposits = it.data ?: emptyList()
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
                     pendingDeposits
                         .filter { pd ->
@@ -250,8 +271,13 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             }
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear all pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearAllPendingDeposits()
+                                return@let
+                            }
                             lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct()?.forEach {
+                                snapshots.map { it.assetId }.distinct().forEach {
                                     walletViewModel.findOrSyncAsset(it)
                                 }
                                 walletViewModel.insertPendingDeposit(snapshots)

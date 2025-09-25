@@ -138,6 +138,8 @@
     <string name="background_preview">Background Preview</string>
     <string name="Backup_success">Backup success</string>
     <string name="Block">Block</string>
+    <string name="block_confirmations">Block Confirmations</string>
+    <string name="block_confirmations_content">Deposit will arrive after at least %1$d block confirmations.</string>
     <string name="block_tip">Blocked users can\'t send you messages or add you to groups.</string>
     <string name="Blocked">Blocked</string>
     <string name="Blocked_Users">Blocked Users</string>
@@ -336,6 +338,7 @@
     <string name="Delete_Synced_Contact">Delete Synced Contacts</string>
     <string name="Delete_withdraw_Address">Delete %1$s Address</string>
     <string name="Deposit">Deposit</string>
+    <string name="Deposit_Token">Deposit %1$s</string>
     <string name="Pending">Pending</string>
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
@@ -352,6 +355,8 @@
     <string name="deposit_tip_btc">This address only supports BTC.</string>
     <string name="deposit_tip_common">This address only supports %1$s.</string>
     <string name="deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
+    <string name="deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
+    <string name="deposit_tip_lightning">This invoice supports BTC on Lightning Network, as well as USDT and other Taproot Assets.</string>
     <string name="deposit_tip_chain">This address supports %1$s, as well as all tokens on %2$s</string>
     <string name="desktop">desktop</string>
     <string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
@@ -483,6 +488,7 @@
     <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
+    <string name="error_watch_address_not_supported">ERROR 10633: Contract or exchange addresses is not supported for watching.</string>
     <string name="error_user_invalid_format">Invalid user id</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Withdrawal memo format incorrect.</string>
     <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
@@ -528,6 +534,7 @@
     <string name="swap_send">Send</string>
     <string name="swap_receive">Receive</string>
     <string name="Generating_keys">Generating keys…</string>
+    <string name="Generating">Generating…</string>
     <string name="Get_a_new_wallet">Get a new wallet</string>
     <string name="GIF">GIF</string>
     <string name="Go">Go</string>
@@ -735,7 +742,7 @@
     <string name="Not_support">Not support</string>
     <string name="not_supported_deposit">Mixin ceases support for deposit service on the %1$s. You can continue to withdraw and transfer %2$s in the wallet balance. Read the document to **learn more**.</string>
     <string name="not_supported_deposit_url">https://support.mixin.one/en/article/the-explanation-about-mixin-stopped-support-for-some-assets-deposits-1im32px</string>
-    <string name="suspended_deposit">The deposit for %1$s has been temporarily suspended. This action has been taken due to potential factors such as low utilization, node failure, blockchain network hard fork, or congestion. We kindly request your attention to the fact that the %2$s assets already stored in the wallet remain transferable.</string>
+    <string name="suspended_deposit">The %1$s deposit has been suspended for possible reasons including:\n · Node failure\n · Network hard fork\n · Network congestion\n · Low utilization\nNote that %2$s assets that have already been deposited can continue to be transferred.</string>
     <string name="Notice">Notice</string>
     <string name="Notification_and_Confirmation">Notification and Confirmation</string>
     <string name="notification_channel_description">Shows what music is currently playing in Mixin Messenger</string>
@@ -1085,6 +1092,7 @@
     <string name="transfer_memo">Memo (optional)</string>
     <string name="Transfer_Notifications">Transfer Notifications</string>
     <string name="transfer_qrcode_prompt">Scan the QR Code to transfer me on Mixin</string>
+    <string name="transfer_qrcode_prompt_amount">Scan the QR Code to transfer me %1$s on Mixin</string>
     <string name="transfer_to">Transfer to %1$s</string>
     <string name="transfer_without_pin">You must setup PIN for transfer</string>
     <string name="Trending">Trending</string>
@@ -1156,6 +1164,7 @@
     <string name="Waiting">Waiting</string>
     <string name="Waiting_for_this_message">Waiting for this message.</string>
     <string name="Wallet">Wallet</string>
+    <string name="wallet_address">Wallet Address</string>
     <string name="Wallets">Wallets</string>
     <string name="wallet_add_asset_already_hidden">Assets %1$s have been hidden by you, want to show them immediately on the wallet homepage?</string>
     <string name="wallet_address_add_tip">Mixin does not support withdrawal to the</string>
@@ -1470,7 +1479,7 @@
     <string name="Confirm_Withdrawal">Confirm Withdrawal</string>
     <string name="Sending_Withdrawal_Request">Sending Withdrawal Request</string>
     <string name="Withdrawal_Request_Sent">Withdrawal Request Sent</string>
-    <string name="address_validity_reminder">The address %1$s(%2$s) has not been used for over %3$s days. Please check if the address is still valid.</string>
+    <string name="address_validity_reminder">The address %1$s(%2$s) has not been used for over %3$d days. Please check if the address is still valid.</string>
     <string name="withdrawal_sending_description">The withdrawal request is being sent to the Mixin mainnet. Please wait a moment.</string>
     <string name="Confirm_Transfer">Confirm Transfer</string>
     <string name="Sending_Transfer_Request">Sending Transfer Request</string>
@@ -1504,7 +1513,10 @@
     <string name="BSC">BSC</string>
     <string name="Solana">Solana</string>
     <string name="Base">Base</string>
-    <string name="Tron">TRON</string>
+    <string name="TRON">TRON</string>
+    <string name="Optimism">Optimism</string>
+    <string name="Arbitrum">Arbitrum</string>
+    <string name="Toncoin">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access apps and DeFi projects.</string>
@@ -1540,7 +1552,7 @@
     <string name="copy_address">Copy Address</string>
     <string name="copy_contract_address">Copy Contract Address</string>
     <string name="coming_soon">Coming soon</string>
-    <string name="web3_deposit_description_evm">Use this address for receiving tokens on Ethereum, Polygon, BSC, Base networks, </string>
+    <string name="web3_deposit_description_evm">Use this address for receiving tokens on Ethereum, Polygon, BSC, Base, Arbitrum, Optimism networks.</string>
     <string name="web3_deposit_description_solana">Use this address for receiving tokens on Solana.</string>
     <string name="No_asset">No Tokens</string>
     <string name="Ethereum_Account">Ethereum Account</string>
@@ -1636,6 +1648,7 @@
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction change the owner of your SPL tokens. This allow the new owner to transfer the tokens without your permission.</string>
     <string name="Assets">Assets</string>
+    <string name="ASSET">ASSET</string>
     <string name="Recipients">Recipients</string>
     <string name="Opponents">Opponents</string>
     <string name="No_users">No users</string>
@@ -1998,6 +2011,12 @@
     <string name="reputation_spam_warning">This token has been flagged as malicious</string>
     <string name="reputation_transaction_warning">This transaction has been flagged as malicious</string>
     <string name="All_Invoices">All Invoices</string>
+    <string name="create_new_wallet">Create New Wallet</string>
+    <string name="classic_wallet">Classic Wallet</string>
+    <string name="create_wallet_notice_1">This mnemonic is generated based on BIP32 and can be used in all wallets that support this standard.</string>
+    <string name="create_wallet_notice_2">Supports multiple networks such as Ethereum, Base, Solana, etc.</string>
+    <string name="create_wallet_notice_3">This wallet cannot be deleted and the private key cannot be viewed after creation.</string>
+    <string name="add_new_multi_chain_wallet">Add a new multi-chain wallet.</string>
     <string name="invoice_renew_plan">Renew %1$s Plan</string>
     <string name="invoice_upgrade_plan">Upgrade to %1$s</string>
     <string name="watch">watching %1$s</string>
@@ -2052,7 +2071,8 @@
     <string name="Dont_share_it_with_a_network">Don’t share it with a network.</string>
     <string name="watch_only_wallet_warning_message">This is a watch-only wallet. Are you sure you want to use it to receive assets?</string>
     <string name="no_key_wallet_warning_message">This wallet has no private key on this device. Are you sure you want to use it to receive assets?</string>
-    <string name="remove_wallet_warning">Make sure you\'ve written down the recovery phrase or private key before removing the wallet. Otherwise you won\'t be able to recover the wallet.</string>
+    <string name="delete_common_wallet_description">Make sure you\'ve written down the recovery phrase or private key before removing the wallet. Otherwise you won\'t be able to recover the wallet.</string>
+    <string name="delete_watch_wallet_description">Deleting this wallet will not affect your assets, as it is a watch-only wallet.</string>
     <string name="words">%1$d words</string>
     <string name="import_private_key">Import Private Key</string>
     <string name="add_watch_address">Add Watch Address</string>
@@ -2077,4 +2097,27 @@
     <string name="import_private_key_url">https://support.mixin.one/en/article/how-to-import-private-keys-w7wn4w/</string>
     <string name="Import_Failed">Import Failed</string>
     <string name="partial_import_successful">Partial Import Successful</string>
+    <string name="Proceed">Proceed</string>
+    <string name="watch_address_notice_1">Easily monitor the balance and transaction history of a specified address.</string>
+    <string name="watch_address_notice_2">Supports multiple networks such as Ethereum, Base, and Solana.</string>
+    <string name="watch_address_notice_3">Cannot transfer funds or interact with on-chain applications or DeFi projects.</string>
+    <string name="watch_address_description">You are unable to control assets in a watch-only wallet, but you can track them. Learn More</string>
+    <string name="watch_wallet_url">https://support.mixin.one/en/article/what-is-a-watch-only-wallet-13bo2l8</string>
+    <string name="Set_Amount">Set Amount</string>
+    <string name="BLOCK_CONFIRMATIONS">BLOCK CONFIRMATIONS</string>
+    <string name="MINIMUM_DEPOSIT">MINIMUM DEPOSIT</string>
+    <string name="Deposit_to_Mixin">Deposit %1$s to Mixin</string>
+    <string name="Deposit_to_Mixin_sub">Scan the QR Code to send me %1$s</string>
+    <string name="LIGHTNING_ADDRESS">LIGHTNING ADDRESS</string>
+    <string name="lightning_address_description">%1$s is your Lightning Network address, through which you can conveniently and securely receive payments:</string>
+    <string name="lightning_address_tip_1">The address format is similar to email, simple and memorable.</string>
+    <string name="lightning_address_tip_2">Reusable, no need to generate a new one each time.</string>
+    <string name="lightning_address_tip_3">Supported by mainstream Lightning Network wallets.</string>
+    <string name="lightning_address_mao_tip">Each MAO domain corresponds to a Lightning Network address. If you own a MAO domain, you can receive Lightning Network transfers in the format name@mao.id. Learn More</string>
+    <string name="Lightning_link">https://support.mixin.one/en/article/what-is-lightning-address-1i8733z//</string>
+    <string name="Copy_Address">Copy Address</string>
+    <string name="Enter_Amount">Enter Amount</string>
+    <string name="mixin_payment_title">📣 Mixin Payment</string>
+    <string name="payment_details">💰 Amount：%1$s\n🌐 Network：%2$s\n🤝 Receiver：%3$s</string>
+    <string name="pay_now">Pay Now</string>
 </resources>

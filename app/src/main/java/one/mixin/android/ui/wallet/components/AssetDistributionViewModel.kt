@@ -52,8 +52,8 @@ class AssetDistributionViewModel @Inject constructor(
             return@withContext emptyList()
         }
 
-        when {
-            tokensWithValue.size == 1 -> {
+        when (tokensWithValue.size) {
+            1 -> {
                 tokensWithValue.map { token ->
                     AssetDistribution(
                         symbol = token.symbol,
@@ -63,8 +63,7 @@ class AssetDistributionViewModel @Inject constructor(
                     )
                 }
             }
-
-            tokensWithValue.size == 2 -> {
+            2 -> {
                 val token1 = tokensWithValue[0]
                 val token2 = tokensWithValue[1]
                 val value1 = calculateValue(token1)
@@ -87,7 +86,6 @@ class AssetDistributionViewModel @Inject constructor(
                     )
                 )
             }
-
             else -> {
                 val top2 = tokensWithValue.take(2)
                 val others = tokensWithValue.drop(2)
@@ -149,11 +147,11 @@ class AssetDistributionViewModel @Inject constructor(
             .sortedByDescending { calculateValue(it) }
         val totalWeb3Value = tokensWithValue.sumOf { calculateValue(it) }
         if (totalWeb3Value == BigDecimal.ZERO || tokensWithValue.isEmpty()) return@withContext emptyList()
-        when {
-            tokensWithValue.size == 1 -> tokensWithValue.map { token ->
+        when (tokensWithValue.size) {
+            1 -> tokensWithValue.map { token ->
                 AssetDistribution(token.symbol, 1f, listOfNotNull(token.iconUrl), count = 1)
             }
-            tokensWithValue.size == 2 -> {
+            2 -> {
                 val (t1, t2) = tokensWithValue
                 val p1 = calculateValue(t1).divide(totalWeb3Value, 2, BigDecimal.ROUND_DOWN).toFloat()
                 val p2 = (1f - p1).coerceIn(0f, 1f)

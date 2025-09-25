@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -21,14 +23,13 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
-import one.mixin.android.db.web3.vo.isSolToken
+import one.mixin.android.db.web3.vo.isNativeSolToken
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat12
@@ -39,14 +40,13 @@ import one.mixin.android.extension.textColor
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
-import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
+import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
@@ -57,7 +57,6 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.editDialog
-import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
@@ -71,7 +70,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.Keyboard
 import org.sol4k.PublicKey
 import timber.log.Timber
@@ -87,21 +86,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val TAG = "InputFragment"
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_FROM_ADDRESS = "args_from_address"
-
-        const val ARGS_TO_WALLET = "args_to_wallet"
-        const val ARGS_TO_ACCOUNT = "args_to_account"
-
         const val ARGS_TO_ADDRESS_TAG = "args_to_address_tag"
-        const val ARGS_TO_ADDRESS_ID = "args_to_address_id"
-        const val ARGS_TO_ADDRESS_LABEL = "args_to_address_label"
-
         const val ARGS_TO_USER = "args_to_user"
 
         const val ARGS_WEB3_TOKEN = "args_web3_token"
         const val ARGS_WEB3_CHAIN_TOKEN = "args_web3_chain_token"
-        const val ARGS_TOKEN = "args_token"
 
-        const val ARGS_RECEIVE = "args_receive"
+        const val ARGS_TOKEN = "args_token"
 
         const val ARGS_BIOMETRIC_ITEM = "args_biometric_item"
 
@@ -111,81 +102,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             WEB3,
             BIOMETRIC_ITEM
         }
-
-        fun newInstance(
-            fromAddress: String,
-            toAddress: String,
-            web3Token: Web3TokenItem,
-            chainToken: Web3TokenItem,
-            label: String? = null,
-            toWallet: Boolean = false
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    Timber.e("chain ${chainToken.name} ${web3Token.chainId} ${chainToken.chainId} $fromAddress $toAddress")
-                    putString(ARGS_FROM_ADDRESS, fromAddress)
-                    putString(ARGS_TO_ADDRESS, toAddress)
-                    putParcelable(ARGS_WEB3_TOKEN, web3Token)
-                    putParcelable(ARGS_WEB3_CHAIN_TOKEN, chainToken)
-                    putString(ARGS_TO_ADDRESS_LABEL, label)
-                    putBoolean(ARGS_TO_WALLET, toWallet)
-                }
-            }
-
-        fun newInstance(
-            tokenItem: TokenItem,
-            toAddress: String,
-            tag: String? = null,
-            toAccount: Boolean? = null,
-            isReceive: Boolean = false,
-            label: String? = null
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    if (toAccount != null) {
-                        putBoolean(ARGS_TO_ACCOUNT, toAccount)
-                    }
-                    putParcelable(ARGS_TOKEN, tokenItem)
-                    putString(ARGS_TO_ADDRESS, toAddress)
-                    putString(ARGS_TO_ADDRESS_TAG, tag)
-                    putBoolean(ARGS_RECEIVE, isReceive)
-                    if (label != null) {
-                        putString(ARGS_TO_ADDRESS_LABEL, label)
-                    }
-                }
-            }
-
-        fun newInstance(
-            tokenItem: TokenItem,
-            address: Address,
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_TOKEN, tokenItem)
-                    putString(ARGS_TO_ADDRESS, address.destination)
-                    putString(ARGS_TO_ADDRESS_TAG, address.tag)
-                    putString(ARGS_TO_ADDRESS_ID, address.addressId)
-                    putString(ARGS_TO_ADDRESS_LABEL, address.label)
-                }
-            }
-
-        fun newInstance(
-            tokenItem: TokenItem,
-            user: User
-        ) =
-            InputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_TOKEN, tokenItem)
-                    putParcelable(ARGS_TO_USER, user)
-                }
-            }
-
-        inline fun <reified T : BiometricItem> newInstance(t: T) =
-            InputFragment().apply {
-                withArgs {
-                    putParcelable(ARGS_BIOMETRIC_ITEM, t)
-                }
-            }
     }
 
     private val transferType: TransferType by lazy {
@@ -230,26 +146,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private val addressTag by lazy {
         requireArguments().getString(ARGS_TO_ADDRESS_TAG) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.tag
-    }
-
-    private val addressLabel by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS_LABEL) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.label
-    }
-
-    private val addressId by lazy {
-        requireArguments().getString(ARGS_TO_ADDRESS_ID) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.addressId
-    }
-
-    private val isReceive by lazy {
-        requireArguments().getBoolean(ARGS_RECEIVE, false)
-    }
-
-    private val toWallet by lazy {
-        requireArguments().getBoolean(ARGS_TO_WALLET, false)
-    }
-
-    private val toAccount by lazy {
-        requireArguments().getBoolean(ARGS_TO_ACCOUNT, false)
     }
 
     private val currencyName by lazy {
@@ -307,51 +203,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, getString(R.string.Token))
                 binding.insufficientFunds.text = getString(R.string.send_sol_for_rent, "0.00203928")
-                when (transferType) {
-                    TransferType.USER -> {
-                        titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), user)
-                    }
-                    TransferType.ADDRESS -> {
-                        if (addressLabel.isNullOrBlank()) {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), if (toAccount) getString(R.string.Common_Wallet) else null, "$toAddress${addressTag?.let { ":$it" } ?: ""}".formatPublicKey(16), toAccount)
-                        } else {
-                            titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
-                        }
-                    }
-                    TransferType.WEB3 -> {
-                        titleView.setLabel(
-                            getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
-                            addressLabel ?: if (toWallet) getString(R.string.Mixin_Wallet) else null,
-                            toAddress ?: "",
-                            toWallet
-                        )
-                    }
-                    TransferType.BIOMETRIC_ITEM -> {
-                        assetBiometricItem?.let { item ->
-                            when {
-                                item is WithdrawBiometricItem -> {
-                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), addressLabel, "")
-                                }
-                                item is AddressTransferBiometricItem -> {
-                                    titleView.setLabel(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), null, (if (toAddress == null) item.address else "$toAddress${addressTag?.let { ":$it" } ?: ""}").formatPublicKey(16))
-                                }
-                                item is TransferBiometricItem -> {
-                                    titleView.setSubTitle(getString(if (isReceive) R.string.Receive else R.string.Send_To_Title), item.users) {
-                                        showUserList(item.users)
-                                    }
-                                }
-
-                                else -> {
-                                    titleView.setSubTitle(
-                                        getString(if (isReceive) R.string.Receive else R.string.Send_To_Title),
-                                        ""
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    else -> {}
-                }
+                initTitle()
                 keyboard.tipTitleEnabled = false
                 keyboard.disableNestedScrolling()
                 keyboard.setOnClickKeyboardListener(
@@ -404,7 +256,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                balanceTv.text = getString(R.string.available_balance, "${tokenBalance.let {
                     if (web3Token == null) {
                         it.numberFormat8()
                     } else {
@@ -427,7 +279,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 )
                 binding.addTv.setOnClickListener {
                     if (insufficientBalance.isVisible) {
-                        if (web3Token != null) {
+                        if (web3Token != null) { // Insufficient web token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(web3Token!!)
                                 .apply {
                                     onWeb3Action = { type, t ->
@@ -438,16 +290,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 output = t.assetId,
                                                 null,
                                                 null,
-                                                walletId = JsSigner.currentWalletId,
+                                                walletId = Web3Signer.currentWalletId,
                                                 inMixin = false
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                             val address =
-                                                if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                                                if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                                             this@InputFragment.view?.navigate(
                                                 R.id.action_input_fragment_to_web3_address_fragment,
                                                 Bundle().apply {
                                                     putString("address", address)
+                                                    putParcelable("web3_token", t)
                                                 }
                                             )
                                         }
@@ -456,7 +309,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     parentFragmentManager,
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
-                        } else if (token != null) {
+                        } else if (token != null) { // Insufficient token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(token!!)
                                 .apply {
                                     onAction = { type, t ->
@@ -482,7 +335,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
                         }
-                    } else if (gas != null && chainToken != null) {
+                    } else if (gas != null && chainToken != null) { // Insufficient gas Balance
                         AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
                             .apply {
                                 onWeb3Action = { type, t ->
@@ -491,17 +344,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                             output = t.assetId,
-                                            null,
-                                            null,
+                                            walletId = Web3Signer.currentWalletId,
                                             inMixin = false
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         val address =
-                                            if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                                            if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                                         this@InputFragment.view?.navigate(
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
                                                 putString("address", address)
+                                                putParcelable("web3_token", t)
                                             }
                                         )
                                     }
@@ -510,7 +363,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 parentFragmentManager,
                                 AddFeeBottomSheetDialogFragment.TAG
                             )
-                    } else if (currentFee != null) {
+                    } else if (currentFee != null) { // Insufficient fee Balance
                         AddFeeBottomSheetDialogFragment.newInstance(currentFee!!.token)
                             .apply {
                                 onAction = { type, t ->
@@ -611,9 +464,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     binding.insufficientFeeBalance.isVisible = false
                                 }
                                 val address = (assetBiometricItem as? WithdrawBiometricItem)?.address
-                                    ?: Address(addressId ?: "", "address", assetId, chainId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
+                                    ?: Address("", "address", assetId, chainId, toAddress, addressLabel ?: "", nowInUtc(), addressTag, null)
                                 val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
+                                val toWallet = web3ViewModel.anyAddressExists(listOf(address.destination))
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
                                     networkFee,
@@ -623,7 +477,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     amount,
                                     null,
                                     PaymentStatus.pending.name,
-                                    null
+                                    null,
+                                    toWallet
                                 )
 
                                 prepareCheck(withdrawBiometricItem)
@@ -655,21 +510,42 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     toAddress = toAddress,
                                     chainToken = chainToken,
                                     onTxhash = { _, serializedTx ->
-                                        val txStateFragment =
-                                            TransactionStateFragment.newInstance(
-                                                serializedTx,
-                                                null
-                                            )
-                                        navTo(txStateFragment, TransactionStateFragment.TAG)
                                     },
                                     onDismiss = { isDone->
                                         if (isDone) {
-                                            this@InputFragment.parentFragmentManager.apply {
-                                                if (backStackEntryCount > 0) {
-                                                    popBackStack(
-                                                        null,
-                                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                                    )
+                                            val navController = findNavController()
+                                            val backStackEntryCount = parentFragmentManager.backStackEntryCount
+
+                                            // Check if current fragment is the start destination of navigation
+                                            val currentDestination = navController.currentDestination?.id
+                                            val startDestination = navController.graph.startDestinationId
+                                            val isStartDestination = currentDestination == startDestination || backStackEntryCount <= 1
+
+                                            if (isStartDestination) {
+                                                // If InputFragment or TransferDestinationInputFragment is start destination, exit activity
+                                                requireActivity().finish()
+                                            } else {
+                                                // Otherwise, navigate back to TransferDestinationInputFragment and pop it
+                                                parentFragmentManager.apply {
+                                                    // Pop all fragments back to TransferDestinationInputFragment
+                                                    var foundTransferDestFragment = false
+                                                    val fragmentCount = backStackEntryCount
+                                                    for (i in 0 until fragmentCount) {
+                                                        val topFragment = fragments.lastOrNull()
+                                                        if (topFragment is TransferDestinationInputFragment) {
+                                                            // Found TransferDestinationInputFragment, pop it too
+                                                            popBackStackImmediate()
+                                                            foundTransferDestFragment = true
+                                                            break
+                                                        } else {
+                                                            popBackStackImmediate()
+                                                        }
+                                                    }
+
+                                                    // If no TransferDestinationInputFragment found in stack, just pop all
+                                                    if (!foundTransferDestFragment) {
+                                                        popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                                    }
                                                 }
                                             }
                                         }
@@ -725,6 +601,65 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
             checkSolanaToExists()
             refreshFee()
+        }
+    }
+
+    private var addressLabel:String? = null
+
+    private fun initTitle() {
+        binding.apply {
+            when (transferType) {
+                TransferType.USER -> {
+                    titleView.setSubTitle(getString(R.string.Send_To_Title), user)
+                }
+                TransferType.ADDRESS -> {
+                    renderTitle(requireNotNull(toAddress), addressTag)
+                }
+                TransferType.WEB3 -> {
+                    renderTitle(requireNotNull(toAddress))
+                }
+                TransferType.BIOMETRIC_ITEM -> {
+                    assetBiometricItem?.let { item ->
+                        when {
+                            item is WithdrawBiometricItem -> {
+                                titleView.setLabel(getString(R.string.Send_To_Title), addressLabel, "")
+                            }
+                            item is AddressTransferBiometricItem -> {
+                                titleView.setLabel(getString(R.string.Send_To_Title), null, (if (toAddress == null) item.address else "$toAddress${addressTag?.let { ":$it" } ?: ""}").formatPublicKey(16))
+                                renderTitle(toAddress ?: item.address, addressTag)
+                            }
+                            item is TransferBiometricItem -> {
+                                titleView.setSubTitle(getString(R.string.Send_To_Title), item.users) {
+                                    showUserList(item.users)
+                                }
+                            }
+
+                            else -> {
+                                titleView.setSubTitle(
+                                    getString(R.string.Send_To_Title),
+                                    ""
+                                )
+                            }
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun renderTitle(toAddress: String, tag: String? = null) {
+        lifecycleScope.launch {
+            val (label, index) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, 0)
+            binding.titleView.setLabel(
+                getString(R.string.Send_To_Title),
+                label,
+                content = "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
+                index = index
+            )
+            label?.let {
+                addressLabel = label
+            }
         }
     }
 
@@ -917,11 +852,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    val address = if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                    val address = if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                     view?.navigate(
                         R.id.action_input_fragment_to_web3_address_fragment,
                         Bundle().apply {
                             putString("address", address)
+                            putParcelable("web3_token", web3Token)
                         }
                     )
                 }
@@ -942,10 +878,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     override
     fun onWalletClick() {
-        QrBottomSheetDialogFragment.newInstance(
-            Session.getAccountId()!!,
-            TYPE_RECEIVE_QR
-        ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+        ReceiveQrActivity.show(requireContext(), Session.getAccountId()!!)
     }
 
     private fun getNumberFormat(value: String): String {
@@ -972,7 +905,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 if (length <= 12) {
                     40f
                 } else {
-                    max(40f - 1 * (length - 8), 16f)
+                    max(40f - (length - 8), 16f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }
@@ -1011,7 +944,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private suspend fun checkSolanaToExists() {
         val token = web3Token ?: return
         val to = toAddress ?: return
-        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isSolToken()) return
+        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isNativeSolToken()) return
 
         val toAccount = withContext(Dispatchers.IO) {
             rpc.getAccountInfo(PublicKey(to))
@@ -1046,17 +979,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
                     val balance = runCatching {
                         tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO)?.max(BigDecimal.ZERO)?.let {
-                            if (web3Token == null) {
-                                it.numberFormat8()
-                            } else {
-                                it.numberFormat12()
-                            }
-                        }
+                            if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     }.getOrDefault("0")
-
-                    binding.balance.text = getString(R.string.available_balance, "$balance $tokenSymbol")
+                    binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
                 } else {
-                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                    binding.balanceTv.text = getString(R.string.available_balance, "${tokenBalance.let {
                         if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     } $tokenSymbol")
                 }
@@ -1205,16 +1132,34 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
                         if (success) {
-                            parentFragmentManager.apply {
-                                if (backStackEntryCount > 0) {
-                                    popBackStack(
-                                        null,
-                                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                                    )
-                                }
-                                val activity = requireActivity()
-                                if (backStackEntryCount == 0 && activity is WalletActivity) { // Only pop if no other fragments in back stack
-                                    activity.onBackPressedDispatcher.onBackPressed()
+                            val navController = findNavController()
+                            val backStackEntryCount = parentFragmentManager.backStackEntryCount
+
+                            val currentDestination = navController.currentDestination?.id
+                            val startDestination = navController.graph.startDestinationId
+                            val isStartDestination = currentDestination == startDestination || backStackEntryCount <= 1
+
+                            if (isStartDestination) {
+                                requireActivity().finish()
+                            } else {
+                                parentFragmentManager.apply {
+                                    var foundTransferDestFragment = false
+                                    val fragmentCount = backStackEntryCount
+                                    for (i in 0 until fragmentCount) {
+                                        val topFragment = fragments.lastOrNull()
+                                        if (topFragment is TransferDestinationInputFragment) {
+                                            // Found TransferDestinationInputFragment, pop it too
+                                            popBackStackImmediate()
+                                            foundTransferDestFragment = true
+                                            break
+                                        } else {
+                                            popBackStackImmediate()
+                                        }
+                                    }
+
+                                    if (!foundTransferDestFragment) {
+                                        popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                                    }
                                 }
                             }
                         }
@@ -1255,12 +1200,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
 
                 }.getOrDefault("0")
-                binding.balance.text = getString(
-                    R.string.available_balance,
-                    "$balance $tokenSymbol"
-                )
+                binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
             } else {
-                binding.balance.text = getString(
+                binding.balanceTv.text = getString(
                     R.string.available_balance,
                     "${
                         tokenBalance.let {

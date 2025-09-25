@@ -34,6 +34,10 @@ fun getChainNetwork(
         return "MVM"
     } else if (chainId == Constants.ChainId.Base) {
         return "Base"
+    } else if (chainId == Constants.ChainId.Arbitrum) {
+        return "Arbitrum"
+    } else if (chainId == Constants.ChainId.Optimism) {
+        return "Optimism"
     }
 
     if (assetId == chainId && !bepChains.contains(chainId) && assetId != Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) return null

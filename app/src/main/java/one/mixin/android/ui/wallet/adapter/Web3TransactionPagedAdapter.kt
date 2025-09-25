@@ -10,6 +10,7 @@ import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.web3.details.Web3TransactionHolder
+import timber.log.Timber
 import kotlin.math.abs
 
 class Web3TransactionPagedAdapter :
@@ -52,8 +53,10 @@ class Web3TransactionPagedAdapter :
         position: Int,
     ) {
         getItem(position)?.let { transaction ->
+            Timber.e("onBindViewHolder: $position, ${transaction.transactionHash}")
             holder.bind(transaction)
             holder.itemView.setOnClickListener {
+                Timber.e("onBindViewHolder: $position, ${transaction.transactionHash} clicked")
                 itemClickListener?.onItemClick(transaction)
             }
         }
@@ -63,8 +66,11 @@ class Web3TransactionPagedAdapter :
         parent: ViewGroup,
         viewType: Int,
     ): Web3TransactionHolder {
+        val binding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Web3TransactionHolder(
-            ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        )
+            binding
+        ).also {
+            binding.root.tag = it
+        }
     }
 }

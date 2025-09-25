@@ -55,6 +55,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
@@ -113,7 +114,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import timber.log.Timber
 import java.io.IOException
@@ -988,9 +989,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         }
     }
 
-    private fun handleTipSignScheme(uri: Uri): Boolean {
+    private suspend fun handleTipSignScheme(uri: Uri): Boolean {
         val chain = uri.getQueryParameter("chain")
-        if (chain.isNullOrBlank() || !chain.equals(JsSigner.JsSignerNetwork.Solana.name, true)) {
+        if (chain.isNullOrBlank() || !chain.equals(Web3Signer.JsSignerNetwork.Solana.name, true)) {
             return false
         }
         val raw = uri.getQueryParameter("raw")
@@ -1008,9 +1009,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             } catch (e: IllegalArgumentException) {
                 return false
             }
-        JsSigner.useSolana()
-        if (JsSigner.address.isBlank()) {
-            WalletUnlockBottomSheetDialogFragment.getInstance(JsSigner.JsSignerNetwork.Solana.name)
+        Web3Signer.useSolana()
+        if (Web3Signer.address.isBlank()) {
+            WalletUnlockBottomSheetDialogFragment.getInstance(Web3Signer.JsSignerNetwork.Solana.name)
                 .setOnDismiss { dismiss() }
                 .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
             return true
@@ -1201,6 +1202,8 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         var asset = oldLinkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = oldLinkViewModel.refreshAsset(assetId)
+        } else {
+            jobManager.addJobInBackground(RefreshAssetsJob(assetId))
         }
         if (asset != null && asset.assetId != asset.chainId && oldLinkViewModel.findAssetItemById(asset.chainId) == null) {
             oldLinkViewModel.refreshAsset(asset.chainId)

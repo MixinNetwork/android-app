@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -54,6 +56,7 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -70,11 +73,10 @@ import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.WithdrawalMemoPossibility
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 
 @Composable
 fun TransferDestinationInputPage(
@@ -94,7 +96,6 @@ fun TransferDestinationInputPage(
     onAddressClick: (Address) -> Unit,
 ) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val localLocalSoftwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val viewModel: AddressViewModel = hiltViewModel()
@@ -103,12 +104,25 @@ fun TransferDestinationInputPage(
         .collectAsState(initial = emptyList())
 
     var account by remember { mutableStateOf("") }
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+    var walletDisplayName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(web3Token?.walletId) {
+        if (web3Token?.walletId != null) {
+            viewModel.findWeb3WalletById(web3Token.walletId)?.let {
+                if (it.category == WalletCategory.CLASSIC.value ||
+                    it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                    it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                    it.category == WalletCategory.WATCH_ADDRESS.value) {
+                    walletDisplayName = it.name
+                }
+            }
+        }
+    }
 
     LaunchedEffect(token?.chainId) {
         account = when {
-            token?.chainId == ChainId.SOLANA_CHAIN_ID -> JsSigner.solanaAddress
-            token?.chainId in Constants.Web3ChainIds -> JsSigner.evmAddress
+            token?.chainId == ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+            token?.chainId in Constants.Web3ChainIds -> Web3Signer.evmAddress
             else -> ""
         }
     }
@@ -136,10 +150,31 @@ fun TransferDestinationInputPage(
         ) {
             PageScaffold(
                 title = stringResource(R.string.Send),
-                subtitle = name ?: if (web3Token != null) {
-                    stringResource(R.string.Common_Wallet)
-                } else {
-                    stringResource(R.string.Privacy_Wallet)
+                subtitle = {
+                    val subtitleText = when {
+                        name != null -> name
+                        web3Token != null -> walletDisplayName ?: stringResource(R.string.Common_Wallet)
+                        else -> stringResource(R.string.Privacy_Wallet)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = subtitleText,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (name == null && web3Token == null) { // Privacy Wallet
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
                 },
                 verticalScrollable = false,
                 pop = pop,
@@ -160,6 +195,7 @@ fun TransferDestinationInputPage(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp)
+                        .imePadding(),
                 ) {
                     TokenInfoHeader(token = token, web3Token = web3Token)
                     Box(
@@ -316,7 +352,9 @@ fun TransferDestinationInputPage(
                                     isPrivacy = false
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                            } else if (account.isNotBlank()) {
+                            } else if (token?.chainId == ChainId.SOLANA_CHAIN_ID ||
+                                token?.chainId in Constants.Web3ChainIds
+                            ) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
                                     stringResource(R.string.My_Wallet),

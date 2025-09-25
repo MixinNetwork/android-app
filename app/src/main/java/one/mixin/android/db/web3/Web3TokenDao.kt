@@ -3,6 +3,8 @@ package one.mixin.android.db.web3
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao
@@ -14,12 +16,23 @@ import one.mixin.android.vo.safe.UnifiedAssetItem
 @Dao
 interface Web3TokenDao : BaseDao<Web3Token> {
 
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.wallet_id = :walletId 
         ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
-    """)
+    """
+    )
     fun web3TokenItems(walletId: String): LiveData<List<Web3TokenItem>>
+
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
+        WHERE t.wallet_id = :walletId AND t.level >= :level
+        ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
+    """
+    )
+    fun web3TokenItems(walletId: String, level:Int): LiveData<List<Web3TokenItem>>
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId")
     suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem>
@@ -29,13 +42,21 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.amount > 0 AND t.wallet_id = :walletId")
     suspend fun findAssetItemsWithBalance(walletId: String): List<Web3TokenItem>
-    
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE (te.hidden != 1 OR te.hidden IS NULL) AND t.wallet_id = :walletId
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
+        WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL) 
         ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
     """)
     fun web3TokenItemsExcludeHidden(walletId: String): LiveData<List<Web3TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+
+    @RawQuery
+    fun web3TokenItemsExcludeHiddenRaw(query: RoomRawQuery): List<Web3TokenItem>
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE te.hidden = 1 AND (:walletId IS NULL OR t.wallet_id = :walletId) ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC""")
     fun hiddenAssetItems(walletId: String): LiveData<List<Web3TokenItem>>
 
@@ -63,10 +84,13 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
     suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem>
 
+    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
+    fun findWeb3TokenItemsByIdsSync(walletId: String, assetIds: List<String>): List<Web3TokenItem>
+
     @Query("SELECT amount FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
     fun tokenExtraFlow(walletId: String, assetId: String): Flow<String?>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id 
         WHERE wallet_id = :walletId AND (t.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR t.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)

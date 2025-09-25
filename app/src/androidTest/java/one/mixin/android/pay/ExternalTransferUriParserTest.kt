@@ -1,5 +1,7 @@
 package one.mixin.android.pay
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.api.response.AddressResponse
@@ -8,9 +10,9 @@ import one.mixin.android.vo.AssetPrecision
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
+@HiltAndroidTest
 class ExternalTransferUriParserTest {
     @Test
     fun testParseBitcoin() =

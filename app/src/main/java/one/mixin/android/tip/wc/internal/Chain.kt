@@ -16,7 +16,7 @@ sealed class Chain(
     val symbol: String,
     private val rpcServers: List<String>,
 ) {
-    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum Mainnet", "ETH", listOf("https://eth.llamarpc.com"))
+    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum", "ETH", listOf("https://eth.llamarpc.com"))
 
     object Arbitrum : Chain(Constants.ChainId.Arbitrum, "eip155", "42161", "0xa4b1", "Arbitrum One", "ETH", listOf("https://arbitrum.llamarpc.com"))
 
@@ -27,11 +27,11 @@ sealed class Chain(
     // Todo replace id
     object Blast : Chain(ETHEREUM_CHAIN_ID, "eip155", "81457", "0x13e31", "Blast", "ETH", listOf("https://rpc.blast.io"))
 
-    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "Binance Smart Chain Mainnet", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "BNB Smart Chain", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
 
-    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon Mainnet", "MATIC", listOf("https://polygon-rpc.com"))
+    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon", "MATIC", listOf("https://polygon-rpc.com"))
 
-    object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana Mainnet", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+    object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
     val chainId: String
         get() {
@@ -58,7 +58,7 @@ sealed class Chain(
         }
 }
 // Chain.Blast
-internal val supportChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Solana)
+internal val supportChainList = listOf(Chain.Solana, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum)
 internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum)
 
 internal fun String.getChain(): Chain? {

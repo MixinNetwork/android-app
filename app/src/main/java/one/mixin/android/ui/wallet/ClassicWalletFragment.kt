@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,17 +11,19 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.switchMap
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -34,13 +35,12 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3Job
+import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
@@ -54,6 +54,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.widget.PercentItemView
@@ -64,6 +65,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
@@ -91,9 +93,31 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     private val _walletId = MutableLiveData<String>()
     var walletId: String = ""
         set(value) {
-            field = value
-            _walletId.value = value
+            if (value != field) {
+                field = value
+                _walletId.value = value
+            }
+            Timber.e("walletId set to $value")
         }
+
+    private val tokensLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData()
+            } else {
+                web3ViewModel.web3TokensExcludeHidden(id)
+            }
+        }
+    }
+    private val pendingTxCountLiveData by lazy {
+        _walletId.switchMap { id ->
+            if (id.isNullOrEmpty()) {
+                MutableLiveData(0)
+            } else {
+                web3ViewModel.getPendingTransactionCount(id)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -110,18 +134,38 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in ClassicWalletFragment")
+        lifecycleScope.launch {
+            val queryDuration = measureTime {
+                val data = web3ViewModel.web3TokensExcludeHiddenRaw(walletId)
+                assets = data
+                Timber.e("web3TokensExcludeHiddenRaw query completed: data size: ${data.size}, walletId: $walletId")
+            }
+            Timber.e("web3TokensExcludeHiddenRaw query took: $queryDuration")
+            if (isAdded) {
+                assetsAdapter.setAssetList(assets)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
+
+                val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                renderPie(assets, bitcoin)
+            }
+        }
+
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         lifecycleScope.launch {
-
                             val wallet = web3ViewModel.findWalletById(walletId)
+                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId = chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
@@ -131,10 +175,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.send.setOnClickListener {
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
+                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId = chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
@@ -164,9 +209,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                                val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
@@ -187,9 +233,10 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         lifecycleScope.launch {
                             val wallet = web3ViewModel.findWalletById(walletId)
                             if (wallet?.isImported() == true && !wallet.hasLocalPrivateKey) {
+                                val chainId = web3ViewModel.getAddresses(walletId).first().chainId
                                 ImportKeyBottomSheetDialogFragment.newInstance(
                                     if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) ImportKeyBottomSheetDialogFragment.PopupType.ImportMnemonicPhrase else ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey,
-                                    walletId = walletId
+                                    walletId = walletId, chainId = chainId
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
@@ -228,13 +275,9 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             )
         }
 
-        // Initialize _walletId
-        lifecycleScope.launch {
-            if (walletId.isEmpty()) {
-                walletId = web3ViewModel.getClassicWalletId() ?: ""
-            }
+        _headBinding?.watchLayout?.setOnClickListener {
+            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_ADDRESS, walletId = walletId)
         }
-
         _walletId.observe(viewLifecycleOwner) { id ->
             if (id.isNotEmpty()) {
                 lifecycleScope.launch {
@@ -254,14 +297,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         }
                     }
                 }
-                _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, web3ViewModel.getPendingTransactionCount(walletId))
-
-                lastData?.removeObservers(viewLifecycleOwner)
-                lastData = web3ViewModel.web3TokensExcludeHidden(id)
-                lastData?.observe(viewLifecycleOwner, observer)
             }
         }
 
+        _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, pendingTxCountLiveData)
+        tokensLiveData.observe(viewLifecycleOwner, observer)
 
         RxBus.listen(QuoteColorEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -271,9 +311,8 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             }
     }
 
-    private var lastData: LiveData<List<Web3TokenItem>>? = null
-
     private val observer = Observer<List<Web3TokenItem>> { data ->
+        Timber.e("observe web3TokensExcludeHidden data size: ${data.size}, walletId: $walletId")
         if (data.isEmpty()) {
             setEmpty()
             assets = data
@@ -289,7 +328,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 lastFiatCurrency = Session.getFiatCurrency()
                 assetsAdapter.notifyDataSetChanged()
             }
-            lifecycleScope.launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 val bitcoin = web3ViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
                 renderPie(assets, bitcoin)
             }
@@ -305,7 +344,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onResume() {
         super.onResume()
-        jobManager.addJobInBackground(RefreshWeb3Job())
+        jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
         refreshJob = PendingTransactionRefreshHelper.startRefreshData(
             fragment = this,
             web3ViewModel = web3ViewModel,
@@ -322,7 +361,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
 
     override fun onHiddenChanged(hidden: Boolean) {
         if (!hidden) {
-            jobManager.addJobInBackground(RefreshWeb3Job())
+            jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
         }
     }
 
@@ -339,7 +378,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         super.onDestroyView()
     }
 
-    private fun renderPie(
+    private suspend fun renderPie(
         assets: List<Web3TokenItem>,
         bitcoin: TokenItem?,
     ) {
@@ -356,44 +395,46 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 totalFiat.divide(BigDecimal(Fiats.getRate()), 16, RoundingMode.HALF_UP)
                     .divide(BigDecimal(bitcoin.priceUsd), 16, RoundingMode.HALF_UP)
         }
-        _headBinding?.apply {
-            totalAsTv.text =
-                try {
-                    if (totalBTC.numberFormat8().toFloat() == 0f) {
-                        "0.00"
-                    } else {
+        withContext(Dispatchers.Main) {
+            _headBinding?.apply {
+                totalAsTv.text =
+                    try {
+                        if (totalBTC.numberFormat8().toFloat() == 0f) {
+                            "0.00"
+                        } else {
+                            totalBTC.numberFormat8()
+                        }
+                    } catch (ignored: NumberFormatException) {
                         totalBTC.numberFormat8()
                     }
-                } catch (ignored: NumberFormatException) {
-                    totalBTC.numberFormat8()
-                }
-            totalTv.text =
-                try {
-                    if (totalFiat.numberFormat2().toFloat() == 0f) {
-                        "0.00"
-                    } else {
+                totalTv.text =
+                    try {
+                        if (totalFiat.numberFormat2().toFloat() == 0f) {
+                            "0.00"
+                        } else {
+                            totalFiat.numberFormat2()
+                        }
+                    } catch (ignored: NumberFormatException) {
                         totalFiat.numberFormat2()
                     }
-                } catch (ignored: NumberFormatException) {
-                    totalFiat.numberFormat2()
-                }
-            symbol.text = Fiats.getSymbol()
+                symbol.text = Fiats.getSymbol()
 
-            if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
-                pieItemContainer.visibility = GONE
-                percentView.visibility = GONE
+                if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
+                    pieItemContainer.visibility = GONE
+                    percentView.visibility = GONE
+                    btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
+                        bottomMargin = requireContext().dpToPx(32f)
+                    }
+                    return@withContext
+                }
+
                 btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
-                    bottomMargin = requireContext().dpToPx(32f)
+                    bottomMargin = requireContext().dpToPx(16f)
                 }
-                return
+                pieItemContainer.visibility = VISIBLE
+                percentView.visibility = VISIBLE
+                setPieView(assets, totalFiat)
             }
-
-            btcRl.updateLayoutParams<LinearLayout.LayoutParams> {
-                bottomMargin = requireContext().dpToPx(16f)
-            }
-            pieItemContainer.visibility = VISIBLE
-            percentView.visibility = VISIBLE
-            setPieView(assets, totalFiat)
         }
     }
 
@@ -484,7 +525,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         toast(R.string.Data_error)
                         return@launch
                     }
-                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, WalletActivity.Destination.Address)
+                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, token, WalletActivity.Destination.Address)
                 }
                 dismissNow()
             }

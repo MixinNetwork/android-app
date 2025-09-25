@@ -209,6 +209,7 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
@@ -980,11 +981,17 @@ class ConversationFragment() :
 
     private fun createImageUri() = Uri.fromFile(context?.getOtherPath()?.createImageTemp())
 
-    private val conversationId: String by lazy<String> {
+    private val conversationId: String by lazy {
         var cid = requireArguments().getString(CONVERSATION_ID)
         if (cid.isNullOrBlank()) {
             isFirstMessage = true
-            cid = generateConversationId(sender.userId, recipient!!.userId)
+            val recipientId = recipient?.userId
+            if (recipientId == null) {
+                reportException(IllegalStateException("no conversationId and no recipient"))
+                requireActivity().finish()
+                return@lazy ""
+            }
+            cid = generateConversationId(sender.userId, recipientId)
         }
         cid
     }
@@ -2615,10 +2622,9 @@ class ConversationFragment() :
                                     AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                                         .setOnAssetClick { asset ->
                                             activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, asset.assetId)
-                                            navTo(
-                                                InputFragment.newInstance(asset, recipient),
-                                                InputFragment.TAG
-                                            )
+                                            activity?.let {
+                                                WalletActivity.showInputForUser(it,asset, recipient)
+                                            }
                                         }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                                 }
                             } else {

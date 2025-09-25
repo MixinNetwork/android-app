@@ -12,6 +12,7 @@ import androidx.core.view.setPadding
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewAvatarBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.clear
@@ -24,7 +25,6 @@ import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
-import one.mixin.android.db.web3.vo.TransactionType
 
 class AvatarView : ViewAnimator {
     private val binding = ViewAvatarBinding.inflate(LayoutInflater.from(context), this)

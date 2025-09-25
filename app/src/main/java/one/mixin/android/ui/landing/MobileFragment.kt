@@ -39,9 +39,11 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.isAnonymousNumber
 import one.mixin.android.util.isValidNumber
 import one.mixin.android.util.reportException
@@ -109,10 +111,15 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("MobileFragment onViewCreated")
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
                 titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
+            }
+            titleView.setOnLongClickListener{
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
             }
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             binding.titleView.rightIb.setOnClickListener {
@@ -167,6 +174,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
             mnemonicPhrase.setOnClickListener {
+                AnalyticsTracker.trackLoginMnemonicPhrase()
                 activity?.addFragment(
                     this@MobileFragment,
                     LandingMnemonicPhraseFragment.newInstance(),
@@ -297,6 +305,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     hideLoading()
                     ErrorHandler.handleError(t)
                     reportException("$TAG loginVerification", t)
+                    Timber.e(t)
                 },
             )
     }
@@ -322,6 +331,11 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                         },
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+            }
+            if (from == FROM_LANDING_CREATE) {
+                AnalyticsTracker.trackSignUpCaptcha("phone_number")
+            } else if (from == FROM_LANDING) {
+                AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
             }
             captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
         }

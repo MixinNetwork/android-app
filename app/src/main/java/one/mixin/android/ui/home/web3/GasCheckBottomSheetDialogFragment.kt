@@ -41,7 +41,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -123,11 +123,11 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.linkLoadingInfo.text = ""
         lifecycleScope.launch {
             if (swapResult != null) {
-                val web3TokenItem = viewModel.web3TokenItemById(JsSigner.currentWalletId, fromToken.assetId)
-                val chainTokenItem = viewModel.web3TokenItemById(JsSigner.currentWalletId, fromToken.chain.chainId)
+                val web3TokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.assetId)
+                val chainTokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.chain.chainId)
                 if (web3TokenItem != null) {
                     val jsSignMessage = web3TokenItem.buildTransaction(
-                        rpc, JsSigner.evmAddress,
+                        rpc, Web3Signer.evmAddress,
                         swapResult!!.depositDestination!!,
                         swapResult!!.quote.inAmount
                     )
@@ -187,7 +187,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
     private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: JsSigner.currentChain
+        token?.getChainFromName() ?: Web3Signer.currentChain
     }
 
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
@@ -262,6 +262,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         transaction.data,
                         transaction.from,
                         transaction.to,
+                        transaction.value,
                     )
                 )
                 if (r.isSuccess.not()) {

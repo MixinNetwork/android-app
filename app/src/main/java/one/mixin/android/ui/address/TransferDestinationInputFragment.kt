@@ -59,7 +59,9 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.decodeICAP
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
@@ -233,7 +235,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 toWallet = { fromWalletId ->
                                     requireView().hideKeyboard()
-                                        WalletListBottomSheetDialogFragment.newInstance(fromWalletId, web3Token?.chainId?: token!!.chainId).apply {
+                                    WalletListBottomSheetDialogFragment.newInstance(fromWalletId, web3Token?.chainId ?: token!!.chainId).apply {
                                             setOnWalletClickListener { destinationWallet ->
                                                 this@TransferDestinationInputFragment.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                                                     Timber.e(error)
@@ -260,18 +262,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                         Bundle().apply {
                                                                             putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress.destination)
                                                                             putString(InputFragment.ARGS_TO_ADDRESS, toAddress)
-                                                                            putString(
-                                                                                InputFragment.ARGS_TO_ADDRESS_LABEL,
-                                                                                if (destinationWallet == null)
-                                                                                    getString(R.string.Privacy_Wallet)
-                                                                                else if (destinationWallet.category == WalletCategory.CLASSIC.value)
-                                                                                    getString(R.string.Common_Wallet)
-                                                                                else destinationWallet.name
-                                                                            )
                                                                             putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
                                                                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
                                                                             putParcelable(ARGS_WALLET, wallet)
-                                                                            putBoolean(InputFragment.ARGS_TO_WALLET, destinationWallet == null)
                                                                         })
                                                                 }
                                                             }
@@ -286,7 +279,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                                     Bundle().apply {
                                                                         putParcelable(InputFragment.ARGS_TOKEN, token)
                                                                         putString(InputFragment.ARGS_TO_ADDRESS, toAddress.destination)
-                                                                        putBoolean(InputFragment.ARGS_TO_WALLET, true)
                                                                     })
                                                             } else {
                                                                 toast(R.string.Alert_Not_Support)
@@ -311,7 +303,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         )
                                     } else {
                                         val memoEnabled =
-                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE
                                         if (memoEnabled) {
                                             navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
                                         } else if (web3Token != null) {
@@ -367,10 +359,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                     navigateToInputFragmentWithBundle(Bundle().apply {
                                                         putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
                                                         putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                                                        putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
                                                         putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token!!)
                                                         putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
                                                         putParcelable(ARGS_WALLET, wallet)
-                                                        putString(InputFragment.ARGS_TO_ADDRESS_LABEL, address.label)
                                                     })
                                                 }
                                             }
@@ -380,8 +372,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         navigateToInputFragmentWithBundle(Bundle().apply {
                                             putParcelable(InputFragment.ARGS_TOKEN, token)
                                             putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
-                                            putBoolean(InputFragment.ARGS_TO_ACCOUNT, true)
-                                            putString(InputFragment.ARGS_TO_ADDRESS_LABEL, address.label)
+                                            putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
                                         })
                                     }
                                 },
@@ -405,7 +396,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 web3Token = web3Token,
                                 contentText = scannedAddress,
                                 onNext = { address ->
-                                    if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE)
+                                    if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE)
                                         navController.navigate("${TransferDestination.Memo.name}?address=$address")
                                     else
                                         navController.navigate("${TransferDestination.Label.name}?address=$address")
@@ -584,25 +575,18 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
                     if (response.isSuccess) {
                         errorInfo = null
-                        val addressLabel = withContext(Dispatchers.IO) {
-                            if (toAccount == true) return@withContext null
-                            viewModel.findAddressByReceiver(destination, tag ?: "")
-                        }
                         when {
                             asset != null && destination.isNotEmpty() && tag != null -> {
                                 navigateToInputFragmentWithBundle(Bundle().apply {
                                     putParcelable(InputFragment.ARGS_TOKEN, asset)
                                     putString(InputFragment.ARGS_TO_ADDRESS, destination)
                                     putString(InputFragment.ARGS_TO_ADDRESS_TAG, tag)
-                                    putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
                                 })
                             }
                             asset != null && destination.isNotEmpty() -> {
                                 navigateToInputFragmentWithBundle(Bundle().apply {
                                     putParcelable(InputFragment.ARGS_TOKEN, asset)
                                     putString(InputFragment.ARGS_TO_ADDRESS, destination)
-                                    putBoolean(InputFragment.ARGS_TO_ACCOUNT, toAccount ?: false)
-                                    putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
                                 })
                             }
                             fromAddress != null && destination.isNotEmpty() && web3Token != null && chainToken != null -> {
@@ -611,12 +595,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     putString(InputFragment.ARGS_TO_ADDRESS, destination)
                                     putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token)
                                     putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
-                                    putString(InputFragment.ARGS_TO_ADDRESS_LABEL, addressLabel)
                                 })
                             }
                         }
                     } else {
-                        errorInfo = response.errorDescription
+                        errorInfo = requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
                     }
                 }
             } catch (e: Exception) {

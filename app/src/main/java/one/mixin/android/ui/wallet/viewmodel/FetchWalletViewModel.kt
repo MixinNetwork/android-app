@@ -21,7 +21,11 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.bip44.Bip44Path
+import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
@@ -30,11 +34,14 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.Web3Signer
+import org.sol4k.Base58
 import org.sol4k.Keypair
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -95,26 +102,33 @@ class FetchWalletViewModel @Inject constructor(
         startFetching(currentIndex)
     }
 
+    private var localMaxIndex: Int = 0
+
     private fun startFetching(offset: Int) {
         viewModelScope.launch {
             _state.value = FetchWalletState.FETCHING
             try {
                 if (mnemonic.isNotBlank()) {
-                    val names = web3Repository.getAllWalletNames(listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                    val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                    val regex = """^$commonWalletName (\d+)$""".toRegex()
-                    val maxIndex = names
-                        .filterNotNull()
-                        .mapNotNull { name ->
-                            regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                        }.maxOrNull() ?: 0
+                    if (localMaxIndex == 0) {
+                        val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                        val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
+                        val regex = """^$commonWalletName (\d+)$""".toRegex()
+                        localMaxIndex = names
+                            .filterNotNull()
+                            .mapNotNull { name ->
+                                regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+                            }.maxOrNull() ?: 0
+                        Timber.e("localMaxIndex $localMaxIndex")
+                    }
 
                     val wallets = (offset until offset + 10).map { index ->
                         val ethereumWallet =
                             CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
                         val solanaWallet =
                             CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
-                        IndexedWallet(maxIndex + index + 1, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
+
+                        val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${localMaxIndex + 1}"
+                        IndexedWallet( name, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
                     }
 
                     val addresses = wallets.flatMap {
@@ -139,15 +153,14 @@ class FetchWalletViewModel @Inject constructor(
                                 val allTokens = (evmTokens + solanaTokens).sortedByDescending {
                                     (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                                 }
-                                IndexedWallet(
-                                    wallet.index,
-                                    wallet.ethereumWallet,
-                                    wallet.solanaWallet,
-                                    exists = wallet.exists,
-                                    assets = allTokens
-                                )
-                            }.filter { it.assets.isNotEmpty() }
+                                wallet.copy(assets = allTokens)
+                            }.filter { it.assets.isNotEmpty() }.map { wallet ->
+                                localMaxIndex ++
+                                val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} $localMaxIndex"
+                                wallet.copy(name = name)
+                            }
                             if (offset == 0 && walletInfos.isEmpty()) {
+                                localMaxIndex ++
                                 _wallets.value = listOf(wallets[0])
                             } else {
                                 _selectedWalletInfos.value = (walletInfos.filter { it.exists.not() } + _selectedWalletInfos.value).toSet()
@@ -174,21 +187,24 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.IMPORTING
             try {
                 val walletsToCreate = selectedWalletInfos.value.map {
-                    val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${it.index}"
                     val category = WalletCategory.IMPORTED_MNEMONIC.value
                     val addresses = listOf(
-                        Web3AddressRequest(
+                        createSignedWeb3AddressRequest(
                             destination = it.ethereumWallet.address,
                             chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                            path = it.ethereumWallet.path
+                            path = it.ethereumWallet.path,
+                            privateKey = it.ethereumWallet.privateKey,
+                            category = category
                         ),
-                        Web3AddressRequest(
+                        createSignedWeb3AddressRequest(
                             destination = it.solanaWallet.address,
                             chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                            path = it.solanaWallet.path
+                            path = it.solanaWallet.path,
+                            privateKey = it.solanaWallet.privateKey,
+                            category = category
                         )
                     )
-                    Pair(WalletRequest(name, category, addresses), it.solanaWallet.mnemonic.split(" "))
+                    Pair(WalletRequest(it.name, category, addresses), it.solanaWallet.mnemonic.split(" "))
                 }
 
                 val expectedCount = walletsToCreate.size
@@ -285,7 +301,7 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    fun getWeb3Priva(context: Context, chainId: String?): String? {
+    fun getWeb3Priva(context: Context, chainId: String?, walletId: String?): String? {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
@@ -293,6 +309,10 @@ class FetchWalletViewModel @Inject constructor(
         }
         if (chainId == null) {
             Timber.e("Chain ID is null, cannot get private key.")
+            return null
+        }
+        if (walletId != Web3Signer.currentWalletId) {
+            Timber.e("Wallet ID does not match current wallet ID, cannot get private key.")
             return null
         }
         return CryptoWalletHelper.getWeb3PrivateKey(context, currentSpendKey, chainId)?.let {
@@ -311,7 +331,7 @@ class FetchWalletViewModel @Inject constructor(
             Timber.e("Spend key is null, cannot save wallets.")
             return null
         }
-        return CryptoWalletHelper.getWeb3Mnemonic(context, currentSpendKey, JsSigner.currentWalletId)
+        return CryptoWalletHelper.getWeb3Mnemonic(context, currentSpendKey, Web3Signer.currentWalletId)
     }
 
     fun importWallet(key: String, chainId: String, mode: WalletSecurityActivity.Mode) {
@@ -319,16 +339,6 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 val address: String
                 val category: WalletCategory
-                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                val regex = """^$commonWalletName (\d+)$""".toRegex()
-                val maxIndex = names
-                    .filterNotNull()
-                    .mapNotNull { name ->
-                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                    }.maxOrNull() ?: 0
-
-                val name = "${MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)} ${maxIndex + 1}"
                 _state.value = FetchWalletState.IMPORTING
                 when (mode) {
                     WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
@@ -347,11 +357,27 @@ class FetchWalletViewModel @Inject constructor(
                 if (address.isBlank()) {
                     throw IllegalArgumentException("Could not derive or find address.")
                 }
-
-                val web3AddressRequest = Web3AddressRequest(
+                val names = web3Repository.getAllWalletNames(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) listOf(WalletCategory.WATCH_ADDRESS.value) else listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                val walletName = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) { MixinApplication.appContext.getString(R.string.Watch_Wallet) } else { MixinApplication.appContext.getString(R.string.Common_Wallet) }
+                val regex = """^$walletName (\d+)$""".toRegex()
+                val maxIndex = names
+                    .filterNotNull()
+                    .mapNotNull { name ->
+                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+                    }.maxOrNull() ?: 0
+                val name = "${MixinApplication.appContext.getString(if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Watch_Wallet else R.string.Common_Wallet)} ${maxIndex + 1}"
+                val web3AddressRequest = createSignedWeb3AddressRequest(
                     destination = address,
                     chainId = chainId,
-                    path = null
+                    path = null,
+                    privateKey = key.let {
+                        if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                            Base58.decode(key)
+                        } else {
+                            Numeric.hexStringToByteArray(key)
+                        }
+                    },
+                    category = category.value
                 )
 
                 val walletRequest = WalletRequest(
@@ -435,5 +461,107 @@ class FetchWalletViewModel @Inject constructor(
             return
         }
         saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, walletId, privateKey)
+    }
+
+    fun createClassicWallet() {
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            Timber.e("Spend key is null, cannot save wallets.")
+            _errorMessage.value = "Spend key is null"
+            _state.value = FetchWalletState.IMPORT_ERROR
+            return
+        }
+        viewModelScope.launch {
+            try {
+                _state.value = FetchWalletState.IMPORTING
+                val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                val classicIndex = web3Repository.getClassicWalletMaxIndex() + 1
+                val walletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
+                val regex = """^$walletName (\d+)$""".toRegex()
+                val maxIndex = names
+                    .filterNotNull()
+                    .mapNotNull { name ->
+                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
+                    }.maxOrNull() ?: 0
+                val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${maxIndex + 1}"
+                val evmAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
+                val solAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
+                val walletRequest = WalletRequest(
+                    name = name,
+                    category = WalletCategory.CLASSIC.value,
+                    addresses = listOf(
+                        createSignedWeb3AddressRequest(
+                            destination = evmAddress,
+                            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                            path = Bip44Path.ethereumPathString(classicIndex),
+                            privateKey = tipPrivToPrivateKey(currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex),
+                            category = WalletCategory.CLASSIC.value
+                        ),
+                        createSignedWeb3AddressRequest(
+                            destination = solAddress,
+                            chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                            path = Bip44Path.solanaPathString(classicIndex),
+                            privateKey = tipPrivToPrivateKey(currentSpendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
+                            category = WalletCategory.CLASSIC.value
+                        )
+                    )
+                )
+                saveImportedWallet(walletRequest, null)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to import wallet")
+                _state.value = FetchWalletState.IMPORT_ERROR
+            }
+        }
+    }
+    private fun createSignedWeb3AddressRequest(
+        destination: String,
+        chainId: String,
+        path: String?,
+        privateKey: String,
+        category: String
+    ): Web3AddressRequest {
+        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+            val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
+            createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
+        } else {
+            val privateKeyBytes = Base58.decode(privateKey)
+            createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
+        }
+    }
+
+    private fun createSignedWeb3AddressRequest(
+        destination: String,
+        chainId: String,
+        path: String?,
+        privateKey: ByteArray?,
+        category: String
+    ): Web3AddressRequest {
+        val selfId = Session.getAccountId()
+        if (category == WalletCategory.WATCH_ADDRESS.value) {
+            return Web3AddressRequest(
+                destination = destination,
+                chainId = chainId,
+                path = path,
+                signature = null,
+                timestamp = null
+            )
+        }
+        val now = Instant.now()
+        val signature = if (privateKey != null) {
+            val message = "$destination\n$selfId\n${now.epochSecond}"
+            if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
+            } else {
+                Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+            }
+        } else null
+
+        return Web3AddressRequest(
+            destination = destination,
+            chainId = chainId,
+            path = path,
+            signature = signature,
+            timestamp = now.toString()
+        )
     }
 }

@@ -19,6 +19,13 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_arrow_back" />
 
+    <View
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignTop="@id/back_iv"
+        android:layout_toEndOf="@id/back_iv"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

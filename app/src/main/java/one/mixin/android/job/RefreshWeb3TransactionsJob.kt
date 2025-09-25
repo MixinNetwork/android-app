@@ -12,6 +12,7 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
 
 class RefreshWeb3TransactionsJob(
+    val walletId: String? = null
 ) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().setGroupId(GROUP)) {
     companion object {
         private const val serialVersionUID = 1L
@@ -23,7 +24,7 @@ class RefreshWeb3TransactionsJob(
     override fun onRun(): Unit =
         runBlocking {
             try {
-                val addresses = web3AddressDao.getAddress()
+                val addresses = if (walletId != null) web3AddressDao.getAddressesByWalletId(walletId) else web3AddressDao.getAddress()
                 if (addresses.isEmpty()) {
                     Timber.d("No addresses found to sync transactions")
                     return@runBlocking
@@ -53,6 +54,10 @@ class RefreshWeb3TransactionsJob(
                 if (result.isNullOrEmpty()) {
                     Timber.d("No transactions returned from API for address $destination")
                 } else {
+                    if (!web3AddressDao.addressMatch(destination)) {
+                        Timber.d("Address $destination does not exist in local database, skipping transaction sync")
+                        return@requestRouteAPI null
+                    }
                     web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }

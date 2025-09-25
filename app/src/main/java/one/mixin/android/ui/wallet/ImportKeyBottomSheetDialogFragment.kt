@@ -31,14 +31,17 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val TAG = "ImportKeyBottomSheetDialogFragment"
         private const val ARGS_POPUP_TYPE = "args_popup_type"
         private const val ARGS_WALLET_ID = "args_wallet_id"
+        private const val ARGS_CHAIN_ID = "args_chain_id"
 
         fun newInstance(
             popupType: PopupType,
             walletId: String,
+            chainId: String?
         ) =
             ImportKeyBottomSheetDialogFragment().withArgs {
                 putString(ARGS_POPUP_TYPE, popupType::class.java.simpleName)
                 putString(ARGS_WALLET_ID, walletId)
+                putString(ARGS_CHAIN_ID, chainId)
             }
     }
 
@@ -53,6 +56,10 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val walletId by lazy {
         requireArguments().getString(ARGS_WALLET_ID) ?: ""
+    }
+
+    private val chainId by lazy {
+        requireArguments().getString(ARGS_CHAIN_ID)
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
@@ -91,7 +98,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?,
     ): View =
         ComposeView(requireContext()).apply {
-            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
+            roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {
@@ -102,7 +109,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 R.string.import_private_key,
                                 R.string.Import_Private_Key_Desc,
                                 action = {
-                                    WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId)
+                                    WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
                                     dismissAllowingStateLoss()
                                 },
                                 dismiss = {
@@ -119,7 +126,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 R.string.import_mnemonic_phrase,
                                 R.string.Import_Mnemonic_Phrase_Desc,
                                 action = {
-                                    WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC, walletId = walletId)
+                                    WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC, walletId = walletId, chainId = chainId)
                                     dismissAllowingStateLoss()
                                 },
                                 dismiss = {

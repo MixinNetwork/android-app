@@ -18,6 +18,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
+import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Optimism
+import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -117,6 +120,18 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         ChainId.Polygon
                     }
 
+                    R.id.radio_arbritrum -> {
+                        Arbitrum
+                    }
+
+                    R.id.radio_optimism -> {
+                        Optimism
+                    }
+
+                    R.id.radio_toncoin -> {
+                        TON_CHAIN_ID
+                    }
+
                     else -> {
                         null
                     }
@@ -184,7 +199,11 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         walletId?.let {
-            bottomViewModel.web3TokenItems(it).observe(this) { items ->
+            if (type == TYPE_FROM_RECEIVE) {
+                bottomViewModel.web3TokenItems(it, Constants.AssetLevel.VERIFIED)
+            } else {
+                bottomViewModel.web3TokenItems(it)
+            }.observe(this) { items ->
                 defaultAssets = items
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     adapter.tokens = ArrayList(defaultAssets.filter { item ->

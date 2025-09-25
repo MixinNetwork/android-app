@@ -5,24 +5,31 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.web3j.utils.Numeric
 import javax.inject.Inject
 
 @HiltViewModel
 class SessionRequestViewModel
     @Inject
-    internal constructor() : ViewModel() {
+    internal constructor(
+        val web3Repository: Web3Repository,
+        val tokenRepository: TokenRepository
+    ) : ViewModel() {
         private var account: String = ""
             get() {
-                return JsSigner.address
+                return Web3Signer.address
             }
 
 
@@ -91,4 +98,29 @@ class SessionRequestViewModel
                     data as String
                 }
             }
-    }
+
+        suspend fun findWalletById(walletId: String) = withContext(Dispatchers.IO) {
+            web3Repository.findWalletById(walletId)
+        }
+
+        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String?, Boolean>? {
+            return withContext(Dispatchers.IO) {
+                if (chainId != null) {
+                    val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                    if (existsInAddresses) return@withContext Pair(null, false) // If the address exists in the deposit addresses, we don't need to show the name
+                }
+
+                val wallet = web3Repository.getWalletByDestination(destination)
+                if (wallet != null) {
+                    return@withContext Pair(wallet.name, false)
+                }
+                if (chainId != null) {
+                    val address = tokenRepository.matchAddress(destination, chainId)
+                    if (address != null) {
+                        return@withContext Pair(address.label, true)
+                    }
+                }
+                return@withContext null
+            }
+        }
+}

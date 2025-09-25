@@ -41,6 +41,7 @@ import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
+import androidx.core.content.edit
 
 val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
@@ -319,16 +320,15 @@ fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: B
 }
 
 fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
-    val encryptedPrefs = EncryptedSharedPreferences.create(
-        context,
-        ENCRYPTED_MNEMONIC,
-        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
     runCatching {
-        encryptedPrefs.edit().remove(alias).apply()
+        val encryptedPrefs = EncryptedSharedPreferences.create(
+            context,
+            ENCRYPTED_MNEMONIC,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        encryptedPrefs.edit { remove(alias) }
     }.onFailure {
         if (Session.saltExported()) context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
     }

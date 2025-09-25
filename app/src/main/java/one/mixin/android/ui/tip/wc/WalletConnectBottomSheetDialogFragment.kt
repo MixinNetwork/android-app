@@ -33,9 +33,11 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -71,7 +73,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.VersionedTransaction
 import org.sol4k.exception.RpcException
@@ -146,6 +148,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ): View =
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            roundTopOrBottom(11.dp.toFloat(), top = true, bottom = false)
             step =
                 when (requestType) {
                     RequestType.Connect -> Step.Connecting
@@ -286,9 +289,9 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             account =
                 if (chain != Chain.Solana) {
-                    JsSigner.solanaAddress
+                    Web3Signer.evmAddress
                 } else {
-                    JsSigner.evmAddress
+                    Web3Signer.solanaAddress
                 }
 
             if (requestType != RequestType.SessionRequest) return@launch
@@ -349,6 +352,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     tx.data,
                                     tx.from,
                                     tx.to,
+                                    tx.value,
                                 )
                             )
                         if (r.isSuccess.not()){

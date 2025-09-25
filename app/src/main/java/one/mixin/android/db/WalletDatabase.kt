@@ -24,9 +24,13 @@ import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.vo.Property
 import java.io.File
+import java.util.concurrent.Executors
+import kotlin.math.max
+import kotlin.math.min
 
 @Database(
     entities = [
@@ -98,6 +102,16 @@ abstract class WalletDatabase : RoomDatabase() {
                                 }
                             },
                         ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                            .enableMultiInstanceInvalidation()
+                            .setQueryExecutor(
+                                Executors.newFixedThreadPool(
+                                    max(
+                                        2,
+                                        min(Runtime.getRuntime().availableProcessors() - 1, 4),
+                                    ),
+                                ),
+                            )
+                            .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                     INSTANCE = builder.build()
                 }
             }

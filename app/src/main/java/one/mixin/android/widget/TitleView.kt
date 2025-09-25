@@ -4,12 +4,11 @@ import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.SpannedString
 import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.RelativeLayout
+import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import one.mixin.android.R
@@ -17,7 +16,6 @@ import one.mixin.android.databinding.ViewTitleBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
-import timber.log.Timber
 
 class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
     private val binding: ViewTitleBinding =
@@ -78,9 +76,9 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.divider.visibility = if (ta.getBoolean(R.styleable.TitleView_need_divider, false)) VISIBLE else GONE
         }
         if (ta.hasValue(R.styleable.TitleView_rightIcon) || ta.hasValue(R.styleable.TitleView_rightText)) {
-            binding.rightAnimator.visibility = View.VISIBLE
+            binding.rightAnimator.visibility = VISIBLE
         } else {
-            binding.rightAnimator.visibility = View.GONE
+            binding.rightAnimator.visibility = GONE
         }
         ta.recycle()
     }
@@ -91,10 +89,28 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     ) {
         binding.titleTv.setTextOnly(first)
         if (second.isBlank()) {
-            binding.subTitleTv.visibility = View.GONE
+            binding.subTitleTv.visibility = GONE
         } else {
-            binding.subTitleTv.visibility = View.VISIBLE
+            binding.subTitleTv.visibility = VISIBLE
             binding.subTitleTv.setTextOnly(second)
+        }
+    }
+
+    fun setSubTitle(
+        first: String,
+        second: String,
+        @DrawableRes icon: Int
+    ) {
+        binding.titleTv.setTextOnly(first)
+        if (second.isBlank()) {
+            binding.subTitleTv.visibility = GONE
+        } else {
+            binding.subTitleTv.visibility = VISIBLE
+            binding.subTitleTv.setTextOnly(second)
+            val drawable = ContextCompat.getDrawable(context, icon)
+            drawable?.setBounds(0, 0, 12.dp, 12.dp)
+            binding.subTitleTv.textView.compoundDrawablePadding = 4.dp
+            binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, drawable, null)
         }
     }
 
@@ -144,21 +160,22 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         title: String,
         label: String?,
         content: String,
-        toWallet: Boolean = false,
+        index: Int = 0,
     ) {
         binding.titleTv.setTextOnly(title)
-        binding.subTitleTv.visibility = VISIBLE
-        if (label != null) {
-            val spannableString = SpannableString("$label ")
-            val backgroundColor: Int = if (toWallet) Color.parseColor("#7EABFB") else Color.parseColor("#8DCC99")
-            val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
-            val endIndex = label.length
-            if (endIndex > 0) {
-                spannableString.setSpan(RelativeSizeSpan(0.8f), 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannableString.setSpan(backgroundColorSpan, 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (index != 0) {
+            binding.subTitleTv.isVisible = true
+            if (index == 1) {
+                setSubTitle(title, label ?: "", R.drawable.ic_wallet_privacy)
+            } else {
+                setSubTitle(title, label ?: "")
             }
-            binding.subTitleTv.setTextOnly(spannableString)
+        } else if (label != null) {
+            binding.subTitleTv.isVisible = false
+            binding.labelTitleTv.isVisible = true
+            binding.labelTitleTv.text = label
         } else {
+            binding.subTitleTv.isVisible = true
             binding.subTitleTv.setTextOnly(content)
         }
     }
@@ -166,7 +183,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
     fun setUser(user: User, onClickListener: OnClickListener) {
         binding.titleTv.setName(user)
         binding.titleTv.setOnIconClickListener(onClickListener)
-        binding.subTitleTv.visibility = View.VISIBLE
+        binding.subTitleTv.visibility = VISIBLE
         binding.subTitleTv.setTextOnly(user.identityNumber)
     }
 

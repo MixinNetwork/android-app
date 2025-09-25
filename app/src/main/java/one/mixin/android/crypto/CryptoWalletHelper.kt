@@ -7,15 +7,17 @@ import androidx.security.crypto.MasterKey
 import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
+import one.mixin.android.MixinApplication
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.crypto.MnemonicCode
 import org.sol4k.Base58
 import org.sol4k.Keypair.Companion.fromSecretKey
@@ -39,8 +41,12 @@ object CryptoWalletHelper {
         }.getOrNull()
     }
 
+    private val secureStorage by lazy {
+        getSecureStorage(MixinApplication.appContext)
+    }
+
     fun hasPrivateKey(context: Context, walletId: String): Boolean {
-        return getSecureStorage(context)?.contains(walletId) ?: false
+        return secureStorage?.contains(walletId) ?: false
     }
 
     fun extractIndexFromPath(path: String): Int? {
@@ -66,7 +72,7 @@ object CryptoWalletHelper {
 
     fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
-            val path = "m/44'/60'/0'/0/$index"
+            val path = Bip44Path.ethereumPathString(index)
             val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
                 ?: throw IllegalArgumentException("Private key generation failed")
             val address = EthKeyGenerator.privateKeyToAddress(privateKey)
@@ -85,7 +91,7 @@ object CryptoWalletHelper {
 
     fun mnemonicToSolanaWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
-            val path = "m/44'/501'/$index'/0'"
+            val path = Bip44Path.solanaPathString(index)
             val privateKey = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
             val keyPair = newKeyPairFromSeed(privateKey)
             val address = keyPair.publicKey.encodeToBase58String()
@@ -195,12 +201,14 @@ object CryptoWalletHelper {
 
     fun getWeb3PrivateKey(context: Context, spendKey: ByteArray, chainId: String): ByteArray? {
         return try {
-            val currentWalletId = JsSigner.currentWalletId
-            val currentCategory = JsSigner.currentWalletCategory
+            val currentWalletId = Web3Signer.currentWalletId
+            val currentCategory = Web3Signer.currentWalletCategory
 
             when {
-                currentWalletId == JsSigner.classicWalletId || currentWalletId.isEmpty() -> {
-                    tipPrivToPrivateKey(spendKey, chainId)
+                currentCategory == WalletCategory.CLASSIC.value || currentWalletId.isEmpty() -> {
+                    val derivationIndex = extractIndexFromPath(Web3Signer.path) ?: 0
+                    Timber.d("currentWalletId: ${Web3Signer.currentWalletId}, currentWalletCategory: ${Web3Signer.currentWalletCategory}, evmAddress: ${Web3Signer.evmAddress}, solanaAddress: ${Web3Signer.solanaAddress} derivationIndex: $derivationIndex")
+                    tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
                 }
 
                 currentCategory == WalletCategory.IMPORTED_PRIVATE_KEY.value -> {
@@ -210,7 +218,7 @@ object CryptoWalletHelper {
                 else -> { // Mnemonic-derived wallet
                     val mnemonic = getWeb3Mnemonic(context, spendKey, currentWalletId)
                         ?: return null
-                    val derivationIndex = requireNotNull(extractIndexFromPath(JsSigner.path))
+                    val derivationIndex = requireNotNull(extractIndexFromPath(Web3Signer.path))
 
                     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                         SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
@@ -238,4 +246,5 @@ object CryptoWalletHelper {
     fun clear(context: Context) {
         context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
     }
+
 }

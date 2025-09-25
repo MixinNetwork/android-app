@@ -325,7 +325,6 @@ class InscriptionActivity : BaseActivity() {
         }
         val options = UCrop.Options()
         options.setToolbarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
-        options.setStatusBarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
         options.setToolbarWidgetColor(Color.WHITE)
         options.setHideBottomControls(true)
         UCrop.of(f.toUri(), imageUri)

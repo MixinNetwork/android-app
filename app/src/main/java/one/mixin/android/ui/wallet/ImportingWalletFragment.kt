@@ -24,6 +24,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+        binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
@@ -67,7 +68,11 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         }
 
         val fromDetail = arguments?.getBoolean(ARG_FROM_DETAIL, false) ?: false
-        if (fromDetail) {
+        val modeOrdinal = arguments?.getInt(ARG_MODE) ?: WalletSecurityActivity.Mode.IMPORT_MNEMONIC.ordinal
+        val mode = WalletSecurityActivity.Mode.values()[modeOrdinal]
+        if (mode == WalletSecurityActivity.Mode.CREATE_WALLET){
+            // do nothing, this is a create wallet mode
+        } else if (fromDetail) {
             val key = arguments?.getString(ARG_KEY) ?: return
             val chainId = arguments?.getString(ARG_CHAIN_ID) ?: return
             val modeOrdinal =
@@ -89,6 +94,14 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
 
         fun newInstance(): ImportingWalletFragment {
             return ImportingWalletFragment()
+        }
+
+        fun newInstance(mode: WalletSecurityActivity.Mode): ImportingWalletFragment {
+            val fragment = ImportingWalletFragment()
+            val args = Bundle()
+            args.putInt(ARG_MODE, mode.ordinal)
+            fragment.arguments = args
+            return fragment
         }
 
         fun newInstance(

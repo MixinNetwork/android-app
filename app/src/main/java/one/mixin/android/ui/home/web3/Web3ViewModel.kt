@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -83,6 +84,10 @@ internal constructor(
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
+
+    suspend fun web3TokensExcludeHiddenRaw(walletId: String) = withContext(Dispatchers.IO) {
+        return@withContext web3Repository.web3TokensExcludeHiddenRaw(walletId)
+    }
 
     fun hiddenAssetItems(walletId: String) = web3Repository.hiddenAssetItems(walletId)
 
@@ -189,7 +194,7 @@ internal constructor(
 
     suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndSyncDepositEntry(token.chainId, token.assetId).first
+            tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
         }
 
     suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)
@@ -297,7 +302,9 @@ internal constructor(
                     EstimateFeeRequest(
                         token.chainId,
                         transaction.data,
-
+                        fromAddress,
+                        transaction.wcEthereumTransaction?.to,
+                        transaction.wcEthereumTransaction?.value,
                         )
                 )
             }
@@ -461,6 +468,27 @@ internal constructor(
         if (walletId == null) return false
         return withContext(Dispatchers.IO) {
             web3Repository.isAddressMatch(walletId, address)
+        }
+    }
+
+    // index 0 is address,index 1 is privacy wallet, 2 is common wallet
+    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Int>? {
+        return withContext(Dispatchers.IO) {
+
+            if (tag.isNullOrBlank()) {
+                val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), 1)
+            }
+
+            val wallet = web3Repository.getWalletByDestination(destination)
+            if (wallet != null) {
+                return@withContext Pair(wallet.name, 2)
+            }
+
+            tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->
+                return@withContext Pair(label, 0)
+            }
+            return@withContext null
         }
     }
 }

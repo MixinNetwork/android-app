@@ -80,8 +80,6 @@ interface TokenService {
     @GET("safe/deposits")
     suspend fun pendingDeposits(
         @Query("asset") asset: String,
-        @Query("destination") key: String,
-        @Query("tag") tag: String? = null,
     ): MixinResponse<List<PendingDeposit>>
 
     @GET("network/assets/search/{query}")

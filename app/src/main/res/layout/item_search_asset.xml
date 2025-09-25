@@ -96,7 +96,6 @@
         android:id="@+id/na_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin20"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:maxLines="1"

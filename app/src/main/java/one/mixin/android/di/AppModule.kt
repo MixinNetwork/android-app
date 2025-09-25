@@ -240,7 +240,11 @@ object AppModule {
 
                 var jwtResult: JwtResult? = null
                 response.body?.run {
-                    val bytes = this.bytes()
+                    val bytes = runCatching {
+                        this.bytes()
+                    }.onFailure { e ->
+                        Timber.d(e, "Unable to read response body, likely a WebSocket or streaming response")
+                    }.getOrNull() ?: return@run
                     val body = bytes.toResponseBody(this.contentType())
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
@@ -507,18 +511,16 @@ object AppModule {
                     addNetworkInterceptor(interceptor)
                 }
                 addInterceptor { chain ->
-                    val requestId = UUID.randomUUID().toString()
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
                         .addHeader("Accept-Language", Locale.getDefault().language)
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
-                        .addHeader(xRequestId, requestId)
-                    val (ts, signature) = Session.getBotSignature(appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null), sourceRequest)
-                    if (!sourceRequest.url.toString().endsWith("checkout/ticker")) {
-                        b.addHeader(mrAccessTimestamp, ts.toString())
-                        b.addHeader(mrAccessSign, signature)
-                    }
+                        .addHeader(xRequestId, UUID.randomUUID().toString())
+                    val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null)
+                    val (ts, signature) = Session.getBotSignature(botPublicKey, sourceRequest)
+                    b.addHeader(mrAccessTimestamp, ts.toString())
+                    b.addHeader(mrAccessSign, signature)
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
                 }

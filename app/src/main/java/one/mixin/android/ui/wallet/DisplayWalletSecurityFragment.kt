@@ -16,12 +16,14 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.DisplayWalletSecurityContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
+import timber.log.Timber
 
 class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
 
     private val viewModel by activityViewModels<FetchWalletViewModel>()
     private var mode: WalletSecurityActivity.Mode = WalletSecurityActivity.Mode.VIEW_MNEMONIC
     private var chainId: String? = null
+    private var walletId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +31,7 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
             val modeOrdinal = it.getInt(ARG_MODE)
             mode = WalletSecurityActivity.Mode.entries.toTypedArray()[modeOrdinal]
             chainId = it.getString(ARG_CHAIN_ID)
+            walletId = it.getString(ARG_WALLET_ID)
         }
     }
 
@@ -47,7 +50,8 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
                             viewModel.getWeb3Mnemonic(requireContext()) ?: throw IllegalArgumentException("Mnemonic not found")
                         }
                         WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY -> {
-                            viewModel.getWeb3Priva(requireContext(), chainId) ?: throw IllegalArgumentException("Private key not found")
+                            Timber.e("chainId = $chainId, walletId = $walletId")
+                            viewModel.getWeb3Priva(requireContext(), chainId, walletId) ?: throw IllegalArgumentException("Private key not found")
                         }
                         else -> throw IllegalArgumentException("Unsupported mode: $mode")
                     }
@@ -70,14 +74,17 @@ class DisplayWalletSecurityFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     companion object {
+        const val TAG = "DisplayWalletSecurityFragment"
         private const val ARG_MODE = "arg_mode"
         private const val ARG_CHAIN_ID = "arg_chain_id"
+        private const val ARG_WALLET_ID = "arg_wallet_id"
 
-        fun newInstance(mode: WalletSecurityActivity.Mode, chainId: String? = null): DisplayWalletSecurityFragment {
+        fun newInstance(mode: WalletSecurityActivity.Mode, chainId: String? = null, walletId: String? = null): DisplayWalletSecurityFragment {
             return DisplayWalletSecurityFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_MODE, mode.ordinal)
                     chainId?.let { putString(ARG_CHAIN_ID, it) }
+                    walletId?.let { putString(ARG_WALLET_ID, it) }
                 }
             }
         }

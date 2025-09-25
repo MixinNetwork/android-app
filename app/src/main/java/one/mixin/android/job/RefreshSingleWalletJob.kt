@@ -8,6 +8,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import timber.log.Timber
@@ -28,11 +29,11 @@ class RefreshSingleWalletJob(
             if (wallet == null) {
                 return@runBlocking
             }
-            fetchChain()
             fetchWalletAddresses(wallet)
             fetchWalletAssets(wallet)
-            RxBus.publish(WalletRefreshedEvent(walletId))
-            Timber.d("Successfully refreshed wallet: $walletId")
+            RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.OTHER))
+            Timber.e("Successfully refreshed wallet: $walletId")
+            jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
         } catch (e: Exception) {
             Timber.e(e, "Failed to refresh wallet: $walletId")
         }
@@ -143,33 +144,6 @@ class RefreshSingleWalletJob(
             } catch (e: Exception) {
                 Timber.e(e, "Exception occurred while fetching chain $chainId")
             }
-        }
-    }
-
-    private suspend fun fetchChain() {
-        try {
-            val response = tokenService.getChains()
-            if (response.isSuccess) {
-                val chains = response.data
-                if (chains != null && chains.isNotEmpty()) {
-                    Timber.d("Fetched ${chains.size} chains")
-                    val web3Chains = chains.map { chain ->
-                        Web3Chain(
-                            chainId = chain.chainId,
-                            name = chain.name,
-                            symbol = chain.symbol,
-                            iconUrl = chain.iconUrl,
-                            threshold = chain.threshold,
-                        )
-                    }
-                    web3ChainDao.insertList(web3Chains)
-                    Timber.d("Successfully inserted ${web3Chains.size} chains into database")
-                } else {
-                    Timber.d("No chains found")
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "Exception occurred while fetching chains")
         }
     }
 }

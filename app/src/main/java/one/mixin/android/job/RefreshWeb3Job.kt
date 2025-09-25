@@ -1,11 +1,13 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
@@ -16,8 +18,11 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.R
+import one.mixin.android.event.WalletOperationType
+import one.mixin.android.tip.bip44.Bip44Path
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
-
 class RefreshWeb3Job : BaseJob(
     Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
 ) {
@@ -37,27 +42,29 @@ class RefreshWeb3Job : BaseJob(
                 return@runBlocking
             }
             createWallet(
-                "ClassicWallet", WalletCategory.CLASSIC.value, listOf(
+                applicationContext.getString(R.string.Common_Wallet), WalletCategory.CLASSIC.value, listOf(
                     Web3AddressRequest(
                         destination = erc20Address,
                         chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                        path = "m/44'/60'/0'/0/0"
+                        path = Bip44Path.ethereumPathString()
                     ),
                     Web3AddressRequest(
                         destination = solAddress,
                         chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                        path = "m/44'/501'/0'/0'"
+                        path = Bip44Path.solanaPathString()
                     )
                 )
             )
         } else {
-            fetchChain()
             wallets.forEach { wallet ->
-                fetchWalletAssets(wallet)
-                RxBus.publish(WalletRefreshedEvent(wallet.id))
+                if (web3AddressDao.getAddressesByWalletId(wallet.id).any {
+                        it.path == null || it.path.isBlank()
+                    }) {
+                    routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    fetchWallets(wallet.id)
+                }
             }
         }
-        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
     }
 
     private suspend fun createWallet(name: String, category: String, addresses: List<Web3AddressRequest>) {
@@ -83,6 +90,14 @@ class RefreshWeb3Job : BaseJob(
                     }
                     fetchChain()
                     fetchWalletAssets(w)
+                    Web3Signer.init(
+                        { w.id },
+                        { walletId ->
+                            runBlocking(Dispatchers.IO) { web3AddressDao.getAddressesByWalletId(walletId) }
+                        }, { walletId ->
+                            w
+                        }
+                    )
                 } else {
                     Timber.e("Failed to create $category wallet: response data is null")
                 }
@@ -125,7 +140,7 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
-    private suspend fun fetchWallets() {
+    private suspend fun fetchWallets(renameWalletId: String? = null) {
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getWallets()
@@ -135,6 +150,9 @@ class RefreshWeb3Job : BaseJob(
                 wallets?.let {
                     web3WalletDao.insertList(it)
                     wallets.forEach { wallet ->
+                        if (wallet.id == renameWalletId) {
+                            RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
+                        }
                         fetchWalletAddresses(wallet)
                     }
                 }

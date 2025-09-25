@@ -62,34 +62,36 @@ object RomUtil {
         }
 
     fun check(rom: String): Boolean {
-        if (sName != null) {
-            return sName == rom
-        }
-        if (!TextUtils.isEmpty(getProp(KEY_VERSION_MIUI).also { sVersion = it })) {
-            sName = ROM_MIUI
-        } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_EMUI).also { sVersion = it })) {
-            sName = ROM_EMUI
-        } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_OPPO).also { sVersion = it })) {
-            sName = ROM_OPPO
-        } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_VIVO).also { sVersion = it })) {
-            sName = ROM_VIVO
-        } else if (!TextUtils.isEmpty(
-                getProp(KEY_VERSION_SMARTISAN).also {
-                    sVersion = it
-                },
-            )
-        ) {
-            sName = ROM_SMARTISAN
-        } else {
-            sVersion = Build.DISPLAY
-            if (sVersion?.uppercase(Locale.getDefault())?.contains(ROM_FLYME) == true) {
-                sName = ROM_FLYME
-            } else {
-                sVersion = Build.UNKNOWN
-                sName = Build.MANUFACTURER.uppercase(Locale.getDefault())
+        return runCatching {
+            if (sName != null) {
+                return sName == rom
             }
-        }
-        return sName == rom
+            if (!TextUtils.isEmpty(getProp(KEY_VERSION_MIUI).also { sVersion = it })) {
+                sName = ROM_MIUI
+            } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_EMUI).also { sVersion = it })) {
+                sName = ROM_EMUI
+            } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_OPPO).also { sVersion = it })) {
+                sName = ROM_OPPO
+            } else if (!TextUtils.isEmpty(getProp(KEY_VERSION_VIVO).also { sVersion = it })) {
+                sName = ROM_VIVO
+            } else if (!TextUtils.isEmpty(
+                    getProp(KEY_VERSION_SMARTISAN).also {
+                        sVersion = it
+                    },
+                )
+            ) {
+                sName = ROM_SMARTISAN
+            } else {
+                sVersion = Build.DISPLAY
+                if (sVersion?.uppercase(Locale.getDefault())?.contains(ROM_FLYME) == true) {
+                    sName = ROM_FLYME
+                } else {
+                    sVersion = Build.UNKNOWN
+                    sName = Build.MANUFACTURER.uppercase(Locale.getDefault())
+                }
+            }
+            return sName == rom
+        }.getOrDefault(false)
     }
 
     private fun getProp(name: String): String? {
