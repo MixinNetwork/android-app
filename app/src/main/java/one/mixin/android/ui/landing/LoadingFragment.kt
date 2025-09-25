@@ -13,8 +13,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEVICE_ID
-import one.mixin.android.Constants.TEAM_BOT_ID
-import one.mixin.android.Constants.TEAM_BOT_NAME
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication

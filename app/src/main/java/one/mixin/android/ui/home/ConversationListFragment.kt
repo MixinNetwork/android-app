@@ -1270,6 +1270,9 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
+        if (!isAdded) {
+            return
+        }
         val choices =
             arrayOf(
                 getString(R.string.one_hour),

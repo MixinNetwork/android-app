@@ -17,6 +17,8 @@ import one.mixin.android.databinding.FragmentDeleteAccountBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.viewDestroyed
@@ -25,6 +27,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.GTCaptcha4Utils
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.VerificationFragment
 import one.mixin.android.ui.setting.LogoutPinBottomSheetDialogFragment
@@ -35,6 +38,8 @@ import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogF
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 
 @AndroidEntryPoint
 class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
@@ -183,8 +188,14 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
-            } else {
+            } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
+            } else if (captchaResponse.first.isGT()) {
+                val t = GTCaptcha4Utils.parseGTCaptchaResponse(captchaResponse.second)
+                verificationRequest.lotNumber = t?.lotNumber
+                verificationRequest.captchaOutput = t?.captchaOutput
+                verificationRequest.passToken = t?.passToken
+                verificationRequest.genTime = t?.genTime
             }
         }
         binding.deleteCover.isVisible = true
@@ -211,7 +222,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             failureBlock = { r ->
                 if (viewDestroyed()) return@handleMixinResponse true
                 if (r.errorCode == ErrorHandler.NEED_CAPTCHA) {
-                    initAndLoadCaptcha()
+                    initAndLoadCaptcha(r.errorDescription)
                     return@handleMixinResponse true
                 }
                 binding.deleteCover.isVisible = false
@@ -225,7 +236,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         )
     }
 
-    private fun initAndLoadCaptcha() =
+    private fun initAndLoadCaptcha(errorDescription: String) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
 
@@ -253,7 +264,11 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                 )
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
     private fun changeNumber() {

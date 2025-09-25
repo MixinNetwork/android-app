@@ -699,8 +699,10 @@ class SwapFragment : BaseFragment() {
 
             fromToken = if (input != null) {
                 if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
+            } else if (lastFrom != null) {
+                if (inMixin()) swapViewModel.findToken(lastFrom.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastFrom.assetId)?.toSwapToken()
             } else {
-                lastFrom ?: (tokens.firstOrNull { t -> t.getUnique() in Constants.usdIds })?.toSwapToken()
+                (tokens.firstOrNull { t -> t.getUnique() in Constants.usdIds })?.toSwapToken()
             }
             toToken = if (output != null) {
                 if (inMixin()) swapViewModel.findToken(output)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, output)?.toSwapToken()
@@ -711,8 +713,10 @@ class SwapFragment : BaseFragment() {
                     USDT_ASSET_ETH_ID
                 }
                 if (inMixin()) swapViewModel.findToken(o)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, o)?.toSwapToken()
+            } else if (lastTo != null) {
+                if (inMixin()) swapViewModel.findToken(lastTo.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastTo.assetId)?.toSwapToken()
             } else {
-                lastTo ?: (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds } ) ?.toSwapToken()
+                (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds })?.toSwapToken()
             }
             if (toToken?.getUnique() == fromToken?.getUnique()) {
                 toToken = (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() })?.toSwapToken()

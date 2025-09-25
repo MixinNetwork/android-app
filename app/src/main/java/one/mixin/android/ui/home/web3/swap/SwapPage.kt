@@ -328,14 +328,12 @@ fun SwapPage(
                                 InputArea(
                                     modifier = Modifier,
                                     token = fromToken,
-                                    inMixin = inMixin,
                                     text = inputText,
                                     title = stringResource(id = R.string.swap_send),
                                     readOnly = false,
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                                     onInputChanged = { inputText = it },
                                     onDeposit = onDeposit,
-                                    walletId = walletId,
                                     onMax = {
                                         val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                         if (balance > BigDecimal.ZERO) {
@@ -350,13 +348,11 @@ fun SwapPage(
                                 InputArea(
                                     modifier = Modifier,
                                     token = toToken,
-                                    inMixin = inMixin,
                                     text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
                                     title = stringResource(id = R.string.swap_receive),
                                     readOnly = true,
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
                                     onDeposit = null,
-                                    walletId = walletId,
                                 )
                             },
                             margin = 6.dp,
@@ -511,7 +507,6 @@ fun SwapPage(
 fun InputArea(
     modifier: Modifier = Modifier,
     token: SwapToken?,
-    inMixin: Boolean,
     text: String,
     title: String,
     readOnly: Boolean,
@@ -519,7 +514,6 @@ fun InputArea(
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
-    walletId: String? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {

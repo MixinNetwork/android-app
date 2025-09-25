@@ -259,6 +259,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val r = viewModel.estimateFee(
                     EstimateFeeRequest(
                         chainId,
+                        null,
                         transaction.data,
                         transaction.from,
                         transaction.to,

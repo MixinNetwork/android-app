@@ -272,6 +272,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         val r = viewModel.estimateFee(
                             EstimateFeeRequest(
                                 assetId,
+                                null,
                                 transaction.data,
                                 transaction.from,
                                 transaction.to,
