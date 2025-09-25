@@ -301,6 +301,7 @@ internal constructor(
                 web3Repository.estimateFee(
                     EstimateFeeRequest(
                         token.chainId,
+                        null,
                         transaction.data,
                         fromAddress,
                         transaction.wcEthereumTransaction?.to,

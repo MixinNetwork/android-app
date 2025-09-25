@@ -207,7 +207,7 @@ class ConversationListFragment : LinkFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        navigationController = NavigationController(activity as MainActivity)
+        navigationController = NavigationController()
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -330,7 +330,7 @@ class ConversationListFragment : LinkFragment() {
             if (cid != null) {
                 openCircleEdit(cid)
             } else {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
         }
 
@@ -432,7 +432,7 @@ class ConversationListFragment : LinkFragment() {
                 openSearch()
             }
             searchBar.setOnGroupClickListener {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
             searchBar.setOnAddClickListener {
                 addCircle(it.context)
@@ -459,7 +459,7 @@ class ConversationListFragment : LinkFragment() {
             searchBar.setSearchViewListener(
                 object : MaterialSearchView.SearchViewListener {
                     override fun onSearchViewClosed() {
-                        navigationController.hideSearch()
+                        navigationController.hideSearch(parentFragmentManager)
                     }
 
                     override fun onSearchViewOpened() {
@@ -496,7 +496,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         if (!binding.searchBar.isOpen) {
-            navigationController.removeSearch()
+            navigationController.removeSearch(parentFragmentManager)
         }
     }
 
@@ -1270,6 +1270,9 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
+        if (!isAdded) {
+            return
+        }
         val choices =
             arrayOf(
                 getString(R.string.one_hour),

@@ -2,8 +2,6 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
