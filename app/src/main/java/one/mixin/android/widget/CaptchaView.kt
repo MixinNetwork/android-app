@@ -122,7 +122,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                         view: WebView?,
                         request: WebResourceRequest?
                     ): WebResourceResponse? {
-                        if (isGT && request?.url.toString().endsWith("gt4.js")) {
+                        if (isGT && request?.url?.toString()?.endsWith("gt4.js") == true) {
                             try {
                                 val inputStream = context.assets.open("gt4.js")
                                 return WebResourceResponse("application/javascript", "UTF-8", inputStream)
