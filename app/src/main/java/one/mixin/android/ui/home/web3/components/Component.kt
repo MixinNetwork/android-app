@@ -705,6 +705,34 @@ private fun WarningPreview() {
 }
 
 @Composable
+fun ActionButton(
+    text: String,
+    onClick: () -> Unit,
+    backgroundColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = backgroundColor,
+            contentColor = contentColor,
+        ),
+        shape = RoundedCornerShape(20.dp),
+        contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
+        elevation = ButtonDefaults.elevation(
+            pressedElevation = 0.dp,
+            defaultElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp,
+        ),
+        modifier = modifier
+    ) {
+        Text(text = text, color = contentColor, fontWeight = FontWeight.W500)
+    }
+}
+
+@Composable
 fun ActionBottom(
     modifier: Modifier,
     cancelTitle: String,
@@ -720,45 +748,19 @@ fun ActionBottom(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
-        Button(
+        ActionButton(
+            text = cancelTitle,
             onClick = cancelAction,
-            colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.backgroundGray,
-                    contentColor = MixinAppTheme.colors.shadow,
-                ),
-            shape = RoundedCornerShape(20.dp),
-            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-            elevation =
-                ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
-        ) {
-            Text(text = cancelTitle, color = MixinAppTheme.colors.textPrimary, fontWeight = FontWeight.W400)
-        }
+            backgroundColor = MixinAppTheme.colors.backgroundGray,
+            contentColor = MixinAppTheme.colors.textPrimary
+        )
         Box(modifier = Modifier.width(36.dp))
-        Button(
+        ActionButton(
+            text = confirmTitle,
             onClick = confirmAction,
-            colors =
-                ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = MixinAppTheme.colors.accent,
-                    contentColor = MixinAppTheme.colors.shadow,
-                ),
-            shape = RoundedCornerShape(20.dp),
-            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-            elevation =
-                ButtonDefaults.elevation(
-                    pressedElevation = 0.dp,
-                    defaultElevation = 0.dp,
-                    hoveredElevation = 0.dp,
-                    focusedElevation = 0.dp,
-                ),
-        ) {
-            Text(text = confirmTitle, color = Color.White, fontWeight = FontWeight.W400)
-        }
+            backgroundColor = MixinAppTheme.colors.accent,
+            contentColor = Color.White
+        )
     }
 }
 

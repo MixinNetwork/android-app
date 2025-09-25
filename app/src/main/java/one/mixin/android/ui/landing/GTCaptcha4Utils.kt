@@ -20,7 +20,7 @@ data class GTCaptcha4Result(
 object GTCaptcha4Utils {
     fun parseGTCaptchaResponse(json: String): GTCaptcha4Result? {
         return try {
-            return GsonHelper.customGson.fromJson(json, GTCaptcha4Result::class.java)
+            GsonHelper.customGson.fromJson(json, GTCaptcha4Result::class.java)
         } catch (e: JsonSyntaxException) {
             e.printStackTrace()
             null

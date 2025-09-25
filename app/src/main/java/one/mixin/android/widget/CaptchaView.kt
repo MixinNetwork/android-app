@@ -149,10 +149,11 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 else -> html = html.replace("#src", "")
             }
 
-            val gt4Input = context.assets.open("gt4.js")
-            val gt4Content = gt4Input.source().buffer().readByteString().string(Charset.forName("utf-8"))
-            gt4Input.close()
+
             if (isGT) {
+                val gt4Input = context.assets.open("gt4.js")
+                val gt4Content = gt4Input.source().buffer().readByteString().string(Charset.forName("utf-8"))
+                gt4Input.close()
                 html = html.replace(
                     "#gt", """
                     <script type="text/javascript">
