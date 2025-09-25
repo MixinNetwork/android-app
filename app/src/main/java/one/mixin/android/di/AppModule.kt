@@ -135,9 +135,6 @@ object AppModule {
     private const val mrAccessSign = "MR-ACCESS-SIGN"
     private const val mrAccessTimestamp = "MR-ACCESS-TIMESTAMP"
 
-    private const val mwAccessSign = "MW-ACCESS-SIGN"
-    private const val mwAccessTimestamp = "MW-ACCESS-TIMESTAMP"
-
     @SuppressLint("ConstantLocale")
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     val API_UA =
