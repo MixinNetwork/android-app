@@ -1270,7 +1270,7 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        if (!isAdded ) {
+        if (!isAdded) {
             return
         }
         val choices =
