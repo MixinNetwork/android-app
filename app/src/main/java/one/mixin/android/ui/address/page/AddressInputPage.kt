@@ -130,7 +130,8 @@ fun AddressInputPage(
                             textAlign = TextAlign.Start
                         ),
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
                         ),
                         minLines = 3,
                         maxLines = 3
