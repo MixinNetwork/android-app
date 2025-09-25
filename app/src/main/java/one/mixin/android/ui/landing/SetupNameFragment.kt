@@ -9,7 +9,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.inputmethod.EditorInfo
 import android.widget.RelativeLayout
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
