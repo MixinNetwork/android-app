@@ -214,7 +214,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 }
                 if (isWeb3) {
                     val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
-                    if (wallet != null && wallet.notClassic()) {
+                    if (wallet != null) {
                         titleView.setSubTitle(
                             getString(R.string.Buy),
                             wallet.name.takeIf { it.isNotEmpty() } ?: getString(R.string.Common_Wallet)
