@@ -31,6 +31,10 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         private const val WEB_VIEW_TIME_OUT = 35000L
 
         private const val TAG = "CaptchaView"
+
+        const val reCAPTCHA = "reCAPTCHA"
+        const val hCAPTCHA = "hCaptcha"
+        const val gtCAPTCHA = "GeeTest"
     }
 
     val webView: WebView by lazy {

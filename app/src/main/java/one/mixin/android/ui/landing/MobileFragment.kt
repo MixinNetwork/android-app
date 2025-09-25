@@ -51,6 +51,8 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.util.xinDialCode
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 
@@ -345,8 +347,8 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
             }
             captchaView?.loadCaptcha(
-                if (errorDescription.containsIgnoreCase("GeeTest")) CaptchaView.CaptchaType.GTCaptcha
-                else if (errorDescription.containsIgnoreCase("hCaptcha")) CaptchaView.CaptchaType.HCaptcha
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
                 else CaptchaView.CaptchaType.GCaptcha
             )
         }

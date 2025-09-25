@@ -62,6 +62,8 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -215,8 +217,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             captchaView?.loadCaptcha(
-                if (errorDescription.containsIgnoreCase("GeeTest")) CaptchaView.CaptchaType.GTCaptcha
-                else if (errorDescription.containsIgnoreCase("hCaptcha")) CaptchaView.CaptchaType.HCaptcha
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
                 else CaptchaView.CaptchaType.GCaptcha
             )
         }

@@ -38,6 +38,8 @@ import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogF
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 
 @AndroidEntryPoint
 class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
@@ -263,8 +265,8 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                 )
             }
             captchaView?.loadCaptcha(
-                if (errorDescription.containsIgnoreCase("GeeTest")) CaptchaView.CaptchaType.GTCaptcha
-                else if (errorDescription.containsIgnoreCase("hCaptcha")) CaptchaView.CaptchaType.HCaptcha
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
                 else CaptchaView.CaptchaType.GCaptcha
             )
         }
