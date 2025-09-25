@@ -198,6 +198,12 @@ fun PinKeyBoard(
                             ButtonDefaults.buttonColors(
                                 backgroundColor = MixinAppTheme.colors.accent,
                             ),
+                        elevation = ButtonDefaults.elevation(
+                            pressedElevation = 0.dp,
+                            defaultElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
                         contentPadding = PaddingValues(horizontal = 20.dp),
                         shape = RoundedCornerShape(20.dp),
                     ) {
