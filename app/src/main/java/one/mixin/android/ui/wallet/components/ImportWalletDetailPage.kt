@@ -426,8 +426,8 @@ fun ImportWalletDetailPage(
                     },
                     enabled = isButtonEnabled,
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (isButtonEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                        backgroundColor = if (isButtonEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
+                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
                         contentColor = Color.White,
                         disabledContentColor = Color.White
                     ),
@@ -441,7 +441,7 @@ fun ImportWalletDetailPage(
                 ) {
                     Text(
                         text = stringResource(id = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Add else R.string.Import),
-                        color = if (isButtonEnabled) Color.White else MixinAppTheme.colors.backgroundGray
+                        color = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
