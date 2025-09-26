@@ -441,7 +441,7 @@ fun ImportWalletDetailPage(
                 ) {
                     Text(
                         text = stringResource(id = if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS) R.string.Add else R.string.Import),
-                        color = Color.White
+                        color = if (isButtonEnabled) Color.White else MixinAppTheme.colors.textPrimary
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
