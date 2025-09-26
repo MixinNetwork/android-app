@@ -150,6 +150,7 @@ fun TextWithRoundedLabelInline(
             ) {
                 Box(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .background(
                             color = accentColor,
                             shape = RoundedCornerShape(4.dp)
@@ -166,7 +167,6 @@ fun TextWithRoundedLabelInline(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
-                            .widthIn(max = 100.dp)
                     )
                 }
             }
