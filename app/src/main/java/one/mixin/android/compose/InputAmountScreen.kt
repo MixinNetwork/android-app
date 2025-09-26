@@ -69,6 +69,7 @@ object InputAmountDestinations {
 
 @Composable
 fun InputAmountFlow(
+    inputAmount: String,
     primaryAmount: String,
     minorAmount: String,
     tokenAmount: String,
@@ -101,6 +102,7 @@ fun InputAmountFlow(
     ) {
         composable(InputAmountDestinations.INPUT) {
             InputAmountScreen(
+                inputAmount = inputAmount,
                 primaryAmount = primaryAmount,
                 minorAmount = minorAmount,
                 onNumberClick = onNumberClick,
@@ -139,6 +141,7 @@ fun InputAmountFlow(
 
 @Composable
 fun InputAmountScreen(
+    inputAmount: String,
     primaryAmount: String,
     minorAmount: String,
     onNumberClick: (String) -> Unit,
@@ -254,6 +257,9 @@ fun InputAmountScreen(
             onClick = onContinueClick,
             backgroundColor = MixinAppTheme.colors.accent,
             contentColor = Color.White,
+            enabled = (inputAmount.toFloatOrNull() ?: 0f) > 0f,
+            disabledContentColor = Color.White,
+            disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 48.dp)

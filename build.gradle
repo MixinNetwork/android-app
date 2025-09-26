@@ -39,7 +39,7 @@ buildscript {
         ext.coroutineAdapterVersion = '0.9.2'
         ext.loggerVersion = '2.2.0'
         ext.kotlinVersion = '2.2.20'
-        ext.libphonenumberVersion = '9.0.14'
+        ext.libphonenumberVersion = '9.0.15'
         ext.coroutinesVersion = '1.10.2'
         ext.firebaseVersion = '18.0.2'
         ext.firebaseMessageVersion = '21.0.1'
@@ -101,7 +101,7 @@ buildscript {
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.8'
-        ext.balloonVersion = '1.6.3'
+        ext.balloonVersion = '1.6.13'
         ext.markdownVersion = '0.7.3'
 
         ext.bcVersion = '1.70'

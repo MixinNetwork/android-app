@@ -711,12 +711,16 @@ fun ActionButton(
     backgroundColor: Color,
     contentColor: Color,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    disabledBackgroundColor: Color = backgroundColor.copy(alpha = 0.4f),
+    disabledContentColor: Color = contentColor.copy(alpha = 0.6f),
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = backgroundColor,
-            contentColor = contentColor,
+            backgroundColor = if (enabled) backgroundColor else disabledBackgroundColor,
+            contentColor = if (enabled) contentColor else disabledContentColor,
         ),
         shape = RoundedCornerShape(20.dp),
         contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
@@ -728,7 +732,11 @@ fun ActionButton(
         ),
         modifier = modifier
     ) {
-        Text(text = text, color = contentColor, fontWeight = FontWeight.W500)
+        Text(
+            text = text,
+            color = if (enabled) contentColor else disabledContentColor,
+            fontWeight = FontWeight.W500
+        )
     }
 }
 
