@@ -426,8 +426,8 @@ fun ImportWalletDetailPage(
                     },
                     enabled = isButtonEnabled,
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (isButtonEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                        backgroundColor = if (isButtonEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
+                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
                         contentColor = Color.White,
                         disabledContentColor = Color.White
                     ),
