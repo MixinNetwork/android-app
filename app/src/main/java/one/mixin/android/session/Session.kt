@@ -406,6 +406,15 @@ object Session {
         return signBotSignature(getAccountId()!!, botPublicKey!!, edKeyPair, request.method, request.url.cutOut(), body)
     }
 
+    fun getBotSignature(
+        botPublicKey: String?,
+        method: String, path: String, body: String
+    ): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        return signBotSignature(getAccountId()!!, botPublicKey!!, edKeyPair, method, path, body)
+    }
+
+
     fun getRegisterSignature(
         message: String,
         seed: ByteArray,
