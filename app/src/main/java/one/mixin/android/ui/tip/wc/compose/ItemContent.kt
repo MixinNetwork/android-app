@@ -140,7 +140,7 @@ fun TextWithRoundedLabelInline(
             "label" to InlineTextContent(
                 placeholder = Placeholder(
                     width = with(density) {
-                        (measureTextWidth(label, (16 * 0.8).sp) + 12.dp).toSp()
+                        measureTextWidth(" $label ", (16 * 0.8).sp)
                     },
                     height = with(density) {
                         16.5.sp
@@ -165,8 +165,6 @@ fun TextWithRoundedLabelInline(
                         lineHeight = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
                     )
                 }
             }
@@ -176,7 +174,7 @@ fun TextWithRoundedLabelInline(
 }
 
 @Composable
-private fun measureTextWidth(text: String, fontSize: TextUnit): Dp {
+private fun measureTextWidth(text: String, fontSize: TextUnit): TextUnit {
     val density = LocalDensity.current
     val fontSizePx = with(density) { fontSize.toPx() }
     val paint = android.graphics.Paint().apply {
@@ -184,5 +182,5 @@ private fun measureTextWidth(text: String, fontSize: TextUnit): Dp {
         isAntiAlias = true
     }
     val textWidth = paint.measureText(text)
-    return with(density) { textWidth.toDp() }
+    return with(density) { (textWidth).toSp() }
 }
