@@ -150,7 +150,6 @@ fun TextWithRoundedLabelInline(
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
                         .background(
                             color = accentColor,
                             shape = RoundedCornerShape(4.dp)
