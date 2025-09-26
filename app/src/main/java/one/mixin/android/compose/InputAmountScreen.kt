@@ -254,6 +254,9 @@ fun InputAmountScreen(
             onClick = onContinueClick,
             backgroundColor = MixinAppTheme.colors.accent,
             contentColor = Color.White,
+            enabled = (primaryAmount.toFloatOrNull() ?: 0f) > 0f,
+            disabledContentColor = MixinAppTheme.colors.backgroundGray,
+            disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 48.dp)
