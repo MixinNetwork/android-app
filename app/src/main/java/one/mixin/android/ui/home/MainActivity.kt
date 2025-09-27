@@ -9,6 +9,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -16,6 +17,7 @@ import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -1001,9 +1003,15 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private val channel = Channel<Int>(Channel.CONFLATED)
-
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        binding.bottomNav.setOnApplyWindowInsetsListener(null)
+        binding.bottomNav.setPadding(0,0,0,0)
+    }
     private fun initBottomNav() {
         binding.apply {
+            bottomNav.setOnApplyWindowInsetsListener(null)
+            bottomNav.setPadding(0,0,0,0)
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 
