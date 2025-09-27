@@ -680,6 +680,7 @@ class ConversationListFragment : LinkFragment() {
 
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationItem: ConversationItem) {
+        if (!isAdded) return
         val conversationId = conversationItem.conversationId
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
@@ -703,6 +704,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         viewBinding.deleteTv.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             alertDialogBuilder()
                 .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
