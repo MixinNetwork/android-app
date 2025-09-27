@@ -28,6 +28,8 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.EnumMap
 import java.util.EnumSet
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 fun Bitmap.toBytes(): ByteArray {
     ByteArrayOutputStream().use { stream ->
@@ -55,7 +57,7 @@ fun Bitmap.saveGroupAvatar(
                 fos.flush()
             }
         }
-    } catch (ignored: Exception) {
+    } catch (_: Exception) {
     }
 }
 
@@ -71,10 +73,17 @@ fun Bitmap.save(file: File) {
 }
 
 fun Bitmap.decodeQR(): String? {
-    val width = width
-    val height = height
+    // Check if the bitmap is hardware accelerated and convert it to a software bitmap if needed
+    val bitmap = if (config == Bitmap.Config.HARDWARE) {
+        copy(Bitmap.Config.ARGB_8888, false)
+    } else {
+        this
+    }
+    
+    val width = bitmap.width
+    val height = bitmap.height
     val pixels = IntArray(width * height)
-    getPixels(pixels, 0, width, 0, 0, width, height)
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
     return decodeLuminanceSource(RGBLuminanceSource(width, height, pixels))
 }
 
@@ -88,7 +97,7 @@ private fun decodeLuminanceSource(source: LuminanceSource): String? {
     val results = ArrayList<Result>(1)
     var readException: ReaderException? = null
     try {
-        val hintsPure = EnumMap<DecodeHintType, Any>(hints)
+        val hintsPure = EnumMap(hints)
         hintsPure[DecodeHintType.PURE_BARCODE] = true
         val theResult = reader.decode(binaryBitmap, hintsPure)
         if (theResult != null) {
@@ -123,7 +132,7 @@ fun Bitmap.scaleUp(minSize: Int): Bitmap {
 
     val small = if (width > height) height else width
     val ratio = small / minSize.toFloat()
-    return Bitmap.createScaledBitmap(this, (width / ratio).toInt(), (height / ratio).toInt(), true)
+    return this.scale((width / ratio).toInt(), (height / ratio).toInt())
 }
 
 fun Bitmap.scaleDown(maxSize: Int): Bitmap {
@@ -131,7 +140,7 @@ fun Bitmap.scaleDown(maxSize: Int): Bitmap {
 
     val large = if (width > height) width else height
     val ratio = large / maxSize.toFloat()
-    return Bitmap.createScaledBitmap(this, (width / ratio).toInt(), (height / ratio).toInt(), true)
+    return this.scale((width / ratio).toInt(), (height / ratio).toInt())
 }
 
 fun Bitmap.base64Encode(format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): String? {
@@ -172,7 +181,7 @@ fun Bitmap.blurBitmap(
     val input = Allocation.createFromBitmap(rs, this)
     val output = Allocation.createTyped(rs, input.type)
     val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-    val result = Bitmap.createBitmap(width, height, config ?: Bitmap.Config.ARGB_8888)
+    val result = createBitmap(width, height, config ?: Bitmap.Config.ARGB_8888)
     script.setRadius(radius.toFloat())
     script.setInput(input)
     script.forEach(output)
