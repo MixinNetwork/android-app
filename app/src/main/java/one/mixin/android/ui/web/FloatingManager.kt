@@ -3,11 +3,9 @@ package one.mixin.android.ui.web
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
 import android.webkit.WebViewClient
-import androidx.annotation.ColorInt
 import androidx.annotation.MainThread
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
@@ -29,8 +27,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 import androidx.core.graphics.scale
 import androidx.core.graphics.toColorInt
-import one.mixin.android.extension.dp
-import one.mixin.android.extension.statusBarHeight
 import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
@@ -45,16 +41,24 @@ fun refreshScreenshot(context: Context, cover: Int? = null) {
             if (!rootView.isLaidOut) return@let
 
             val screenBitmap = rootView.drawToBitmap()
+            
+            // Convert hardware bitmap to software bitmap if needed
+            val softwareBitmap = if (screenBitmap.config == Bitmap.Config.HARDWARE) {
+                screenBitmap.copy(Bitmap.Config.ARGB_8888, false)
+            } else {
+                screenBitmap
+            }
+            
             val resultBitmap =
-                screenBitmap.scale(screenBitmap.width / 3, screenBitmap.height / 3, false)
+                softwareBitmap.scale(softwareBitmap.width / 3, softwareBitmap.height / 3, false)
 
             val cv = Canvas(resultBitmap)
             cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
             cv.drawRect(
                 0f,
                 0f,
-                screenBitmap.width.toFloat(),
-                screenBitmap.height.toFloat(),
+                resultBitmap.width.toFloat(),
+                resultBitmap.height.toFloat(),
                 Paint().apply {
                     color = cover ?: if (context.isNightMode()) {
                         "#CC1C1C1C".toColorInt()
@@ -78,7 +82,7 @@ fun expand(context: Context) {
 }
 
 fun collapse() {
-    if (clips.size > 0) {
+    if (clips.isNotEmpty()) {
         FloatingWebClip.getInstance().show()
     }
 }
@@ -88,7 +92,6 @@ var clips = mutableListOf<WebClip>()
 data class WebClip(
     var url: String,
     var app: App?,
-    @ColorInt
     val titleColor: Int,
     val name: String?,
     val thumb: Bitmap?,
