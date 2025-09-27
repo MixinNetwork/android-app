@@ -504,11 +504,9 @@ class TokenRepository
 
         suspend fun findWeb3AssetItemsWithBalance(walletId: String): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance(walletId)
 
-        suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
-
         fun web3TokenItems(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId)
 
-        fun web3TokenItems(walletId: String, level:Int): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId, level)
+        fun web3TokenItemsExcludeHidden(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
         suspend fun fuzzySearchToken(
             query: String,
@@ -518,6 +516,9 @@ class TokenRepository
 
         suspend fun fuzzySearchAssetIgnoreAmount(query: String) =
             tokenDao.fuzzySearchAssetIgnoreAmount(query, query)
+
+        suspend fun fuzzySearchAsset(query: String, chainId: String?) =
+            tokenDao.fuzzySearchAsset(query, chainId)
 
         fun assetItem(id: String) = tokenDao.assetItem(id)
 
