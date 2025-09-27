@@ -3,8 +3,10 @@ package one.mixin.android.ui.conversation.preview
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +14,9 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import androidx.core.os.bundleOf
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -32,6 +37,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelinePlayView
 import timber.log.Timber
@@ -107,6 +113,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         super.setupDialog(dialog, style)
         dialog.window?.apply {
             requestFeature(Window.FEATURE_NO_TITLE)
+            WindowCompat.setDecorFitsSystemWindows(this, false)
+            SystemUIManager.fullScreen(this)
             setWindowAnimations(R.style.BottomSheet_Animation)
         }
         dialog.setOnShowListener {
