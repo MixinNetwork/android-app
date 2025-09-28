@@ -515,6 +515,7 @@ object AppModule {
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, UUID.randomUUID().toString())
                     val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null)
+                    if (botPublicKey.isNullOrBlank()) return@addInterceptor chain.proceed(b.build())
                     val (ts, signature) = Session.getBotSignature(botPublicKey, sourceRequest)
                     b.addHeader(mrAccessTimestamp, ts.toString())
                     b.addHeader(mrAccessSign, signature)

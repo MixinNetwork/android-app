@@ -342,6 +342,10 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     }
 
     override fun updateUI() {
+        if (!::jobManager.isInitialized) {
+            Timber.e("JobManager not initialized yet, skipping updateUI")
+            return
+        }
         jobManager.addJobInBackground(RefreshMarketsJob())
         jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
         jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
