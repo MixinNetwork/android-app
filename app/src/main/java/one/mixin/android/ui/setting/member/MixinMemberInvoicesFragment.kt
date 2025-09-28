@@ -24,6 +24,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -98,6 +99,10 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                             AllMixinMemberInvoicesFragment.TAG
                         )
                     },
+                    onReferral = {
+                        // todo replace
+                        InputReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                    }
                 )
             }
         }

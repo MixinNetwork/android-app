@@ -2065,4 +2065,9 @@
     <string name="mixin_payment_title">📣 Mixin 收款</string>
     <string name="payment_details">💰 金额：%1$s\n🌐 网络：%2$s\n🤝 收款人：%3$s</string>
     <string name="pay_now">立刻支付</string>
+    <string name="referral_description">参与邀请计划：&#10;最高 70% 交易手续费分佣。&#10;会员返佣单比最高 2000 USD。&#10;返佣资格终生有效。&#10;* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
+    <string name="referral_commission">最高 70% 交易手续费分佣。</string>
+    <string name="referral_member_rebate">会员返佣单比最高 2000 USD。</string>
+    <string name="referral_lifetime">返佣资格终生有效。</string>
+    <string name="referral_paid_only">* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
 </resources>

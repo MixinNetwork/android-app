@@ -231,6 +231,16 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                         }
                         isMembership = Session.getAccount()?.membership?.isMembership() ?: false
                     }
+                    menu {
+                        title = getString(R.string.Referral)
+                        action = {
+                            if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                                // todo open the webpage
+                            } else {
+                                ReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ReferralBottomSheetDialogFragment.TAG)
+                            }
+                        }
+                    }
                 }
                 menuGroup {
                     menu {

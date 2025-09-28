@@ -1,0 +1,188 @@
+package one.mixin.android.ui.common.profile
+
+import android.annotation.SuppressLint
+import android.app.Dialog
+import android.os.Bundle
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.doOnPreDraw
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
+import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.ui.home.web3.components.ActionButton
+import one.mixin.android.util.SystemUIManager
+import one.mixin.android.extension.dp as dip
+
+@AndroidEntryPoint
+class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
+    companion object {
+        const val TAG = "InputReferralBottomSheetDialogFragment"
+
+        fun newInstance() = InputReferralBottomSheetDialogFragment()
+    }
+
+    private var behavior: BottomSheetBehavior<*>? = null
+
+    var onConfirm: ((String) -> Unit)? = null
+    var onDismissCallback: (() -> Unit)? = null
+
+    override fun getTheme() = R.style.AppTheme_Dialog
+
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, R.style.MixinBottomSheet)
+        dialog.window?.let { window ->
+            SystemUIManager.lightUI(window, requireContext().resources.configuration.uiMode and 0x30 != 0x20)
+        }
+        dialog.window?.setGravity(Gravity.BOTTOM)
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+        ComposeView(requireContext()).apply {
+            roundTopOrBottom(12.dip.toFloat(), top = true, bottom = false)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                MixinAppTheme {
+                    var input by remember { mutableStateOf("") }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = Color.Transparent, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                            .padding(horizontal = 16.dp, vertical = 18.dp)
+                            .imePadding(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.bg_referral),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Image(
+                                painter = painterResource(R.drawable.icon_referral),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 16.dp)
+                            )
+                        }
+                        Spacer(Modifier.height(30.dp))
+                        Text(
+                            text = stringResource(R.string.Apply_Referral_Code),
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.W600,
+                            color = MixinAppTheme.colors.textPrimary,
+                        )
+
+                        Box(modifier = Modifier.padding(14.dp)) {
+                            OutlinedTextField(
+                                value = input,
+                                onValueChange = { input = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                label = { Text(text = stringResource(R.string.referral_hint)) },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = Color.Transparent,
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedLabelColor = MixinAppTheme.colors.accent,
+                                    unfocusedLabelColor = MixinAppTheme.colors.textAssist,
+                                    textColor = MixinAppTheme.colors.textPrimary
+                                ),
+                                singleLine = true
+                            )
+                        }
+                        Spacer(Modifier.weight(1f))
+
+                        ActionButton(
+                            text = stringResource(R.string.Confirm),
+                            onClick = { // todo
+                            },
+                            backgroundColor = MixinAppTheme.colors.accent,
+                            contentColor = Color.White,
+                            modifier = Modifier
+                                .wrapContentHeight()
+                                .fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            doOnPreDraw {
+                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
+                behavior = params?.behavior as? BottomSheetBehavior<*>
+                behavior?.peekHeight = requireContext().screenHeight()
+                behavior?.isDraggable = true
+                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+            }
+        }
+
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(window, !requireContext().resources.configuration.uiMode.and(0x30).equals(0x20))
+        }
+    }
+
+    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+            when (newState) {
+                BottomSheetBehavior.STATE_HIDDEN -> {
+                    onDismissCallback?.invoke()
+                    dismissAllowingStateLoss()
+                }
+
+                else -> {}
+            }
+        }
+
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+    }
+
+    override fun onDestroyView() {
+        behavior?.removeBottomSheetCallback(bottomSheetBehaviorCallback)
+        super.onDestroyView()
+    }
+}

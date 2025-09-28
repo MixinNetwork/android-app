@@ -1,13 +1,17 @@
 package one.mixin.android.ui.setting.ui.page
 
 import PageScaffold
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -16,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -41,6 +47,7 @@ fun MixinMemberInvoicesPage(
     onViewPlanClick: () -> Unit,
     onAll: () -> Unit,
     onOrderClick: (MembershipOrder) -> Unit
+    onReferral:() -> Unit
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<MemberViewModel>()
@@ -67,6 +74,44 @@ fun MixinMemberInvoicesPage(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFFF2E8FF),
+                                    Color(0xFFE6F1FF)
+                                )
+                            )
+                        )
+                        .padding(16.dp)
+                        .clickable {
+                            onReferral.invoke()
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_referral),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.referral_desc),
+                        color = Color(red = 0xAA, green = 0x71, blue = 0xFA),
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_referral_arrow),
+                        contentDescription = null,
+                        tint = Color.Unspecified
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
                 MembershipPlanCard(
                     membership = membership,
                     onViewPlanClick = onViewPlanClick
@@ -74,10 +119,11 @@ fun MixinMemberInvoicesPage(
 
                 Spacer(modifier = Modifier.height(10.dp))
                 Column(
-                    modifier = Modifier.cardBackground(
-                        MixinAppTheme.colors.background,
-                        MixinAppTheme.colors.borderColor
-                    )
+                    modifier = Modifier
+                        .cardBackground(
+                            MixinAppTheme.colors.background,
+                            MixinAppTheme.colors.borderColor
+                        )
                         .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
                     Row(modifier = Modifier.clickable{

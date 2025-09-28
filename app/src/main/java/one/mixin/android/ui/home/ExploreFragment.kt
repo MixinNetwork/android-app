@@ -38,6 +38,7 @@ import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
+import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
@@ -46,6 +47,7 @@ import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.bot.INTERNAL_BUY_ID
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_MEMBER_ID
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.InternalBots
@@ -328,6 +330,14 @@ class ExploreFragment : BaseFragment() {
                             parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
                         )
                     }
+                }
+                INTERNAL_REFERRAL_ID -> {
+                    if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                        // todo open the webpage
+                    } else {
+                        ReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ReferralBottomSheetDialogFragment.TAG)
+                    }
+
                 }
                 INTERNAL_SUPPORT_ID -> {
                     lifecycleScope.launch {
