@@ -2,10 +2,13 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -28,6 +31,8 @@ import one.mixin.android.event.FavoriteEvent
 import one.mixin.android.event.SessionEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -53,6 +58,7 @@ import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
+import one.mixin.android.ui.home.bot.InternalReferral
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.search.SearchExploreFragment
@@ -69,6 +75,7 @@ import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
 import one.mixin.android.vo.Plan
 import one.mixin.android.widget.SegmentationItemDecoration
+import one.mixin.android.widget.lottie.RLottieDrawable
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -499,7 +506,31 @@ class ExploreFragment : BaseFragment() {
                         app
                     }
                 itemBinding.apply {
-                    avatar.renderApp(a)
+                    if (app == InternalReferral) {
+                        lottie.setImageDrawable(
+                            RLottieDrawable(
+                                if (root.context.isNightMode()) {
+                                    R.raw.referral_night
+                                } else {
+                                    R.raw.referral
+                                },
+                                "referral",
+                                35.dp,
+                                35.dp,
+                            ).apply {
+                                setAllowDecodeSingleFrame(true)
+                                setAutoRepeat(1)
+                                setAutoRepeatCount(Int.MAX_VALUE)
+                                start()
+                            },
+                        )
+                        avatar.isInvisible = true
+                        lottieFl.isVisible = true
+                    } else {
+                        avatar.renderApp(a)
+                        avatar.isVisible = true
+                        lottieFl.isVisible = false
+                    }
                     name.setTextOnly(a.name)
                     mixinIdTv.setText(a.description)
                     name.setTextOnly(a.name)
