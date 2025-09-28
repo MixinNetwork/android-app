@@ -171,13 +171,14 @@ class BottomSheetViewModel
 
         suspend fun findAndSync(appId: String) = userRepository.findOrSyncApp(appId)
 
-        suspend fun getBotPublicKey(appId: String, sp: SharedPreferences): String? {
+        suspend fun getBotPublicKey(appId: String, sp: SharedPreferences, reloadPublicKey: Boolean): String? {
             var pub = sp.getString("bot_$appId", null)
-            if (pub.isNullOrBlank().not()) return pub
-            else {
+            return if (!reloadPublicKey && pub.isNullOrBlank().not()) {
+                pub
+            } else {
                 pub = userRepository.fetchSessionsSuspend(listOf(appId)).data?.firstOrNull()?.publicKey
                 if (pub != null) sp.putString("bot_$appId", pub)
-                return pub
+                pub
             }
         }
 

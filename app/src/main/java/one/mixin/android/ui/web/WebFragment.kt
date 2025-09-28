@@ -918,8 +918,8 @@ class WebFragment : BaseFragment() {
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
-                    signBotSignature = { appId, pub, metho, path, body, callbackFunction ->
-                        botSign(appId, pub, metho, path, body, callbackFunction)
+                    signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
+                        botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
                     }
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
@@ -1112,7 +1112,7 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun botSign(appId: String, publicKey: String, method: String, path: String, body: String, callbackFunction: String) {
+    private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1125,6 +1125,7 @@ class WebFragment : BaseFragment() {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
+            val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
             webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
         }
@@ -2100,7 +2101,7 @@ class WebFragment : BaseFragment() {
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
-        var signBotSignature: ((String, String, String, String, String, String) -> Unit)? = null,
+        var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2164,9 +2165,9 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun signBotSignature(
-            appid:String, publicKey: String, method: String, path: String, body:String, callbackFunction: String,
+            appid:String, reloadPublicKey: String, method: String, path: String, body:String, callbackFunction: String,
         ) {
-            signBotSignature?.invoke(appid, publicKey, method, path, body, callbackFunction)
+            signBotSignature?.invoke(appid, reloadPublicKey.toBooleanStrictOrNull() ?: false, method, path, body, callbackFunction)
         }
     }
 
