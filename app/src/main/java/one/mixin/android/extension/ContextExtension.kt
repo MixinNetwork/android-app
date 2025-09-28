@@ -1065,7 +1065,8 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
-        Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, Constants.ChainId.Litecoin, Constants.ChainId.RIPPLE_CHAIN_ID, Constants.ChainId.Dogecoin, Constants.ChainId.Monero, Constants.ChainId.MobileCoin, -> getString(R.string.deposit_tip_common, asset.symbol)
+        Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
+        Constants.ChainId.Litecoin, Constants.ChainId.RIPPLE_CHAIN_ID, Constants.ChainId.Dogecoin, Constants.ChainId.Monero, Constants.ChainId.MobileCoin, -> getString(R.string.deposit_tip_common, asset.symbol)
         else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey?:""))
     }
 
@@ -1210,18 +1211,7 @@ fun PackageManager.getPackageInfoCompat(
     }
 
 fun Context.openMarket() {
-    if (BuildConfig.IS_GOOGLE_PLAY && isPlayStoreInstalled()) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
-            intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
-            startActivity(intent)
-        } catch (e: Exception) {
-            openExternalUrl(getString(R.string.website))
-        }
-    } else {
-        openExternalUrl(getString(R.string.website))
-    }
+    openExternalUrl(getString(R.string.website))
 }
 
 @Suppress("DEPRECATION") // Deprecated for third party Services.

@@ -246,4 +246,5 @@ object CryptoWalletHelper {
     fun clear(context: Context) {
         context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
     }
+
 }

@@ -3,9 +3,10 @@ package one.mixin.android.util.mlkit.scan.camera.config
 import android.content.Context
 import android.util.DisplayMetrics
 import androidx.camera.core.AspectRatio
-import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.AspectRatioStrategy.FALLBACK_RULE_AUTO
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import timber.log.Timber
 import kotlin.math.abs
 
@@ -32,16 +33,8 @@ class AspectRatioCameraConfig(context: Context) : CameraConfig() {
         }
     }
 
-    override fun options(builder: Preview.Builder): Preview {
-        return super.options(builder)
-    }
-
-    override fun options(builder: CameraSelector.Builder): CameraSelector {
-        return super.options(builder)
-    }
-
     override fun options(builder: ImageAnalysis.Builder): ImageAnalysis {
-        builder.setTargetAspectRatio(aspectRatio)
+        builder.setResolutionSelector(ResolutionSelector.Builder().setAspectRatioStrategy(AspectRatioStrategy(aspectRatio, FALLBACK_RULE_AUTO)).build())
         return super.options(builder)
     }
 }

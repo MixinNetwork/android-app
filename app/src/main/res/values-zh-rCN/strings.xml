@@ -343,6 +343,7 @@
     <string name="deposit_tip_common">该充值地址仅支持 %1$s。</string>
     <string name="deposit_tip_trx">支持 TRX 和所有符合 TRC-10、TRC-20 标准的代币。</string>
     <string name="deposit_tip_eth">该充值地址支持所有符合 ERC-20 标准的代币，例如 ETH、XIN 等。</string>
+    <string name="deposit_tip_lightning">此票据支持闪电网络上的 BTC，以及 USDT 和其他 Taproot 资产。</string>
     <string name="deposit_tip_chain">该充值地址支持 %1$s 和所有 %2$s 上的代币</string>
     <string name="desktop">桌面端</string>
     <string name="desktop_login_no_pin">为了您的安全，登录桌面前请先设置 PIN 码！</string>
@@ -474,6 +475,7 @@
     <string name="error_unknown_with_code">错误：%1$d</string>
     <string name="error_unknown_with_message">错误：%1$s</string>
     <string name="error_used_phone">错误 20122：电话号码已经被占用。</string>
+    <string name="error_watch_address_not_supported">错误 10633：当前地址为合约地址或交易所地址，暂不支持观察。</string>
     <string name="error_user_invalid_format">用户数据不合法</string>
     <string name="error_withdrawal_memo_format_incorrect">错误 20131：提现备注格式不正确</string>
     <string name="error_withdrawal_suspend">错误 20137：提现暂停</string>

@@ -356,6 +356,7 @@
     <string name="deposit_tip_common">This address only supports %1$s.</string>
     <string name="deposit_tip_trx">This address supports all TRC-10 and TRC-20 tokens.</string>
     <string name="deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, etc.</string>
+    <string name="deposit_tip_lightning">This invoice supports BTC on Lightning Network, as well as USDT and other Taproot Assets.</string>
     <string name="deposit_tip_chain">This address supports %1$s, as well as all tokens on %2$s</string>
     <string name="desktop">desktop</string>
     <string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
@@ -487,6 +488,7 @@
     <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
+    <string name="error_watch_address_not_supported">ERROR 10633: Contract or exchange addresses is not supported for watching.</string>
     <string name="error_user_invalid_format">Invalid user id</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Withdrawal memo format incorrect.</string>
     <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
@@ -1514,7 +1516,7 @@
     <string name="TRON">TRON</string>
     <string name="Optimism">Optimism</string>
     <string name="Arbitrum">Arbitrum</string>
-    <string name="Toncoin">Toncoin</string>
+    <string name="Toncoin">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access apps and DeFi projects.</string>

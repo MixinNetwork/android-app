@@ -219,6 +219,7 @@ open class ErrorHandler {
         const val SIMULATE_TRANSACTION_FAILED = 10631
         const val MAX_WALLET_REACHED = 10632
 
+        const val UNSUPPORTED_WATCH_ADDRESS = 10633
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         const val INVALID_INVITATION_CODE = 20112
@@ -314,6 +315,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.MAX_WALLET_REACHED -> {
             getString(R.string.error_too_many_wallets)
+        }
+        ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
+            getString(R.string.error_watch_address_not_supported)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)

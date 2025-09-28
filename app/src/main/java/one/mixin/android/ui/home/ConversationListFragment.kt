@@ -177,7 +177,14 @@ class ConversationListFragment : LinkFragment() {
     private var enterJob: Job? = null
 
     companion object {
-        fun newInstance() = ConversationListFragment()
+        @Volatile
+        private var INSTANCE: ConversationListFragment? = null
+
+        fun getInstance(): ConversationListFragment {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: ConversationListFragment().also { INSTANCE = it }
+            }
+        }
 
         const val TAG = "ConversationListFragment"
 
@@ -200,7 +207,7 @@ class ConversationListFragment : LinkFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        navigationController = NavigationController(activity as MainActivity)
+        navigationController = NavigationController()
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -323,7 +330,7 @@ class ConversationListFragment : LinkFragment() {
             if (cid != null) {
                 openCircleEdit(cid)
             } else {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
         }
 
@@ -425,7 +432,7 @@ class ConversationListFragment : LinkFragment() {
                 openSearch()
             }
             searchBar.setOnGroupClickListener {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
             searchBar.setOnAddClickListener {
                 addCircle(it.context)
@@ -452,7 +459,7 @@ class ConversationListFragment : LinkFragment() {
             searchBar.setSearchViewListener(
                 object : MaterialSearchView.SearchViewListener {
                     override fun onSearchViewClosed() {
-                        navigationController.hideSearch()
+                        navigationController.hideSearch(parentFragmentManager)
                     }
 
                     override fun onSearchViewOpened() {
@@ -489,7 +496,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         if (!binding.searchBar.isOpen) {
-            navigationController.removeSearch()
+            navigationController.removeSearch(parentFragmentManager)
         }
     }
 
@@ -673,6 +680,7 @@ class ConversationListFragment : LinkFragment() {
 
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationItem: ConversationItem) {
+        if (!isAdded) return
         val conversationId = conversationItem.conversationId
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
@@ -696,6 +704,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         viewBinding.deleteTv.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             alertDialogBuilder()
                 .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
@@ -733,7 +742,9 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        bottomSheet.show()
+        if (!parentFragmentManager.isStateSaved) {
+            bottomSheet.show()
+        }
     }
 
     override fun onResume() {
@@ -747,12 +758,19 @@ class ConversationListFragment : LinkFragment() {
             if (isAdded) {
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
-                        (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
-                        if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                        val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
+                        existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
+
+                        if (type != null && !parentFragmentManager.isStateSaved) {
+                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                            }
+                        }
                     }
             }
         }
     }
+
 
     private fun openCamera(scan: Boolean) {
         RxPermissions(requireActivity())
@@ -1254,6 +1272,9 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
+        if (!isAdded) {
+            return
+        }
         val choices =
             arrayOf(
                 getString(R.string.one_hour),

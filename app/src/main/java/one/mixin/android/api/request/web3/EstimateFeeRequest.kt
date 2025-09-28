@@ -7,7 +7,9 @@ data class EstimateFeeRequest(
     val chainId: String,
     @SerializedName("raw_transaction")
     val rawTransaction: String?,
+    val data: String?,
 
     val from: String? = null,
     val to: String? = null,
+    val value: String? = null,
 )

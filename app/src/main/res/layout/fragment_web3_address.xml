@@ -191,6 +191,7 @@
                 android:text="@string/network"
                 android:textColor="?attr/text_assist"
                 android:layout_marginTop="20dp"
+                android:textAllCaps="true"
                 android:textSize="14sp" />
 
             <TextView
