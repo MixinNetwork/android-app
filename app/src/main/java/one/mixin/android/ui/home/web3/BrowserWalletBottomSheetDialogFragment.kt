@@ -37,6 +37,7 @@ import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -207,13 +208,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
                 val ctx = requireContext()
-                val navBarHeight = ctx.navigationBarHeight()
-                val diff = if (navBarHeight <= 24.dip) {
-                    12.dip
-                } else {
-                    0.dip
-                }
-                behavior?.peekHeight = ctx.screenHeight() - ctx.statusBarHeight()  - diff
+                behavior?.peekHeight = ctx.screenHeight() - this.getSafeAreaInsetsTop()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
