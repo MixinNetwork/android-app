@@ -369,7 +369,7 @@ fun signBotSignature(
     val sharedKey = calculateAgreement(botPk, private)
     val ts = currentTimeSeconds()
     var content = "$ts${method}${path}"
-    if (body != null) {
+    if (body.isNullOrBlank().not()) {
         content += body
     }
     return Pair(ts, (accountId.toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())

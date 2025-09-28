@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,6 +50,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
@@ -166,6 +168,18 @@ class BottomSheetViewModel
             }
 
         fun assetItems(): LiveData<List<TokenItem>> = tokenRepository.assetItems()
+
+        suspend fun findAndSync(appId: String) = userRepository.findOrSyncApp(appId)
+
+        suspend fun getBotPublicKey(appId: String, sp: SharedPreferences): String? {
+            var pub = sp.getString("bot_$appId", null)
+            if (pub.isNullOrBlank().not()) return pub
+            else {
+                pub = userRepository.fetchSessionsSuspend(listOf(appId)).data?.firstOrNull()?.publicKey
+                if (pub != null) sp.putString("bot_$appId", pub)
+                return pub
+            }
+        }
 
         fun coinItems(): LiveData<List<CoinItem>> = tokenRepository.coinItems()
 

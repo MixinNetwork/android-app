@@ -46,7 +46,7 @@ fun MixinMemberInvoicesPage(
     onPop: () -> Unit,
     onViewPlanClick: () -> Unit,
     onAll: () -> Unit,
-    onOrderClick: (MembershipOrder) -> Unit
+    onOrderClick: (MembershipOrder) -> Unit,
     onReferral:() -> Unit
 ) {
     val context = LocalContext.current
