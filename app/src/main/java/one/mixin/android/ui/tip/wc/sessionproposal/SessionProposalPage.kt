@@ -99,7 +99,7 @@ fun SessionProposalPage(
             modifier =
                 Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                    .padding(bottom = GetNavBarHeightValue())
+                    .padding(bottom = GetNavBarHeightValue() + 8.dp)
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(MixinAppTheme.colors.background),

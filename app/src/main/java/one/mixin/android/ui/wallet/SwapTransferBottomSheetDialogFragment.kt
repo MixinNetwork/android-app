@@ -94,6 +94,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -290,7 +291,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         modifier =
                         Modifier
                             .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                            .padding(bottom = GetNavBarHeightValue())
+                            .padding(bottom = GetNavBarHeightValue() + 8.dp)
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .background(MixinAppTheme.colors.background),
@@ -544,7 +545,13 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
                 val ctx = requireContext()
-                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight()
+                val navBarHeight = ctx.navigationBarHeight()
+                val diff = if (navBarHeight <= 24.dip) {
+                    8.dip
+                } else {
+                    0.dip
+                }
+                behavior?.peekHeight = ctx.screenHeight() - ctx.statusBarHeight()  - diff
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
