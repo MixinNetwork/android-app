@@ -206,7 +206,7 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val ctx = requireContext()
                 val navBarHeight = ctx.navigationBarHeight()
                 val diff = if (navBarHeight <= 24.dip) {
-                    8.dip
+                    12.dip
                 } else {
                     0.dip
                 }

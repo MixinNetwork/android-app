@@ -291,7 +291,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         modifier =
                         Modifier
                             .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                            .padding(bottom = GetNavBarHeightValue() + 8.dp)
+                            .padding(bottom = GetNavBarHeightValue() + 12.dp)
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .background(MixinAppTheme.colors.background),
@@ -547,7 +547,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val ctx = requireContext()
                 val navBarHeight = ctx.navigationBarHeight()
                 val diff = if (navBarHeight <= 24.dip) {
-                    8.dip
+                    12.dip
                 } else {
                     0.dip
                 }
