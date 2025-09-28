@@ -398,12 +398,12 @@ object Session {
     }
 
     fun getBotSignature(
-        botPublicKey: String?,
+        botPublicKey: String,
         request: Request,
     ): Pair<Long, String> {
         val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
         val body = request.body?.bodyToString()
-        return signBotSignature(getAccountId()!!, botPublicKey!!, edKeyPair, request.method, request.url.cutOut(), body)
+        return signBotSignature(getAccountId()!!, botPublicKey, edKeyPair, request.method, request.url.cutOut(), body)
     }
 
     fun getRegisterSignature(
