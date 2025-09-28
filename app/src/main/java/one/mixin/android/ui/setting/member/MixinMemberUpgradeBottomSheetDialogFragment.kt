@@ -28,11 +28,13 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -137,8 +139,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                 doOnPreDraw {
                     val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                     behavior = params?.behavior as? BottomSheetBehavior<*>
-                    behavior?.peekHeight =
-                        requireContext().realSize().y - requireContext().statusBarHeight()
+                    behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop()
                     behavior?.isDraggable = false
                     behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
                 }

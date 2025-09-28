@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
@@ -168,7 +169,7 @@ class CollectionBottomSheetDialogFragment : BottomSheetDialogFragment() {
             doOnPreDraw {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight()
+                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }

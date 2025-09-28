@@ -26,15 +26,14 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.util.getChainName
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Fiats
@@ -242,7 +241,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
             doOnPreDraw {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight()
+                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop()
                 behavior?.isDraggable = true
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
