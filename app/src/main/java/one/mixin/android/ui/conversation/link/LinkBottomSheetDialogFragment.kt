@@ -20,7 +20,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
@@ -72,6 +74,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.parser.BalanceError
@@ -696,6 +699,17 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     else -> showError()
                 }
             }
+        } else if (url.startsWith(Scheme.MIXIN_REFERRALS, true) || url.startsWith(Scheme.HTTPS_REFERRALS, true)) {
+            val uri = Uri.parse(url)
+            val referralCode = uri.lastPathSegment
+                if (referralCode.isNullOrBlank()) {
+                    showError()
+                } else {
+                    InputReferralBottomSheetDialogFragment
+                        .newInstance(referralCode)
+                        .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
         } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment

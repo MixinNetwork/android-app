@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.getValue
@@ -28,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -45,6 +45,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.ui.common.compose.MaterialInputField
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.extension.dp as dip
@@ -53,8 +54,13 @@ import one.mixin.android.extension.dp as dip
 class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "InputReferralBottomSheetDialogFragment"
+        private const val ARG_DEFAULT_VALUE = "default_value"
 
-        fun newInstance() = InputReferralBottomSheetDialogFragment()
+        fun newInstance(defaultValue: String = "") = InputReferralBottomSheetDialogFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_DEFAULT_VALUE, defaultValue)
+            }
+        }
     }
 
     private var behavior: BottomSheetBehavior<*>? = null
@@ -80,7 +86,8 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 MixinAppTheme {
-                    var input by remember { mutableStateOf("") }
+                    val defaultValue = arguments?.getString(ARG_DEFAULT_VALUE) ?: ""
+                    var input by remember { mutableStateOf(defaultValue) }
 
                     Column(
                         modifier = Modifier
@@ -117,27 +124,23 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             color = MixinAppTheme.colors.textPrimary,
                         )
 
-                        Box(modifier = Modifier.padding(14.dp)) {
-                            OutlinedTextField(
-                                value = input,
-                                onValueChange = { input = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(text = stringResource(R.string.referral_hint)) },
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    focusedBorderColor = Color.Transparent,
-                                    unfocusedBorderColor = Color.Transparent,
-                                    focusedLabelColor = MixinAppTheme.colors.accent,
-                                    unfocusedLabelColor = MixinAppTheme.colors.textAssist,
-                                    textColor = MixinAppTheme.colors.textPrimary
-                                ),
-                                singleLine = true
-                            )
-                        }
+
+                        MaterialInputField(
+                            value = input,
+                            onValueChange = { input = it },
+                            hint = stringResource(R.string.referral_hint),
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
                         Spacer(Modifier.weight(1f))
 
                         ActionButton(
                             text = stringResource(R.string.Confirm),
-                            onClick = { // todo
+                            onClick = {
+                                if (input.isNotBlank()) {
+                                    onConfirm?.invoke(input.trim())
+                                    dismiss()
+                                }
                             },
                             backgroundColor = MixinAppTheme.colors.accent,
                             contentColor = Color.White,
