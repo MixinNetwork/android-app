@@ -90,13 +90,10 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.TokenRepository
@@ -144,6 +141,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import one.mixin.android.extension.dp as dip
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -246,7 +244,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val link by lazy {
-        Uri.parse(requireNotNull(requireArguments().getString(ARGS_LINK)))
+        requireNotNull(requireArguments().getString(ARGS_LINK)).toUri()
     }
 
     private var step by mutableStateOf(Step.Pending)
@@ -888,7 +886,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3TokenItem?,
         tipGas: TipGas?,
         value: String?,
-        maxFeePerGas: String?
+        maxFeePerGas: String?,
     ): Boolean {
         return if (web3Token != null) {
             if (chainToken == null) {
@@ -913,7 +911,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 fun ItemUserContent(
     title: String,
     user: User?,
-    address: String?
+    address: String?,
 ) {
     Column(
         modifier =
@@ -996,7 +994,7 @@ fun ItemPriceContent(
     inAmount: BigDecimal,
     inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: SwapToken
+    outAsset: SwapToken,
 ) {
     var isSwitch by remember { mutableStateOf(false) }
     val price = outAmount.divide(inAmount, 8, RoundingMode.HALF_UP)
@@ -1046,7 +1044,7 @@ fun AssetChanges(
     inAmount: BigDecimal,
     inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: SwapToken
+    outAsset: SwapToken,
 ) {
     Column(
         modifier =
