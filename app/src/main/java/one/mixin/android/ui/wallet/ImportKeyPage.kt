@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
@@ -40,6 +41,7 @@ fun ImportKeyPage(
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
+            .padding(bottom = GetNavBarHeightValue())
             .background(MixinAppTheme.colors.primary)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,

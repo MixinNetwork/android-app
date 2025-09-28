@@ -78,6 +78,7 @@ import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
@@ -289,6 +290,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         modifier =
                         Modifier
                             .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+                            .padding(bottom = GetNavBarHeightValue())
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .background(MixinAppTheme.colors.background),
@@ -542,7 +544,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
                 val ctx = requireContext()
-                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
+                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }

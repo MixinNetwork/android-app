@@ -138,7 +138,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : SchemeBottomSheet() {
                     val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                     behavior = params?.behavior as? BottomSheetBehavior<*>
                     behavior?.peekHeight =
-                        requireContext().realSize().y - requireContext().statusBarHeight() - requireContext().navigationBarHeight()
+                        requireContext().realSize().y - requireContext().statusBarHeight()
                     behavior?.isDraggable = false
                     behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
                 }

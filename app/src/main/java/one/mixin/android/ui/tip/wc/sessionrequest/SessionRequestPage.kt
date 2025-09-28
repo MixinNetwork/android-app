@@ -46,6 +46,7 @@ import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.currencyFormat
@@ -140,6 +141,7 @@ fun SessionRequestPage(
             modifier =
             Modifier
                 .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+                .padding(bottom = GetNavBarHeightValue())
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .background(MixinAppTheme.colors.background),

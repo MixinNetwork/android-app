@@ -100,6 +100,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
         ComposeView(requireContext()).apply {
             roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            fitsSystemWindows = true
             setContent {
                 MixinAppTheme {
                     when (popupType) {

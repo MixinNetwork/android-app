@@ -70,7 +70,7 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
                 val ctx = requireContext()
-                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
+                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }

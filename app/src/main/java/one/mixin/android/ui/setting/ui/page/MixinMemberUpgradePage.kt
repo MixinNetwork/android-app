@@ -24,6 +24,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.api.request.MemberOrderRequest
 import one.mixin.android.api.response.MemberOrderPlan
 import one.mixin.android.api.response.MembershipOrder
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.MemberUpgradeContent
 import one.mixin.android.ui.setting.ui.components.MemberUpgradePaymentButton
@@ -156,6 +157,7 @@ fun MixinMemberUpgradePage(
     MixinAppTheme {
         Column(
             modifier = Modifier
+                .padding(bottom = GetNavBarHeightValue())
                 .fillMaxSize()
                 .padding(16.dp)
         )

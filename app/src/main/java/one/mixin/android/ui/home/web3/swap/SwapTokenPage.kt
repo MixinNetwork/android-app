@@ -38,6 +38,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.MiddleEllipsisText
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
@@ -52,6 +53,7 @@ fun SwapTokenPage(
         Column(
             modifier =
                 Modifier
+                    .padding(bottom = GetNavBarHeightValue())
                     .fillMaxWidth()
                     .padding(20.dp),
             horizontalAlignment = Alignment.Start,
