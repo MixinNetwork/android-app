@@ -56,6 +56,7 @@ import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
@@ -217,7 +218,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
                 contentView.doOnPreDraw {
                     if (!isAdded) return@doOnPreDraw
-
+                    binding.opLl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        bottomMargin = requireContext().navigationBarHeight() + 24.dp
+                    }
                     behavior?.peekHeight =
                         binding.title.height +
                         binding.scrollContent.height -
