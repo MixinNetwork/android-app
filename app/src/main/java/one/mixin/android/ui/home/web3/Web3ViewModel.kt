@@ -298,18 +298,20 @@ internal constructor(
             return fee
         } else {
             val r = withContext(Dispatchers.IO) {
-                web3Repository.estimateFee(
-                    EstimateFeeRequest(
-                        token.chainId,
-                        null,
-                        transaction.data,
-                        fromAddress,
-                        transaction.wcEthereumTransaction?.to,
-                        transaction.wcEthereumTransaction?.value,
+                runCatching {
+                    web3Repository.estimateFee(
+                        EstimateFeeRequest(
+                            token.chainId,
+                            null,
+                            transaction.data,
+                            fromAddress,
+                            transaction.wcEthereumTransaction?.to,
+                            transaction.wcEthereumTransaction?.value,
                         )
-                )
+                    )
+                }.getOrNull()
             }
-            if (r.isSuccess.not()) return BigDecimal.ZERO
+            if (r?.isSuccess != true) return BigDecimal.ZERO
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
                 tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
