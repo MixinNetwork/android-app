@@ -45,6 +45,7 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
@@ -203,7 +204,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+            height = binding.ph.getSafeAreaInsetsTop()
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

@@ -21,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -88,7 +89,7 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         }
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
+            height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

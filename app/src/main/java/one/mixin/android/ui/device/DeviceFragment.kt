@@ -20,6 +20,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDeviceBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
@@ -99,7 +100,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+            height = binding.ph.getSafeAreaInsetsTop()
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
