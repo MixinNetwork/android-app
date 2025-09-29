@@ -2115,6 +2115,7 @@
     <string name="lightning_address_tip_3">Supported by mainstream Lightning Network wallets.</string>
     <string name="lightning_address_mao_tip">Each MAO domain corresponds to a Lightning Network address. If you own a MAO domain, you can receive Lightning Network transfers in the format name@mao.id. Learn More</string>
     <string name="Lightning_link">https://support.mixin.one/en/article/what-is-lightning-address-1i8733z//</string>
+    <string name="referral_url">https://support.mixin.one/en/article/how-to-get-a-referral-reward-vmxho0</string>
     <string name="Copy_Address">Copy Address</string>
     <string name="Enter_Amount">Enter Amount</string>
     <string name="mixin_payment_title">📣 Mixin Payment</string>
@@ -2132,4 +2133,7 @@
     <string name="referral_member_rebate">Members can earn up to 2,000 USD per referral.</string>
     <string name="referral_lifetime">Rebate eligibility is valid for life.</string>
     <string name="referral_paid_only">* Referral rewards are only available to paid Mixin One members. Learn more</string>
+    <string name="referral_success">绑定成功</string>
+    <string name="got_it">Got It</string>
+    <string name="upgrade">Upgrade</string>
 </resources>

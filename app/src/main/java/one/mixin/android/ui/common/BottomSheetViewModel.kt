@@ -132,6 +132,7 @@ import java.io.File
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.String
 
 @HiltViewModel
 class BottomSheetViewModel
@@ -1823,4 +1824,8 @@ class BottomSheetViewModel
         }
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+
+        suspend fun bindReferral(code: String) = userRepository.bindReferral(code)
+
+        suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 }

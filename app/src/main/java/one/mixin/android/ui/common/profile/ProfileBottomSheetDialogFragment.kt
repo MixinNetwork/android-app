@@ -24,6 +24,7 @@ import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -58,6 +59,7 @@ import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
@@ -235,7 +237,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                         title = getString(R.string.Referral)
                         action = {
                             if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
-                                // todo open the webpage
+                                WebActivity.show(requireContext(), Constants.RouteConfig.REFERRAL_BOT_URL,null)
                             } else {
                                 ReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ReferralBottomSheetDialogFragment.TAG)
                             }

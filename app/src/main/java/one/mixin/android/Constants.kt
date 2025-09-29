@@ -480,6 +480,9 @@ object Constants {
 
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 
+        // todo replace 
+        const val REFERRAL_BOT_URL = ""
+
         const val GOOGLE_PAY = "googlepay"
 
         const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION

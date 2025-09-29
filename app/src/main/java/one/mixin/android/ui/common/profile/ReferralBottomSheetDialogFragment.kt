@@ -48,6 +48,7 @@ import kotlinx.datetime.Month
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
@@ -62,7 +63,7 @@ import one.mixin.android.extension.dp as dip
 @AndroidEntryPoint
 class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
     companion object {
-        const val TAG = "InputReferralBottomSheetDialogFragment"
+        const val TAG = "ReferralBottomSheetDialogFragment"
 
         fun newInstance() = ReferralBottomSheetDialogFragment()
     }
@@ -158,8 +159,7 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             fontSize = 14.sp,
                             lineHeight = 21.sp
                         ) {
-                            // Todo
-                            context.openUrl(Constants.HelpLink.TIP)
+                            context.openUrl(getString(R.string.referral_url))
                         }
 
                         Spacer(Modifier.weight(1f))
@@ -204,7 +204,7 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
-            SystemUIManager.lightUI(window, !requireContext().resources.configuration.uiMode.and(0x30).equals(0x20))
+            SystemUIManager.lightUI(window, !requireContext().booleanFromAttribute(R.attr.flag_night))
         }
     }
 

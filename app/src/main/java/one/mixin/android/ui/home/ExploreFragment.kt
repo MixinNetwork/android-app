@@ -340,7 +340,7 @@ class ExploreFragment : BaseFragment() {
                 }
                 INTERNAL_REFERRAL_ID -> {
                     if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
-                        // todo open the webpage
+                        WebActivity.show(requireContext(), Constants.RouteConfig.REFERRAL_BOT_URL,null)
                     } else {
                         ReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ReferralBottomSheetDialogFragment.TAG)
                     }

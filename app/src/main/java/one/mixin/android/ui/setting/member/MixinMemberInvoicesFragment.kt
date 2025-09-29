@@ -17,6 +17,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.navTo
@@ -28,6 +29,7 @@ import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragmen
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.Membership
 import one.mixin.android.vo.Plan
 import javax.inject.Inject
@@ -100,8 +102,7 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                         )
                     },
                     onReferral = {
-                        // todo replace
-                        InputReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                        WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
                     }
                 )
             }
