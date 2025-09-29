@@ -98,7 +98,7 @@ fun InputAmountFlow(
     NavHost(
         navController = navController,
         startDestination = InputAmountDestinations.INPUT,
-        modifier = modifier.fillMaxSize().padding(bottom = GetNavBarHeightValue())
+        modifier = modifier.padding(bottom = GetNavBarHeightValue())
     ) {
         composable(InputAmountDestinations.INPUT) {
             InputAmountScreen(
@@ -154,7 +154,6 @@ fun InputAmountScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(bottom = GetNavBarHeightValue())
             .background(MixinAppTheme.colors.background)
     ) {
         Row(
@@ -502,7 +501,6 @@ fun InputAmountPreviewScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(bottom = GetNavBarHeightValue())
             .background(MixinAppTheme.colors.background)
     ) {
         Row(
