@@ -27,6 +27,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.roundTopOrBottom
@@ -245,7 +246,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
             doOnPreDraw {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop()
+                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop() - this.getSafeAreaInsetsBottom()
                 behavior?.isDraggable = true
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
