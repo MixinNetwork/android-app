@@ -269,16 +269,18 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 try {
                     tipGas = withContext(Dispatchers.IO) {
-                        val r = runCatching {  viewModel.estimateFee(
-                            EstimateFeeRequest(
-                                assetId,
-                                null,
-                                transaction.data,
-                                transaction.from,
-                                transaction.to,
-                                transaction.value,
+                        val r = runCatching {
+                            viewModel.estimateFee(
+                                EstimateFeeRequest(
+                                    assetId,
+                                    null,
+                                    transaction.data,
+                                    transaction.from,
+                                    transaction.to,
+                                    transaction.value,
+                                )
                             )
-                        )}.getOrNull()
+                        }.getOrNull()
                         if (r?.isSuccess != true) {
                             step = Step.Error
                             ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")

@@ -11,6 +11,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
+import timber.log.Timber
 
 class RefreshPriceJob(private val assetId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -38,7 +39,7 @@ class RefreshPriceJob(private val assetId: String) : BaseJob(
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e)
         }
     }
 }
