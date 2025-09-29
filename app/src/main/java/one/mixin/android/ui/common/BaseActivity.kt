@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.doOnPreDraw
@@ -31,7 +32,7 @@ open class BaseActivity : AppCompatActivity() {
         } else {
             setTheme(getDefaultThemeId())
         }
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
         if (!skipSystemUi) {
             SystemUIManager.setSystemUiColor(window, colorFromAttribute(R.attr.bg_white))
         }

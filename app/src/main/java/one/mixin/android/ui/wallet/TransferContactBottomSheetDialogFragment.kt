@@ -81,7 +81,7 @@ class TransferContactBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         contentView = binding.root
 
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            height = binding.root.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

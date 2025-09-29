@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.compose.GetActionBarHeight
+import one.mixin.android.compose.GetStatusBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.address.component.SearchTextField
@@ -97,7 +99,7 @@ fun AddressSearchBottomSheet(
         modifier = Modifier
             .fillMaxWidth()
             .height(
-                LocalConfiguration.current.screenHeightDp.dp - maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()) - actionBarHeight
+                LocalConfiguration.current.screenHeightDp.dp - GetActionBarHeight() - GetStatusBarHeightValue()
             )
             .background(
                 MixinAppTheme.colors.background,
