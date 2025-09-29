@@ -70,7 +70,7 @@ class GalleryActivity :
             setTheme(getDefaultThemeId())
             SystemUIManager.lightUI(window, true)
         }
-        SystemUIManager.setSystemUiColor(window, colorFromAttribute(R.attr.bg_white))
+        SystemUIManager.setSafePadding(window, colorFromAttribute(R.attr.bg_white))
         mSpec = SelectionSpec.getInstance()
         super.onCreate(savedInstanceState)
         if (!mSpec.hasInited) {

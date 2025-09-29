@@ -64,6 +64,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
@@ -105,6 +106,9 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        dialog?.window?.let { window ->
+            SystemUIManager.setSafePadding(window, requireContext().colorFromAttribute(R.attr.bg_white), onlyNav = true)
+        }
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             roundTopOrBottom(12.dip.toFloat(), top = true, bottom = false)

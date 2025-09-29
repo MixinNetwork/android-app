@@ -3,8 +3,6 @@ package one.mixin.android.util
 import android.annotation.SuppressLint
 import android.view.Window
 import android.view.WindowInsets
-import androidx.annotation.ColorInt
-import androidx.constraintlayout.compose.Skip
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -39,17 +37,18 @@ object SystemUIManager {
         }
     }
 
-    fun setSystemUiColor(
+    fun setSafePadding(
         window: Window,
         color: Int,
         onlyStatus: Boolean = false,
+        onlyNav: Boolean = false,
     ) {
         window.decorView.setOnApplyWindowInsetsListener { view, insets ->
             val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
             val navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars())
             view.setPadding(
                 0,
-                statusBarInsets.top,
+                if (onlyNav) 0 else statusBarInsets.top,
                 0,
                 if (onlyStatus) 0 else navBarInsets.bottom,
             )

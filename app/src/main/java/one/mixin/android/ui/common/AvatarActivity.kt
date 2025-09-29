@@ -68,7 +68,7 @@ class AvatarActivity : BaseActivity() {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         postponeEnterTransition()
-        SystemUIManager.setSystemUiColor(window, Color.TRANSPARENT)
+        SystemUIManager.setSafePadding(window, Color.TRANSPARENT)
         SystemUIManager.fullScreen(window)
         binding = ActivityAvatarBinding.inflate(layoutInflater)
         setContentView(binding.root)

@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
@@ -34,7 +33,7 @@ open class BaseActivity : AppCompatActivity() {
         }
         enableEdgeToEdge()
         if (!skipSystemUi) {
-            SystemUIManager.setSystemUiColor(window, colorFromAttribute(R.attr.bg_white))
+            SystemUIManager.setSafePadding(window, colorFromAttribute(R.attr.bg_white))
         }
     }
 
