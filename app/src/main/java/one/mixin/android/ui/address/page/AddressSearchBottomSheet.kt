@@ -9,10 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -80,10 +85,20 @@ fun AddressSearchBottomSheet(
         }
     }
 
+    val actionBarHeight = with(LocalDensity.current) {
+        val attrs = intArrayOf(android.R.attr.actionBarSize)
+        val typedArray = LocalContext.current.obtainStyledAttributes(attrs)
+        val height = typedArray.getDimensionPixelSize(0, 0)
+        typedArray.recycle()
+        height.toDp()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(LocalConfiguration.current.screenHeightDp.dp - 56.dp)
+            .height(
+                LocalConfiguration.current.screenHeightDp.dp - maxOf(WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()) - actionBarHeight
+            )
             .background(
                 MixinAppTheme.colors.background,
                 shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
