@@ -339,12 +339,11 @@ class ExploreFragment : BaseFragment() {
                     }
                 }
                 INTERNAL_REFERRAL_ID -> {
-                    if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                    if (Session.getAccount()?.membership?.isMembership() == true) {
                         WebActivity.show(requireContext(), Constants.RouteConfig.REFERRAL_BOT_URL,null)
                     } else {
                         ReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ReferralBottomSheetDialogFragment.TAG)
                     }
-
                 }
                 INTERNAL_SUPPORT_ID -> {
                     lifecycleScope.launch {

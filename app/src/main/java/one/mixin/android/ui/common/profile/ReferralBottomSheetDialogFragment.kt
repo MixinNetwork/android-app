@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,8 +18,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
@@ -27,12 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -40,6 +45,7 @@ import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -50,6 +56,7 @@ import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.extension.dp as dip
 
@@ -112,6 +119,20 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     .align(Alignment.BottomCenter)
                                     .padding(bottom = 16.dp)
                             )
+
+                            Image(
+                                painter = painterResource(R.drawable.ic_circle_close),
+                                modifier =
+                                    Modifier
+                                        .align(Alignment.TopEnd)
+                                        .offset(y = 20.dp)
+                                        .padding(horizontal = 8.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            dismissNow()
+                                        },
+                                contentDescription = null,
+                            )
                         }
                         Spacer(Modifier.height(30.dp))
                         Text(
@@ -149,6 +170,7 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             stringResource(R.string.Learn_More),
                             color = MixinAppTheme.colors.textAssist,
+                            textAlign = TextAlign.Start,
                             fontSize = 14.sp,
                             lineHeight = 21.sp
                         ) {
@@ -172,13 +194,15 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            text = stringResource(R.string.Not_Now),
+                            text = stringResource(R.string.Invited_by_friend),
                             color = MixinAppTheme.colors.accent,
+                            textAlign = TextAlign.Center,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.W500,
-                            modifier = Modifier.fillMaxWidth().padding(13.dp).clickable {
+                            modifier = Modifier.fillMaxWidth().padding(13.dp).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
+                                WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
                                 dismissNow()
-                            }
+                            })
                         )
                     }
                 }

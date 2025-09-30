@@ -26,6 +26,7 @@ import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -102,7 +103,11 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                         )
                     },
                     onReferral = {
-                        WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
+                        if (Session.getAccount()?.membership?.isMembership() == true) {
+                            WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
+                        } else {
+                            ReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ReferralBottomSheetDialogFragment.TAG)
+                        }
                     }
                 )
             }

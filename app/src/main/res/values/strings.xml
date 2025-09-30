@@ -2140,4 +2140,5 @@
     <string name="referral_code_applied">Applied</string>
     <string name="got_it">Got It</string>
     <string name="upgrade_membership_now">Upgrade Now</string>
+    <string name="Invited_by_friend">Invited by a friend?</string>
 </resources>

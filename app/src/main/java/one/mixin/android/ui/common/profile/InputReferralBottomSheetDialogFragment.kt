@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -189,7 +190,8 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     stringResource(R.string.Learn_More),
                                     color = MixinAppTheme.colors.textAssist,
                                     fontSize = 14.sp,
-                                    lineHeight = 21.sp
+                                    lineHeight = 21.sp,
+                                    textAlign = TextAlign.Start
                                 ) {
                                     context.openUrl(getString(R.string.referral_url))
                                 }
@@ -323,9 +325,9 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(13.dp)
-                                            .clickable {
+                                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
                                                 dismissNow()
-                                            }
+                                            })
                                     )
                                 }
                             }
