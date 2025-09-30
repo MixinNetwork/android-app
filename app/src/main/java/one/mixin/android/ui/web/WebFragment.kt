@@ -1123,6 +1123,7 @@ class WebFragment : BaseFragment() {
             }
             if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
+                bottomViewModel.refreshUser(appId, true)
                 return@launch
             }
             val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
