@@ -50,7 +50,7 @@ fun MaterialInputField(
         label = "label_animation"
     )
     
-    val labelColor = MixinAppTheme.colors.accent
+    val labelColor = MixinAppTheme.colors.textAssist
     
     val backgroundColor = MixinAppTheme.colors.backgroundWindow
     
