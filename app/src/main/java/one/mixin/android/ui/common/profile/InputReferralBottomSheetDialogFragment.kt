@@ -219,12 +219,13 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(13.dp)
+                                        .padding(12.dp)
                                         .clickable {
                                             MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
                                             dismissNow()
                                         }
                                 )
+                                Spacer(Modifier.height(12.dp))
                             }
                             else -> {
                                 Box(
@@ -256,7 +257,7 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 MaterialInputField(
                                     value = input,
                                     onValueChange = {
-                                        input = it
+                                        input = it.uppercase()
                                         if (uiState is UiState.Failure) {
                                             uiState = UiState.Initial
                                         }
@@ -285,27 +286,26 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 } else {
                                     ActionButton(
                                         text = stringResource(R.string.Confirm),
+                                        enabled = input.trim().length >= 8,
                                         onClick = {
-                                            if (input.isNotBlank()) {
-                                                scope.launch {
-                                                    uiState = UiState.Loading
-                                                    requestRouteAPI(
-                                                        invokeNetwork = { viewModel.bindReferral(input.trim()) },
-                                                        successBlock = {
-                                                            uiState = UiState.Success
-                                                            true
-                                                        },
-                                                        failureBlock = {
-                                                            uiState = UiState.Failure(it.errorDescription)
-                                                            true
-                                                        },
-                                                        exceptionBlock = {
-                                                            uiState = UiState.Failure(it.localizedMessage)
-                                                            true
-                                                        },
-                                                        requestSession = { viewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-                                                    )
-                                                }
+                                            scope.launch {
+                                                uiState = UiState.Loading
+                                                requestRouteAPI(
+                                                    invokeNetwork = { viewModel.bindReferral(input.trim()) },
+                                                    successBlock = {
+                                                        uiState = UiState.Success
+                                                        true
+                                                    },
+                                                    failureBlock = {
+                                                        uiState = UiState.Failure(it.errorDescription)
+                                                        true
+                                                    },
+                                                    exceptionBlock = {
+                                                        uiState = UiState.Failure(it.localizedMessage)
+                                                        true
+                                                    },
+                                                    requestSession = { viewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+                                                )
                                             }
                                         },
                                         backgroundColor = MixinAppTheme.colors.accent,
@@ -324,11 +324,12 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(13.dp)
+                                            .padding(12.dp)
                                             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
                                                 dismissNow()
                                             })
                                     )
+                                    Spacer(Modifier.height(12.dp))
                                 }
                             }
                         }

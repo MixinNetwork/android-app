@@ -194,16 +194,17 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            text = stringResource(R.string.Invited_by_friend),
+                            text = stringResource(R.string.input_referral_code_hint),
                             color = MixinAppTheme.colors.accent,
                             textAlign = TextAlign.Center,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.W500,
-                            modifier = Modifier.fillMaxWidth().padding(13.dp).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
+                            modifier = Modifier.fillMaxWidth().padding(12.dp).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
                                 WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
                                 dismissNow()
                             })
                         )
+                        Spacer(Modifier.height(12.dp))
                     }
                 }
             }

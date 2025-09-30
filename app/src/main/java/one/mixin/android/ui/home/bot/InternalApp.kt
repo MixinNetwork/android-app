@@ -27,7 +27,7 @@ val InternalBuy = Bot(INTERNAL_BUY_ID, R.string.Buy, R.string.buy_crypto_with_ca
 val InternalSwap = Bot(INTERNAL_SWAP_ID, R.string.Swap, R.string.trade_native_tokens, R.drawable.ic_bot_swap)
 val InternalMember = Bot(INTERNAL_MEMBER_ID, R.string.Mixin_One, R.string.mixin_one_desc, R.drawable.ic_bot_member)
 
-val InternalReferral = Bot(INTERNAL_REFERRAL_ID, R.string.Referral, R.string.referral_invite, R.drawable.ic_bot_referral)
+val InternalReferral = Bot(INTERNAL_REFERRAL_ID, R.string.Referral, R.string.referral_description, R.drawable.ic_bot_referral)
 val InternalLinkDesktop = Bot(INTERNAL_LINK_DESKTOP_ID, R.string.Link_desktop, R.string.link_desktop_description, R.drawable.ic_bot_desktop)
 val InternalSupport = Bot(INTERNAL_SUPPORT_ID, R.string.Contact_Support, R.string.leave_message_to_team_mixin, R.drawable.ic_bot_support)
 

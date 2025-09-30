@@ -103,11 +103,7 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                         )
                     },
                     onReferral = {
-                        if (Session.getAccount()?.membership?.isMembership() == true) {
-                            WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
-                        } else {
-                            ReferralBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ReferralBottomSheetDialogFragment.TAG)
-                        }
+                        WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
                     }
                 )
             }

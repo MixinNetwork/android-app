@@ -489,6 +489,7 @@
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
     <string name="error_watch_address_not_supported">ERROR 10633: Contract or exchange addresses is not supported for watching.</string>
+    <string name="error_invitation_already_bound">ERROR 10731：Invitation already bound</string>
     <string name="error_user_invalid_format">Invalid user id</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Withdrawal memo format incorrect.</string>
     <string name="error_withdrawal_suspend">ERROR 20137: Withdrawal suspend.</string>
@@ -2124,7 +2125,6 @@
     <string name="Referral">Referral</string>
     <string name="referral_hint">Referral Code</string>
     <string name="referral_desc">Invite friends and earn up to 70% of their trading fees!</string>
-    <string name="referral_invite">Invite friends earn crypto</string>
     <string name="Mixin_Referral">Mixin Referral</string>
     <string name="apply_referral_code">Apply Referral Code</string>
     <string name="referral_program_introduction_header">Join the referral program and invite friends to earn crypto together:</string>
@@ -2140,5 +2140,6 @@
     <string name="referral_code_applied">Applied</string>
     <string name="got_it">Got It</string>
     <string name="upgrade_membership_now">Upgrade Now</string>
-    <string name="Invited_by_friend">Invited by a friend?</string>
+    <string name="input_referral_code_hint">Invited by a friend?</string>
+    <string name="referral_description">Invite friends earn crypto</string>
 </resources>
