@@ -195,6 +195,7 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             contentColor = Color.White,
                             modifier = Modifier
                                 .wrapContentHeight()
+                                .padding(horizontal = 20.dp)
                                 .fillMaxWidth()
                         )
 
