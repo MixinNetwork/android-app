@@ -42,9 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -52,12 +55,15 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
+import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
+import kotlin.getValue
 import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
@@ -67,7 +73,7 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
         fun newInstance() = ReferralBottomSheetDialogFragment()
     }
-
+    private val memberViewModel: MemberViewModel by viewModels()
     private var behavior: BottomSheetBehavior<*>? = null
 
     var onConfirm: ((String) -> Unit)? = null
@@ -200,8 +206,12 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             fontSize = 16.sp,
                             fontWeight = FontWeight.W500,
                             modifier = Modifier.fillMaxWidth().padding(12.dp).clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {
-                                WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
-                                dismissNow()
+                                lifecycleScope.launch {
+                                    memberViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                        WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                                    }
+                                    dismissNow()
+                                }
                             })
                         )
                         Spacer(Modifier.height(12.dp))

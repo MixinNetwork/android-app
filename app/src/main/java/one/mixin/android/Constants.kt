@@ -478,10 +478,7 @@ object Constants {
 
         const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
 
-        const val ROUTE_BOT_URL = "https://api.route.mixin.one"
-
-        // todo replace 
-        const val REFERRAL_BOT_URL = ""
+        const val ROUTE_BOT_URL = "https://api.sandbox.reward.mixin.zone"
 
         const val GOOGLE_PAY = "googlepay"
 

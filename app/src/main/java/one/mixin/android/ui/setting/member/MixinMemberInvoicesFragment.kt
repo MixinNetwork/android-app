@@ -27,6 +27,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -42,7 +43,6 @@ class MixinMemberInvoicesFragment : BaseFragment() {
         fun newInstance() = MixinMemberInvoicesFragment()
     }
 
-    private val settingViewModel: SettingViewModel by viewModels({ requireActivity() })
     private val memberViewModel: MemberViewModel by viewModels()
 
     @Inject
@@ -103,7 +103,11 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                         )
                     },
                     onReferral = {
-                        WebActivity.show(requireActivity(), Constants.RouteConfig.REFERRAL_BOT_URL, null)
+                        lifecycleScope.launch {
+                            memberViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                            }
+                        }
                     }
                 )
             }

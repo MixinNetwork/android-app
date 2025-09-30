@@ -339,7 +339,11 @@ class ExploreFragment : BaseFragment() {
                     }
                 }
                 INTERNAL_REFERRAL_ID -> {
-                    WebActivity.show(requireContext(), Constants.RouteConfig.REFERRAL_BOT_URL,null)
+                    lifecycleScope.launch {
+                        botManagerViewModel.findOrSyncApp(INTERNAL_REFERRAL_ID)?.let { app ->
+                            WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                        }
+                    }
                 }
                 INTERNAL_SUPPORT_ID -> {
                     lifecycleScope.launch {

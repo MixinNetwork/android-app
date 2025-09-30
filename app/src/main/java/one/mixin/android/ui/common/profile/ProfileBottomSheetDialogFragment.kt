@@ -55,6 +55,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.TipActivity
@@ -236,7 +237,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     menu {
                         title = getString(R.string.Referral)
                         action = {
-                            WebActivity.show(requireContext(), Constants.RouteConfig.REFERRAL_BOT_URL,null)
+                            lifecycleScope.launch {
+                                bottomViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                                }
+                            }
                         }
                     }
                 }
