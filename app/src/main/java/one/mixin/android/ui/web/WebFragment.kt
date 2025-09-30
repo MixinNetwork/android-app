@@ -2166,9 +2166,18 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun signBotSignature(
-            appid:String, reloadPublicKey: String, method: String, path: String, body:String, callbackFunction: String,
+            messageBody: Array<String>,
         ) {
-            signBotSignature?.invoke(appid, reloadPublicKey.toBooleanStrictOrNull() ?: false, method, path, body, callbackFunction)
+            if (messageBody.isEmpty()) {
+                return
+            }
+            val appid = messageBody[0]
+            val reloadPublicKey = messageBody[1]
+            val method = messageBody[2]
+            val path = messageBody[3]
+            val body = messageBody[4]
+            val callbackFunction = messageBody[5]
+            signBotSignature?.invoke(appid, reloadPublicKey.toBoolean(), method, path, body, callbackFunction)
         }
     }
 
