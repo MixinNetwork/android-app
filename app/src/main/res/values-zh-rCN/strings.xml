@@ -2066,12 +2066,20 @@
     <string name="mixin_payment_title">📣 Mixin 收款</string>
     <string name="payment_details">💰 金额：%1$s\n🌐 网络：%2$s\n🤝 收款人：%3$s</string>
     <string name="pay_now">立刻支付</string>
-    <string name="referral_description">参与邀请计划：&#10;最高 70% 交易手续费分佣。&#10;会员返佣单比最高 2000 USD。&#10;返佣资格终生有效。&#10;* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
-    <string name="referral_commission">最高 70% 交易手续费分佣。</string>
-    <string name="referral_member_rebate">会员返佣单比最高 2000 USD。</string>
-    <string name="referral_lifetime">返佣资格终生有效。</string>
-    <string name="referral_paid_only">* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
-    <string name="referral_success">绑定成功</string>
+    <string name="referral_program_introduction_1">最高 70% 交易手续费分佣。</string>
+    <string name="referral_program_introduction_2">会员返佣单比最高 1000 USD。</string>
+    <string name="referral_program_introduction_3">返佣资格终生有效。</string>
+    <string name="referral_code_applied_introduction_1">最高 50%% 交易手续费返现</string>
+    <string name="referral_code_applied_introduction_2">升级会员返现单笔最高 1000 USD</string>
+    <string name="referral_code_applied_introduction_3">自动获得后续所有新权益</string>
+    <string name="apply_referral_code">绑定邀请码</string>
+    <string name="referral_program_introduction_header">参与邀请计划，邀请好友分享赚币：</string>
+    <string name="referral_program_introduction_footer">* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
+    <string name="referral_code_applied_footer">所有返现将按月结算到您的 Mixin 隐私钱包。了解更多</string>
+    <string name="referral_code_applied_header">🎉 邀请码绑定成功，您已自动获得以下权益：</string>
+    <string name="referral_code_applied">绑定成功</string>
     <string name="got_it">知道了</string>
-    <string name="upgrade">升级</string>
+    <string name="upgrade_membership_now">升级会员</string>
+    <string name="Referral">邀请</string>
+    <string name="referral_hint">邀请码</string>
 </resources>

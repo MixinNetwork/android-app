@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,7 +29,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -153,7 +151,7 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                         )
                                         Spacer(Modifier.height(16.dp))
                                         Text(
-                                            text = stringResource(R.string.referral_success),
+                                            text = stringResource(R.string.referral_code_applied),
                                             fontSize = 22.sp,
                                             fontWeight = FontWeight.W600,
                                             color = MixinAppTheme.colors.textPrimary,
@@ -162,7 +160,7 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 Spacer(Modifier.height(30.dp))
                                 Text(
-                                    text = stringResource(R.string.referral_description),
+                                    text = stringResource(R.string.referral_code_applied_header),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.W400,
                                     color = MixinAppTheme.colors.textPrimary,
@@ -170,23 +168,23 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 Column {
                                     NumberedText(
                                         modifier = Modifier
-                                            .fillMaxWidth(), numberStr = "1", instructionStr = stringResource(R.string.referral_commission)
+                                            .fillMaxWidth(), numberStr = "1", instructionStr = stringResource(R.string.referral_program_introduction_1)
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     NumberedText(
                                         modifier = Modifier
-                                            .fillMaxWidth(), numberStr = "2", instructionStr = stringResource(R.string.referral_member_rebate)
+                                            .fillMaxWidth(), numberStr = "2", instructionStr = stringResource(R.string.referral_program_introduction_2)
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     NumberedText(
                                         modifier = Modifier
-                                            .fillMaxWidth(), numberStr = "3", instructionStr = stringResource(R.string.referral_lifetime),
+                                            .fillMaxWidth(), numberStr = "3", instructionStr = stringResource(R.string.referral_program_introduction_3),
                                         color = MixinAppTheme.colors.red
                                     )
                                 }
 
                                 HighlightedTextWithClick(
-                                    stringResource(R.string.referral_paid_only, stringResource(R.string.Learn_More)),
+                                    stringResource(R.string.referral_code_applied_footer, stringResource(R.string.Learn_More)),
                                     modifier = Modifier.align(Alignment.CenterHorizontally),
                                     stringResource(R.string.Learn_More),
                                     color = MixinAppTheme.colors.textAssist,
@@ -247,7 +245,7 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 }
                                 Spacer(Modifier.height(30.dp))
                                 Text(
-                                    text = stringResource(R.string.Apply_Referral_Code),
+                                    text = stringResource(R.string.apply_referral_code),
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.W600,
                                     color = MixinAppTheme.colors.textPrimary,

@@ -700,16 +700,21 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 }
             }
         } else if (url.startsWith(Scheme.MIXIN_REFERRALS, true) || url.startsWith(Scheme.HTTPS_REFERRALS, true)) {
-            val uri = Uri.parse(url)
+            val uri = url.toUri()
             val referralCode = uri.lastPathSegment
-                if (referralCode.isNullOrBlank()) {
-                    showError()
-                } else {
-                    InputReferralBottomSheetDialogFragment
-                        .newInstance(referralCode)
-                        .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
-                    dismiss()
-                }
+            if (uri.pathSegments.size == 1) {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance("")
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            } else if (referralCode.isNullOrBlank()) {
+                showError()
+            } else {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance(referralCode)
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            }
         } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
@@ -1238,7 +1243,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
     @SuppressLint("SetTextI18n")
     override fun showError(
-        @StringRes errorRes: Int
+        @StringRes errorRes: Int,
     ) {
         if (!isAdded) return
 

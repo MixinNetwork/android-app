@@ -106,7 +106,7 @@ fun MaterialInputField(
                         }
                         
                         Box(
-                            modifier = Modifier.offset(y = if (animatedProgress > 0f) 8.dp else 0.dp)
+                            modifier = Modifier.offset(y = if (animatedProgress > 0f) 8.dp else -10.dp)
                         ) {
                             if (value.isEmpty() && !isFocused) {
                                 Text(

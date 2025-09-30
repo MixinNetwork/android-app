@@ -20,9 +20,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,24 +33,19 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.Dimension
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.datetime.Month
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
@@ -128,7 +121,7 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             color = MixinAppTheme.colors.textPrimary,
                         )
                         Text(
-                            text = stringResource(R.string.referral_description),
+                            text = stringResource(R.string.referral_program_introduction_header),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.W400,
                             color = MixinAppTheme.colors.textPrimary,
@@ -136,23 +129,23 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         Column {
                             NumberedText(
                                 modifier = Modifier
-                                    .fillMaxWidth(), numberStr = "1", instructionStr = stringResource(R.string.referral_commission)
+                                    .fillMaxWidth(), numberStr = "1", instructionStr = stringResource(R.string.referral_program_introduction_1)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             NumberedText(
                                 modifier = Modifier
-                                    .fillMaxWidth(), numberStr = "2", instructionStr = stringResource(R.string.referral_member_rebate)
+                                    .fillMaxWidth(), numberStr = "2", instructionStr = stringResource(R.string.referral_program_introduction_2)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             NumberedText(
                                 modifier = Modifier
-                                    .fillMaxWidth(), numberStr = "3", instructionStr = stringResource(R.string.referral_lifetime),
+                                    .fillMaxWidth(), numberStr = "3", instructionStr = stringResource(R.string.referral_program_introduction_3),
                                 color = MixinAppTheme.colors.red
                             )
                         }
 
                         HighlightedTextWithClick(
-                            stringResource(R.string.referral_paid_only, stringResource(R.string.Learn_More)),
+                            stringResource(R.string.referral_program_introduction_footer, stringResource(R.string.Learn_More)),
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             stringResource(R.string.Learn_More),
                             color = MixinAppTheme.colors.textAssist,
@@ -165,7 +158,7 @@ class ReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         Spacer(Modifier.weight(1f))
 
                         ActionButton(
-                            text = stringResource(R.string.Upgrade_Now),
+                            text = stringResource(R.string.upgrade_membership_now),
                             onClick = {
                                 MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
                                 dismissNow()
