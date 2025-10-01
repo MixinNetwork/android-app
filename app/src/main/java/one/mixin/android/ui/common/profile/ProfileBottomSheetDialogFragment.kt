@@ -27,15 +27,18 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentProfileBottomSheetDialogBinding
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
@@ -55,6 +58,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
@@ -69,6 +73,7 @@ import one.mixin.android.vo.Plan
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
 import timber.log.Timber
+import androidx.core.content.edit
 
 @AndroidEntryPoint
 class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -239,6 +244,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                         action = {
                             lifecycleScope.launch {
                                 bottomViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                    setClickedBotId()
                                     WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
                                 }
                             }
@@ -467,5 +473,19 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     ErrorHandler.handleError(t)
                 },
             )
+    }
+
+    private fun setClickedBotId() {
+        val sp = requireContext().defaultSharedPreferences
+        val old = getClickedBotIds().toMutableSet()
+        if (old.add(INTERNAL_REFERRAL_ID)) {
+            sp.edit { putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")) }
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
+        }
+    }
+
+    private fun getClickedBotIds(): Set<String> {
+        return requireContext().defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
     }
 }

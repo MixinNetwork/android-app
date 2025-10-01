@@ -43,7 +43,6 @@ import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
-import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
@@ -83,7 +82,7 @@ class ExploreFragment : BaseFragment() {
     companion object {
         const val TAG = "ExploreFragment"
         const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
-        private val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID)
+        private val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID, INTERNAL_REFERRAL_ID)
         fun newInstance() = ExploreFragment()
     }
 
@@ -200,6 +199,10 @@ class ExploreFragment : BaseFragment() {
         }
         RxBus.listen(SessionEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe {
             adapter.isDesktopLogin = Session.getExtensionSessionId() != null
+            updateFavoriteDot()
+        }
+        RxBus.listen(BadgeEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(destroyScope).subscribe { event ->
+            loadData()
             updateFavoriteDot()
         }
         lifecycleScope.launch {
@@ -341,6 +344,7 @@ class ExploreFragment : BaseFragment() {
                 INTERNAL_REFERRAL_ID -> {
                     lifecycleScope.launch {
                         botManagerViewModel.findOrSyncApp(INTERNAL_REFERRAL_ID)?.let { app ->
+                            setClickedBotId(INTERNAL_REFERRAL_ID)
                             WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
                         }
                     }
