@@ -72,6 +72,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Plan
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
+import one.mixin.android.extension.base64RawURLEncode
 import timber.log.Timber
 import androidx.core.content.edit
 
@@ -351,7 +352,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 val resultUri = UCrop.getOutput(data)
                 val bitmap = resultUri?.getCapturedImage(requireContext().contentResolver)
                 update(
-                    Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP),
+                    bitmap?.toBytes()?.base64RawURLEncode() ?: "",
                     TYPE_PHOTO,
                 )
             }
