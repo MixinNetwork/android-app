@@ -119,6 +119,7 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.session.Session.getBotSignature
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
 import one.mixin.android.tip.privateKeyToAddress
@@ -917,6 +918,9 @@ class WebFragment : BaseFragment() {
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
+                    signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
+                        botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
+                    }
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -1105,6 +1109,26 @@ class WebFragment : BaseFragment() {
                     "[]"
                 }
             webView.evaluateJavascript("$callbackFunction('$result')") {}
+        }
+    }
+
+    private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            val app = bottomViewModel.findAndSync(appId)
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                bottomViewModel.refreshUser(appId, true)
+                return@launch
+            }
+            val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
+            val (ts, signature) = getBotSignature(publicKey, method, path, body)
+            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
         }
     }
 
@@ -2078,6 +2102,7 @@ class WebFragment : BaseFragment() {
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
+        var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2137,6 +2162,22 @@ class WebFragment : BaseFragment() {
             callbackFunction: String,
         ) {
             tipSignAction?.invoke(chainId, message, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun signBotSignature(
+            messageBody: Array<String>,
+        ) {
+            if (messageBody.isEmpty()) {
+                return
+            }
+            val appid = messageBody[0]
+            val reloadPublicKey = messageBody[1]
+            val method = messageBody[2]
+            val path = messageBody[3]
+            val body = messageBody[4]
+            val callbackFunction = messageBody[5]
+            signBotSignature?.invoke(appid, reloadPublicKey.toBoolean(), method, path, body, callbackFunction)
         }
     }
 

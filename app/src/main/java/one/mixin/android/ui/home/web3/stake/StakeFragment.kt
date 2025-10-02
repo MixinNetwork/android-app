@@ -22,8 +22,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.maxLeftAmount
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 import java.math.RoundingMode
 

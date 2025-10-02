@@ -158,10 +158,13 @@ object Constants {
         const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
         const val MIXIN_SWAP = "mixin://mixin.one/swap"
         const val MIXIN_MARKET = "mixin://mixin.one/markets"
+        const val MIXIN_REFERRALS = "mixin://mixin.one/referrals"
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_INSCRIPTION = "https://mixin.one/inscriptions"
         const val HTTPS_MARKET = "https://mixin.one/markets"
+
+        const val HTTPS_REFERRALS  = "https://mixin.one/referrals"
         const val HTTPS_APPS = "https://mixin.one/apps"
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_SEND = "https://mixin.one/send"
@@ -475,7 +478,7 @@ object Constants {
 
         const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
 
-        const val ROUTE_BOT_URL = "https://api.route.mixin.one"
+        const val ROUTE_BOT_URL = "https://api.sandbox.reward.mixin.zone"
 
         const val GOOGLE_PAY = "googlepay"
 

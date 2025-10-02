@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3.swap
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.core.content.IntentCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
