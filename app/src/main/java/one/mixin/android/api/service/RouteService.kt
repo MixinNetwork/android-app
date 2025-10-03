@@ -21,6 +21,7 @@ import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
@@ -313,4 +314,10 @@ interface RouteService {
     suspend fun rampWebUrl(
         @Body request: RampWebUrlRequest
     ): MixinResponse<RampWebUrlResponse>
+
+    @GET("users/{user_id}/address")
+    suspend fun getUserAddress(
+        @Path("user_id") userId: String,
+        @Query("chain_id") chainId: String
+    ): MixinResponse<UserAddressView>
 }
