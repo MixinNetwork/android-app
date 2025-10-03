@@ -180,7 +180,6 @@ class BottomSheet(
                 or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
         )
         container.background = backDrawable
-        container.fitsSystemWindows = true
         container.setOnApplyWindowInsetsListener { v, insets ->
             lastInsets = insets
             v.requestLayout()
@@ -194,7 +193,6 @@ class BottomSheet(
         super.onCreate(savedInstanceState)
         window?.setWindowAnimations(R.style.DialogNoAnimation)
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-        sheetContainer.fitsSystemWindows = true
         sheetContainer.visibility = INVISIBLE
         container.addView(sheetContainer, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.BOTTOM))
         window?.let { window ->

@@ -39,11 +39,13 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.toast
@@ -84,6 +86,7 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 MixinAppTheme {
                     Column(
                         modifier = Modifier
+                            .padding(bottom = GetNavBarHeightValue())
                             .fillMaxWidth()
                             .padding(vertical = 20.dp, horizontal = 28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -161,7 +164,7 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
             doOnPreDraw {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = 690.dip
+                behavior?.peekHeight = 690.dip + requireContext().navigationBarHeight()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }

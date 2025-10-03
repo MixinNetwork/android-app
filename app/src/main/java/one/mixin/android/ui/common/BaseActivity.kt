@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Lifecycle
@@ -30,8 +31,9 @@ open class BaseActivity : AppCompatActivity() {
         } else {
             setTheme(getDefaultThemeId())
         }
+        enableEdgeToEdge()
         if (!skipSystemUi) {
-            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
+            SystemUIManager.setSafePadding(window, colorFromAttribute(R.attr.bg_white))
         }
     }
 

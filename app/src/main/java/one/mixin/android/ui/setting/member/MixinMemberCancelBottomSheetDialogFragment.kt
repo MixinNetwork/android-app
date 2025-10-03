@@ -20,6 +20,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.setting.ui.page.MixinMemberCancelPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -66,7 +67,7 @@ class MixinMemberCancelBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 doOnPreDraw {
                     val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                     behavior = params?.behavior as? BottomSheetBehavior<*>
-                    behavior?.peekHeight = 450.dp
+                    behavior?.peekHeight = 450.dp + requireContext().navigationBarHeight()
                     behavior?.isDraggable = false
                     behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
                 }

@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentTransactionBinding
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -56,7 +57,7 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
         super.setupDialog(dialog, style)
         contentView = binding.root
         binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+            height = binding.ph.getSafeAreaInsetsTop()
         }
         binding.titleView.leftIb.setOnClickListener { dismiss() }
         binding.titleView.rightAnimator.visibility = View.GONE

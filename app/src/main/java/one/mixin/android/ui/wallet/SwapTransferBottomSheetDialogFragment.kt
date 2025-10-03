@@ -78,6 +78,7 @@ import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
@@ -87,13 +88,12 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.TokenRepository
@@ -141,6 +141,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import one.mixin.android.extension.dp as dip
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -243,7 +244,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val link by lazy {
-        Uri.parse(requireNotNull(requireArguments().getString(ARGS_LINK)))
+        requireNotNull(requireArguments().getString(ARGS_LINK)).toUri()
     }
 
     private var step by mutableStateOf(Step.Pending)
@@ -289,6 +290,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         modifier =
                         Modifier
                             .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+                            .padding(bottom = GetNavBarHeightValue() + 12.dp)
                             .fillMaxWidth()
                             .fillMaxHeight()
                             .background(MixinAppTheme.colors.background),
@@ -542,7 +544,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
                 val ctx = requireContext()
-                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
+                behavior?.peekHeight = ctx.screenHeight() - this.getSafeAreaInsetsTop()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
@@ -884,7 +886,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3TokenItem?,
         tipGas: TipGas?,
         value: String?,
-        maxFeePerGas: String?
+        maxFeePerGas: String?,
     ): Boolean {
         return if (web3Token != null) {
             if (chainToken == null) {
@@ -909,7 +911,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 fun ItemUserContent(
     title: String,
     user: User?,
-    address: String?
+    address: String?,
 ) {
     Column(
         modifier =
@@ -992,7 +994,7 @@ fun ItemPriceContent(
     inAmount: BigDecimal,
     inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: SwapToken
+    outAsset: SwapToken,
 ) {
     var isSwitch by remember { mutableStateOf(false) }
     val price = outAmount.divide(inAmount, 8, RoundingMode.HALF_UP)
@@ -1042,7 +1044,7 @@ fun AssetChanges(
     inAmount: BigDecimal,
     inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: SwapToken
+    outAsset: SwapToken,
 ) {
     Column(
         modifier =

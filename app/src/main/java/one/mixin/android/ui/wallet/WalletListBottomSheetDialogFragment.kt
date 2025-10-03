@@ -59,14 +59,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
@@ -102,6 +106,9 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        dialog?.window?.let { window ->
+            SystemUIManager.setSafePadding(window, requireContext().colorFromAttribute(R.attr.bg_white), onlyNav = true)
+        }
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             roundTopOrBottom(12.dip.toFloat(), top = true, bottom = false)
@@ -159,7 +166,7 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
                 behavior = params?.behavior as? BottomSheetBehavior<*>
                 behavior?.peekHeight =
-                    requireContext().realSize().y - requireContext().statusBarHeight() - requireContext().navigationBarHeight()
+                    requireContext().screenHeight() - this.getSafeAreaInsetsTop()
                 behavior?.isDraggable = false
                 behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             }
@@ -249,7 +256,7 @@ fun WalletListScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.padding(bottom = GetNavBarHeightValue()).fillMaxSize()) {
         SearchBar(
             query = query,
             onQueryChanged = {
@@ -260,7 +267,13 @@ fun WalletListScreen(
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
         )
-        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp).fillMaxSize().verticalScroll(rememberScrollState())) {
+
+        Column(
+            modifier = Modifier
+                .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
                 when (item) {
@@ -273,6 +286,7 @@ fun WalletListScreen(
                             }
                         )
                     }
+
                     is WalletListItem.RegularWallet -> {
                         val wallet = item.wallet
                         if (wallet.isImported()) {
@@ -322,6 +336,7 @@ fun WalletListScreen(
                 )
                 Spacer(modifier = Modifier.height(30.dp))
             }
+            Spacer(modifier = Modifier.height(GetNavBarHeightValue()))
         }
     }
 }
