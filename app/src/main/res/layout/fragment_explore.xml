@@ -4,10 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_window"
+    android:background="?attr/bg_white"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/title_rl"
@@ -94,14 +93,14 @@
                 android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_market"
+                android:id="@+id/radio_collectible"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:checked="true"
-                android:text="@string/Markets"
+                android:text="@string/Collectibles"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 

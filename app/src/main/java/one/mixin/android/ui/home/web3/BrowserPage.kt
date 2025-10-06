@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,10 +44,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.composeDp
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
@@ -59,11 +63,15 @@ import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
+import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
+import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
+import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -97,21 +105,53 @@ fun BrowserPage(
     onDismissRequest: () -> Unit,
     onRejectAction: () -> Unit,
 ) {
+    val viewModel = hiltViewModel<SessionRequestViewModel>()
+    val context = LocalContext.current
     var showWarning by remember { mutableStateOf(false) }
+    var walletName by remember { mutableStateOf<String?>(null) }
+    var addressDisplayInfo by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
 
-    LaunchedEffect (parsedTx) {
+    LaunchedEffect(parsedTx) {
         showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
+    }
+
+    LaunchedEffect(Unit) {
+        val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+        walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
+    }
+
+    LaunchedEffect(toAddress, token?.chainId) {
+        if (toAddress != null) {
+            try {
+                addressDisplayInfo = viewModel.checkAddressAndGetDisplayName(toAddress, token?.chainId)
+            } catch (e: Exception) {
+                addressDisplayInfo = null
+            }
+        }
+    }
+
+    LaunchedEffect(account) {
+        try {
+            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account,null)
+        } catch (e: Exception) {
+            walletDisplayInfo = null
+        }
     }
 
     MixinAppTheme {
         Column(
             modifier =
             Modifier
-                .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .background(MixinAppTheme.colors.background),
         ) {
+            WalletLabel(
+                walletName = walletName,
+                isWeb3 = true
+            )
             Column(
                 modifier =
                 Modifier
@@ -299,10 +339,35 @@ fun BrowserPage(
                 }
                 if (toAddress != null) {
                     Box(modifier = Modifier.height(20.dp))
-                    ItemContent(title = stringResource(id = R.string.Receivers).uppercase(), subTitle = toAddress)
+                    val displayInfo = addressDisplayInfo
+                    if (displayInfo != null) {
+                        val (displayName, isAddress) = displayInfo
+                        if (displayName == null) {
+                            ItemWalletContent(
+                                title = stringResource(id = R.string.Receivers).uppercase(),
+                            )
+                        } else {
+                            ItemContent(
+                                title = stringResource(id = R.string.Receivers).uppercase(),
+                                subTitle = toAddress,
+                                label = displayName,
+                                isAddress = isAddress,
+                            )
+                        }
+                    } else {
+                        ItemContent(
+                            title = stringResource(id = R.string.Receivers).uppercase(), 
+                            subTitle = toAddress,
+                        )
+                    }
                 }
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(id = R.string.Account).uppercase(), subTitle = account)
+                walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                    val (displayName, _) = walletDisplayInfo
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
+                }, {
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
+                })
                 Box(modifier = Modifier.height(20.dp))
                 ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
                 Box(modifier = Modifier.height(20.dp))
@@ -330,7 +395,7 @@ fun BrowserPage(
                         Modifier
                             .align(Alignment.BottomCenter)
                             .background(MixinAppTheme.colors.background)
-                            .padding(20.dp)
+                            .padding(8.dp)
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
@@ -362,7 +427,7 @@ fun BrowserPage(
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
-            Box(modifier = Modifier.height(40.dp))
+            Box(modifier = Modifier.height(32.dp))
         }
     }
 }

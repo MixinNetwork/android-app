@@ -2,16 +2,31 @@ package one.mixin.android.billing
 
 import android.app.Activity
 import android.content.Context
-import com.android.billingclient.api.*
-import kotlinx.coroutines.*
+import com.android.billingclient.api.AcknowledgePurchaseParams
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
+import com.android.billingclient.api.ProductDetails
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.android.billingclient.api.QueryPurchasesParams
+import com.android.billingclient.api.acknowledgePurchase
+import com.android.billingclient.api.queryProductDetails
+import com.android.billingclient.api.queryPurchasesAsync
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import timber.log.Timber
-import com.android.billingclient.api.ProductDetails.PricingPhase
+import kotlinx.coroutines.launch
 import one.mixin.android.session.Session
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import timber.log.Timber
 
 sealed class SubscriptionProcessStatus {
     object None : SubscriptionProcessStatus() // Initial or not subscribed

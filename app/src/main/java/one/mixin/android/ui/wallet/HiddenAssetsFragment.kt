@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentHiddenAssetsBinding
+import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navigate
@@ -52,6 +53,11 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
         super.onViewCreated(view, savedInstanceState)
         assetsAdapter.onItemListener = this
         binding.apply {
+            titleView.setSubTitle(
+                getString(R.string.Hidden_Assets),
+                getString(R.string.Privacy_Wallet),
+                R.drawable.ic_wallet_privacy
+            )
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             ItemTouchHelper(
                 AssetItemCallback(

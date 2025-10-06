@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet.components
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,105 +21,185 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.reactivex.android.schedulers.AndroidSchedulers
+import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import androidx.core.content.edit
 
 const val PREF_NAME = "wallet_info_card"
-private const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
-private const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
+const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
+const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AssetDashboardScreen(
-    onWalletCardClick: (destination: WalletDestination, walletId: String?) -> Unit,
-    viewModel: AssetDistributionViewModel = hiltViewModel()
+    onWalletCardClick: (destination: WalletDestination) -> Unit,
+    onAddWalletClick: () -> Unit,
 ) {
-    val tokenDistribution by viewModel.tokenDistribution.collectAsState(initial = emptyList())
-    val web3TokenDistribution by viewModel.web3TokenDistribution.collectAsState(initial = emptyList())
-    val wallets by viewModel.wallets.collectAsState(initial = emptyList())
-
-    val tokenTotalBalance by viewModel.tokenTotalBalance.collectAsState()
-    val web3TokenTotalBalance by viewModel.web3TokenTotalBalance.collectAsState()
-    
+    val viewModel: AssetDistributionViewModel = hiltViewModel()
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
+    val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
+    val wallets by viewModel.wallets.collectAsStateWithLifecycle()
 
-    MixinAppTheme {
+    var refreshTrigger by remember { mutableIntStateOf(0) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                refreshTrigger++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { event ->
+                refreshTrigger++
+            }
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            disposable.dispose()
+        }
+    }
+
+    LaunchedEffect(refreshTrigger) {
+        viewModel.loadWallets()
+    }
+
+    MixinAppTheme(skip = true) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                text = stringResource(R.string.Wallets),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MixinAppTheme.colors.textPrimary,
-                modifier = Modifier
-                    .height(56.dp)
-                    .wrapContentHeight(Alignment.CenterVertically)
-            )
-            TotalAssetsCard()
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            WalletCard(
-                balance = tokenTotalBalance,
-                assets = tokenDistribution,
-                destination = WalletDestination.Privacy,
-                onClick = { onWalletCardClick.invoke(WalletDestination.Privacy, WalletDestination.Privacy.name) }
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            wallets.forEach { wallet ->
-                WalletCard(
-                    balance = web3TokenTotalBalance,
-                    assets = web3TokenDistribution,
-                    destination = WalletDestination.Classic,
-                    onClick = { onWalletCardClick.invoke(WalletDestination.Classic, wallet.id) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.Wallets),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier
+                        .height(56.dp)
+                        .wrapContentHeight(Alignment.CenterVertically)
                 )
-            }
-
-
-            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
                 Spacer(modifier = Modifier.weight(1f))
-                WalletInfoCard(
-                    hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
-                    hideCommonWalletInfo = hideCommonWalletInfo.value,
-                    onPrivacyClose = {
-                        hidePrivacyWalletInfo.value = true
-                        prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
-                    },
-                    onCommonClose = {
-                        hideCommonWalletInfo.value = true
-                        prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
+                Box {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_add_black_24dp),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                if (!addWalletClicked.value) {
+                                    addWalletClicked.value = true
+                                    prefs.edit { putBoolean(PREF_HAS_USED_ADD_WALLET, true) }
+                                }
+                                onAddWalletClick()
+                            }
+                    )
+                    if (!addWalletClicked.value) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(8.dp)
+                                .background(color = Color.Red, shape = CircleShape)
+                        )
                     }
-                )
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                TotalAssetsCard()
                 Spacer(modifier = Modifier.height(20.dp))
+
+                WalletCard(
+                    destination = WalletDestination.Privacy,
+                    onClick = { onWalletCardClick.invoke(WalletDestination.Privacy) }
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                wallets.forEach { wallet ->
+                    if (wallet.isWatch()) {
+                        WalletCard(
+                            name = wallet.name,
+                            destination = WalletDestination.Watch(wallet.id, wallet.category),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Watch(wallet.id, wallet.category)) })
+                    } else if (wallet.isImported()) {
+                        WalletCard(
+                            name = wallet.name,
+                            hasLocalPrivateKey = wallet.hasLocalPrivateKey,
+                            destination = WalletDestination.Import(wallet.id, wallet.category),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) },
+                        )
+                    } else {
+                        WalletCard(
+                            name = wallet.name,
+                            destination = WalletDestination.Classic(wallet.id),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    WalletInfoCard(
+                        hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
+                        hideCommonWalletInfo = hideCommonWalletInfo.value,
+                        onPrivacyClose = {
+                            hidePrivacyWalletInfo.value = true
+                            prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
+                        },
+                        onCommonClose = {
+                            hideCommonWalletInfo.value = true
+                            prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
             }
         }
     }
@@ -132,14 +211,14 @@ fun WalletInfoCard(
     hidePrivacyWalletInfo: Boolean,
     hideCommonWalletInfo: Boolean,
     onPrivacyClose: () -> Unit,
-    onCommonClose: () -> Unit
+    onCommonClose: () -> Unit,
 ) {
     val initialPage = if (hidePrivacyWalletInfo && !hideCommonWalletInfo) 0 else 0
     val pageCount = if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) 2 else 1
-    
+
     val pagerState = rememberPagerState(initialPage = initialPage) { pageCount }
     val context = LocalContext.current
-    
+
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -159,6 +238,7 @@ fun WalletInfoCard(
                             },
                             onClose = onPrivacyClose
                         )
+
                         1 -> CommonWalletInfo(
                             onLearnMoreClick = {
                                 context.openUrl(context.getString(R.string.url_classic_wallet))
@@ -182,10 +262,10 @@ fun WalletInfoCard(
                     )
                 }
             }
-            
+
             if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) {
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
@@ -210,11 +290,14 @@ fun WalletInfoCard(
 @Composable
 fun PrivacyWalletInfo(
     onLearnMoreClick: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()
-        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -225,7 +308,7 @@ fun PrivacyWalletInfo(
                 color = MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_close_grey),
                 contentDescription = stringResource(R.string.Close),
@@ -234,9 +317,9 @@ fun PrivacyWalletInfo(
                     .clickable { onClose() }
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -246,18 +329,18 @@ fun PrivacyWalletInfo(
                 color = MixinAppTheme.colors.textMinor,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_privacy),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onLearnMoreClick() }
@@ -275,11 +358,14 @@ fun PrivacyWalletInfo(
 @Composable
 fun CommonWalletInfo(
     onLearnMoreClick: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()
-        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -290,7 +376,7 @@ fun CommonWalletInfo(
                 color = MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_close_grey),
                 contentDescription = stringResource(R.string.Close),
@@ -299,9 +385,9 @@ fun CommonWalletInfo(
                     .clickable { onClose() }
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -311,18 +397,18 @@ fun CommonWalletInfo(
                 color = MixinAppTheme.colors.textMinor,
                 modifier = Modifier.weight(1f)
             )
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Image(
                 painter = painterResource(id = R.drawable.ic_common),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable { onLearnMoreClick() }

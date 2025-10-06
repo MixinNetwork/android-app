@@ -233,6 +233,9 @@ data class MixinInvoice(
                 } catch (_: NumberFormatException) {
                     throw IllegalArgumentException("invalid amount: $amountStr")
                 }
+                if (amount <= BigInteger.ZERO) {
+                    throw IllegalArgumentException("amount must be positive: $amount")
+                }
 
                 val extraLengthBytes = ByteArray(2)
                 decoder.get(extraLengthBytes)

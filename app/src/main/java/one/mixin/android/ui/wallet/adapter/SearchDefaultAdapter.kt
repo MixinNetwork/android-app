@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemWalletSearchBinding
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.util.getChainNetwork
@@ -154,7 +155,7 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
             asset.chainId,
             asset.name,
             asset.symbol,
-            asset.balance,
+            asset.balance.numberFormat8(),
             asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,

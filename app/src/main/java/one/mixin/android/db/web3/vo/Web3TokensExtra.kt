@@ -2,7 +2,6 @@ package one.mixin.android.db.web3.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "tokens_extra", primaryKeys = ["wallet_id", "asset_id"]

@@ -1,0 +1,44 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_round_white"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:layout_marginBottom="10dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp">
+
+    <one.mixin.android.widget.CircleImageView
+        android:id="@+id/asset_icon"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true" />
+
+    <TextView
+        android:id="@+id/name_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/asset_icon"
+        android:layout_marginStart="16dp"
+        android:layout_toEndOf="@id/asset_icon"
+        android:textColor="?attr/text_primary"
+        android:textSize="16sp"
+        tools:text="Bitcoin" />
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/name_tv"
+        android:layout_alignStart="@+id/name_tv"
+        android:layout_marginTop="4dp"
+        android:textColor="?attr/text_assist"
+        android:textSize="14sp"
+        tools:text="Bitcoin" />
+
+</RelativeLayout>

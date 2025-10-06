@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -34,7 +35,9 @@ import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BotCloseEvent
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -44,6 +47,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
@@ -152,6 +156,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.bottom.setText(if (item.action == SignatureAction.sign.name) R.string.Approve else R.string.Reject)
             }
         }
+        if (t is AddressManageBiometricItem) {
+            binding.walletLabel.setBackgroundColor(requireContext().colorFromAttribute(R.attr.bg_white))
+        }
 
         if (!isSuccess) {
             if (t is SafeMultisigsBiometricItem) {
@@ -170,7 +177,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     lifecycleScope.launch {
                         withContext(Dispatchers.IO) {
                             item.safe.operation.transaction.recipients.forEach { item ->
-                                item.label = bottomViewModel.findAddressByReceiver(item.address, "")
+                                item.label = bottomViewModel.findAddressByDestination(item.address, "")
                             }
                         }
                         binding.content.render(item, emptyList(), emptyList()) {}
@@ -205,6 +212,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }
+        binding.root.roundTopOrBottom(12.dp.toFloat(), true, false)
+        val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
+        drawable?.setBounds(0, 0, 22.dp, 22.dp)
+        binding.walletTv.compoundDrawablePadding = 4.dp
+        binding.walletTv.setCompoundDrawablesRelative(null, null, drawable, null)
 
         binding.bottom.setOnClickListener({
             callback?.onDismiss(isSuccess)
@@ -402,7 +414,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val tips = mutableListOf<String>()
                 val ethAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
                 val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-
                 val addressWarning = withdrawBiometricItem.address.destination !in listOf(ethAddress, solAddress) &&
                     withContext(Dispatchers.IO) {
                         val snapshot = transferViewModel.findLastWithdrawalSnapshotByReceiver(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag))
@@ -653,7 +664,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                             is AddressTransferBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
-                                bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo, t.reference)
+                                bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, t.threshold, pin, t.traceId, t.memo, t.reference)
                             }
 
                             is SafeMultisigsBiometricItem -> {

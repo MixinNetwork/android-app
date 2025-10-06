@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentHiddenAssetsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navigate
@@ -32,14 +33,21 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
     companion object {
         val TAG = Web3HiddenAssetsFragment::class.java.simpleName
 
-        fun newInstance() = Web3HiddenAssetsFragment()
+        fun newInstance(walletId: String? = null) = Web3HiddenAssetsFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARGS_WALLET_ID, walletId)
+            }
+        }
 
         const val POS_ASSET = 0
         const val POS_EMPTY = 1
+        const val ARGS_WALLET_ID = "args_wallet_id"
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val binding by viewBinding(FragmentHiddenAssetsBinding::bind)
+
+    private val walletId by lazy { requireNotNull(requireArguments().getString(ARGS_WALLET_ID)) }
 
     private var assets: List<Web3TokenItem> = listOf()
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(true) }
@@ -54,6 +62,17 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
         super.onViewCreated(view, savedInstanceState)
         assetsAdapter.onItemListener = this
         binding.apply {
+            lifecycleScope.launch {
+                val wallet = web3ViewModel.findWalletById(walletId)
+                if (wallet != null) {
+                    titleView.setSubTitle(
+                        getString(R.string.Hidden_Assets),
+                        wallet.name.takeIf { it.isNotEmpty() } ?: getString(R.string.Common_Wallet)
+                    )
+                } else {
+                    titleView.setSubTitle(getString(R.string.Buy), getString(R.string.Common_Wallet))
+                }
+            }
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             ItemTouchHelper(
                 AssetItemCallback(
@@ -103,7 +122,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                 },
             )
 
-            web3ViewModel.hiddenAssetItems().observe(
+            web3ViewModel.hiddenAssetItems(walletId).observe(
                 viewLifecycleOwner,
             ) { hiddenTokens ->
                 if (hiddenTokens != null && hiddenTokens.isNotEmpty()) {
@@ -125,12 +144,16 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
     override fun <T> onNormalItemClick(item: T) {
         val token = item as Web3TokenItem
         lifecycleScope.launch {
-            val address = getAddressesByChainId(token.chainId)
+            if (walletId == null) {
+                toast(R.string.Data_error)
+                return@launch
+            }
+            val address = web3ViewModel.getAddressesByChainId(walletId!!, token.chainId)
             if (address != null) {
                 view?.navigate(
                     R.id.action_web3_hidden_assets_to_web3_transactions,
                     Bundle().apply {
-                        putString(Web3TransactionsFragment.ARGS_ADDRESS, address)
+                        putString(Web3TransactionsFragment.ARGS_ADDRESS, address.destination)
                         putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
                     }
                 )
@@ -138,11 +161,5 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                 toast(R.string.Data_error)
             }
         }
-    }
-
-
-    private suspend fun getAddressesByChainId(chainId: String): String? {
-        val address = web3ViewModel.getAddressesByChainId(chainId)
-        return address?.destination
     }
 }

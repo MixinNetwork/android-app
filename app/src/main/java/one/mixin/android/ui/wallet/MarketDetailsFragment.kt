@@ -38,7 +38,6 @@ import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
 import one.mixin.android.util.viewBinding
@@ -132,7 +131,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             Bundle().apply {
                                 putString(ARGS_INPUT, input)
                                 putString(ARGS_OUTPUT, nowTokens.first().assetId)
-                                putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }) })
                             })
                     } else {
                         ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
@@ -147,7 +145,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     Bundle().apply {
                                         putString(ARGS_INPUT, token.assetId)
                                         putString(ARGS_OUTPUT, output)
-                                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }) })
                                     })
                             }
                         }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)

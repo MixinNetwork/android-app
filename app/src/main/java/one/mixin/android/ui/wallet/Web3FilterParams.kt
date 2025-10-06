@@ -3,9 +3,8 @@ package one.mixin.android.ui.wallet
 import android.os.Parcelable
 import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.Constants
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.TransactionStatus
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -18,7 +17,8 @@ class Web3FilterParams(
     var tokenItems: List<Web3TokenItem>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
-    var level: Int = 0b00
+    var level: Int = 0b00,
+    var walletId: String
 ) : Parcelable {
     companion object {
         const val FILTER_MASK = 0b11
@@ -29,7 +29,7 @@ class Web3FilterParams(
     }
 
     override fun toString(): String {
-        return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} " +
+        return "order:${order.name} tokenFilterType:${tokenFilterType.name} tokens:${tokenItems?.map { it.symbol }} walletId:{$walletId}" +
             "startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} " +
             "endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""} " +
             "level:$level"
@@ -61,6 +61,10 @@ class Web3FilterParams(
                 val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
                 filters.add("(w.send_asset_id IN ($tokenIds) OR w.receive_asset_id IN ($tokenIds))")
             }
+        }
+
+        walletId.let {
+            filters.add("w.address IN (SELECT destination FROM addresses WHERE wallet_id = '$it')")
         }
 
         tokenFilterType.let {
@@ -102,7 +106,7 @@ class Web3FilterParams(
         }
 
         return SimpleSQLiteQuery(
-            "SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
+            "SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
                 "w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
                 "w.transaction_at, w.updated_at, w.level, " +
                 "c.symbol as chain_symbol, " +

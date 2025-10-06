@@ -4,14 +4,13 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
-import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
 
 @Suppress("EqualsOrHashCode")
 @Parcelize
 data class SwapToken(
+    @SerializedName("wallet_id") val walletId: String?,
     @SerializedName("address") val address: String,
     @SerializedName("assetId") val assetId: String,
     @SerializedName("decimals") val decimals: Int,
@@ -56,27 +55,27 @@ data class SwapToken(
     }
 
     private val assetKey: String
-        get() = if (address == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else address
+        get() = address
 
     override fun equals(other: Any?): Boolean {
         if (other !is SwapToken) return false
 
         return if (assetId.isNotEmpty()) {
-            assetId == other.assetId
+            assetId == other.assetId && walletId == other.walletId
         } else if (address.isNotEmpty()) {
-            assetKey == other.assetKey
+            assetKey == other.assetKey && walletId == other.walletId
         } else {
-            name == other.name && chain.chainId == other.chain.chainId
+            name == other.name && chain.chainId == other.chain.chainId && walletId == other.walletId
         }
     }
 
     override fun hashCode(): Int {
-        return  if (assetId.isNotEmpty()) {
-            assetId.hashCode()
+        return if (assetId.isNotEmpty()) {
+            (assetId + walletId).hashCode()
         } else if (address.isNotEmpty()) {
-            assetKey.hashCode()
+            (assetKey + walletId).hashCode()
         } else {
-            (name + chain.chainId).hashCode()
+            (name + chain.chainId + walletId).hashCode()
         }
     }
 

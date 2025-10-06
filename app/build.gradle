@@ -11,14 +11,14 @@ plugins {
     id "com.google.protobuf" version "0.9.1"
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
     id 'com.google.firebase.firebase-perf'
+    id 'com.bugsnag.android.gradle'
 
-    id 'io.sentry.android.gradle' version '5.7.0'
 }
 
 def versionMajor = 3
-def versionMinor = 2
-def versionPatch = 0
-def versionBuild = 2
+def versionMinor = 4
+def versionPatch = 2
+def versionBuild = 0
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -29,7 +29,7 @@ android {
     namespace "one.mixin.android"
     defaultConfig {
         applicationId "one.mixin.messenger"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 35
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -61,6 +61,7 @@ android {
         }
 
         lintOptions{
+            disable "ObjectAnimatorBinding", "AnimatorKeep"
             disable 'MissingTranslation'
         }
 
@@ -179,6 +180,7 @@ android {
         staging {
             initWith debug
             applicationIdSuffix ".test"
+            matchingFallbacks = ['debug']
         }
     }
 
@@ -218,6 +220,10 @@ android {
     }
 }
 
+bugsnag {
+    uploadNdkMappings = false
+}
+
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("room.incremental", "true")
@@ -248,7 +254,7 @@ dependencies {
     implementation "androidx.sharetarget:sharetarget:${sharetargetVersion}"
     implementation "androidx.coordinatorlayout:coordinatorlayout:${coordinatorVersion}"
     implementation "androidx.biometric:biometric:${biometricVersion}"
-    implementation "androidx.security:security-crypto:1.0.0"
+    implementation "androidx.security:security-crypto:1.1.0"
 
     implementation "org.sol4k:tweetnacl:${tweetnaclVersion}"
     implementation "org.sol4k:utilities:${sol4kUtilitiesVersion}"
@@ -327,6 +333,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:${retrofitVersion}")
     implementation("com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}")
     implementation "com.jakewharton.rxbinding3:rxbinding:${rxbindingVersion}"
+    implementation "com.jakewharton.rxbinding3:rxbinding-material:${rxbindingVersion}"
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}")
 
     implementation "com.google.net.cronet:cronet-okhttp:${cronetOkhttpVersion}"
@@ -335,10 +342,9 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${serializationVersion}"
 
-    implementation "com.google.firebase:firebase-messaging-ktx"
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
-    implementation 'com.google.firebase:firebase-dynamic-links-ktx'
+    implementation "com.google.firebase:firebase-messaging"
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics'
 
     implementation("com.google.protobuf:protobuf-javalite") {
         version {
@@ -415,7 +421,7 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout-compose:${constraintLayoutComposeVersion}"
     implementation "androidx.activity:activity-compose:${activityComposeVersion}"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:${composeVersion}"
-    
+
     // accompanist
     implementation "com.google.accompanist:accompanist-navigation-animation:${accompanistVersion}"
     implementation "com.google.accompanist:accompanist-pager:${accompanistVersion}"
@@ -426,6 +432,7 @@ dependencies {
     implementation "org.web3j:crypto:${web3jCryptoVersion}"
     implementation platform("com.reown:android-bom:${reownBomVersion}")
     implementation "com.reown:android-core"
+    testImplementation "com.reown:android-core"
     implementation "com.reown:walletkit"
 
     implementation "org.sol4k:sol4k:${sol4kVersion}"
@@ -504,6 +511,7 @@ dependencies {
     implementation "com.android.installreferrer:installreferrer:$installreferrerVersion"
     implementation "com.android.billingclient:billing:$billingVersion"
     implementation "com.android.billingclient:billing-ktx:$billingVersion"
+    implementation "com.bugsnag:bugsnag-android:$bugsnagVersion"
 }
 
 composeCompiler {
@@ -549,20 +557,4 @@ task syncStrings {
 }
 
 
-import io.sentry.android.gradle.extensions.InstrumentationFeature
-sentry {
-    org = "mcwm"
-    projectName = "android"
 
-    autoUploadProguardMapping = false
-    autoUploadNativeSymbols = false
-
-    tracingInstrumentation {
-        enabled = true
-        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.OKHTTP
-        features = EnumSet.allOf(InstrumentationFeature) - InstrumentationFeature.FILE_IO
-        logcat {
-            enabled = false
-        }
-    }
-}

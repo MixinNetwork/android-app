@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,16 +28,21 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,22 +54,64 @@ import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.openUrl
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.SwapOrderItem
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwapOrderListPage(
+    walletId: String?,
     pop: () -> Unit,
     onOrderClick: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
     val orders by viewModel.swapOrders().collectAsState(emptyList())
+    var walletDisplayName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(walletId) {
+        if (walletId != null) {
+            viewModel.findWeb3WalletById(walletId)?.let {
+                if (it.category == WalletCategory.CLASSIC.value ||
+                    it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                    it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                    it.category == WalletCategory.WATCH_ADDRESS.value) {
+                    walletDisplayName = it.name
+                }
+            }
+        }
+    }
 
     MixinAppTheme {
         PageScaffold(
             title = stringResource(id = R.string.Swap_Orders),
+            subtitle = {
+                val text = if (walletId == null) {
+                    stringResource(id = R.string.Privacy_Wallet)
+                } else {
+                    walletDisplayName ?: stringResource(id = R.string.Common_Wallet)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = text,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (walletId == null) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
+                }
+            },
             pop = pop,
             actions = {
                 IconButton(onClick = {

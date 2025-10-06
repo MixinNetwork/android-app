@@ -53,6 +53,7 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val web3TokenItem = requireArguments().getParcelable<Web3TokenItem?>(ARGS_WEB3_TOKEN)
         binding.apply {
             titleTv.text = "${getString(R.string.Add)} ${tokenItem?.symbol ?: web3TokenItem?.symbol ?: ""}"
+            subtitleTv.text = tokenItem?.chainName ?: web3TokenItem?.chainName ?: ""
             rightIv.setOnClickListener {
                 dismiss()
             }

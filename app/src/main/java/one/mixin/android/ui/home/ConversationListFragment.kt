@@ -16,7 +16,6 @@ import android.view.animation.BounceInterpolator
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -51,7 +50,6 @@ import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.networkConnected
@@ -76,7 +74,6 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
-import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment.PopupType
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
@@ -117,6 +114,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.widget.picker.toTimeInterval
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -179,7 +177,14 @@ class ConversationListFragment : LinkFragment() {
     private var enterJob: Job? = null
 
     companion object {
-        fun newInstance() = ConversationListFragment()
+        @Volatile
+        private var INSTANCE: ConversationListFragment? = null
+
+        fun getInstance(): ConversationListFragment {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: ConversationListFragment().also { INSTANCE = it }
+            }
+        }
 
         const val TAG = "ConversationListFragment"
 
@@ -202,7 +207,7 @@ class ConversationListFragment : LinkFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        navigationController = NavigationController(activity as MainActivity)
+        navigationController = NavigationController()
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -325,21 +330,23 @@ class ConversationListFragment : LinkFragment() {
             if (cid != null) {
                 openCircleEdit(cid)
             } else {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
         }
-        val circleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
-        if (circleId == null) {
-            selectCircle(null)
+
+        this.circleId = if (savedInstanceState != null) {
+            val id = savedInstanceState.getString(CIRCLE_ID)
+            Timber.e("Restored circleId: $id")
+            id
         } else {
-            this.circleId = circleId
+            defaultSharedPreferences.getString(CIRCLE_ID, null)
         }
         RxBus.listen(CircleDeleteEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe {
                 if (it.circleId == this.circleId) {
-                    selectCircle(null, null)
+                    selectCircle(null,null)
                 }
             }
         RxBus.listen(User::class.java)
@@ -425,7 +432,7 @@ class ConversationListFragment : LinkFragment() {
                 openSearch()
             }
             searchBar.setOnGroupClickListener {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
             searchBar.setOnAddClickListener {
                 addCircle(it.context)
@@ -452,7 +459,7 @@ class ConversationListFragment : LinkFragment() {
             searchBar.setSearchViewListener(
                 object : MaterialSearchView.SearchViewListener {
                     override fun onSearchViewClosed() {
-                        navigationController.hideSearch()
+                        navigationController.hideSearch(parentFragmentManager)
                     }
 
                     override fun onSearchViewOpened() {
@@ -489,7 +496,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         if (!binding.searchBar.isOpen) {
-            navigationController.removeSearch()
+            navigationController.removeSearch(parentFragmentManager)
         }
     }
 
@@ -570,6 +577,7 @@ class ConversationListFragment : LinkFragment() {
         }
 
     override fun onDestroyView() {
+        Timber.e("onDestroyView")
         if (isAdded) {
             messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
@@ -619,10 +627,8 @@ class ConversationListFragment : LinkFragment() {
     private var conversationLiveData: LiveData<PagedList<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
-            if (field != value) {
-                field = value
-                selectCircle(circleId)
-            }
+            field = value
+            selectCircle(circleId)
         }
 
     private var scrollTop = false
@@ -638,22 +644,25 @@ class ConversationListFragment : LinkFragment() {
 
         binding.searchBar.hideContainer()
         setCircleName(name)
-        this.circleId = circleId
+        if (this.circleId != circleId) {
+            this.circleId = circleId
+        }
         observeOtherCircleUnread(circleId)
     }
 
-    fun setCircleName(name: String?) {
-        if (viewDestroyed()) return
-
-        binding.searchBar.logo.text = name ?: "Mixin"
-    }
-
+    // binding data
     private fun selectCircle(circleId: String?) {
         conversationLiveData?.removeObserver(observer)
         val liveData = conversationListViewModel.observeConversations(circleId)
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
         this.conversationLiveData = liveData
+    }
+
+    fun setCircleName(name: String?) {
+        if (viewDestroyed()) return
+
+        binding.searchBar.logo.text = name ?: "Mixin"
     }
 
     private fun animDownIcon(expand: Boolean) {
@@ -671,6 +680,7 @@ class ConversationListFragment : LinkFragment() {
 
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationItem: ConversationItem) {
+        if (!isAdded) return
         val conversationId = conversationItem.conversationId
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
@@ -694,6 +704,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         viewBinding.deleteTv.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             alertDialogBuilder()
                 .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
@@ -731,20 +742,35 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        bottomSheet.show()
+        if (!parentFragmentManager.isStateSaved) {
+            bottomSheet.show()
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        if (messageAdapter.itemCount <= 0) {
+            Timber.e("onResume reset")
+            this.circleId = circleId
+        }
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
-                .let { type ->
-                    (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
-                    if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
-                }
+            if (isAdded) {
+                ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
+                    .let { type ->
+                        val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
+                        existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
+
+                        if (type != null && !parentFragmentManager.isStateSaved) {
+                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                            }
+                        }
+                    }
+            }
         }
     }
+
 
     private fun openCamera(scan: Boolean) {
         RxPermissions(requireActivity())
@@ -1246,6 +1272,9 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
+        if (!isAdded) {
+            return
+        }
         val choices =
             arrayOf(
                 getString(R.string.one_hour),
@@ -1355,5 +1384,11 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(CIRCLE_ID, circleId)
+        Timber.e("onSaveInstanceState: $circleId")
     }
 }

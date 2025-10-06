@@ -4,11 +4,11 @@ import com.google.gson.annotations.SerializedName
 
 data class WalletRequest(
     @SerializedName("name")
-    val name: String,
+    val name: String?,
     
     @SerializedName("category")
-    val category: String,
+    val category: String?,
     
     @SerializedName("addresses")
-    val addresses: List<Web3AddressRequest>?
+    val addresses: List<Web3AddressRequest>?,
 )

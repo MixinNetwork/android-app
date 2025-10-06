@@ -2,14 +2,16 @@
 package one.mixin.android.widget.gallery.internal.utils;
 
 import android.text.TextUtils;
+
 import androidx.exifinterface.media.ExifInterface;
-import timber.log.Timber;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+
+import timber.log.Timber;
 
 
 final class ExifInterfaceCompat {

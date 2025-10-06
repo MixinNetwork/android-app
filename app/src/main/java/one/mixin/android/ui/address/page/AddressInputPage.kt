@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -69,7 +70,6 @@ fun AddressInputPage(
     }
 
     val context = LocalContext.current
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     PageScaffold(
         title = stringResource(R.string.Address),
         verticalScrollable = false,
@@ -91,7 +91,7 @@ fun AddressInputPage(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
-            Column {
+            Column(modifier = Modifier.imePadding()) {
                 TokenInfoHeader(token = token, web3Token = web3Token)
                 Box(
                     modifier = Modifier
@@ -130,7 +130,8 @@ fun AddressInputPage(
                             textAlign = TextAlign.Start
                         ),
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
                         ),
                         minLines = 3,
                         maxLines = 3

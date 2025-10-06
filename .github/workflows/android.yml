@@ -35,3 +35,6 @@ jobs:
 
     - name: Build
       run: ./gradlew clean assembleDebug --stacktrace
+
+    - name: Run tests
+      run: ./gradlew testGooglePlayDebugUnitTest

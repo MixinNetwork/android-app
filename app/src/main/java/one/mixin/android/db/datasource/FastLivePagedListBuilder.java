@@ -1,6 +1,7 @@
 package one.mixin.android.db.datasource;
 
 import android.annotation.SuppressLint;
+
 import androidx.annotation.AnyThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

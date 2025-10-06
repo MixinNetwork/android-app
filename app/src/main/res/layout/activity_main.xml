@@ -5,8 +5,8 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="one.mixin.android.ui.home.MainActivity">
+    tools:context="one.mixin.android.ui.home.MainActivity"
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -30,7 +30,8 @@
             android:layout_above="@+id/bottom_nav"
             android:layout_alignParentTop="true"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true" />
 
     </RelativeLayout>
 
@@ -38,12 +39,14 @@
         android:layout_marginTop="56dp"
         android:id="@+id/container_search"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"/>
 
     <FrameLayout
-        android:id="@+id/container_password"
+        android:id="@+id/internal_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"/>
 
 </FrameLayout>
 

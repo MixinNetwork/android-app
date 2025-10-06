@@ -49,6 +49,9 @@ class CustomDns(val dnsHostname: String) : Dns {
             } catch (e: RuntimeException) {
                 // workaround java.lang.RuntimeException: Failed to initialize resolver
                 throw UnknownHostException()
+            } catch (e: ExceptionInInitializerError) {
+                // workaround java.lang.RuntimeException: Failed to initialize resolver
+                throw UnknownHostException()
             }
         }
     }

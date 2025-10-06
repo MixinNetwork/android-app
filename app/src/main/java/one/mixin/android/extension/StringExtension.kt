@@ -54,13 +54,18 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.abs
 import kotlin.math.roundToInt
-
 private const val QUIET_ZONE_SIZE = 4
 private val radii = FloatArray(8)
 
 fun String.generateQRCode(
     qrSize: Int,
     padding: Int = 32.dp,
+): Pair<Bitmap, Int>  = generateQRCode(qrSize, padding, padding)
+
+fun String.generateQRCode(
+    qrSize: Int,
+    padding: Int = 32.dp,
+    innerPadding: Int = 0.dp,
 ): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }
     require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
@@ -100,17 +105,23 @@ fun String.generateQRCode(
     blackPaint.style = Paint.Style.FILL
     canvas.drawRoundRect(
         RectF(padding / 2f, padding / 2f, size.toFloat() - padding / 2f, size.toFloat() - padding / 2f),
-        padding / 2f,
-        padding / 2f,
+        innerPadding / 2f,
+        innerPadding / 2f,
         blackPaint,
     )
     blackPaint.color = Color.BLACK
     val rect = GradientDrawable()
     rect.shape = GradientDrawable.RECTANGLE
     rect.cornerRadii = radii
-    var imageIgnore = ((size - padding * 2) / 4.65f / multiple).roundToInt()
-    if (imageIgnore % 2 != inputWidth % 2) {
-        imageIgnore++
+
+    val imageIgnore = if (innerPadding == 0) {
+        0
+    } else {
+        var ignore = (innerPadding / multiple).coerceAtLeast(1)
+        if (ignore % 2 != inputWidth % 2) {
+            ignore++
+        }
+        ignore
     }
     val imageBlockX = (inputWidth - imageIgnore) / 2
     for (a in 0..2) {
@@ -325,9 +336,11 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(limit: Int = 50): String {
+fun String.formatPublicKey( limit: Int = 50, prefixLen: Int = 8, suffixLen: Int = 6): String {
     if (this.length <= limit) return this
-    return substring(0, 8) + "..." + substring(length - 6, length)
+    val prefix = substring(0, prefixLen.coerceAtMost(length))
+    val suffix = substring(length - suffixLen.coerceAtLeast(0), length)
+    return "$prefix...$suffix"
 }
 
 fun String.numberFormat(): String {

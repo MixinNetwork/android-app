@@ -12,12 +12,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -51,7 +48,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -91,9 +87,32 @@ fun MnemonicPhraseInput(
     pin: String? = null,
     onQrCode: ((List<String>) -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
+    onScan: (() -> Unit)? = null,
+    validate: ((List<String>) -> String?)? = null,
 ) {
     var legacy by remember { mutableStateOf(mnemonicList.size > 13) }
-    var inputs by remember { mutableStateOf(List(if (!legacy) 13 else 25) { "" }) }
+    var inputs by remember {
+        mutableStateOf(
+            when (state) {
+                MnemonicState.Import -> List(if (!legacy) 12 else 24) { "" }
+                else -> List(if (!legacy) 13 else 25) { "" }
+            }
+        )
+    }
+
+    if (state == MnemonicState.Import) {
+        LaunchedEffect(mnemonicList) {
+            legacy =
+                if (mnemonicList.size == 12) false else if (mnemonicList.size > 12) true else legacy
+            inputs =
+                if (mnemonicList.size <= 12) {
+                    mnemonicList + List(12 - mnemonicList.size) { "" }
+                } else {
+                    mnemonicList + List(24 - mnemonicList.size) { "" }
+                }
+        }
+    }
+
     var loading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -103,6 +122,7 @@ fun MnemonicPhraseInput(
     val focusManager = LocalFocusManager.current
     var currentText by remember { mutableStateOf("") }
     var focusIndex by remember { mutableIntStateOf(-1) }
+
     MixinAppTheme(skip = true) {
         KeyboardAwareBox(
             modifier = Modifier
@@ -127,24 +147,27 @@ fun MnemonicPhraseInput(
                 Text(
                     text = when (state) {
                         MnemonicState.Input -> stringResource(R.string.log_in_whit_mnemonic_phrase)
+                        MnemonicState.Import -> stringResource(R.string.import_mnemonic_phrase)
                         MnemonicState.Display -> stringResource(R.string.write_down_mnemonic_phrase)
                         MnemonicState.Verify -> stringResource(R.string.check_mnemonic_phrase)
-                    }, fontSize = 18.sp,
+                    },
+                    fontSize = 18.sp,
                     color = MixinAppTheme.colors.textPrimary,
-                    fontWeight = SemiBold
+                    fontWeight = SemiBold,
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = when (state) {
                         MnemonicState.Input -> stringResource(R.string.enter_mnemonic_phrase, if (legacy) 25 else 13)
+                        MnemonicState.Import -> stringResource(R.string.enter_mnemonic_phrase, if (legacy) 24 else 12)
                         MnemonicState.Display -> stringResource(R.string.write_down_mnemonic_phrase_desc)
                         MnemonicState.Verify -> stringResource(R.string.check_mnemonic_phrase_desc)
                     }, fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     textAlign = TextAlign.Center
                 )
-                if (state == MnemonicState.Input) {
+                if (state == MnemonicState.Input || state == MnemonicState.Import) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         horizontalArrangement = Arrangement.Start, modifier = Modifier
@@ -153,27 +176,27 @@ fun MnemonicPhraseInput(
                         WordCountButton(
                             onClick = {
                                 legacy = false
-                                inputs = List(13) { "" }
+                                inputs = List(if (state == MnemonicState.Input) 13 else 12) { "" }
                             },
                             border = BorderStroke(
                                 width = 1.dp,
                                 color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
                             ),
                         ) {
-                            Text("13 words", color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
+                            Text(stringResource(R.string.words, if (state == MnemonicState.Input) 13 else 12), color = if (!legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         WordCountButton(
                             onClick = {
                                 legacy = true
-                                inputs = List(25) { "" }
+                                inputs = List(if(state == MnemonicState.Input) 25 else 24) { "" }
                             },
                             border = BorderStroke(
                                 width = 1.dp,
                                 color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray
                             ),
                         ) {
-                            Text("25 words", color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
+                            Text(stringResource(R.string.words, if (state == MnemonicState.Input) 25 else 24), color = if (legacy) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -181,7 +204,63 @@ fun MnemonicPhraseInput(
                     Spacer(modifier = Modifier.height(44.dp))
                 }
                 InputGrid(if (legacy) 27 else 15, 10.dp) { index ->
-                    if (index < inputs.size) {
+                    if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 12) || (mnemonicList.size == 24 && index == 24))) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    onQrCode?.invoke(mnemonicList)
+                                }
+                                .padding(8.dp)) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_mnemonic_qrcode),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                stringResource(R.string.QR_Code), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+                        }
+                    } else if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 13) || (mnemonicList.size == 24 && index == 25))) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable {
+                                    val clipboard = context.getClipboardManager()
+                                    clipboard.setPrimaryClip(
+                                        ClipData.newPlainText(
+                                            null, mnemonicList.joinToString(" ")
+                                        )
+                                    )
+                                    toast(R.string.copied_to_clipboard)
+                                }
+                                .padding(8.dp)) {
+
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_copy_gray),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                stringResource(R.string.Copy), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+
+                        }
+                    } else if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 14) || (mnemonicList.size == 24 && index == 26))) {
+                        // placeholder
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {}
+                    } else if (index < inputs.size) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -250,15 +329,36 @@ fun MnemonicPhraseInput(
                                         },
                                         onDone = {
                                             val words = inputs.map { it.trim() }
+                                            validate?.invoke(words)?.let {
+                                                errorInfo = it
+                                                return@KeyboardActions
+                                            }
                                             when (state) {
                                                 MnemonicState.Input -> onComplete.invoke(words)
+                                                MnemonicState.Import -> {
+                                                    val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
+                                                        (legacy && words.size == 24 && isMnemonicValid(words))
+                                                    if (!valid) {
+                                                        errorInfo =
+                                                            context.getString(R.string.invalid_mnemonic_phrase)
+                                                    } else {
+                                                        onComplete.invoke(words)
+                                                    }
+                                                }
                                                 MnemonicState.Verify -> {
                                                     coroutineScope.launch {
                                                         runCatching {
                                                             loading = true
-                                                            if (mnemonicList != words) {
+                                                            val valid = when (state) {
+                                                                MnemonicState.Import ->
+                                                                    (!legacy && words.size == 24 && isMnemonicValid(words)) ||
+                                                                    (legacy && words.size == 12 && isMnemonicValid(words))
+                                                                MnemonicState.Verify -> mnemonicList == words
+                                                                else -> false
+                                                            }
+                                                            if (!valid) {
                                                                 errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
-                                                            } else {
+                                                            } else if (state == MnemonicState.Verify) {
                                                                 val selfId = Session.getAccountId()!!
                                                                 val seed = tip?.getOrRecoverTipPriv(context, pin!!)?.getOrThrow()
                                                                 val edKey = tip?.getMnemonicEdKey(context, pin!!, seed!!)
@@ -309,25 +409,58 @@ fun MnemonicPhraseInput(
                                 )
                             }
                         }
+                    } else if (state == MnemonicState.Import && index == if(legacy) 24 else 12) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable { onScan?.invoke() }
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_scan),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.textPrimary,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.Scan), fontSize = 12.sp,
+                                fontWeight = W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                            )
+                        }
                     } else if (index == if (legacy) 25 else 13) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .alpha(if (state == MnemonicState.Input || state == MnemonicState.Display) 1f else 0f)
+                                .alpha(if (state == MnemonicState.Input || state == MnemonicState.Display || state == MnemonicState.Import) 1f else 0f)
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable {
-                                    if (state == MnemonicState.Input) {
+                                    if (state == MnemonicState.Input || state == MnemonicState.Import) {
                                         val clipboard = context.getClipboardManager()
                                         val clipData: ClipData? = clipboard.primaryClip
                                         if (clipData != null && clipData.itemCount > 0) {
                                             val pastedText = clipData.getItemAt(0).text.toString()
                                             val words = pastedText.split(" ")
-                                            if (legacy && words.size == 25 && isMnemonicValid(words.subList(0, 24))) {
-                                                inputs = words
-                                            } else if (words.size == 13 && isMnemonicValid(words.subList(0, 12))) {
-                                                inputs = words
-                                            } else {
-                                                errorInfo = context.getString(R.string.invalid_mnemonic_phrase)
+                                            when {
+                                                words.size == (if (state == MnemonicState.Import) 24 else 25) && isMnemonicValid(
+                                                    if (state == MnemonicState.Import) words else words.subList(0, 24)
+                                                ) -> {
+                                                    legacy = true
+                                                    inputs = words
+                                                }
+
+                                                words.size == (if (state == MnemonicState.Import) 12 else 13) && isMnemonicValid(
+                                                    if (state == MnemonicState.Import) words else words.subList(0, 12)
+                                                ) -> {
+                                                    legacy = false
+                                                    inputs = words
+                                                }
+
+                                                else -> {
+                                                    errorInfo =
+                                                        context.getString(R.string.invalid_mnemonic_phrase)
+                                                }
                                             }
                                         }
                                     } else if (state == MnemonicState.Display) {
@@ -336,7 +469,7 @@ fun MnemonicPhraseInput(
                                 }
                                 .padding(8.dp)
                         ) {
-                            if (state == MnemonicState.Input) {
+                            if (state == MnemonicState.Input || state == MnemonicState.Import) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_paste),
                                     contentDescription = null,
@@ -368,17 +501,21 @@ fun MnemonicPhraseInput(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable {
-                                    if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                                    if (state == MnemonicState.Input || state == MnemonicState.Verify || state == MnemonicState.Import) {
                                         inputs = inputs.map { "" }
                                     } else if (state == MnemonicState.Display) {
                                         val clipboard = context.getClipboardManager()
-                                        clipboard.setPrimaryClip(ClipData.newPlainText(null, mnemonicList.joinToString(" ")))
+                                        clipboard.setPrimaryClip(
+                                            ClipData.newPlainText(
+                                                null, mnemonicList.joinToString(" ")
+                                            )
+                                        )
                                         toast(R.string.copied_to_clipboard)
                                     }
                                 }
                                 .padding(8.dp)
                         ) {
-                            if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                            if (state == MnemonicState.Input || state == MnemonicState.Verify || state == MnemonicState.Import) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_action_delete),
                                     contentDescription = null,
@@ -440,8 +577,22 @@ fun MnemonicPhraseInput(
                     enabled = state == MnemonicState.Display || inputs.all { it.isNotEmpty() },
                     onClick = {
                         val words = inputs.map { it.trim() }
+                        validate?.invoke(words)?.let {
+                            errorInfo = it
+                            return@Button
+                        }
                         when (state) {
                             MnemonicState.Input -> onComplete.invoke(words)
+                            MnemonicState.Import -> {
+                                val valid = (!legacy && words.size == 12 && isMnemonicValid(words)) ||
+                                    (legacy && words.size == 24 && isMnemonicValid(words))
+                                if (!valid) {
+                                    errorInfo =
+                                        context.getString(R.string.invalid_mnemonic_phrase)
+                                } else {
+                                    onComplete.invoke(words)
+                                }
+                            }
                             MnemonicState.Verify -> {
                                 coroutineScope.launch {
                                     runCatching {
@@ -462,7 +613,6 @@ fun MnemonicPhraseInput(
                                             r.data?.let {
                                                 Session.storeAccount(it)
                                             }
-
                                             errorInfo = if (!r.isSuccess) {
                                                 context.getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                                             } else {
@@ -478,7 +628,6 @@ fun MnemonicPhraseInput(
                                     }
                                 }
                             }
-
                             MnemonicState.Display -> {
                                 onComplete.invoke(mnemonicList)
                             }
@@ -509,10 +658,13 @@ fun MnemonicPhraseInput(
                     } else {
                         Text(
                             stringResource(
-                                when (state) {
-                                    MnemonicState.Display -> R.string.Check_Backup
-                                    MnemonicState.Input -> R.string.Confirm
-                                    MnemonicState.Verify -> R.string.Complete
+                                when {
+                                    state == MnemonicState.Import -> R.string.Next
+                                    state == MnemonicState.Display && (mnemonicList.size == 12 || mnemonicList.size == 24) -> R.string.Done
+                                    state == MnemonicState.Display -> R.string.Check_Backup
+                                    state == MnemonicState.Input -> R.string.Confirm
+                                    state == MnemonicState.Verify -> R.string.Complete
+                                    else -> R.string.Next
                                 }
                             ),
                             color = Color.White,
@@ -525,20 +677,41 @@ fun MnemonicPhraseInput(
             }
         }
     }, floating = {
-                if (state == MnemonicState.Input || state == MnemonicState.Verify) {
+                if (state == MnemonicState.Input || state == MnemonicState.Verify || state == MnemonicState.Import) {
                     InputBar(currentText) { word ->
-                        inputs = inputs.toMutableList().also { it[focusIndex] = word }
-                        if (!legacy && focusIndex == 12) {
-                            keyboardController?.hide()
-                            focusManager.moveFocus(FocusDirection.Right)
-                        } else if (focusIndex == 24) {
-                            keyboardController?.hide()
-                        } else if ((focusIndex + 1) % 3 == 0) {
-                            focusManager.moveFocus(FocusDirection.Down)
-                            focusManager.moveFocus(FocusDirection.Left)
-                            focusManager.moveFocus(FocusDirection.Left)
+                        val maxInput = when (state) {
+                            MnemonicState.Import -> if (!legacy) 24 else 12
+                            else -> inputs.size
+                        }
+                        if (focusIndex in 0 until maxInput) {
+                            inputs = inputs.toMutableList().also { it[focusIndex] = word }
+                        }
+                        if (state == MnemonicState.Import) {
+                            if (legacy && focusIndex == 11) {
+                                keyboardController?.hide()
+                                focusManager.moveFocus(FocusDirection.Right)
+                            } else if (!legacy && focusIndex == 23) {
+                                keyboardController?.hide()
+                            } else if ((focusIndex + 1) % 3 == 0) {
+                                focusManager.moveFocus(FocusDirection.Down)
+                                focusManager.moveFocus(FocusDirection.Left)
+                                focusManager.moveFocus(FocusDirection.Left)
+                            } else {
+                                focusManager.moveFocus(FocusDirection.Right)
+                            }
                         } else {
-                            focusManager.moveFocus(FocusDirection.Right)
+                            if (!legacy && focusIndex == 12) {
+                                keyboardController?.hide()
+                                focusManager.moveFocus(FocusDirection.Right)
+                            } else if (focusIndex == 24) {
+                                keyboardController?.hide()
+                            } else if ((focusIndex + 1) % 3 == 0) {
+                                focusManager.moveFocus(FocusDirection.Down)
+                                focusManager.moveFocus(FocusDirection.Left)
+                                focusManager.moveFocus(FocusDirection.Left)
+                            } else {
+                                focusManager.moveFocus(FocusDirection.Right)
+                            }
                         }
                     }
                 }
@@ -579,7 +752,8 @@ fun InputGrid(
 enum class MnemonicState {
     Input,
     Display,
-    Verify
+    Verify,
+    Import
 }
 
 @Composable
@@ -639,6 +813,7 @@ fun InputBar(string: String, callback: (String) -> Unit) {
 fun MnemonicPhraseInputPreview() {
     MnemonicPhraseInput(
         state = MnemonicState.Input,
+        onScan = {},
         onComplete = { mnemonicList -> /* Handle mnemonic change */ },
     )
 }

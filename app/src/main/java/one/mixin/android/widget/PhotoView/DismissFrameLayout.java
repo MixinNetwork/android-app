@@ -1,5 +1,7 @@
 package one.mixin.android.widget.PhotoView;
 
+import static one.mixin.android.widget.PhotoView.SwipeGestureDetector.DIRECTION_LEFT_RIGHT;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -7,13 +9,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import one.mixin.android.widget.largeimage.LargeImageView;
 
-import static one.mixin.android.widget.PhotoView.SwipeGestureDetector.DIRECTION_LEFT_RIGHT;
+import one.mixin.android.widget.largeimage.LargeImageView;
 
 public class DismissFrameLayout extends FrameLayout {
     private SwipeGestureDetector swipeGestureDetector;

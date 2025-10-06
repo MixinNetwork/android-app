@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
@@ -16,32 +17,53 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
+import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
+import one.mixin.android.event.WalletOperationType
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.ui.web.reloadWebViewInClips
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.hypot
 
@@ -49,17 +71,54 @@ import kotlin.math.hypot
 class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     companion object {
         const val TAG = "WalletFragment"
+        private const val ARG_WALLET_DESTINATION = "wallet_destination"
 
-        fun newInstance(): WalletFragment = WalletFragment()
+        fun newInstance(walletDestination: WalletDestination? = null): WalletFragment = WalletFragment().apply {
+            arguments = Bundle().apply {
+                walletDestination?.let { destination ->
+                    putString(ARG_WALLET_DESTINATION, GsonHelper.customGson.toJson(destination))
+                }
+            }
+        }
     }
 
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    private var selectedWalletDestination: WalletDestination? = null
+        set(value) {
+            if (value != field && value != null) {
+                field = value
+                when(value) {
+                    is WalletDestination.Classic -> {
+                        classicWalletFragment.walletId = value.walletId
+                    }
+                    is WalletDestination.Import -> {
+                        classicWalletFragment.walletId = value.walletId
+                    }
+                    is WalletDestination.Watch -> {
+                        classicWalletFragment.walletId = value.walletId
+                    }
+                    is WalletDestination.Privacy -> {
+                        // No action needed for Privacy wallet
+                    }
+                }
+                updateUi(value)
+                saveSelectedWalletDestination(value)
+            }
+            Timber.e("Selected wallet destination: $value")
+        }
+
+    private fun saveSelectedWalletDestination(destination: WalletDestination) {
+        defaultSharedPreferences.putString(Constants.Account.PREF_USED_WALLET, GsonHelper.customGson.toJson(destination))
+    }
+
+    private val gson = GsonBuilder()
+        .registerTypeHierarchyAdapter(WalletDestination::class.java, WalletDestinationTypeAdapter())
+        .create()
+
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private var currentType: String = WalletDestination.Privacy.name
-    private var classicWalletId: String? = ""
     private val walletViewModel by viewModels<WalletViewModel>()
 
     override fun onCreateView(
@@ -71,8 +130,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         return binding.root
     }
 
-    private val classicWalletFragment by lazy {  ClassicWalletFragment.newInstance() }
-    private val privacyWalletFragment by lazy {  PrivacyWalletFragment.newInstance() }
+    private val classicWalletFragment by lazy { ClassicWalletFragment.newInstance() }
+    private val privacyWalletFragment by lazy { PrivacyWalletFragment.newInstance() }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
@@ -80,42 +139,42 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val wallet = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, null)
-        currentType = defaultSharedPreferences.getString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Privacy.name).let {
-            if (it == WalletDestination.Privacy.name) {
-                WalletDestination.Privacy.name
-            }else{
-                classicWalletId = it
-                WalletDestination.Classic.name
+        Timber.e("onViewCreated called in WalletFragment")
+
+        val initialWalletDestination = arguments?.getString(ARG_WALLET_DESTINATION)?.let { json ->
+            try {
+                GsonHelper.customGson.fromJson(json, WalletDestination::class.java)
+            } catch (_: Exception) {
+                null
             }
         }
+
+        if (!classicWalletFragment.isAdded) {
+            childFragmentManager.beginTransaction()
+                .add(R.id.wallet_container, classicWalletFragment, ClassicWalletFragment.TAG)
+                .hide(classicWalletFragment)
+                .commit()
+        }
+
+        if (!privacyWalletFragment.isAdded) {
+            childFragmentManager.beginTransaction()
+                .add(R.id.wallet_container, privacyWalletFragment, PrivacyWalletFragment.TAG)
+                .hide(privacyWalletFragment)
+                .commit()
+        }
+
+        selectedWalletDestination = initialWalletDestination ?: WalletDestination.Privacy
+
         binding.apply {
-            badge.isVisible = wallet == null
-            if (wallet == WalletDestination.Privacy.name || wallet == null) { // defualt wallet
-                currentType = WalletDestination.Privacy.name
-                requireActivity().replaceFragment(
-                    privacyWalletFragment,
-                    R.id.wallet_container,
-                    PrivacyWalletFragment.TAG
-                )
-                titleTv.setText(R.string.Privacy_Wallet)
-                tailIcon.isVisible = true
-            } else {
-                currentType = WalletDestination.Classic.name
-                classicWalletFragment.walletId = classicWalletId ?: ""
-                requireActivity().replaceFragment(
-                    classicWalletFragment,
-                    R.id.wallet_container,
-                    ClassicWalletFragment.TAG
-                )
-                titleTv.setText(R.string.Common_Wallet)
-                tailIcon.isVisible = false
-            }
+            badge.isVisible = defaultSharedPreferences.getBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, true)
+
             moreIb.setOnClickListener {
-                if (currentType == WalletDestination.Privacy.name) {
-                    showPrivacyBottom()
-                } else {
-                    showClassicBottom()
+                when (selectedWalletDestination) {
+                    is WalletDestination.Privacy -> showPrivacyBottom()
+                    is WalletDestination.Import -> showImportBottom()
+                    is WalletDestination.Watch -> showImportBottom()
+                    is WalletDestination.Classic -> showClassicBottom()
+                    null -> showPrivacyBottom() // Default
                 }
             }
             scanIb.setOnClickListener {
@@ -129,24 +188,55 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     }
             }
             searchIb.setOnClickListener {
-                if (currentType == WalletDestination.Privacy.name) {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
-                } else {
-                    WalletActivity.show(requireActivity(), WalletActivity.Destination.SearchWeb3)
+                when (selectedWalletDestination) {
+                    is WalletDestination.Privacy -> {
+                        WalletActivity.show(requireActivity(), WalletActivity.Destination.Search)
+                    }
+                    is WalletDestination.Import -> {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Import) {
+                            WalletActivity.show(
+                                requireActivity(),
+                                WalletActivity.Destination.SearchWeb3(dest.walletId)
+                            )
+                        }
+                    }
+                    is WalletDestination.Watch -> {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Watch) {
+                            WalletActivity.show(
+                                requireActivity(),
+                                WalletActivity.Destination.SearchWeb3(dest.walletId)
+                            )
+                        }
+                    }
+                    is WalletDestination.Classic -> {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Classic) {
+                            WalletActivity.show(
+                                requireActivity(),
+                                WalletActivity.Destination.SearchWeb3(dest.walletId)
+                            )
+                        }
+                    }
+                    null -> WalletActivity.show(
+                        requireActivity(),
+                        WalletActivity.Destination.Search
+                    ) // Default
                 }
             }
             compose.setContent {
                 AssetDashboardScreen(
-                    onWalletCardClick = ::handleWalletCardClick
+                    onWalletCardClick = ::handleWalletCardClick,
+                    onAddWalletClick = ::handleAddWalletClick
                 )
             }
 
             titleRl.setOnClickListener {
+                badge.isVisible = false
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
                 if (compose.isVisible.not()) {
-
-
                     compose.visibility = VISIBLE
-
                     val centerX = titleTv.x.toInt() + titleTv.width / 2
                     val centerY = titleTv.y.toInt() + titleTv.height / 2
                     val startRadius = 0
@@ -179,29 +269,176 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             migrateEnable = it
         }
         checkPin()
+        RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (event.type != WalletOperationType.RENAME) return@subscribe
+                val currentDestination = selectedWalletDestination
+                when (currentDestination) {
+                    is WalletDestination.Classic -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    is WalletDestination.Import -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    is WalletDestination.Watch -> {
+                        if (currentDestination.walletId == event.walletId) {
+                            updateUi(currentDestination)
+                        }
+                    }
+
+                    else -> {
+                        // Do nothing for Privacy wallet or null destination
+                    }
+                }
+            }
+    }
+
+    private fun updateUi(destination: WalletDestination) {
+        Timber.e("updateUi called with destination: $destination")
+        when (destination) {
+            is WalletDestination.Privacy -> {
+                childFragmentManager.beginTransaction()
+                    .hide(classicWalletFragment)
+                    .show(privacyWalletFragment)
+                    .commit()
+                binding.titleTv.setText(R.string.Privacy_Wallet)
+                binding.tailIcon.setImageResource(R.drawable.ic_wallet_privacy)
+                binding.tailIcon.isVisible = true
+            }
+            is WalletDestination.Classic -> {
+                childFragmentManager.beginTransaction()
+                .hide(privacyWalletFragment)
+                    .show(classicWalletFragment)
+                    .commit()
+                binding.titleTv.setText(R.string.Common_Wallet)
+                binding.tailIcon.isVisible = false
+                lifecycleScope.launch {
+                    walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleRl.requestLayout()
+                    } ?: run {
+                        binding.titleTv.setText(R.string.Common_Wallet)
+                    }
+                }
+            }
+            is WalletDestination.Watch -> {
+                childFragmentManager.beginTransaction()
+                    .hide(privacyWalletFragment)
+                    .show(classicWalletFragment)
+                    .commit()
+                binding.titleTv.setText(R.string.Watch_Wallet)
+                binding.tailIcon.isVisible = false
+                lifecycleScope.launch {
+                    walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
+                        binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
+                        binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Watch_Wallet) }
+                        binding.titleRl.requestLayout()
+                    } ?: run {
+                        binding.titleTv.setText(R.string.Watch_Wallet)
+                        binding.tailIcon.isVisible = false
+                    }
+                }
+            }
+            is WalletDestination.Import -> {
+                childFragmentManager.beginTransaction()
+                    .hide(privacyWalletFragment)
+                    .show(classicWalletFragment)
+                    .commit()
+                binding.titleTv.setText(R.string.Common_Wallet)
+                binding.tailIcon.isVisible = false
+                lifecycleScope.launch {
+                    walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
+                        binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
+                        binding.tailIcon.isVisible = false
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleRl.requestLayout()
+                    } ?: run {
+                        binding.titleTv.setText(R.string.Common_Wallet)
+                        binding.tailIcon.isVisible = false
+                    }
+                }
+            }
+        }
     }
 
     private var migrateEnable = false
 
-    private fun handleWalletCardClick(destination: WalletDestination, walletId: String?) {
-        when (destination) {
-            WalletDestination.Privacy -> {
-                defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, WalletDestination.Privacy.name)
-                currentType = WalletDestination.Privacy.name
-                requireActivity().replaceFragment(privacyWalletFragment, R.id.wallet_container, PrivacyWalletFragment.TAG)
-                binding.titleTv.setText(R.string.Privacy_Wallet)
-                binding.tailIcon.isVisible = true
-                binding.badge.isVisible = false
+    private fun handleAddWalletClick() {
+        val callback: (AddWalletBottomSheetDialogFragment.Action) -> Unit = { action ->
+            val intent = Intent(requireContext(), WalletSecurityActivity::class.java)
+            val mode = when (action) {
+                AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT_MNEMONIC
+                AddWalletBottomSheetDialogFragment.Action.IMPORT_PRIVATE_KEY -> WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
+                AddWalletBottomSheetDialogFragment.Action.ADD_WATCH_ADDRESS -> WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
+                AddWalletBottomSheetDialogFragment.Action.CREATE_WALLET -> WalletSecurityActivity.Mode.CREATE_WALLET
             }
-            WalletDestination.Classic -> {
-                defaultSharedPreferences.putString(Constants.Account.PREF_HAS_USED_WALLET, walletId)
-                currentType = WalletDestination.Classic.name
-                classicWalletId = walletId
-                classicWalletFragment.walletId = walletId ?: ""
-                requireActivity().replaceFragment(classicWalletFragment, R.id.wallet_container, ClassicWalletFragment.TAG)
-                binding.titleTv.setText(R.string.Common_Wallet)
-                binding.tailIcon.isVisible = false
-                binding.badge.isVisible = false
+            intent.putExtra(WalletSecurityActivity.EXTRA_MODE, mode.ordinal)
+            startActivity(intent)
+        }
+
+        if (!Session.saltExported() && Session.isAnonymous()) {
+            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance().apply {
+                laterCallback = {
+                    if (this@WalletFragment.isAdded) {
+                        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                        dialog.callback = callback
+                        dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+                    }
+                }
+            }.show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+        } else {
+            val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+            dialog.callback = callback
+            dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+        }
+    }
+
+    private fun handleWalletCardClick(destination: WalletDestination) {
+        selectedWalletDestination = destination
+        when (destination) {
+            is WalletDestination.Classic -> {
+                destination.walletId
+            }
+
+            is WalletDestination.Import -> {
+                destination.walletId
+            }
+
+            is WalletDestination.Watch -> {
+                destination.walletId
+            }
+
+            else -> {
+                null
+            }
+        }?.let { wallet ->
+            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
+        }
+        if (destination is WalletDestination.Classic || destination is WalletDestination.Import) {
+            val walletId = if (destination is WalletDestination.Classic) {
+                destination.walletId
+            } else {
+                (destination as WalletDestination.Import).walletId
+            }
+            lifecycleScope.launch(Dispatchers.IO) {
+                val wallet = walletViewModel.findWalletById(walletId)
+                if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
+                    Web3Signer.setWallet(walletId, wallet.category) { queryWalletId ->
+                        runBlocking { walletViewModel.getAddresses(queryWalletId) }
+                    }
+                    withContext(Dispatchers.Main) {
+                        reloadWebViewInClips()
+                    }
+                }
             }
         }
         closeMenu()
@@ -245,6 +482,144 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             false
         }
     }
+
+    private var _importBottomBinding: ViewImportWalletBottomBinding? = null
+    private val importBottomBinding get() = requireNotNull(_importBottomBinding)
+    @SuppressLint("InflateParams")
+    private fun showImportBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        if (_importBottomBinding == null) {
+            _importBottomBinding = ViewImportWalletBottomBinding.bind(
+                View.inflate(
+                    ContextThemeWrapper(
+                        requireActivity(),
+                        R.style.Custom
+                    ), R.layout.view_import_wallet_bottom, null
+                )
+            )
+        }
+        builder.setCustomView(importBottomBinding.root)
+        val bottomSheet = builder.create()
+        importBottomBinding.title.text = binding.titleTv.text.toString()
+
+        val dest = selectedWalletDestination
+        importBottomBinding.privateKey.isVisible = dest is WalletDestination.Import && dest.category != WalletCategory.WATCH_ADDRESS.value
+        importBottomBinding.mnemonicPhrase.isVisible = dest is WalletDestination.Import && dest.category == WalletCategory.IMPORTED_MNEMONIC.value
+        importBottomBinding.rename.isVisible = dest is WalletDestination.Import || dest is WalletDestination.Watch
+        if (dest is WalletDestination.Import) {
+            lifecycleScope.launch {
+                val wallet = walletViewModel.findWalletById(dest.walletId)
+                val hasPrivateKey = wallet?.hasLocalPrivateKey == true
+                importBottomBinding.privateKey.isVisible = hasPrivateKey
+                importBottomBinding.mnemonicPhrase.isVisible = hasPrivateKey && wallet.category == WalletCategory.IMPORTED_MNEMONIC.value
+            }
+            importBottomBinding.privateKey.setOnClickListener {
+                ChainSelectionBottomSheetDialogFragment.newInstance(dest.walletId).apply {
+                    callback = { chainItem ->
+                        WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.VIEW_PRIVATE_KEY, chainItem.chainId, dest.walletId)
+                    }
+                }.show(parentFragmentManager, ChainSelectionBottomSheetDialogFragment.TAG)
+                bottomSheet.dismiss()
+            }
+        }
+        importBottomBinding.hide.setOnClickListener {
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Import) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
+            } else if (dest is WalletDestination.Watch) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
+            }
+            bottomSheet.dismiss()
+        }
+        importBottomBinding.transactionsTv.setOnClickListener {
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Import) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+            } else if (dest is WalletDestination.Watch) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+            }
+            bottomSheet.dismiss()
+        }
+
+        importBottomBinding.mnemonicPhrase.setOnClickListener {
+            WalletSecurityActivity.show(
+                requireActivity(), WalletSecurityActivity.Mode.VIEW_MNEMONIC, walletId = if (dest is WalletDestination.Import) {
+                    dest.walletId
+                } else {
+                    null
+                }
+            )
+            bottomSheet.dismiss()
+        }
+        importBottomBinding.delete.setOnClickListener {
+            VerifyBottomSheetDialogFragment.newInstance(
+                getString(R.string.delete_wallet_title),
+                disableBiometric = true,
+                isHintRed = true,
+                subtitle = getString(
+                    if (dest is WalletDestination.Import) R.string.delete_common_wallet_description
+                    else R.string.delete_watch_wallet_description,
+                ),
+            ).apply {
+                disableToast = true
+            }.setOnPinSuccess { _ ->
+                deleteWallet()
+            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+            bottomSheet.dismiss()
+        }
+        importBottomBinding.rename.setOnClickListener {
+            editDialog {
+                titleText = this@WalletFragment.getString(R.string.rename_wallet)
+                editText = binding.titleTv.text.toString()
+                maxTextCount = 32
+                allowEmpty = false
+                rightAction = { newName ->
+                    this@WalletFragment.lifecycleScope.launch {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Import) {
+                            walletViewModel.renameWallet(dest.walletId, newName)
+                            updateUi(dest)
+                        } else if (dest is WalletDestination.Watch) {
+                            walletViewModel.renameWallet(dest.walletId, newName)
+                            updateUi(dest)
+                        }
+                    }
+                }
+            }
+            bottomSheet.dismiss()
+        }
+        bottomSheet.show()
+    }
+
+    private fun deleteWallet() {
+        val dialog = indeterminateProgressDialog(R.string.Please_wait_a_bit).apply {
+            setCancelable(false)
+        }
+        dialog.show()
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            dialog.dismiss()
+            Timber.e(error)
+        }) {
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Import) {
+                walletViewModel.deleteWallet(dest.walletId)
+                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
+            } else if (dest is WalletDestination.Watch) {
+                walletViewModel.deleteWallet(dest.walletId)
+                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
+            }
+            dialog.dismiss()
+            withContext(Dispatchers.IO) {
+                Web3Signer.setWallet(Web3Signer.classicWalletId, WalletCategory.CLASSIC.value) { queryWalletId ->
+                    runBlocking { walletViewModel.getAddresses(queryWalletId) }
+                }
+                withContext(Dispatchers.Main) {
+                    reloadWebViewInClips()
+                }
+            }
+        }
+    }
+
     private var _privacyBottomBinding: ViewPrivacyWalletBottomBinding? = null
     private val privacyBottomBinding get() = requireNotNull(_privacyBottomBinding)
 
@@ -252,7 +627,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun showPrivacyBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         if (_privacyBottomBinding == null) {
-            _privacyBottomBinding = ViewPrivacyWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_privacy_wallet_bottom, null))
+            _privacyBottomBinding = ViewPrivacyWalletBottomBinding.bind(
+                View.inflate(
+                    ContextThemeWrapper(
+                        requireActivity(),
+                        R.style.Custom
+                    ), R.layout.view_privacy_wallet_bottom, null
+                )
+            )
         }
         builder.setCustomView(privacyBottomBinding.root)
         val bottomSheet = builder.create()
@@ -283,16 +665,47 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun showClassicBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         if (_classicBottomBinding == null) {
-            _classicBottomBinding = ViewClassicWalletBottomBinding.bind(View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_classic_wallet_bottom, null))
+            _classicBottomBinding = ViewClassicWalletBottomBinding.bind(
+                View.inflate(
+                    ContextThemeWrapper(
+                        requireActivity(),
+                        R.style.Custom
+                    ), R.layout.view_classic_wallet_bottom, null
+                )
+            )
         }
         builder.setCustomView(classicBottomBinding.root)
         val bottomSheet = builder.create()
         classicBottomBinding.hide.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden)
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Classic) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.Web3Hidden(dest.walletId))
+            }
             bottomSheet.dismiss()
         }
         classicBottomBinding.transactionsTv.setOnClickListener {
-            WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions)
+            val dest = selectedWalletDestination
+            if (dest is WalletDestination.Classic) {
+                WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(dest.walletId))
+            }
+            bottomSheet.dismiss()
+        }
+        classicBottomBinding.rename.setOnClickListener {
+            editDialog {
+                titleText = this@WalletFragment.getString(R.string.rename_wallet)
+                editText = binding.titleTv.text.toString()
+                maxTextCount = 32
+                allowEmpty = false
+                rightAction = { newName ->
+                    this@WalletFragment.lifecycleScope.launch {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Classic) {
+                            walletViewModel.renameWallet(dest.walletId, newName)
+                            updateUi(dest)
+                        }
+                    }
+                }
+            }
             bottomSheet.dismiss()
         }
         bottomSheet.show()

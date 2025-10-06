@@ -79,7 +79,7 @@ import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
-import one.mixin.android.ui.wallet.InputFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.addPinShortcut
@@ -231,7 +231,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     .apply {
                         setOnAssetClick { selectedAsset ->
                             requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
-                            navTo(InputFragment.newInstance(selectedAsset, user), InputFragment.TAG)
+                            WalletActivity.showInputForUser(requireActivity(), selectedAsset, user)
                         }
                     }.show(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
                 this@UserBottomSheetDialogFragment.dismiss()

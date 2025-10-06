@@ -68,14 +68,15 @@ sealed class TipSignSpec(
 
 sealed class TipSignAction(open val spec: TipSignSpec) {
     data class Public(override val spec: TipSignSpec) : TipSignAction(spec) {
-        operator fun invoke(priv: ByteArray) = spec.public(tipPrivToPrivateKey(priv))
+        // TODO: to be modified
+        operator fun invoke(priv: ByteArray) = spec.public(tipPrivToPrivateKey(priv, index = 0))
     }
 
     data class Signature(override val spec: TipSignSpec) : TipSignAction(spec) {
         operator fun invoke(
             priv: ByteArray,
             data: ByteArray,
-        ) = spec.sign(tipPrivToPrivateKey(priv), data)
+        ) = spec.sign(tipPrivToPrivateKey(priv, index = 0), data)     // TODO: to be modified
     }
 }
 
@@ -109,13 +110,14 @@ private fun matchTipSignSpec(
 fun tipPrivToPrivateKey(
     priv: ByteArray,
     chainId: String = Constants.ChainId.ETHEREUM_CHAIN_ID,
+    index: Int,
 ): ByteArray {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
 
     when (chainId) {
         Constants.ChainId.SOLANA_CHAIN_ID -> {
-            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString(), Bip44Path.solanaPathString(index))
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
             val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
             val kp = Keypair.fromSecretKey(seed)
             val address = kp.publicKey.toBase58()
@@ -125,8 +127,8 @@ fun tipPrivToPrivateKey(
             return kp.secret
         }
         else -> {
-            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString(), Bip44Path.ethereumPathString(index))
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.ethereum(index))
             val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
             if (address != addressFromGo) {
                 throw IllegalArgumentException("Generate illegal Ethereum Address")
@@ -140,24 +142,25 @@ fun tipPrivToPrivateKey(
 fun privateKeyToAddress(
     priv: ByteArray,
     chainId: String,
+    index: Int = 0,
 ): String {
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
     when (chainId) {
         Constants.ChainId.ETHEREUM_CHAIN_ID -> {
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Ethereum)
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.ethereum(index))
             val address = Keys.toChecksumAddress(Keys.getAddress(bip44KeyPair.publicKey))
-            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString())
+            val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString(), Bip44Path.ethereumPathString(index))
             if (address != addressFromGo) {
                 throw IllegalArgumentException("Generate illegal Address")
             }
             return address
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
-            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.Solana)
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
             val seed = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
             val kp = Keypair.fromSecretKey(seed)
             val address = kp.publicKey.toBase58()
-            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString())
+            val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString(), Bip44Path.solanaPathString(index))
             if (address != addressFromGo) {
                 throw IllegalArgumentException("Generate illegal Solana Address")
             }

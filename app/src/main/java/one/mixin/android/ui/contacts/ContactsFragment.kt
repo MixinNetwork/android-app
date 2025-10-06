@@ -30,6 +30,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
@@ -228,8 +229,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
             override fun onReceiveQr(self: User?) {
                 self?.let {
-                    QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
-                        .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                    ReceiveQrActivity.show(requireContext(), it.userId)
                 }
             }
         }

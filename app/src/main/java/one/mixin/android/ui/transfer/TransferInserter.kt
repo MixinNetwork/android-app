@@ -571,7 +571,7 @@ class TransferInserter(val db: MixinDatabase) {
 
     fun insertIgnore(token: Token) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `tokens` (`asset_id`,`kernel_asset_id`,`symbol`,`name`,`icon_url`,`price_btc`,`price_usd`,`chain_id`,`change_usd`,`change_btc`,`confirmations`,`asset_key`,`dust`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `tokens` (`asset_id`,`kernel_asset_id`,`symbol`,`name`,`icon_url`,`price_btc`,`price_usd`,`chain_id`,`change_usd`,`change_btc`,`confirmations`,`asset_key`,`dust`,`collection_hash`,`precision`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
         try {
             stmt.bindString(1, token.assetId)
             stmt.bindString(2, token.asset)
@@ -586,6 +586,12 @@ class TransferInserter(val db: MixinDatabase) {
             stmt.bindLong(11, token.confirmations.toLong())
             stmt.bindString(12, token.assetKey)
             stmt.bindString(13, token.dust)
+            if (token.collectionHash == null) {
+                stmt.bindNull(14)
+            } else {
+                stmt.bindString(14, token.collectionHash)
+            }
+            stmt.bindLong(15, token.precision.toLong())
             stmt.executeInsert()
             primaryId = token.assetId
             assistanceId = null
@@ -671,7 +677,7 @@ class TransferInserter(val db: MixinDatabase) {
 
     fun insertIgnore(safeSnapshot: SafeSnapshot) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `safe_snapshots` (`snapshot_id`,`type`,`asset_id`,`amount`,`user_id`,`opponent_id`,`memo`,`transaction_hash`,`created_at`,`trace_id`,`confirmations`,`opening_balance`,`closing_balance`,`deposit`,`withdrawal`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `safe_snapshots` (`snapshot_id`,`type`,`asset_id`,`amount`,`user_id`,`opponent_id`,`memo`,`transaction_hash`,`created_at`,`trace_id`,`confirmations`,`opening_balance`,`closing_balance`,`deposit`,`withdrawal`,`inscription_hash`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
         try {
             stmt.bindString(1, safeSnapshot.snapshotId)
             stmt.bindString(2, safeSnapshot.type)
@@ -713,6 +719,11 @@ class TransferInserter(val db: MixinDatabase) {
                 stmt.bindNull(15)
             } else {
                 stmt.bindString(15, tmpWithdrawal)
+            }
+            if (safeSnapshot.inscriptionHash == null) {
+                stmt.bindNull(16)
+            } else {
+                stmt.bindString(16, safeSnapshot.inscriptionHash)
             }
             stmt.executeInsert()
             primaryId = safeSnapshot.snapshotId

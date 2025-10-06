@@ -13,11 +13,11 @@ import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.ErrorHandler
 import org.sol4k.exception.RpcException
 import javax.inject.Inject
@@ -38,7 +38,8 @@ class BrowserWalletBottomSheetViewModel
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToPrivateKey(spendKey, chainId)
+            val privateKey = CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId)
+            return requireNotNull(privateKey) { "Failed to get private key" }
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
@@ -60,7 +61,7 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(
-                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
+                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx, null)) },
                 successBlock = {
                     it.data
                 },
@@ -103,7 +104,7 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
 
-        suspend fun web3TokenItemById(assetId: String) = withContext(Dispatchers.IO) {
-            web3Repository.web3TokenItemById(assetId)
+        suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(walletId, assetId)
         }
     }

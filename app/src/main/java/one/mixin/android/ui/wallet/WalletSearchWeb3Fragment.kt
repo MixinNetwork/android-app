@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.Config
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
@@ -22,11 +21,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.navigate
@@ -35,7 +31,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
-import timber.log.Timber
+import one.mixin.android.web3.js.Web3Signer
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -44,6 +40,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         const val POS_DEFAULT = 0
         const val POS_SEARCH = 1
         const val POS_EMPTY = 2
+        const val ARGS_WALLET_ID = "args_wallet_id"
         private const val TAG = "WalletSearchWeb3"
     }
 
@@ -52,6 +49,8 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
     private val viewModel by viewModels<Web3ViewModel>()
     private val walletViewModel by viewModels<WalletViewModel>()
+
+    private val walletId by lazy { requireArguments().getString(ARGS_WALLET_ID) }
 
     private val searchAdapter by lazy {
         SearchWeb3Adapter()
@@ -133,8 +132,13 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             if (viewDestroyed()) return@launch
             
             binding.pb.isVisible = true
-            val tokens = withContext(Dispatchers.IO) { 
-                val allTokens = viewModel.web3TokensExcludeHidden().value ?: emptyList()
+            if (walletId.isNullOrEmpty()) {
+                binding.rvVa.displayedChild = POS_EMPTY
+                binding.pb.isVisible = false
+                return@launch
+            }
+            val tokens = withContext(Dispatchers.IO) {
+                val allTokens = viewModel.web3TokensExcludeHidden(walletId!!).value ?: emptyList()
                 allTokens.sortedByDescending {
                     runCatching { it.balance.toBigDecimal() * it.priceUsd.toBigDecimal() }.getOrDefault(0.toBigDecimal())
                 }
@@ -176,8 +180,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             binding.pb.isVisible = true
             isSearchingRemote = false
 
+            if (walletId.isNullOrEmpty()) {
+                binding.rvVa.displayedChild = POS_EMPTY
+                binding.pb.isVisible = false
+                return@launch
+            }
+
             val localTokens = withContext(Dispatchers.IO) {
-                viewModel.web3TokensExcludeHidden().value?.filter { token ->
+                viewModel.web3TokensExcludeHidden(walletId!!).value?.filter { token ->
                     token.name.contains(query, ignoreCase = true) ||
                         token.symbol.contains(query, ignoreCase = true) ||
                         token.chainName?.contains(query, ignoreCase = true) == true
@@ -204,7 +214,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         
         try {
             val remoteTokens = withContext(Dispatchers.IO) {
-                walletViewModel.queryAsset(query, true)
+                walletViewModel.queryAsset(walletId, query, true)
             }
 
             if (remoteTokens.isNotEmpty() && isSearchingRemote) {
@@ -212,9 +222,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                     it.chainId in Constants.Web3ChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID
                 }
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
-                    val t = viewModel.web3TokenItemById(tokenItem.assetId)
+                    val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)
                     Web3TokenItem(
-                        walletId = t?.walletId ?: "",
+                        walletId = walletId!!,
                         assetId = tokenItem.assetId,
                         chainId = tokenItem.chainId,
                         name = tokenItem.name,
@@ -226,14 +236,13 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         balance = t?.balance ?: "0",
                         priceUsd = tokenItem.priceUsd,
                         changeUsd = tokenItem.changeUsd,
-                        chainIcon = tokenItem.chainIconUrl,
+                        chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon,
                         chainName = tokenItem.chainName,
                         chainSymbol = tokenItem.chainSymbol,
                         hidden = false,
                         level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
-                
                 val currentList = searchAdapter.currentList
 
                 val combinedList = currentList + remoteWeb3Tokens.filter { remote ->
@@ -263,10 +272,10 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             override fun onTokenClick(token: Web3TokenItem) {
                 binding.searchEt.hideKeyboard()
                 lifecycleScope.launch {
-                    val address = if (token.isSolana()) {
-                        PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
+                    val address = if (token.isSolanaChain()) {
+                        Web3Signer.solanaAddress
                     } else {
-                        PropertyHelper.findValueByKey(EVM_ADDRESS, "")
+                        Web3Signer.evmAddress
                     }
                     view?.navigate(
                         R.id.action_wallet_search_web3_to_web3_transactions,

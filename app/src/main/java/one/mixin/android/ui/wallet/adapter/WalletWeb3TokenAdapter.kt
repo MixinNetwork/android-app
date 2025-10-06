@@ -5,21 +5,18 @@ import android.content.ClipData
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
@@ -102,13 +99,13 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
                 try {
                     if (asset.balance.isBlank()) {
                         "0.00"
-                    } else if (asset.balance.numberFormat().toFloat() == 0f) {
+                    } else if (asset.balance.numberFormat8().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        asset.balance.numberFormat()
+                        asset.balance.numberFormat8()
                     }
                 } catch (ignored: NumberFormatException) {
-                    asset.balance.numberFormat()
+                    asset.balance.numberFormat8()
                 }
             binding.symbolTv.text = asset.symbol
             binding.icSpam.isVisible = asset.isSpam()

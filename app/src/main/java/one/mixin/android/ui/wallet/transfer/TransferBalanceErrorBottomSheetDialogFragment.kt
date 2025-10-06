@@ -2,28 +2,31 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferBalanceErrorBottomSheetBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navTo
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
-import one.mixin.android.util.viewBinding
-import one.mixin.android.widget.BottomSheet
-import kotlin.getValue
-import one.mixin.android.R
-import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -52,6 +55,11 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
+        binding.root.roundTopOrBottom(12.dp.toFloat(), true, false)
+        val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
+        drawable?.setBounds(0, 0, 22.dp, 22.dp)
+        binding.walletTv.compoundDrawablePadding = 4.dp
+        binding.walletTv.setCompoundDrawablesRelative(null, null, drawable, null)
         dialog.setCanceledOnTouchOutside(false)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
@@ -102,7 +110,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                                     )
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                    navTo(DepositFragment.newInstance(fee), DepositFragment.TAG)
+                                    WalletActivity.showDeposit(requireActivity(),asset)
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 }
                             }
@@ -129,7 +137,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                                     )
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                    navTo(DepositFragment.newInstance(asset), DepositFragment.TAG)
+                                    WalletActivity.showDeposit(requireActivity(),asset)
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 }
                             }

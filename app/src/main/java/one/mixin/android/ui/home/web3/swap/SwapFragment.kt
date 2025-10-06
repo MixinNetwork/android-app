@@ -39,14 +39,11 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.solanaNativeTokenAssetKey
-import one.mixin.android.db.web3.vo.wrappedSolTokenAssetKey
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
-import one.mixin.android.extension.getList
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -82,7 +79,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
@@ -94,12 +91,12 @@ class SwapFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
-        const val ARGS_TOKEN_ITEMS = "args_token_items"
         const val ARGS_INPUT = "args_input"
         const val ARGS_OUTPUT = "args_output"
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
+        const val ARGS_WALLET_ID = "args_wallet_id"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -109,36 +106,20 @@ class SwapFragment : BaseFragment() {
         const val maxLeftAmount = 0.01
 
         inline fun <reified T : Swappable> newInstance(
-            tokens: List<T>? = null,
             input: String? = null,
             output: String? = null,
             amount: String? = null,
             inMixin: Boolean = true,
             referral: String? = null,
+            walletId: String? = null,
         ): SwapFragment =
             SwapFragment().withArgs {
-                when (T::class) {
-                    Web3TokenItem::class -> {
-                        putParcelableArrayList(ARGS_WEB3_TOKENS, arrayListOf<T>().apply {
-                            if (tokens != null) {
-                                addAll(tokens)
-                            }
-                        })
-                    }
-
-                    TokenItem::class -> {
-                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<T>().apply {
-                            if (tokens != null) {
-                                addAll(tokens)
-                            }
-                        })
-                    }
-                }
                 input?.let { putString(ARGS_INPUT, it) }
                 output?.let { putString(ARGS_OUTPUT, it) }
                 amount?.let { putString(ARGS_AMOUNT, it) }
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
+                walletId?.let { putString(ARGS_WALLET_ID, it) }
             }
     }
 
@@ -161,6 +142,7 @@ class SwapFragment : BaseFragment() {
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
     private var reviewing: Boolean by mutableStateOf(false)
+    private val walletId: String? by lazy { arguments?.getString(ARGS_WALLET_ID) }
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -169,7 +151,7 @@ class SwapFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
+        orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
@@ -223,6 +205,7 @@ class SwapFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapPage(
+                                walletId = walletId,
                                 from = fromToken,
                                 to = toToken,
                                 inMixin = inMixin(),
@@ -248,10 +231,11 @@ class SwapFragment : BaseFragment() {
                                     if (inMixin()) {
                                         deposit(token.assetId)
                                     } else {
-                                        navTo(
-                                            Web3AddressFragment.newInstance(if (token.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress),
-                                            Web3AddressFragment.TAG
-                                        )
+                                        this@SwapFragment.lifecycleScope.launch {
+                                            val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
+                                            val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                                            navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
+                                        }
                                     }
                                 },
                                 onOrderList = {
@@ -259,7 +243,7 @@ class SwapFragment : BaseFragment() {
                                     if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
                                         defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
                                         orderBadge = false
-                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
+                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP_TRANSACTION))
                                     }
                                 },
                                 pop = {
@@ -272,6 +256,7 @@ class SwapFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapOrderListPage(
+                                walletId = walletId,
                                 pop = {
                                     navigateUp(navController)
                                 },
@@ -285,6 +270,7 @@ class SwapFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
                                 SwapOrderDetailPage(
+                                    walletId = walletId,
                                     orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
                                     onShare = { payAssetId, receiveAssetId ->
                                         lifecycleScope.launch {
@@ -349,11 +335,20 @@ class SwapFragment : BaseFragment() {
                     ArrayList(
                         list,
                     ),
-                    isFrom = true
+                    isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        navTo(Web3AddressFragment.newInstance(JsSigner.evmAddress), Web3AddressFragment.TAG)
-                        dismissNow()
+                        this@SwapFragment.lifecycleScope.launch {
+                            val t = swapViewModel.getTokenByWalletAndAssetId(
+                                Web3Signer.currentWalletId, if (Web3Signer.evmAddress.isBlank()) {
+                                    Constants.ChainId.SOLANA_CHAIN_ID
+                                } else {
+                                    Constants.ChainId.ETHEREUM_CHAIN_ID
+                                }) ?: return@launch
+                            val address = if (t.isSolanaChain()) { Web3Signer.solanaAddress } else { Web3Signer.evmAddress }
+                            navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
+                            dismissNow()
+                        }
                     }
                     setOnClickListener { token, alert ->
                         if (alert) {
@@ -378,7 +373,7 @@ class SwapFragment : BaseFragment() {
                 if (inMixin()) {
                     if (isReverse) fromToken?.assetId else toToken?.assetId
                 } else null,
-                isFrom = false
+                isFrom = false,
             ).apply {
                 if (list.isEmpty()) {
                     setLoading(true)
@@ -614,7 +609,7 @@ class SwapFragment : BaseFragment() {
                         quote.payload,
                         getSource(),
                         if (inMixin()) null else {
-                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                            if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                         },
                         getReferral(),
                     )
@@ -637,9 +632,6 @@ class SwapFragment : BaseFragment() {
             openSwapTransfer(resp, from, to)
         } else {
             AnalyticsTracker.trackSwapPreview()
-            val token = swapViewModel.web3TokenItemById(from.assetId) ?: return
-            val chainToken = swapViewModel.web3TokenItemById(from.chain.chainId) ?: return
-            val depositDestination = resp.depositDestination ?: return
             openSwapTransfer(resp, from, to)
         }
     }
@@ -673,13 +665,22 @@ class SwapFragment : BaseFragment() {
     }
 
     private suspend fun initFromTo() {
-        tokenItems = requireArguments().getParcelableArrayListCompat(ARGS_TOKEN_ITEMS, TokenItem::class.java)
         var swappable = web3tokens ?: tokenItems
         if (!inMixin() && web3tokens.isNullOrEmpty()) {
-            swappable = swapViewModel.findWeb3AssetItemsWithBalance()
+            if (walletId == null) {
+                toast(R.string.Data_error)
+                return
+            }
+            swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
+            if (swappable.isEmpty()) {
+                swappable = swapViewModel.findWeb3AssetItems(walletId!!)
+            }
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.findAssetItemsWithBalance()
+            if (swappable.isEmpty()) {
+                swappable = swapViewModel.findAssetItems()
+            }
             tokenItems = swappable
         }
         swappable.map { it.toSwapToken() }.toList().let {
@@ -697,35 +698,30 @@ class SwapFragment : BaseFragment() {
             val lastTo = lastSelectedPair?.getOrNull(1)
 
             fromToken = if (input != null) {
-                swapViewModel.findToken(input)?.toSwapToken() ?: swapViewModel.web3TokenItemById(input)?.toSwapToken()
-            } else lastFrom
-                ?: (tokens.firstOrNull { it.getUnique() == USDT_ASSET_ETH_ID }
-                    ?: tokens.firstOrNull())?.toSwapToken()
-
+                if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
+            } else if (lastFrom != null) {
+                if (inMixin()) swapViewModel.findToken(lastFrom.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastFrom.assetId)?.toSwapToken()
+            } else {
+                (tokens.firstOrNull { t -> t.getUnique() in Constants.usdIds })?.toSwapToken()
+            }
             toToken = if (output != null) {
-                swapViewModel.findToken(output)?.toSwapToken() ?: swapViewModel.web3TokenItemById(
-                    output
-                )?.toSwapToken()
+                if (inMixin()) swapViewModel.findToken(output)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, output)?.toSwapToken()
             } else if (input != null) {
-                val o = if (input == USDT_ASSET_ETH_ID) {
+                val o = if (input in Constants.usdIds) {
                     XIN_ASSET_ID
                 } else {
                     USDT_ASSET_ETH_ID
                 }
-                swapViewModel.findToken(o)?.toSwapToken() ?: swapViewModel.web3TokenItemById(o)
-                    ?.toSwapToken()
-            } else lastTo
-                ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }
-                    ?.toSwapToken()
+                if (inMixin()) swapViewModel.findToken(o)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, o)?.toSwapToken()
+            } else if (lastTo != null) {
+                if (inMixin()) swapViewModel.findToken(lastTo.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastTo.assetId)?.toSwapToken()
+            } else {
+                (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds })?.toSwapToken()
+            }
             if (toToken?.getUnique() == fromToken?.getUnique()) {
-                toToken = tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() }?.toSwapToken()
+                toToken = (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() })?.toSwapToken()
             }
         }
-    }
-
-    private val saveSwapTokens by lazy {
-        if (inMixin()) defaultSharedPreferences.getList(Account.PREF_FROM_SWAP, SwapToken::class.java) + defaultSharedPreferences.getList(Account.PREF_TO_SWAP, SwapToken::class.java)
-        else emptyList()
     }
 
     private suspend fun refreshTokens() {
@@ -757,9 +753,9 @@ class SwapFragment : BaseFragment() {
             },
         )?.let { remote ->
             if (!inMixin()) {
-                remoteSwapTokens = remote.map { it.copy(isWeb3 = true) }.map { token ->
+                remoteSwapTokens = remote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
-                        web3Token.assetKey == token.address || (token.address == wrappedSolTokenAssetKey && web3Token.assetKey == solanaNativeTokenAssetKey)
+                        (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
                     } ?: return@map token
                     token.balance = t.balance
                     token
@@ -823,7 +819,7 @@ class SwapFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
-    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR }
+    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"}
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
     private fun getReferral(): String? = arguments?.getString(ARGS_REFERRAL)

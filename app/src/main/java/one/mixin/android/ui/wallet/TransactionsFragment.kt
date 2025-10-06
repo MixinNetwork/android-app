@@ -26,7 +26,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
@@ -47,7 +46,6 @@ import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.swap.SwapActivity
-import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
@@ -129,7 +127,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         binding.apply {
             sendReceiveView.swap.setOnClickListener {
                 lifecycleScope.launch {
-                    val assets = walletViewModel.allAssetItems()
+
                     val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {
@@ -139,9 +137,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     SwapActivity.show(
                         requireActivity(),
                         inMixin = true,
-                        tokens = assets.filter {
-                            (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
-                        },
                         input = asset.assetId,
                         output = output
                     )
@@ -264,9 +259,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
         walletViewModel.refreshAsset(asset.assetId)
         lifecycleScope.launch {
-            val depositEntry = walletViewModel.findDepositEntry(asset.chainId)
+            val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry != null && depositEntry.destination.isNotBlank()) {
-                refreshPendingDeposits(asset, depositEntry)
+                refreshPendingDeposits(asset)
             }
         }
     }
@@ -280,13 +275,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     private fun refreshPendingDeposits(
         asset: TokenItem,
-        depositEntry: DepositEntry,
     ) {
         if (viewDestroyed()) return
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = {
-                    walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
+                    walletViewModel.refreshPendingDeposits(asset.assetId)
                 },
                 exceptionBlock = { e ->
                     reportException(e)
@@ -294,19 +288,23 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 },
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {
-                        walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                        val pendingDeposits = list.data
-                        if (pendingDeposits.isNullOrEmpty()) {
-                            return@withContext
-                        }
-
-                        pendingDeposits.chunked(100) { chunk ->
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                chunk.map {
-                                    it.toSnapshot()
-                                }.let {
-                                    walletViewModel.insertPendingDeposit(it)
+                        val pendingDeposits = list.data ?: emptyList()
+                        val destinationTags = walletViewModel.findDepositEntryDestinations()
+                        pendingDeposits.filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }.map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear token pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
+                                return@let
+                            }
+                            lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct().forEach {
+                                    walletViewModel.findOrSyncAsset(it)
                                 }
+                                walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
                     }

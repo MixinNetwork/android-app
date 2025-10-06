@@ -12,6 +12,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.extension.base64Encode
@@ -108,6 +109,7 @@ abstract class PinCodeFragment(
             withContext(Dispatchers.IO) {
                 clearDatabase(requireContext())
             }
+            CryptoWalletHelper.clear(requireContext())
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.privateKey

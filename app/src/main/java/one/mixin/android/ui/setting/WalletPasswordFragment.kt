@@ -28,6 +28,7 @@ import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.tip.Processing
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipFragment
@@ -137,6 +138,10 @@ class WalletPasswordFragment :
                 tipTv.setText(getString(R.string.tip_create_pin_title))
                 max = 4
                 titleView.initProgress(max, 0)
+            }
+            titleView.setOnLongClickListener {
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
             }
             titleView.leftIb.setOnClickListener {
                 when (step) {

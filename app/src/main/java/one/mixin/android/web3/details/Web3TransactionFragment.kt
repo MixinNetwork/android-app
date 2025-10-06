@@ -21,6 +21,7 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
@@ -35,9 +36,11 @@ import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.details.Web3TransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.widget.BottomSheet
 import org.web3j.crypto.TransactionDecoder
@@ -50,15 +53,18 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         const val TAG = "Web3TransactionFragment"
         const val ARGS_TRANSACTION = "args_transaction"
         const val ARGS_CHAIN = "args_chain"
+        const val ARGS_WALLET = "args_wallet"
 
         fun newInstance(
             transaction: Web3TransactionItem,
             chain: String,
             web3Token: Web3TokenItem,
+            wallet: Web3Wallet,
         ) = Web3TransactionFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, transaction)
             putString(ARGS_CHAIN, chain)
             putParcelable(ARGS_TOKEN, web3Token)
+            putParcelable(ARGS_WALLET, wallet)
         }
     }
 
@@ -66,6 +72,10 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     private val web3ViewModel by viewModels<Web3ViewModel>()
     private val token: Web3TokenItem by lazy {
         requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)!!
+    }
+
+    private val wallet: Web3Wallet by lazy {
+        requireArguments().getParcelableCompat(ARGS_WALLET, Web3Wallet::class.java)!!
     }
 
     private val transaction by lazy {
@@ -112,6 +122,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
         binding.root.isClickable = true
         binding.apply {
+            if (wallet.category == WalletCategory.CLASSIC.value ||
+                wallet.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
+                wallet.category == WalletCategory.IMPORTED_MNEMONIC.value ||
+                wallet.category == WalletCategory.WATCH_ADDRESS.value) {
+                titleView.setSubTitle(getString(R.string.Transaction), wallet.name)
+            } else {
+                titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Common_Wallet))
+            }
             spamLl.isVisible = transaction.isNotVerified()
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
@@ -148,17 +166,28 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     getString(R.string.Approval)
                 }
                 else -> {
-                    buildAmountSymbol(
-                        requireContext(),
-                        formatAmountWithSign(mainAmount, transaction.transactionType == TransactionType.TRANSFER_IN.value),
-                        when (transaction.transactionType) {
-                            TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
-                            TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
-                            TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
-                            else -> ""
-                        },
-                        amountColor, symbolColor
-                    )
+                    if ((transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
+                        valueTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                        valueTv.setTypeface(valueTv.typeface, Typeface.BOLD)
+                        valueTv.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+                        if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
+                            getString(R.string.Send)
+                        } else {
+                            getString(R.string.Deposit)
+                        }
+                    } else {
+                        buildAmountSymbol(
+                            requireContext(),
+                            formatAmountWithSign(mainAmount, transaction.transactionType == TransactionType.TRANSFER_IN.value),
+                            when (transaction.transactionType) {
+                                TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
+                                TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
+                                TransactionType.TRANSFER_IN.value -> transaction.receiveAssetSymbol ?: ""
+                                else -> ""
+                            },
+                            amountColor, symbolColor
+                        )
+                    }
                 }
             }
 
@@ -239,11 +268,19 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
-                    avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    if (transaction.senders.size > 1) {
+                        avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
+                    } else {
+                        avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    }
                 }
 
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
-                    avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    if (transaction.receivers.size > 1) {
+                        avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
+                    } else {
+                        avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
+                    }
                 }
 
                 transaction.transactionType == TransactionType.SWAP.value -> {
@@ -281,32 +318,31 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 TransactionType.SWAP.value -> getString(R.string.Swap)
                 else -> transaction.transactionType
             }
-
-            if (transaction.transactionType == TransactionType.SWAP.value && transaction.senders.isNotEmpty()) {
-                assetChangesLl.visibility = View.VISIBLE
-                assetChangesContainer.setContent {
-                    AssetChangesList(
-                        status = transaction.status,
-                        senders = transaction.senders,
-                        receivers = transaction.receivers,
-                        fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(assetId)
-                        }
-                    )
-                }
-            } else if (transaction.transactionType == TransactionType.APPROVAL.value) {
+            if (transaction.transactionType == TransactionType.APPROVAL.value) {
                 assetChangesLl.visibility = View.VISIBLE
                 assetChangesTitle.setText(R.string.TOKEN_ACCESS_APPROVAL)
-                
+
                 assetChangesContainer.setContent {
                     AssetChangesList(
                         status = transaction.status,
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
-                            web3ViewModel.web3TokenItemById(assetId)
+                            web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId)
                         },
                         approvals = transaction.approvals,
+                    )
+                }
+            } else if (transaction.transactionType == TransactionType.SWAP.value || (transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
+                assetChangesLl.visibility = View.VISIBLE
+                assetChangesContainer.setContent {
+                    AssetChangesList(
+                        status = transaction.status,
+                        senders = if (transaction.transactionType == TransactionType.TRANSFER_IN.value) emptyList() else transaction.senders,
+                        receivers = if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) emptyList() else transaction.receivers,
+                        fetchToken = { assetId ->
+                            web3ViewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId)
+                        }
                     )
                 }
             } else {

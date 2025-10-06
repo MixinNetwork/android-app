@@ -1,9 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.graphics.RenderEffect
-import android.graphics.Shader
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,54 +8,43 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account
+import one.mixin.android.Constants.Account.PREF_HAS_USED_BUY
+import one.mixin.android.Constants.Account.PREF_HAS_USED_SWAP
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
-import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.QuoteColorEvent
-import one.mixin.android.extension.config
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.supportsS
-import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
-import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.swap.SwapActivity
-import one.mixin.android.ui.home.web3.swap.SwapFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
-import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
@@ -68,10 +54,12 @@ import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import one.mixin.android.widget.calcPercent
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.time.measureTime
 
 @AndroidEntryPoint
 class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
@@ -110,12 +98,38 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("onViewCreated called in PrivacyWalletFragment")
+        lifecycleScope.launch {
+            val queryDuration = measureTime {
+                val data = walletViewModel.assetItemsNotHiddenRaw()
+                assets = data
+                Timber.e("assetItemsNotHiddenRaw query completed: data size: ${data.size}")
+            }
+            Timber.e("assetItemsNotHiddenRaw query took: $queryDuration")
+            if (isAdded) {
+                assetsAdapter.setAssetList(assets)
+                if (lastFiatCurrency != Session.getFiatCurrency()) {
+                    lastFiatCurrency = Session.getFiatCurrency()
+                    assetsAdapter.notifyDataSetChanged()
+                }
+                var bitcoin = assets.find { a -> a.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }
+                if (bitcoin == null) {
+                    bitcoin = walletViewModel.findOrSyncAsset(Constants.ChainId.BITCOIN_CHAIN_ID)
+                }
+                renderPie(assets, bitcoin)
+            }
+        }
+
         binding.apply {
             _headBinding =
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
+                    sendReceiveView.isVisible = true
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
                         WalletActivity.showBuy(requireActivity(), false, null, null)
+                        defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
+                        RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
+                        sendReceiveView.buyBadge.isVisible = false
                     }
                     sendReceiveView.send.setOnClickListener {
                         AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
@@ -142,10 +156,9 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         SwapActivity.show(requireActivity(), inMixin = true)
-                        if (defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 0) {
-                            sendReceiveView.badge.isVisible = false
-                            RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP))
-                        }
+                        defaultSharedPreferences.putBoolean(PREF_HAS_USED_SWAP, false)
+                        RxBus.publish(BadgeEvent(PREF_HAS_USED_SWAP))
+                        sendReceiveView.swapBadge.isVisible = false
                     }
                 }
             assetsAdapter.headerView = _headBinding!!.root
@@ -172,6 +185,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
 
         walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
+            Timber.e("observe assetItemsNotHidden data size: ${it.size}")
             if (it.isEmpty()) {
                 setEmpty()
             } else {
@@ -217,20 +231,10 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 assetsAdapter.notifyDataSetChanged()
             }
 
-        val swap = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
-        _headBinding?.sendReceiveView?.badge?.isVisible = swap
-
-        RxBus.listen(BadgeEvent::class.java)
-            .autoDispose(destroyScope)
-            .subscribe { e ->
-                lifecycleScope.launch{
-                    when (e.badge) {
-                        Account.PREF_HAS_USED_SWAP -> {
-                            _headBinding?.sendReceiveView?.badge?.isVisible = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_SWAP, true) || defaultSharedPreferences.getInt(Constants.Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) == 0
-                        }
-                    }
-                }
-            }
+        val swap = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true)
+        _headBinding?.sendReceiveView?.swapBadge?.isVisible = swap
+        val buy = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true)
+        _headBinding?.sendReceiveView?.buyBadge?.isVisible = buy
     }
 
     override fun onResume() {
@@ -258,11 +262,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     false
                 },
                 successBlock = {
-                    val pendingDeposits = it.data
-                    if (pendingDeposits.isNullOrEmpty()) {
-                        walletViewModel.clearAllPendingDeposits()
-                        return@handleMixinResponse
-                    }
+                    val pendingDeposits = it.data ?: emptyList()
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
                     pendingDeposits
                         .filter { pd ->
@@ -271,8 +271,13 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             }
                         }
                         .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear all pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearAllPendingDeposits()
+                                return@let
+                            }
                             lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct()?.forEach {
+                                snapshots.map { it.assetId }.distinct().forEach {
                                     walletViewModel.findOrSyncAsset(it)
                                 }
                                 walletViewModel.insertPendingDeposit(snapshots)

@@ -7,5 +7,14 @@ data class Web3AddressRequest(
     val destination: String,
     
     @SerializedName("chain_id")
-    val chainId: String
+    val chainId: String,
+
+    @SerializedName("path")
+    val path: String?,
+
+    @SerializedName("signature")
+    val signature: String? = null,
+
+    @SerializedName("timestamp")
+    val timestamp: String? = null
 )

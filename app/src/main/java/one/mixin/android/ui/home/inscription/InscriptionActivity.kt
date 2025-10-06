@@ -54,6 +54,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.ActivityInscriptionBinding
 import one.mixin.android.databinding.ViewInscriptionMenuBinding
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
@@ -323,7 +324,6 @@ class InscriptionActivity : BaseActivity() {
         }
         val options = UCrop.Options()
         options.setToolbarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
-        options.setStatusBarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
         options.setToolbarWidgetColor(Color.WHITE)
         options.setHideBottomControls(true)
         UCrop.of(f.toUri(), imageUri)
@@ -371,7 +371,7 @@ class InscriptionActivity : BaseActivity() {
             if (data != null) {
                 val resultUri = UCrop.getOutput(data)
                 val bitmap = resultUri?.getCapturedImage(this.contentResolver)
-                update(Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP))
+                update(bitmap?.toBytes()?.base64RawURLEncode() ?: "")
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {

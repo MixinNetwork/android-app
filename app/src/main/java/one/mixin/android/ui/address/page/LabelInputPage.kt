@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -68,7 +69,6 @@ fun LabelInputPage(
     val clipboardManager = LocalClipboardManager.current
     var label by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
-    val memoEnabled = token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
     LaunchedEffect(Unit) {
         awaitFrame()
         focusRequester.requestFocus()
@@ -95,7 +95,7 @@ fun LabelInputPage(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Column {
+            Column(modifier = Modifier.imePadding()) {
                 TokenInfoHeader(token = token, web3Token = web3Token)
                 Box(
                     modifier = Modifier

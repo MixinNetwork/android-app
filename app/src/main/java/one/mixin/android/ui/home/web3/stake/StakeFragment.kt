@@ -19,11 +19,10 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.TransactionStateFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.maxLeftAmount
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -89,7 +88,7 @@ class StakeFragment : BaseFragment() {
                 return@launch
             }
             val stakeResp = stakeViewModel.stakeSol(StakeRequest(
-                payer = JsSigner.solanaAddress,
+                payer = Web3Signer.solanaAddress,
                 amount = amount,
                 action = StakeAction.delegate.name.lowercase(),
                 vote = validator.votePubkey,
@@ -99,22 +98,13 @@ class StakeFragment : BaseFragment() {
                 return@launch
             }
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = stakeResp.tx, solanaTxSource = SolanaTxSource.InnerStake)
-            JsSigner.useSolana()
+            Web3Signer.useSolana()
             isLoading = false
             showBrowserBottomSheetDialogFragment(
                 requireActivity(),
                 signMessage,
                 onTxhash = { _, serializedTx ->
-                    lifecycleScope.launch {
-                        val txStateFragment =
-                            TransactionStateFragment.newInstance(serializedTx, null).apply {
-                                setCloseAction {
-                                    parentFragmentManager.popBackStackImmediate()
-                                    parentFragmentManager.popBackStackImmediate()
-                                }
-                            }
-                        navTo(txStateFragment, TransactionStateFragment.TAG)
-                    }
+
                 },
             )
         }

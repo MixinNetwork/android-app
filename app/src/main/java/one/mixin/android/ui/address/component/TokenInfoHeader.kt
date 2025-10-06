@@ -25,6 +25,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
@@ -67,7 +68,7 @@ fun TokenInfoHeader(
             modifier = Modifier
                 .padding(start = 4.dp)
                 .wrapContentWidth()
-                .widthIn(max = 80.dp),
+                .widthIn(max = 100.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -109,7 +110,7 @@ fun TokenInfoHeader(
         Spacer(modifier = Modifier.weight(1f).widthIn(min = 4.dp))
 
         Text(
-            text = "Bal: ${token?.balance ?: web3Token?.balance} ${token?.symbol ?: web3Token?.symbol}",
+            text = "Bal: ${token?.balance?.numberFormat8() ?: web3Token?.balance?.numberFormat8()} ${token?.symbol ?: web3Token?.symbol}",
             fontSize = 14.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

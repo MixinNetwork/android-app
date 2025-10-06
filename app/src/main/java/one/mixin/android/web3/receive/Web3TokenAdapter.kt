@@ -7,14 +7,13 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
@@ -86,13 +85,13 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
 
             balance.text =
                 try {
-                    if (token.balance.numberFormat().toFloat() == 0f) {
+                    if (token.balance.numberFormat8().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        token.balance.numberFormat()
+                        token.balance.numberFormat8()
                     }
                 } catch (ignored: NumberFormatException) {
-                    token.balance.numberFormat()
+                    token.balance.numberFormat8()
                 }
             symbolTv.text = token.symbol
             balanceAs.text = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}"

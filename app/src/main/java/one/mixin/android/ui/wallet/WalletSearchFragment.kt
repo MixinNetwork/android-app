@@ -217,7 +217,7 @@ class WalletSearchFragment : BaseFragment() {
                 val localAssets = withContext(Dispatchers.IO) { viewModel.fuzzySearchAssets(query) }
                 searchAdapter.submitList(localAssets)
 
-                val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(query) }
+                val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(null, query) }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 searchAdapter.submitList(result)

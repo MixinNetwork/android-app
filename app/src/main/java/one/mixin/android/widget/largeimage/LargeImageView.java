@@ -35,13 +35,15 @@ import android.view.ViewParent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.OverScroller;
+
 import androidx.annotation.DrawableRes;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
-import one.mixin.android.widget.largeimage.factory.BitmapDecoderFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import one.mixin.android.widget.largeimage.factory.BitmapDecoderFactory;
 
 /**
  * Created by LuckyJayce on 2016/11/24.

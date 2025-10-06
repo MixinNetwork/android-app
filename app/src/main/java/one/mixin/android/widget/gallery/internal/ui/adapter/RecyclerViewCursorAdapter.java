@@ -3,6 +3,7 @@ package one.mixin.android.widget.gallery.internal.ui.adapter;
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.provider.MediaStore;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHolder> extends

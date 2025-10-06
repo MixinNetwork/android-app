@@ -466,7 +466,7 @@
     </plurals>
     <string name="I_know">わかりました</string>
     <string name="Immediately">すぐに</string>
-    <string name="Import">インポート</string>
+    <string name="Import_Chat">インポート</string>
     <string name="in_connecting">接続中…</string>
     <string name="Incognito_Keyboard">シークレットキーボード</string>
     <string name="Incoming_voice_call">着信</string>

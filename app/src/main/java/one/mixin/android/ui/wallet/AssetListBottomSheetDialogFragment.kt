@@ -18,11 +18,14 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
@@ -135,6 +138,18 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                     R.id.radio_polygon -> {
                         Polygon
+                    }
+
+                    R.id.radio_arbritrum -> {
+                        Arbitrum
+                    }
+
+                    R.id.radio_optimism -> {
+                        Optimism
+                    }
+
+                    R.id.radio_toncoin -> {
+                        TON_CHAIN_ID
                     }
 
                     else -> {
@@ -329,7 +344,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 adapter.submitList(localAssets)
 
-                val remoteAssets = bottomViewModel.queryAsset(query).filter { item ->
+                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).filter { item ->
                     ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                 }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)

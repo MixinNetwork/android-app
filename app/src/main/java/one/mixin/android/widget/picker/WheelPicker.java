@@ -18,11 +18,12 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Scroller;
-import one.mixin.android.R;
-import timber.log.Timber;
 
 import java.util.Arrays;
 import java.util.List;
+
+import one.mixin.android.R;
+import timber.log.Timber;
 
 public class WheelPicker extends View implements IDebug, IWheelPicker, Runnable {
 

@@ -2,7 +2,6 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -34,7 +33,6 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
@@ -46,16 +44,17 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.home.bot.INTERNAL_BUY_ID
-import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
 import one.mixin.android.ui.home.bot.INTERNAL_MEMBER_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SUPPORT_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SWAP_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
-import one.mixin.android.ui.home.web3.MarketFragment
+import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.search.SearchExploreFragment
+import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
@@ -74,7 +73,7 @@ import javax.inject.Inject
 class ExploreFragment : BaseFragment() {
     companion object {
         const val TAG = "ExploreFragment"
-        private const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
+        const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
         private val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID)
         fun newInstance() = ExploreFragment()
     }
@@ -107,11 +106,21 @@ class ExploreFragment : BaseFragment() {
                 // do nothing
             }
             searchIb.setOnClickListener {
-                activity?.addFragment(
-                    this@ExploreFragment,
-                    SearchExploreFragment(),
-                    SearchExploreFragment.TAG,
-                )
+                if (radioCollectible.isChecked) {
+                    activity?.addFragment(
+                        this@ExploreFragment,
+                        SearchInscriptionFragment(),
+                        SearchInscriptionFragment.TAG,
+                        id = R.id.internal_container,
+                    )
+                } else {
+                    activity?.addFragment(
+                        this@ExploreFragment,
+                        SearchExploreFragment.newInstance(),
+                        SearchExploreFragment.TAG,
+                        id = R.id.internal_container,
+                    )
+                }
             }
             scanIb.setOnClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
@@ -133,14 +142,14 @@ class ExploreFragment : BaseFragment() {
                 0 -> {
                     exploreVa.displayedChild = 0
                     radioFavorite.isChecked = true
-                    radioMarket.isChecked = false
+                    radioCollectible.isChecked = false
                 }
 
                 1 -> {
                     exploreVa.displayedChild = 1
                     radioFavorite.isChecked = false
-                    radioMarket.isChecked = true
-                    navigate(marketFragment, MarketFragment.TAG)
+                    radioCollectible.isChecked = true
+                    navigate(collectiblesFragment, CollectiblesFragment.TAG)
                 }
             }
 
@@ -151,11 +160,11 @@ class ExploreFragment : BaseFragment() {
                         exploreVa.displayedChild = 0
                     }
 
-                    R.id.radio_market -> {
+                    R.id.radio_collectible -> {
                         defaultSharedPreferences.putInt(Constants.Account.PREF_EXPLORE_SELECT, 1)
                         exploreVa.displayedChild = 1
-                        navigate(marketFragment, MarketFragment.TAG)
-                        radioMarket.setBackgroundResource(R.drawable.selector_radio)
+                        navigate(collectiblesFragment, CollectiblesFragment.TAG)
+                        radioCollectible.setBackgroundResource(R.drawable.selector_radio)
                         lifecycleScope.launch {
                             defaultSharedPreferences.putBoolean(Account.PREF_HAS_USED_MARKET, false)
                         }
@@ -187,14 +196,14 @@ class ExploreFragment : BaseFragment() {
         lifecycleScope.launch {
             val market = defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             if (market) {
-                binding.radioMarket.setBackgroundResource(R.drawable.selector_radio_badge)
+                binding.radioCollectible.setBackgroundResource(R.drawable.selector_radio_badge)
             } else {
-                binding.radioMarket.setBackgroundResource(R.drawable.selector_radio)
+                binding.radioCollectible.setBackgroundResource(R.drawable.selector_radio)
             }
         }
     }
 
-    private val containerFragmentTags = listOf(MarketFragment.TAG)
+    private val containerFragmentTags = listOf(CollectiblesFragment.TAG)
     private fun navigate(
         destinationFragment: Fragment,
         tag: String,
@@ -215,21 +224,14 @@ class ExploreFragment : BaseFragment() {
         tx.commitAllowingStateLoss()
     }
 
-    private val marketFragment by lazy {
-        MarketFragment()
+    private val collectiblesFragment by lazy {
+        CollectiblesFragment()
     }
 
     private fun loadData() {
         lifecycleScope.launch {
             val favoriteApps = botManagerViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             adapter.setData(favoriteApps)
-        }
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden) {
-            if (marketFragment.isVisible) marketFragment.updateUI()
         }
     }
 
@@ -280,6 +282,7 @@ class ExploreFragment : BaseFragment() {
         if (old.add(id)) {
             sp.edit().putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")).apply()
             updateFavoriteDot()
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
         }
     }
 

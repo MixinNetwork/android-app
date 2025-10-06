@@ -26,6 +26,8 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.svg.SvgDecoder
 import coil3.util.DebugLogger
 import coil3.video.VideoFrameDecoder
+import com.bugsnag.android.Bugsnag
+import com.bugsnag.android.Configuration as BugsnagConfiguration
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
@@ -36,9 +38,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
-import io.sentry.SentryLevel
-import io.sentry.android.core.SentryAndroid
-import io.sentry.android.timber.SentryTimberIntegration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -47,8 +46,8 @@ import kotlinx.coroutines.withContext
 import leakcanary.AppWatcher
 import leakcanary.LeakCanaryProcess
 import leakcanary.ReachabilityWatcher
-import okhttp3.Call
 import okhttp3.OkHttpClient
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -96,6 +95,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
+import kotlin.time.ExperimentalTime
 
 open class MixinApplication :
     Application(),
@@ -174,28 +174,21 @@ open class MixinApplication :
         applicationScope.launch {
             entityInitialize()
         }
-        initSentry()
+        initBugsnag()
         initAppsFlyer()
     }
 
-    private fun initSentry() {
-        if (BuildConfig.SENTRYDSN.isBlank()) {
-            return
+    private fun initBugsnag() {
+        val config = BugsnagConfiguration.load(this)
+        config.enabledErrorTypes.anrs = true
+        config.enabledErrorTypes.ndkCrashes = true
+        config.enabledErrorTypes.unhandledExceptions = true
+        if (BuildConfig.DEBUG) {
+            config.setReleaseStage("development");
+        } else {
+            config.setReleaseStage("production");
         }
-        SentryAndroid.init(this) { options ->
-            options.dsn = BuildConfig.SENTRYDSN
-            options.isEnableUserInteractionTracing = false
-            options.isEnableUserInteractionBreadcrumbs = false
-            options.isEnablePerformanceV2 = true
-            options.isEnableAppStartProfiling = true
-
-            options.addIntegration(
-                SentryTimberIntegration(
-                    minEventLevel = SentryLevel.FATAL,
-                    minBreadcrumbLevel = SentryLevel.ERROR
-                )
-            )
-        }
+        Bugsnag.start(this, config)
     }
 
     private fun initAppsFlyer() {
@@ -318,6 +311,7 @@ open class MixinApplication :
                 disconnect<VoiceCallService>(this)
             }
             notificationManager.cancelAll()
+            CryptoWalletHelper.clear(this)
             Session.clearAccount()
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
@@ -486,6 +480,7 @@ open class MixinApplication :
         return false
     }
 
+    @OptIn(ExperimentalTime::class)
     @ExperimentalCoilApi
     @RequiresApi(Build.VERSION_CODES.P)
     override fun newImageLoader(context: PlatformContext): ImageLoader {

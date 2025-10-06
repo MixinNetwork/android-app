@@ -3,7 +3,6 @@ package one.mixin.android.db.web3.vo
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Index
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
@@ -11,8 +10,6 @@ import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.vo.Fiats
-import org.sol4k.Convert.lamportToSol
-import org.sol4kt.VersionedTransactionCompat
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -65,7 +62,8 @@ data class Web3Token(
 
     override fun toSwapToken(): SwapToken {
         return SwapToken(
-            address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
+            walletId = walletId,
+            address = assetKey,
             assetId = assetId,
             decimals = precision,
             name = name,
@@ -112,42 +110,9 @@ data class Web3Token(
     fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
 }
 
-fun Web3TokenItem.isSolToken(): Boolean {
-    return isSolana() && (assetKey == solanaNativeTokenAssetKey || assetKey == wrappedSolTokenAssetKey)
+fun Web3TokenItem.isNativeSolToken(): Boolean {
+    return isSolanaChain() && assetId == Constants.ChainId.SOLANA_CHAIN_ID
 }
-
-private fun Web3Token.getChainAssetKey(): String {
-    return if (chainId.equals("ethereum", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("base", true)) {
-        "0x0000000000000000000000000000000000000000"}
-    else if (chainId.equals("blast", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("arbitrum", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("optimism", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("polygon", true)) {
-        "0x0000000000000000000000000000000000001010"
-    } else if (chainId.equals("binance-smart-chain", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("avalanche", true)) {
-        "0x0000000000000000000000000000000000000000"
-    } else if (chainId.equals("solana", true)) {
-        solanaNativeTokenAssetKey
-    } else {
-        ""
-    }
-}
-
-fun Web3TokenItem.calcSolBalanceChange(balanceChange: VersionedTransactionCompat.TokenBalanceChange): String {
-    return if (isSolToken()) {
-        lamportToSol(BigDecimal(balanceChange.change))
-    } else {
-        BigDecimal(balanceChange.change).divide(BigDecimal.TEN.pow(precision)).setScale(precision, RoundingMode.CEILING)
-    }.stripTrailingZeros().toPlainString()
-}
-
 fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
     return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)
 }

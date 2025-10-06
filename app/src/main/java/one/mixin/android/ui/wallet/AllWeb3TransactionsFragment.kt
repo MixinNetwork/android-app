@@ -44,6 +44,7 @@ import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_UN
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
@@ -61,30 +62,24 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
         setOnItemClickListener(object : Web3TransactionPagedAdapter.OnItemClickListener {
             override fun onItemClick(transaction: Web3TransactionItem) {
                 lifecycleScope.launch {
-                    val token = web3ViewModel.web3TokenItemById(transaction.getMainAssetId()) ?: return@launch
+                    val token = web3ViewModel.web3TokenItemById(filterParams.walletId,transaction.getMainAssetId()) ?: return@launch
+                    val wallet = web3ViewModel.findWalletById(filterParams.walletId) ?: return@launch
                     this@AllWeb3TransactionsFragment.view?.findNavController()?.navigate(
                         R.id.action_all_web3_transactions_fragment_to_web3_transaction_fragment,
                         Bundle().apply {
                             putParcelable("args_transaction", transaction)
                             putString("args_chain", transaction.chainId)
                             putParcelable("args_token", token)
+                            putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet)
                         }
                     )
                 }
             }
         })
     }
-    private val tokenItem by lazy {
-        requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
-    }
 
     private val filterParams by lazy {
-        (requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java)
-            ?: Web3FilterParams(
-                tokenItems = tokenItem?.let { listOf(it) },
-                level = requireArguments().getInt("level", 0b00)
-            )
-        )
+        requireNotNull(requireArguments().getParcelableCompat(ARGS_FILTER_PARAMS, Web3FilterParams::class.java))
     }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
@@ -390,7 +385,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
     }
 
     private val multiSelectWeb3TokenListBottomSheetDialogFragment by lazy {
-        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance()
+        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(walletId = filterParams.walletId)
             .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
                 override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
                     filterParams.tokenItems = tokenItems
