@@ -62,6 +62,7 @@
             android:textColorHint="?attr/text_assist"
             android:textSize="16sp"
             android:inputType="text"
+            android:maxLength="48"
             android:imeOptions="actionDone"
             tools:ignore="Autofill,TextFields" />
     </com.google.android.material.textfield.TextInputLayout>
