@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_chat">
+
+    <fragment
+        android:id="@+id/nav_chat"
+        android:name="one.mixin.android.ui.home.ConversationListFragment"
+        android:label="ConversationListFragment" />
+    <fragment
+        android:id="@+id/nav_wallet"
+        android:name="one.mixin.android.ui.wallet.WalletFragment"
+        android:label="WalletFragment" />
+    <fragment
+        android:id="@+id/nav_market"
+        android:name="one.mixin.android.ui.home.web3.MarketFragment"
+        android:label="MarketFragment" />
+    <fragment
+        android:id="@+id/nav_more"
+        android:name="one.mixin.android.ui.home.ExploreFragment"
+        android:label="ExploreFragment" />
+</navigation>

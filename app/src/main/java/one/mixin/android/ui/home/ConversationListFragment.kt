@@ -177,15 +177,6 @@ class ConversationListFragment : LinkFragment() {
     private var enterJob: Job? = null
 
     companion object {
-        @Volatile
-        private var INSTANCE: ConversationListFragment? = null
-
-        fun getInstance(): ConversationListFragment {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: ConversationListFragment().also { INSTANCE = it }
-            }
-        }
-
         const val TAG = "ConversationListFragment"
 
         private const val DRAG_FRICTION = 2

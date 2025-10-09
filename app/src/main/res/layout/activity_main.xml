@@ -27,11 +27,14 @@
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/root_view"
-            android:layout_above="@+id/bottom_nav"
-            android:layout_alignParentTop="true"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true" />
+            android:layout_above="@+id/bottom_nav"
+            android:layout_alignParentTop="true"
+            android:fitsSystemWindows="true"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph" />
 
     </RelativeLayout>
 
