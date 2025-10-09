@@ -199,7 +199,7 @@ class InputAmountBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
     var onNumberClick: ((String) -> Unit)? = null
@@ -212,23 +212,6 @@ class InputAmountBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     var onCopyClick: ((depositUri: String) -> Unit)? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
-
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(
-        dialog: Dialog,
-        style: Int,
-    ) {
-        super.setupDialog(dialog, R.style.MixinBottomSheet)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-        }
-        dialog.window?.setGravity(Gravity.BOTTOM)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
-    }
-
     private fun buildForwardMessage(tokenDisplayName: String, url: String, amount: String): ForwardMessage {
         val description = buildString {
             append(getString(R.string.payment_details, amount, tokenDisplayName, "${Session.getAccount()?.fullName}(${Session.getAccount()?.identityNumber})"))

@@ -98,7 +98,6 @@ fun InputAmountFlow(
     NavHost(
         navController = navController,
         startDestination = InputAmountDestinations.INPUT,
-        modifier = modifier.fillMaxSize().padding(bottom = GetNavBarHeightValue())
     ) {
         composable(InputAmountDestinations.INPUT) {
             InputAmountScreen(
@@ -266,6 +265,7 @@ fun InputAmountScreen(
         )
 
         Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(GetNavBarHeightValue()))
     }
 }
 
@@ -730,7 +730,8 @@ fun InputAmountPreviewScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(GetNavBarHeightValue()))
     }
 }
 

@@ -53,8 +53,6 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
 
     private var defaultPlan: Plan? = null
 
-    private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this, linkViewModel) }
-
 
     val linkViewModel by viewModels<BottomSheetViewModel>()
     private val memberViewModel by viewModels<MemberViewModel>()
