@@ -1,0 +1,82 @@
+package one.mixin.android.ui.common
+
+import android.os.Bundle
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.doOnPreDraw
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import one.mixin.android.R
+import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.dp as dip
+import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.util.SystemUIManager
+
+abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
+    protected var behavior: BottomSheetBehavior<*>? = null
+
+    @Composable
+    protected abstract fun Content()
+
+    protected abstract fun getBottomSheetHeight(): Int
+    protected open fun onBottomSheetStateChanged(bottomSheet: View, newState: Int) {}
+    protected open fun onBottomSheetSlide(bottomSheet: View, slideOffset: Float) {}
+
+    private val internalBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+            if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                dismissAllowingStateLoss()
+            }
+            onBottomSheetStateChanged(bottomSheet, newState)
+        }
+
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            onBottomSheetSlide(bottomSheet, slideOffset)
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        return ComposeView(requireContext()).apply {
+            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Content()
+            }
+            doOnPreDraw {
+                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
+                behavior = params?.behavior as? BottomSheetBehavior<*>
+                behavior?.peekHeight = getBottomSheetHeight()
+                behavior?.isDraggable = false
+                behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
+            )
+            window.setGravity(Gravity.BOTTOM)
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            )
+        }
+    }
+
+    override fun dismiss() {
+        dismissAllowingStateLoss()
+    }
+}
