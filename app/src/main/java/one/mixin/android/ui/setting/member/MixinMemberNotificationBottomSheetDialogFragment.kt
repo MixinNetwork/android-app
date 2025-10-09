@@ -18,11 +18,9 @@ import one.mixin.android.R
 import one.mixin.android.api.response.MembershipOrder
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.setting.ui.page.MixinMemberCancelPage
 import one.mixin.android.ui.setting.ui.page.MixinMemberNotificationPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.util.SystemUIManager

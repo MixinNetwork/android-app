@@ -21,9 +21,9 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
     protected var behavior: BottomSheetBehavior<*>? = null
 
     @Composable
-    protected abstract fun Content()
+    protected abstract fun ComposeContent()
 
-    protected abstract fun getBottomSheetHeight(): Int
+    protected abstract fun getBottomSheetHeight(view: View): Int
     protected open fun onBottomSheetStateChanged(bottomSheet: View, newState: Int) {}
     protected open fun onBottomSheetSlide(bottomSheet: View, slideOffset: Float) {}
 
@@ -45,19 +45,24 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        return ComposeView(requireContext()).apply {
+        val composeView = ComposeView(requireContext()).apply {
             roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                Content()
+                ComposeContent()
             }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = getBottomSheetHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
-            }
+        }
+        return composeView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        view.doOnPreDraw {
+            val params = (view.parent as? View)?.layoutParams as? CoordinatorLayout.LayoutParams
+            behavior = params?.behavior as? BottomSheetBehavior<*>
+            behavior?.peekHeight = getBottomSheetHeight(view)
+            behavior?.isDraggable = false
+            behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
         }
     }
 

@@ -1,9 +1,7 @@
 package one.mixin.android.ui.setting.member
 
 import android.os.Bundle
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -12,8 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,9 +19,9 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.MembershipEvent
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.job.MixinJobManager
@@ -92,9 +88,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @Composable
-    override fun Content() {
-        viewModel<BottomSheetViewModel>()
-        viewModel<MemberViewModel>()
+    override fun ComposeContent() {
         LaunchedEffect(Unit) {
             memberViewModel.refreshSubscriptionStatus()
         }
@@ -124,8 +118,8 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
         )
     }
 
-    override fun getBottomSheetHeight(): Int {
-        return requireContext().screenHeight() - (view?.getSafeAreaInsetsTop() ?: 0)
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() 
     }
 
     override fun showError(errorRes: Int) {
