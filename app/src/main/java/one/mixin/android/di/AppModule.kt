@@ -236,7 +236,7 @@ object AppModule {
                 }
 
                 var jwtResult: JwtResult? = null
-                response.body?.run {
+                response.body.run {
                     val bytes = runCatching {
                         this.bytes()
                     }.onFailure { e ->
@@ -265,7 +265,7 @@ object AppModule {
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)
                         jwtResult = Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)
-                        if (jwtResult?.isExpire == true) {
+                        if (jwtResult.isExpire) {
                             throw ExpiredTokenException()
                         }
                     }
@@ -277,8 +277,8 @@ object AppModule {
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
                         } else if (jwtResult?.isExpire == false) {
-                            jwtResult?.serverTime = serverTime / 1000000000
-                            jwtResult?.currentTime = currentTime / 1000
+                            jwtResult.serverTime = serverTime / 1000000000
+                            jwtResult.currentTime = currentTime / 1000
                             val ise = IllegalStateException("Force logout. $jwtResult. request: ${request.show()}, response: ${response.show()}")
                             reportException(ise)
                             MixinApplication.get().closeAndClear()
