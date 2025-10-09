@@ -240,4 +240,7 @@ interface AccountService {
         @Query("destination") destination: String,
         @Query("tag") tag: String?,
     ): MixinResponse<AddressResponse>
+
+    @POST("referral/bind/{code}")
+    suspend fun bindReferral(@Body request: BindInviteRequest): MixinResponse<Unit>
 }

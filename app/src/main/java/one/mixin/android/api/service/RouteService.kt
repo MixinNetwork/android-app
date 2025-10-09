@@ -313,7 +313,4 @@ interface RouteService {
     suspend fun rampWebUrl(
         @Body request: RampWebUrlRequest
     ): MixinResponse<RampWebUrlResponse>
-
-    @POST("referral/bind/{code}")
-    suspend fun bindReferral(@Path("code") code: String): MixinResponse<Unit>
 }

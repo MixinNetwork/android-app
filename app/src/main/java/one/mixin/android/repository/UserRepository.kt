@@ -12,7 +12,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.BindInviteRequest
 import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UserService
@@ -57,7 +59,7 @@ class UserRepository
         private val participantSessionDao: ParticipantSessionDao,
         private val userDao: UserDao,
         private val userService: UserService,
-        private val routeService: RouteService,
+        private val accountService: AccountService,
     ) {
         fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 
@@ -401,5 +403,5 @@ class UserRepository
             }
         }
 
-        suspend fun bindReferral(code: String) = routeService.bindReferral(code)
+        suspend fun bindReferral(code: String) = accountService.bindReferral(BindInviteRequest(code))
     }
