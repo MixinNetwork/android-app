@@ -53,6 +53,15 @@ class NavigationController() {
                 tx.hide(fragment)
             }
             tx.commitNowAllowingStateLoss()
+        } catch (e: IllegalStateException) {
+            val tx = fragmentManager.beginTransaction()
+            val tag = destination.tag
+            fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag }.forEach { fragment ->
+                tx.remove(fragment)
+            }
+            tx.add(R.id.root_view, destinationFragment, tag)
+            tx.commitNowAllowingStateLoss()
+            Timber.e(e)
         } catch (e: Exception) {
             Timber.w(e)
         }
