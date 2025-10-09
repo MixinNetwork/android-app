@@ -21,12 +21,9 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
-import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -36,7 +33,6 @@ import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.Plan
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -59,8 +55,6 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
 
     private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this, linkViewModel) }
 
-    @Inject
-    lateinit var jobManager: MixinJobManager
 
     val linkViewModel by viewModels<BottomSheetViewModel>()
     private val memberViewModel by viewModels<MemberViewModel>()
@@ -119,7 +113,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() 
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(errorRes: Int) {
@@ -129,9 +123,6 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
     override fun showError(error: String) {
     }
 
-    override fun syncUtxo() {
-        jobManager.addJobInBackground(SyncOutputJob())
-    }
 
     private fun launchPurchaseSubscription(orderId: String, playStoreSubscriptionId: String) {
         lifecycleScope.launch {

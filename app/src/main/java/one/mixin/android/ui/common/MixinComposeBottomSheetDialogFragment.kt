@@ -15,9 +15,16 @@ import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp as dip
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.util.SystemUIManager
+import javax.inject.Inject
 
 abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     protected var behavior: BottomSheetBehavior<*>? = null
 
     @Composable
@@ -84,4 +91,9 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
     override fun dismiss() {
         dismissAllowingStateLoss()
     }
+
+    override fun syncUtxo() {
+        jobManager.addJobInBackground(SyncOutputJob())
+    }
+
 }

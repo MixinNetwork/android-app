@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.ActionButtonData
@@ -47,7 +49,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 @AndroidEntryPoint
-class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class InputAmountBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "InputAmountBottomSheetDialogFragment"
         private const val ARGS_TOKEN = "args_token"
@@ -93,7 +95,112 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
         token?.symbol ?: web3Token?.symbol ?: ""
     }
 
-    private var behavior: BottomSheetBehavior<*>? = null
+    @Composable
+    override fun ComposeContent() {
+
+        var inputAmount by remember { mutableStateOf("0") }
+        var isPrimaryMode by remember { mutableStateOf(true) }
+
+        val formattedPrimaryAmount = remember(inputAmount, isPrimaryMode) {
+            if (isPrimaryMode) {
+                formatAmount(inputAmount, tokenSymbol)
+            } else {
+                // Calculate primary from minor
+                val minorValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val priceDecimal = price.toBigDecimal()
+                val primaryValue = if (priceDecimal > BigDecimal.ZERO) {
+                    minorValue.divide(priceDecimal, 8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+                } else "0"
+                formatAmount(primaryValue, tokenSymbol)
+            }
+        }
+
+        val formattedMinorAmount = remember(inputAmount, isPrimaryMode) {
+            if (!isPrimaryMode) {
+                formatAmount(inputAmount, Fiats.getAccountCurrencyAppearance())
+            } else {
+                // Calculate minor from primary
+                val primaryValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                val priceDecimal = price.toBigDecimal()
+                val minorValue = if (priceDecimal > BigDecimal.ZERO) {
+                    primaryValue.multiply(priceDecimal).setScale(2, RoundingMode.DOWN).toPlainString()
+                } else "0"
+                formatAmount(minorValue, Fiats.getAccountCurrencyAppearance())
+            }
+        }
+
+        MixinAppTheme {
+            InputAmountFlow(
+                inputAmount = inputAmount,
+                primaryAmount = if (isPrimaryMode) formattedPrimaryAmount else formattedMinorAmount,
+                minorAmount = if (isPrimaryMode) formattedMinorAmount else formattedPrimaryAmount,
+                tokenAmount = formattedPrimaryAmount,
+                token = token,
+                web3Token = web3Token,
+                address = address,
+                onNumberClick = { number ->
+                    val currentCurrency = if (isPrimaryMode) null else Fiats.getAccountCurrencyAppearance()
+                    inputAmount = AmountInputHandler.handleNumberInput(inputAmount, number, isPrimaryMode, currentCurrency)
+                    onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
+                    onNumberClick?.invoke(number)
+                },
+                onDeleteClick = {
+                    inputAmount = AmountInputHandler.handleDeleteInput(inputAmount)
+                    onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
+                    onDeleteClick?.invoke()
+                },
+                onSwitchClick = {
+                    val currentPrimaryValue = if (isPrimaryMode) {
+                        inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    } else {
+                        val minorValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                        val priceDecimal = price.toBigDecimal()
+                        if (priceDecimal > BigDecimal.ZERO) {
+                            minorValue.divide(priceDecimal, 8, RoundingMode.DOWN)
+                        } else {
+                            BigDecimal.ZERO
+                        }
+                    }
+
+                    isPrimaryMode = !isPrimaryMode
+
+                    inputAmount = if (isPrimaryMode) {
+                        currentPrimaryValue.stripTrailingZeros().toPlainString()
+                    } else {
+                        val priceDecimal = price.toBigDecimal()
+                        if (priceDecimal > BigDecimal.ZERO) {
+                            currentPrimaryValue.multiply(priceDecimal).setScale(2, RoundingMode.DOWN).toPlainString()
+                        } else "0"
+                    }
+
+                    if (inputAmount.toBigDecimalOrNull()?.let { it < BigDecimal("0.000001") } == true) {
+                        inputAmount = "0"
+                    }
+                    onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
+                    onSwitchClick?.invoke()
+                },
+                onCopyClick = { depositUri ->
+                    onCopyClick?.invoke(depositUri)
+                    dismiss()
+                },
+                onCloseClick = {
+                    dismiss()
+                },
+                onShareClick = { depositUri ->
+                    onShareClick?.invoke(formattedPrimaryAmount, depositUri)
+                    dismiss()
+                },
+                onForward = { tokenDisplayName, depositUri, amount ->
+                    onForwardClick?.invoke(buildForwardMessage(tokenDisplayName, depositUri, amount))
+                    dismiss()
+                }
+            )
+        }
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+    }
 
     var onNumberClick: ((String) -> Unit)? = null
     var onDeleteClick: (() -> Unit)? = null
@@ -121,136 +228,6 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
         )
     }
-
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.let { window ->
-            SystemUIManager.lightUI(
-                window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night),
-            )
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            dialog?.window?.let { window ->
-                SystemUIManager.setSafePadding(window, requireContext().colorFromAttribute(R.attr.bg_white), onlyNav = true)
-            }
-            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                var inputAmount by remember { mutableStateOf("0") }
-                var isPrimaryMode by remember { mutableStateOf(true) }
-
-                val formattedPrimaryAmount = remember(inputAmount, isPrimaryMode) {
-                    if (isPrimaryMode) {
-                        formatAmount(inputAmount, tokenSymbol)
-                    } else {
-                        // Calculate primary from minor
-                        val minorValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        val priceDecimal = price.toBigDecimal()
-                        val primaryValue = if (priceDecimal > BigDecimal.ZERO) {
-                            minorValue.divide(priceDecimal, 8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                        } else "0"
-                        formatAmount(primaryValue, tokenSymbol)
-                    }
-                }
-
-                val formattedMinorAmount = remember(inputAmount, isPrimaryMode) {
-                    if (!isPrimaryMode) {
-                        formatAmount(inputAmount, Fiats.getAccountCurrencyAppearance())
-                    } else {
-                        // Calculate minor from primary
-                        val primaryValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        val priceDecimal = price.toBigDecimal()
-                        val minorValue = if (priceDecimal > BigDecimal.ZERO) {
-                            primaryValue.multiply(priceDecimal).setScale(2, RoundingMode.DOWN).toPlainString()
-                        } else "0"
-                        formatAmount(minorValue, Fiats.getAccountCurrencyAppearance())
-                    }
-                }
-
-                MixinAppTheme {
-                    InputAmountFlow(
-                        inputAmount = inputAmount,
-                        primaryAmount = if (isPrimaryMode) formattedPrimaryAmount else formattedMinorAmount,
-                        minorAmount = if (isPrimaryMode) formattedMinorAmount else formattedPrimaryAmount,
-                        tokenAmount = formattedPrimaryAmount,
-                        token = token,
-                        web3Token = web3Token,
-                        address = address,
-                        onNumberClick = { number ->
-                            val currentCurrency = if (isPrimaryMode) null else Fiats.getAccountCurrencyAppearance()
-                            inputAmount = AmountInputHandler.handleNumberInput(inputAmount, number, isPrimaryMode, currentCurrency)
-                            onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
-                            onNumberClick?.invoke(number)
-                        },
-                        onDeleteClick = {
-                            inputAmount = AmountInputHandler.handleDeleteInput(inputAmount)
-                            onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
-                            onDeleteClick?.invoke()
-                        },
-                        onSwitchClick = {
-                            val currentPrimaryValue = if (isPrimaryMode) {
-                                inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                            } else {
-                                val minorValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                val priceDecimal = price.toBigDecimal()
-                                if (priceDecimal > BigDecimal.ZERO) {
-                                    minorValue.divide(priceDecimal, 8, RoundingMode.DOWN)
-                                } else {
-                                    BigDecimal.ZERO
-                                }
-                            }
-
-                            isPrimaryMode = !isPrimaryMode
-
-                            inputAmount = if (isPrimaryMode) {
-                                currentPrimaryValue.stripTrailingZeros().toPlainString()
-                            } else {
-                                val priceDecimal = price.toBigDecimal()
-                                if (priceDecimal > BigDecimal.ZERO) {
-                                    currentPrimaryValue.multiply(priceDecimal).setScale(2, RoundingMode.DOWN).toPlainString()
-                                } else "0"
-                            }
-
-                            if (inputAmount.toBigDecimalOrNull()?.let { it < BigDecimal("0.000001") } == true) {
-                                inputAmount = "0"
-                            }
-                            onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)
-                            onSwitchClick?.invoke()
-                        },
-                        onCopyClick = { depositUri ->
-                            onCopyClick?.invoke(depositUri)
-                            dismiss()
-                        },
-                        onCloseClick = {
-                            dismiss()
-                        },
-                        onShareClick = { depositUri ->
-                            onShareClick?.invoke(formattedPrimaryAmount, depositUri)
-                            dismiss()
-                        },
-                        onForward = { tokenDisplayName, depositUri, amount ->
-                            onForwardClick?.invoke(buildForwardMessage(tokenDisplayName, depositUri, amount))
-                            dismiss()
-                        }
-                    )
-                }
-            }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop() - this.getSafeAreaInsetsBottom()
-                behavior?.isDraggable = true
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-        }
 
     private fun buildForwardMessage(tokenDisplayName: String, url: String, amount: String): ForwardMessage {
         val description = buildString {
@@ -281,28 +258,6 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
         return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
     }
 
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> {
-                        onDismiss?.invoke()
-                        dismissAllowingStateLoss()
-                    }
-
-                    else -> {}
-                }
-            }
-
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
 
     private fun formatAmount(amount: String, symbol: String): String {
         val value = amount.toDoubleOrNull() ?: 0.0
@@ -334,8 +289,6 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onDestroyView() {
-        behavior?.removeBottomSheetCallback(bottomSheetBehaviorCallback)
-        super.onDestroyView()
+    override fun showError(error: String) {
     }
 }

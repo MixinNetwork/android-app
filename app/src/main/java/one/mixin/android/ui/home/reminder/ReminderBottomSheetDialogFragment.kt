@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -34,12 +35,14 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.logs.LogViewerScreen
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
-class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ReminderBottomSheetDialogFragment"
         private const val PREF_NOTIFICATION_ON = "pref_notification_on"
@@ -121,8 +124,6 @@ class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private var behavior: BottomSheetBehavior<*>? = null
-
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @SuppressLint("RestrictedApi")
@@ -151,103 +152,76 @@ class ReminderBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                MixinAppTheme {
-                    when (popupType) {
-                        is PopupType.NewVersionReminder -> {
-                            ReminderPage(R.drawable.bg_reminber_version, R.string.New_Update_Available, R.string.New_Update_Available_desc, R.string.Update_Now, action = {
-                                Session.getAccount()?.system?.messenger?.let { it -> (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
-                                dismissAllowingStateLoss()
-                            }, dismiss = {
-                                requireContext().defaultSharedPreferences.putLong(
-                                    PREF_NEW_VERSION,
-                                    System.currentTimeMillis(),
-                                )
-                                dismissAllowingStateLoss()
-                            })
-                        }
-
-                        is PopupType.BackupMnemonicReminder -> {
-                            ReminderPage(R.drawable.bg_reminber_mnemonic, R.string.Backup_Mnemonic_Phrase, R.string.Backup_Mnemonic_Phrase_desc, R.string.Backup_Now, action = {
-                                SettingActivity.showMnemonicPhrase(context)
-                                dismissAllowingStateLoss()
-                            }, dismiss = {
-                                requireContext().defaultSharedPreferences.putLong(
-                                    PREF_BACKUP_MNEMONIC,
-                                    System.currentTimeMillis(),
-                                )
-                                dismissAllowingStateLoss()
-                            })
-                        }
-
-                        is PopupType.NotificationPermissionReminder -> {
-                            ReminderPage(
-                                languageBasedImage(
-                                    R.drawable.bg_reminder_notifaction,
-                                    R.drawable.bg_reminder_notifaction_cn
-                                ), R.string.Turn_On_Notifications, R.string.notification_content, R.string.Enable_Notifications, action = {
-                                    requireContext().openNotificationSetting()
-                                    dismissAllowingStateLoss()
-                                }, dismiss = {
-                                    requireContext().defaultSharedPreferences.putLong(
-                                        PREF_NOTIFICATION_ON,
-                                        System.currentTimeMillis(),
-                                    )
-                                    dismissAllowingStateLoss()
-                                })
-                        }
-
-                        is PopupType.RestoreContactReminder -> {
-                            ReminderPage(R.drawable.bg_reminber_recovery_contact, R.string.Emergency_Contact, R.string.setting_emergency_content, R.string.Continue, action = {
-                                SettingActivity.showEmergencyContact(requireContext())
-                                dismissAllowingStateLoss()
-                            }, dismiss = {
-                                requireContext().defaultSharedPreferences.putLong(
-                                    PREF_EMERGENCY_CONTACT,
-                                    System.currentTimeMillis(),
-                                )
-                                dismissAllowingStateLoss()
-                            })
-                        }
-
-                    }
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            when (popupType) {
+                is PopupType.NewVersionReminder -> {
+                    ReminderPage(R.drawable.bg_reminber_version, R.string.New_Update_Available, R.string.New_Update_Available_desc, R.string.Update_Now, action = {
+                        Session.getAccount()?.system?.messenger?.let { it -> (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
+                        dismissAllowingStateLoss()
+                    }, dismiss = {
+                        requireContext().defaultSharedPreferences.putLong(
+                            PREF_NEW_VERSION,
+                            System.currentTimeMillis(),
+                        )
+                        dismissAllowingStateLoss()
+                    })
                 }
-            }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+
+                is PopupType.BackupMnemonicReminder -> {
+                    ReminderPage(R.drawable.bg_reminber_mnemonic, R.string.Backup_Mnemonic_Phrase, R.string.Backup_Mnemonic_Phrase_desc, R.string.Backup_Now, action = {
+                        SettingActivity.showMnemonicPhrase(requireContext())
+                        dismissAllowingStateLoss()
+                    }, dismiss = {
+                        requireContext().defaultSharedPreferences.putLong(
+                            PREF_BACKUP_MNEMONIC,
+                            System.currentTimeMillis(),
+                        )
+                        dismissAllowingStateLoss()
+                    })
+                }
+
+                is PopupType.NotificationPermissionReminder -> {
+                    ReminderPage(
+                        languageBasedImage(
+                            R.drawable.bg_reminder_notifaction,
+                            R.drawable.bg_reminder_notifaction_cn
+                        ), R.string.Turn_On_Notifications, R.string.notification_content, R.string.Enable_Notifications, action = {
+                            requireContext().openNotificationSetting()
+                            dismissAllowingStateLoss()
+                        }, dismiss = {
+                            requireContext().defaultSharedPreferences.putLong(
+                                PREF_NOTIFICATION_ON,
+                                System.currentTimeMillis(),
+                            )
+                            dismissAllowingStateLoss()
+                        })
+                }
+
+                is PopupType.RestoreContactReminder -> {
+                    ReminderPage(R.drawable.bg_reminber_recovery_contact, R.string.Emergency_Contact, R.string.setting_emergency_content, R.string.Continue, action = {
+                        SettingActivity.showEmergencyContact(requireContext())
+                        dismissAllowingStateLoss()
+                    }, dismiss = {
+                        requireContext().defaultSharedPreferences.putLong(
+                            PREF_EMERGENCY_CONTACT,
+                            System.currentTimeMillis(),
+                        )
+                        dismissAllowingStateLoss()
+                    })
+                }
+
             }
         }
+    }
 
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-                    else -> {}
-                }
-            }
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
 
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
+    override fun showError(error: String) {
+    }
 
     sealed class PopupType {
         object NewVersionReminder : PopupType()

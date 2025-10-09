@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -21,14 +22,14 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
-class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class ImportKeyBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ImportKeyBottomSheetDialogFragment"
         private const val ARGS_POPUP_TYPE = "args_popup_type"
@@ -38,7 +39,7 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
         fun newInstance(
             popupType: PopupType,
             walletId: String,
-            chainId: String?
+            chainId: String?,
         ) =
             ImportKeyBottomSheetDialogFragment().withArgs {
                 putString(ARGS_POPUP_TYPE, popupType::class.java.simpleName)
@@ -63,8 +64,6 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val chainId by lazy {
         requireArguments().getString(ARGS_CHAIN_ID)
     }
-
-    private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -94,81 +93,55 @@ class ImportKeyBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            roundTopOrBottom(8.dp.toFloat(), top = true, bottom = false)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                MixinAppTheme {
-                    when (popupType) {
-                        is PopupType.ImportPrivateKey -> {
-                            ImportKeyPage(
-                                R.drawable.bg_import_private_key,
-                                R.string.import_private_key,
-                                R.string.Import_Private_Key_Desc,
-                                action = {
-                                    WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
-                                    dismissAllowingStateLoss()
-                                },
-                                dismiss = {
-                                    dismissAllowingStateLoss()
-                                },
-                                learnMoreAction = {
-                                    context.openUrl(getString(R.string.import_mnemonic_phrase_url))
-                                }
-                            )
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            when (popupType) {
+                is PopupType.ImportPrivateKey -> {
+                    ImportKeyPage(
+                        R.drawable.bg_import_private_key,
+                        R.string.import_private_key,
+                        R.string.Import_Private_Key_Desc,
+                        action = {
+                            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
+                            dismissAllowingStateLoss()
+                        },
+                        dismiss = {
+                            dismissAllowingStateLoss()
+                        },
+                        learnMoreAction = {
+                            context?.openUrl(getString(R.string.import_mnemonic_phrase_url))
                         }
-                        is PopupType.ImportMnemonicPhrase -> {
-                            ImportKeyPage(
-                                R.drawable.bg_import_mnemonic,
-                                R.string.import_mnemonic_phrase,
-                                R.string.Import_Mnemonic_Phrase_Desc,
-                                action = {
-                                    WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC, walletId = walletId, chainId = chainId)
-                                    dismissAllowingStateLoss()
-                                },
-                                dismiss = {
-                                    dismissAllowingStateLoss()
-                                },
-                                learnMoreAction = {
-                                    context.openUrl(getString(R.string.import_private_key_url))
-                                }
-                            )
+                    )
+                }
+
+                is PopupType.ImportMnemonicPhrase -> {
+                    ImportKeyPage(
+                        R.drawable.bg_import_mnemonic,
+                        R.string.import_mnemonic_phrase,
+                        R.string.Import_Mnemonic_Phrase_Desc,
+                        action = {
+                            WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC, walletId = walletId, chainId = chainId)
+                            dismissAllowingStateLoss()
+                        },
+                        dismiss = {
+                            dismissAllowingStateLoss()
+                        },
+                        learnMoreAction = {
+                            context?.openUrl(getString(R.string.import_private_key_url))
                         }
-                    }
+                    )
                 }
             }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
         }
+    }
 
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-                    else -> {}
-                }
-            }
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
 
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
+    override fun showError(error: String) {
+    }
 
     sealed class PopupType {
         object ImportPrivateKey : PopupType()

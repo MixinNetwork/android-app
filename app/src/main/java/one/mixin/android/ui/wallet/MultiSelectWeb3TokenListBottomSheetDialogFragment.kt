@@ -23,7 +23,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SelectableWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedWeb3TokenAdapter

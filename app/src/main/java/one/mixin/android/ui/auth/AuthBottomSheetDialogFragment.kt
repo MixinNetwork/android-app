@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,10 +39,13 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.getSafeAreaInsetsBottom
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipException
@@ -50,6 +54,7 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.auth.compose.AuthBottomSheetDialogCompose
 import one.mixin.android.ui.auth.compose.AuthStep
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.tip.TipActivity
@@ -65,7 +70,7 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
 @AndroidEntryPoint
-class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class AuthBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AuthBottomSheetDialogFragment"
 
@@ -112,7 +117,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var success = false
 
-    private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -137,51 +141,42 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(12.dp.toFloat(), top = true, bottom = false)
-            setContent {
-                AuthBottomSheetDialogCompose(
-                    name = "$appName($appNumber)",
-                    iconUrl = appIconUrl,
-                    scopes = scopes,
-                    onDismissRequest = {
-                        dismiss()
-                    },
-                    step = step,
-                    errorContent = errorContent,
-                    onConfirmed = {
-                        if (Session.getAccount()?.hasPin != true) {
-                            TipActivity.show(requireActivity(), TipType.Create)
-                        } else {
-                            step = AuthStep.INPUT
-                        }
-                    },
-                    onResetClick = {
-                        step = AuthStep.INPUT
-                    },
-                    onBiometricClick = {
-                        savedScopes = it
-                        showBiometricPrompt()
-                    },
-                    onVerifyRequest = { scopes, pin ->
-                        authVerify(scopes, pin)
-                    },
-                )
-            }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = 690.dp + requireContext().navigationBarHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-        }
+    @Composable
+    override fun ComposeContent() {
+        AuthBottomSheetDialogCompose(
+            name = "$appName($appNumber)",
+            iconUrl = appIconUrl,
+            scopes = scopes,
+            onDismissRequest = {
+                dismiss()
+            },
+            step = step,
+            errorContent = errorContent,
+            onConfirmed = {
+                if (Session.getAccount()?.hasPin != true) {
+                    TipActivity.show(requireActivity(), TipType.Create)
+                } else {
+                    step = AuthStep.INPUT
+                }
+            },
+            onResetClick = {
+                step = AuthStep.INPUT
+            },
+            onBiometricClick = {
+                savedScopes = it
+                showBiometricPrompt()
+            },
+            onVerifyRequest = { scopes, pin ->
+                authVerify(scopes, pin)
+            },
+        )
+    }
+
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return 690.dp + requireContext().navigationBarHeight()
+    }
+
 
     private fun authVerify(
         scopes: List<String>,
@@ -300,25 +295,6 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-                    else -> {}
-                }
-            }
-
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
-
     override fun onDismiss(dialog: DialogInterface) {
         if (!success && isAdded) {
             lifecycleScope.launch {
@@ -398,4 +374,7 @@ class AuthBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             override fun onCancel() {}
         }
+
+    override fun showError(error: String) {
+    }
 }

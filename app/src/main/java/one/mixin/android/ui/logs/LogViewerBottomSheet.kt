@@ -7,6 +7,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -17,21 +18,22 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
-class LogViewerBottomSheet : BottomSheetDialogFragment() {
+class LogViewerBottomSheet : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "LogViewerBottomSheet"
         fun newInstance() = LogViewerBottomSheet()
     }
 
-    private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -61,45 +63,20 @@ class LogViewerBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                LogViewerScreen(
-                    onNavigateUp = {
-                        dismissAllowingStateLoss()
-                    }
-                )
+    @Composable
+    override fun ComposeContent() {
+        LogViewerScreen(
+            onNavigateUp = {
+                dismissAllowingStateLoss()
             }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight() - this.getSafeAreaInsetsTop()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-        }
+        )
+    }
 
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    dismissAllowingStateLoss()
-                }
-            }
 
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
 }

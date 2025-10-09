@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -58,6 +59,7 @@ import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.getChainByChainId
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
@@ -86,7 +88,7 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
-class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "WalletConnectBottomSheetDialogFragment"
 
@@ -115,8 +117,6 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
         Error,
     }
 
-    private var behavior: BottomSheetBehavior<*>? = null
-
     override fun getTheme() = R.style.AppTheme_Dialog
 
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
@@ -144,74 +144,70 @@ class WalletConnectBottomSheetDialogFragment : BottomSheetDialogFragment() {
     @Inject
     lateinit var rpc: Rpc
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(11.dp.toFloat(), top = true, bottom = false)
-            step =
-                when (requestType) {
-                    RequestType.Connect -> Step.Connecting
-                    RequestType.SessionProposal -> Step.Input
-                    RequestType.SessionRequest -> Step.Sign
-                }
-            setContent {
-                when (requestType) {
-                    RequestType.Connect -> {
-                        Loading()
-                    }
-                    RequestType.SessionProposal -> {
-                        SessionProposalPage(
-                            version,
-                            account,
-                            step,
-                            chain,
-                            topic,
-                            sessionProposal,
-                            errorInfo,
-                            onDismissRequest = { dismiss() },
-                            showPin = { showPin() },
-                        )
-                    }
-                    RequestType.SessionRequest -> {
-                        val gson =
-                            GsonBuilder()
-                                .serializeNulls()
-                                .setPrettyPrinting()
-                                .create()
-                        SessionRequestPage(
-                            gson,
-                            version,
-                            account,
-                            step,
-                            chain,
-                            topic,
-                            sessionRequest,
-                            signData,
-                            asset,
-                            tipGas,
-                            errorInfo,
-                            onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
-                            onDismissRequest = { dismiss() },
-                            showPin = { showPin() },
-                        )
-                    }
-                }
-            }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                val ctx = requireContext()
-                behavior?.peekHeight = ctx.screenHeight() - this.getSafeAreaInsetsTop()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+    @Composable
+    override fun ComposeContent() {
+        when (requestType) {
+            RequestType.Connect -> {
+                Loading()
             }
 
-            checkV2ChainAndParseSignData()
+            RequestType.SessionProposal -> {
+                SessionProposalPage(
+                    version,
+                    account,
+                    step,
+                    chain,
+                    topic,
+                    sessionProposal,
+                    errorInfo,
+                    onDismissRequest = { dismiss() },
+                    showPin = { showPin() },
+                )
+            }
+
+            RequestType.SessionRequest -> {
+                val gson =
+                    GsonBuilder()
+                        .serializeNulls()
+                        .setPrettyPrinting()
+                        .create()
+                SessionRequestPage(
+                    gson,
+                    version,
+                    account,
+                    step,
+                    chain,
+                    topic,
+                    sessionRequest,
+                    signData,
+                    asset,
+                    tipGas,
+                    errorInfo,
+                    onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
+                    onDismissRequest = { dismiss() },
+                    showPin = { showPin() },
+                )
+            }
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        step =
+            when (requestType) {
+                RequestType.Connect -> Step.Connecting
+                RequestType.SessionProposal -> Step.Input
+                RequestType.SessionRequest -> Step.Sign
+            }
+        checkV2ChainAndParseSignData()
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(

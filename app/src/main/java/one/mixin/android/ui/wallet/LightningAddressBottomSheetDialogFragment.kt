@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,26 +38,27 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.extension.dp as dip
 
-class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "LightningAddressBottomSheetDialogFragment"
 
@@ -68,22 +70,15 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     var copyCallback: ((String) -> Unit)? = null
-    private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            val address = arguments?.getString(KEY_ADDRESS).orEmpty()
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(12.dip.toFloat(), top = true, bottom = false)
-            setContent {
-                MixinAppTheme {
+    private val address by lazy { arguments?.getString(KEY_ADDRESS).orEmpty() }
+
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
                     Column(
                         modifier = Modifier
                             .padding(bottom = GetNavBarHeightValue())
@@ -138,7 +133,7 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
                         ) {
-                            context.openUrl(getString(R.string.Lightning_link))
+                            context?.openUrl(getString(R.string.Lightning_link))
                         }
                         Spacer(modifier = Modifier.height(120.dp))
                         Button(
@@ -160,32 +155,16 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         Spacer(modifier = Modifier.height(30.dp))
                     }
                 }
-            }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = 690.dip + requireContext().navigationBarHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-        }
-
-
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(
-        dialog: Dialog,
-        style: Int,
-    ) {
-        super.setupDialog(dialog, R.style.MixinBottomSheet)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-        }
-        dialog.window?.setGravity(Gravity.BOTTOM)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
     }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return 690.dip + requireContext().navigationBarHeight()
+    }
+
+    override fun showError(error: String) {
+    }
+
+
     override fun onStart() {
         super.onStart()
         dialog?.window?.let { window ->
@@ -196,25 +175,6 @@ class LightningAddressBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
-
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-                    else -> {}
-                }
-            }
-
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
 
 }
 
