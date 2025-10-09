@@ -408,7 +408,7 @@ class ConversationListFragment : LinkFragment() {
         binding.searchBar.containerDisplay
 
     fun hideContainer() {
-        if (isAdded && parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null) {
+        if (isAdded && requireActivity().supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null) {
             binding.searchBar.hideContainer()
         }
     }
@@ -430,7 +430,7 @@ class ConversationListFragment : LinkFragment() {
             }
             searchBar.setOnConfirmClickListener {
                 val circlesFragment =
-                    parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+                    requireActivity().supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
                 circlesFragment.cancelSort()
                 searchBar.actionVa.showPrevious()
             }
@@ -440,7 +440,7 @@ class ConversationListFragment : LinkFragment() {
             searchBar.mOnQueryTextListener =
                 object : MaterialSearchView.OnQueryTextListener {
                     override fun onQueryTextChange(newText: String): Boolean {
-                        (parentFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
+                        (requireActivity().supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
                             newText,
                         )
                         return true
@@ -450,16 +450,16 @@ class ConversationListFragment : LinkFragment() {
             searchBar.setSearchViewListener(
                 object : MaterialSearchView.SearchViewListener {
                     override fun onSearchViewClosed() {
-                        navigationController.hideSearch(parentFragmentManager)
+                        navigationController.hideSearch(requireActivity().supportFragmentManager)
                     }
 
                     override fun onSearchViewOpened() {
-                        navigationController.showSearch(parentFragmentManager)
+                        navigationController.showSearch(requireActivity().supportFragmentManager)
                     }
                 },
             )
             searchBar.hideAction = {
-                (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
+                (requireActivity().supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
                 hideCircles()
             }
             searchBar.logo.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
@@ -481,19 +481,19 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
             searchBar.showAction = {
-                if (parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null) {
-                    parentFragmentManager.beginTransaction().replace(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+                if (requireActivity().supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) == null) {
+                    requireActivity().supportFragmentManager.beginTransaction().replace(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
                 }
             }
         }
         if (!binding.searchBar.isOpen) {
-            navigationController.removeSearch(parentFragmentManager)
+            navigationController.removeSearch(requireActivity().supportFragmentManager)
         }
     }
 
     fun hideCircles() {
-        if (isAdded && parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null) {
-            parentFragmentManager.beginTransaction().remove(circlesFragment).commit()
+        if (isAdded && requireActivity().supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) != null) {
+            requireActivity().supportFragmentManager.beginTransaction().remove(circlesFragment).commit()
         }
     }
 
@@ -515,7 +515,7 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             conversationListViewModel.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
                 val circlesFragment =
-                    parentFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
+                    requireActivity().supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
                 circlesFragment?.edit(circleItem)
             }
         }
@@ -733,7 +733,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        if (!parentFragmentManager.isStateSaved) {
+        if (!requireActivity().supportFragmentManager.isStateSaved) {
             bottomSheet.show()
         }
     }
@@ -749,12 +749,12 @@ class ConversationListFragment : LinkFragment() {
             if (isAdded) {
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
-                        val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
+                        val existingDialog = requireActivity().supportFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
                         existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
 
-                        if (type != null && !parentFragmentManager.isStateSaved) {
-                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
-                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                        if (type != null && !requireActivity().supportFragmentManager.isStateSaved) {
+                            if (requireActivity().supportFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(requireActivity().supportFragmentManager, ReminderBottomSheetDialogFragment.TAG)
                             }
                         }
                     }

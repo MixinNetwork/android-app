@@ -18,46 +18,6 @@ import one.mixin.android.ui.wallet.WalletFragment
 import timber.log.Timber
 
 class NavigationController() {
-
-    sealed class Destination(val tag: String)
-
-    data object ConversationList : Destination(ConversationListFragment.TAG)
-
-    data object Wallet : Destination(WalletFragment.TAG)
-
-    data object Explore : Destination(ExploreFragment.TAG)
-
-    data object Market : Destination(MarketFragment.TAG)
-
-    private val destinations = listOf(ConversationList.tag, Wallet.tag, Market.tag, Explore.tag)
-
-    fun navigate(
-        fragmentManager: FragmentManager,
-        destination: Destination,
-        destinationFragment: Fragment,
-    ) {
-        try {
-            // Ensure any previous transactions are completed
-            fragmentManager.executePendingTransactions()
-            val tx = fragmentManager.beginTransaction()
-            val tag = destination.tag
-            val f = fragmentManager.findFragmentByTag(tag)
-            if (destinationFragment.isAdded) {
-                tx.show(destinationFragment)
-            } else if (f == null || !f.isAdded) {
-                tx.add(R.id.root_view, destinationFragment, tag)
-            } else {
-                tx.show(f)
-            }
-            fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag }.forEach { fragment ->
-                tx.hide(fragment)
-            }
-            tx.commitNowAllowingStateLoss()
-        } catch (e: Exception) {
-            Timber.w(e)
-        }
-    }
-
     fun pushContacts(activity: Activity) {
         ContactsActivity.show(activity)
     }
