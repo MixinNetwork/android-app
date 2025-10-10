@@ -43,7 +43,12 @@ class NavigationController() {
             val tag = destination.tag
             val f = fragmentManager.findFragmentByTag(tag)
             if (destinationFragment.isAdded) {
-                tx.show(destinationFragment)
+                if (fragmentManager != destinationFragment.parentFragmentManager) {
+                    destinationFragment.parentFragmentManager.beginTransaction().remove(destinationFragment).commitNowAllowingStateLoss()
+                    tx.add(R.id.root_view, destinationFragment, tag)
+                } else {
+                    tx.show(destinationFragment)
+                }
             } else if (f == null || !f.isAdded) {
                 tx.add(R.id.root_view, destinationFragment, tag)
             } else {
@@ -53,15 +58,6 @@ class NavigationController() {
                 tx.hide(fragment)
             }
             tx.commitNowAllowingStateLoss()
-        } catch (e: IllegalStateException) {
-            val tx = fragmentManager.beginTransaction()
-            val tag = destination.tag
-            fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag }.forEach { fragment ->
-                tx.remove(fragment)
-            }
-            tx.add(R.id.root_view, destinationFragment, tag)
-            tx.commitNowAllowingStateLoss()
-            Timber.e(e)
         } catch (e: Exception) {
             Timber.w(e)
         }

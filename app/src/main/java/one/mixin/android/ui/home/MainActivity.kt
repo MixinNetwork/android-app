@@ -1220,33 +1220,6 @@ class MainActivity : BlazeBaseActivity() {
         Timber.e("initFragmentsFromSavedState: nav_chat")
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    private fun restoreFragmentFromTag(fragmentTag: String?, navItemId: Int) {
-        when (fragmentTag) {
-            ConversationListFragment.TAG -> {
-                navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, conversationListFragment)
-            }
-            WalletFragment.TAG -> {
-                if (Session.getAccount()?.hasPin == true) {
-                    navigationController.navigate(supportFragmentManager, NavigationController.Wallet, walletFragment)
-                } else {
-                    navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, conversationListFragment)
-                    binding.bottomNav.selectedItemId = R.id.nav_chat
-                }
-            }
-            MarketFragment.TAG -> {
-                navigationController.navigate(supportFragmentManager, NavigationController.Market, marketFragment)
-            }
-            ExploreFragment.TAG -> {
-                navigationController.navigate(supportFragmentManager, NavigationController.Explore, exploreFragment)
-            }
-            else -> {
-                navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, conversationListFragment)
-                binding.bottomNav.selectedItemId = R.id.nav_chat
-            }
-        }
-    }
-
     companion object {
         const val URL = "url"
         const val SCAN = "scan"
