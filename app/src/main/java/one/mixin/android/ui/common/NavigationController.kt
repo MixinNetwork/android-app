@@ -59,7 +59,7 @@ class NavigationController() {
             }
             tx.commitNowAllowingStateLoss()
         } catch (e: Exception) {
-            Timber.w(e)
+            Timber.e(e)
         }
     }
 
