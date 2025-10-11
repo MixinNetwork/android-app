@@ -59,7 +59,6 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet

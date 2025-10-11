@@ -22,7 +22,6 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
-import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences

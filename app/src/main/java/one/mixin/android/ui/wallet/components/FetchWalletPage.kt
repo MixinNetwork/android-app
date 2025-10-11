@@ -78,7 +78,7 @@ data class IndexedWallet(
 
 @Composable
 private fun LoadingState(title: String, subtitle: String) {
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -136,7 +136,7 @@ fun SelectContent(
     onFindMore: () -> Unit,
     isLoadingMore: Boolean,
 ) {
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         val selectableWallets = wallets.filter { !it.exists }
         val isAllSelected = selectableWallets.isNotEmpty() && selectedWalletInfos.containsAll(selectableWallets)
 
@@ -249,7 +249,7 @@ fun SelectContent(
 
 @Composable
 fun ImportingContent(onFinished: () -> Unit) {
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         LoadingState(
             title = stringResource(R.string.importing_into_your_wallet),
             subtitle = stringResource(R.string.fetching_shouldnt_take_long)
@@ -266,7 +266,7 @@ fun ImportErrorContent(
     onNotNow: () -> Unit
 ) {
     val context = LocalContext.current
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         Column(
             modifier = Modifier
                 .fillMaxSize()
