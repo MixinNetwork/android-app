@@ -1272,7 +1272,7 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        if (!isAdded) {
+        if (!isAdded || activity?.isFinishing == true || activity?.isDestroyed == true) {
             return
         }
         val choices =
@@ -1284,7 +1284,7 @@ class ConversationListFragment : LinkFragment() {
             )
         var duration = MUTE_8_HOURS
         var whichItem = 1 // default choice
-        alertDialogBuilder()
+        requireActivity().alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.Cancel) { dialog, _ ->
                 dialog.dismiss()
