@@ -10,7 +10,7 @@ import java.math.BigDecimal
 @Suppress("EqualsOrHashCode")
 @Parcelize
 data class SwapToken(
-    @SerializedName("wallet_id") val walletId: String?,
+    @SerializedName("wallet_id") var walletId: String?,
     @SerializedName("address") val address: String,
     @SerializedName("assetId") val assetId: String,
     @SerializedName("decimals") val decimals: Int,
