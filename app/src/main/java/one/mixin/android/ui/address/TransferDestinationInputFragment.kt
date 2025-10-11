@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -29,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -40,11 +42,13 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.ui.address.FetchUserAddressFragment.Companion.ARGS_TO_USER
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
 import one.mixin.android.ui.address.page.MemoInputPage
@@ -216,8 +220,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedTransferDest,
                                 toContact = {
                                     requireView().hideKeyboard()
+                                    Timber.e("Transfer to contact $token $web3Token")
                                     token?.let { t ->
-                                        TransferContactBottomSheetDialogFragment.newInstance(t)
+                                        TransferContactBottomSheetDialogFragment.newInstance()
                                             .apply {
                                                 onUserClick = { user->
                                                     navigateToInputFragmentWithBundle(
@@ -225,6 +230,38 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                             putParcelable(InputFragment.ARGS_TO_USER, user)
                                                             putParcelable(InputFragment.ARGS_TOKEN, t)
                                                         })
+                                                }
+                                            }
+                                            .show(
+                                                parentFragmentManager,
+                                                TransferContactBottomSheetDialogFragment.TAG
+                                            )
+                                    }
+                                    web3Token?.let { t ->
+                                        TransferContactBottomSheetDialogFragment.newInstance()
+                                            .apply {
+                                                onUserClick = { user ->
+                                                    this@TransferDestinationInputFragment.lifecycleScope.launch {
+                                                        val fromAddress = web3ViewModel.getAddressesByChainId(t.walletId, t.chainId)?.destination
+                                                        if (fromAddress.isNullOrBlank()) {
+                                                            toast(R.string.Alert_Not_Support)
+                                                            return@launch
+                                                        }
+                                                        val chain = chainToken ?: web3ViewModel.web3TokenItemById(t.walletId, t.chainId)
+                                                        if (chain == null) {
+                                                            toast(R.string.Alert_Not_Support)
+                                                            return@launch
+                                                        }
+                                                        findNavController().navigate(
+                                                            R.id.action_transfer_destination_to_fetch_user_address,
+                                                            Bundle().apply {
+                                                                putParcelable(ARGS_TO_USER, user)
+                                                                putParcelable(FetchUserAddressFragment.ARGS_WEB3_TOKEN, t)
+                                                                putString(FetchUserAddressFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                                putParcelable(FetchUserAddressFragment.ARGS_CHAIN_TOKEN, chain)
+                                                            }
+                                                        )
+                                                    }
                                                 }
                                             }
                                             .show(
