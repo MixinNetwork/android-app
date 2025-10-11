@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,6 +50,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toHex
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.ConversationJob
@@ -130,6 +132,7 @@ import java.io.File
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.String
 
 @HiltViewModel
 class BottomSheetViewModel
@@ -166,6 +169,19 @@ class BottomSheetViewModel
             }
 
         fun assetItems(): LiveData<List<TokenItem>> = tokenRepository.assetItems()
+
+        suspend fun findAndSync(appId: String) = userRepository.findOrSyncApp(appId)
+
+        suspend fun getBotPublicKey(appId: String, sp: SharedPreferences, reloadPublicKey: Boolean): String? {
+            var pub = sp.getString("bot_$appId", null)
+            return if (!reloadPublicKey && pub.isNullOrBlank().not()) {
+                pub
+            } else {
+                pub = userRepository.fetchSessionsSuspend(listOf(appId)).data?.firstOrNull()?.publicKey
+                if (pub != null) sp.putString("bot_$appId", pub)
+                pub
+            }
+        }
 
         fun coinItems(): LiveData<List<CoinItem>> = tokenRepository.coinItems()
 
@@ -1808,4 +1824,8 @@ class BottomSheetViewModel
         }
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+
+        suspend fun bindReferral(code: String) = userRepository.bindReferral(code)
+
+        suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 }
