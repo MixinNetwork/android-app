@@ -330,6 +330,7 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                             color = MixinAppTheme.colors.iconGray,
                                             modifier = Modifier.padding(13.dp)
                                         )
+                                        Spacer(Modifier.height(40.dp))
                                     } else {
                                         ActionButton(
                                             text = stringResource(R.string.Confirm),

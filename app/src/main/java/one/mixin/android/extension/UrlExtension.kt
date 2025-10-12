@@ -77,6 +77,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_MARKET, true) ||
         startsWith(Constants.Scheme.MIXIN_REFERRALS, true) ||
         startsWith(Constants.Scheme.HTTPS_REFERRALS, true) ||
+        startsWith(Constants.Scheme.HTTPS_MEMBERSHIP, true) ||
         startsWith(Constants.Scheme.DEVICE, true) ||
         startsWith(Constants.Scheme.SEND, true) ||
         startsWith(Constants.Scheme.MIXIN_SEND, true) ||
