@@ -34,7 +34,8 @@
         var initGTCaptcha = function() {
             initGeetest4({
                 captchaId: '#apiKey',
-                product: 'bind'
+                product: 'bind',
+                hideBar: ['close']
             }, function(captcha) {
                 captcha.onReady(function(){
                     captcha.showCaptcha();
