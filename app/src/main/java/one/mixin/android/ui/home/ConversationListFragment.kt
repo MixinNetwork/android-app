@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -76,6 +77,7 @@ import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
+import one.mixin.android.util.ErrorHandler.Companion.handleError
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -1272,78 +1274,83 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        if (!isAdded) {
-            return
-        }
-        val choices =
-            arrayOf(
-                getString(R.string.one_hour),
-                resources.getQuantityString(R.plurals.Hour, 8, 8),
-                getString(R.string.one_week),
-                getString(R.string.one_year),
-            )
-        var duration = MUTE_8_HOURS
-        var whichItem = 1 // default choice
-        alertDialogBuilder()
-            .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.Cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                if (conversationItem.isGroupConversation()) {
-                    lifecycleScope.launch {
-                        handleMixinResponse(
-                            invokeNetwork = {
-                                conversationListViewModel.mute(
-                                    duration.toLong(),
-                                    conversationId = conversationItem.conversationId,
-                                )
-                            },
-                            successBlock = { response ->
-                                conversationListViewModel.updateGroupMuteUntil(
-                                    conversationItem.conversationId,
-                                    response.data!!.muteUntil,
-                                )
-                                toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
-                            },
-                        )
-                    }
-                } else {
-                    val account = Session.getAccount()
-                    account?.let {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }) {
+            val choices =
+                arrayOf(
+                    getString(R.string.one_hour),
+                    resources.getQuantityString(R.plurals.Hour, 8, 8),
+                    getString(R.string.one_week),
+                    getString(R.string.one_year),
+                )
+            var duration = MUTE_8_HOURS
+            var whichItem = 1 // default choice
+            val builder = alertDialogBuilder()
+                .setTitle(getString(R.string.contact_mute_title))
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                    if (conversationItem.isGroupConversation()) {
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
                                     conversationListViewModel.mute(
                                         duration.toLong(),
-                                        senderId = it.userId,
-                                        recipientId = conversationItem.ownerId,
+                                        conversationId = conversationItem.conversationId,
                                     )
                                 },
                                 successBlock = { response ->
-                                    conversationListViewModel.updateMuteUntil(
-                                        conversationItem.ownerId,
+                                    conversationListViewModel.updateGroupMuteUntil(
+                                        conversationItem.conversationId,
                                         response.data!!.muteUntil,
                                     )
-                                    toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                                 },
                             )
                         }
+                    } else {
+                        val account = Session.getAccount()
+                        account?.let {
+                            lifecycleScope.launch {
+                                handleMixinResponse(
+                                    invokeNetwork = {
+                                        conversationListViewModel.mute(
+                                            duration.toLong(),
+                                            senderId = it.userId,
+                                            recipientId = conversationItem.ownerId,
+                                        )
+                                    },
+                                    successBlock = { response ->
+                                        conversationListViewModel.updateMuteUntil(
+                                            conversationItem.ownerId,
+                                            response.data!!.muteUntil,
+                                        )
+                                        toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    dialog.dismiss()
+                }
+                .setSingleChoiceItems(choices, whichItem) { _, which ->
+                    whichItem = which
+                    when (which) {
+                        0 -> duration = MUTE_1_HOUR
+                        1 -> duration = MUTE_8_HOURS
+                        2 -> duration = MUTE_1_WEEK
+                        3 -> duration = MUTE_1_YEAR
                     }
                 }
 
-                dialog.dismiss()
+            if (!isAdded) {
+                return@launch
             }
-            .setSingleChoiceItems(choices, whichItem) { _, which ->
-                whichItem = which
-                when (which) {
-                    0 -> duration = MUTE_1_HOUR
-                    1 -> duration = MUTE_8_HOURS
-                    2 -> duration = MUTE_1_WEEK
-                    3 -> duration = MUTE_1_YEAR
-                }
-            }
-            .show()
+            builder.show()
+        }
     }
 
     private fun unMute(conversationItem: ConversationItem) {
