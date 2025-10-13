@@ -164,7 +164,7 @@ object Constants {
         const val HTTPS_INSCRIPTION = "https://mixin.one/inscriptions"
         const val HTTPS_MARKET = "https://mixin.one/markets"
 
-        const val HTTPS_REFERRALS  = "https://mixin.one/referrals"
+        const val HTTPS_REFERRALS = "https://mixin.one/referrals"
         const val HTTPS_APPS = "https://mixin.one/apps"
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_SEND = "https://mixin.one/send"
