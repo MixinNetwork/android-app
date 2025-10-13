@@ -15,6 +15,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
@@ -44,6 +46,9 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val SCHEME = "scheme"
         private const val MIXIN = "mixin.one"
         private const val SWAP = "swap"
+
+        private const val REFERRAL = "referrals"
+
         const val WC = "wc"
 
         fun show(
@@ -112,11 +117,16 @@ class UrlInterpreterActivity : BaseActivity() {
 
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
+            REFERRAL -> {
+                InputReferralBottomSheetDialogFragment.newInstance(uri.pathSegments.first()).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+            }
+
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP, SWAP -> {
+            CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP, SWAP, REFERRAL -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
+
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true && Session.getTipPub() != null && Session.hasSafe()) {
@@ -128,9 +138,11 @@ class UrlInterpreterActivity : BaseActivity() {
                     }
                 }
             }
+
             DEVICE -> {
                 ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
+
             SEND -> {
                 uri.handleSchemeSend(
                     this,
