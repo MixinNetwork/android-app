@@ -115,6 +115,7 @@ class FetchUserAddressFragment : BaseFragment(R.layout.fragment_compose) {
                             putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
                             putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
+                            putParcelable(InputFragment.ARGS_TO_USER, toUser)
                         })
 
                     }

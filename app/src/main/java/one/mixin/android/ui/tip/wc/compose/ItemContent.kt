@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -22,6 +23,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -35,7 +37,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.wallet.UserBadge
+import one.mixin.android.vo.User
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -115,6 +120,46 @@ fun ItemContent(
                 fontSize = 14.sp,
             )
         }
+    }
+}
+
+@Composable
+fun ItemContent(
+    title: String,
+    subTitle: String,
+    toUser: User,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+    ) {
+        Text(
+            text = title,
+            color = MixinAppTheme.colors.textRemarks,
+            fontSize = 14.sp,
+            maxLines = 1,
+        )
+        Box(modifier = Modifier.height(5.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CoilImage(
+                model = toUser.avatarUrl,
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier =
+                    Modifier
+                        .size(18.dp)
+                        .clip(CircleShape),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            UserBadge(toUser)
+        }
+        Box(modifier = Modifier.height(5.dp))
+        Text(
+            text = subTitle,
+            color = MixinAppTheme.colors.textAssist,
+            fontSize = 14.sp,
+        )
     }
 }
 
