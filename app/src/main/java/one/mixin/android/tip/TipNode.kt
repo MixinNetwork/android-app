@@ -353,7 +353,7 @@ class TipNode
             grace: Long,
             assignee: ByteArray?,
         ): TipSignRequest {
-            Timber.e("genTipSignRequest to ${tipSigner.info()}")
+            Timber.e("genTipSignRequest start ${tipSigner.index}")
             val signerPk = Tip.pubKeyFromBase58(tipSigner.identity)
             val userPk = userSk.publicKey()
             val esum = (ephemeral + tipSigner.identity.toByteArray()).sha3Sum256()
@@ -361,6 +361,7 @@ class TipNode
             if (assignee != null) {
                 msg += assignee
             }
+            Timber.e("genTipSignRequest sign start")
             val sig = userSk.sign(msg).toHex()
 
             val userPkStr = userPk.publicKeyString()
@@ -375,6 +376,7 @@ class TipNode
                     grace = grace,
                 )
             val dataJson = gson.toJson(data).toByteArray()
+            Timber.e("genTipSignRequest encrypt start ${tipSigner.index}")
             val cipher = Tip.encrypt(signerPk, userSk, dataJson)
             Timber.e("genTipSignRequest end ${tipSigner.index}")
             return TipSignRequest(sig, userPkStr, cipher.base64RawURLEncode(), watcherHex)
