@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentHiddenAssetsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navigate
@@ -61,6 +62,17 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
         super.onViewCreated(view, savedInstanceState)
         assetsAdapter.onItemListener = this
         binding.apply {
+            lifecycleScope.launch {
+                val wallet = web3ViewModel.findWalletById(walletId)
+                if (wallet != null) {
+                    titleView.setSubTitle(
+                        getString(R.string.Hidden_Assets),
+                        wallet.name.takeIf { it.isNotEmpty() } ?: getString(R.string.Common_Wallet)
+                    )
+                } else {
+                    titleView.setSubTitle(getString(R.string.Buy), getString(R.string.Common_Wallet))
+                }
+            }
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             ItemTouchHelper(
                 AssetItemCallback(

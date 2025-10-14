@@ -22,6 +22,7 @@ import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.signBotSignature
 import one.mixin.android.crypto.useGoEd
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -31,7 +32,6 @@ import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -398,27 +398,22 @@ object Session {
     }
 
     fun getBotSignature(
-        publicKey: String?,
+        botPublicKey: String,
         request: Request,
     ): Pair<Long, String> {
-        val botPk = publicKey?.base64RawURLDecode() ?: return Pair(0L, "")
         val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
-        val private = privateKeyToCurve25519(edKeyPair.privateKey)
-        val sharedKey = calculateAgreement(botPk, private)
-        val ts = currentTimeSeconds()
-        var content = "$ts${request.method}${request.url.cutOut()}"
-        request.body?.apply {
-            if (contentLength() > 0) {
-                content += bodyToString()
-            }
-        }
-        val accountId = getAccountId()
-        return if (accountId == null) {
-            Pair(ts, "")
-        } else {
-            Pair(ts, (accountId.toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
-        }
+        val body = request.body?.bodyToString()
+        return signBotSignature(getAccountId()!!, botPublicKey, edKeyPair, request.method, request.url.cutOut(), body)
     }
+
+    fun getBotSignature(
+        botPublicKey: String?,
+        method: String, path: String, body: String
+    ): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        return signBotSignature(getAccountId()!!, botPublicKey!!, edKeyPair, method, path, body)
+    }
+
 
     fun getRegisterSignature(
         message: String,

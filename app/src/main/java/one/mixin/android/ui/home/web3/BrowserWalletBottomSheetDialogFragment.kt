@@ -64,8 +64,8 @@ import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
@@ -269,17 +269,21 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 try {
                     tipGas = withContext(Dispatchers.IO) {
-                        val r = viewModel.estimateFee(
-                            EstimateFeeRequest(
-                                assetId,
-                                transaction.data,
-                                transaction.from,
-                                transaction.to,
+                        val r = runCatching {
+                            viewModel.estimateFee(
+                                EstimateFeeRequest(
+                                    assetId,
+                                    null,
+                                    transaction.data,
+                                    transaction.from,
+                                    transaction.to,
+                                    transaction.value,
+                                )
                             )
-                        )
-                        if (r.isSuccess.not()) {
+                        }.getOrNull()
+                        if (r?.isSuccess != true) {
                             step = Step.Error
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                            ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
                             return@withContext null
                         }
                         buildTipGas(chain.chainId, r.data!!)

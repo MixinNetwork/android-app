@@ -43,6 +43,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 @AndroidEntryPoint
 class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -147,10 +148,10 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         formatAmount(inputAmount, tokenSymbol)
                     } else {
                         // Calculate primary from minor
-                        val minorValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                        val minorValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         val priceDecimal = price.toBigDecimal()
-                        val primaryValue = if (priceDecimal > java.math.BigDecimal.ZERO) {
-                            minorValue.divide(priceDecimal, 8, java.math.RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+                        val primaryValue = if (priceDecimal > BigDecimal.ZERO) {
+                            minorValue.divide(priceDecimal, 8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
                         } else "0"
                         formatAmount(primaryValue, tokenSymbol)
                     }
@@ -161,10 +162,10 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         formatAmount(inputAmount, Fiats.getAccountCurrencyAppearance())
                     } else {
                         // Calculate minor from primary
-                        val primaryValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                        val primaryValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         val priceDecimal = price.toBigDecimal()
-                        val minorValue = if (priceDecimal > java.math.BigDecimal.ZERO) {
-                            primaryValue.multiply(priceDecimal).setScale(2, java.math.RoundingMode.DOWN).toPlainString()
+                        val minorValue = if (priceDecimal > BigDecimal.ZERO) {
+                            primaryValue.multiply(priceDecimal).setScale(2, RoundingMode.DOWN).toPlainString()
                         } else "0"
                         formatAmount(minorValue, Fiats.getAccountCurrencyAppearance())
                     }
@@ -172,6 +173,7 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
                 MixinAppTheme {
                     InputAmountFlow(
+                        inputAmount = inputAmount,
                         primaryAmount = if (isPrimaryMode) formattedPrimaryAmount else formattedMinorAmount,
                         minorAmount = if (isPrimaryMode) formattedMinorAmount else formattedPrimaryAmount,
                         tokenAmount = formattedPrimaryAmount,
@@ -191,14 +193,14 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         },
                         onSwitchClick = {
                             val currentPrimaryValue = if (isPrimaryMode) {
-                                inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                                inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                             } else {
-                                val minorValue = inputAmount.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
+                                val minorValue = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                 val priceDecimal = price.toBigDecimal()
-                                if (priceDecimal > java.math.BigDecimal.ZERO) {
-                                    minorValue.divide(priceDecimal, 8, java.math.RoundingMode.DOWN)
+                                if (priceDecimal > BigDecimal.ZERO) {
+                                    minorValue.divide(priceDecimal, 8, RoundingMode.DOWN)
                                 } else {
-                                    java.math.BigDecimal.ZERO
+                                    BigDecimal.ZERO
                                 }
                             }
 
@@ -208,12 +210,12 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 currentPrimaryValue.stripTrailingZeros().toPlainString()
                             } else {
                                 val priceDecimal = price.toBigDecimal()
-                                if (priceDecimal > java.math.BigDecimal.ZERO) {
-                                    currentPrimaryValue.multiply(priceDecimal).setScale(2, java.math.RoundingMode.DOWN).toPlainString()
+                                if (priceDecimal > BigDecimal.ZERO) {
+                                    currentPrimaryValue.multiply(priceDecimal).setScale(2, RoundingMode.DOWN).toPlainString()
                                 } else "0"
                             }
 
-                            if (inputAmount.toBigDecimalOrNull()?.let { it < java.math.BigDecimal("0.000001") } == true) {
+                            if (inputAmount.toBigDecimalOrNull()?.let { it < BigDecimal("0.000001") } == true) {
                                 inputAmount = "0"
                             }
                             onAmountChanged?.invoke(formattedPrimaryAmount, formattedMinorAmount)

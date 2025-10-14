@@ -54,6 +54,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
@@ -68,6 +69,7 @@ object InputAmountDestinations {
 
 @Composable
 fun InputAmountFlow(
+    inputAmount: String,
     primaryAmount: String,
     minorAmount: String,
     tokenAmount: String,
@@ -100,6 +102,7 @@ fun InputAmountFlow(
     ) {
         composable(InputAmountDestinations.INPUT) {
             InputAmountScreen(
+                inputAmount = inputAmount,
                 primaryAmount = primaryAmount,
                 minorAmount = minorAmount,
                 onNumberClick = onNumberClick,
@@ -138,6 +141,7 @@ fun InputAmountFlow(
 
 @Composable
 fun InputAmountScreen(
+    inputAmount: String,
     primaryAmount: String,
     minorAmount: String,
     onNumberClick: (String) -> Unit,
@@ -247,21 +251,19 @@ fun InputAmountScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Full width button with 20dp horizontal margins
-        Button(
+
+        ActionButton(
+            text = stringResource(id = R.string.Review),
             onClick = onContinueClick,
+            backgroundColor = MixinAppTheme.colors.accent,
+            contentColor = Color.White,
+            enabled = (inputAmount.toFloatOrNull() ?: 0f) > 0f,
+            disabledContentColor = Color.White,
+            disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 48.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
-            contentPadding = PaddingValues(vertical = 12.dp),
-        ) {
-            Text(
-                stringResource(id = R.string.Review),
-                fontSize = 16.sp,
-                color = Color.White,
-            )
-        }
+                .padding(horizontal = 48.dp)
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
     }
@@ -689,73 +691,43 @@ fun InputAmountPreviewScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 50.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(36.dp)
         ) {
             if (address == null) {
-                Button(
-                    onClick = {
-                        onShareClick(depositUri)
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.Share),
-                        fontSize = 16.sp,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-                }
+                ActionButton(
+                    text = stringResource(R.string.Share),
+                    onClick = { onShareClick(depositUri) },
+                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                    contentColor = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
 
-                Button(
+                ActionButton(
+                    text = stringResource(R.string.Forward),
                     onClick = {
                         val tokenDisplayName = "${getChainName(tokenChainId, tokenChainName, tokenAssetKey)}"
                         onForward(tokenDisplayName, depositUri, primaryAmount)
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.Forward),
-                        fontSize = 16.sp,
-                        color = Color.White,
-                    )
-                }
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    modifier = Modifier.weight(1f)
+                )
             } else {
-                Button(
-                    onClick = {
-                        onCopyClick(depositUri)
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.backgroundWindow),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.Copy),
-                        fontSize = 16.sp,
-                        color = MixinAppTheme.colors.textPrimary
-                    )
-                }
+                ActionButton(
+                    text = stringResource(R.string.Copy),
+                    onClick = { onCopyClick(depositUri) },
+                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                    contentColor = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
 
-                Button(
-                    onClick = {
-                        onShareClick(depositUri)
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.Share),
-                        fontSize = 16.sp,
-                        color = Color.White,
-                    )
-                }
+                ActionButton(
+                    text = stringResource(R.string.Share),
+                    onClick = { onShareClick(depositUri) },
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
         Spacer(modifier = Modifier.height(10.dp))

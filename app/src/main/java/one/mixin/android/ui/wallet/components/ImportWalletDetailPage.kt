@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenu
@@ -41,6 +43,8 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -77,7 +81,6 @@ fun ImportWalletDetailPage(
         "Ethereum" to Constants.ChainId.ETHEREUM_CHAIN_ID,
         "Base" to Constants.ChainId.Base,
         "BSC" to Constants.ChainId.BinanceSmartChain,
-        "Polygon" to Constants.ChainId.Polygon,
         "Polygon" to Constants.ChainId.Polygon,
         "Arbitrum" to Constants.ChainId.Arbitrum,
         "Optimism" to Constants.ChainId.Optimism,
@@ -214,6 +217,7 @@ fun ImportWalletDetailPage(
         }) {
             Column(
                 modifier = Modifier
+                    .imePadding()
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
@@ -304,6 +308,10 @@ fun ImportWalletDetailPage(
                             unfocusedBorderColor = Color.Transparent,
                             focusedBorderColor = Color.Transparent,
                             cursorColor = MixinAppTheme.colors.accent
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
                         )
                     )
                     if (text.isNotBlank()) {
@@ -370,7 +378,7 @@ fun ImportWalletDetailPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 48.dp, vertical = 8.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            textAlign = TextAlign.Center
                         )
                     }
                     showInvalidError -> {
@@ -387,7 +395,7 @@ fun ImportWalletDetailPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 48.dp, vertical = 8.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            textAlign = TextAlign.Center
                         )
                     }
                     showReimportMismatchError -> {
@@ -397,7 +405,7 @@ fun ImportWalletDetailPage(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 48.dp, vertical = 8.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
@@ -418,8 +426,8 @@ fun ImportWalletDetailPage(
                     },
                     enabled = isButtonEnabled,
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = if (isButtonEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                        backgroundColor = if (isButtonEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGray,
+                        disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
                         contentColor = Color.White,
                         disabledContentColor = Color.White
                     ),
@@ -436,7 +444,7 @@ fun ImportWalletDetailPage(
                         color = Color.White
                     )
                 }
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }

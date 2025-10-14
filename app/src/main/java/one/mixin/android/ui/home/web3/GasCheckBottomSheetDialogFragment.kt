@@ -256,16 +256,20 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         viewModel.refreshAsset(chainId)
         try {
             val tipGas = withContext(Dispatchers.IO) {
-                val r = viewModel.estimateFee(
-                    EstimateFeeRequest(
-                        chainId,
-                        transaction.data,
-                        transaction.from,
-                        transaction.to,
+                val r = runCatching {
+                    viewModel.estimateFee(
+                        EstimateFeeRequest(
+                            chainId,
+                            null,
+                            transaction.data,
+                            transaction.from,
+                            transaction.to,
+                            transaction.value,
+                        )
                     )
-                )
-                if (r.isSuccess.not()) {
-                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                }.getOrNull()
+                if (r?.isSuccess != true) {
+                    ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
                     return@withContext null
                 }
                 buildTipGas(chain.chainId, r.data!!)

@@ -4,16 +4,13 @@ import android.content.Context
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
-import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
-import one.mixin.android.api.service.TokenService
 import one.mixin.android.crypto.CryptoWalletHelper
-import one.mixin.android.db.TokenDao
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -22,7 +19,6 @@ import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem

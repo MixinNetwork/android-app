@@ -1,7 +1,6 @@
 package one.mixin.android.ui.tip.wc.compose
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -30,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -43,7 +41,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun ItemWalletContent(
     title: String,
-    fontSize: TextUnit = 14.sp,
+    fontSize: TextUnit = 16.sp,
 ) {
     Column(
         modifier =
@@ -53,7 +51,7 @@ fun ItemWalletContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textAssist,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -93,7 +91,7 @@ fun ItemContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textAssist,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -105,7 +103,7 @@ fun ItemContent(
             Text(
                 text = subTitle,
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
             )
         }
 
@@ -137,22 +135,22 @@ fun TextWithRoundedLabelInline(
             appendInlineContent("label", "[label]")
         },
         color = MixinAppTheme.colors.textPrimary,
-        fontSize = 14.sp,
+        fontSize = 16.sp,
         inlineContent = mapOf(
             "label" to InlineTextContent(
                 placeholder = Placeholder(
                     width = with(density) {
-                        (measureTextWidth(label, (14 * 0.8).sp) + 12.dp).toSp()
+                        (measureTextWidth(label, (16 * 0.8).sp) + 12.dp).toSp()
                     },
                     height = with(density) {
-                        (16.dp).toSp()
+                        16.5.sp
                     },
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .background(
                             color = accentColor,
                             shape = RoundedCornerShape(4.dp)
@@ -163,13 +161,12 @@ fun TextWithRoundedLabelInline(
                     Text(
                         text = label,
                         color = Color.White,
-                        fontSize = (14 * 0.8).sp,
-                        lineHeight = 14.sp,
+                        fontSize = (16 * 0.8).sp,
+                        lineHeight = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
-                            .widthIn(max = 100.dp)
                     )
                 }
             }

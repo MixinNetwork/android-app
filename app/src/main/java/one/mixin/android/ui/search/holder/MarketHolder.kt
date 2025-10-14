@@ -38,7 +38,7 @@ class MarketHolder(val binding: ItemSearchMarketBinding) : NormalHolder(binding.
             binding.changeTv.visibility = View.GONE
         } else {
             binding.changeTv.visibility = View.VISIBLE
-            binding.priceTv.text = "${Fiats.getSymbol()}${BigDecimal(market.currentPrice).priceFormat()}"
+            binding.priceTv.text = "${Fiats.getSymbol()}${ BigDecimal(market.currentPrice).multiply(BigDecimal(Fiats.getRate())).numberFormat2()}"
             if (market.marketCapChangePercentage24h.isNotEmpty()) {
                 val changeUsd = BigDecimal(market.marketCapChangePercentage24h)
                 val isPositive = changeUsd >= BigDecimal.ZERO

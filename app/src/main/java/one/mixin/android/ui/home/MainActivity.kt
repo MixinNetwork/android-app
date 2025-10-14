@@ -17,7 +17,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -36,7 +35,6 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.jakewharton.rxbinding3.material.itemSelections
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -248,7 +246,7 @@ class MainActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        navigationController = NavigationController(this)
+        navigationController = NavigationController()
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
@@ -981,7 +979,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private val conversationListFragment by lazy {
-        ConversationListFragment()
+        ConversationListFragment.getInstance()
     }
 
     private val walletFragment by lazy {
@@ -997,30 +995,16 @@ class MainActivity : BlazeBaseActivity() {
         MarketFragment()
     }
 
+
     private fun initBottomNav() {
         binding.apply {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 
-            bottomNav.itemSelections()
-                .map { it.itemId }
-                .distinctUntilChanged()
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(destroyScope)
-                .subscribe { itemId ->
-                    Timber.e(
-                        "onItemSelected: ${
-                            when (itemId) {
-                                R.id.nav_chat -> "nav_chat"
-                                R.id.nav_wallet -> "nav_wallet"
-                                R.id.nav_market -> "nav_market"
-                                R.id.nav_more -> "nav_more"
-                                else -> "unknown"
-                            }
-                        }"
-                    )
-                    handleNavigationItemSelected(itemId)
-                }
+            bottomNav.setOnItemSelectedListener {
+                handleNavigationItemSelected(it.itemId)
+                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_market)
+            }
         }
 
         lifecycleScope.launch {
@@ -1062,13 +1046,13 @@ class MainActivity : BlazeBaseActivity() {
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
             R.id.nav_chat -> {
-                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, conversationListFragment)
             }
 
             R.id.nav_wallet -> {
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
-                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                    navigationController.navigate(supportFragmentManager, NavigationController.Wallet, walletFragment)
                 } else {
                     val id = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
                     TipActivity.show(this, TipBundle(TipType.Create, id, TryConnecting))
@@ -1077,13 +1061,13 @@ class MainActivity : BlazeBaseActivity() {
             }
 
             R.id.nav_market -> {
-                navigationController.navigate(NavigationController.Market, marketFragment)
+                navigationController.navigate(supportFragmentManager, NavigationController.Market, marketFragment)
                 marketFragment.updateUI()
                 conversationListFragment.hideCircles()
             }
 
             R.id.nav_more -> {
-                navigationController.navigate(NavigationController.Explore, exploreFragment)
+                navigationController.navigate(supportFragmentManager, NavigationController.Explore, exploreFragment)
                 conversationListFragment.hideCircles()
             }
 
@@ -1177,9 +1161,9 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
-        val walletFragmentInstance = 
+        val walletFragmentInstance =
             supportFragmentManager.findFragmentByTag(WalletFragment.TAG) as? BaseFragment
-        
+
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
@@ -1230,106 +1214,10 @@ class MainActivity : BlazeBaseActivity() {
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val currentFragment = getCurrentVisibleFragment()
-        currentFragment?.let { fragment ->
-            outState.putString(KEY_CURRENT_FRAGMENT_TAG, fragment.tag)
-        }
-
-        outState.putInt(KEY_SELECTED_NAV_ITEM, binding.bottomNav.selectedItemId)
-        Timber.e("onSaveInstanceState: ${currentFragment?.tag} - ${binding.bottomNav.selectedItemId}")
-    }
-
     private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
-        if (savedInstanceState == null) {
-            navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-            binding.bottomNav.selectedItemId = R.id.nav_chat
-        } else {
-            val savedFragmentTag = savedInstanceState.getString(KEY_CURRENT_FRAGMENT_TAG)
-            val savedNavItem = savedInstanceState.getInt(KEY_SELECTED_NAV_ITEM, R.id.nav_chat)
-
-            binding.bottomNav.selectedItemId = savedNavItem
-
-            restoreFragmentFromTag(savedFragmentTag, savedNavItem)
-            Timber.e("restoreFragmentFromTag: $savedFragmentTag - $savedNavItem")
-        }
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    private fun restoreFragmentFromTag(fragmentTag: String?, navItemId: Int) {
-        when (fragmentTag) {
-            ConversationListFragment.TAG -> {
-                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-            }
-            WalletFragment.TAG -> {
-                if (Session.getAccount()?.hasPin == true) {
-                    navigationController.navigate(NavigationController.Wallet, walletFragment)
-                } else {
-                    navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-                    binding.bottomNav.selectedItemId = R.id.nav_chat
-                }
-            }
-            MarketFragment.TAG -> {
-                navigationController.navigate(NavigationController.Market, marketFragment)
-            }
-            ExploreFragment.TAG -> {
-                navigationController.navigate(NavigationController.Explore, exploreFragment)
-            }
-            else -> {
-                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-                binding.bottomNav.selectedItemId = R.id.nav_chat
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        ensureFragmentIsVisible()
-    }
-
-    private fun ensureFragmentIsVisible() {
-        val currentFragment = getCurrentVisibleFragment()
-        if (currentFragment == null || !currentFragment.isVisible) {
-            val selectedItemId = binding.bottomNav.selectedItemId
-            restoreFragmentByNavItem(selectedItemId)
-        }
-    }
-
-    private fun restoreFragmentByNavItem(itemId: Int) {
-        when (itemId) {
-            R.id.nav_chat -> {
-                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-            }
-            R.id.nav_wallet -> {
-                if (Session.getAccount()?.hasPin == true) {
-                    navigationController.navigate(NavigationController.Wallet, walletFragment)
-                } else {
-                    navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-                    binding.bottomNav.selectedItemId = R.id.nav_chat
-                }
-            }
-            R.id.nav_market -> {
-                navigationController.navigate(NavigationController.Market, marketFragment)
-            }
-            R.id.nav_more -> {
-                navigationController.navigate(NavigationController.Explore, exploreFragment)
-            }
-            else -> {
-                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-                binding.bottomNav.selectedItemId = R.id.nav_chat
-            }
-        }
-    }
-
-    private fun getCurrentVisibleFragment(): Fragment? {
-        return supportFragmentManager.fragments.find { fragment ->
-            fragment.isVisible && fragment.isAdded &&
-            (fragment.tag == ConversationListFragment.TAG ||
-             fragment.tag == WalletFragment.TAG ||
-             fragment.tag == MarketFragment.TAG ||
-             fragment.tag == ExploreFragment.TAG)
-        }
+        navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, conversationListFragment)
+        binding.bottomNav.selectedItemId = R.id.nav_chat
+        Timber.e("initFragmentsFromSavedState: nav_chat")
     }
 
     companion object {
@@ -1338,9 +1226,6 @@ class MainActivity : BlazeBaseActivity() {
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         const val WALLET_CONNECT = "wallet_connect"
-
-        private const val KEY_CURRENT_FRAGMENT_TAG = "current_fragment_tag"
-        private const val KEY_SELECTED_NAV_ITEM = "selected_nav_item"
 
         fun showWallet(
             context: Context,

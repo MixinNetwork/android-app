@@ -1,6 +1,7 @@
 package one.mixin.android.ui.landing
 
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,7 +9,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import android.view.inputmethod.EditorInfo
+import android.widget.RelativeLayout
 import androidx.fragment.app.viewModels
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -112,7 +113,30 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                 nameEt.showKeyboard()
             }, 200)
         }
+        setupSimpleKeyboardListener()
     }
+
+    private fun setupSimpleKeyboardListener() {
+        val rootView = binding.root
+        val nameFab = binding.nameFab
+        val originalMargin = (nameFab.layoutParams as RelativeLayout.LayoutParams).bottomMargin
+
+        rootView.viewTreeObserver.addOnGlobalLayoutListener {
+            val rect = Rect()
+            rootView.getWindowVisibleDisplayFrame(rect)
+            val keypadHeight = rootView.height - rect.bottom
+
+            val layoutParams = nameFab.layoutParams as RelativeLayout.LayoutParams
+            layoutParams.bottomMargin = if (keypadHeight > 200) {
+                originalMargin + keypadHeight + 16.dpToPx()
+            } else {
+                originalMargin
+            }
+            nameFab.layoutParams = layoutParams
+        }
+    }
+
+    private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
     private fun initializeBots() {
     }

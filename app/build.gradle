@@ -17,7 +17,7 @@ plugins {
 
 def versionMajor = 3
 def versionMinor = 4
-def versionPatch = 0
+def versionPatch = 3
 def versionBuild = 3
 
 apply plugin: 'com.google.gms.google-services'
@@ -61,6 +61,7 @@ android {
         }
 
         lintOptions{
+            disable "ObjectAnimatorBinding", "AnimatorKeep"
             disable 'MissingTranslation'
         }
 

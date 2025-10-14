@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -72,10 +73,8 @@ import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.js.Web3Signer
 
@@ -149,15 +148,6 @@ fun TransferDestinationInputPage(
                         else -> stringResource(R.string.Privacy_Wallet)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (name == null && web3Token == null) { // Privacy Wallet
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
                         Text(
                             text = subtitleText,
                             fontSize = 12.sp,
@@ -166,6 +156,15 @@ fun TransferDestinationInputPage(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                        if (name == null && web3Token == null) { // Privacy Wallet
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
                     }
                 },
                 verticalScrollable = false,
@@ -187,6 +186,7 @@ fun TransferDestinationInputPage(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp)
+                        .imePadding(),
                 ) {
                     TokenInfoHeader(token = token, web3Token = web3Token)
                     Box(
