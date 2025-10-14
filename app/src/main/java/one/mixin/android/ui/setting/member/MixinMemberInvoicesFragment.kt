@@ -17,19 +17,28 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.RxBus
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.MembershipEvent
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.setting.ui.page.MixinMemberInvoicesPage
 import one.mixin.android.ui.viewmodel.MemberViewModel
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.Membership
 import one.mixin.android.vo.Plan
 import javax.inject.Inject
+import androidx.core.content.edit
 
 @AndroidEntryPoint
 class MixinMemberInvoicesFragment : BaseFragment() {
@@ -38,7 +47,6 @@ class MixinMemberInvoicesFragment : BaseFragment() {
         fun newInstance() = MixinMemberInvoicesFragment()
     }
 
-    private val settingViewModel: SettingViewModel by viewModels({ requireActivity() })
     private val memberViewModel: MemberViewModel by viewModels()
 
     @Inject
@@ -98,8 +106,30 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                             AllMixinMemberInvoicesFragment.TAG
                         )
                     },
+                    onReferral = {
+                        lifecycleScope.launch {
+                            memberViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                setClickedBotId()
+                                WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                            }
+                        }
+                    }
                 )
             }
         }
+    }
+
+    private fun setClickedBotId() {
+        val sp = requireContext().defaultSharedPreferences
+        val old = getClickedBotIds().toMutableSet()
+        if (old.add(INTERNAL_REFERRAL_ID)) {
+            sp.edit { putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")) }
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
+        }
+    }
+
+    private fun getClickedBotIds(): Set<String> {
+        return requireContext().defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
     }
 }
