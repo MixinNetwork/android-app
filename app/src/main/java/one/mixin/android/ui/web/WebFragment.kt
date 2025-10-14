@@ -119,6 +119,7 @@ import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
+import one.mixin.android.session.Session.getBotSignature
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
 import one.mixin.android.tip.privateKeyToAddress
@@ -182,6 +183,9 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.util.Locale
 import javax.inject.Inject
+import androidx.core.view.get
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -266,19 +270,19 @@ class WebFragment : BaseFragment() {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.Extract_QR_Code)
-                    menu.getItem(0).setOnMenuItemClickListener { menu ->
+                    menu[0].setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
                     menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.Save_image)
-                    menu.getItem(1).setOnMenuItemClickListener { menu ->
+                    menu[1].setOnMenuItemClickListener { menu ->
                         onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
                 }
                 WebView.HitTestResult.SRC_ANCHOR_TYPE, WebView.HitTestResult.ANCHOR_TYPE -> {
                     menu.add(0, CONTEXT_MENU_ID_COPY_LINK, 0, R.string.Copy_link)
-                    menu.getItem(0).setOnMenuItemClickListener { _ ->
+                    menu[0].setOnMenuItemClickListener { _ ->
                         requireContext().getClipboardManager().setPrimaryClip(
                             ClipData.newPlainText(
                                 null,
@@ -917,6 +921,9 @@ class WebFragment : BaseFragment() {
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
+                    signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
+                        botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
+                    }
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -1108,6 +1115,26 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            val app = bottomViewModel.findAndSync(appId)
+            if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                bottomViewModel.refreshUser(appId, true)
+                return@launch
+            }
+            val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
+            val (ts, signature) = getBotSignature(publicKey, method, path, body)
+            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+        }
+    }
+
     private fun tipSign(
         chainId: String,
         message: String,
@@ -1182,7 +1209,7 @@ class WebFragment : BaseFragment() {
         val currentUrl = webView.url ?: url
         val v = webView
         if (v.height <= 0) return null
-        val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
+        val screenshot = createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
         val c = Canvas(screenshot)
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
         v.draw(c)
@@ -1649,7 +1676,7 @@ class WebFragment : BaseFragment() {
     private fun setStatusBarColor(content: String) {
         try {
             val color = content.replace("\"", "")
-            val c = Color.parseColor(color)
+            val c = color.toColorInt()
             val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
@@ -1846,7 +1873,7 @@ class WebFragment : BaseFragment() {
         private fun isFallbackUrlValid(fallbackUrl: String): Boolean {
             try {
                 val anyCaseScheme = URI(fallbackUrl).scheme
-                val scheme = if ((anyCaseScheme == null)) null else anyCaseScheme.lowercase(Locale.US)
+                val scheme = anyCaseScheme?.lowercase(Locale.US)
                 if ("http" == scheme || "https" == scheme) {
                     return true
                 } else {
@@ -2078,6 +2105,7 @@ class WebFragment : BaseFragment() {
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
+        var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2137,6 +2165,22 @@ class WebFragment : BaseFragment() {
             callbackFunction: String,
         ) {
             tipSignAction?.invoke(chainId, message, callbackFunction)
+        }
+
+        @JavascriptInterface
+        fun signBotSignature(
+            messageBody: Array<String>,
+        ) {
+            if (messageBody.isEmpty()) {
+                return
+            }
+            val appId = messageBody[0]
+            val reloadPublicKey = messageBody[1]
+            val method = messageBody[2]
+            val path = messageBody[3]
+            val body = messageBody[4]
+            val callbackFunction = messageBody[5]
+            signBotSignature?.invoke(appId, reloadPublicKey.toBoolean(), method, path, body, callbackFunction)
         }
     }
 

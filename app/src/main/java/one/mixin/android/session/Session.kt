@@ -402,9 +402,20 @@ object Session {
         request: Request,
     ): Pair<Long, String> {
         val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        val accountId = getAccountId() ?: return Pair(0L, "")
         val body = request.body?.bodyToString()
-        return signBotSignature(getAccountId()!!, botPublicKey, edKeyPair, request.method, request.url.cutOut(), body)
+        return signBotSignature(accountId, botPublicKey, edKeyPair, request.method, request.url.cutOut(), body)
     }
+
+    fun getBotSignature(
+        botPublicKey: String?,
+        method: String, path: String, body: String
+    ): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        val accountId = getAccountId() ?: return Pair(0L, "")
+        return signBotSignature(accountId, botPublicKey!!, edKeyPair, method, path, body)
+    }
+
 
     fun getRegisterSignature(
         message: String,

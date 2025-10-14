@@ -36,6 +36,7 @@ class MemberViewModel @Inject constructor(
     application: Application
 ) : ViewModel() {
 
+    suspend fun findAndSync(appId: String) = userRepository.findOrSyncApp(appId)
     private val _orderState = MutableStateFlow<MixinResponse<MembershipOrder>?>(null)
     val orderState: StateFlow<MixinResponse<MembershipOrder>?> = _orderState
 

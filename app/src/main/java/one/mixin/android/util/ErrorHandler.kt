@@ -220,6 +220,9 @@ open class ErrorHandler {
         const val MAX_WALLET_REACHED = 10632
 
         const val UNSUPPORTED_WATCH_ADDRESS = 10633
+
+        const val INVITATION_ALREADY_BOUND = 10737
+
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         const val INVALID_INVITATION_CODE = 20112
@@ -318,6 +321,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)
+        }
+        ErrorHandler.INVITATION_ALREADY_BOUND -> {
+            getString(R.string.error_invitation_already_bound)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)

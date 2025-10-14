@@ -58,7 +58,7 @@ buildscript {
         ext.signalVersion = '2.8.1'
         ext.fabVersion = '1.6'
         ext.playVersion = '2.1.0'
-        ext.googlePlayServicesVersion = '18.1.0'
+        ext.googlePlayServicesVersion = '18.1.1'
         ext.svgVersion = '1.4'
         ext.reboundVersion = '0.3.8'
         ext.shimmerVersion = '0.5.0'
@@ -120,7 +120,7 @@ buildscript {
         ext.playPayVersion = '16.5.0'
         ext.datastoreVersion = '1.1.7'
         ext.protobufVersion = '3.11.0'
-        ext.appsFlyerVersion ='6.16.2'
+        ext.appsFlyerVersion ='6.17.3'
         ext.installreferrerVersion ='2.2'
         ext.billingVersion ='8.0.0'
 

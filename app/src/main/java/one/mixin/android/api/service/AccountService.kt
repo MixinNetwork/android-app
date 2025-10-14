@@ -6,6 +6,7 @@ import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.BindInviteRequest
 import one.mixin.android.api.request.CollectibleRequest
 import one.mixin.android.api.request.DeactivateRequest
 import one.mixin.android.api.request.DeactivateVerificationRequest
@@ -240,4 +241,7 @@ interface AccountService {
         @Query("destination") destination: String,
         @Query("tag") tag: String?,
     ): MixinResponse<AddressResponse>
+
+    @POST("referral/bind")
+    suspend fun bindReferral(@Body request: BindInviteRequest): MixinResponse<Unit>
 }

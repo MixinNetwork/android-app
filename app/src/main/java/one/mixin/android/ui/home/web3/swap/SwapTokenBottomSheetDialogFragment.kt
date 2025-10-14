@@ -32,7 +32,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
