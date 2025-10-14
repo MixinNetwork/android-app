@@ -16,7 +16,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
-import one.mixin.android.ui.common.profile.ReferralBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
@@ -47,7 +46,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val MIXIN = "mixin.one"
         private const val SWAP = "swap"
 
-        private const val REFERRAL = "referrals"
+        private const val REFERRALS = "referrals"
 
         const val WC = "wc"
 
@@ -117,16 +116,14 @@ class UrlInterpreterActivity : BaseActivity() {
 
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
-            REFERRAL -> {
+            REFERRALS -> {
                 InputReferralBottomSheetDialogFragment.newInstance(uri.pathSegments.first()).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
             }
-
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
-            CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP, SWAP, REFERRAL -> {
+            CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP, SWAP -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
-
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true && Session.getTipPub() != null && Session.hasSafe()) {
@@ -138,11 +135,9 @@ class UrlInterpreterActivity : BaseActivity() {
                     }
                 }
             }
-
             DEVICE -> {
                 ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
-
             SEND -> {
                 uri.handleSchemeSend(
                     this,
@@ -163,15 +158,19 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             MIXIN -> {
                 val path = uri.pathSegments.first()
-                if (path.equals(PAY, true) || path.equals(SCHEME, true) || path.equals(MULTISIGS, true) || path.equals(SWAP, true)) {
+                if (path.equals(REFERRALS,true)) {
+                    InputReferralBottomSheetDialogFragment.newInstance(uri.pathSegments.last()).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                } else if (path.equals(PAY, true) || path.equals(SCHEME, true) || path.equals(MULTISIGS, true) || path.equals(SWAP, true)) {
                     val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
                     bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                 } else {
                     toast(R.string.Invalid_Link)
+                    finish()
                 }
             }
             else -> {
                 toast(R.string.Invalid_Link)
+                finish()
             }
         }
     }

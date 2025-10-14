@@ -105,6 +105,7 @@
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
+                <data android:host="referrals" />
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -432,7 +433,7 @@
             android:foregroundServiceType="microphone" />
         <service
             android:name=".job.BlazeMessageService"
-            android:foregroundServiceType="remoteMessaging"
+            android:foregroundServiceType="dataSync"
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"

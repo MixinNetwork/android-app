@@ -58,6 +58,7 @@ import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.extension.dp as dip
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -439,5 +440,19 @@ class InputReferralBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun onDestroyView() {
         behavior?.removeBottomSheetCallback(bottomSheetBehaviorCallback)
         super.onDestroyView()
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        // UrlInterpreterActivity doesn't have a UI and needs it's son fragment to handle it's finish.
+        if (activity is UrlInterpreterActivity) {
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                realFragmentCount++
+            }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
+            }
+        }
     }
 }
