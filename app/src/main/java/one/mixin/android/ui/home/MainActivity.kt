@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -978,24 +979,6 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private val conversationListFragment by lazy {
-        ConversationListFragment.getInstance()
-    }
-
-    private val walletFragment by lazy {
-        val initialWalletDestination = loadInitialWalletDestination()
-        WalletFragment.newInstance(initialWalletDestination)
-    }
-
-    private val exploreFragment by lazy {
-        ExploreFragment()
-    }
-
-    private val marketFragment by lazy {
-        MarketFragment()
-    }
-
-
     private fun initBottomNav() {
         binding.apply {
             bottomNav.itemIconTintList = null
@@ -1029,6 +1012,24 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    private fun switchToDestination(destination: NavigationController.Destination) {
+        val fm = supportFragmentManager
+        var fragment = fm.findFragmentByTag(destination.tag)
+        if (fragment == null) {
+            fragment = when (destination) {
+                is NavigationController.ConversationList -> ConversationListFragment.newInstance()
+                is NavigationController.Wallet -> {
+                    val initialWalletDestination = loadInitialWalletDestination()
+                    WalletFragment.newInstance(initialWalletDestination)
+                }
+                is NavigationController.Explore -> ExploreFragment()
+                is NavigationController.Market -> MarketFragment()
+            }
+        }
+
+        navigationController.navigate(fm, destination, fragment)
+    }
+
     private fun loadInitialWalletDestination(): WalletDestination {
         val walletPref = defaultSharedPreferences.getString(
             Account.PREF_USED_WALLET, null
@@ -1046,37 +1047,41 @@ class MainActivity : BlazeBaseActivity() {
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
             R.id.nav_chat -> {
-                navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, conversationListFragment)
+                switchToDestination(NavigationController.ConversationList)
             }
 
             R.id.nav_wallet -> {
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
-                    navigationController.navigate(supportFragmentManager, NavigationController.Wallet, walletFragment)
+                    switchToDestination(NavigationController.Wallet)
                 } else {
                     val id = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
                     TipActivity.show(this, TipBundle(TipType.Create, id, TryConnecting))
                 }
-                conversationListFragment.hideCircles()
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
             R.id.nav_market -> {
-                navigationController.navigate(supportFragmentManager, NavigationController.Market, marketFragment)
-                marketFragment.updateUI()
-                conversationListFragment.hideCircles()
+                switchToDestination(NavigationController.Market)
+                findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
+
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
             R.id.nav_more -> {
-                navigationController.navigate(supportFragmentManager, NavigationController.Explore, exploreFragment)
-                conversationListFragment.hideCircles()
+                switchToDestination(NavigationController.Explore)
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
             else -> {
-                conversationListFragment.hideCircles()
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
         }
-        conversationListFragment.hideContainer()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideContainer()
     }
+
+    private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
+        supportFragmentManager.findFragmentByTag(tag) as? T
 
     fun showUpdate(releaseUrl: String?) {
         if (isPlayStoreInstalled()) {
@@ -1125,30 +1130,30 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun hideSearchLoading() {
-        conversationListFragment.hideSearchLoading()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideSearchLoading()
     }
 
     fun closeSearch() {
-        conversationListFragment.closeSearch()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.closeSearch()
     }
 
     fun showSearchLoading() {
-        conversationListFragment.showSearchLoading()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.showSearchLoading()
     }
 
     fun selectCircle(
         name: String?,
         circleId: String?,
     ) {
-        conversationListFragment.selectCircle(name, circleId)
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.selectCircle(name, circleId)
     }
 
     fun setCircleName(name: String?) {
-        conversationListFragment.setCircleName(name)
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.setCircleName(name)
     }
 
     fun sortAction() {
-        conversationListFragment.sortAction()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.sortAction()
     }
 
     @Deprecated("Deprecated in Java")
@@ -1161,20 +1166,20 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
-        val walletFragmentInstance =
-            supportFragmentManager.findFragmentByTag(WalletFragment.TAG) as? BaseFragment
+        val walletFragment = findFragmentByTagTyped<WalletFragment>(NavigationController.Wallet.tag)
+        val conversationListFragment = findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)
 
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
-            walletFragmentInstance != null && walletFragmentInstance.isVisible && walletFragmentInstance.onBackPressed() -> {
+            walletFragment != null && walletFragment.isVisible && walletFragment.onBackPressed() -> {
                 // do nothing
             }
-            conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
+            conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
                 conversationListFragment.closeSearch()
             }
-            conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
+            conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
                 if (circlesFragment == null) {
                     super.onBackPressed()
                 } else if (!circlesFragment.onBackPressed()) {
@@ -1215,7 +1220,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
-        navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, conversationListFragment)
+        navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
         binding.bottomNav.selectedItemId = R.id.nav_chat
         Timber.e("initFragmentsFromSavedState: nav_chat")
     }
