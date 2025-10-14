@@ -125,6 +125,7 @@
                 <data android:pathPrefix="/scheme" />
                 <data android:pathPrefix="/tip" />
                 <data android:pathPrefix="/swap" />
+                <data android:pathPrefix="/referrals" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />
