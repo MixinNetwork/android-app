@@ -433,7 +433,7 @@
             android:foregroundServiceType="microphone" />
         <service
             android:name=".job.BlazeMessageService"
-            android:foregroundServiceType="remoteMessaging"
+            android:foregroundServiceType="dataSync"
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"
