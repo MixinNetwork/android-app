@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.ui.address.components.FetchAddressState
@@ -37,6 +39,9 @@ class FetchAddressViewModel @Inject constructor(
                 if (response.isSuccess) {
                     _userAddress.value = response.data
                     _state.value = FetchAddressState.SUCCESS
+                } else if (response.errorCode == 404){
+                    _errorMessage.value = MixinApplication.appContext.getString(R.string.Address_not_found)
+                    _state.value = FetchAddressState.ERROR
                 } else {
                     Timber.e("Fetch user address failed: ${response.errorDescription}")
                     _errorMessage.value = response.errorDescription

@@ -2146,4 +2146,5 @@
     <string name="upgrade_membership_now">Upgrade Now</string>
     <string name="input_referral_code_hint">Invited by a friend?</string>
     <string name="referral_description">Invite friends earn crypto</string>
+    <string name="Address_not_found">This user has not registered a common wallet</string>
 </resources>
