@@ -61,6 +61,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
+import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
@@ -93,6 +94,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_TO_ADDRESS = "args_to_address"
+        const val ARGS_TO_USER = "args_to_user"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -102,6 +104,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token: Web3TokenItem? = null,
             chainToken: Web3TokenItem? = null,
             toAddress: String? = null,
+            toUser: User? = null
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(
@@ -115,6 +118,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token?.let { putParcelable(ARGS_TOKEN, it) }
             chainToken?.let { putParcelable(ARGS_CHAIN_TOKEN, it) }
             toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
+            toUser?.let { putParcelable(ARGS_TO_USER, it) }
         }
     }
 
@@ -132,6 +136,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
     private val chainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
+    }
+
+    private val toUser by lazy {
+        requireArguments().getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
     private val currentChain by lazy {
         token?.getChainFromName() ?: Web3Signer.currentChain
@@ -176,6 +184,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         amount,
                         token,
                         toAddress,
+                        toUser,
                         signMessage.type,
                         step,
                         signMessage.isCancelTx,
@@ -559,8 +568,9 @@ fun showBrowserBottomSheetDialogFragment(
     onDone: ((String?) -> Unit)? = null,
     onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
+    toUser: User? = null
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser)
     onDismiss?.let {
         wcBottomSheet.setOnDismiss(onDismiss)
     }
