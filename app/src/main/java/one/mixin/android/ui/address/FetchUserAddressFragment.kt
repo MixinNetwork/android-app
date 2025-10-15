@@ -106,18 +106,19 @@ class FetchUserAddressFragment : BaseFragment(R.layout.fragment_compose) {
                 // Handle success state with navigation
                 if (state == FetchAddressState.SUCCESS) {
                     userAddress?.let { address ->
-                        parentFragmentManager.popBackStack()
-                        findNavController().navigate(R.id.action_fetch_user_address_to_input, Bundle().apply {
-                            putParcelable(
-                                InputFragment.ARGS_WEB3_TOKEN,
-                                web3Token
-                            )
+                        val navController = findNavController()
+                        val args = Bundle().apply {
+                            putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token)
                             putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
                             putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
                             putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
                             putParcelable(InputFragment.ARGS_TO_USER, toUser)
-                        })
-
+                        }
+                        val currentId = navController.currentDestination?.id ?: return@let
+                        val navOptions = androidx.navigation.NavOptions.Builder()
+                            .setPopUpTo(currentId, true)
+                            .build()
+                        navController.navigate(R.id.action_fetch_user_address_to_input, args, navOptions)
                     }
                 }
             }
