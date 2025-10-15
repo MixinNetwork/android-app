@@ -76,6 +76,7 @@ import one.mixin.android.vo.Plan
 import one.mixin.android.widget.SegmentationItemDecoration
 import one.mixin.android.widget.lottie.RLottieDrawable
 import javax.inject.Inject
+import androidx.core.content.edit
 
 @AndroidEntryPoint
 class ExploreFragment : BaseFragment() {
@@ -292,7 +293,7 @@ class ExploreFragment : BaseFragment() {
         val sp = requireContext().defaultSharedPreferences
         val old = getClickedBotIds().toMutableSet()
         if (old.add(id)) {
-            sp.edit().putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")).apply()
+            sp.edit { putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")) }
             updateFavoriteDot()
             RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
         }

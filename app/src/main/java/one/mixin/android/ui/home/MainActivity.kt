@@ -1004,7 +1004,7 @@ class MainActivity : BlazeBaseActivity() {
                     ?.split(",")?.toSet() ?: emptySet()
             } catch (e: Exception) {
                 emptySet()
-            }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            }.size != 4 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
                 isVisible = market
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
