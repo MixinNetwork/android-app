@@ -370,7 +370,7 @@ class TipNode
             if (assignee != null) {
                 msg += assignee
             }
-            Timber.e("genTipSignRequest sign start")
+            Timber.e("genTipSignRequest sign(${tipSigner.index}) start")
             val sig = userSk.sign(msg).toHex()
 
             val userPkStr = userPk.publicKeyString()
