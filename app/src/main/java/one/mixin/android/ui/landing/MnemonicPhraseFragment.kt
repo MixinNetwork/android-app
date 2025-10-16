@@ -28,8 +28,10 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromMnemonic
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
@@ -137,9 +139,18 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 val mnemonic = w.joinToString(" ")
                 val entropy  = runCatching { toEntropy(w)}.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
                 storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
+                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy).not()) {
+                    errorInfo = getString(R.string.Save_failure) // Save entropy failure
+                    return@launch
+                }
                 newKeyPairFromMnemonic(mnemonic)
             } else {
                 val mnemonic = toMnemonic(tip.generateEntropyAndStore(requireContext()))
+                val entropy  = runCatching { toEntropy(mnemonic.split(" "))}.getOrNull() ?: return@launch
+                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy).not()) {
+                    errorInfo = getString(R.string.Save_failure) // Save entropy failure
+                    return@launch
+                }
                 newKeyPairFromMnemonic(mnemonic)
             }
             Timber.e("PublicKey:${edKey.publicKey.hexString()}")

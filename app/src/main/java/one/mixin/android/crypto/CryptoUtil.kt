@@ -202,7 +202,7 @@ fun generateRandomBytes(len: Int = 16): ByteArray {
 fun aesGcmEncrypt(
     plain: ByteArray,
     key: ByteArray,
-    iv: ByteArray? = null
+    iv: ByteArray? = null,
 ): ByteArray {
     val iv = iv ?: ByteArray(GCM_IV_LENGTH).also { secureRandom.nextBytes(it) }
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -321,7 +321,7 @@ fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: B
         context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
     }.getOrThrow()  // Unable to create when logging in, it crashes directly
     val encodedKey = entropy.toHex()
-    encryptedPrefs.edit().putString(alias, encodedKey).commit()
+    encryptedPrefs.edit(commit = true) { putString(alias, encodedKey) }
 }
 
 fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
