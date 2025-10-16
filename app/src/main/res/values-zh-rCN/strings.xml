@@ -1390,6 +1390,7 @@
     <string name="send_to_address_description">转到我地址薄中的地址，地址受到 PIN 保护，避免地址钓鱼攻击。</string>
     <string name="send_to_my_wallet_description">使用加密网络发送到我的另一个钱包。</string>
     <string name="send_to_contact_description">转给我的 Mixin 好友，转账隐私、零手续费且秒到账。</string>
+    <string name="send_to_mixin_contact_description">发送到您朋友的普通钱包，隐私且便捷。</string>
     <string name="send_to_privacy_wallet_description">转到我的隐私钱包，保护资产的隐私和安全，避免各种潜在风险。</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
@@ -1985,6 +1986,8 @@
     <string name="add_wallet">导入钱包</string>
     <string name="fetching_in_to_your_wallet">正在查找你的钱包…</string>
     <string name="importing_into_your_wallet">正在导入到您的钱包…</string>
+    <string name="Fetching_address">查询地址…</string>
+    <string name="Fetch_Failed">查询失败</string>
     <string name="fetching_shouldnt_take_long">这应该不会花太长时间。</string>
     <string name="import_mnemonic_phrase">导入助记词</string>
     <string name="Import_wallets_from_another_wallet">从其他钱包导入钱包。</string>
@@ -2086,4 +2089,5 @@
     <string name="referral_hint">邀请码</string>
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>
+    <string name="Address_not_found">该联系人还没有注册普通钱包</string>
 </resources>

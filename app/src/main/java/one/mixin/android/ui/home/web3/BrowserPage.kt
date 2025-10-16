@@ -75,6 +75,7 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.vo.User
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
@@ -92,6 +93,7 @@ fun BrowserPage(
     amount: String?,
     token: Web3TokenItem?,
     toAddress: String?,
+    toUser: User?,
     type: Int,
     step: WalletConnectBottomSheetDialogFragment.Step,
     isCancel: Boolean,
@@ -349,7 +351,13 @@ fun BrowserPage(
                 if (toAddress != null) {
                     Box(modifier = Modifier.height(20.dp))
                     val displayInfo = addressDisplayInfo
-                    if (displayInfo != null) {
+                    if (toUser != null) {
+                        ItemContent(
+                            title = stringResource(id = R.string.Receivers).uppercase(),
+                            subTitle = toAddress,
+                            toUser = toUser,
+                        )
+                    } else if (displayInfo != null) {
                         val (displayName, isAddress) = displayInfo
                         if (displayName == null) {
                             ItemWalletContent(

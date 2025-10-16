@@ -33,10 +33,7 @@ import one.mixin.android.widget.SearchView
 class TransferContactBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), FriendsListener {
     companion object {
         const val TAG = "TransferContactBottomSheetDialogFragment"
-        fun newInstance(token: TokenItem) =
-            TransferContactBottomSheetDialogFragment().withArgs {
-                putParcelable(TransactionsFragment.Companion.ARGS_ASSET, token)
-            }
+        fun newInstance() = TransferContactBottomSheetDialogFragment()
     }
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
@@ -45,15 +42,6 @@ class TransferContactBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         FriendsAdapter(userCallback).apply {
             listener = this@TransferContactBottomSheetDialogFragment
         }
-    }
-
-    private val token: TokenItem by lazy {
-        requireNotNull(
-            requireArguments().getParcelableCompat(
-                TransactionsFragment.Companion.ARGS_ASSET,
-                TokenItem::class.java
-            )
-        )
     }
 
     private val userCallback = UserItemCallback("")

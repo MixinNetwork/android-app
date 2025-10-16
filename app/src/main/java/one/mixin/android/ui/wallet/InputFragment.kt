@@ -507,6 +507,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     token = token,
                                     amount = amount,
                                     toAddress = toAddress,
+                                    toUser = user,
                                     chainToken = chainToken,
                                     onTxhash = { _, serializedTx ->
                                     },
@@ -615,7 +616,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     renderTitle(requireNotNull(toAddress), addressTag)
                 }
                 TransferType.WEB3 -> {
-                    renderTitle(requireNotNull(toAddress))
+                    if (user != null) {
+                        titleView.setSubTitle(getString(R.string.Send_To_Title), user)
+                    } else {
+                        renderTitle(requireNotNull(toAddress))
+                    }
                 }
                 TransferType.BIOMETRIC_ITEM -> {
                     assetBiometricItem?.let { item ->
