@@ -195,7 +195,7 @@ class TipNode
                     async(Dispatchers.IO) {
                         var retryCount = 0
                         while (retryCount < maxRequestCount) {
-                            val (sign, tipNodeError) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
+                            val (sign, tipNodeError) = signTipNode(userSk.clone(), signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
                             if (tipNodeError != null) {
                                 val errorMessage = "sign tip node failed, ${signer.index} ${signer.api} meet $tipNodeError"
                                 nodeFailedInfo.append("[${signer.index}, ${tipNodeError.code}] ")
