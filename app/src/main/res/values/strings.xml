@@ -1420,7 +1420,7 @@
     <string name="send_to_address_description">Send to an address in your Address Book, PIN-protected to prevent phishing.</string>
     <string name="send_to_my_wallet_description">Send to my other wallet using a crypto network.</string>
     <string name="send_to_contact_description">Send to your Mixin friends with privacy, zero fees, and instant delivery.</string>
-    <string name="send_to_mixin_contact_description">Send to your friends‘ Common Wallet with privacy and ease.</string>
+    <string name="send_to_mixin_contact_description">Send to your friends’ Common Wallets quickly and easily.</string>
     <string name="send_to_privacy_wallet_description">Send to your Privacy Wallet to keep your assets safe and hidden from potential risks.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
