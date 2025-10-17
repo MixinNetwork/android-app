@@ -353,7 +353,7 @@ class MainActivity : BlazeBaseActivity() {
                                         ?.split(",")?.toSet() ?: emptySet()
                                 } catch (e: Exception) {
                                     emptySet()
-                                }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+                                }.size != SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
                                 backgroundColor = Color.RED
                             }
                         }
