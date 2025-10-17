@@ -2,9 +2,11 @@ package one.mixin.android.tip
 
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import okio.Buffer
 import one.mixin.android.api.request.TipSignData
 import one.mixin.android.api.request.TipSignRequest
@@ -25,6 +27,7 @@ import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.NotEnoughPartialsException
 import one.mixin.android.tip.exception.TipNodeException
+import one.mixin.android.util.SINGLE_SIGN_EXECUTOR
 import retrofit2.HttpException
 import timber.log.Timber
 import tip.Scalar
@@ -192,7 +195,7 @@ class TipNode
                     async(Dispatchers.IO) {
                         var retryCount = 0
                         while (retryCount < maxRequestCount) {
-                            val (sign, tipNodeError) = signTipNode(userSk, signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
+                            val (sign, tipNodeError) = signTipNode(userSk.clone(), signer, ephemeral, watcher, nonce + retryCount, grace, assignee)
                             if (tipNodeError != null) {
                                 val errorMessage = "sign tip node failed, ${signer.index} ${signer.api} meet $tipNodeError"
                                 nodeFailedInfo.append("[${signer.index}, ${tipNodeError.code}] ")
@@ -260,7 +263,9 @@ class TipNode
             assignee: ByteArray?,
         ): Pair<TipSignRespData?, TipNodeError?> {
             return try {
-                val tipSignRequest = genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
+                val tipSignRequest = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
+                    genTipSignRequest(userSk, tipSigner, ephemeral, watcher, nonce, grace, assignee)
+                }
                 val response = tipNodeService.sign(tipSignRequest, tipNodeApi2Path(tipSigner.api))
                 val requestId = response.headers()["x-request-id"] ?: ""
                 if (response.isSuccessful.not()) {
@@ -274,7 +279,9 @@ class TipNode
                 if (resError != null) {
                     return Pair(null, resError.code.toTipNodeError(tipSigner.index, requestId, resError.description))
                 }
-                val signerPk = Tip.pubKeyFromBase58(tipSigner.identity)
+                val signerPk = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
+                    Tip.pubKeyFromBase58(tipSigner.identity)
+                }
                 val msg = gson.toJson(tipSignResponse.data).toByteArray()
                 try {
                     signerPk.verify(msg, tipSignResponse.signature.hexStringToByteArray())
@@ -283,7 +290,9 @@ class TipNode
                     return Pair(null, null)
                 }
 
-                val data = parseNodeSigResp(userSk, tipSigner, tipSignResponse)
+                val data = withContext(SINGLE_SIGN_EXECUTOR.asCoroutineDispatcher()) {
+                    parseNodeSigResp(userSk, tipSigner, tipSignResponse)
+                }
                 Pair(data, null)
             } catch (e: Exception) {
                 Timber.d(e)
@@ -361,7 +370,7 @@ class TipNode
             if (assignee != null) {
                 msg += assignee
             }
-            Timber.e("genTipSignRequest sign start")
+            Timber.e("genTipSignRequest sign(${tipSigner.index}) start")
             val sig = userSk.sign(msg).toHex()
 
             val userPkStr = userPk.publicKeyString()
