@@ -32,7 +32,7 @@ fun FetchAddressContent(
     onRetry: () -> Unit = {},
     onCancel: () -> Unit,
 ) {
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,

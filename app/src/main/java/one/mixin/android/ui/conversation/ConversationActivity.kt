@@ -29,7 +29,6 @@ class ConversationActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (savedInstanceState == null) {
             if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
                 replaceFragment(

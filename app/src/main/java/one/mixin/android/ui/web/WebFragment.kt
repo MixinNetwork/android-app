@@ -468,7 +468,7 @@ class WebFragment : BaseFragment() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
         activity?.window?.let { window->
-            SystemUIManager.setSystemUiColor(requireActivity().window, requireContext().colorFromAttribute(R.color.bgWhite))
+            SystemUIManager.setSafePadding(requireActivity().window, requireContext().colorFromAttribute(R.color.bgWhite))
             SystemUIManager.lightUI(window , requireContext().isNightMode().not())
         }
         binding.suspiciousLinkView.listener =
@@ -1693,7 +1693,7 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         requireActivity().window?.let {
-            SystemUIManager.setSystemUiColor(it, color)
+            SystemUIManager.setSafePadding(it, color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
