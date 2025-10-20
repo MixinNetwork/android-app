@@ -44,8 +44,10 @@ import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getChainName
 import one.mixin.android.web3.js.Web3Signer
+import timber.log.Timber
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {
