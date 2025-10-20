@@ -2127,7 +2127,7 @@
     <string name="pay_now">Pay Now</string>
     <string name="Referral">Referral</string>
     <string name="referral_hint">Referral Code</string>
-    <string name="referral_desc">Invite friends and earn up to 60% of their trading fees!</string>
+    <string name="referral_banner">Invite friends and earn up to 60% of their trading fees!</string>
     <string name="Mixin_Referral">Mixin Referral</string>
     <string name="apply_referral_code">Apply Referral Code</string>
     <string name="apply_referral_code_benefit">Apply a referral code to your account to unlock exclusive benefits on Mixin</string>

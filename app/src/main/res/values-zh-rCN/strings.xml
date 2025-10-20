@@ -2086,6 +2086,7 @@
     <string name="got_it">知道了</string>
     <string name="upgrade_membership_now">升级会员</string>
     <string name="Referral">邀请</string>
+    <string name="referral_banner">邀请好友赢取最高 60% 手续费分佣！</string>
     <string name="referral_hint">邀请码</string>
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>
