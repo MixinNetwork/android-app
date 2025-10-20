@@ -17,6 +17,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
@@ -115,7 +116,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     tokenItem.chainIconUrl,
                     R.drawable.ic_avatar_place_holder,
                 )
-                binding.content.text = getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey)
+                binding.content.text = getChainNetwork(tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey)
                 binding.root.setBackgroundResource(R.drawable.bg_round_choose_network)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 binding.root.setOnClickListener {
