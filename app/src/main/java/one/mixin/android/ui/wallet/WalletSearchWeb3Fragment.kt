@@ -239,7 +239,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         changeUsd = tokenItem.changeUsd,
                         chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon ?: c?.iconUrl,
                         chainName = tokenItem.chainName ?: c?.name,
-                        chainSymbol = tokenItem.chainSymbol?:c?.chainSymbol,
+                        chainSymbol = tokenItem.chainSymbol ?: c?.chainSymbol,
                         hidden = false,
                         level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )
