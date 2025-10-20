@@ -201,6 +201,7 @@ android {
         jniLibs {
             useLegacyPackaging true
         }
+        exclude 'lib/x86_64/libcurve25519.so'
     }
 
     configurations.configureEach {
