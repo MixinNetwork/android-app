@@ -202,8 +202,8 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            jobManager.addJobInBackground(RefreshOrdersJob(getSource()))
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob(getSource()))
                             SwapPage(
                                 walletId = walletId,
                                 from = fromToken,
@@ -253,8 +253,8 @@ class SwapFragment : BaseFragment() {
                         }
 
                         composable(SwapDestination.OrderList.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            jobManager.addJobInBackground(RefreshOrdersJob(getSource()))
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob(getSource()))
                             SwapOrderListPage(
                                 walletId = walletId,
                                 pop = {
@@ -266,8 +266,8 @@ class SwapFragment : BaseFragment() {
                             )
                         }
                         composable("${SwapDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            jobManager.addJobInBackground(RefreshOrdersJob(getSource()))
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob(getSource()))
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
                                 SwapOrderDetailPage(
                                     walletId = walletId,
