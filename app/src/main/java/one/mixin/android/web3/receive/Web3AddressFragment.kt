@@ -44,8 +44,6 @@ import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
-import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.getChainName
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
@@ -275,7 +273,7 @@ class Web3AddressFragment : BaseFragment() {
         showed = true // run only once
         lifecycleScope.launch {
             DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset.toTokenItem(), name)
-                .showNow(childFragmentManager, DepositFragment.Companion.TAG)
+                .showNow(childFragmentManager, DepositFragment.TAG)
         }
     }
 
