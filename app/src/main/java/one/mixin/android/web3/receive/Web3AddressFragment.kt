@@ -237,9 +237,11 @@ class Web3AddressFragment : BaseFragment() {
             ""
         )
         binding.assetName.text = "${web3Token.name} (${web3Token.symbol})"
-        binding.addressDesc.text = getTipsByAsset(web3Token)
+
         binding.addressDesc.isVisible = true
         lifecycleScope.launch {
+            val chain = walletViewModel.findChainById(web3Token.chainId)
+            binding.addressDesc.text = getTipsByAsset(web3Token, chain)
             binding.networkName.text = walletViewModel.findChainById(web3Token.chainId)?.name
                 ?: getChainNetwork(web3Token.assetId, web3Token.chainId, web3Token.assetKey)
         }

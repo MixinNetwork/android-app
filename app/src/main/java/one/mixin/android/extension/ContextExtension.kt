@@ -73,6 +73,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
@@ -83,6 +84,7 @@ import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
+import one.mixin.android.vo.Chain
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -1070,10 +1072,10 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey?:""))
     }
 
-fun Fragment.getTipsByAsset(asset: Web3TokenItem) =
+fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =
     when (asset.assetId) {
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
-        else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey))
+        else -> getString(R.string.deposit_tip_chain, asset.symbol, chain?.name ?: getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
 
 fun Context.showConfirmDialog(
