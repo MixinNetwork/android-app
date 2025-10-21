@@ -27,10 +27,12 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     companion object {
         const val TAG = "DepositChooseNetworkBottomSheetDialogFragment"
         private const val ASSET = "asset"
+        private const val NAME = "name"
 
-        fun newInstance(asset: TokenItem) =
+        fun newInstance(asset: TokenItem, name: String? = null) =
             DepositChooseNetworkBottomSheetDialogFragment().withArgs {
                 putParcelable(ASSET, asset)
+                putString(NAME, name)
             }
     }
 
@@ -38,9 +40,13 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         requireArguments().getParcelableCompat(ASSET, TokenItem::class.java)
     }
 
+    private val networkName by lazy {
+        requireArguments().getString(NAME)
+    }
+
     private val binding by viewBinding(FragmentDepositChooseNetworkBottomSheetBinding::inflate)
 
-    private val adapter = AssetAdapter()
+    private val adapter by lazy { AssetAdapter(networkName) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -66,7 +72,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
 
     var callback: (() -> Unit)? = null
 
-    class AssetAdapter : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
+    class AssetAdapter(val networkName: String?) : ListAdapter<TokenItem, ItemHolder>(TokenItem.DIFF_CALLBACK) {
         var callback: (() -> Unit)? = null
 
         override fun onCreateViewHolder(
@@ -91,7 +97,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             position: Int,
         ) {
             if (position != 0) {
-                getItem(position - 1)?.let { holder.bind(it, callback) }
+                getItem(position - 1)?.let { holder.bind(it, networkName, callback) }
             } else {
                 holder.bind(null)
             }
@@ -101,6 +107,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     class ItemHolder(val binding: ItemChooseNetworkBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             tokenItem: TokenItem?,
+            networkName: String? = null,
             callback: (() -> Unit)? = null,
         ) {
             if (tokenItem == null) {
@@ -116,7 +123,7 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     tokenItem.chainIconUrl,
                     R.drawable.ic_avatar_place_holder,
                 )
-                binding.content.text = getChainNetwork(tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey)
+                binding.content.text = networkName ?: getChainNetwork(tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey)
                 binding.root.setBackgroundResource(R.drawable.bg_round_choose_network)
                 binding.content.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
                 binding.root.setOnClickListener {
