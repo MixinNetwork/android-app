@@ -5,28 +5,21 @@ package one.mixin.android.ui.home.web3.swap
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -47,34 +39,26 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
-import one.mixin.android.api.response.web3.rate
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
+import java.math.RoundingMode
+import java.util.UUID
 
 @Composable
 fun LimitOrderContent(
@@ -84,7 +68,7 @@ fun LimitOrderContent(
     reviewing: Boolean,
     source: String,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
-    onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
+    onReview: () -> Unit, // todo
     onDeposit: (SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
@@ -92,16 +76,11 @@ fun LimitOrderContent(
 
     val viewModel = hiltViewModel<SwapViewModel>()
 
-    var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
-    var errorInfo by remember { mutableStateOf<String?>(null) }
-    var quoteMin by remember { mutableStateOf<String?>(null) }
-    var quoteMax by remember { mutableStateOf<String?>(null) }
-
     var inputText by remember { mutableStateOf("") }
+    var limitPriceText by remember { mutableStateOf("") }
+    var outputText by remember { mutableStateOf("") }
 
-    var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
-    var invalidFlag by remember { mutableStateOf(false) }
 
     var fromToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) to else from)
@@ -110,58 +89,25 @@ fun LimitOrderContent(
         mutableStateOf(if (isReverse) from else to)
     }
 
-    val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
     var isButtonEnabled by remember { mutableStateOf(true) }
 
-    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken) {
-        shouldRefreshQuote.emit(inputText)
-    }
+    LaunchedEffect(inputText, limitPriceText, fromToken, toToken) {
+        val fromAmount = inputText.toBigDecimalOrNull()
+        val limitPrice = limitPriceText.toBigDecimalOrNull()
+        val toTokenDecimals = toToken?.decimals ?: 8
 
-    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken) {
-        shouldRefreshQuote
-            .debounce(300L)
-            .collectLatest { text ->
-                fromToken?.let { from ->
-                    toToken?.let { to ->
-                        if (text.isNotBlank() && runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO) > BigDecimal.ZERO && !reviewing) {
-                            isLoading = true
-                            errorInfo = null
-                            quoteMin = null
-                            quoteMax = null
-                            val amount = if (source == "") from.toLongAmount(text).toString() else text
-                            viewModel.quote(context, from.symbol, from.assetId, to.assetId, amount, source)
-                                .onSuccess { value ->
-                                    AnalyticsTracker.trackSwapQuote("success")
-                                    quoteResult = value
-                                    isLoading = false
-                                }
-                                .onFailure { exception ->
-                                    AnalyticsTracker.trackSwapQuote("failure")
-                                    if (exception is CancellationException) return@onFailure
-                                    if (exception is AmountException) {
-                                        quoteMin = exception.min
-                                        quoteMax = exception.max
-                                    }
-                                    errorInfo = ErrorHandler.getErrorMessage(exception)
-                                    quoteResult = null
-                                    isLoading = false
-                                }
-                        } else {
-                            errorInfo = null
-                            quoteResult = null
-                            quoteMin = null
-                            quoteMax = null
-                            isLoading = false
-                        }
-                    }
-                }
-            }
+        if (fromAmount != null && limitPrice != null && fromAmount > BigDecimal.ZERO && limitPrice > BigDecimal.ZERO) {
+            val toAmount = fromAmount.multiply(limitPrice).setScale(toTokenDecimals, RoundingMode.DOWN)
+            outputText = toAmount.stripTrailingZeros().toPlainString()
+        } else {
+            outputText = ""
+        }
     }
 
     val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
-    fromToken?.let { from ->
-        val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+    fromToken?.let {
+        val fromBalance = viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value
 
 
         Column(
@@ -178,9 +124,15 @@ fun LimitOrderContent(
                             .clip(CircleShape)
                             .background(MixinAppTheme.colors.accent)
                             .clickable {
-                                isLoading = true
                                 isReverse = !isReverse
-                                invalidFlag = !invalidFlag
+                                val oldInput = inputText
+                                inputText = outputText
+
+                                val oldPrice = limitPriceText.toBigDecimalOrNull()
+                                if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
+                                    limitPriceText = BigDecimal.ONE.divide(oldPrice, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+                                }
+
                                 fromToken?.let { f ->
                                     toToken?.let { t ->
                                         val tokenPair =
@@ -195,10 +147,6 @@ fun LimitOrderContent(
                                             serializedPair
                                         )
                                     }
-                                }
-                                quoteResult?.let {
-                                    inputText = it.outAmount
-                                    quoteResult = null
                                 }
                                 context.clickVibrate()
                             }
@@ -236,7 +184,7 @@ fun LimitOrderContent(
                     InputArea(
                         modifier = Modifier,
                         token = toToken,
-                        text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
+                        text = outputText,
                         title = stringResource(id = R.string.swap_receive),
                         readOnly = true,
                         selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
@@ -246,62 +194,25 @@ fun LimitOrderContent(
                 margin = 6.dp,
             )
 
+            Spacer(modifier = Modifier.height(12.dp))
+            Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                InputArea(
+                    token = null,
+                    text = limitPriceText,
+                    title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
+                    readOnly = false,
+                    selectClick = {},
+                    onInputChanged = { limitPriceText = it }
+                )
+            }
+
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Box(modifier = Modifier.heightIn(min = 68.dp)) {
-                    if (errorInfo.isNullOrBlank()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(horizontal = 20.dp)
-                                .alpha(if (quoteResult == null) 0f else 1f),
-                        ) {
-                            quoteResult?.let { quote ->
-                                val rate = quote.rate(fromToken, toToken)
-                                if (rate != BigDecimal.ZERO) {
-                                    PriceInfo(
-                                        fromToken = fromToken!!,
-                                        toToken = toToken,
-                                        isLoading = isLoading,
-                                        exchangeRate = rate,
-                                        onPriceExpired = {
-                                            invalidFlag = !invalidFlag
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
-                        ) {
-                            Text(
-                                text = errorInfo ?: "",
-                                modifier = Modifier
-                                    .clickable {
-                                        if (quoteMax != null || quoteMin != null) {
-                                            if (quoteMax != null && runCatching { BigDecimal(inputText) }.getOrDefault(BigDecimal.ZERO) > runCatching { BigDecimal(quoteMax!!) }.getOrDefault(BigDecimal.ZERO)) {
-                                                inputText = quoteMax!!
-                                            } else if (quoteMin != null) {
-                                                inputText = quoteMin!!
-                                            }
-                                        }
-                                    },
-                                style = TextStyle(
-                                    fontSize = 14.sp,
-                                    color = MixinAppTheme.colors.tipError,
-                                ),
-                            )
-                        }
-                    }
-                }
                 Spacer(modifier = Modifier.height(14.dp))
                 val keyboardController = LocalSoftwareKeyboardController.current
                 val focusManager = LocalFocusManager.current
                 val checkBalance = checkBalance(inputText, fromBalance)
+                val isInputValid = inputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
+                val isPriceValid = limitPriceText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -309,7 +220,7 @@ fun LimitOrderContent(
                     onClick = {
                         if (isButtonEnabled) {
                             isButtonEnabled = false
-                            quoteResult?.let { onReview(it, fromToken!!, toToken!!, inputText) }
+                            onReview.invoke()
                             keyboardController?.hide()
                             focusManager.clearFocus()
                             scope.launch {
@@ -318,9 +229,9 @@ fun LimitOrderContent(
                             }
                         }
                     },
-                    enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
+                    enabled = isInputValid && isPriceValid && checkBalance == true,
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                        backgroundColor = if (isInputValid && isPriceValid && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
                     shape = RoundedCornerShape(32.dp),
                     elevation = ButtonDefaults.elevation(
@@ -330,17 +241,10 @@ fun LimitOrderContent(
                         focusedElevation = 0.dp,
                     ),
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = if (quoteResult != null && errorInfo == null && checkBalance == true) Color.White else MixinAppTheme.colors.textAssist,
-                        )
-                    } else {
-                        Text(
-                            text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                            color = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.textAssist else Color.White,
-                        )
-                    }
+                    Text(
+                        text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                        color = if (checkBalance != true || !isInputValid || !isPriceValid) MixinAppTheme.colors.textAssist else Color.White,
+                    )
                 }
             }
         }

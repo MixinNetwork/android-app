@@ -138,7 +138,9 @@ fun TradePage(
                 reviewing = reviewing,
                 source = source,
                 onSelectToken = onSelectToken,
-                onReview = onReview,
+                onReview = {
+                    // todo
+                },
                 onDeposit = onDeposit,
             )
         }

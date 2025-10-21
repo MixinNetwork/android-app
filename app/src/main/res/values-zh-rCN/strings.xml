@@ -2091,4 +2091,5 @@
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>
     <string name="Address_not_found">该联系人还没有注册普通钱包</string>
+    <string name="limit_price">限价</string>
 </resources>
