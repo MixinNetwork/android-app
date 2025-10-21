@@ -101,7 +101,7 @@ fun MixinMemberInvoicesPage(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.referral_desc),
+                        text = stringResource(R.string.referral_banner),
                         color = Color(red = 0xAA, green = 0x71, blue = 0xFA),
                         fontSize = 14.sp,
                         lineHeight = 18.sp,

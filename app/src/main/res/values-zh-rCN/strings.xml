@@ -2070,7 +2070,7 @@
     <string name="mixin_payment_title">📣 Mixin 收款</string>
     <string name="payment_details">💰 金额：%1$s\n🌐 网络：%2$s\n🤝 收款人：%3$s</string>
     <string name="pay_now">立刻支付</string>
-    <string name="referral_program_introduction_1">最高 70% 交易手续费分佣。</string>
+    <string name="referral_program_introduction_1">最高 60% 交易手续费分佣。</string>
     <string name="referral_program_introduction_2">会员返佣单比最高 1000 USD。</string>
     <string name="referral_program_introduction_3">返佣资格终生有效。</string>
     <string name="referral_code_applied_introduction_1">最高 50%% 交易手续费返现</string>
@@ -2086,6 +2086,7 @@
     <string name="got_it">知道了</string>
     <string name="upgrade_membership_now">升级会员</string>
     <string name="Referral">邀请</string>
+    <string name="referral_banner">邀请好友赢取最高 60% 手续费分佣！</string>
     <string name="referral_hint">邀请码</string>
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>
