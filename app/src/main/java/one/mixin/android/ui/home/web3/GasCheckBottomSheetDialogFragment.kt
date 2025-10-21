@@ -279,7 +279,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 val c = chainToken ?: viewModel.web3TokenItemById(token?.walletId ?: Web3Signer.currentWalletId, chainId)
                 if (c == null) {
                     Timber.e("Insufficient gas for chain: ${chain.chainId}")
-                    showBrowserWalletBottomSheet()
+                    showError(getString(R.string.Data_error))
                     return
                 } else if (c.balance.toBigDecimal() <= BigDecimal.ZERO) {
                     Timber.e("Insufficient gas and zero balance for chain: ${c.assetId}")
@@ -287,7 +287,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         Web3TokenFeeItem(
                             c,
                             BigDecimal.ZERO,
-                            BigDecimal.ZERO
+                            tipGas.displayValue(transaction.maxFeePerGas) ?: BigDecimal.ZERO
                         )
                     ).showNow(
                         parentFragmentManager,
@@ -311,6 +311,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             } else {
+                Timber.e("Sufficient gas for chain: ${chain.chainId}, gas: ${tipGas.maxFeePerGas} ${tipGas.gasLimit}")
                 showBrowserWalletBottomSheet()
             }
         } catch (e: Exception) {

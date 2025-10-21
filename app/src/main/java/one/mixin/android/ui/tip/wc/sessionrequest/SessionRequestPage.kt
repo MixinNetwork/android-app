@@ -47,6 +47,8 @@ import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.notNullWithElse
@@ -58,6 +60,7 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.home.web3.components.ActionBottom
+import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -97,6 +100,7 @@ fun SessionRequestPage(
     var walletName by remember { mutableStateOf<String?>(null) }
     val walletViewModel = hiltViewModel<WalletViewModel>()
     var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var chainToken by remember { mutableStateOf<Web3TokenItem?>(null) }
 
     if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
         Loading()
@@ -134,6 +138,23 @@ fun SessionRequestPage(
             walletName = context.getString(R.string.Common_Wallet)
         }
     }
+
+    LaunchedEffect(Unit) {
+        try {
+            chainToken = viewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId = chain.assetId)
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
+
+    val fee = tipGas?.displayValue(
+        if (sessionRequestUI.data is WCEthereumTransaction) {
+            sessionRequestUI.data.maxFeePerGas
+        } else {
+            null
+        }
+    ) ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
 
     MixinAppTheme {
         Column(
@@ -298,13 +319,7 @@ fun SessionRequestPage(
                     }
                 }
                 Box(modifier = Modifier.height(20.dp))
-                val fee = tipGas?.displayValue(
-                    if (sessionRequestUI.data is WCEthereumTransaction) {
-                        sessionRequestUI.data.maxFeePerGas
-                    } else {
-                        null
-                    }
-                ) ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
@@ -381,10 +396,32 @@ fun SessionRequestPage(
                             )
                         }
                     } else {
-                        ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                            viewModel.rejectRequest(version, topic)
-                            onDismissRequest.invoke()
-                        }, showPin)
+                        if (fee != null && fee > BigDecimal.ZERO && (chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
+                            Row(
+                                modifier =
+                                    Modifier
+                                        .background(MixinAppTheme.colors.background)
+                                        .padding(8.dp)
+                                        .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                ActionButton(
+                                    text = stringResource(id = R.string.insufficient_balance_symbol, chain.symbol),
+                                    onClick = {
+                                        viewModel.rejectRequest(version, topic)
+                                        onDismissRequest.invoke()
+                                    },
+                                    backgroundColor = MixinAppTheme.colors.backgroundGray,
+                                    contentColor = MixinAppTheme.colors.textPrimary
+                                )
+                                Box(modifier = Modifier.width(36.dp))
+                            }
+                        } else {
+                            ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
+                                viewModel.rejectRequest(version, topic)
+                                onDismissRequest.invoke()
+                            }, showPin)
+                        }
                     }
                 }
 
