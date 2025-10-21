@@ -46,6 +46,7 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 
@@ -233,7 +234,7 @@ class Web3AddressFragment : BaseFragment() {
         binding.assetName.text = "${web3Token.name} (${web3Token.symbol})"
         binding.addressDesc.text = getTipsByAsset(web3Token)
         binding.addressDesc.isVisible = true
-        binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
+        binding.networkName.text = getChainNetwork(web3Token.assetId, web3Token.chainId, web3Token.assetKey)
     }
 
     private fun updateChips() {
