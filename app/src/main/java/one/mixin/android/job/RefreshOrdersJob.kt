@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 
 class RefreshOrdersJob(
-    val source: String,
+    val walletId: String?,
 ) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
         private const val serialVersionUID = 2L
@@ -19,7 +19,7 @@ class RefreshOrdersJob(
         }
 
     private suspend fun refreshOrders(offset: String?) {
-        val response = routeService.orders(limit = LIMIT, offset = offset, source = source)
+        val response = routeService.orders(limit = LIMIT, offset = offset, walletId = walletId)
         if (response.isSuccess && response.data != null) {
             swapOrderDao.insertListSuspend(response.data!!)
             if (response.data!!.size >= LIMIT) {

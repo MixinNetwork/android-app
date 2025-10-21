@@ -5,7 +5,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class RefreshPendingOrdersJob(
-    val source: String,
+    val walletId: String?,
 ) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
         private const val serialVersionUID = 2L
@@ -25,7 +25,7 @@ class RefreshPendingOrdersJob(
         }
 
     private suspend fun refreshPendingOrder(orderId: String) {
-        val response = routeService.orderById(orderId, source)
+        val response = routeService.orderById(orderId, walletId)
         if (response.isSuccess && response.data != null) {
             swapOrderDao.insertSuspend(response.data!!)
         }

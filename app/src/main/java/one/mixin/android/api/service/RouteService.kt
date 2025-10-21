@@ -196,13 +196,13 @@ interface RouteService {
     suspend fun orders(
         @Query("offset") offset: String?,
         @Query("limit") limit: Int,
-        @Query("source") source: String,
+        @Query("walletId") walletId: String?,
     ) : MixinResponse<List<SwapOrder>>
 
     @GET("web3/swap/orders/{id}")
     suspend fun orderById(
         @Path("id") id: String,
-        @Query("source") source: String,
+        @Query("walletId") walletId: String?,
     ) : MixinResponse<SwapOrder>
 
     @GET("markets/{id}/price-history")
