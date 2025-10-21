@@ -203,7 +203,7 @@ class SwapFragment : BaseFragment() {
                         composable(SwapDestination.Swap.name) {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
-                            SwapPage(
+                            TradePage(
                                 walletId = walletId,
                                 from = fromToken,
                                 to = toToken,

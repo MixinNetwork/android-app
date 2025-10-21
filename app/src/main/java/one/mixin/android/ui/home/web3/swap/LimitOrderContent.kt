@@ -97,7 +97,7 @@ fun LimitOrderContent(
     var quoteMin by remember { mutableStateOf<String?>(null) }
     var quoteMax by remember { mutableStateOf<String?>(null) }
 
-    var inputText by remember { mutableStateOf( "") }
+    var inputText by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
@@ -113,7 +113,7 @@ fun LimitOrderContent(
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
     var isButtonEnabled by remember { mutableStateOf(true) }
 
-    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken)  {
+    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken) {
         shouldRefreshQuote.emit(inputText)
     }
 
@@ -163,230 +163,188 @@ fun LimitOrderContent(
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
 
-        KeyboardAwareBox(
-            modifier = Modifier.fillMaxHeight(),
-            content = {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .imePadding(),
-                ) {
-                    SwapLayout(
-                        centerCompose = {
-                            Box(
-                                modifier = Modifier
-                                    .width(32.dp)
-                                    .height(32.dp)
-                                    .clip(CircleShape)
-                                    .background(MixinAppTheme.colors.accent)
-                                    .clickable {
-                                        isLoading = true
-                                        isReverse = !isReverse
-                                        invalidFlag = !invalidFlag
-                                        fromToken?.let { f ->
-                                            toToken?.let { t ->
-                                                val tokenPair =
-                                                    if (isReverse) listOf(t, f) else listOf(
-                                                        f,
-                                                        t
-                                                    )
-                                                val serializedPair =
-                                                    GsonHelper.customGson.toJson(tokenPair)
-                                                context.defaultSharedPreferences.putString(
-                                                    if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR,
-                                                    serializedPair
-                                                )
-                                            }
-                                        }
-                                        quoteResult?.let {
-                                            inputText = it.outAmount
-                                            quoteResult = null
-                                        }
-                                        context.clickVibrate()
-                                    }
-                                    .rotate(rotation),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_switch),
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                )
-                            }
-                        },
-                        headerCompose = {
-                            InputArea(
-                                modifier = Modifier,
-                                token = fromToken,
-                                text = inputText,
-                                title = stringResource(id = R.string.swap_send),
-                                readOnly = false,
-                                selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
-                                onInputChanged = { inputText = it },
-                                onDeposit = onDeposit,
-                                onMax = {
-                                    val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                    if (balance > BigDecimal.ZERO) {
-                                        inputText = balance.stripTrailingZeros().toPlainString()
-                                    } else {
-                                        inputText = ""
-                                    }
-                                }
-                            )
-                        },
-                        bottomCompose = {
-                            InputArea(
-                                modifier = Modifier,
-                                token = toToken,
-                                text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
-                                title = stringResource(id = R.string.swap_receive),
-                                readOnly = true,
-                                selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
-                                onDeposit = null,
-                            )
-                        },
-                        margin = 6.dp,
-                    )
 
-                    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                        Box(modifier = Modifier.heightIn(min = 68.dp)) {
-                            if (errorInfo.isNullOrBlank()) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .padding(horizontal = 20.dp)
-                                        .alpha(if (quoteResult == null) 0f else 1f),
-                                ) {
-                                    quoteResult?.let { quote ->
-                                        val rate = quote.rate(fromToken, toToken)
-                                        if (rate != BigDecimal.ZERO) {
-                                            PriceInfo(
-                                                fromToken = fromToken!!,
-                                                toToken = toToken,
-                                                isLoading = isLoading,
-                                                exchangeRate = rate,
-                                                onPriceExpired = {
-                                                    invalidFlag = !invalidFlag
-                                                }
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .imePadding(),
+        ) {
+            SwapLayout(
+                centerCompose = {
+                    Box(
+                        modifier = Modifier
+                            .width(32.dp)
+                            .height(32.dp)
+                            .clip(CircleShape)
+                            .background(MixinAppTheme.colors.accent)
+                            .clickable {
+                                isLoading = true
+                                isReverse = !isReverse
+                                invalidFlag = !invalidFlag
+                                fromToken?.let { f ->
+                                    toToken?.let { t ->
+                                        val tokenPair =
+                                            if (isReverse) listOf(t, f) else listOf(
+                                                f,
+                                                t
                                             )
-                                        }
+                                        val serializedPair =
+                                            GsonHelper.customGson.toJson(tokenPair)
+                                        context.defaultSharedPreferences.putString(
+                                            if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR,
+                                            serializedPair
+                                        )
                                     }
                                 }
+                                quoteResult?.let {
+                                    inputText = it.outAmount
+                                    quoteResult = null
+                                }
+                                context.clickVibrate()
+                            }
+                            .rotate(rotation),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_switch),
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                    }
+                },
+                headerCompose = {
+                    InputArea(
+                        modifier = Modifier,
+                        token = fromToken,
+                        text = inputText,
+                        title = stringResource(id = R.string.swap_send),
+                        readOnly = false,
+                        selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
+                        onInputChanged = { inputText = it },
+                        onDeposit = onDeposit,
+                        onMax = {
+                            val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                            if (balance > BigDecimal.ZERO) {
+                                inputText = balance.stripTrailingZeros().toPlainString()
                             } else {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
-                                ) {
-                                    Text(
-                                        text = errorInfo ?: "",
-                                        modifier = Modifier
-                                            .clickable {
-                                                if (quoteMax != null || quoteMin != null) {
-                                                    if (quoteMax != null && runCatching { BigDecimal(inputText) }.getOrDefault(BigDecimal.ZERO) > runCatching { BigDecimal(quoteMax!!) }.getOrDefault(BigDecimal.ZERO)) {
-                                                        inputText = quoteMax!!
-                                                    } else if (quoteMin != null) {
-                                                        inputText = quoteMin!!
-                                                    }
-                                                }
-                                            },
-                                        style = TextStyle(
-                                            fontSize = 14.sp,
-                                            color = MixinAppTheme.colors.tipError,
-                                        ),
+                                inputText = ""
+                            }
+                        }
+                    )
+                },
+                bottomCompose = {
+                    InputArea(
+                        modifier = Modifier,
+                        token = toToken,
+                        text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
+                        title = stringResource(id = R.string.swap_receive),
+                        readOnly = true,
+                        selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
+                        onDeposit = null,
+                    )
+                },
+                margin = 6.dp,
+            )
+
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Box(modifier = Modifier.heightIn(min = 68.dp)) {
+                    if (errorInfo.isNullOrBlank()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(horizontal = 20.dp)
+                                .alpha(if (quoteResult == null) 0f else 1f),
+                        ) {
+                            quoteResult?.let { quote ->
+                                val rate = quote.rate(fromToken, toToken)
+                                if (rate != BigDecimal.ZERO) {
+                                    PriceInfo(
+                                        fromToken = fromToken!!,
+                                        toToken = toToken,
+                                        isLoading = isLoading,
+                                        exchangeRate = rate,
+                                        onPriceExpired = {
+                                            invalidFlag = !invalidFlag
+                                        }
                                     )
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(14.dp))
-                        val keyboardController = LocalSoftwareKeyboardController.current
-                        val focusManager = LocalFocusManager.current
-                        val checkBalance = checkBalance(inputText, fromBalance)
-                        Button(
+                    } else {
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(48.dp),
-                            onClick = {
-                                if (isButtonEnabled) {
-                                    isButtonEnabled = false
-                                    quoteResult?.let { onReview(it, fromToken!!, toToken!!, inputText) }
-                                    keyboardController?.hide()
-                                    focusManager.clearFocus()
-                                    scope.launch {
-                                        delay(1000)
-                                        isButtonEnabled = true
-                                    }
-                                }
-                            },
-                            enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                            ),
-                            shape = RoundedCornerShape(32.dp),
-                            elevation = ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp,
-                            ),
+                                .wrapContentHeight()
+                                .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                         ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    color = if (quoteResult != null && errorInfo == null && checkBalance == true) Color.White else MixinAppTheme.colors.textAssist,
-                                )
-                            } else {
-                                Text(
-                                    text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                    color = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.textAssist else Color.White,
-                                )
-                            }
+                            Text(
+                                text = errorInfo ?: "",
+                                modifier = Modifier
+                                    .clickable {
+                                        if (quoteMax != null || quoteMin != null) {
+                                            if (quoteMax != null && runCatching { BigDecimal(inputText) }.getOrDefault(BigDecimal.ZERO) > runCatching { BigDecimal(quoteMax!!) }.getOrDefault(BigDecimal.ZERO)) {
+                                                inputText = quoteMax!!
+                                            } else if (quoteMin != null) {
+                                                inputText = quoteMin!!
+                                            }
+                                        }
+                                    },
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    color = MixinAppTheme.colors.tipError,
+                                ),
+                            )
                         }
                     }
                 }
-            },
-            floating = {
-                Row(
+                Spacer(modifier = Modifier.height(14.dp))
+                val keyboardController = LocalSoftwareKeyboardController.current
+                val focusManager = LocalFocusManager.current
+                val checkBalance = checkBalance(inputText, fromBalance)
+                Button(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MixinAppTheme.colors.backgroundWindow)
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .height(48.dp),
+                    onClick = {
+                        if (isButtonEnabled) {
+                            isButtonEnabled = false
+                            quoteResult?.let { onReview(it, fromToken!!, toToken!!, inputText) }
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                            scope.launch {
+                                delay(1000)
+                                isButtonEnabled = true
+                            }
+                        }
+                    },
+                    enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                    ),
+                    shape = RoundedCornerShape(32.dp),
+                    elevation = ButtonDefaults.elevation(
+                        pressedElevation = 0.dp,
+                        defaultElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                    ),
                 ) {
-                    val keyboardController = LocalSoftwareKeyboardController.current
-                    val focusManager = LocalFocusManager.current
-                    val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-
-                    InputAction("25%", showBorder = true) {
-                        if (balance > BigDecimal.ZERO) {
-                            inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
-                        } else {
-                            inputText = ""
-                        }
-                    }
-                    InputAction("50%", showBorder = true) {
-                        if (balance > BigDecimal.ZERO) {
-                            inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
-                        } else {
-                            inputText = ""
-                        }
-                    }
-                    InputAction(stringResource(R.string.Max), showBorder = true) {
-                        if (balance > BigDecimal.ZERO) {
-                            inputText = balance.stripTrailingZeros().toPlainString()
-                        } else {
-                            inputText = ""
-                        }
-                    }
-                    InputAction(stringResource(R.string.Done), showBorder = false) {
-                        keyboardController?.hide()
-                        focusManager.clearFocus()
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = if (quoteResult != null && errorInfo == null && checkBalance == true) Color.White else MixinAppTheme.colors.textAssist,
+                        )
+                    } else {
+                        Text(
+                            text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                            color = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.textAssist else Color.White,
+                        )
                     }
                 }
             }
-        )
+        }
+
     } ?: run {
         Loading()
     }

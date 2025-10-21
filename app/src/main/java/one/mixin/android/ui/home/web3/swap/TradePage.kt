@@ -81,7 +81,7 @@ import one.mixin.android.ui.components.TabItem
 @OptIn(ExperimentalFoundationApi::class)
 @FlowPreview
 @Composable
-fun SwapPage(
+fun TradePage(
     walletId: String?,
     from: SwapToken?,
     to: SwapToken?,
@@ -213,31 +213,48 @@ fun SwapPage(
             }
         },
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-        ) {
-            tabs.forEachIndexed { index, tab ->
-                OutlinedTab(
-                    text = tab.title,
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
+        if (walletId.isNullOrBlank()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.Start,
+            ) {
+                tabs.forEachIndexed { index, tab ->
+                    OutlinedTab(
+                        text = tab.title,
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
                         }
+                    )
+                    if (index < tabs.size - 1) {
+                        Spacer(modifier = Modifier.width(10.dp))
                     }
-                )
-                if (index < tabs.size - 1) {
-                    Spacer(modifier = Modifier.width(10.dp))
                 }
             }
-        }
 
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-        ) { page ->
-            tabs[page].screen()
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+            ) { page ->
+                tabs[page].screen()
+            }
+        } else {
+            SwapContent(
+                from = from,
+                to = to,
+                inMixin = inMixin,
+                initialAmount = initialAmount,
+                lastOrderTime = lastOrderTime,
+                reviewing = reviewing,
+                source = source,
+                onSelectToken = onSelectToken,
+                onReview = onReview,
+                onDeposit = onDeposit,
+            )
         }
     }
 }
