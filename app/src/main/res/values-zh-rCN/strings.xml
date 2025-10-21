@@ -1536,6 +1536,7 @@
     <string name="HASH">哈希</string>
     <string name="Collectible_Hash">藏品哈希</string>
     <string name="Swap">交易</string>
+    <string name="limit_order">限价单</string>
     <string name="Swapping">兑换中</string>
     <string name="Pay">支付</string>
     <string name="Received">收到</string>

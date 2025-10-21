@@ -1578,6 +1578,7 @@
     <string name="Collectible">Collectible</string>
     <string name="Collectible_Hash">Collectible Hash</string>
     <string name="Swap">Swap</string>
+    <string name="limit_order">Limit Order</string>
     <string name="Swapping">Swapping</string>
     <string name="Pay">Pay</string>
     <string name="Received">received</string>
