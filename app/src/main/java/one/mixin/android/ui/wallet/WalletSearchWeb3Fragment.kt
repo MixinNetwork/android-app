@@ -223,12 +223,13 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 }
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
                     val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)
+                    val c = viewModel.web3TokenItemById(walletId!!, tokenItem.chainId)
                     Web3TokenItem(
                         walletId = walletId!!,
                         assetId = tokenItem.assetId,
                         chainId = tokenItem.chainId,
                         name = tokenItem.name,
-                        assetKey = tokenItem.assetKey ?: "",
+                        assetKey = tokenItem.assetKey ?: t?.assetKey ?: "",
                         symbol = tokenItem.symbol,
                         iconUrl = tokenItem.iconUrl,
                         precision = t?.precision ?: 0,
@@ -236,9 +237,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         balance = t?.balance ?: "0",
                         priceUsd = tokenItem.priceUsd,
                         changeUsd = tokenItem.changeUsd,
-                        chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon,
-                        chainName = tokenItem.chainName,
-                        chainSymbol = tokenItem.chainSymbol,
+                        chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon ?: c?.iconUrl,
+                        chainName = tokenItem.chainName ?: c?.name,
+                        chainSymbol = tokenItem.chainSymbol ?: c?.chainSymbol,
                         hidden = false,
                         level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )

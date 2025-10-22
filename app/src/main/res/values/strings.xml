@@ -2128,12 +2128,12 @@
     <string name="pay_now">Pay Now</string>
     <string name="Referral">Referral</string>
     <string name="referral_hint">Referral Code</string>
-    <string name="referral_desc">Invite friends and earn up to 70% of their trading fees!</string>
+    <string name="referral_banner">Invite friends and earn up to 60% of their trading fees!</string>
     <string name="Mixin_Referral">Mixin Referral</string>
     <string name="apply_referral_code">Apply Referral Code</string>
     <string name="apply_referral_code_benefit">Apply a referral code to your account to unlock exclusive benefits on Mixin</string>
     <string name="referral_program_introduction_header">Join the referral program and invite friends to earn crypto together:</string>
-    <string name="referral_program_introduction_1">Up to 70% commission on trading fees</string>
+    <string name="referral_program_introduction_1">Up to 60% commission on trading fees</string>
     <string name="referral_program_introduction_2">Membership commission rebate up to 1,000 USD per order</string>
     <string name="referral_program_introduction_3">Rebate eligibility is valid for life</string>
     <string name="referral_code_applied_introduction_1">Up to 50%% cashback on trading fees</string>

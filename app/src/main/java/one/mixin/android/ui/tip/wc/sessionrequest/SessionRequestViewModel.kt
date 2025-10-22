@@ -103,6 +103,10 @@ class SessionRequestViewModel
             web3Repository.findWalletById(walletId)
         }
 
+        suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(walletId, assetId)
+        }
+
         suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String?, Boolean>? {
             return withContext(Dispatchers.IO) {
                 if (chainId != null) {
