@@ -55,6 +55,10 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import com.google.gson.annotations.SerializedName
+import one.mixin.android.api.request.LimitOrderRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.LimitOrder
 import retrofit2.http.Query
 
 interface RouteService {
@@ -202,6 +206,22 @@ interface RouteService {
     suspend fun orderById(
         @Path("id") id: String,
     ) : MixinResponse<SwapOrder>
+
+    @POST("web3/limit_orders")
+    suspend fun createLimitOrder(@Body request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse>
+
+    @GET("web3/limit_orders")
+    suspend fun getLimitOrders(
+        @Query("category") category: String = "all",
+        @Query("limit") limit: Int = 50,
+        @Query("offset") offset: String?,
+    ): MixinResponse<List<LimitOrder>>
+
+    @GET("web3/limit_orders/{id}")
+    suspend fun getLimitOrder(@Path("id") id: String): MixinResponse<LimitOrder>
+
+    @POST("web3/limit_orders/{id}/cancel")
+    suspend fun cancelLimitOrder(@Path("id") id: String): MixinResponse<LimitOrder>
 
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(
