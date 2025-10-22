@@ -32,6 +32,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -65,6 +66,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
@@ -223,6 +225,9 @@ class SwapFragment : BaseFragment() {
                                     lifecycleScope.launch {
                                         handleReview(quote, from, to, amount, navController)
                                     }
+                                },
+                                onLimitReview = { order ->
+                                    openLimitTransfer(order)
                                 },
                                 source = getSource(),
                                 onDeposit = { token ->
@@ -661,6 +666,25 @@ class SwapFragment : BaseFragment() {
                 GasCheckBottomSheetDialogFragment.TAG
             )
         }
+    }
+
+    private fun openLimitTransfer(order: CreateLimitOrderResponse) {
+        val from = fromToken
+        val to = toToken
+        if (from == null || to == null) {
+            toast(R.string.Data_error)
+            return
+        }
+        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to).apply {
+            setOnDone {
+                initialAmount = null
+                lastOrderTime = System.currentTimeMillis()
+            }
+            setOnDestroy {
+                reviewing = false
+            }
+        }.showNow(parentFragmentManager, LimitTransferBottomSheetDialogFragment.TAG)
+        reviewing = true
     }
 
     private suspend fun initFromTo() {

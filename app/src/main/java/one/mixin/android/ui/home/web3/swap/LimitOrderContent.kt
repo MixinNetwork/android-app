@@ -48,6 +48,8 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
+import one.mixin.android.api.request.LimitOrderRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -58,6 +60,8 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.GsonHelper
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Duration
+import java.time.Instant
 import java.util.UUID
 
 @Composable
@@ -66,9 +70,8 @@ fun LimitOrderContent(
     to: SwapToken?,
     inMixin: Boolean,
     reviewing: Boolean,
-    source: String,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
-    onReview: () -> Unit, // todo
+    onLimitReview: (CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
@@ -108,7 +111,6 @@ fun LimitOrderContent(
 
     fromToken?.let {
         val fromBalance = viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value
-
 
         Column(
             modifier = Modifier
@@ -194,7 +196,7 @@ fun LimitOrderContent(
                 margin = 6.dp,
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Box(modifier = Modifier.padding(horizontal = 20.dp)) {
                 InputArea(
                     token = null,
@@ -202,7 +204,8 @@ fun LimitOrderContent(
                     title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
                     readOnly = false,
                     selectClick = {},
-                    onInputChanged = { limitPriceText = it }
+                    onInputChanged = { limitPriceText = it },
+                    showTokenInfo = false,
                 )
             }
 
@@ -218,18 +221,29 @@ fun LimitOrderContent(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        if (isButtonEnabled) {
+                        if (isButtonEnabled && toToken != null) {
                             isButtonEnabled = false
-                            onReview.invoke()
                             keyboardController?.hide()
                             focusManager.clearFocus()
                             scope.launch {
+                                runCatching {
+                                    val request = LimitOrderRequest(
+                                        assetId = requireNotNull(fromToken).assetId,
+                                        amount = inputText,
+                                        receiveAssetId = requireNotNull(toToken).assetId,
+                                        expectedReceiveAmount = outputText,
+                                        expiredAt = Instant.now().plus(Duration.ofDays(7)).toString(),
+                                    )
+                                    viewModel.createLimitOrder(request).data?.let {
+                                        onLimitReview.invoke(it)
+                                    }
+                                }
                                 delay(1000)
                                 isButtonEnabled = true
                             }
                         }
                     },
-                    enabled = isInputValid && isPriceValid && checkBalance == true,
+                    enabled = isInputValid && isPriceValid && checkBalance == true && toToken != null,
                     colors = ButtonDefaults.outlinedButtonColors(
                         backgroundColor = if (isInputValid && isPriceValid && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),

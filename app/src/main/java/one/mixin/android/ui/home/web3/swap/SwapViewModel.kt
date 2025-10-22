@@ -28,6 +28,9 @@ import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.api.request.LimitOrderRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.LimitOrder
 import javax.inject.Inject
 
 @HiltViewModel
@@ -58,6 +61,16 @@ class SwapViewModel
         addRouteBot()
         return assetRepository.web3Swap(swapRequest)
     }
+
+    // Limit order APIs (create is used by UI; others not used yet)
+    suspend fun createLimitOrder(request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse> {
+        addRouteBot()
+        return assetRepository.createLimitOrder(request)
+    }
+    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?): MixinResponse<List<LimitOrder>> =
+        assetRepository.getLimitOrders(category, limit, offset)
+    suspend fun getLimitOrder(id: String): MixinResponse<LimitOrder> = assetRepository.getLimitOrder(id)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<LimitOrder> = assetRepository.cancelLimitOrder(id)
 
     suspend fun quote(
         context: Context,

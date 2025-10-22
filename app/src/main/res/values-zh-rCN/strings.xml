@@ -2093,4 +2093,6 @@
     <string name="referral_description">邀请好友赚币</string>
     <string name="Address_not_found">该联系人还没有注册普通钱包</string>
     <string name="limit_price">限价</string>
+    <string name="Order_Type">Order Type</string>
+    <string name="Forever">Forever</string>
 </resources>

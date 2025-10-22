@@ -2149,4 +2149,6 @@
     <string name="referral_description">Invite friends earn crypto</string>
     <string name="Address_not_found">This user has not registered a common wallet</string>
     <string name="limit_price">Limit price</string>
+    <string name="Order_Type">Order Type</string>
+    <string name="Forever">Forever</string>
 </resources>

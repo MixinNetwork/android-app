@@ -76,6 +76,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.launch
+import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.ui.components.TabItem
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -93,6 +94,7 @@ fun TradePage(
     source: String,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
+    onLimitReview: (CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onOrderList: () -> Unit,
     pop: () -> Unit,
@@ -136,11 +138,8 @@ fun TradePage(
                 to = to,
                 inMixin = inMixin,
                 reviewing = reviewing,
-                source = source,
                 onSelectToken = onSelectToken,
-                onReview = {
-                    // todo
-                },
+                onLimitReview = onLimitReview,
                 onDeposit = onDeposit,
             )
         }
@@ -301,6 +300,7 @@ fun InputArea(
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
+    showTokenInfo: Boolean = true,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
@@ -323,62 +323,66 @@ fun InputArea(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
-                Spacer(modifier = Modifier.weight(1f))
-                token?.let {
-                    Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
-                } ?: run {
-                    Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
+                if (showTokenInfo) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    token?.let {
+                        Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                    } ?: run {
+                        Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
+                    }
                 }
             }
         }
         Box(modifier = Modifier.height(10.dp))
         InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            token?.let { t->
-                Text(
-                    text = stringResource(id = R.string.Deposit),
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textBlue,
-                    ),
-                    modifier = Modifier
-                        .alpha(
-                            if (!readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()
-                                    ?.compareTo(BigDecimal.ZERO) ?: 0) == 0
-                            ) 1f
-                            else 0f
-                        )
-                        .clickable { onDeposit?.invoke(t) },
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_web3_wallet),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = if (token.isWeb3) {
-                        balance?.numberFormat() ?: "0"
-                    } else {
-                        balance?.numberFormat8() ?: "0"
-                    },
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        textAlign = TextAlign.End,
-                    ),
-                    modifier = Modifier.clickable { onMax?.invoke() }
-                )
-            } ?: run {
-                Text(
-                    text = "0",
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        textAlign = TextAlign.End,
-                    ),
-                )
+        if (showTokenInfo) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                token?.let { t->
+                    Text(
+                        text = stringResource(id = R.string.Deposit),
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textBlue,
+                        ),
+                        modifier = Modifier
+                            .alpha(
+                                if (!readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()
+                                        ?.compareTo(BigDecimal.ZERO) ?: 0) == 0
+                                ) 1f
+                                else 0f
+                            )
+                            .clickable { onDeposit?.invoke(t) },
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_web3_wallet),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.textAssist,
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (token.isWeb3) {
+                            balance?.numberFormat() ?: "0"
+                        } else {
+                            balance?.numberFormat8() ?: "0"
+                        },
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            textAlign = TextAlign.End,
+                        ),
+                        modifier = Modifier.clickable { onMax?.invoke() }
+                    )
+                } ?: run {
+                    Text(
+                        text = "0",
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            textAlign = TextAlign.End,
+                        ),
+                    )
+                }
             }
         }
     }
