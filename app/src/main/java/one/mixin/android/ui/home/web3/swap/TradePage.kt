@@ -118,7 +118,7 @@ fun TradePage(
     }
 
     val tabs = listOf(
-        TabItem(stringResource(id = R.string.Swap)) {
+        TabItem(stringResource(id = R.string.Trade_Simple)) {
             SwapContent(
                 from = from,
                 to = to,
@@ -132,7 +132,7 @@ fun TradePage(
                 onDeposit = onDeposit,
             )
         },
-        TabItem(stringResource(id = R.string.limit_order)) {
+        TabItem(stringResource(id = R.string.Trade_Advanced)) {
             LimitOrderContent(
                 from = from,
                 to = to,
@@ -494,7 +494,7 @@ private fun SlippageInfo(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val descText = "${slippageBps.slippageBpsDisplay()}%"
-    val highSlippage = slippageBps > SwapFragment.DangerousSlippage
+    val highSlippage = slippageBps > TradeFragment.DangerousSlippage
     Spacer(modifier = Modifier.height(16.dp))
     Row(
         modifier =

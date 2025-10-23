@@ -2151,4 +2151,6 @@
     <string name="limit_price">Limit price</string>
     <string name="Order_Type">Order Type</string>
     <string name="Forever">Forever</string>
+    <string name="Trade_Simple">Simple</string>
+    <string name="Trade_Advanced">Advanced</string>
 </resources>

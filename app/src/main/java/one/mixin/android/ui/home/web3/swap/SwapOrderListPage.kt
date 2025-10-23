@@ -63,7 +63,7 @@ import one.mixin.android.vo.route.SwapOrderItem
 fun SwapOrderListPage(
     walletId: String?,
     pop: () -> Unit,
-    onOrderClick: (String) -> Unit,
+    onOrderClick: (String, Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
@@ -158,7 +158,7 @@ fun SwapOrderListPage(
                         items(ordersInGroup) { order ->
                             OrderItem(
                                 order = order,
-                                onClick = { onOrderClick(order.orderId) }
+                                .clickable { onOrderClick(order.orderId, order.type == "limit") }
                             )
                         }
                     }

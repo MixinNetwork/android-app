@@ -2095,4 +2095,6 @@
     <string name="limit_price">限价</string>
     <string name="Order_Type">Order Type</string>
     <string name="Forever">Forever</string>
+    <string name="Trade_Simple">闪兑</string>
+    <string name="Trade_Advanced">挂单</string>
 </resources>
