@@ -344,7 +344,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             if (from == FROM_LANDING_CREATE) {
                 AnalyticsTracker.trackSignUpCaptcha("phone_number")
             } else if (from == FROM_LANDING) {
-                AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
+                AnalyticsTracker.trackLoginCaptcha("phone_number")
             }
             captchaView?.loadCaptcha(
                 if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
