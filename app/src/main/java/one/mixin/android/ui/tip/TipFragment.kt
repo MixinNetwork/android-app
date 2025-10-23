@@ -103,7 +103,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("$TAG onViewCreated type: ${tipBundle.tipType}, event: ${tipBundle.tipEvent}")
         binding.apply {
-            if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
+            if (tipBundle.tipType == TipType.Create) {
                 AnalyticsTracker.trackSignUpPinSet()
             }
             closeIv.setOnClickListener {
@@ -422,7 +422,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
             when(tipBundle.tipType) {
                 TipType.Change -> {
-                    AnalyticsTracker.trackLoginPinVerify("change_pin")
+                    AnalyticsTracker.trackLoginPinVerify("pin_change")
                 }
                 TipType.Upgrade -> {
                     AnalyticsTracker.trackLoginPinVerify("pin_upgrade")
@@ -542,7 +542,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             TipType.Upgrade -> toast(R.string.Upgrade_TIP_successfully)
         }
 
-        if (tipBundle.tipType == TipType.Create || tipBundle.tipType == TipType.Upgrade) {
+        if (tipBundle.tipType == TipType.Create) {
             AnalyticsTracker.trackSignUpEnd()
         }
         if (activity?.isTaskRoot == true) {

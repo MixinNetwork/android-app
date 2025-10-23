@@ -159,6 +159,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     private suspend fun syncSession() {
         try {
+            AnalyticsTracker.trackSignUpSignalInit()
             Session.deleteExtensionSessionId()
             loadingViewModel.updateSignalSession()
             putIsSyncSession(requireContext(), true)
