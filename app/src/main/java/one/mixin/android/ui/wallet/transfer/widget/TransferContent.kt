@@ -20,7 +20,7 @@ import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.util.getChainName
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.User
@@ -169,7 +169,7 @@ class TransferContent : LinearLayout {
             }
 
             val tokenItem = transferBiometricItem.asset!!
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
@@ -296,7 +296,7 @@ class TransferContent : LinearLayout {
                 )
             }
 
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
@@ -324,7 +324,7 @@ class TransferContent : LinearLayout {
             }
 
             val tokenItem = safeMultisigsBiometricItem.asset!!
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
@@ -376,7 +376,7 @@ class TransferContent : LinearLayout {
                 memo.isVisible = true
                 memo.setContent(R.string.Memo, addressTransferBiometricItem.memo ?: "")
             }
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
@@ -405,7 +405,7 @@ class TransferContent : LinearLayout {
             networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
 
             val tokenItem = withdrawBiometricItem.asset!!
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 }
