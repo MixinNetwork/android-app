@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEVICE_ID
@@ -23,6 +24,7 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
@@ -159,7 +161,6 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     private suspend fun syncSession() {
         try {
-            AnalyticsTracker.trackSignUpSignalInit()
             Session.deleteExtensionSessionId()
             loadingViewModel.updateSignalSession()
             putIsSyncSession(requireContext(), true)
