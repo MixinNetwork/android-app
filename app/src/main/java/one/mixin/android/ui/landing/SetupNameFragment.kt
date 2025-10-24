@@ -53,6 +53,7 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("SetupNameFragment onViewCreated")
+        AnalyticsTracker.trackSignUpFullName()
         MixinApplication.get().isOnline.set(true)
         binding.apply {
             nameFab.visibility = GONE
@@ -73,7 +74,6 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                                 ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                                 return@subscribe
                             }
-                            AnalyticsTracker.trackSignUpFullName()
                             r.data?.let { data ->
                                 Session.storeAccount(data)
                                 mobileViewModel.insertUser(data.toUser())

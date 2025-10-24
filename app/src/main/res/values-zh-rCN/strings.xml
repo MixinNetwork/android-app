@@ -1390,7 +1390,7 @@
     <string name="send_to_address_description">转到我地址薄中的地址，地址受到 PIN 保护，避免地址钓鱼攻击。</string>
     <string name="send_to_my_wallet_description">使用加密网络发送到我的另一个钱包。</string>
     <string name="send_to_contact_description">转给我的 Mixin 好友，转账隐私、零手续费且秒到账。</string>
-    <string name="send_to_mixin_contact_description">发送到您朋友的普通钱包，隐私且便捷。</string>
+    <string name="send_to_mixin_contact_description">转到 Mixin 好友的普通钱包，转账快捷又方便。</string>
     <string name="send_to_privacy_wallet_description">转到我的隐私钱包，保护资产的隐私和安全，避免各种潜在风险。</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
@@ -2070,7 +2070,7 @@
     <string name="mixin_payment_title">📣 Mixin 收款</string>
     <string name="payment_details">💰 金额：%1$s\n🌐 网络：%2$s\n🤝 收款人：%3$s</string>
     <string name="pay_now">立刻支付</string>
-    <string name="referral_program_introduction_1">最高 70% 交易手续费分佣。</string>
+    <string name="referral_program_introduction_1">最高 60% 交易手续费分佣。</string>
     <string name="referral_program_introduction_2">会员返佣单比最高 1000 USD。</string>
     <string name="referral_program_introduction_3">返佣资格终生有效。</string>
     <string name="referral_code_applied_introduction_1">最高 50%% 交易手续费返现</string>
@@ -2086,6 +2086,7 @@
     <string name="got_it">知道了</string>
     <string name="upgrade_membership_now">升级会员</string>
     <string name="Referral">邀请</string>
+    <string name="referral_banner">邀请好友赢取最高 60% 手续费分佣！</string>
     <string name="referral_hint">邀请码</string>
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>

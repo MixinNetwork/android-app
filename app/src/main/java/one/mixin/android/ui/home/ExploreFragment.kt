@@ -83,7 +83,7 @@ class ExploreFragment : BaseFragment() {
     companion object {
         const val TAG = "ExploreFragment"
         const val PREF_BOT_CLICKED_IDS = "explore_bot_clicked_ids"
-        private val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID, INTERNAL_REFERRAL_ID)
+        val SHOW_DOT_BOT_IDS = setOf(INTERNAL_BUY_ID, INTERNAL_SWAP_ID, INTERNAL_MEMBER_ID, INTERNAL_REFERRAL_ID)
         fun newInstance() = ExploreFragment()
     }
 

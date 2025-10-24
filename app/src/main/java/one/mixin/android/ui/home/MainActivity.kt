@@ -145,6 +145,7 @@ import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
+import one.mixin.android.ui.home.ExploreFragment.Companion.SHOW_DOT_BOT_IDS
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
@@ -355,7 +356,7 @@ class MainActivity : BlazeBaseActivity() {
                                         ?.split(",")?.toSet() ?: emptySet()
                                 } catch (e: Exception) {
                                     emptySet()
-                                }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+                                }.size != SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
                                 backgroundColor = Color.RED
                             }
                         }
@@ -400,7 +401,7 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
-                    AnalyticsTracker.trackLoginPinVerify("verify_pin")
+                    AnalyticsTracker.trackLoginPinVerify("pin_verify")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                         onDismissCallback = { success ->
                             if (success) {
@@ -1009,7 +1010,7 @@ class MainActivity : BlazeBaseActivity() {
                     ?.split(",")?.toSet() ?: emptySet()
             } catch (e: Exception) {
                 emptySet()
-            }.size != 4 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            }.size < SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
                 isVisible = market
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)

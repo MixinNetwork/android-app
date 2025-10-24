@@ -1420,7 +1420,7 @@
     <string name="send_to_address_description">Send to an address in your Address Book, PIN-protected to prevent phishing.</string>
     <string name="send_to_my_wallet_description">Send to my other wallet using a crypto network.</string>
     <string name="send_to_contact_description">Send to your Mixin friends with privacy, zero fees, and instant delivery.</string>
-    <string name="send_to_mixin_contact_description">Send to your friends‘ Common Wallet with privacy and ease.</string>
+    <string name="send_to_mixin_contact_description">Send to your friends’ Common Wallets quickly and easily.</string>
     <string name="send_to_privacy_wallet_description">Send to your Privacy Wallet to keep your assets safe and hidden from potential risks.</string>
     <string name="Withdrawal_Suspended">%1$s Withdrawal Suspended</string>
     <string name="Withdrawal_Suspended_Content">%1$s withdrawals are temporarily suspended, possibly due to node failure, blockchain network hard fork, or congestion. Please try again later.</string>
@@ -2127,12 +2127,12 @@
     <string name="pay_now">Pay Now</string>
     <string name="Referral">Referral</string>
     <string name="referral_hint">Referral Code</string>
-    <string name="referral_desc">Invite friends and earn up to 70% of their trading fees!</string>
+    <string name="referral_banner">Invite friends and earn up to 60% of their trading fees!</string>
     <string name="Mixin_Referral">Mixin Referral</string>
     <string name="apply_referral_code">Apply Referral Code</string>
     <string name="apply_referral_code_benefit">Apply a referral code to your account to unlock exclusive benefits on Mixin</string>
     <string name="referral_program_introduction_header">Join the referral program and invite friends to earn crypto together:</string>
-    <string name="referral_program_introduction_1">Up to 70% commission on trading fees</string>
+    <string name="referral_program_introduction_1">Up to 60% commission on trading fees</string>
     <string name="referral_program_introduction_2">Membership commission rebate up to 1,000 USD per order</string>
     <string name="referral_program_introduction_3">Rebate eligibility is valid for life</string>
     <string name="referral_code_applied_introduction_1">Up to 50%% cashback on trading fees</string>

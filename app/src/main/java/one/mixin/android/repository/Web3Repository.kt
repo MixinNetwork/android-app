@@ -13,12 +13,14 @@ import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -41,7 +43,8 @@ constructor(
     val web3AddressDao: Web3AddressDao,
     val web3WalletDao: Web3WalletDao,
     val tokenRepository: TokenRepository,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val web3ChainDao: Web3ChainDao,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
 
@@ -221,5 +224,9 @@ constructor(
             Timber.e(e)
             null
         }
+    }
+
+    suspend fun findChainById(chainId: String): Web3Chain? {
+        return web3ChainDao.findChainById(chainId)
     }
 }
