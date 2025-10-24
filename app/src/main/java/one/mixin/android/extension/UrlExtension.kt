@@ -42,7 +42,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getShareCategory
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
 
@@ -75,6 +75,9 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) ||
         startsWith(Constants.Scheme.MIXIN_MARKET, true) ||
         startsWith(Constants.Scheme.HTTPS_MARKET, true) ||
+        startsWith(Constants.Scheme.MIXIN_REFERRALS, true) ||
+        startsWith(Constants.Scheme.HTTPS_REFERRALS, true) ||
+        startsWith(Constants.Scheme.HTTPS_MEMBERSHIP, true) ||
         startsWith(Constants.Scheme.DEVICE, true) ||
         startsWith(Constants.Scheme.SEND, true) ||
         startsWith(Constants.Scheme.MIXIN_SEND, true) ||
@@ -117,7 +120,7 @@ fun String.isMixinUrl(): Boolean {
         } else if (startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
         } else {
-            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true)
+            startsWith(Constants.Scheme.HTTPS_ADDRESS, true) || startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) || startsWith(Constants.Scheme.MIXIN_MARKET, true) || startsWith(Constants.Scheme.HTTPS_MARKET, true) || startsWith(Constants.Scheme.MIXIN_REFERRALS, true) || startsWith(Constants.Scheme.HTTPS_REFERRALS, true)
         }
     }
 }
@@ -161,8 +164,8 @@ Version Code: ${Build.VERSION.RELEASE}
 User ID: ${Session.getAccountId()}
 Google Available: ${context.isGooglePlayServicesAvailable()}
 User-agent: ${WebView(context).settings.userAgentString}
-Solana Address: ${JsSigner.solanaAddress}
-EVM Address: ${JsSigner.address}
+Solana Address: ${Web3Signer.solanaAddress}
+EVM Address: ${Web3Signer.address}
 """
         context.alert(content).setPositiveButton(android.R.string.copy) { dialog, _ ->
             context.getClipboardManager().setPrimaryClip(

@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,7 +36,6 @@ import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
-import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
@@ -61,7 +61,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import javax.inject.Inject
@@ -270,6 +270,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
         checkPin()
         RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe { event ->
                 if (event.type != WalletOperationType.RENAME) return@subscribe
@@ -322,6 +323,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleRl.requestLayout()
                     } ?: run {
                         binding.titleTv.setText(R.string.Common_Wallet)
                     }
@@ -339,6 +341,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Watch_Wallet) }
+                        binding.titleRl.requestLayout()
                     } ?: run {
                         binding.titleTv.setText(R.string.Watch_Wallet)
                         binding.tailIcon.isVisible = false
@@ -355,10 +358,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 lifecycleScope.launch {
                     walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
                         binding.tailIcon.isVisible = wallet.hasLocalPrivateKey.not()
-                        if (wallet.hasLocalPrivateKey.not()) {
-                            binding.tailIcon.setImageResource(R.drawable.ic_wallet_watch)
-                        }
+                        binding.tailIcon.isVisible = false
                         binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleRl.requestLayout()
                     } ?: run {
                         binding.titleTv.setText(R.string.Common_Wallet)
                         binding.tailIcon.isVisible = false
@@ -384,13 +386,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
 
         if (!Session.saltExported() && Session.isAnonymous()) {
-            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance()
-                .apply {
-                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-                    dialog.callback = callback
-                    dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+            BackupMnemonicPhraseWarningBottomSheetDialogFragment.newInstance().apply {
+                laterCallback = {
+                    if (this@WalletFragment.isAdded) {
+                        val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                        dialog.callback = callback
+                        dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+                    }
                 }
-                .show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
+            }.show(parentFragmentManager, BackupMnemonicPhraseWarningBottomSheetDialogFragment.TAG)
         } else {
             val dialog = AddWalletBottomSheetDialogFragment.newInstance()
             dialog.callback = callback
@@ -428,13 +432,12 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             lifecycleScope.launch(Dispatchers.IO) {
                 val wallet = walletViewModel.findWalletById(walletId)
                 if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || CryptoWalletHelper.hasPrivateKey(requireActivity(), walletId))) {
-                    JsSigner.setWallet(walletId, wallet.category) { queryWalletId ->
+                    Web3Signer.setWallet(walletId, wallet.category) { queryWalletId ->
                         runBlocking { walletViewModel.getAddresses(queryWalletId) }
                     }
                     withContext(Dispatchers.Main) {
                         reloadWebViewInClips()
                     }
-                    PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, walletId)
                 }
             }
         }
@@ -600,20 +603,19 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             val dest = selectedWalletDestination
             if (dest is WalletDestination.Import) {
                 walletViewModel.deleteWallet(dest.walletId)
-                selectedWalletDestination = WalletDestination.Classic(JsSigner.classicWalletId)
+                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
             } else if (dest is WalletDestination.Watch) {
                 walletViewModel.deleteWallet(dest.walletId)
-                selectedWalletDestination = WalletDestination.Classic(JsSigner.classicWalletId)
+                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
             }
             dialog.dismiss()
             withContext(Dispatchers.IO) {
-                JsSigner.setWallet(JsSigner.classicWalletId, WalletCategory.CLASSIC.value) { queryWalletId ->
+                Web3Signer.setWallet(Web3Signer.classicWalletId, WalletCategory.CLASSIC.value) { queryWalletId ->
                     runBlocking { walletViewModel.getAddresses(queryWalletId) }
                 }
                 withContext(Dispatchers.Main) {
                     reloadWebViewInClips()
                 }
-                PropertyHelper.updateKeyValue(Constants.Account.SELECTED_WEB3_WALLET_ID, JsSigner.classicWalletId)
             }
         }
     }

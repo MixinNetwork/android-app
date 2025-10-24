@@ -41,6 +41,12 @@ import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.and
 import kotlin.experimental.or
+import androidx.core.content.edit
+import one.mixin.android.extension.base64RawURLDecode
+import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.currentTimeSeconds
+import one.mixin.android.extension.hmacSha256
+import kotlin.text.toByteArray
 
 val secureRandom: SecureRandom = SecureRandom()
 private const val GCM_IV_LENGTH = 12
@@ -56,14 +62,14 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 
 fun generateEd25519KeyPair(): EdKeyPair {
     return if (useGoEd()) {
-        val priv = Ed25519.generateKey()
-        EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+        val private = Ed25519.generateKey()
+        EdKeyPair(private.sliceArray(32..63), private.sliceArray(0..31))
     } else {
         val keyPair = one.mixin.eddsa.KeyPair.newKeyPair(true)
         val ktEdKeyPair = EdKeyPair(keyPair.publicKey.toByteArray(), keyPair.privateKey.toByteArray())
 
-        val priv = Ed25519.newKeyFromSeed(ktEdKeyPair.privateKey)
-        val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+        val private = Ed25519.newKeyFromSeed(ktEdKeyPair.privateKey)
+        val goEdKeyPair = EdKeyPair(private.sliceArray(32..63), private.sliceArray(0..31))
         if (!goEdKeyPair.privateKey.contentEquals(ktEdKeyPair.privateKey) || !goEdKeyPair.publicKey.contentEquals(ktEdKeyPair.publicKey)) {
             throw InvalidEd25519Exception()
         }
@@ -72,8 +78,8 @@ fun generateEd25519KeyPair(): EdKeyPair {
 }
 
 fun newKeyPairFromSeed(seed: ByteArray): EdKeyPair {
-    val priv = Ed25519.newKeyFromSeed(seed)
-    val goEdKeyPair = EdKeyPair(priv.sliceArray(32..63), priv.sliceArray(0..31))
+    val private = Ed25519.newKeyFromSeed(seed)
+    val goEdKeyPair = EdKeyPair(private.sliceArray(32..63), private.sliceArray(0..31))
     return if (useGoEd()) {
         goEdKeyPair
     } else {
@@ -196,7 +202,7 @@ fun generateRandomBytes(len: Int = 16): ByteArray {
 fun aesGcmEncrypt(
     plain: ByteArray,
     key: ByteArray,
-    iv: ByteArray? = null
+    iv: ByteArray? = null,
 ): ByteArray {
     val iv = iv ?: ByteArray(GCM_IV_LENGTH).also { secureRandom.nextBytes(it) }
     val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -315,20 +321,19 @@ fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: B
         context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
     }.getOrThrow()  // Unable to create when logging in, it crashes directly
     val encodedKey = entropy.toHex()
-    encryptedPrefs.edit().putString(alias, encodedKey).commit()
+    encryptedPrefs.edit(commit = true) { putString(alias, encodedKey) }
 }
 
 fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
-    val encryptedPrefs = EncryptedSharedPreferences.create(
-        context,
-        ENCRYPTED_MNEMONIC,
-        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
     runCatching {
-        encryptedPrefs.edit().remove(alias).apply()
+        val encryptedPrefs = EncryptedSharedPreferences.create(
+            context,
+            ENCRYPTED_MNEMONIC,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        encryptedPrefs.edit { remove(alias) }
     }.onFailure {
         if (Session.saltExported()) context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
     }
@@ -349,4 +354,23 @@ fun getValueFromEncryptedPreferences(context: Context, alias: String): ByteArray
 
     val encodedText = encryptedPrefs?.getString(alias, null) ?: return null
     return encodedText.hexStringToByteArray()
+}
+
+fun signBotSignature(
+    accountId: String,
+    botPublicKey: String,
+    edKeyPair: EdKeyPair,
+    method: String,
+    path: String,
+    body: String?,
+): Pair<Long, String> {
+    val botPk = botPublicKey.base64RawURLDecode()
+    val private = privateKeyToCurve25519(edKeyPair.privateKey)
+    val sharedKey = calculateAgreement(botPk, private)
+    val ts = currentTimeSeconds()
+    var content = "$ts${method}${path}"
+    if (body.isNullOrBlank().not()) {
+        content += body
+    }
+    return Pair(ts, (accountId.toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
 }

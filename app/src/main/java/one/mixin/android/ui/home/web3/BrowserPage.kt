@@ -68,11 +68,11 @@ import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.WalletCategory
+import one.mixin.android.vo.User
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -86,6 +86,7 @@ fun BrowserPage(
     amount: String?,
     token: Web3TokenItem?,
     toAddress: String?,
+    toUser: User?,
     type: Int,
     step: WalletConnectBottomSheetDialogFragment.Step,
     isCancel: Boolean,
@@ -118,7 +119,7 @@ fun BrowserPage(
     }
 
     LaunchedEffect(Unit) {
-        val wallet = viewModel.findWalletById(JsSigner.currentWalletId)
+        val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
         walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
     }
 
@@ -341,7 +342,13 @@ fun BrowserPage(
                 if (toAddress != null) {
                     Box(modifier = Modifier.height(20.dp))
                     val displayInfo = addressDisplayInfo
-                    if (displayInfo != null) {
+                    if (toUser != null) {
+                        ItemContent(
+                            title = stringResource(id = R.string.Receivers).uppercase(),
+                            subTitle = toAddress,
+                            toUser = toUser,
+                        )
+                    } else if (displayInfo != null) {
                         val (displayName, isAddress) = displayInfo
                         if (displayName == null) {
                             ItemWalletContent(
@@ -396,7 +403,7 @@ fun BrowserPage(
                         Modifier
                             .align(Alignment.BottomCenter)
                             .background(MixinAppTheme.colors.background)
-                            .padding(20.dp)
+                            .padding(8.dp)
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                     ) {
@@ -428,7 +435,7 @@ fun BrowserPage(
                     Warning(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
-            Box(modifier = Modifier.height(40.dp))
+            Box(modifier = Modifier.height(32.dp))
         }
     }
 }

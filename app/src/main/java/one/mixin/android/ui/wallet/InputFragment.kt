@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -22,7 +23,7 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
-import one.mixin.android.db.web3.vo.isSolToken
+import one.mixin.android.db.web3.vo.isNativeSolToken
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
@@ -45,8 +46,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
@@ -70,7 +70,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.Keyboard
 import org.sol4k.PublicKey
 import timber.log.Timber
@@ -259,7 +259,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 avatar.bg.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
                 avatar.badge.loadImage(tokenChainIconUrl, R.drawable.ic_avatar_place_holder)
                 name.text = tokenName
-                balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                balanceTv.text = getString(R.string.available_balance, "${tokenBalance.let {
                     if (web3Token == null) {
                         it.numberFormat8()
                     } else {
@@ -282,7 +282,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 )
                 binding.addTv.setOnClickListener {
                     if (insufficientBalance.isVisible) {
-                        if (web3Token != null) {
+                        if (web3Token != null) { // Insufficient web token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(web3Token!!)
                                 .apply {
                                     onWeb3Action = { type, t ->
@@ -293,16 +293,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 output = t.assetId,
                                                 null,
                                                 null,
-                                                walletId = JsSigner.currentWalletId,
+                                                walletId = Web3Signer.currentWalletId,
                                                 inMixin = false
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                             val address =
-                                                if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                                                if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                                             this@InputFragment.view?.navigate(
                                                 R.id.action_input_fragment_to_web3_address_fragment,
                                                 Bundle().apply {
                                                     putString("address", address)
+                                                    putParcelable("web3_token", t)
                                                 }
                                             )
                                         }
@@ -311,7 +312,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     parentFragmentManager,
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
-                        } else if (token != null) {
+                        } else if (token != null) { // Insufficient token Balance
                             AddFeeBottomSheetDialogFragment.newInstance(token!!)
                                 .apply {
                                     onAction = { type, t ->
@@ -337,7 +338,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     AddFeeBottomSheetDialogFragment.TAG
                                 )
                         }
-                    } else if (gas != null && chainToken != null) {
+                    } else if (gas != null && chainToken != null) { // Insufficient gas Balance
                         AddFeeBottomSheetDialogFragment.newInstance(chainToken!!)
                             .apply {
                                 onWeb3Action = { type, t ->
@@ -346,16 +347,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                             output = t.assetId,
-                                            walletId = JsSigner.currentWalletId,
+                                            walletId = Web3Signer.currentWalletId,
                                             inMixin = false
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         val address =
-                                            if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                                            if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                                         this@InputFragment.view?.navigate(
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
                                                 putString("address", address)
+                                                putParcelable("web3_token", t)
                                             }
                                         )
                                     }
@@ -364,7 +366,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 parentFragmentManager,
                                 AddFeeBottomSheetDialogFragment.TAG
                             )
-                    } else if (currentFee != null) {
+                    } else if (currentFee != null) { // Insufficient fee Balance
                         AddFeeBottomSheetDialogFragment.newInstance(currentFee!!.token)
                             .apply {
                                 onAction = { type, t ->
@@ -373,8 +375,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                             output = t.assetId,
-                                            walletId = JsSigner.currentWalletId,
-                                            inMixin = false,
+                                            null,
+                                            null
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         view.navigate(
@@ -509,6 +511,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     token = token,
                                     amount = amount,
                                     toAddress = toAddress,
+                                    toUser = user,
                                     chainToken = chainToken,
                                     onTxhash = { _, serializedTx ->
                                     },
@@ -617,7 +620,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     renderTitle(requireNotNull(toAddress), addressTag)
                 }
                 TransferType.WEB3 -> {
-                    renderTitle(requireNotNull(toAddress))
+                    if (user != null) {
+                        titleView.setSubTitle(getString(R.string.Send_To_Title), user)
+                    } else {
+                        renderTitle(requireNotNull(toAddress))
+                    }
                 }
                 TransferType.BIOMETRIC_ITEM -> {
                     assetBiometricItem?.let { item ->
@@ -651,12 +658,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun renderTitle(toAddress: String, tag: String? = null) {
         lifecycleScope.launch {
-            val (label, wallet) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, false)
+            val (label, index) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, 0)
             binding.titleView.setLabel(
                 getString(R.string.Send_To_Title),
                 label,
-                "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
-                wallet
+                content = "$toAddress${tag?.let { ":$it" } ?: ""}".formatPublicKey(16),
+                index = index
             )
             label?.let {
                 addressLabel = label
@@ -853,11 +860,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    val address = if (token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) JsSigner.solanaAddress else JsSigner.evmAddress
+                    val address = if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                     view?.navigate(
                         R.id.action_input_fragment_to_web3_address_fragment,
                         Bundle().apply {
                             putString("address", address)
+                            putParcelable("web3_token", web3Token)
                         }
                     )
                 }
@@ -878,10 +886,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     override
     fun onWalletClick() {
-        QrBottomSheetDialogFragment.newInstance(
-            Session.getAccountId()!!,
-            TYPE_RECEIVE_QR
-        ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+        ReceiveQrActivity.show(requireContext(), Session.getAccountId()!!)
     }
 
     private fun getNumberFormat(value: String): String {
@@ -908,7 +913,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 if (length <= 12) {
                     40f
                 } else {
-                    max(40f - 1 * (length - 8), 16f)
+                    max(40f - (length - 8), 16f)
                 }
             primaryTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         }
@@ -947,7 +952,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private suspend fun checkSolanaToExists() {
         val token = web3Token ?: return
         val to = toAddress ?: return
-        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isSolToken()) return
+        if (token.chainId != Constants.ChainId.SOLANA_CHAIN_ID || !token.isNativeSolToken()) return
 
         val toAccount = withContext(Dispatchers.IO) {
             rpc.getAccountInfo(PublicKey(to))
@@ -982,17 +987,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
                     val balance = runCatching {
                         tokenBalance.toBigDecimalOrNull()?.subtract(value.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO)?.max(BigDecimal.ZERO)?.let {
-                            if (web3Token == null) {
-                                it.numberFormat8()
-                            } else {
-                                it.numberFormat12()
-                            }
-                        }
+                            if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     }.getOrDefault("0")
-
-                    binding.balance.text = getString(R.string.available_balance, "$balance $tokenSymbol")
+                    binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
                 } else {
-                    binding.balance.text = getString(R.string.available_balance, "${tokenBalance.let {
+                    binding.balanceTv.text = getString(R.string.available_balance, "${tokenBalance.let {
                         if (web3Token == null) { it.numberFormat8() } else { it.numberFormat12() } }
                     } $tokenSymbol")
                 }
@@ -1209,12 +1208,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
 
                 }.getOrDefault("0")
-                binding.balance.text = getString(
-                    R.string.available_balance,
-                    "$balance $tokenSymbol"
-                )
+                binding.balanceTv.text = getString(R.string.available_balance, "$balance $tokenSymbol")
             } else {
-                binding.balance.text = getString(
+                binding.balanceTv.text = getString(
                     R.string.available_balance,
                     "${
                         tokenBalance.let {

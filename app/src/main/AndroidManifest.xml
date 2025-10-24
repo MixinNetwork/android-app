@@ -105,6 +105,7 @@
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
+                <data android:host="referrals" />
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -125,6 +126,7 @@
                 <data android:pathPrefix="/scheme" />
                 <data android:pathPrefix="/tip" />
                 <data android:pathPrefix="/swap" />
+                <data android:pathPrefix="/referrals" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />
@@ -261,6 +263,11 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:name=".ui.common.ReceiveQrActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
             android:name=".ui.qr.CaptureActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Capture"
@@ -320,6 +327,11 @@
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
         <activity
             android:name=".ui.wallet.MarketShareActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.Blur"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
+        <activity
+            android:name=".ui.wallet.DepositShareActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
@@ -421,7 +433,7 @@
             android:foregroundServiceType="microphone" />
         <service
             android:name=".job.BlazeMessageService"
-            android:foregroundServiceType="remoteMessaging"
+            android:foregroundServiceType="dataSync"
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"
@@ -508,14 +520,13 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAP_KEY}" />
-<!--        <meta-data-->
-<!--            android:name="com.google.android.gms.car.application"-->
-<!--            android:resource="@xml/automotive_app_desc" />-->
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
 
-        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+        <meta-data
+            android:name="com.bugsnag.android.API_KEY"
+            android:value="${BUGSNAG_KEY}"/>
 
     </application>
 

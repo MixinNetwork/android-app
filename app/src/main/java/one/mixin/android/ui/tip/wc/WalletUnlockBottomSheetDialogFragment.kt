@@ -30,7 +30,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import org.chromium.net.CronetException
 import java.io.IOException
@@ -225,13 +225,13 @@ class WalletUnlockBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (type == TYPE_SOLANA) {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                     PropertyHelper.updateKeyValue(SOLANA_ADDRESS, address)
-                    JsSigner.updateAddress(JsSigner.JsSignerNetwork.Solana.name, address)
+                    Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, address)
                     RxBus.publish(WCChangeEvent())
                     keyViewModel.success(address)
                 } else {
                     val address = keyViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                     PropertyHelper.updateKeyValue(EVM_ADDRESS, address)
-                    JsSigner.updateAddress(JsSigner.JsSignerNetwork.Ethereum.name, address)
+                    Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, address)
                     RxBus.publish(WCChangeEvent())
                     keyViewModel.success(address)
                 }

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -29,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -40,11 +42,13 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.ui.address.FetchUserAddressFragment.Companion.ARGS_TO_USER
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
 import one.mixin.android.ui.address.page.MemoInputPage
@@ -59,7 +63,9 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.decodeICAP
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
@@ -214,8 +220,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 contentText = scannedTransferDest,
                                 toContact = {
                                     requireView().hideKeyboard()
+                                    Timber.e("Transfer to contact $token $web3Token")
                                     token?.let { t ->
-                                        TransferContactBottomSheetDialogFragment.newInstance(t)
+                                        TransferContactBottomSheetDialogFragment.newInstance()
                                             .apply {
                                                 onUserClick = { user->
                                                     navigateToInputFragmentWithBundle(
@@ -223,6 +230,38 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                             putParcelable(InputFragment.ARGS_TO_USER, user)
                                                             putParcelable(InputFragment.ARGS_TOKEN, t)
                                                         })
+                                                }
+                                            }
+                                            .show(
+                                                parentFragmentManager,
+                                                TransferContactBottomSheetDialogFragment.TAG
+                                            )
+                                    }
+                                    web3Token?.let { t ->
+                                        TransferContactBottomSheetDialogFragment.newInstance()
+                                            .apply {
+                                                onUserClick = { user ->
+                                                    this@TransferDestinationInputFragment.lifecycleScope.launch {
+                                                        val fromAddress = web3ViewModel.getAddressesByChainId(t.walletId, t.chainId)?.destination
+                                                        if (fromAddress.isNullOrBlank()) {
+                                                            toast(R.string.Alert_Not_Support)
+                                                            return@launch
+                                                        }
+                                                        val chain = chainToken ?: web3ViewModel.web3TokenItemById(t.walletId, t.chainId)
+                                                        if (chain == null) {
+                                                            toast(R.string.Alert_Not_Support)
+                                                            return@launch
+                                                        }
+                                                        findNavController().navigate(
+                                                            R.id.action_transfer_destination_to_fetch_user_address,
+                                                            Bundle().apply {
+                                                                putParcelable(ARGS_TO_USER, user)
+                                                                putParcelable(FetchUserAddressFragment.ARGS_WEB3_TOKEN, t)
+                                                                putString(FetchUserAddressFragment.ARGS_FROM_ADDRESS, fromAddress)
+                                                                putParcelable(FetchUserAddressFragment.ARGS_CHAIN_TOKEN, chain)
+                                                            }
+                                                        )
+                                                    }
                                                 }
                                             }
                                             .show(
@@ -301,7 +340,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         )
                                     } else {
                                         val memoEnabled =
-                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE
+                                            token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE
                                         if (memoEnabled) {
                                             navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
                                         } else if (web3Token != null) {
@@ -394,7 +433,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 web3Token = web3Token,
                                 contentText = scannedAddress,
                                 onNext = { address ->
-                                    if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE)
+                                    if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE)
                                         navController.navigate("${TransferDestination.Memo.name}?address=$address")
                                     else
                                         navController.navigate("${TransferDestination.Label.name}?address=$address")
@@ -597,7 +636,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             }
                         }
                     } else {
-                        errorInfo = response.errorDescription
+                        errorInfo = requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
                     }
                 }
             } catch (e: Exception) {

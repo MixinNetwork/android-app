@@ -3,11 +3,9 @@ package one.mixin.android.ui.web
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
 import android.webkit.WebViewClient
-import androidx.annotation.ColorInt
 import androidx.annotation.MainThread
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
@@ -27,6 +25,9 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
+import androidx.core.graphics.scale
+import androidx.core.graphics.toColorInt
+import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
 private var screenshot: Bitmap? = null
@@ -34,47 +35,54 @@ private var screenshot: Bitmap? = null
 fun getScreenshot() = screenshot
 
 fun refreshScreenshot(context: Context, cover: Int? = null) {
-    MixinApplication.get().currentActivity?.let { activity ->
-        val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
-        if (!rootView.isLaidOut) return@let
+    runCatching { 
+        MixinApplication.get().currentActivity?.let { activity ->
+            val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
+            if (!rootView.isLaidOut) return@let
 
-        val screenBitmap = rootView.drawToBitmap()
-        val resultBitmap =
-            Bitmap.createScaledBitmap(
-                screenBitmap,
-                screenBitmap.width / 3,
-                screenBitmap.height / 3,
-                false,
+            val screenBitmap = rootView.drawToBitmap()
+            
+            // Convert hardware bitmap to software bitmap if needed
+            val softwareBitmap = if (screenBitmap.config == Bitmap.Config.HARDWARE) {
+                screenBitmap.copy(Bitmap.Config.ARGB_8888, false)
+            } else {
+                screenBitmap
+            }
+            
+            val resultBitmap =
+                softwareBitmap.scale(softwareBitmap.width / 3, softwareBitmap.height / 3, false)
+
+            val cv = Canvas(resultBitmap)
+            cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
+            cv.drawRect(
+                0f,
+                0f,
+                resultBitmap.width.toFloat(),
+                resultBitmap.height.toFloat(),
+                Paint().apply {
+                    color = cover ?: if (context.isNightMode()) {
+                        "#CC1C1C1C".toColorInt()
+                    } else {
+                        "#E6F6F7FA".toColorInt()
+                    }
+                },
             )
-
-        val cv = Canvas(resultBitmap)
-        cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
-        cv.drawRect(
-            0f,
-            0f,
-            screenBitmap.width.toFloat(),
-            screenBitmap.height.toFloat(),
-            Paint().apply {
-                color = cover ?: if (context.isNightMode()) {
-                    Color.parseColor("#CC1C1C1C")
-                } else {
-                    Color.parseColor("#E6F6F7FA")
-                }
-            },
-        )
-        screenshot = resultBitmap
+            screenshot = resultBitmap
+        }
+    }.onFailure {
+        Timber.e(it)
     }
     initRenderScript(context)
 }
 
 fun expand(context: Context) {
-    refreshScreenshot(context)
+    runCatching { refreshScreenshot(context) }.onFailure { Timber.e(it) }
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }
 
 fun collapse() {
-    if (clips.size > 0) {
+    if (clips.isNotEmpty()) {
         FloatingWebClip.getInstance().show()
     }
 }
@@ -84,7 +92,6 @@ var clips = mutableListOf<WebClip>()
 data class WebClip(
     var url: String,
     var app: App?,
-    @ColorInt
     val titleColor: Int,
     val name: String?,
     val thumb: Bitmap?,

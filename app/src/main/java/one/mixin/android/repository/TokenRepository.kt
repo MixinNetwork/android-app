@@ -141,7 +141,7 @@ import one.mixin.android.vo.safe.toAssetItem
 import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -554,7 +554,7 @@ class TokenRepository
             web3WalletDao.deleteAllWallets()
         }
 
-        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(JsSigner.currentWalletId, hash, chainId)
+        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(Web3Signer.currentWalletId, hash, chainId)
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
@@ -564,10 +564,7 @@ class TokenRepository
 
         suspend fun pendingDeposits(
             asset: String,
-            destination: String,
-            tag: String? = null,
-        ) =
-            tokenService.pendingDeposits(asset, destination, tag)
+        ) = tokenService.pendingDeposits(asset)
 
         suspend fun clearAllPendingDeposits() = safeSnapshotDao.clearAllPendingDeposits()
 
@@ -654,8 +651,6 @@ class TokenRepository
 
         fun observeTopAssets() = hotAssetDao.topAssets()
 
-        fun checkExists(id: String) = tokenDao.checkExists(id)
-
         suspend fun findAssetItemById(assetId: String) = tokenDao.findAssetItemById(assetId)
 
         suspend fun findAssetItemByCollectionHash(collectionHash: String) = tokenDao.findAssetItemByCollectionHash(collectionHash)
@@ -663,9 +658,6 @@ class TokenRepository
         suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
 
         suspend fun findSnapshotById(snapshotId: String) = safeSnapshotDao.findSnapshotById(snapshotId)
-
-        suspend fun findSnapshotByTraceId(traceId: String) = safeSnapshotDao.findSnapshotByTraceId(traceId)
-
         suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
             var result: SnapshotItem? = null
             handleMixinResponse(
@@ -852,8 +844,6 @@ class TokenRepository
 
         suspend fun findUnspentOutputByHash(inscriptionHash: String) = outputDao.findUnspentOutputByHash(inscriptionHash)
 
-        suspend fun findOutputByHash(inscriptionHash: String) = outputDao.findOutputByHash(inscriptionHash)
-
         fun findInscriptionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionByHash(inscriptionHash)
 
         fun findInscriptionCollectionByHash(inscriptionHash: String) = inscriptionDao.findInscriptionCollectionByHash(inscriptionHash)
@@ -889,8 +879,6 @@ class TokenRepository
                 throw RuntimeException("Update failed, please try again")
             }
         }
-
-        suspend fun findOldAssets() = assetService.fetchAllAssetSuspend()
 
         fun insertSnapshotMessage(
             data: TransactionResponse,

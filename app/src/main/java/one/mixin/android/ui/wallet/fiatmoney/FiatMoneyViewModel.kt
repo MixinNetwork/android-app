@@ -224,7 +224,7 @@ class FiatMoneyViewModel
                 )
             )
 
-        suspend fun getAddressById(chainId: String) = withContext(Dispatchers.IO) {
-            tokenRepository.getAddressById(chainId)
+        suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) = withContext(Dispatchers.IO) {
+            tokenRepository.findAndSyncDepositEntry(chainId, assetId)
         }
     }

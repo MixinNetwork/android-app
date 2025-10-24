@@ -30,6 +30,7 @@ import one.mixin.android.databinding.FragmentMobileBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
@@ -39,6 +40,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
@@ -49,6 +51,8 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.util.xinDialCode
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 
@@ -110,10 +114,15 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("MobileFragment onViewCreated")
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
                 titleSwitcher.setCurrentText(getString(R.string.Enter_new_phone_number))
+            }
+            titleView.setOnLongClickListener{
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
             }
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             binding.titleView.rightIb.setOnClickListener {
@@ -246,8 +255,14 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
-            } else {
+            } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
+            } else {
+                val t = GTCaptcha4Utils.parseGTCaptchaResponse(captchaResponse.second)
+                verificationRequest.lotNumber = t?.lotNumber
+                verificationRequest.captchaOutput = t?.captchaOutput
+                verificationRequest.passToken = t?.passToken
+                verificationRequest.genTime = t?.genTime
             }
         }
         binding.continueBn.displayedChild = 1
@@ -256,7 +271,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
-                            initAndLoadCaptcha()
+                            initAndLoadCaptcha(r.errorDescription)
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -299,11 +314,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     hideLoading()
                     ErrorHandler.handleError(t)
                     reportException("$TAG loginVerification", t)
+                    Timber.e(t)
                 },
             )
     }
 
-    private fun initAndLoadCaptcha() =
+    private fun initAndLoadCaptcha(errorDescription: String) =
         lifecycleScope.launch {
             if (captchaView == null) {
                 captchaView =
@@ -328,9 +344,13 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             if (from == FROM_LANDING_CREATE) {
                 AnalyticsTracker.trackSignUpCaptcha("phone_number")
             } else if (from == FROM_LANDING) {
-                AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
+                AnalyticsTracker.trackLoginCaptcha("phone_number")
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
     private fun hideLoading() {

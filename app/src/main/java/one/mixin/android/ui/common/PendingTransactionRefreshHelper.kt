@@ -9,7 +9,7 @@ import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 
 object PendingTransactionRefreshHelper {
@@ -24,7 +24,7 @@ object PendingTransactionRefreshHelper {
         refreshJob?.cancel()
         return fragment.lifecycleScope.launch {
             refreshTransactionData(
-                JsSigner.currentWalletId,
+                Web3Signer.currentWalletId,
                 web3ViewModel,
                 jobManager,
                 onTransactionStatusUpdated

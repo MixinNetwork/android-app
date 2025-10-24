@@ -14,18 +14,19 @@ import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
@@ -57,7 +58,9 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
             setContent {
                 SwapTokenPage(token) {
-                    WebActivity.show(context, "https://solscan.io/token/${token.address}", null)
+                    val url =
+                        "${Constants.API.URL}external/explore/${token.chain.chainId}/assets/${token.address}"
+                    context?.openUrl(url)
                     dismiss()
                 }
             }

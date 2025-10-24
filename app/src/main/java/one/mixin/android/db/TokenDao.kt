@@ -25,15 +25,16 @@ interface TokenDao : BaseDao<Token> {
             a1.price_btc AS priceBtc, a1.price_usd AS priceUsd,
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName,
-            a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash 
+            a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash,
+            a1.precision 
             FROM tokens a1 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
         const val POSTFIX =
-            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, a1.rowid DESC"
-        const val POSTFIX_ASSET_ITEM =
             " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
+        const val POSTFIX_ASSET_ITEM =
+            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE ae.hidden IS NULL OR NOT ae.hidden $POSTFIX_ASSET_ITEM"
     }
@@ -141,7 +142,7 @@ interface TokenDao : BaseDao<Token> {
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
     suspend fun findAssetItemsWithBalance(): List<TokenItem>
 
-    @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) $POSTFIX_ASSET_ITEM")
+    @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC")
     suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem>
 
 

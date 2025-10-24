@@ -28,14 +28,17 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromMnemonic
+import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
@@ -61,6 +64,8 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -96,6 +101,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("MnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -133,9 +139,18 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 val mnemonic = w.joinToString(" ")
                 val entropy  = runCatching { toEntropy(w)}.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
                 storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
+                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy).not()) {
+                    errorInfo = getString(R.string.Save_failure) // Save entropy failure
+                    return@launch
+                }
                 newKeyPairFromMnemonic(mnemonic)
             } else {
                 val mnemonic = toMnemonic(tip.generateEntropyAndStore(requireContext()))
+                val entropy  = runCatching { toEntropy(mnemonic.split(" "))}.getOrNull() ?: return@launch
+                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy).not()) {
+                    errorInfo = getString(R.string.Save_failure) // Save entropy failure
+                    return@launch
+                }
                 newKeyPairFromMnemonic(mnemonic)
             }
             Timber.e("PublicKey:${edKey.publicKey.hexString()}")
@@ -167,7 +182,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         } else {
                             AnalyticsTracker.trackLoginCaptcha("mnemonic_phrase")
                         }
-                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signature.hexString())
+                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signature.hexString(), r.errorDescription)
                     } else {
                         errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                         mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
@@ -192,7 +207,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private var captchaView: CaptchaView? = null
-    private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String) =
+    private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String, errorDescription: String) =
         lifecycleScope.launch {
             if (captchaView == null) {
                 captchaView =
@@ -206,20 +221,24 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                             override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                                 val t = value.second
-                                reSend(sessionKey, edKey, messageHex, signatureHex, if (!value.first.isG()) t else null, if (value.first.isG()) t else null)
+                                reSend(sessionKey, edKey, messageHex, signatureHex, if (value.first.isH()) t else null, if (value.first.isG()) t else null, if (value.first.isGT()) t else null)
                             }
                         },
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
-    private fun reSend(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null) {
+    private fun reSend(sessionKey: EdKeyPair, edKey: EdKeyPair, messageHex: String, signatureHex: String, hCaptchaResponse: String? = null, gRecaptchaResponse: String? = null, gtRecaptchaResponse: String? = null) {
         lifecycleScope.launch {
             val r = handleMixinResponse(
                 invokeNetwork = {
-                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse)
+                    mobileViewModel.anonymousRequest(edKey.publicKey.hexString(), messageHex, signatureHex, hCaptchaResponse, gRecaptchaResponse, gtRecaptchaResponse)
                 },
 
                 successBlock = { r ->
@@ -234,8 +253,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 },
 
                 failureBlock = { r ->
-                    errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
-                    mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signatureHex, r.errorDescription)
+                    } else {
+                        errorInfo = requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
+                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    }
                     true
                 }
             )
@@ -251,6 +275,11 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 }
             } else {
                 if (r != null) {
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
+                        initAndLoadCaptcha(sessionKey, edKey, messageHex, signatureHex, r.errorDescription)
+                        return@launch
+                    }
                     errorInfo = requireActivity().getMixinErrorStringByCode(r.errorCode, r.errorDescription)
                 }
                 mobileViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)

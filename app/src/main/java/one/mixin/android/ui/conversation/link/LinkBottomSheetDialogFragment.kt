@@ -20,7 +20,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
@@ -55,6 +57,7 @@ import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
@@ -71,6 +74,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.parser.BalanceError
@@ -113,7 +117,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import timber.log.Timber
 import java.io.IOException
@@ -695,6 +699,22 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     else -> showError()
                 }
             }
+        } else if (url.startsWith(Scheme.MIXIN_REFERRALS, true) || url.startsWith(Scheme.HTTPS_REFERRALS, true)) {
+            val uri = url.toUri()
+            val referralCode = uri.lastPathSegment
+            if (uri.pathSegments.size == 1) {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance("")
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            } else if (referralCode.isNullOrBlank()) {
+                showError()
+            } else {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance(referralCode)
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            }
         } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
@@ -988,9 +1008,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         }
     }
 
-    private fun handleTipSignScheme(uri: Uri): Boolean {
+    private suspend fun handleTipSignScheme(uri: Uri): Boolean {
         val chain = uri.getQueryParameter("chain")
-        if (chain.isNullOrBlank() || !chain.equals(JsSigner.JsSignerNetwork.Solana.name, true)) {
+        if (chain.isNullOrBlank() || !chain.equals(Web3Signer.JsSignerNetwork.Solana.name, true)) {
             return false
         }
         val raw = uri.getQueryParameter("raw")
@@ -1008,9 +1028,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             } catch (e: IllegalArgumentException) {
                 return false
             }
-        JsSigner.useSolana()
-        if (JsSigner.address.isBlank()) {
-            WalletUnlockBottomSheetDialogFragment.getInstance(JsSigner.JsSignerNetwork.Solana.name)
+        Web3Signer.useSolana()
+        if (Web3Signer.address.isBlank()) {
+            WalletUnlockBottomSheetDialogFragment.getInstance(Web3Signer.JsSignerNetwork.Solana.name)
                 .setOnDismiss { dismiss() }
                 .showIfNotShowing(childFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
             return true
@@ -1201,6 +1221,8 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         var asset = oldLinkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = oldLinkViewModel.refreshAsset(assetId)
+        } else {
+            jobManager.addJobInBackground(RefreshAssetsJob(assetId))
         }
         if (asset != null && asset.assetId != asset.chainId && oldLinkViewModel.findAssetItemById(asset.chainId) == null) {
             oldLinkViewModel.refreshAsset(asset.chainId)
@@ -1221,7 +1243,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
     @SuppressLint("SetTextI18n")
     override fun showError(
-        @StringRes errorRes: Int
+        @StringRes errorRes: Int,
     ) {
         if (!isAdded) return
 

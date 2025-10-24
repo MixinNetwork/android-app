@@ -110,7 +110,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             val drawable = ContextCompat.getDrawable(context, icon)
             drawable?.setBounds(0, 0, 12.dp, 12.dp)
             binding.subTitleTv.textView.compoundDrawablePadding = 4.dp
-            binding.subTitleTv.textView.setCompoundDrawablesRelative(drawable, null, null, null)
+            binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, drawable, null)
         }
     }
 
@@ -160,21 +160,22 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         title: String,
         label: String?,
         content: String,
-        toWallet: Boolean = false,
+        index: Int = 0,
     ) {
         binding.titleTv.setTextOnly(title)
-        binding.subTitleTv.visibility = VISIBLE
-        if (label != null) {
-            val spannableString = SpannableString("$label ")
-            val backgroundColor: Int = if (toWallet) Color.parseColor("#B34B7CDD") else Color.parseColor("#8DCC99")
-            val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
-            val endIndex = label.length
-            if (endIndex > 0) {
-                spannableString.setSpan(RelativeSizeSpan(0.8f), 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                spannableString.setSpan(backgroundColorSpan, 0, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (index != 0) {
+            binding.subTitleTv.isVisible = true
+            if (index == 1) {
+                setSubTitle(title, label ?: "", R.drawable.ic_wallet_privacy)
+            } else {
+                setSubTitle(title, label ?: "")
             }
-            binding.subTitleTv.setTextOnly(spannableString)
+        } else if (label != null) {
+            binding.subTitleTv.isVisible = false
+            binding.labelTitleTv.isVisible = true
+            binding.labelTitleTv.text = label
         } else {
+            binding.subTitleTv.isVisible = true
             binding.subTitleTv.setTextOnly(content)
         }
     }

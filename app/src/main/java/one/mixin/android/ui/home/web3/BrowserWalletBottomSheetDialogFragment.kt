@@ -61,11 +61,12 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
+import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
@@ -93,6 +94,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_TOKEN = "args_token"
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_TO_ADDRESS = "args_to_address"
+        const val ARGS_TO_USER = "args_to_user"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -102,6 +104,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token: Web3TokenItem? = null,
             chainToken: Web3TokenItem? = null,
             toAddress: String? = null,
+            toUser: User? = null
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(
@@ -115,6 +118,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token?.let { putParcelable(ARGS_TOKEN, it) }
             chainToken?.let { putParcelable(ARGS_CHAIN_TOKEN, it) }
             toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
+            toUser?.let { putParcelable(ARGS_TO_USER, it) }
         }
     }
 
@@ -133,8 +137,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val chainToken by lazy {
         requireArguments().getParcelableCompat(ARGS_CHAIN_TOKEN, Web3TokenItem::class.java)
     }
+
+    private val toUser by lazy {
+        requireArguments().getParcelableCompat(ARGS_TO_USER, User::class.java)
+    }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: JsSigner.currentChain
+        token?.getChainFromName() ?: Web3Signer.currentChain
     }
 
     var step by mutableStateOf(Step.Input)
@@ -163,25 +171,26 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
             amount = requireArguments().getString(ARGS_AMOUNT)
             setContent {
-                if (signMessage.isSolMessage() && JsSigner.solanaAddress.isBlank()) {
+                if (signMessage.isSolMessage() && Web3Signer.solanaAddress.isBlank()) {
                     toast(getString(R.string.not_support_network, currentChain.symbol))
                     dismiss()
-                } else if (signMessage.isEvmMessage() && JsSigner.evmAddress.isBlank()) {
+                } else if (signMessage.isEvmMessage() && Web3Signer.evmAddress.isBlank()) {
                     toast(getString(R.string.not_support_network, currentChain.symbol))
                     dismiss()
                 } else {
                     BrowserPage(
-                        JsSigner.address,
+                        Web3Signer.address,
                         currentChain,
                         amount,
                         token,
                         toAddress,
+                        toUser,
                         signMessage.type,
                         step,
                         signMessage.isCancelTx,
                         signMessage.isSpeedUp,
                         tipGas,
-                        solanaTx?.calcFee(JsSigner.address),
+                        solanaTx?.calcFee(Web3Signer.address),
                         parsedTx,
                         signMessage.solanaTxSource,
                         asset,
@@ -269,17 +278,21 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 asset = viewModel.refreshAsset(assetId)
                 try {
                     tipGas = withContext(Dispatchers.IO) {
-                        val r = viewModel.estimateFee(
-                            EstimateFeeRequest(
-                                assetId,
-                                transaction.data,
-                                transaction.from,
-                                transaction.to,
+                        val r = runCatching {
+                            viewModel.estimateFee(
+                                EstimateFeeRequest(
+                                    assetId,
+                                    null,
+                                    transaction.data,
+                                    transaction.from,
+                                    transaction.to,
+                                    transaction.value,
+                                )
                             )
-                        )
-                        if (r.isSuccess.not()) {
+                        }.getOrNull()
+                        if (r?.isSuccess != true) {
                             step = Step.Error
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                            ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
                             return@withContext null
                         }
                         buildTipGas(chain.chainId, r.data!!)
@@ -288,17 +301,17 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
-                    val hex = JsSigner.ethPreviewTransaction(
-                        JsSigner.evmAddress,
+                    val hex = Web3Signer.ethPreviewTransaction(
+                        Web3Signer.evmAddress,
                         transaction,
                         tipGas!!,
                         chain = token?.getChainFromName()
                     ) { _ ->
-                        val nonce = rpc.nonceAt(currentChain.assetId, JsSigner.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
+                        val nonce = rpc.nonceAt(currentChain.assetId, Web3Signer.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethPreviewTransaction nonce
                     }
                     if (parsedTx == null) {
-                        parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = JsSigner.evmAddress, toAddress)
+                        parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = Web3Signer.evmAddress, toAddress)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
@@ -322,11 +335,11 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 solanaTx = tx
                             }
                         if (parsedTx == null) {
-                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, JsSigner.solanaAddress, toAddress)
+                            parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress)
                         }
                         tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
-                        solanaSignInInput = SignInInput.from(signMessage.data ?: "", JsSigner.address)
+                        solanaSignInInput = SignInInput.from(signMessage.data ?: "", Web3Signer.address)
                     }
                 } catch (e: Exception) {
                     handleException(e)
@@ -342,8 +355,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 errorInfo = null
                 if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
-                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val pair = JsSigner.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
+                    val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
                         val nonce = rpc.nonceAt(currentChain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethSignTransaction nonce
                     }
@@ -351,10 +364,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val hex = pair.first
                     val hash = Hash.sha3(hex)
                     viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, toAddress, token?.assetId)
-                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
+                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
-                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val tx = JsSigner.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
+                    val tx = Web3Signer.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
                         val blockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
                         return@signSolanaTransaction blockhash
                     }
@@ -362,24 +375,24 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val sig = tx.signatures.first { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
                     val rawTx = tx.serialize().base64Encode()
                     if (tx.allSignerSigned()) {
-                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, JsSigner.solanaAddress,  toAddress,token?.assetId)
+                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress,  toAddress,token?.assetId)
                         onTxhash?.invoke(sig, rawTx)
                     }
-                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
+                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
-                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val hex = JsSigner.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
-                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hex\");")
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
+                    val hex = Web3Signer.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
+                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hex\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
-                    val priv = viewModel.getWeb3Priv(requireContext(), pin, JsSigner.currentChain.assetId)
-                    val output = JsSigner.solanaSignIn(priv, solanaSignInInput!!)
-                    onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$output\");")
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
+                    val output = Web3Signer.solanaSignIn(priv, solanaSignInInput!!)
+                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$output\");")
                 } else {
                     throw IllegalArgumentException("invalid signMessage type ${signMessage.type}")
                 }
                 step = Step.Done
             } catch (e: Exception) {
-                onDone?.invoke("window.${JsSigner.currentNetwork}.sendResponse(${signMessage.callbackId}, null);")
+                onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, null);")
                 handleException(e)
             }
         }
@@ -555,8 +568,9 @@ fun showBrowserBottomSheetDialogFragment(
     onDone: ((String?) -> Unit)? = null,
     onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
+    toUser: User? = null
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser)
     onDismiss?.let {
         wcBottomSheet.setOnDismiss(onDismiss)
     }

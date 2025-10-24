@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.inscription
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.Gravity
@@ -11,29 +10,22 @@ import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentCollectiblesBinding
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putInt
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.search.SearchInscriptionFragment
-import one.mixin.android.ui.setting.SettingActivity
-import one.mixin.android.util.rxpermission.RxPermissions
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -89,28 +81,6 @@ class CollectiblesFragment : BaseFragment() {
                 // do nothing
             }
 
-            searchIb.setOnClickListener {
-                activity?.addFragment(
-                    this@CollectiblesFragment,
-                    SearchInscriptionFragment(),
-                    SearchInscriptionFragment.TAG,
-                    id= R.id.internal_container,
-                )
-            }
-
-            scanIb.setOnClickListener {
-                RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
-                    if (granted) {
-                        (requireActivity() as? MainActivity)?.showCapture(true)
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
-            }
-
-            settingIb.setOnClickListener {
-                SettingActivity.show(requireContext(), compose = false)
-            }
             if (type == TYPE_COLLECTIBLES) {
                 radioCollectibles.isChecked = true
             } else {

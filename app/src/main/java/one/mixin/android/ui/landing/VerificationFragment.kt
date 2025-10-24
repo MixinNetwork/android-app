@@ -34,6 +34,7 @@ import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
@@ -49,6 +50,7 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_A
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING_CREATE
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -58,6 +60,9 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -114,8 +119,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("VerificationFragment onViewCreated")
         hasEmergencyContact = requireArguments().getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
         binding.pinVerificationTitleTv.text = getString(R.string.landing_validation_title, phoneNum)
+        binding.title.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         binding.verificationResendTv.setOnClickListener { sendVerification() }
         binding.verificationNeedHelpTv.setOnClickListener { showBottom() }
 
@@ -308,8 +318,14 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
-            } else {
+            } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
+            } else {
+                val t = GTCaptcha4Utils.parseGTCaptchaResponse(captchaResponse.second)
+                verificationRequest.lotNumber = t?.lotNumber
+                verificationRequest.captchaOutput = t?.captchaOutput
+                verificationRequest.passToken = t?.passToken
+                verificationRequest.genTime = t?.genTime
             }
         }
         viewModel.verification(verificationRequest)
@@ -317,7 +333,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
-                            initAndLoadCaptcha()
+                            initAndLoadCaptcha(r.errorDescription)
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -337,7 +353,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             )
     }
 
-    private fun initAndLoadCaptcha() =
+    private fun initAndLoadCaptcha(errorDescription: String) =
         lifecycleScope.launch {
             if (captchaView == null) {
                 captchaView =
@@ -355,7 +371,11 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     )
                 (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
     private fun startCountDown() {

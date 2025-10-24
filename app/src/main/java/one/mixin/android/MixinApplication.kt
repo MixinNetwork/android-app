@@ -26,6 +26,8 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.svg.SvgDecoder
 import coil3.util.DebugLogger
 import coil3.video.VideoFrameDecoder
+import com.bugsnag.android.Bugsnag
+import com.bugsnag.android.Configuration as BugsnagConfiguration
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService
@@ -36,9 +38,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import io.reactivex.plugins.RxJavaPlugins
-import io.sentry.SentryLevel
-import io.sentry.android.core.SentryAndroid
-import io.sentry.android.timber.SentryTimberIntegration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -175,28 +174,21 @@ open class MixinApplication :
         applicationScope.launch {
             entityInitialize()
         }
-        initSentry()
+        initBugsnag()
         initAppsFlyer()
     }
 
-    private fun initSentry() {
-        if (BuildConfig.SENTRYDSN.isBlank()) {
-            return
+    private fun initBugsnag() {
+        val config = BugsnagConfiguration.load(this)
+        config.enabledErrorTypes.anrs = true
+        config.enabledErrorTypes.ndkCrashes = true
+        config.enabledErrorTypes.unhandledExceptions = true
+        if (BuildConfig.DEBUG) {
+            config.setReleaseStage("development");
+        } else {
+            config.setReleaseStage("production");
         }
-        SentryAndroid.init(this) { options ->
-            options.dsn = BuildConfig.SENTRYDSN
-            options.isEnableUserInteractionTracing = false
-            options.isEnableUserInteractionBreadcrumbs = false
-            options.isEnablePerformanceV2 = true
-            options.isEnableAppStartProfiling = true
-
-            options.addIntegration(
-                SentryTimberIntegration(
-                    minEventLevel = SentryLevel.FATAL,
-                    minBreadcrumbLevel = SentryLevel.ERROR
-                )
-            )
-        }
+        Bugsnag.start(this, config)
     }
 
     private fun initAppsFlyer() {

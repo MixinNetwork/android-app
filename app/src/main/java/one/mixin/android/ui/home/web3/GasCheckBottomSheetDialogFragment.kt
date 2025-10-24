@@ -41,7 +41,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -123,11 +123,11 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         binding.linkLoadingInfo.text = ""
         lifecycleScope.launch {
             if (swapResult != null) {
-                val web3TokenItem = viewModel.web3TokenItemById(JsSigner.currentWalletId, fromToken.assetId)
-                val chainTokenItem = viewModel.web3TokenItemById(JsSigner.currentWalletId, fromToken.chain.chainId)
+                val web3TokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.assetId)
+                val chainTokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.chain.chainId)
                 if (web3TokenItem != null) {
                     val jsSignMessage = web3TokenItem.buildTransaction(
-                        rpc, JsSigner.evmAddress,
+                        rpc, Web3Signer.evmAddress,
                         swapResult!!.depositDestination!!,
                         swapResult!!.quote.inAmount
                     )
@@ -187,7 +187,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
     private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: JsSigner.currentChain
+        token?.getChainFromName() ?: Web3Signer.currentChain
     }
 
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
@@ -248,24 +248,22 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             showBrowserWalletBottomSheet()
             return
         }
-        if (token == null) {
-            Timber.e("token is null")
-            showBrowserWalletBottomSheet()
-            return
-        }
-        viewModel.refreshAsset(chainId)
         try {
             val tipGas = withContext(Dispatchers.IO) {
-                val r = viewModel.estimateFee(
-                    EstimateFeeRequest(
-                        chainId,
-                        transaction.data,
-                        transaction.from,
-                        transaction.to,
+                val r = runCatching {
+                    viewModel.estimateFee(
+                        EstimateFeeRequest(
+                            chainId,
+                            null,
+                            transaction.data,
+                            transaction.from,
+                            transaction.to,
+                            transaction.value,
+                        )
                     )
-                )
-                if (r.isSuccess.not()) {
-                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                }.getOrNull()
+                if (r?.isSuccess != true) {
+                    ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
                     return@withContext null
                 }
                 buildTipGas(chain.chainId, r.data!!)
@@ -278,14 +276,28 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             val insufficientGas =
                 checkGas(token, chainId = chainId, tipGas, transaction.value, transaction.maxFeePerGas)
             if (insufficientGas) {
-                val c = chainToken ?: viewModel.web3TokenItemById(token.walletId, chainId)
+                val c = chainToken ?: viewModel.web3TokenItemById(token?.walletId ?: Web3Signer.currentWalletId, chainId)
                 if (c == null) {
                     Timber.e("Insufficient gas for chain: ${chain.chainId}")
-                    showBrowserWalletBottomSheet()
+                    showError(getString(R.string.Data_error))
                     return
+                } else if (c.balance.toBigDecimal() <= BigDecimal.ZERO) {
+                    Timber.e("Insufficient gas and zero balance for chain: ${c.assetId}")
+                    TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
+                        Web3TokenFeeItem(
+                            c,
+                            BigDecimal.ZERO,
+                            tipGas.displayValue(transaction.maxFeePerGas) ?: BigDecimal.ZERO
+                        )
+                    ).showNow(
+                        parentFragmentManager,
+                        TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG
+                    )
+                    dismiss()
                 } else {
                     val fee = tipGas.displayValue(transaction.maxFeePerGas) ?: BigDecimal.ZERO
                     val amount = transaction.getMainTokenAmount()
+                    Timber.e("Insufficient gas for chain: ${c.assetId}, fee: $fee, amount: $amount")
                     TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
                         Web3TokenFeeItem(
                             c,
@@ -299,6 +311,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     dismiss()
                 }
             } else {
+                Timber.e("Sufficient gas for chain: ${chain.chainId}, gas: ${tipGas.maxFeePerGas} ${tipGas.gasLimit}")
                 showBrowserWalletBottomSheet()
             }
         } catch (e: Exception) {
@@ -342,7 +355,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         maxFeePerGas: String?
     ): Boolean {
         val assetId = web3Token?.assetId
-        val walletId = web3Token?.walletId ?: return true
+        val walletId = web3Token?.walletId ?: Web3Signer.currentWalletId
         val c = viewModel.web3TokenItemById(walletId, chainId) ?: return true
         return if (tipGas != null) {
             val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO

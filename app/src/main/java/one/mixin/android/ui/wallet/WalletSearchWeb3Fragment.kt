@@ -31,7 +31,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -223,12 +223,13 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 }
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
                     val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)
+                    val c = viewModel.web3TokenItemById(walletId!!, tokenItem.chainId)
                     Web3TokenItem(
                         walletId = walletId!!,
                         assetId = tokenItem.assetId,
                         chainId = tokenItem.chainId,
                         name = tokenItem.name,
-                        assetKey = tokenItem.assetKey ?: "",
+                        assetKey = tokenItem.assetKey ?: t?.assetKey ?: "",
                         symbol = tokenItem.symbol,
                         iconUrl = tokenItem.iconUrl,
                         precision = t?.precision ?: 0,
@@ -236,9 +237,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         balance = t?.balance ?: "0",
                         priceUsd = tokenItem.priceUsd,
                         changeUsd = tokenItem.changeUsd,
-                        chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon,
-                        chainName = tokenItem.chainName,
-                        chainSymbol = tokenItem.chainSymbol,
+                        chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon ?: c?.iconUrl,
+                        chainName = tokenItem.chainName ?: c?.name,
+                        chainSymbol = tokenItem.chainSymbol ?: c?.chainSymbol,
                         hidden = false,
                         level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )
@@ -272,10 +273,10 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             override fun onTokenClick(token: Web3TokenItem) {
                 binding.searchEt.hideKeyboard()
                 lifecycleScope.launch {
-                    val address = if (token.isSolana()) {
-                        JsSigner.solanaAddress
+                    val address = if (token.isSolanaChain()) {
+                        Web3Signer.solanaAddress
                     } else {
-                        JsSigner.evmAddress
+                        Web3Signer.evmAddress
                     }
                     view?.navigate(
                         R.id.action_wallet_search_web3_to_web3_transactions,

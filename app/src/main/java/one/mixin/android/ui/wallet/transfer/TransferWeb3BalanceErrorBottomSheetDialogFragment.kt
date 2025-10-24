@@ -22,7 +22,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3AddressActivity
 import one.mixin.android.widget.BottomSheet
 
@@ -65,7 +65,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
         }
         lifecycleScope.launch {
             val asset = t.token
-            val wallet = web3ViewModel.findWalletById(JsSigner.currentWalletId)
+            val wallet = web3ViewModel.findWalletById(Web3Signer.currentWalletId)
             val walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
             binding.walletTv.text = walletName
             if (asset.assetId in Constants.usdIds) {
@@ -115,7 +115,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                                     val addresses = transferViewModel.getAddressesByChainId(asset.walletId, asset.chainId)
                                     val address = addresses?.destination
                                     if (address != null) {
-                                        Web3AddressActivity.show(requireActivity(), address)
+                                        Web3AddressActivity.show(requireActivity(), asset, address)
                                     }
                                     this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
                                 }

@@ -298,15 +298,20 @@ internal constructor(
             return fee
         } else {
             val r = withContext(Dispatchers.IO) {
-                web3Repository.estimateFee(
-                    EstimateFeeRequest(
-                        token.chainId,
-                        transaction.data,
-
+                runCatching {
+                    web3Repository.estimateFee(
+                        EstimateFeeRequest(
+                            token.chainId,
+                            null,
+                            transaction.data,
+                            fromAddress,
+                            transaction.wcEthereumTransaction?.to,
+                            transaction.wcEthereumTransaction?.value,
                         )
-                )
+                    )
+                }.getOrNull()
             }
-            if (r.isSuccess.not()) return BigDecimal.ZERO
+            if (r?.isSuccess != true) return BigDecimal.ZERO
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
                 tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
@@ -469,21 +474,22 @@ internal constructor(
         }
     }
 
-    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Boolean>? {
+    // index 0 is address,index 1 is privacy wallet, 2 is common wallet
+    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Int>? {
         return withContext(Dispatchers.IO) {
 
             if (tag.isNullOrBlank()) {
                 val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
-                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), true)
+                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), 1)
             }
 
             val wallet = web3Repository.getWalletByDestination(destination)
             if (wallet != null) {
-                return@withContext Pair(wallet.name, true)
+                return@withContext Pair(wallet.name, 2)
             }
 
             tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->
-                return@withContext Pair(label, false)
+                return@withContext Pair(label, 0)
             }
             return@withContext null
         }

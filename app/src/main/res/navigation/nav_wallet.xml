@@ -279,6 +279,37 @@
             app:popEnterAnim="@anim/stay"
             app:popExitAnim="@anim/slide_out_right" />
 
+        <action
+            android:id="@+id/action_transfer_destination_to_fetch_user_address"
+            app:destination="@id/fetch_user_address_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fetch_user_address_fragment"
+        android:name="one.mixin.android.ui.address.FetchUserAddressFragment"
+        tools:layout="@layout/fragment_compose">
+
+        <argument
+            android:name="args_web3_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
+
+        <argument
+            android:name="args_to_user"
+            app:argType="one.mixin.android.vo.User" />
+
+        <action
+            android:id="@+id/action_fetch_user_address_to_input"
+            app:destination="@id/input_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
+
     </fragment>
 
     <fragment
@@ -532,6 +563,10 @@
         <argument
             android:name="address"
             app:argType="string" />
+
+        <argument
+            android:name="web3_token"
+            app:argType="one.mixin.android.db.web3.vo.Web3TokenItem" />
     </fragment>
 
     <fragment

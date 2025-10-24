@@ -40,6 +40,11 @@ fun WalletLabel(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = walletName ?: stringResource(id = R.string.Privacy_Wallet),
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
                 if (!isWeb3) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_wallet_privacy_white),
@@ -49,11 +54,6 @@ fun WalletLabel(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                 }
-                Text(
-                    text = walletName ?: stringResource(id = R.string.Privacy_Wallet),
-                    color = Color.White,
-                    fontSize = 14.sp
-                )
             }
             Spacer(modifier = Modifier.height(7.dp))
             Box(

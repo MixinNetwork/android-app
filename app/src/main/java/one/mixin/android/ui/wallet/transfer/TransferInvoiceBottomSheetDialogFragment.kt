@@ -114,7 +114,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
         drawable?.setBounds(0, 0, 22.dp, 22.dp)
         binding.walletTv.compoundDrawablePadding = 4.dp
-        binding.walletTv.setCompoundDrawablesRelative(drawable, null, null, null)
+        binding.walletTv.setCompoundDrawablesRelative(null, null, drawable, null)
         dialog.setCanceledOnTouchOutside(false)
         (dialog as BottomSheet).apply {
             onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
@@ -150,7 +150,13 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 null
             }
 
-            binding.content.render(invoice, tokenItems, receivers) { user ->
+            val xin = transferViewModel.findXIN()
+            if (xin == null) {
+                dismiss()
+                return@launch
+            }
+
+            binding.content.render(invoice, tokenItems, receivers, xin) { user ->
                 if (user.userId != Session.getAccountId()) {
                     showUserBottom(parentFragmentManager, user)
                 }

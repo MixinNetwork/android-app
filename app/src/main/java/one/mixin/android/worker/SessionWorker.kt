@@ -10,6 +10,7 @@ import dagger.assisted.AssistedInject
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.session.Session
+import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import timber.log.Timber
 
 @HiltWorker
@@ -26,15 +27,18 @@ class SessionWorker @AssistedInject constructor(
             Timber.w("Session update failed: No active account")
             return Result.failure()
         }
-        
+
         val token = retrieveFirebaseToken()
         Timber.e("Firebase token retrieved: ${token != null}")
-        
+
         return try {
             val response = accountService.updateSession(SessionRequest(notificationToken = token))
             if (response.isSuccess) {
                 Timber.e("Session updated successfully")
                 Result.success()
+            } else if (response.errorCode >= SERVER) {
+                Timber.e("Session update failed with server error, retrying...")
+                Result.retry()
             } else {
                 Timber.e("Session update failed with error code: ${response.errorCode}")
                 Result.failure()
@@ -44,7 +48,7 @@ class SessionWorker @AssistedInject constructor(
             Result.retry()
         }
     }
-    
+
     private fun retrieveFirebaseToken(): String? {
         return runCatching {
             Tasks.await(FirebaseMessaging.getInstance().token)

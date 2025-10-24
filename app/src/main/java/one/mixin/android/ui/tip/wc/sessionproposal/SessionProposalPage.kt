@@ -49,10 +49,8 @@ import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
-import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 
 @Composable
 fun SessionProposalPage(
@@ -82,7 +80,7 @@ fun SessionProposalPage(
     }
 
     LaunchedEffect(Unit) {
-        val wallet = viewModel.findWalletById(JsSigner.currentWalletId)
+        val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
         walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
     }
 

@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -76,6 +77,7 @@ import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
+import one.mixin.android.util.ErrorHandler.Companion.handleError
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -114,6 +116,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.widget.picker.toTimeInterval
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -176,7 +179,9 @@ class ConversationListFragment : LinkFragment() {
     private var enterJob: Job? = null
 
     companion object {
-        fun newInstance() = ConversationListFragment()
+        fun newInstance(): ConversationListFragment {
+            return ConversationListFragment()
+        }
 
         const val TAG = "ConversationListFragment"
 
@@ -199,7 +204,7 @@ class ConversationListFragment : LinkFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        navigationController = NavigationController(activity as MainActivity)
+        navigationController = NavigationController()
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -322,21 +327,23 @@ class ConversationListFragment : LinkFragment() {
             if (cid != null) {
                 openCircleEdit(cid)
             } else {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
         }
-        val circleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
-        if (circleId == null) {
-            selectCircle(null)
+
+        this.circleId = if (savedInstanceState != null) {
+            val id = savedInstanceState.getString(CIRCLE_ID)
+            Timber.e("Restored circleId: $id")
+            id
         } else {
-            this.circleId = circleId
+            defaultSharedPreferences.getString(CIRCLE_ID, null)
         }
         RxBus.listen(CircleDeleteEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe {
                 if (it.circleId == this.circleId) {
-                    selectCircle(null, null)
+                    selectCircle(null,null)
                 }
             }
         RxBus.listen(User::class.java)
@@ -422,7 +429,7 @@ class ConversationListFragment : LinkFragment() {
                 openSearch()
             }
             searchBar.setOnGroupClickListener {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
             searchBar.setOnAddClickListener {
                 addCircle(it.context)
@@ -449,7 +456,7 @@ class ConversationListFragment : LinkFragment() {
             searchBar.setSearchViewListener(
                 object : MaterialSearchView.SearchViewListener {
                     override fun onSearchViewClosed() {
-                        navigationController.hideSearch()
+                        navigationController.hideSearch(parentFragmentManager)
                     }
 
                     override fun onSearchViewOpened() {
@@ -486,7 +493,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         if (!binding.searchBar.isOpen) {
-            navigationController.removeSearch()
+            navigationController.removeSearch(parentFragmentManager)
         }
     }
 
@@ -567,6 +574,7 @@ class ConversationListFragment : LinkFragment() {
         }
 
     override fun onDestroyView() {
+        Timber.e("onDestroyView")
         if (isAdded) {
             messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
         }
@@ -616,10 +624,8 @@ class ConversationListFragment : LinkFragment() {
     private var conversationLiveData: LiveData<PagedList<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
-            if (field != value) {
-                field = value
-                selectCircle(circleId)
-            }
+            field = value
+            selectCircle(circleId)
         }
 
     private var scrollTop = false
@@ -635,22 +641,25 @@ class ConversationListFragment : LinkFragment() {
 
         binding.searchBar.hideContainer()
         setCircleName(name)
-        this.circleId = circleId
+        if (this.circleId != circleId) {
+            this.circleId = circleId
+        }
         observeOtherCircleUnread(circleId)
     }
 
-    fun setCircleName(name: String?) {
-        if (viewDestroyed()) return
-
-        binding.searchBar.logo.text = name ?: "Mixin"
-    }
-
+    // binding data
     private fun selectCircle(circleId: String?) {
         conversationLiveData?.removeObserver(observer)
         val liveData = conversationListViewModel.observeConversations(circleId)
         liveData.observe(viewLifecycleOwner, observer)
         scrollTop = true
         this.conversationLiveData = liveData
+    }
+
+    fun setCircleName(name: String?) {
+        if (viewDestroyed()) return
+
+        binding.searchBar.logo.text = name ?: "Mixin"
     }
 
     private fun animDownIcon(expand: Boolean) {
@@ -668,6 +677,7 @@ class ConversationListFragment : LinkFragment() {
 
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationItem: ConversationItem) {
+        if (!isAdded) return
         val conversationId = conversationItem.conversationId
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
@@ -691,6 +701,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         viewBinding.deleteTv.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             alertDialogBuilder()
                 .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
@@ -728,20 +739,35 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        bottomSheet.show()
+        if (!parentFragmentManager.isStateSaved) {
+            bottomSheet.show()
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        if (messageAdapter.itemCount <= 0) {
+            Timber.e("onResume reset")
+            this.circleId = circleId
+        }
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
-                .let { type ->
-                    (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment)?.dismissNow()
-                    if (type != null) ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
-                }
+            if (isAdded) {
+                ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
+                    .let { type ->
+                        val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
+                        existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
+
+                        if (type != null && !parentFragmentManager.isStateSaved) {
+                            if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
+                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                            }
+                        }
+                    }
+            }
         }
     }
+
 
     private fun openCamera(scan: Boolean) {
         RxPermissions(requireActivity())
@@ -1243,75 +1269,83 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        val choices =
-            arrayOf(
-                getString(R.string.one_hour),
-                resources.getQuantityString(R.plurals.Hour, 8, 8),
-                getString(R.string.one_week),
-                getString(R.string.one_year),
-            )
-        var duration = MUTE_8_HOURS
-        var whichItem = 1 // default choice
-        alertDialogBuilder()
-            .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.Cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                if (conversationItem.isGroupConversation()) {
-                    lifecycleScope.launch {
-                        handleMixinResponse(
-                            invokeNetwork = {
-                                conversationListViewModel.mute(
-                                    duration.toLong(),
-                                    conversationId = conversationItem.conversationId,
-                                )
-                            },
-                            successBlock = { response ->
-                                conversationListViewModel.updateGroupMuteUntil(
-                                    conversationItem.conversationId,
-                                    response.data!!.muteUntil,
-                                )
-                                toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
-                            },
-                        )
-                    }
-                } else {
-                    val account = Session.getAccount()
-                    account?.let {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }) {
+            val choices =
+                arrayOf(
+                    getString(R.string.one_hour),
+                    resources.getQuantityString(R.plurals.Hour, 8, 8),
+                    getString(R.string.one_week),
+                    getString(R.string.one_year),
+                )
+            var duration = MUTE_8_HOURS
+            var whichItem = 1 // default choice
+            val builder = alertDialogBuilder()
+                .setTitle(getString(R.string.contact_mute_title))
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                    if (conversationItem.isGroupConversation()) {
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
                                     conversationListViewModel.mute(
                                         duration.toLong(),
-                                        senderId = it.userId,
-                                        recipientId = conversationItem.ownerId,
+                                        conversationId = conversationItem.conversationId,
                                     )
                                 },
                                 successBlock = { response ->
-                                    conversationListViewModel.updateMuteUntil(
-                                        conversationItem.ownerId,
+                                    conversationListViewModel.updateGroupMuteUntil(
+                                        conversationItem.conversationId,
                                         response.data!!.muteUntil,
                                     )
-                                    toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                                 },
                             )
                         }
+                    } else {
+                        val account = Session.getAccount()
+                        account?.let {
+                            lifecycleScope.launch {
+                                handleMixinResponse(
+                                    invokeNetwork = {
+                                        conversationListViewModel.mute(
+                                            duration.toLong(),
+                                            senderId = it.userId,
+                                            recipientId = conversationItem.ownerId,
+                                        )
+                                    },
+                                    successBlock = { response ->
+                                        conversationListViewModel.updateMuteUntil(
+                                            conversationItem.ownerId,
+                                            response.data!!.muteUntil,
+                                        )
+                                        toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    dialog.dismiss()
+                }
+                .setSingleChoiceItems(choices, whichItem) { _, which ->
+                    whichItem = which
+                    when (which) {
+                        0 -> duration = MUTE_1_HOUR
+                        1 -> duration = MUTE_8_HOURS
+                        2 -> duration = MUTE_1_WEEK
+                        3 -> duration = MUTE_1_YEAR
                     }
                 }
 
-                dialog.dismiss()
+            if (!isAdded) {
+                return@launch
             }
-            .setSingleChoiceItems(choices, whichItem) { _, which ->
-                whichItem = which
-                when (which) {
-                    0 -> duration = MUTE_1_HOUR
-                    1 -> duration = MUTE_8_HOURS
-                    2 -> duration = MUTE_1_WEEK
-                    3 -> duration = MUTE_1_YEAR
-                }
-            }
-            .show()
+            builder.show()
+        }
     }
 
     private fun unMute(conversationItem: ConversationItem) {
@@ -1352,5 +1386,11 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(CIRCLE_ID, circleId)
+        Timber.e("onSaveInstanceState: $circleId")
     }
 }

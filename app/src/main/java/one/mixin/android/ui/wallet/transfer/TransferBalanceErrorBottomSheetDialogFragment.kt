@@ -24,6 +24,7 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.home.web3.swap.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
@@ -58,7 +59,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
         drawable?.setBounds(0, 0, 22.dp, 22.dp)
         binding.walletTv.compoundDrawablePadding = 4.dp
-        binding.walletTv.setCompoundDrawablesRelative(drawable, null, null, null)
+        binding.walletTv.setCompoundDrawablesRelative(null, null, drawable, null)
         dialog.setCanceledOnTouchOutside(false)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
@@ -109,7 +110,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                                     )
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                    navTo(DepositFragment.newInstance(fee), DepositFragment.TAG)
+                                    WalletActivity.showDeposit(requireActivity(),asset)
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 }
                             }
@@ -136,7 +137,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                                     )
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                    navTo(DepositFragment.newInstance(asset), DepositFragment.TAG)
+                                    WalletActivity.showDeposit(requireActivity(),asset)
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 }
                             }

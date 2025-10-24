@@ -1,7 +1,6 @@
 package one.mixin.android.ui.tip.wc.compose
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -23,6 +23,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -30,19 +31,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.wallet.UserBadge
+import one.mixin.android.vo.User
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ItemWalletContent(
     title: String,
+    fontSize: TextUnit = 16.sp,
 ) {
     Column(
         modifier =
@@ -52,7 +56,7 @@ fun ItemWalletContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textAssist,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -61,7 +65,7 @@ fun ItemWalletContent(
             Text(
                 text = stringResource(R.string.Privacy_Wallet),
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
+                fontSize = fontSize,
             )
             Spacer(modifier = Modifier.width(4.dp))
 
@@ -75,6 +79,7 @@ fun ItemWalletContent(
         }
     }
 }
+
 @Composable
 fun ItemContent(
     title: String,
@@ -91,7 +96,7 @@ fun ItemContent(
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textAssist,
+            color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
             maxLines = 1,
         )
@@ -103,7 +108,7 @@ fun ItemContent(
             Text(
                 text = subTitle,
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
             )
         }
 
@@ -115,6 +120,46 @@ fun ItemContent(
                 fontSize = 14.sp,
             )
         }
+    }
+}
+
+@Composable
+fun ItemContent(
+    title: String,
+    subTitle: String,
+    toUser: User,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+    ) {
+        Text(
+            text = title,
+            color = MixinAppTheme.colors.textRemarks,
+            fontSize = 14.sp,
+            maxLines = 1,
+        )
+        Box(modifier = Modifier.height(5.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CoilImage(
+                model = toUser.avatarUrl,
+                placeholder = R.drawable.ic_avatar_place_holder,
+                modifier =
+                    Modifier
+                        .size(18.dp)
+                        .clip(CircleShape),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            UserBadge(toUser)
+        }
+        Box(modifier = Modifier.height(5.dp))
+        Text(
+            text = subTitle,
+            color = MixinAppTheme.colors.textAssist,
+            fontSize = 14.sp,
+        )
     }
 }
 
@@ -135,22 +180,22 @@ fun TextWithRoundedLabelInline(
             appendInlineContent("label", "[label]")
         },
         color = MixinAppTheme.colors.textPrimary,
-        fontSize = 14.sp,
+        fontSize = 16.sp,
         inlineContent = mapOf(
             "label" to InlineTextContent(
                 placeholder = Placeholder(
                     width = with(density) {
-                        (measureTextWidth(label, (14 * 0.8).sp) + 12.dp).toSp()
+                        (measureTextWidth(label, (16 * 0.8).sp) + 12.dp).toSp()
                     },
                     height = with(density) {
-                        (16.dp).toSp()
+                        16.5.sp
                     },
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .background(
                             color = accentColor,
                             shape = RoundedCornerShape(4.dp)
@@ -161,13 +206,12 @@ fun TextWithRoundedLabelInline(
                     Text(
                         text = label,
                         color = Color.White,
-                        fontSize = (14 * 0.8).sp,
-                        lineHeight = 14.sp,
+                        fontSize = (16 * 0.8).sp,
+                        lineHeight = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
-                            .widthIn(max = 100.dp)
                     )
                 }
             }

@@ -24,17 +24,21 @@ import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentProfileBottomSheetDialogBinding
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
@@ -48,15 +52,19 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.AvatarActivity
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
@@ -64,7 +72,9 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Plan
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
+import one.mixin.android.extension.base64RawURLEncode
 import timber.log.Timber
+import androidx.core.content.edit
 
 @AndroidEntryPoint
 class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -101,7 +111,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 if (uri != null) {
                     val options = UCrop.Options()
                     options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-                    options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
                     options.setToolbarWidgetColor(Color.WHITE)
                     options.setHideBottomControls(true)
                     UCrop.of(uri, imageUri)
@@ -231,6 +240,17 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                         }
                         isMembership = Session.getAccount()?.membership?.isMembership() ?: false
                     }
+                    menu {
+                        title = getString(R.string.Referral)
+                        action = {
+                            lifecycleScope.launch {
+                                bottomViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                    setClickedBotId()
+                                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                                }
+                            }
+                        }
+                    }
                 }
                 menuGroup {
                     menu {
@@ -259,10 +279,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     menu {
                         title = getString(R.string.Receive_Money)
                         action = {
-                            QrBottomSheetDialogFragment.newInstance(
-                                account.userId,
-                                QrBottomSheetDialogFragment.TYPE_RECEIVE_QR,
-                            ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                            ReceiveQrActivity.show(requireContext(), account.userId)
                         }
                     }
                 }
@@ -319,7 +336,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             val options = UCrop.Options()
             options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-            options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
             options.setToolbarWidgetColor(Color.WHITE)
             options.setHideBottomControls(true)
             UCrop.of(selectedImageUri, imageUri)
@@ -336,7 +352,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 val resultUri = UCrop.getOutput(data)
                 val bitmap = resultUri?.getCapturedImage(requireContext().contentResolver)
                 update(
-                    Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP),
+                    bitmap?.toBytes()?.base64RawURLEncode() ?: "",
                     TYPE_PHOTO,
                 )
             }
@@ -458,5 +474,19 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     ErrorHandler.handleError(t)
                 },
             )
+    }
+
+    private fun setClickedBotId() {
+        val sp = requireContext().defaultSharedPreferences
+        val old = getClickedBotIds().toMutableSet()
+        if (old.add(INTERNAL_REFERRAL_ID)) {
+            sp.edit { putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")) }
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
+        }
+    }
+
+    private fun getClickedBotIds(): Set<String> {
+        return requireContext().defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
     }
 }

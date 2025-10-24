@@ -17,11 +17,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.room.util.readVersion
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -33,7 +36,6 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.jakewharton.rxbinding3.material.itemSelections
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -65,6 +67,7 @@ import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
@@ -84,6 +87,8 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isPlayStoreInstalled
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
@@ -103,7 +108,6 @@ import one.mixin.android.job.InscriptionMigrationJob
 import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshDappJob
@@ -139,10 +143,11 @@ import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
+import one.mixin.android.ui.home.ExploreFragment.Companion.SHOW_DOT_BOT_IDS
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
-import one.mixin.android.ui.home.inscription.CollectiblesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -168,6 +173,7 @@ import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
@@ -181,7 +187,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.worker.SessionWorker
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -242,7 +248,7 @@ class MainActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        navigationController = NavigationController(this)
+        navigationController = NavigationController()
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
@@ -305,9 +311,7 @@ class MainActivity : BlazeBaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
-        }
+        initFragmentsFromSavedState(savedInstanceState)
 
         val account = Session.getAccount()
         account?.let {
@@ -321,6 +325,7 @@ class MainActivity : BlazeBaseActivity() {
         initBottomNav()
         handlerCode(intent)
 
+        updateSessionWhenOpen()
         checkAsync()
 
         RxBus.listen(TipEvent::class.java)
@@ -348,7 +353,7 @@ class MainActivity : BlazeBaseActivity() {
                                         ?.split(",")?.toSet() ?: emptySet()
                                 } catch (e: Exception) {
                                     emptySet()
-                                }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+                                }.size != SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
                                 backgroundColor = Color.RED
                             }
                         }
@@ -393,7 +398,7 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
-                    AnalyticsTracker.trackLoginPinVerify("verify_pin")
+                    AnalyticsTracker.trackLoginPinVerify("pin_verify")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                         onDismissCallback = { success ->
                             if (success) {
@@ -444,6 +449,24 @@ class MainActivity : BlazeBaseActivity() {
         appUpdateManager.unregisterListener(updatedListener)
     }
 
+    private fun updateSessionWhenOpen() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            updateSessionIfNeeded()
+            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
+                6, TimeUnit.HOURS
+            ).setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            ).build()
+            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
+                "SessionWorker",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                periodicWorkRequest
+            )
+        }
+    }
+
     private fun checkAsync() =
         lifecycleScope.launch(Dispatchers.IO) {
             checkRoot()
@@ -452,7 +475,6 @@ class MainActivity : BlazeBaseActivity() {
             refreshStickerAlbum()
             refreshExternalSchemes()
             cleanCache()
-            jobManager.addJobInBackground(RefreshAssetsJob())
             checkBatteryOptimization()
 
             if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
@@ -518,14 +540,7 @@ class MainActivity : BlazeBaseActivity() {
 
             jobManager.addJobInBackground(RefreshContactJob())
 
-            val periodicWorkRequest = PeriodicWorkRequestBuilder<SessionWorker>(
-                6, TimeUnit.HOURS
-            ).build()
-            WorkManager.getInstance(this@MainActivity).enqueueUniquePeriodicWork(
-                "SessionWorker",
-                ExistingPeriodicWorkPolicy.UPDATE,
-                periodicWorkRequest
-            )
+
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
@@ -546,6 +561,28 @@ class MainActivity : BlazeBaseActivity() {
               jobManager.addJobInBackground(RefreshWeb3Job())
             }
         }
+
+    private suspend fun updateSessionIfNeeded() {
+        try {
+            val account = Session.getAccount()
+            if (account == null) {
+                Timber.w("Session update failed: No active account")
+                return
+            }
+
+            val response = accountRepo.updateSession(SessionRequest())
+            if (response.isSuccess) {
+                Timber.e("Session updated successfully")
+            } else if (response.errorCode >= SERVER) {
+                delay(1000)
+                updateSessionIfNeeded()
+            } else {
+                Timber.e("Session update failed with error code: ${response.errorCode}")
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating session")
+        }
+    }
 
     private fun handleTipEvent(
         e: TipEvent,
@@ -718,16 +755,21 @@ class MainActivity : BlazeBaseActivity() {
 
     private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
-        WalletConnectV2
-        val classicWalletId = web3Repository.getClassicWalletId()
-        JsSigner.init(
-            { classicWalletId },
-            { walletId ->
-                runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
-            }, { walletId ->
-                runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
-            }
-        )
+        try {
+            WalletConnectV2
+            val classicWalletId = web3Repository.getClassicWalletId()
+            Web3Signer.init(
+                { classicWalletId },
+                { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
+                }, { walletId ->
+                    runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+                }
+            )
+        } catch (e: Exception) {
+            Timber.e("Failed to initialize WalletConnect: ${e.message}")
+            reportException(e)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -927,25 +969,15 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun showScanBottom(scan: String) {
-        bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-        bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-    }
-
-    private val conversationListFragment by lazy {
-        ConversationListFragment()
-    }
-
-    private val walletFragment by lazy {
-        val initialWalletDestination = loadInitialWalletDestination()
-        WalletFragment.newInstance(initialWalletDestination)
-    }
-
-    private val exploreFragment by lazy {
-        ExploreFragment()
-    }
-
-    private val collectiblesFragment by lazy {
-        CollectiblesFragment()
+        if (scan.isLightningUrl() || scan.isExternalTransferUrl()) {
+            LinkBottomSheetDialogFragment.newInstance(scan).show(
+                supportFragmentManager,
+                LinkBottomSheetDialogFragment.TAG
+            )
+        } else {
+            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        }
     }
 
     private fun initBottomNav() {
@@ -953,25 +985,10 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 
-            bottomNav.itemSelections()
-                .map { it.itemId }
-                .distinctUntilChanged()
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(destroyScope)
-                .subscribe { itemId ->
-                    Timber.e(
-                        "onItemSelected: ${
-                            when (itemId) {
-                                R.id.nav_chat -> "nav_chat"
-                                R.id.nav_wallet -> "nav_wallet"
-                                R.id.nav_collectibles -> "nav_collectibles"
-                                R.id.nav_more -> "nav_more"
-                                else -> "unknown"
-                            }
-                        }"
-                    )
-                    handleNavigationItemSelected(itemId)
-                }
+            bottomNav.setOnItemSelectedListener {
+                handleNavigationItemSelected(it.itemId)
+                return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_market)
+            }
         }
 
         lifecycleScope.launch {
@@ -988,12 +1005,30 @@ class MainActivity : BlazeBaseActivity() {
                     ?.split(",")?.toSet() ?: emptySet()
             } catch (e: Exception) {
                 emptySet()
-            }.size != 3 || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
+            }.size < SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
                 isVisible = market
                 backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
             }
         }
+    }
+
+    private fun switchToDestination(destination: NavigationController.Destination) {
+        val fm = supportFragmentManager
+        var fragment = fm.findFragmentByTag(destination.tag)
+        if (fragment == null) {
+            fragment = when (destination) {
+                is NavigationController.ConversationList -> ConversationListFragment.newInstance()
+                is NavigationController.Wallet -> {
+                    val initialWalletDestination = loadInitialWalletDestination()
+                    WalletFragment.newInstance(initialWalletDestination)
+                }
+                is NavigationController.Explore -> ExploreFragment()
+                is NavigationController.Market -> MarketFragment()
+            }
+        }
+
+        navigationController.navigate(fm, destination, fragment)
     }
 
     private fun loadInitialWalletDestination(): WalletDestination {
@@ -1013,36 +1048,41 @@ class MainActivity : BlazeBaseActivity() {
     private fun handleNavigationItemSelected(itemId: Int) {
         when (itemId) {
             R.id.nav_chat -> {
-                navigationController.navigate(NavigationController.ConversationList, conversationListFragment)
+                switchToDestination(NavigationController.ConversationList)
             }
 
             R.id.nav_wallet -> {
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
-                    navigationController.navigate(NavigationController.Wallet, walletFragment)
+                    switchToDestination(NavigationController.Wallet)
                 } else {
                     val id = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
                     TipActivity.show(this, TipBundle(TipType.Create, id, TryConnecting))
                 }
-                conversationListFragment.hideCircles()
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
-            R.id.nav_collectibles -> {
-                navigationController.navigate(NavigationController.Collectibles, collectiblesFragment)
-                conversationListFragment.hideCircles()
+            R.id.nav_market -> {
+                switchToDestination(NavigationController.Market)
+                findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
+
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
             R.id.nav_more -> {
-                navigationController.navigate(NavigationController.Explore, exploreFragment)
-                conversationListFragment.hideCircles()
+                switchToDestination(NavigationController.Explore)
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
             else -> {
-                conversationListFragment.hideCircles()
+                findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
         }
-        conversationListFragment.hideContainer()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideContainer()
     }
+
+    private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
+        supportFragmentManager.findFragmentByTag(tag) as? T
 
     fun showUpdate(releaseUrl: String?) {
         if (isPlayStoreInstalled()) {
@@ -1091,30 +1131,30 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun hideSearchLoading() {
-        conversationListFragment.hideSearchLoading()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideSearchLoading()
     }
 
     fun closeSearch() {
-        conversationListFragment.closeSearch()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.closeSearch()
     }
 
     fun showSearchLoading() {
-        conversationListFragment.showSearchLoading()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.showSearchLoading()
     }
 
     fun selectCircle(
         name: String?,
         circleId: String?,
     ) {
-        conversationListFragment.selectCircle(name, circleId)
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.selectCircle(name, circleId)
     }
 
     fun setCircleName(name: String?) {
-        conversationListFragment.setCircleName(name)
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.setCircleName(name)
     }
 
     fun sortAction() {
-        conversationListFragment.sortAction()
+        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.sortAction()
     }
 
     @Deprecated("Deprecated in Java")
@@ -1127,20 +1167,20 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment?
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
-        val walletFragmentInstance = 
-            supportFragmentManager.findFragmentByTag(WalletFragment.TAG) as? BaseFragment
-        
+        val walletFragment = findFragmentByTagTyped<WalletFragment>(NavigationController.Wallet.tag)
+        val conversationListFragment = findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)
+
         when {
             searchMessageFragment != null -> onBackPressedDispatcher.onBackPressed()
             searchSingleFragment != null -> onBackPressedDispatcher.onBackPressed()
             conversationCircleEditFragment != null -> onBackPressedDispatcher.onBackPressed()
-            walletFragmentInstance != null && walletFragmentInstance.isVisible && walletFragmentInstance.onBackPressed() -> {
+            walletFragment != null && walletFragment.isVisible && walletFragment.onBackPressed() -> {
                 // do nothing
             }
-            conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
+            conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.isOpen() -> {
                 conversationListFragment.closeSearch()
             }
-            conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
+            conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.containerDisplay() -> {
                 if (circlesFragment == null) {
                     super.onBackPressed()
                 } else if (!circlesFragment.onBackPressed()) {
@@ -1178,6 +1218,12 @@ class MainActivity : BlazeBaseActivity() {
         val g = ((color1 shr 8) and 0xFF) * 0.5f + ((color2 shr 8) and 0xFF) * 0.5f
         val b = (color1 and 0xFF) * 0.5f + (color2 and 0xFF) * 0.5f
         return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
+    }
+
+    private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {
+        navigationController.navigate(supportFragmentManager, NavigationController.ConversationList, ConversationListFragment.newInstance())
+        binding.bottomNav.selectedItemId = R.id.nav_chat
+        Timber.e("initFragmentsFromSavedState: nav_chat")
     }
 
     companion object {

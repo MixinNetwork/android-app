@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3.swap
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.core.content.IntentCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
@@ -14,7 +13,6 @@ import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_IN_MIXIN
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_REFERRAL
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 
@@ -28,7 +26,6 @@ class SwapActivity : BaseActivity(){
             amount: String? = null,
             referral: String? = null,
             inMixin: Boolean = true,
-            tokens: List<TokenItem>? = null,
             walletId: String? = null,
         ) {
             context.startActivity(
@@ -38,7 +35,6 @@ class SwapActivity : BaseActivity(){
                     amount?.let { putExtra(ARGS_AMOUNT, it) }
                     referral?.let { putExtra(ARGS_REFERRAL, it) }
                     putExtra(ARGS_IN_MIXIN, inMixin)
-                    tokens?.let { putParcelableArrayListExtra(ARGS_TOKEN_ITEMS, ArrayList(it)) }
                     walletId?.let { putExtra(SwapFragment.ARGS_WALLET_ID, it) }
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                 },
@@ -51,9 +47,7 @@ class SwapActivity : BaseActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        val passedTokens = IntentCompat.getParcelableArrayListExtra(intent, ARGS_TOKEN_ITEMS, TokenItem::class.java)
         val swapFragment = SwapFragment.newInstance<TokenItem>(
-            passedTokens,
             intent.getStringExtra(ARGS_INPUT),
             intent.getStringExtra(ARGS_OUTPUT),
             intent.getStringExtra(ARGS_AMOUNT),

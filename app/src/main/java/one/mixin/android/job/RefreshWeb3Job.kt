@@ -19,10 +19,9 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.tip.bip44.Bip44Path
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 class RefreshWeb3Job : BaseJob(
     Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
@@ -61,9 +60,12 @@ class RefreshWeb3Job : BaseJob(
                 if (web3AddressDao.getAddressesByWalletId(wallet.id).any {
                         it.path == null || it.path.isBlank()
                     }) {
-                    routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
-                    RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
-                    fetchWalletAddresses(wallet)
+                    try {
+                        routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to rename wallet ${wallet.id}")
+                    }
+                    fetchWallets(wallet.id)
                 }
             }
         }
@@ -92,7 +94,7 @@ class RefreshWeb3Job : BaseJob(
                     }
                     fetchChain()
                     fetchWalletAssets(w)
-                    JsSigner.init(
+                    Web3Signer.init(
                         { w.id },
                         { walletId ->
                             runBlocking(Dispatchers.IO) { web3AddressDao.getAddressesByWalletId(walletId) }
@@ -142,7 +144,7 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
-    private suspend fun fetchWallets() {
+    private suspend fun fetchWallets(renameWalletId: String? = null) {
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getWallets()
@@ -152,6 +154,9 @@ class RefreshWeb3Job : BaseJob(
                 wallets?.let {
                     web3WalletDao.insertList(it)
                     wallets.forEach { wallet ->
+                        if (wallet.id == renameWalletId) {
+                            RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
+                        }
                         fetchWalletAddresses(wallet)
                     }
                 }

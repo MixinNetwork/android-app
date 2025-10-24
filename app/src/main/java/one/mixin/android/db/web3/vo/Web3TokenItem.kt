@@ -17,7 +17,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
@@ -89,14 +89,14 @@ data class Web3TokenItem(
         }
     }
     
-    fun isSolana(): Boolean {
+    fun isSolanaChain(): Boolean {
         return chainId.equals(Constants.ChainId.SOLANA_CHAIN_ID, true)
     }
     
     override fun toSwapToken(): SwapToken {
         return SwapToken(
             walletId = walletId,
-            address = if (assetKey == solanaNativeTokenAssetKey) wrappedSolTokenAssetKey else assetKey,
+            address = assetKey,
             assetId = assetId,
             decimals = precision,
             name = name,
@@ -146,17 +146,6 @@ data class Web3TokenItem(
         else -> BigDecimal(priceUsd).multiply(Fiats.getRate().toBigDecimal())
     }
 
-    fun findChainToken(tokens: List<Web3TokenItem>): Web3TokenItem? {
-        val chainAssetKey = when {
-            // Todo
-            chainId.equals("solana", true) && assetKey == solanaNativeTokenAssetKey -> wrappedSolTokenAssetKey
-            else -> assetKey
-        }
-        return tokens.firstOrNull { token ->
-            token.chainId == chainId && token.assetKey == chainAssetKey
-        }
-    }
-
     fun Long.solLamportToAmount(scale: Int = 9): BigDecimal {
         return BigDecimal(this).divide(BigDecimal.TEN.pow(9)).setScale(scale, RoundingMode.CEILING)
     }
@@ -184,7 +173,8 @@ data class Web3TokenItem(
             dust = null,
             withdrawalMemoPossibility = null,
             collectionHash = null,
-            level = level
+            level = level,
+            precision = precision
         )
     }
 }
@@ -224,11 +214,11 @@ suspend fun Web3TokenItem.buildTransaction(
     v: String,
 ): JsSignMessage {
     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-        JsSigner.useSolana()
+        Web3Signer.useSolana()
         val sender = PublicKey(fromAddress)
         val receiver = PublicKey(toAddress)
         val instructions = mutableListOf<Instruction>()
-        if (isSolToken()) {
+        if (isNativeSolToken()) {
             val amount = solToLamport(v).toLong()
             instructions.add(TransferInstruction(sender, receiver, amount))
         } else {
@@ -297,7 +287,7 @@ suspend fun Web3TokenItem.buildTransaction(
         val tx = transaction.serialize().base64Encode()
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
     } else {
-        JsSigner.useEvm()
+        Web3Signer.useEvm()
         // (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
             if ((chainId == Constants.ChainId.Base && assetKey == "0x0000000000000000000000000000000000000000") ||

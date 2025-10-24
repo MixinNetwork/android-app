@@ -20,13 +20,12 @@ import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.isActiveState
 import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.JsSigner
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 
 @AndroidEntryPoint
 class UnstakeFragment : BaseFragment() {
@@ -79,7 +78,7 @@ class UnstakeFragment : BaseFragment() {
         lifecycleScope.launch {
             isLoading = true
             val stakeResp = stakeViewModel.stakeSol(StakeRequest(
-                payer = JsSigner.solanaAddress,
+                payer = Web3Signer.solanaAddress,
                 amount = stakeAccount.account.lamports.solLamportToAmount().toPlainString(),
                 action = if (stakeActivation.state.isActiveState()) StakeAction.deactive.name else StakeAction.withdraw.name,
                 pubkey = stakeAccount.pubkey,
@@ -89,7 +88,7 @@ class UnstakeFragment : BaseFragment() {
                 return@launch
             }
             val signMessage = JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = stakeResp.tx, solanaTxSource = SolanaTxSource.InnerStake)
-            JsSigner.useSolana()
+            Web3Signer.useSolana()
             isLoading = false
             showBrowserBottomSheetDialogFragment(
                 requireActivity(),

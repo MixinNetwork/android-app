@@ -7,8 +7,6 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
@@ -18,8 +16,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
-import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSigner
+import one.mixin.android.web3.js.Web3Signer
 import org.web3j.utils.Numeric
 import javax.inject.Inject
 
@@ -32,7 +29,7 @@ class SessionRequestViewModel
     ) : ViewModel() {
         private var account: String = ""
             get() {
-                return JsSigner.address
+                return Web3Signer.address
             }
 
 
@@ -104,6 +101,10 @@ class SessionRequestViewModel
 
         suspend fun findWalletById(walletId: String) = withContext(Dispatchers.IO) {
             web3Repository.findWalletById(walletId)
+        }
+
+        suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+            web3Repository.web3TokenItemById(walletId, assetId)
         }
 
         suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String?, Boolean>? {
