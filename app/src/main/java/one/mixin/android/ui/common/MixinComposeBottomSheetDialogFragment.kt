@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -9,8 +10,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updateMargins
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsBottom
@@ -48,6 +55,29 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
         }
     }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        object : BottomSheetDialog(requireContext(), theme) {
+            override fun onAttachedToWindow() {
+                super.onAttachedToWindow()
+
+                window?.let {
+                    WindowCompat.setDecorFitsSystemWindows(it, false)
+                }
+
+                findViewById<View>(com.google.android.material.R.id.container)?.apply {
+                    fitsSystemWindows = false
+                    doOnApplyWindowInsets(this) { insetView, windowInsets, initialMargins ->
+                        insetView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                            updateMargins(top = initialMargins.top + windowInsets.getInsets(systemBars()).top)
+                        }
+                        windowInsets
+                    }
+                }
+
+                findViewById<View>(com.google.android.material.R.id.coordinator)?.fitsSystemWindows = false
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -71,7 +101,7 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
             behavior?.peekHeight = getBottomSheetHeight(view)
             behavior?.isDraggable = false
             behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
-            view.setPadding(0,0,0, view.getSafeAreaInsetsBottom())
+            view.setPadding(0, 0, 0, view.getSafeAreaInsetsBottom())
         }
     }
 
