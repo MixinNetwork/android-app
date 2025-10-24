@@ -14,10 +14,8 @@ import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
-import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.friends.FriendsListener
 import one.mixin.android.ui.common.friends.UserItemCallback
@@ -25,7 +23,6 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.adapter.FriendsAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 

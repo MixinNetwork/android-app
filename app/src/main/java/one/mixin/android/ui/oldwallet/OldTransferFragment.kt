@@ -55,7 +55,6 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.sp
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast

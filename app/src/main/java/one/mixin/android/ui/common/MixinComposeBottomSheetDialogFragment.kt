@@ -14,12 +14,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsBottom
-import one.mixin.android.extension.dp as dip
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.util.SystemUIManager
 import javax.inject.Inject
+import one.mixin.android.extension.dp as dip
 
 abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
 

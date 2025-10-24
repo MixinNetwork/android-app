@@ -48,7 +48,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.GetNavBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.currencyFormat

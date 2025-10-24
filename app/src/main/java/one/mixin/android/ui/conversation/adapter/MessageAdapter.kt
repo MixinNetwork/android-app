@@ -92,7 +92,6 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.Plan
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.vo.isAppCard

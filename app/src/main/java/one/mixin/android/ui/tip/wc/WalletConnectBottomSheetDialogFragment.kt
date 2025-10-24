@@ -5,22 +5,16 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,14 +28,9 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
@@ -76,7 +65,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
-import one.mixin.android.extension.dp as dip
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction

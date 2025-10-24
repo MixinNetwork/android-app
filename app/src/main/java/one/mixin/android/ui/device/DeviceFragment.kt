@@ -24,7 +24,6 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs

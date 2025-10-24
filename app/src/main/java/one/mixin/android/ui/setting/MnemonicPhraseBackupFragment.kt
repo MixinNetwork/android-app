@@ -16,7 +16,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.toCompleteMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
