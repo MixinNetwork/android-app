@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -56,8 +57,10 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

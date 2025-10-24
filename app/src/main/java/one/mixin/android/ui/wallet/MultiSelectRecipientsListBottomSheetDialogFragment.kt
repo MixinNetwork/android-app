@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -101,8 +102,10 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
             selectedRecipients.clear()
             selectedRecipients.addAll(provider.getCurrentRecipients())
         }
-      binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

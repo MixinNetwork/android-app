@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -64,8 +65,10 @@ class TransferContactBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         super.setupDialog(dialog, style)
         contentView = binding.root
 
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = binding.root.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.root.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
