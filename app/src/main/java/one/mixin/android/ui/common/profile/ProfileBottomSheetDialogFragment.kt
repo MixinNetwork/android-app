@@ -11,20 +11,19 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.method.LinkMovementMethod
-import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -36,6 +35,7 @@ import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.defaultSharedPreferences
@@ -72,9 +72,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Plan
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
-import one.mixin.android.extension.base64RawURLEncode
 import timber.log.Timber
-import androidx.core.content.edit
 
 @AndroidEntryPoint
 class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {

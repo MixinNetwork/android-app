@@ -16,7 +16,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.util.getChainName
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem

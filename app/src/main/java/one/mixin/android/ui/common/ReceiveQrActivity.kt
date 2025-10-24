@@ -19,13 +19,11 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.ActivityReceiveQrBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -39,7 +37,6 @@ import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
-import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.toUser

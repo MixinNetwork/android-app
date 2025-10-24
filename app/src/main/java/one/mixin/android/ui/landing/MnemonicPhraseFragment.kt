@@ -31,7 +31,6 @@ import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromMnemonic
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic

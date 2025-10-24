@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
-import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,7 +75,6 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.Web3Signer
 
 @Composable
 fun TransferDestinationInputPage(

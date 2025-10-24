@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -13,8 +14,8 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.setting.Currency
@@ -56,8 +57,10 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

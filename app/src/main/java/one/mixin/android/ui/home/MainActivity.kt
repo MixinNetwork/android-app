@@ -982,6 +982,8 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun initBottomNav() {
         binding.apply {
+            bottomNav.setOnApplyWindowInsetsListener(null)
+            bottomNav.setPadding(0,0,0,0)
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 

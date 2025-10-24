@@ -46,8 +46,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -56,12 +54,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.doOnPreDraw
+import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -78,6 +73,7 @@ import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
@@ -87,13 +83,12 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsBottom
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.TokenRepository
@@ -104,6 +99,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -140,10 +136,9 @@ import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
-class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "SwapTransferBottomSheetDialogFragment"
@@ -155,7 +150,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         private const val ARGS_OUT_ASSET = "args_out_asset"
         private const val ARGS_SOURCE = "args_source"
         private const val ARGS_DISPLAY_USER_ID = "args_display_user_id"
-        
+
         fun newInstance(swapResult: SwapResponse, inAsset: SwapToken, outAssetItem: SwapToken): SwapTransferBottomSheetDialogFragment {
             return SwapTransferBottomSheetDialogFragment()
                 .withArgs {
@@ -170,8 +165,6 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
         }
     }
-
-    private var behavior: BottomSheetBehavior<*>? = null
 
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -243,7 +236,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private val link by lazy {
-        Uri.parse(requireNotNull(requireArguments().getString(ARGS_LINK)))
+        requireNotNull(requireArguments().getString(ARGS_LINK)).toUri()
     }
 
     private var step by mutableStateOf(Step.Pending)
@@ -269,286 +262,282 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var insufficientGas by mutableStateOf(false)
     private var walletName by mutableStateOf<String?>(null)
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                MixinAppTheme {
-                    LaunchedEffect(Unit) {
-                        if (source == "web3") {
-                            val wallet = web3ViewModel.findWalletById(Web3Signer.currentWalletId)
-                            walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: context.getString(R.string.Common_Wallet)
-                        }
-                    }
-                    Column(
-                        modifier =
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val view =  super.onCreateView(inflater, container, savedInstanceState)
+        parse()
+        return view
+    }
+
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            LaunchedEffect(Unit) {
+                if (source == "web3") {
+                    val wallet = web3ViewModel.findWalletById(Web3Signer.currentWalletId)
+                    walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: requireContext().getString(R.string.Common_Wallet)
+                }
+            }
+            Column(
+                modifier =
+                    Modifier
+                        .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .background(MixinAppTheme.colors.background),
+            ) {
+                WalletLabel(walletName = walletName, isWeb3 = source == "web3")
+                Column(
+                    modifier =
                         Modifier
-                            .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .background(MixinAppTheme.colors.background),
-                    ) {
-                        WalletLabel(walletName = walletName, isWeb3 = source == "web3")
-                        Column(
-                            modifier =
-                            Modifier
-                                .verticalScroll(rememberScrollState())
-                                .weight(weight = 1f, fill = true),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Box(modifier = Modifier.height(50.dp))
-                            when (step) {
-                                Step.Sending -> {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(70.dp),
-                                        color = MixinAppTheme.colors.accent,
-                                    )
-                                }
+                            .verticalScroll(rememberScrollState())
+                            .weight(weight = 1f, fill = true),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(modifier = Modifier.height(50.dp))
+                    when (step) {
+                        Step.Sending -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(70.dp),
+                                color = MixinAppTheme.colors.accent,
+                            )
+                        }
 
-                                Step.Error -> {
-                                    Icon(
-                                        modifier = Modifier.size(70.dp),
-                                        painter = painterResource(id = R.drawable.ic_transfer_status_failed),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified,
-                                    )
-                                }
+                        Step.Error -> {
+                            Icon(
+                                modifier = Modifier.size(70.dp),
+                                painter = painterResource(id = R.drawable.ic_transfer_status_failed),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                            )
+                        }
 
-                                Step.Done -> {
-                                    Icon(
-                                        modifier = Modifier.size(70.dp),
-                                        painter = painterResource(id = R.drawable.ic_transfer_status_success),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified,
-                                    )
-                                }
+                        Step.Done -> {
+                            Icon(
+                                modifier = Modifier.size(70.dp),
+                                painter = painterResource(id = R.drawable.ic_transfer_status_success),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                            )
+                        }
 
-                                else ->
-                                    Box(
-                                        modifier = Modifier.wrapContentWidth(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Box(
-                                            modifier =
-                                            Modifier
-                                                .size(70.dp)
-                                                .offset(x = (-27).dp)
-                                                .border(
-                                                    1.5.dp,
-                                                    MixinAppTheme.colors.background,
-                                                    CircleShape
-                                                )
-                                        ) {
-                                            CoilImage(
-                                                model = inAsset.icon,
-                                                placeholder = R.drawable.ic_avatar_place_holder,
-                                                modifier = Modifier
-                                                    .size(67.dp)
-                                                    .align(Alignment.Center)
-                                                    .clip(CircleShape)
+                        else ->
+                            Box(
+                                modifier = Modifier.wrapContentWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .size(70.dp)
+                                            .offset(x = (-27).dp)
+                                            .border(
+                                                1.5.dp,
+                                                MixinAppTheme.colors.background,
+                                                CircleShape
                                             )
-                                        }
-                                        Box(
-                                            modifier =
-                                            Modifier
-                                                .size(70.dp)
-                                                .offset(x = 27.dp)
-                                                .border(
-                                                    1.5.dp,
-                                                    MixinAppTheme.colors.background,
-                                                    CircleShape
-                                                )
-                                        ) {
-                                            CoilImage(
-                                                model = outAsset.icon,
-                                                placeholder = R.drawable.ic_avatar_place_holder,
-                                                modifier = Modifier
-                                                    .size(67.dp)
-                                                    .align(Alignment.Center)
-                                                    .clip(CircleShape)
+                                ) {
+                                    CoilImage(
+                                        model = inAsset.icon,
+                                        placeholder = R.drawable.ic_avatar_place_holder,
+                                        modifier = Modifier
+                                            .size(67.dp)
+                                            .align(Alignment.Center)
+                                            .clip(CircleShape)
+                                    )
+                                }
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .size(70.dp)
+                                            .offset(x = 27.dp)
+                                            .border(
+                                                1.5.dp,
+                                                MixinAppTheme.colors.background,
+                                                CircleShape
                                             )
-                                        }
-                                    }
+                                ) {
+                                    CoilImage(
+                                        model = outAsset.icon,
+                                        placeholder = R.drawable.ic_avatar_place_holder,
+                                        modifier = Modifier
+                                            .size(67.dp)
+                                            .align(Alignment.Center)
+                                            .clip(CircleShape)
+                                    )
+                                }
                             }
-                            Box(modifier = Modifier.height(20.dp))
-                            Text(
-                                text =
-                                stringResource(
-                                    id =
+                    }
+                    Box(modifier = Modifier.height(20.dp))
+                    Text(
+                        text =
+                            stringResource(
+                                id =
                                     when (step) {
                                         Step.Pending -> R.string.swap_confirmation
                                         Step.Done -> R.string.web3_sending_success
                                         Step.Error -> R.string.swap_failed
                                         Step.Sending -> R.string.Sending
                                     }
-                                ),
-                                style =
-                                TextStyle(
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.W600,
-                                ),
-                            )
-                            Box(modifier = Modifier.height(8.dp))
-                            Text(
-                                modifier =
-                                Modifier
-                                    .padding(horizontal = 24.dp),
-                                text =
-                                errorInfo ?: stringResource(
-                                    id =
+                            ),
+                        style =
+                            TextStyle(
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.W600,
+                            ),
+                    )
+                    Box(modifier = Modifier.height(8.dp))
+                    Text(
+                        modifier =
+                            Modifier
+                                .padding(horizontal = 24.dp),
+                        text =
+                            errorInfo ?: stringResource(
+                                id =
                                     when (step) {
                                         Step.Done -> R.string.swap_message_success
                                         Step.Error -> R.string.Data_error
                                         else -> R.string.swap_inner_desc
                                     },
-                                ),
-                                textAlign = TextAlign.Center,
-                                style =
-                                TextStyle(
-                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W400,
-                                ),
-                                maxLines = 3,
-                                minLines = 3,
-                            )
-                            Box(modifier = Modifier.height(10.dp))
+                            ),
+                        textAlign = TextAlign.Center,
+                        style =
+                            TextStyle(
+                                color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.W400,
+                            ),
+                        maxLines = 3,
+                        minLines = 3,
+                    )
+                    Box(modifier = Modifier.height(10.dp))
 
-                            Box(
+                    Box(
+                        modifier =
+                            Modifier
+                                .height(10.dp)
+                                .fillMaxWidth()
+                                .background(MixinAppTheme.colors.backgroundWindow),
+                    )
+                    Box(modifier = Modifier.height(20.dp))
+                    AssetChanges(title = stringResource(id = R.string.Balance_Change).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
+                    Box(modifier = Modifier.height(20.dp))
+                    ItemPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
+                    Box(modifier = Modifier.height(20.dp))
+                    if (source == "web3") {
+                        if (tipGas != null || solanaFee != null) {
+                            val transaction = web3Transaction?.wcEthereumTransaction
+                            val fee = solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                            if (fee == BigDecimal.ZERO) {
+                                FeeInfo(
+                                    amount = "$fee",
+                                    fee = fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO),
+                                )
+                            } else {
+                                FeeInfo(
+                                    amount = "$fee ${asset?.symbol ?: ""}",
+                                    fee = fee.multiply(asset?.priceUsd?.toBigDecimal() ?: BigDecimal.ZERO),
+                                    gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
+                                )
+                            }
+                        } else {
+                            FeeInfo("0", BigDecimal("0"))
+                        }
+                    } else {
+                        FeeInfo("0", BigDecimal("0"))
+                    }
+                    Box(modifier = Modifier.height(20.dp))
+                    if (source == "web3") {
+                        val account = if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                        LaunchedEffect(account) {
+                            try {
+                                walletDisplayInfo = web3ViewModel.checkAddressAndGetDisplayName(account, null, inAsset.chain.chainId)
+                            } catch (e: Exception) {
+                                walletDisplayInfo = null
+                            }
+                        }
+                        walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                            val (displayName, _) = walletDisplayInfo
+                            ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account, displayName)
+                        }, {
+                            ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account)
+                        })
+                    } else {
+                        ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
+                    }
+                    Box(modifier = Modifier.height(20.dp))
+                    ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver, null)
+                    Box(modifier = Modifier.height(16.dp))
+                }
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    when (step) {
+                        Step.Done -> {
+                            Row(
                                 modifier =
-                                Modifier
-                                    .height(10.dp)
-                                    .fillMaxWidth()
-                                    .background(MixinAppTheme.colors.backgroundWindow),
+                                    Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .background(MixinAppTheme.colors.background)
+                                        .padding(20.dp)
+                                        .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                Button(
+                                    onClick = {
+                                        onDoneAction?.invoke()
+                                        dismiss()
+                                    },
+                                    colors =
+                                        ButtonDefaults.outlinedButtonColors(
+                                            backgroundColor = MixinAppTheme.colors.accent,
+                                        ),
+                                    shape = RoundedCornerShape(20.dp),
+                                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                                ) {
+                                    Text(text = stringResource(id = R.string.Done), color = Color.White)
+                                }
+                            }
+                        }
+
+                        Step.Error -> {
+                            ActionBottom(
+                                modifier =
+                                    Modifier
+                                        .align(Alignment.BottomCenter),
+                                cancelTitle = stringResource(R.string.Cancel),
+                                confirmTitle = stringResource(id = R.string.Retry),
+                                cancelAction = { dismiss() },
+                                confirmAction = { showPin() },
                             )
-                            Box(modifier = Modifier.height(20.dp))
-                            AssetChanges(title = stringResource(id = R.string.Balance_Change).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
-                            Box(modifier = Modifier.height(20.dp))
-                            ItemPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
-                            Box(modifier = Modifier.height(20.dp))
-                            if (source == "web3") {
-                                if (tipGas != null || solanaFee != null) {
-                                    val transaction = web3Transaction?.wcEthereumTransaction
-                                    val fee = solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
-                                    if (fee == BigDecimal.ZERO) {
-                                        FeeInfo(
-                                            amount = "$fee",
-                                            fee = fee.multiply(asset?.priceUsd?.toBigDecimal()?: BigDecimal.ZERO),
-                                        )
-                                    } else {
-                                        FeeInfo(
-                                            amount = "$fee ${asset?.symbol ?: ""}",
-                                            fee = fee.multiply(asset?.priceUsd?.toBigDecimal()?: BigDecimal.ZERO),
-                                            gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
-                                        )
-                                    }
-                                } else {
-                                    FeeInfo("0", BigDecimal("0"))
-                                }
-                            } else {
-                                FeeInfo("0", BigDecimal("0"))
-                            }
-                            Box(modifier = Modifier.height(20.dp))
-                            if (source == "web3") {
-                                val account = if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) Web3Signer.solanaAddress else Web3Signer.evmAddress
-                                LaunchedEffect(account) {
-                                    try {
-                                        walletDisplayInfo = web3ViewModel.checkAddressAndGetDisplayName(account, null, inAsset.chain.chainId)
-                                    } catch (e: Exception) {
-                                        walletDisplayInfo = null
-                                    }
-                                }
-                                walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
-                                    val (displayName, _) = walletDisplayInfo
-                                    ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account, displayName)
-                                }, {
-                                    ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account)
-                                })
-                            } else {
-                                ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
-                            }
-                            Box(modifier = Modifier.height(20.dp))
-                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver, null)
-                            Box(modifier = Modifier.height(16.dp))
                         }
 
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            when (step) {
-                                Step.Done -> {
-                                    Row(
-                                        modifier =
-                                        Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .background(MixinAppTheme.colors.background)
-                                            .padding(20.dp)
-                                            .fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.Center,
-                                    ) {
-                                        Button(
-                                            onClick = {
-                                                onDoneAction?.invoke()
-                                                dismiss()
-                                            },
-                                            colors =
-                                            ButtonDefaults.outlinedButtonColors(
-                                                backgroundColor = MixinAppTheme.colors.accent,
-                                            ),
-                                            shape = RoundedCornerShape(20.dp),
-                                            contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-                                        ) {
-                                            Text(text = stringResource(id = R.string.Done), color = Color.White)
-                                        }
-                                    }
-                                }
-                                Step.Error -> {
-                                    ActionBottom(
-                                        modifier =
-                                        Modifier
-                                            .align(Alignment.BottomCenter),
-                                        cancelTitle = stringResource(R.string.Cancel),
-                                        confirmTitle = stringResource(id = R.string.Retry),
-                                        cancelAction = { dismiss() },
-                                        confirmAction = { showPin() },
-                                    )
-                                }
-                                Step.Pending -> {
-                                    ActionBottom(
-                                        modifier =
-                                        Modifier
-                                            .align(Alignment.BottomCenter),
-                                        cancelTitle = stringResource(R.string.Cancel),
-                                        confirmTitle = stringResource(id = R.string.Continue),
-                                        cancelAction = { dismiss() },
-                                        confirmAction = { showPin() },
-                                    )
-                                }
-
-                                Step.Sending -> {
-
-                                }
-                            }
+                        Step.Pending -> {
+                            ActionBottom(
+                                modifier =
+                                    Modifier
+                                        .align(Alignment.BottomCenter),
+                                cancelTitle = stringResource(R.string.Cancel),
+                                confirmTitle = stringResource(id = R.string.Continue),
+                                cancelAction = { dismiss() },
+                                confirmAction = { showPin() },
+                            )
                         }
-                        Box(modifier = Modifier.height(36.dp))
+
+                        Step.Sending -> {
+
+                        }
                     }
                 }
+                Box(modifier = Modifier.height(36.dp))
             }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                val ctx = requireContext()
-                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-
-            parse()
         }
+    }
+
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+    }
+
 
     private var onDoneAction: (() -> Unit)? = null
     private var onDestroyAction: (() -> Unit)? = null
@@ -579,6 +568,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
     }
+
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -604,6 +594,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 step = Step.Done
                                 AnalyticsTracker.trackSwapSend()
                             }
+
                             JsSignMessage.TYPE_TRANSACTION -> {
                                 val transaction = requireNotNull(web3Transaction!!.wcEthereumTransaction)
                                 val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
@@ -620,6 +611,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                 step = Step.Done
                                 AnalyticsTracker.trackSwapSend()
                             }
+
                             else -> {
                                 throw IllegalArgumentException("invalid signMessage type ${web3Transaction!!.type}")
                             }
@@ -649,7 +641,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 handleException(e)
             }
         }
-        
+
     private suspend fun handleTransactionResponse(response: MixinResponse<*>) {
         if (response.isSuccess) {
             defaultSharedPreferences.putLong(
@@ -664,7 +656,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             step = Step.Error
         }
     }
-    
+
     private suspend fun handleError(
         error: ResponseError?,
     ): String? {
@@ -711,24 +703,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             "",
             "",
         )
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-                    else -> {}
-                }
-            }
 
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
 
     override fun onDetach() {
         super.onDetach()
@@ -758,19 +733,19 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private fun parse() = lifecycleScope.launch {
         val swapLink = requireArguments().getString(ARGS_LINK)
         val displayUserId = requireArguments().getString(ARGS_DISPLAY_USER_ID)
-        
+
         when (source) {
             "web3" -> {
                 val wallet = web3ViewModel.findWalletById(Web3Signer.currentWalletId)
                 walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
-                depositDestination?.let { depositDestination->
+                depositDestination?.let { depositDestination ->
                     val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
                             val transaction = token.buildTransaction(
-                                rpc, 
+                                rpc,
                                 if (token.chainId == Constants.ChainId.Solana) Web3Signer.solanaAddress else Web3Signer.evmAddress,
-                                depositDestination, 
+                                depositDestination,
                                 requireArguments().getString(ARGS_IN_AMOUNT)!!
                             )
                             web3Transaction = transaction
@@ -789,13 +764,14 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     receiver = bottomViewModel.refreshUser(userId)
                 }
             }
+
             else -> {
                 val uri = if (swapLink != null) {
                     Uri.parse(swapLink)
                 } else {
                     link
                 }
-                
+
                 val assetId = requireNotNull(uri.getQueryParameter("asset"))
                 val amount = requireNotNull(uri.getQueryParameter("amount"))
                 val receiverId = requireNotNull(uri.lastPathSegment)
@@ -807,16 +783,16 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
     }
-    
+
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
         if (chain == Chain.Solana) {
             refreshSolana()
             return
         }
-        
+
         val assetId = chain.assetId
         val transaction = web3Transaction?.wcEthereumTransaction ?: return
-        
+
         tickerFlow(15.seconds)
             .onEach {
                 asset = bottomViewModel.refreshAsset(assetId)
@@ -839,12 +815,12 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         }
                         buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
-                    chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId,token?.chainId ?: "")
+                    chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, token?.chainId ?: "")
                     insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))
                     }
-                    
+
                     val hex = Web3Signer.ethPreviewTransaction(
                         Web3Signer.evmAddress,
                         transaction,
@@ -884,7 +860,7 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3TokenItem?,
         tipGas: TipGas?,
         value: String?,
-        maxFeePerGas: String?
+        maxFeePerGas: String?,
     ): Boolean {
         return if (web3Token != null) {
             if (chainToken == null) {
@@ -903,19 +879,22 @@ class SwapTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             false
         }
     }
+
+    override fun showError(error: String) {
+    }
 }
 
 @Composable
 fun ItemUserContent(
     title: String,
     user: User?,
-    address: String?
+    address: String?,
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
     ) {
         Text(
             text = title,
@@ -945,9 +924,9 @@ fun ItemUserContent(
                     model = user.avatarUrl,
                     placeholder = R.drawable.ic_avatar_place_holder,
                     modifier =
-                    Modifier
-                        .size(18.dp)
-                        .clip(CircleShape),
+                        Modifier
+                            .size(18.dp)
+                            .clip(CircleShape),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 UserBadge(user)
@@ -992,15 +971,15 @@ fun ItemPriceContent(
     inAmount: BigDecimal,
     inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: SwapToken
+    outAsset: SwapToken,
 ) {
     var isSwitch by remember { mutableStateOf(false) }
     val price = outAmount.divide(inAmount, 8, RoundingMode.HALF_UP)
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
     ) {
         Text(
             text = title,
@@ -1042,13 +1021,13 @@ fun AssetChanges(
     inAmount: BigDecimal,
     inAsset: SwapToken,
     outAmount: BigDecimal,
-    outAsset: SwapToken
+    outAsset: SwapToken,
 ) {
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
     ) {
         Text(
             text = title,
@@ -1064,9 +1043,9 @@ fun AssetChanges(
             CoilImage(
                 model = inAsset.icon,
                 modifier =
-                Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Box(modifier = Modifier.width(12.dp))
@@ -1091,9 +1070,9 @@ fun AssetChanges(
             CoilImage(
                 model = outAsset.icon,
                 modifier =
-                Modifier
-                    .size(24.dp)
-                    .clip(CircleShape),
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Box(modifier = Modifier.width(12.dp))

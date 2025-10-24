@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentHiddenAssetsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navigate

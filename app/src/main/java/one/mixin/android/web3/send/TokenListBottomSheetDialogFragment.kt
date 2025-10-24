@@ -4,11 +4,13 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
@@ -52,8 +54,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

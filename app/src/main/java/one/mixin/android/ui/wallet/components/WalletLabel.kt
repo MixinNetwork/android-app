@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,11 +33,11 @@ fun WalletLabel(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = if (isWeb3) Color(0xFF007AFF) else Color(0xFF8666F0))
-            .padding(top = 7.dp),
+            .background(color = if (isWeb3) Color(0xFF007AFF) else Color(0xFF8666F0)),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.height(7.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = walletName ?: stringResource(id = R.string.Privacy_Wallet),

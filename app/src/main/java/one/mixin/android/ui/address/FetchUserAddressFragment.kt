@@ -4,15 +4,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -25,7 +21,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
-import timber.log.Timber
 
 @AndroidEntryPoint
 class FetchUserAddressFragment : BaseFragment(R.layout.fragment_compose) {
