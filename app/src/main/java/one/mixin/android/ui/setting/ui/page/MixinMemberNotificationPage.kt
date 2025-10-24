@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.MembershipIcon
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -42,7 +42,6 @@ fun MixinMemberNotificationPage(
     MixinAppTheme {
         Box(
             modifier = Modifier
-                .padding(bottom = GetNavBarHeightValue())
                 .fillMaxSize()
                 .padding(16.dp)
         ) {

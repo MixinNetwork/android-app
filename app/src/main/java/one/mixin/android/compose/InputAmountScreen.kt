@@ -265,7 +265,6 @@ fun InputAmountScreen(
         )
 
         Spacer(modifier = Modifier.height(20.dp))
-        Spacer(modifier = Modifier.height(GetNavBarHeightValue()))
     }
 }
 
@@ -731,7 +730,6 @@ fun InputAmountPreviewScreen(
             }
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Spacer(modifier = Modifier.height(GetNavBarHeightValue()))
     }
 }
 

@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.ParsedTx
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.composeDp
@@ -147,7 +147,6 @@ fun BrowserPage(
             modifier =
                 Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                    .padding(bottom = GetNavBarHeightValue() + 12.dp)
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .background(MixinAppTheme.colors.background)

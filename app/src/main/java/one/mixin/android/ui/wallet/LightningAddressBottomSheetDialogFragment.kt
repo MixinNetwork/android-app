@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getClipboardManager
@@ -65,7 +65,6 @@ class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
         MixinAppTheme {
                     Column(
                         modifier = Modifier
-                            .padding(bottom = GetNavBarHeightValue())
                             .fillMaxWidth()
                             .padding(vertical = 20.dp, horizontal = 28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally

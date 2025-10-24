@@ -41,7 +41,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
 import java.io.File
@@ -64,7 +64,6 @@ fun LogViewerScreen(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(bottom = GetNavBarHeightValue())
                     .fillMaxWidth()
                     .padding(vertical = 20.dp, horizontal = 16.dp)
             ) {

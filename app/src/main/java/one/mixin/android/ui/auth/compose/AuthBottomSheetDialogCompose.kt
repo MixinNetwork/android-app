@@ -66,7 +66,7 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
@@ -95,7 +95,6 @@ fun AuthBottomSheetDialogCompose(
             modifier =
                 Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                    .padding(bottom = GetNavBarHeightValue())
                     .fillMaxWidth()
                     .height(690.dp)
                     .background(MixinAppTheme.colors.background)

@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
@@ -189,7 +189,6 @@ fun WalletListScreen(
     }
 
     Column(modifier = Modifier
-        .padding(bottom = GetNavBarHeightValue())
         .fillMaxSize()) {
         SearchBar(
             query = query,
@@ -270,7 +269,6 @@ fun WalletListScreen(
                 )
                 Spacer(modifier = Modifier.height(30.dp))
             }
-            Spacer(modifier = Modifier.height(GetNavBarHeightValue()))
         }
     }
 }

@@ -29,14 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
 fun ReminderPage(@DrawableRes contentImage: Int, @StringRes title: Int, @StringRes content: Int, @StringRes actionStr: Int, action: () -> Unit, dismiss: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-            .padding(bottom = GetNavBarHeightValue())
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
             .background(MixinAppTheme.colors.primary)
     ) {

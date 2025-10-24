@@ -34,7 +34,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.MembershipOrder
-import one.mixin.android.compose.GetNavBarHeightValue
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.MembershipIcon
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -50,7 +50,6 @@ fun MixinMemberCancelPage(
     MixinAppTheme {
         Column(
             modifier = Modifier
-                .padding(bottom = GetNavBarHeightValue())
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally

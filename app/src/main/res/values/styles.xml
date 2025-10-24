@@ -267,6 +267,7 @@
         <item name="android:windowAnimationStyle">@style/BottomSheet.Animation</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="bottomSheetStyle">@style/BottomSheetModal</item>
+        <item name="enableEdgeToEdge">true</item>
     </style>
 
     <style name="AppTheme.Call" parent="AppTheme.NoActionBar">
