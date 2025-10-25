@@ -1068,8 +1068,10 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
         Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
-        Constants.ChainId.Litecoin, Constants.ChainId.RIPPLE_CHAIN_ID, Constants.ChainId.Dogecoin, Constants.ChainId.Monero, Constants.ChainId.MobileCoin, -> getString(R.string.deposit_tip_common, asset.symbol)
-        else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
+        Constants.ChainId.EOS_CHAIN_ID, Constants.ChainId.SOLANA_CHAIN_ID, Constants.ChainId.MixinVirtualMachine, Constants.ChainId.Base, Constants.ChainId.Arbitrum,
+        Constants.ChainId.Optimism, Constants.ChainId.Dash, Constants.ChainId.Polygon, Constants.ChainId.BinanceSmartChain, Constants.ChainId.BinanceBeaconChain, Constants.ChainId.BitShares,
+            -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
+        else -> getString(R.string.deposit_tip_common, asset.symbol)
     }
 
 fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =

@@ -16,7 +16,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.util.getChainName
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
@@ -40,13 +39,13 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         requireArguments().getParcelableCompat(ASSET, TokenItem::class.java)
     }
 
-    private val networkName by lazy {
-        requireArguments().getString(NAME)
+    private val chainName by lazy {
+        requireArguments().getString(NAME) ?: asset?.chainName
     }
 
     private val binding by viewBinding(FragmentDepositChooseNetworkBottomSheetBinding::inflate)
 
-    private val adapter by lazy { AssetAdapter(networkName) }
+    private val adapter by lazy { AssetAdapter(chainName) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
