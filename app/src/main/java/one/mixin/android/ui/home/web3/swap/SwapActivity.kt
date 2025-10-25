@@ -8,11 +8,11 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_AMOUNT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_IN_MIXIN
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_REFERRAL
+import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_AMOUNT
+import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_INPUT
+import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_IN_MIXIN
+import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_REFERRAL
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 
@@ -35,7 +35,7 @@ class SwapActivity : BaseActivity(){
                     amount?.let { putExtra(ARGS_AMOUNT, it) }
                     referral?.let { putExtra(ARGS_REFERRAL, it) }
                     putExtra(ARGS_IN_MIXIN, inMixin)
-                    walletId?.let { putExtra(SwapFragment.ARGS_WALLET_ID, it) }
+                    walletId?.let { putExtra(TradeFragment.ARGS_WALLET_ID, it) }
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                 },
             )
@@ -47,13 +47,13 @@ class SwapActivity : BaseActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        val swapFragment = SwapFragment.newInstance<TokenItem>(
+        val swapFragment = TradeFragment.newInstance<TokenItem>(
             intent.getStringExtra(ARGS_INPUT),
             intent.getStringExtra(ARGS_OUTPUT),
             intent.getStringExtra(ARGS_AMOUNT),
             inMixin =  intent.getBooleanExtra(ARGS_IN_MIXIN, true),
             referral = intent.getStringExtra(ARGS_REFERRAL),
-            walletId = intent.getStringExtra(SwapFragment.ARGS_WALLET_ID)
+            walletId = intent.getStringExtra(TradeFragment.ARGS_WALLET_ID)
         )
-        replaceFragment(swapFragment, R.id.container, SwapFragment.TAG)}
+        replaceFragment(swapFragment, R.id.container, TradeFragment.TAG)}
 }

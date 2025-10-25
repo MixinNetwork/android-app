@@ -275,7 +275,7 @@ private fun String.toIntSlippage(): Int {
 
 private fun String.isSlippageValid(): Boolean {
     val v = toIntSlippage()
-    return v >= SwapFragment.MinSlippage && v <= SwapFragment.MaxSlippage
+    return v >= TradeFragment.MinSlippage && v <= TradeFragment.MaxSlippage
 }
 
 @Preview

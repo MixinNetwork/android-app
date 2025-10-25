@@ -32,6 +32,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -44,7 +45,6 @@ import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.forEachWithIndex
-import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
@@ -66,6 +66,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
@@ -87,7 +88,7 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SwapFragment : BaseFragment() {
+class TradeFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
@@ -112,8 +113,8 @@ class SwapFragment : BaseFragment() {
             inMixin: Boolean = true,
             referral: String? = null,
             walletId: String? = null,
-        ): SwapFragment =
-            SwapFragment().withArgs {
+        ): TradeFragment =
+            TradeFragment().withArgs {
                 input?.let { putString(ARGS_INPUT, it) }
                 output?.let { putString(ARGS_OUTPUT, it) }
                 amount?.let { putString(ARGS_AMOUNT, it) }
@@ -123,10 +124,11 @@ class SwapFragment : BaseFragment() {
             }
     }
 
-    enum class SwapDestination {
+    enum class TradeDestination {
         Swap,
         OrderList,
-        OrderDetail
+        OrderDetail,
+        LimitOrderPage
     }
 
     @Inject
@@ -175,7 +177,7 @@ class SwapFragment : BaseFragment() {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = SwapDestination.Swap.name,
+                        startDestination = TradeDestination.Swap.name,
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -201,10 +203,10 @@ class SwapFragment : BaseFragment() {
                             )
                         },
                     ) {
-                        composable(SwapDestination.Swap.name) {
+                        composable(TradeDestination.Swap.name) {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
-                            SwapPage(
+                            TradePage(
                                 walletId = walletId,
                                 from = fromToken,
                                 to = toToken,
@@ -225,13 +227,16 @@ class SwapFragment : BaseFragment() {
                                         handleReview(quote, from, to, amount, navController)
                                     }
                                 },
+                                onLimitReview = { order ->
+                                    openLimitTransfer(order)
+                                },
                                 source = getSource(),
                                 onDeposit = { token ->
                                     hideKeyboard()
                                     if (inMixin()) {
                                         deposit(token.assetId)
                                     } else {
-                                        this@SwapFragment.lifecycleScope.launch {
+                                        this@TradeFragment.lifecycleScope.launch {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
                                             val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
                                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
@@ -239,7 +244,7 @@ class SwapFragment : BaseFragment() {
                                     }
                                 },
                                 onOrderList = {
-                                    navController.navigate(SwapDestination.OrderList.name)
+                                    navController.navigate(TradeDestination.OrderList.name)
                                     if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
                                         defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
                                         orderBadge = false
@@ -252,7 +257,7 @@ class SwapFragment : BaseFragment() {
                             )
                         }
 
-                        composable(SwapDestination.OrderList.name) {
+                        composable(TradeDestination.OrderList.name) {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             SwapOrderListPage(
@@ -261,11 +266,11 @@ class SwapFragment : BaseFragment() {
                                     navigateUp(navController)
                                 },
                                 onOrderClick = { orderId ->
-                                    navController.navigate("${SwapDestination.OrderDetail.name}/$orderId")
+                                    navController.navigate("${TradeDestination.OrderDetail.name}/$orderId")
                                 }
                             )
                         }
-                        composable("${SwapDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
+                        composable("${TradeDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
@@ -282,10 +287,10 @@ class SwapFragment : BaseFragment() {
                                             val fromToken = swapViewModel.findToken(fromAssetId)?.toSwapToken()
                                             val toToken = swapViewModel.findToken(toAssetId)?.toSwapToken()
                                             if (fromToken != null && toToken != null) {
-                                                this@SwapFragment.fromToken = fromToken
-                                                this@SwapFragment.toToken = toToken
-                                                navController.navigate(SwapDestination.Swap.name) {
-                                                    popUpTo(SwapDestination.Swap.name) {
+                                                this@TradeFragment.fromToken = fromToken
+                                                this@TradeFragment.toToken = toToken
+                                                navController.navigate(TradeDestination.Swap.name) {
+                                                    popUpTo(TradeDestination.Swap.name) {
                                                         inclusive = true
                                                     }
                                                 }
@@ -297,6 +302,37 @@ class SwapFragment : BaseFragment() {
                                     }
                                 )
                             }
+                        }
+                        composable("${TradeDestination.LimitOrderPage.name}/{orderId}") { navBackStackEntry ->
+                            jobManager.addJobInBackground(RefreshOrdersJob())
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            LimitOrderDetailPage(
+                                walletId = walletId,
+                                orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
+                                onShare = { payAssetId, receiveAssetId ->
+                                    lifecycleScope.launch {
+                                        shareSwap(payAssetId, receiveAssetId)
+                                    }
+                                },
+                                onTryAgain = { fromAssetId, toAssetId ->
+                                    lifecycleScope.launch {
+                                        val fromToken = swapViewModel.findToken(fromAssetId)?.toSwapToken()
+                                        val toToken = swapViewModel.findToken(toAssetId)?.toSwapToken()
+                                        if (fromToken != null && toToken != null) {
+                                            this@TradeFragment.fromToken = fromToken
+                                            this@TradeFragment.toToken = toToken
+                                            navController.navigate(TradeDestination.Swap.name) {
+                                                popUpTo(TradeDestination.Swap.name) {
+                                                    inclusive = true
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                pop = {
+                                    navigateUp(navController)
+                                }
+                            )
                         }
                     }
                 }
@@ -338,7 +374,7 @@ class SwapFragment : BaseFragment() {
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        this@SwapFragment.lifecycleScope.launch {
+                        this@TradeFragment.lifecycleScope.launch {
                             val t = swapViewModel.getTokenByWalletAndAssetId(
                                 Web3Signer.currentWalletId, if (Web3Signer.evmAddress.isBlank()) {
                                     Constants.ChainId.SOLANA_CHAIN_ID
@@ -662,6 +698,25 @@ class SwapFragment : BaseFragment() {
                 GasCheckBottomSheetDialogFragment.TAG
             )
         }
+    }
+
+    private fun openLimitTransfer(order: CreateLimitOrderResponse) {
+        val from = fromToken
+        val to = toToken
+        if (from == null || to == null) {
+            toast(R.string.Data_error)
+            return
+        }
+        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to).apply {
+            setOnDone {
+                initialAmount = null
+                lastOrderTime = System.currentTimeMillis()
+            }
+            setOnDestroy {
+                reviewing = false
+            }
+        }.showNow(parentFragmentManager, LimitTransferBottomSheetDialogFragment.TAG)
+        reviewing = true
     }
 
     private suspend fun initFromTo() {
