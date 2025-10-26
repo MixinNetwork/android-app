@@ -261,7 +261,6 @@ object Constants {
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
         const val MobileCoin = "eea900a8-b327-488c-8d8d-1428702fe240"
 
-        const val Zcash = "c996abc9-d94e-4494-b1cf-2a3fd3ac5714"
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }
 
