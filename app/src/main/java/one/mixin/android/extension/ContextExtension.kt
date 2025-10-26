@@ -1065,11 +1065,17 @@ fun Context.isFirebaseDecodeAvailable() =
 fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
-        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
         Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
-        Constants.ChainId.EOS_CHAIN_ID, Constants.ChainId.SOLANA_CHAIN_ID, Constants.ChainId.MixinVirtualMachine, Constants.ChainId.Base, Constants.ChainId.Arbitrum,
-        Constants.ChainId.Optimism, Constants.ChainId.Dash, Constants.ChainId.Polygon, Constants.ChainId.BinanceSmartChain, Constants.ChainId.BinanceBeaconChain, Constants.ChainId.BitShares,
+        Constants.ChainId.EOS_CHAIN_ID,
+        Constants.ChainId.SOLANA_CHAIN_ID,
+        Constants.ChainId.TRON_CHAIN_ID,
+        Constants.ChainId.Base,
+        Constants.ChainId.BinanceSmartChain,
+        Constants.ChainId.Arbitrum,
+        Constants.ChainId.Optimism,
+        Constants.ChainId.Polygon,
+        Constants.ChainId.BitShares,
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }
