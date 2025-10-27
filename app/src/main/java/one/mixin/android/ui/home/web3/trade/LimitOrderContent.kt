@@ -1,6 +1,6 @@
 @file:OptIn(FlowPreview::class)
 
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -53,7 +52,6 @@ import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
@@ -65,7 +63,17 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+import one.mixin.android.api.response.LimitOrder
+import one.mixin.android.api.response.LimitOrderCategory
+import one.mixin.android.api.response.LimitOrderStatus
+import one.mixin.android.compose.CoilImage
+import one.mixin.android.extension.fullDate
 
 @Composable
 fun LimitOrderContent(
@@ -76,6 +84,7 @@ fun LimitOrderContent(
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
+    onLimitOrderClick: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -96,6 +105,14 @@ fun LimitOrderContent(
     }
 
     var isButtonEnabled by remember { mutableStateOf(true) }
+
+    var limitOrders by remember { mutableStateOf<List<LimitOrder>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getLimitOrders(category = LimitOrderCategory.ACTIVE.value, offset = null).data?.let {
+            limitOrders = it
+        }
+    }
 
     LaunchedEffect(inputText, limitPriceText, fromToken, toToken) {
         val fromAmount = inputText.toBigDecimalOrNull()
@@ -137,7 +154,14 @@ fun LimitOrderContent(
 
                                         val oldPrice = limitPriceText.toBigDecimalOrNull()
                                         if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
-                                            limitPriceText = BigDecimal.ONE.divide(oldPrice, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+                                            limitPriceText =
+                                                BigDecimal.ONE
+                                                    .divide(
+                                                        oldPrice,
+                                                        8,
+                                                        RoundingMode.HALF_UP
+                                                    )
+                                                    .stripTrailingZeros().toPlainString()
                                         }
 
                                         fromToken?.let { f ->
@@ -266,6 +290,20 @@ fun LimitOrderContent(
                             )
                         }
                     }
+                    if (limitOrders.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = stringResource(id = R.string.open_orders),
+                            color = MixinAppTheme.colors.textPrimary,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            limitOrders.forEach { order ->
+                                OpenOrderItem(order = order, onClick = { onLimitOrderClick(order.limitOrderId) })
+                            }
+                        }
+                    }
                 }
             },
             floating = {
@@ -309,5 +347,91 @@ fun LimitOrderContent(
             })
     } ?: run {
         Loading()
+    }
+}
+
+@Composable
+private fun OpenOrderItem(order: LimitOrder, onClick: () -> Unit) {
+    val viewModel = hiltViewModel<SwapViewModel>()
+    val fromToken by viewModel.assetItemFlow(order.assetId).collectAsStateWithLifecycle(null)
+    val toToken by viewModel.assetItemFlow(order.receiveAssetId).collectAsStateWithLifecycle(null)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.wrapContentSize()) {
+            CoilImage(
+                fromToken?.iconUrl,
+                modifier = Modifier
+                    .width(30.dp)
+                    .height(30.dp),
+                placeholder = R.drawable.ic_avatar_place_holder,
+            )
+            CoilImage(
+                toToken?.iconUrl,
+                modifier = Modifier
+                    .offset(x = 10.dp, y = 10.dp)
+                    .width(34.dp)
+                    .height(34.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, MixinAppTheme.colors.background, CircleShape),
+                placeholder = R.drawable.ic_avatar_place_holder,
+            )
+        }
+
+        Spacer(modifier = Modifier.width(22.dp))
+
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "${fromToken?.symbol ?: "..."} → ${toToken?.symbol ?: "..."}",
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = order.createdAt.fullDate(),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    textAlign = TextAlign.End
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "-${order.amount} ${fromToken?.symbol ?: "..."}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.walletRed,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "Price ${order.price}",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "+${order.expectedReceiveAmount} ${toToken?.symbol ?: "..."}",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.walletGreen,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = order.state.value.replaceFirstChar { it.uppercase() },
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                    color = when (order.state) {
+                        LimitOrderStatus.CREATED, LimitOrderStatus.PRICING, LimitOrderStatus.QUOTING -> MixinAppTheme.colors.textAssist
+                        LimitOrderStatus.SETTLED -> MixinAppTheme.colors.green
+                        else -> MixinAppTheme.colors.red
+                    }
+                )
+            }
+        }
     }
 }

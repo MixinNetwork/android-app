@@ -1,6 +1,6 @@
 @file:OptIn(FlowPreview::class)
 
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import PageScaffold
 import androidx.compose.foundation.background
@@ -98,6 +98,7 @@ fun TradePage(
     onDeposit: (SwapToken) -> Unit,
     onOrderList: () -> Unit,
     pop: () -> Unit,
+    onLimitOrderClick: (String) -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -141,6 +142,7 @@ fun TradePage(
                 onSelectToken = onSelectToken,
                 onLimitReview = onLimitReview,
                 onDeposit = onDeposit,
+                onLimitOrderClick = onLimitOrderClick,
             )
         }
     )

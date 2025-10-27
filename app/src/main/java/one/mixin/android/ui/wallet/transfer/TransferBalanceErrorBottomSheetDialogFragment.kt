@@ -13,7 +13,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransferBalanceErrorBottomSheetBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
@@ -21,9 +20,8 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet

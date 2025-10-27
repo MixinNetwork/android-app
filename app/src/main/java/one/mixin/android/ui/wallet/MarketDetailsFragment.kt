@@ -36,8 +36,8 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_INPUT
-import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
 import one.mixin.android.util.viewBinding

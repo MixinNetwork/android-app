@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.app.Dialog
 import android.os.Bundle
@@ -251,6 +251,9 @@ class TradeFragment : BaseFragment() {
                                         RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP_TRANSACTION))
                                     }
                                 },
+                                onLimitOrderClick = { orderId ->
+                                    navController.navigate("${TradeDestination.LimitOrderPage.name}/$orderId")
+                                },
                                 pop = {
                                     navigateUp(navController)
                                 }
@@ -265,7 +268,7 @@ class TradeFragment : BaseFragment() {
                                 pop = {
                                     navigateUp(navController)
                                 },
-                                onOrderClick = { orderId ->
+                                onOrderClick = { orderId, isLimitOrder ->
                                     navController.navigate("${TradeDestination.OrderDetail.name}/$orderId")
                                 }
                             )
@@ -307,7 +310,6 @@ class TradeFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob())
                             LimitOrderDetailPage(
-                                walletId = walletId,
                                 orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
                                 onShare = { payAssetId, receiveAssetId ->
                                     lifecycleScope.launch {

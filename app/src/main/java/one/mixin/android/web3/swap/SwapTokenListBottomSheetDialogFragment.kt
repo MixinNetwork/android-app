@@ -39,7 +39,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapViewModel
+import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentSwapTokens

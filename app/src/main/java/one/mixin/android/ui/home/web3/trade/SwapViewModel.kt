@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -36,6 +35,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SwapViewModel
+
     @Inject
     internal constructor(
         private val assetRepository: AssetRepository,
@@ -179,13 +179,7 @@ class SwapViewModel
         web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
     }
 
-    fun getLimitOrderById(orderId: String): Flow<LimitOrder?> {
-        // TODO: implement proper flow source (e.g. from repository)
-        return flowOf<LimitOrder?>(null)
-    }
-
-    fun getAssetById(assetId: String): Flow<TokenItem?> {
-        // TODO: implement proper flow source (e.g. from repository)
-        return flowOf<TokenItem?>(null)
+    fun assetItemFlow(assetId: String): Flow<TokenItem?> {
+        return tokenRepository.assetItemFlow(assetId)
     }
 }

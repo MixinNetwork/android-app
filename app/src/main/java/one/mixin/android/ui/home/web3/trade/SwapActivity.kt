@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.content.Context
 import android.content.Intent
@@ -8,11 +8,11 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_AMOUNT
-import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_INPUT
-import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_IN_MIXIN
-import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_OUTPUT
-import one.mixin.android.ui.home.web3.swap.TradeFragment.Companion.ARGS_REFERRAL
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_AMOUNT
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_IN_MIXIN
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_REFERRAL
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 

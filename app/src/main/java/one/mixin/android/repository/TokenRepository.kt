@@ -521,6 +521,8 @@ class TokenRepository
 
         fun assetItem(id: String) = tokenDao.assetItem(id)
 
+        fun assetItemFlow(id: String): Flow<TokenItem?> = tokenDao.assetItemFlow(id)
+
         suspend fun simpleAssetItem(id: String) = tokenDao.simpleAssetItem(id)
 
         fun assetItemsWithBalance() = tokenDao.assetItemsWithBalance()

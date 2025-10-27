@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

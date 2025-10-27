@@ -135,6 +135,10 @@ interface TokenDao : BaseDao<Token> {
     suspend fun simpleAssetItem(assetId: String): TokenItem?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
+    fun assetItemFlow(assetId: String): Flow<TokenItem?>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(): LiveData<List<TokenItem>>
 

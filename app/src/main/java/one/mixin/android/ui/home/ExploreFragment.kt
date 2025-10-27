@@ -2,7 +2,6 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -59,7 +58,7 @@ import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.bot.InternalReferral
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity

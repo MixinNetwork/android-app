@@ -1583,6 +1583,7 @@
     <string name="Pay">Pay</string>
     <string name="Received">received</string>
     <string name="Review_Order">Review Order</string>
+    <string name="open_orders">Open Orders</string>
     <string name="View_Transaction">View Transaction</string>
     <string name="Confirming_Transaction">Confirming Transaction</string>
     <string name="Transaction_Success">Transaction Success</string>
@@ -2153,4 +2154,10 @@
     <string name="Forever">Forever</string>
     <string name="Trade_Simple">Simple</string>
     <string name="Trade_Advanced">Advanced</string>
+    <string name="order_state_created">Created</string>
+    <string name="order_state_pricing">Pricing</string>
+    <string name="order_state_quoting">Quoting</string>
+    <string name="order_state_rejected">Rejected</string>
+    <string name="order_state_canceled">Canceled</string>
+    <string name="order_state_expired">Expired</string>
 </resources>

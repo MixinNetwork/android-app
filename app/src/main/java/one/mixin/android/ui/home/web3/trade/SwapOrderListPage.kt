@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import PageScaffold
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -158,7 +158,7 @@ fun SwapOrderListPage(
                         items(ordersInGroup) { order ->
                             OrderItem(
                                 order = order,
-                                .clickable { onOrderClick(order.orderId, order.type == "limit") }
+                                onClick = { onOrderClick(order.orderId, order.type == "limit") }
                             )
                         }
                     }

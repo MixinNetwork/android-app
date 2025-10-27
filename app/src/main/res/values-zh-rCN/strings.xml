@@ -1541,6 +1541,7 @@
     <string name="Pay">支付</string>
     <string name="Received">收到</string>
     <string name="Review_Order">预览订单</string>
+    <string name="open_orders">当前委托</string>
     <string name="View_Transaction">查看区块链浏览器</string>
     <string name="Confirming_Transaction">正在确认交易</string>
     <string name="Transaction_Success">交易成功</string>
@@ -2097,4 +2098,10 @@
     <string name="Forever">Forever</string>
     <string name="Trade_Simple">闪兑</string>
     <string name="Trade_Advanced">挂单</string>
+    <string name="order_state_created">已创建</string>
+    <string name="order_state_pricing">定价中</string>
+    <string name="order_state_quoting">报价中</string>
+    <string name="order_state_rejected">已拒绝</string>
+    <string name="order_state_canceled">已取消</string>
+    <string name="order_state_expired">已过期</string>
 </resources>

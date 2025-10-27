@@ -17,6 +17,7 @@ import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
 import one.mixin.android.vo.Plan
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import java.lang.reflect.Type
+import one.mixin.android.api.response.LimitOrderStatus
 
 object GsonHelper {
     val customGson: Gson =
@@ -26,6 +27,7 @@ object GsonHelper {
             .registerTypeHierarchyAdapter(WithdrawalMemoPossibility::class.java, WithdrawalMemoPossibilityAdapter())
             .registerTypeHierarchyAdapter(Plan::class.java, PlanAdapter())
             .registerTypeHierarchyAdapter(WalletDestination::class.java, WalletDestinationTypeAdapter())
+            .registerTypeHierarchyAdapter(LimitOrderStatus::class.java, LimitOrderStatusAdapter())
             .create()
 
     private class BitmapToBase64TypeAdapter : JsonSerializer<Bitmap>, JsonDeserializer<Bitmap> {
@@ -94,6 +96,23 @@ object GsonHelper {
             context: JsonSerializationContext,
         ): JsonElement {
             return JsonPrimitive(src.base64Encode())
+        }
+    }
+
+    private class LimitOrderStatusAdapter : JsonSerializer<LimitOrderStatus>, JsonDeserializer<LimitOrderStatus> {
+        override fun serialize(
+            src: LimitOrderStatus,
+            typeOfSrc: Type,
+            context: JsonSerializationContext,
+        ): JsonElement = JsonPrimitive(src.value)
+
+        override fun deserialize(
+            json: JsonElement?,
+            typeOfT: Type?,
+            context: JsonDeserializationContext?,
+        ): LimitOrderStatus {
+            val v = json?.asString?.trim()
+            return if (v.isNullOrEmpty()) LimitOrderStatus.UNKNOWN else LimitOrderStatus.fromString(v)
         }
     }
 }
