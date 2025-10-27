@@ -1026,6 +1026,9 @@ class MainActivity : BlazeBaseActivity() {
                 is NavigationController.Explore -> ExploreFragment()
                 is NavigationController.Market -> MarketFragment()
             }
+        } else if (fragment is WalletFragment){
+            // Ensure wallet fragment refreshes its content when switching back
+            fragment.update()
         }
 
         navigationController.navigate(fm, destination, fragment)
