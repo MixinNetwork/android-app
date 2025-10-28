@@ -19,6 +19,7 @@ import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -332,10 +333,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                     highValue.text = priceFormat(info.ath)
                     highTime.isVisible = true
-                    highTime.text = info.athDate
+                    highTime.text = info.athDate.dayTime()
                     lowValue.text = priceFormat(info.atl)
                     lowTime.isVisible = true
-                    lowTime.text = info.atlDate
+                    lowTime.text = info.atlDate.dayTime()
 
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)

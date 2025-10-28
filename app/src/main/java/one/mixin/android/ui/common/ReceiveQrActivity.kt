@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.jakewharton.rxbinding3.view.preDraws
 import com.uber.autodispose.android.lifecycle.autoDispose
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,6 +21,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.ActivityReceiveQrBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.heavyClickVibrate
@@ -145,10 +148,10 @@ class ReceiveQrActivity : BaseActivity() {
                 numberTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
                 badgeView.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
                 badgeView.pos = BadgeCircleImageView.END_BOTTOM
-                qr.post {
+                qr.doOnPreDraw {
                     Observable.create<Pair<Bitmap, Int>> { e ->
                         val code = "${Constants.Scheme.HTTPS_PAY}/${user.userId}"
-                        val r = code.generateQRCode(binding.qrFl.measuredWidth)
+                        val r = code.generateQRCode(qrFl.measuredWidth, innerPadding = 48.dp)
                         e.onNext(r)
                     }.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())

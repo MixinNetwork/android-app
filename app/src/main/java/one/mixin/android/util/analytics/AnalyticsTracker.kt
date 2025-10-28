@@ -33,8 +33,8 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent("sign_up_fullname", null)
     }
 
-    fun trackLoginSignalInit() {
-        firebaseAnalytics.logEvent("login_signal_init", null)
+    fun trackSignalInit() {
+        firebaseAnalytics.logEvent("signal_init", null)
     }
 
     fun trackSignUpPinSet() {

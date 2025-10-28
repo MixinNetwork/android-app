@@ -66,7 +66,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().isOnline.set(true)
-        AnalyticsTracker.trackLoginSignalInit()
+        AnalyticsTracker.trackSignalInit()
         checkAndLoad()
     }
 

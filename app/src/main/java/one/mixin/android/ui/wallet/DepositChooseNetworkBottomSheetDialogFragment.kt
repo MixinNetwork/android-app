@@ -39,13 +39,13 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         requireArguments().getParcelableCompat(ASSET, TokenItem::class.java)
     }
 
-    private val networkName by lazy {
-        requireArguments().getString(NAME)
+    private val chainName by lazy {
+        requireArguments().getString(NAME) ?: asset?.chainName
     }
 
     private val binding by viewBinding(FragmentDepositChooseNetworkBottomSheetBinding::inflate)
 
-    private val adapter by lazy { AssetAdapter(networkName) }
+    private val adapter by lazy { AssetAdapter(chainName) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
