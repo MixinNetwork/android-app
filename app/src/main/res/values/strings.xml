@@ -2160,4 +2160,9 @@
     <string name="order_state_rejected">Rejected</string>
     <string name="order_state_canceled">Canceled</string>
     <string name="order_state_expired">Expired</string>
+    <string name="market_price">Market</string>
+    <string name="expiry">Expiry</string>
+    <string name="forever">Forever</string>
+    <string name="no_order">NO ORDERS</string>
+    <string name="Filled">Filled</string>
 </resources>

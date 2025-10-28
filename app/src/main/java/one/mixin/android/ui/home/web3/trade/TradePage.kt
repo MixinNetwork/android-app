@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,6 +72,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.launch
@@ -298,7 +298,7 @@ fun InputArea(
     text: String,
     title: String,
     readOnly: Boolean,
-    selectClick: () -> Unit,
+    selectClick: (() -> Unit)?,
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
@@ -338,24 +338,9 @@ fun InputArea(
         Box(modifier = Modifier.height(10.dp))
         InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
         if (showTokenInfo) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 token?.let { t->
-                    Text(
-                        text = stringResource(id = R.string.Deposit),
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textBlue,
-                        ),
-                        modifier = Modifier
-                            .alpha(
-                                if (!readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()
-                                        ?.compareTo(BigDecimal.ZERO) ?: 0) == 0
-                                ) 1f
-                                else 0f
-                            )
-                            .clickable { onDeposit?.invoke(t) },
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    val depositVisible = !readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0
                     Icon(
                         painter = painterResource(id = R.drawable.ic_web3_wallet),
                         contentDescription = null,
@@ -371,9 +356,30 @@ fun InputArea(
                         style = TextStyle(
                             fontSize = 12.sp,
                             color = MixinAppTheme.colors.textAssist,
-                            textAlign = TextAlign.End,
+                            textAlign = TextAlign.Start,
                         ),
                         modifier = Modifier.clickable { onMax?.invoke() }
+                    )
+                    if (depositVisible) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(id = R.string.Deposit),
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                color = MixinAppTheme.colors.textBlue,
+                            ),
+                            modifier = Modifier.clickable { onDeposit?.invoke(t) },
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = token.name,
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            textAlign = TextAlign.Start,
+                        )
                     )
                 } ?: run {
                     Text(
@@ -381,7 +387,7 @@ fun InputArea(
                         style = TextStyle(
                             fontSize = 12.sp,
                             color = MixinAppTheme.colors.textAssist,
-                            textAlign = TextAlign.End,
+                            textAlign = TextAlign.Start,
                         ),
                     )
                 }

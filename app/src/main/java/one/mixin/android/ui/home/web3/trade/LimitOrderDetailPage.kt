@@ -178,6 +178,7 @@ fun LimitOrderDetailPage(
                                         LimitOrderStatus.FAILED, LimitOrderStatus.CANCELLED, LimitOrderStatus.EXPIRED -> MixinAppTheme.colors.walletRed.copy(
                                             alpha = 0.2f
                                         )
+
                                         else -> MixinAppTheme.colors.textMinor.copy(alpha = 0.2f)
                                     }
                                 )
@@ -312,6 +313,26 @@ fun LimitOrderDetailPage(
                             payAsset?.symbol ?: "",
                             receiveAsset?.symbol ?: ""
                         )
+                        run {
+                            val filledReceive = runCatching { BigDecimal(limitOrder.filledReceiveAmount) }.getOrDefault(BigDecimal.ZERO)
+                            val expectedReceive = runCatching { BigDecimal(limitOrder.expectedReceiveAmount) }.getOrDefault(BigDecimal.ZERO)
+                            val percentStr = if (expectedReceive > BigDecimal.ZERO) {
+                                filledReceive
+                                    .divide(expectedReceive, 6, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal(100))
+                                    .setScale(2, RoundingMode.HALF_UP)
+                                    .stripTrailingZeros()
+                                    .toPlainString()
+                            } else {
+                                "0"
+                            }
+                            val endText = "${filledReceive.stripTrailingZeros().toPlainString()} ${payAsset?.symbol ?: ""}"
+                            DetailItem(
+                                label = stringResource(R.string.Filled).uppercase(),
+                                value = "$percentStr%",
+                                end = endText,
+                            )
+                        }
                         DetailItem(
                             label = stringResource(R.string.Type).uppercase(),
                             value = context.getString(R.string.order_type_limit),
@@ -364,7 +385,7 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 $paySymbol ≈ ${BigDecimal(orderItem.expectedReceiveAmount).divide(BigDecimal(orderItem.amount), 8, RoundingMode.HALF_UP)} $receiveSymbol" }.getOrDefault("N/A"),
+            text = runCatching { "1 $paySymbol ≈ ${BigDecimal(orderItem.expectedReceiveAmount).divide(BigDecimal(orderItem.amount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $receiveSymbol" }.getOrDefault("N/A"),
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,
@@ -373,7 +394,45 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 $receiveSymbol ≈ ${BigDecimal(orderItem.amount).divide(BigDecimal(orderItem.expectedReceiveAmount), 8, RoundingMode.HALF_UP)} $paySymbol" }.getOrDefault("N/A"),
+            text = runCatching { "1 $receiveSymbol ≈ ${BigDecimal(orderItem.amount).divide(BigDecimal(orderItem.expectedReceiveAmount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $paySymbol" }.getOrDefault("N/A"),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Normal,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+    }
+}
+
+@Composable
+private fun DetailItem(
+    label: String,
+    value: String,
+    end: String,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 20.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = value,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = end,
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,

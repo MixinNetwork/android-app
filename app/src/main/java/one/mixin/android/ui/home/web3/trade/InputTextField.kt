@@ -58,7 +58,7 @@ import java.math.BigDecimal
 fun InputContent(
     token: SwapToken?,
     text: String,
-    selectClick: () -> Unit,
+    selectClick: (() -> Unit)?,
     onInputChanged: ((String) -> Unit)? = null,
     readOnly: Boolean = false,
 ) {
@@ -119,7 +119,9 @@ fun InputContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
                     BasicTextField(
                         value = textFieldValue,
@@ -179,9 +181,9 @@ fun InputContent(
 @Composable
 private fun Right(
     token: SwapToken?,
-    selectClick: () -> Unit,
+    selectClick: (() -> Unit)? = null,
 ) {
-    Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick?.invoke() }, verticalAlignment = Alignment.CenterVertically) {
         if (token?.collectionHash != null) {
             CoilImage(
                 model = ImageRequest.Builder(LocalContext.current).data(token.icon).transformations(CoilRoundedHexagonTransformation()).build(),
@@ -226,11 +228,13 @@ private fun Right(
                 stepSize = 1.sp
             )
         )
-        Box(modifier = Modifier.width(8.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.ic_web3_drop_down),
-            contentDescription = null,
-            tint = MixinAppTheme.colors.iconGray,
-        )
+        if (selectClick != null) {
+            Box(modifier = Modifier.width(8.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_web3_drop_down),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.iconGray,
+            )
+        }
     }
 }

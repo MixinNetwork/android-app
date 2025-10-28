@@ -83,6 +83,8 @@ data class LimitOrder(
     val amount: String,
     @SerializedName("pending_amount")
     val pendingAmount: String,
+    @SerializedName("filled_receive_amount")
+    val filledReceiveAmount: String,
     @SerializedName("expected_receive_amount")
     val expectedReceiveAmount: String,
     @SerializedName("price")
