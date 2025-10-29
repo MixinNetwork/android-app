@@ -2165,4 +2165,11 @@
     <string name="forever">Forever</string>
     <string name="no_order">NO ORDERS</string>
     <string name="Filled">Filled</string>
+    <string name="expiry_never">Never</string>
+    <string name="expiry_10_min">10 minutes</string>
+    <string name="expiry_1_hour">1 hour</string>
+    <string name="expiry_1_day">1 day</string>
+    <string name="expiry_3_days">3 days</string>
+    <string name="expiry_1_week">1 week</string>
+    <string name="expiry_1_month">1 month</string>
 </resources>
