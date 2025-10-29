@@ -75,11 +75,6 @@ import java.time.Duration
 import java.time.Instant
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.Divider
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import one.mixin.android.api.response.LimitOrder
@@ -91,7 +86,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 enum class FocusedField { NONE, AMOUNT, PRICE }
 
-enum class ExpiryOption(@StringRes val labelRes: Int) {
+enum class ExpiryOption(@get:StringRes val labelRes: Int) {
     NEVER(R.string.expiry_never), MIN_10(R.string.expiry_10_min), HOUR_1(R.string.expiry_1_hour), DAY_1(R.string.expiry_1_day), DAY_3(R.string.expiry_3_days), WEEK_1(R.string.expiry_1_week), MONTH_1(R.string.expiry_1_month);
 
     fun toDuration(): Duration {
@@ -190,7 +185,7 @@ fun LimitOrderContent(
                     .verticalScroll(rememberScrollState())
                     .imePadding(),
             ) {
-                SwapLayout(
+                TradeLayout(
                     centerCompose = {
                         Box(
                             modifier = Modifier
@@ -256,30 +251,27 @@ fun LimitOrderContent(
                             onDeposit = null,
                         )
                     },
+                    tailCompose = {
+                        InputArea(
+                            modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) focusedField = FocusedField.PRICE
+                            },
+                            token = toToken,
+                            text = limitPriceText,
+                            title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
+                            readOnly = false,
+                            selectClick = null,
+                            onInputChanged = { limitPriceText = it },
+                            showTokenInfo = false,
+                        )
+                    },
                     margin = 6.dp,
                 )
 
-                Spacer(modifier = Modifier.height(2.dp))
-                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    InputArea(
-                        modifier = Modifier.onFocusChanged {
-                            if (it.isFocused) focusedField = FocusedField.PRICE
-                        },
-                        token = toToken,
-                        text = limitPriceText,
-                        title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
-                        readOnly = false,
-                        selectClick = null,
-                        onInputChanged = { limitPriceText = it },
-                        showTokenInfo = false,
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 if (inputText.isBlank()) {
                     if (limitOrders.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
                         Column(
                             modifier = Modifier
                                 .padding(horizontal = 20.dp)
@@ -289,16 +281,14 @@ fun LimitOrderContent(
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                                 .padding(16.dp),
                         ) {
-                            Text(
-                                text = stringResource(id = R.string.open_orders), color = MixinAppTheme.colors.textPrimary, modifier = Modifier.padding(horizontal = 20.dp)
-                            )
+                            Text(text = stringResource(id = R.string.open_orders), color = MixinAppTheme.colors.textPrimary)
                             Spacer(modifier = Modifier.height(8.dp))
                             limitOrders.forEach { order ->
                                 OpenOrderItem(order = order, onClick = { onLimitOrderClick(order.limitOrderId) })
                             }
                         }
                     } else {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
                         Column(
                             modifier = Modifier
                                 .padding(horizontal = 20.dp)
@@ -308,9 +298,7 @@ fun LimitOrderContent(
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                                 .padding(16.dp),
                         ) {
-                            Text(
-                                text = stringResource(id = R.string.open_orders), color = MixinAppTheme.colors.textPrimary, modifier = Modifier.padding(horizontal = 20.dp)
-                            )
+                            Text(text = stringResource(id = R.string.open_orders), color = MixinAppTheme.colors.textPrimary)
                             Spacer(modifier = Modifier.height(8.dp))
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_empty_file), contentDescription = null, tint = MixinAppTheme.colors.iconGray, modifier = Modifier

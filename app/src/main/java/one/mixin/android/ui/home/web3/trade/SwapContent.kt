@@ -174,7 +174,7 @@ fun SwapContent(
                         .verticalScroll(rememberScrollState())
                         .imePadding(),
                 ) {
-                    SwapLayout(
+                    TradeLayout(
                         centerCompose = {
                             Box(
                                 modifier = Modifier

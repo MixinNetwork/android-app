@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -622,10 +621,11 @@ fun InputAction(
 }
 
 @Composable
-fun SwapLayout(
+fun TradeLayout(
     headerCompose: @Composable () -> Unit,
     bottomCompose: @Composable () -> Unit,
     centerCompose: @Composable () -> Unit,
+    tailCompose: (@Composable () -> Unit)? = null,
     margin: Dp,
 ) {
     ConstraintLayout(
@@ -635,12 +635,11 @@ fun SwapLayout(
                 .wrapContentWidth()
                 .padding(horizontal = 20.dp, vertical = margin),
     ) {
-        val (headerRef, bottomRef, centerRef) = createRefs()
+        val (headerRef, bottomRef, centerRef, tailRef) = createRefs()
         Box(
             modifier =
                 Modifier.constrainAs(headerRef) {
                     top.linkTo(parent.top)
-                    bottom.linkTo(bottomRef.top, margin)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 },
@@ -650,8 +649,7 @@ fun SwapLayout(
         Box(
             modifier =
                 Modifier.constrainAs(bottomRef) {
-                    top.linkTo(parent.bottom)
-                    bottom.linkTo(headerRef.bottom, margin)
+                    top.linkTo(headerRef.bottom, margin)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 },
@@ -669,13 +667,26 @@ fun SwapLayout(
         ) {
             centerCompose()
         }
+
+        if (tailCompose != null) {
+            Box(
+                modifier =
+                    Modifier.constrainAs(tailRef) {
+                        top.linkTo(bottomRef.bottom, margin)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    },
+            ) {
+                tailCompose()
+            }
+        }
     }
 }
 
 @Preview
 @Composable
-fun SwapLayoutPreview() {
-    SwapLayout(
+fun TradeLayoutPreview() {
+    TradeLayout(
         headerCompose = {
             Box(
                 modifier =
