@@ -338,7 +338,7 @@ fun TransferDestinationInputPage(
                                     R.string.send_to_mixin_contact_description,
                                     onClick = {
                                         toContact.invoke()
-                                    }, false
+                                    }, true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
@@ -347,7 +347,7 @@ fun TransferDestinationInputPage(
                                     R.drawable.ic_destination_wallet,
                                     R.string.My_Wallet,
                                     stringResource(R.string.send_to_my_wallet_description),
-                                    free = false,
+                                    free = true,
                                     onClick = {
                                         toWallet.invoke(web3Token.walletId)
                                     },
@@ -364,6 +364,7 @@ fun TransferDestinationInputPage(
                                     onClick = {
                                         toWallet.invoke(null)
                                     },
+                                    free = true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
