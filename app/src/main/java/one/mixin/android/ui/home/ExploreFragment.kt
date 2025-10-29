@@ -512,18 +512,14 @@ class ExploreFragment : BaseFragment() {
                     if (app == InternalReferral) {
                         lottie.setImageDrawable(
                             RLottieDrawable(
-                                if (root.context.isNightMode()) {
-                                    R.raw.referral_night
-                                } else {
-                                    R.raw.referral
-                                },
+                                R.raw.referral,
                                 "referral",
                                 35.dp,
                                 35.dp,
                             ).apply {
                                 setAllowDecodeSingleFrame(true)
                                 setAutoRepeat(1)
-                                setAutoRepeatCount(Int.MAX_VALUE)
+                                setAutoRepeatCount(3)
                                 start()
                             },
                         )
