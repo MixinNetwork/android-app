@@ -46,6 +46,7 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
+import one.mixin.android.widget.BadgeCircleImageView
 import java.io.File
 import java.io.FileOutputStream
 
@@ -188,7 +189,11 @@ class DepositShareActivity : BaseActivity() {
                 val qrCode = addr.generateQRCode(200.dp, innerPadding = 20.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
                 binding.icon.bg.loadImage(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
-                binding.icon.badge.isVisible = false
+                binding.icon.bg.borderWidth = 2.dp
+                binding.icon.badge.borderWidth = 0
+                binding.icon.badge.borderColor = Color.WHITE
+                binding.icon.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
+                binding.icon.pos = BadgeCircleImageView.END_BOTTOM
             }
             binding.bottomTv.isVisible = true
             if (hasToken) {

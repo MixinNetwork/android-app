@@ -109,7 +109,7 @@ buildscript {
         ext.composeVersion = '1.9.4'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
-        ext.sol4kVersion = '0.5.17'
+        ext.sol4kVersion = '0.5.18'
 
         ext.sumsubVersion = '1.38.0'
         ext.checkoutFramesVersion = '4.2.3'
@@ -124,7 +124,7 @@ buildscript {
         ext.installreferrerVersion ='2.2'
         ext.billingVersion ='8.0.0'
 
-        ext.lottieComposeVersion = '6.6.10'
+        ext.lottieComposeVersion = '6.7.0'
         ext.composeBomVersion = '2025.10.01'
         ext.activityComposeVersion = '1.11.0'
         ext.web3jCoreVersion = '4.11.0'
