@@ -114,7 +114,8 @@ fun InputAmountFlow(
 
     val walletViewModel: WalletViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
-    var resolvedDepositUri by remember { mutableStateOf<String?>(null) }
+    var resolvedDepositUri by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     NavHost(
         navController = navController,
@@ -130,16 +131,19 @@ fun InputAmountFlow(
                 onDeleteClick = onDeleteClick,
                 onSwitchClick = onSwitchClick,
                 onContinueClick = {
+                    if (isLoading) return@InputAmountScreen
                     val amountOnly = tokenAmount.split(" ").first()
                     if (tokenChainId == ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
                         scope.launch {
+                            isLoading = true
                             val dep = try {
                                 walletViewModel.createDepositWithAmount(tokenChainId, tokenAssetId, amountOnly)
                             } catch (_: Exception) {
                                 null
                             }
                             resolvedDepositUri = dep?.destination.orEmpty()
-                            if (resolvedDepositUri.isNullOrEmpty().not()) {
+                            isLoading = false
+                            if (resolvedDepositUri.isNotEmpty()) {
                                 navController.navigate(InputAmountDestinations.PREVIEW)
                             }
                         }
@@ -150,6 +154,7 @@ fun InputAmountFlow(
                 onCloseClick = onCloseClick,
                 minimum = minimum,
                 maximum = maximum,
+                isLoading = isLoading,
             )
         }
 
@@ -191,6 +196,7 @@ fun InputAmountScreen(
     modifier: Modifier = Modifier,
     minimum: BigDecimal? = null,
     maximum: BigDecimal? = null,
+    isLoading: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -298,18 +304,31 @@ fun InputAmountScreen(
         val withinMax = maximum?.let { if (it.compareTo(BigDecimal.ZERO) == 0) true else entered <= it } ?: true
         val canContinue = (inputAmount.toFloatOrNull() ?: 0f) > 0f && withinMin && withinMax
 
-        ActionButton(
-            text = stringResource(id = R.string.Review),
-            onClick = onContinueClick,
-            backgroundColor = MixinAppTheme.colors.accent,
-            contentColor = Color.White,
-            enabled = canContinue,
-            disabledContentColor = Color.White,
-            disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 48.dp)
-        )
+                .height(48.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (!isLoading) {
+                ActionButton(
+                    text = stringResource(id = R.string.Review),
+                    onClick = onContinueClick,
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    enabled = canContinue,
+                    disabledContentColor = Color.White,
+                    disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MixinAppTheme.colors.accent
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
     }
