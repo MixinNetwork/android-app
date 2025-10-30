@@ -75,6 +75,8 @@ import java.time.Duration
 import java.time.Instant
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import one.mixin.android.api.response.LimitOrder
@@ -245,7 +247,7 @@ fun LimitOrderContent(
                             modifier = Modifier,
                             token = toToken,
                             text = outputText,
-                            title = stringResource(id = R.string.Price),
+                            title = stringResource(id = R.string.swap_receive),
                             readOnly = true,
                             selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
                             onDeposit = null,
@@ -299,16 +301,27 @@ fun LimitOrderContent(
                                 .padding(16.dp),
                         ) {
                             Text(text = stringResource(id = R.string.open_orders), color = MixinAppTheme.colors.textPrimary)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_empty_file), contentDescription = null, tint = MixinAppTheme.colors.iconGray, modifier = Modifier
-                                    .padding(vertical = 40.dp)
-                                    .align(Alignment.CenterHorizontally)
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = stringResource(id = R.string.no_order), color = MixinAppTheme.colors.textAssist, modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .heightIn(min = 120.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_empty_file),
+                                        contentDescription = null,
+                                        tint = MixinAppTheme.colors.iconGray,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = stringResource(id = R.string.no_order),
+                                        color = MixinAppTheme.colors.textAssist,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                }
+                            }
                         }
                     }
                 } else {

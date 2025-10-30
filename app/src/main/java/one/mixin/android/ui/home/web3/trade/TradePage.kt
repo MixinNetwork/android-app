@@ -237,7 +237,7 @@ fun TradePage(
                     }
                 }
             }
-
+            Spacer(modifier = Modifier.height(6.dp))
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
