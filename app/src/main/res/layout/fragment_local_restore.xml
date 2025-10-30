@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:background="?attr/bg_white"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical">
 
     <ImageView
         android:id="@+id/restore_icon"

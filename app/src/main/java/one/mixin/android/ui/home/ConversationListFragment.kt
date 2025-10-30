@@ -77,7 +77,6 @@ import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.ErrorHandler.Companion.handleError
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.markdown.MarkwonUtil

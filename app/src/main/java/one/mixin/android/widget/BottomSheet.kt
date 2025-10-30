@@ -32,7 +32,12 @@ import android.widget.TextView
 import androidx.activity.ComponentDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updateMargins
+import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.displayMetrics
@@ -89,6 +94,26 @@ class BottomSheet(
                 }
             }
         }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        window?.let {
+            WindowCompat.setDecorFitsSystemWindows(it, false)
+        }
+
+        findViewById<View>(com.google.android.material.R.id.container)?.apply {
+            fitsSystemWindows = false
+            doOnApplyWindowInsets(this) { insetView, windowInsets, initialMargins ->
+                insetView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    updateMargins(top = initialMargins.top + windowInsets.getInsets(systemBars()).top)
+                }
+                windowInsets
+            }
+        }
+
+        findViewById<View>(com.google.android.material.R.id.coordinator)?.fitsSystemWindows = false
+    }
 
     private inner class ContainerView(context: Context) : FrameLayout(context) {
         @SuppressLint("ClickableViewAccessibility")
@@ -180,7 +205,6 @@ class BottomSheet(
                 or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
         )
         container.background = backDrawable
-        container.fitsSystemWindows = true
         container.setOnApplyWindowInsetsListener { v, insets ->
             lastInsets = insets
             v.requestLayout()
@@ -194,7 +218,6 @@ class BottomSheet(
         super.onCreate(savedInstanceState)
         window?.setWindowAnimations(R.style.DialogNoAnimation)
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-        sheetContainer.fitsSystemWindows = true
         sheetContainer.visibility = INVISIBLE
         container.addView(sheetContainer, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.BOTTOM))
         window?.let { window ->

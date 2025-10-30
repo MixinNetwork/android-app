@@ -44,6 +44,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
@@ -151,6 +152,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             translationOffset = (peekHeight - root.measuredHeight).toFloat()
             binding.participants.translationY = translationOffset
             binding.bottomLayout.translationY = translationOffset
+            binding.root.setPadding(0,0,0, root.getSafeAreaInsetsBottom())
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
         behavior.addBottomSheetCallback(
