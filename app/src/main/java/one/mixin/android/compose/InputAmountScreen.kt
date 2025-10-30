@@ -70,6 +70,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
+import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.pow
@@ -78,16 +80,6 @@ import one.mixin.android.extension.dp as dip
 object InputAmountDestinations {
     const val INPUT = "input"
     const val PREVIEW = "preview"
-}
-
-private fun abbreviateMiddle(text: String, maxChars: Int): String {
-    if (maxChars <= 0) return ""
-    if (text.length <= maxChars) return text
-    if (maxChars <= 3) return text.take(maxChars)
-    val keep = maxChars - 3
-    val head = keep / 2
-    val tail = keep - head
-    return text.take(head) + "..." + text.takeLast(tail)
 }
 
 @Composable
@@ -122,7 +114,7 @@ fun InputAmountFlow(
 
     val walletViewModel: WalletViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
-    var resolvedDepositUri by remember { mutableStateOf("") }
+    var resolvedDepositUri by remember { mutableStateOf<String?>(null) }
 
     NavHost(
         navController = navController,
@@ -147,7 +139,7 @@ fun InputAmountFlow(
                                 null
                             }
                             resolvedDepositUri = dep?.destination.orEmpty()
-                            if (resolvedDepositUri.isNotEmpty()) {
+                            if (resolvedDepositUri.isNullOrEmpty().not()) {
                                 navController.navigate(InputAmountDestinations.PREVIEW)
                             }
                         }
@@ -639,8 +631,7 @@ fun InputAmountPreviewScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        bitmap = (depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first?.asImageBitmap())
-                            ?: generateQrCodeBitmap(
+                        bitmap = depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first?.asImageBitmap() ?: generateQrCodeBitmap(
                             assetId = tokenAssetId,
                             chainId = tokenChainId,
                             assetKey = tokenAssetKey,
@@ -693,10 +684,12 @@ fun InputAmountPreviewScreen(
                         color = MixinAppTheme.colors.textAssist,
                     )
 
-                    Text(
-                        text = abbreviateMiddle(addr, 180),
+                    AutoSizeText(
+                        text = addr,
+                        maxLines = 6,
                         color = MixinAppTheme.colors.textPrimary,
                         fontSize = 16.sp,
+                        constraint = AutoSizeConstraint.Height(min = 10.sp),
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(

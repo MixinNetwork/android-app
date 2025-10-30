@@ -416,7 +416,7 @@ class DepositFragment : BaseFragment() {
                     binding.amount.setOnClickListener {
                         InputAmountBottomSheetDialogFragment.newInstance(
                             asset,
-                            depositEntry.destination,
+                            if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) null else depositEntry.destination,
                             minimum = depositEntry.minimum,
                             maximum = depositEntry.maximum,
                         ).apply {
