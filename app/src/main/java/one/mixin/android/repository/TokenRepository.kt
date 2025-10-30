@@ -248,6 +248,7 @@ class TokenRepository
                     invokeNetwork = {
                         utxoService.createDeposit(
                             DepositEntryRequest(chainId, assetId),
+                            null,
                         )
                     },
                     failureBlock = {
@@ -272,6 +273,22 @@ class TokenRepository
                     },
                 )
             return Pair(depositEntry, code)
+        }
+
+        suspend fun createDepositWithAmount(chainId: String, assetId: String, amount: String): DepositEntry? {
+            val resp = utxoService.createDeposit(DepositEntryRequest(chainId, assetId), amount)
+            val pubs = SAFE_PUBLIC_KEY.map { it.hexStringToByteArray() }
+            val list = resp.data?.filter {
+                val message =
+                    if (it.tag.isNullOrBlank()) {
+                        it.destination
+                    } else {
+                        "${it.destination}:${it.tag}"
+                    }.toByteArray().sha3Sum256()
+                val signature = it.signature.hexStringToByteArray()
+                pubs.any { pub -> verifyCurve25519Signature(message, signature, pub) }
+            }
+            return list?.find { it.isPrimary }
         }
 
         suspend fun findDepositEntry(chainId: String) = depositDao.findDepositEntry(chainId)

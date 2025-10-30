@@ -231,6 +231,11 @@ internal constructor(
             tokenRepository.findAndSyncDepositEntry(chainId, assetId)
         }
 
+    suspend fun createDepositWithAmount(chainId: String, assetId: String, amount: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.createDepositWithAmount(chainId, assetId, amount)
+        }
+
     suspend fun syncNoExistAsset(assetIds: List<String>) =
         withContext(Dispatchers.IO) {
             assetIds.forEach { id ->

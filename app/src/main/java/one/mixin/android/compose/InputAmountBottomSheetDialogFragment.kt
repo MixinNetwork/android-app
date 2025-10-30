@@ -52,18 +52,24 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
         private const val ARGS_TOKEN = "args_token"
         private const val ARGS_WEB3_TOKEN = "args_web3_token"
         private const val ARGS_ADDRESS = "args_address"
+        private const val ARGS_MINIMUM = "args_minimum"
+        private const val ARGS_MAXIMUM = "args_maximum"
 
         fun newInstance(
             token: TokenItem,
-            address: String? = null
+            address: String? = null,
+            minimum: String? = null,
+            maximum: String? = null,
         ) = InputAmountBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_TOKEN, token)
             putString(ARGS_ADDRESS, address)
+            putString(ARGS_MINIMUM, minimum)
+            putString(ARGS_MAXIMUM, maximum)
         }
 
         fun newInstance(
             web3Token: Web3TokenItem,
-            address: String? = null
+            address: String? = null,
         ) = InputAmountBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_WEB3_TOKEN, web3Token)
             putString(ARGS_ADDRESS, address)
@@ -81,6 +87,9 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val address by lazy {
         requireArguments().getString(ARGS_ADDRESS)
     }
+
+    private val minimum by lazy { requireArguments().getString(ARGS_MINIMUM) }
+    private val maximum by lazy { requireArguments().getString(ARGS_MAXIMUM) }
 
     // Calculate USD price from token
     private val price by lazy {
@@ -142,6 +151,8 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setContent {
                 var inputAmount by remember { mutableStateOf("0") }
                 var isPrimaryMode by remember { mutableStateOf(true) }
+                val minValue = remember(minimum) { minimum?.toBigDecimalOrNull() }
+                val maxValue = remember(maximum) { maximum?.toBigDecimalOrNull() }
 
                 val formattedPrimaryAmount = remember(inputAmount, isPrimaryMode) {
                     if (isPrimaryMode) {
@@ -180,6 +191,8 @@ class InputAmountBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         token = token,
                         web3Token = web3Token,
                         address = address,
+                        minimum = minValue,
+                        maximum = maxValue,
                         onNumberClick = { number ->
                             val currentCurrency = if (isPrimaryMode) null else Fiats.getAccountCurrencyAppearance()
                             inputAmount = AmountInputHandler.handleNumberInput(inputAmount, number, isPrimaryMode, currentCurrency)

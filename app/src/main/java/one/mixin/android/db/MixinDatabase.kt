@@ -67,6 +67,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_63_64
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_64_65
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_65_66
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_66_67
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_67_68
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
 import one.mixin.android.db.converter.MembershipConverter
@@ -383,6 +384,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_64_65,
                                 MIGRATION_65_66,
                                 MIGRATION_66_67,
+                                MIGRATION_67_68,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

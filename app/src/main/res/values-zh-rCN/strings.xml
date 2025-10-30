@@ -2055,6 +2055,7 @@
     <string name="Set_Amount">设置金额</string>
     <string name="BLOCK_CONFIRMATIONS">最小区块确认</string>
     <string name="MINIMUM_DEPOSIT">最小充值数</string>
+    <string name="MAXIMUM_DEPOSIT">最大充值数</string>
     <string name="Deposit_to_Mixin">充值 %1$s 到 Mixin</string>
     <string name="Deposit_to_Mixin_sub">扫码充值 %1$s</string>
     <string name="LIGHTNING_ADDRESS">闪电网络地址</string>

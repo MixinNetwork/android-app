@@ -30,6 +30,7 @@ interface UtxoService {
     @POST("safe/deposit/entries")
     suspend fun createDeposit(
         @Body depositEntryRequest: DepositEntryRequest,
+        @Query("amount") amount: String? = null,
     ): MixinResponse<List<DepositEntry>>
 
     @POST("safe/users")
