@@ -40,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -102,6 +103,8 @@ fun BrowserPage(
     title: String?,
     errorInfo: String?,
     insufficientGas: Boolean,
+    isFeeWaived: Boolean,
+    onFreeClick: () -> Unit,
     showPin: () -> Unit,
     onPreviewMessage: (String) -> Unit,
     onDismissRequest: () -> Unit,
@@ -327,12 +330,16 @@ fun BrowserPage(
                     FeeInfo(
                         amount = "$fee",
                         fee = fee.multiply(asset.priceUSD()),
+                        isFree = isFeeWaived,
+                        onFreeClick = onFreeClick,
                     )
                 } else {
                     FeeInfo(
                         amount = "$fee ${asset?.symbol ?: ""}",
                         fee = fee.multiply(asset.priceUSD()),
                         gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
+                        isFree = isFeeWaived,
+                        onFreeClick = onFreeClick,
                     )
                 }
                 if (url != null && title != null) {

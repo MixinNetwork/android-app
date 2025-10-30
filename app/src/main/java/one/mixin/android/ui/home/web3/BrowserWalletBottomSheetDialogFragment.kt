@@ -57,6 +57,7 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
@@ -95,6 +96,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_TO_USER = "args_to_user"
+        const val ARGS_IS_FEE_FREE = "args_is_fee_free"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -104,7 +106,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token: Web3TokenItem? = null,
             chainToken: Web3TokenItem? = null,
             toAddress: String? = null,
-            toUser: User? = null
+            toUser: User? = null,
+            isFeeWaived: Boolean = false,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(
@@ -119,6 +122,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             chainToken?.let { putParcelable(ARGS_CHAIN_TOKEN, it) }
             toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
             toUser?.let { putParcelable(ARGS_TO_USER, it) }
+            putBoolean(ARGS_IS_FEE_FREE, isFeeWaived)
         }
     }
 
@@ -141,6 +145,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val toUser by lazy {
         requireArguments().getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
+    private val isFeeWaived by lazy { requireArguments().getBoolean(ARGS_IS_FEE_FREE, false) }
     private val currentChain by lazy {
         token?.getChainFromName() ?: Web3Signer.currentChain
     }
@@ -200,6 +205,12 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         title,
                         errorInfo,
                         insufficientGas,
+                        isFeeWaived = isFeeWaived,
+                        onFreeClick = {
+                            CrossWalletFeeFreeBottomSheetDialogFragment
+                                .newInstance()
+                                .show(parentFragmentManager, CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
+                        },
                         onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                         showPin = { showPin() },
                         onDismissRequest = { dismiss() },
@@ -568,9 +579,10 @@ fun showBrowserBottomSheetDialogFragment(
     onDone: ((String?) -> Unit)? = null,
     onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
-    toUser: User? = null
+    toUser: User? = null,
+    isFeeWaived: Boolean = false,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser, isFeeWaived)
     onDismiss?.let {
         wcBottomSheet.setOnDismiss(onDismiss)
     }

@@ -72,6 +72,7 @@ import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
+import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
@@ -209,6 +210,17 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.content.render(t) { user ->
                     if (user.userId == Session.getAccountId()) return@render
                     showUserBottom(parentFragmentManager, user)
+                }
+            }
+        }
+        (t as? WithdrawBiometricItem)?.let { withdraw ->
+            val assetChainId = withdraw.asset?.chainId ?: ""
+            val isFeeWaived = Constants.Web3ChainIds.contains(assetChainId)
+            if (isFeeWaived) {
+                binding.content.renderWithdrawFeeFree(withdraw) {
+                    CrossWalletFeeFreeBottomSheetDialogFragment
+                        .newInstance()
+                        .show(parentFragmentManager, CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
                 }
             }
         }
