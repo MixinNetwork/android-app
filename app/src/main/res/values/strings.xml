@@ -623,7 +623,8 @@
     <string name="Live">Live</string>
     <string name="live_permission">Mixin needs access to draw above other apps to play videos in Picture-in-Picture mode.</string>
     <string name="live_shareable_false">The live has been set to not allow sharing</string>
-    <string name="loading_time">System time is unusual, please continue to use again after correction</string>
+    <string name="system_time_is_unusual">System time is unusual</string>
+    <string name="loading_time">Please continue to use again after correction</string>
     <string name="Local_IP">Local IP</string>
     <string name="Location">Location</string>
     <plurals name="location_accurate">
