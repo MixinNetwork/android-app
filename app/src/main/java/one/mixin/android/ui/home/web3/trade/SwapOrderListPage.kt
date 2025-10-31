@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import PageScaffold
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -45,7 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -63,7 +63,7 @@ import one.mixin.android.vo.route.SwapOrderItem
 fun SwapOrderListPage(
     walletId: String?,
     pop: () -> Unit,
-    onOrderClick: (String) -> Unit,
+    onOrderClick: (String, Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SwapViewModel>()
@@ -158,7 +158,7 @@ fun SwapOrderListPage(
                         items(ordersInGroup) { order ->
                             OrderItem(
                                 order = order,
-                                onClick = { onOrderClick(order.orderId) }
+                                onClick = { onOrderClick(order.orderId, order.type == "limit") }
                             )
                         }
                     }

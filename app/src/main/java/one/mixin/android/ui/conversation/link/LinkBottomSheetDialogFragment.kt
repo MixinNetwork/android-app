@@ -82,7 +82,7 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment

@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -11,9 +11,12 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.LimitOrder
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -32,6 +35,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SwapViewModel
+
     @Inject
     internal constructor(
         private val assetRepository: AssetRepository,
@@ -58,6 +62,16 @@ class SwapViewModel
         addRouteBot()
         return assetRepository.web3Swap(swapRequest)
     }
+
+    // Limit order APIs (create is used by UI; others not used yet)
+    suspend fun createLimitOrder(request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse> {
+        addRouteBot()
+        return assetRepository.createLimitOrder(request)
+    }
+    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?): MixinResponse<List<LimitOrder>> =
+        assetRepository.getLimitOrders(category, limit, offset)
+    suspend fun getLimitOrder(id: String): MixinResponse<LimitOrder> = assetRepository.getLimitOrder(id)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<LimitOrder> = assetRepository.cancelLimitOrder(id)
 
     suspend fun quote(
         context: Context,
@@ -163,5 +177,9 @@ class SwapViewModel
 
     suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
         web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
+    }
+
+    fun assetItemFlow(assetId: String): Flow<TokenItem?> {
+        return tokenRepository.assetItemFlow(assetId)
     }
 }

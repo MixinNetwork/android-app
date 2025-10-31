@@ -1,17 +1,20 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -20,31 +23,28 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
-class SwapSlippageBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+class SwapTokenBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "SwapSlippageBottomSheetDialogFragment"
+        const val TAG = "SwapOrderBottomSheetDialogFragment"
 
-        const val ARGS_SLIPPAGE_BPS = "args_slippage_bps"
-
-        fun newInstance(
-            slippageBps: Int,
-        ) =
-            SwapSlippageBottomSheetDialogFragment().withArgs {
-                putInt(ARGS_SLIPPAGE_BPS, slippageBps)
+        fun newInstance(token: SwapToken) =
+            SwapTokenBottomSheetDialogFragment().withArgs {
+                putParcelable("TOKEN", token)
             }
     }
 
-    private val slippageBps by lazy { requireArguments().getInt(ARGS_SLIPPAGE_BPS) }
-
+    private val token: SwapToken by lazy {
+        requireArguments().getParcelableCompat("TOKEN", SwapToken::class.java)!!
+    }
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @Composable
     override fun ComposeContent() {
-        SwapSlippagePage(slippageBps, {
-            dismiss()
-        }) { bps ->
-            onSlippage?.invoke(bps)
+        SwapTokenPage(token) {
+            val url =
+                "${Constants.API.URL}external/explore/${token.chain.chainId}/assets/${token.address}"
+            context?.openUrl(url)
             dismiss()
         }
     }
@@ -65,8 +65,6 @@ class SwapSlippageBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         super.setupDialog(dialog, R.style.MixinBottomSheet)
         dialog.window?.let { window ->
             SystemUIManager.lightUI(window, requireContext().isNightMode())
-            @Suppress("DEPRECATION")
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
         dialog.window?.setGravity(Gravity.BOTTOM)
         dialog.window?.setLayout(
@@ -100,12 +98,5 @@ class SwapSlippageBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     override fun dismiss() {
         dismissAllowingStateLoss()
-    }
-
-    private var onSlippage: ((Int) -> Unit)? = null
-
-    fun setOnSlippage(callback: (Int) -> Unit): SwapSlippageBottomSheetDialogFragment {
-        onSlippage = callback
-        return this
     }
 }

@@ -1,7 +1,6 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import PageScaffold
-import android.content.Context
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,9 +45,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.LimitOrder
+import one.mixin.android.api.response.LimitOrderStatus
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate
@@ -55,15 +58,11 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.route.OrderState
-import one.mixin.android.vo.route.SwapOrderItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Composable
-fun SwapOrderDetailPage(
-    walletId: String?,
+fun LimitOrderDetailPage(
     orderId: String,
     onShare: (String, String) -> Unit,
     onTryAgain: (String, String) -> Unit,
@@ -71,31 +70,22 @@ fun SwapOrderDetailPage(
 ) {
     val context = LocalContext.current
     val viewModel: SwapViewModel = hiltViewModel()
-    val orderItem = viewModel.getOrderById(orderId).collectAsState(null)
-    var walletDisplayName by remember { mutableStateOf<String?>(null) }
+    var orderItem by remember { mutableStateOf<LimitOrder?>(null) }
 
-    LaunchedEffect(walletId) {
-        if (walletId != null) {
-            viewModel.findWeb3WalletById(walletId)?.let {
-                if (it.category == WalletCategory.CLASSIC.value ||
-                    it.category == WalletCategory.IMPORTED_MNEMONIC.value ||
-                    it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
-                    it.category == WalletCategory.WATCH_ADDRESS.value) {
-                    walletDisplayName = it.name
-                }
-            }
+    LaunchedEffect(orderId) {
+        viewModel.getLimitOrder(orderId).data?.let {
+            orderItem = it
         }
     }
+
+    val payAsset by viewModel.assetItemFlow(orderItem?.assetId ?: "").collectAsState(null)
+    val receiveAsset by viewModel.assetItemFlow(orderItem?.receiveAssetId ?: "").collectAsState(null)
 
     MixinAppTheme {
         PageScaffold(
             title = stringResource(id = R.string.Order_Details),
             subtitle = {
-                val text = if (walletId == null) {
-                    stringResource(id = R.string.Privacy_Wallet)
-                } else {
-                    walletDisplayName ?: stringResource(id = R.string.Common_Wallet)
-                }
+                val text = stringResource(id = R.string.Privacy_Wallet)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = text,
@@ -105,7 +95,6 @@ fun SwapOrderDetailPage(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    if (walletId == null) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.ic_wallet_privacy),
@@ -113,7 +102,6 @@ fun SwapOrderDetailPage(
                             tint = Color.Unspecified,
                             modifier = Modifier.size(12.dp)
                         )
-                    }
                 }
             },
             pop = pop,
@@ -132,7 +120,12 @@ fun SwapOrderDetailPage(
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
-                orderItem.value?.let { swapOrder ->
+                orderItem?.let { limitOrder ->
+                    if (payAsset == null || receiveAsset == null) {
+                        // show loading
+                        return@let
+                    }
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -150,14 +143,14 @@ fun SwapOrderDetailPage(
                                 .padding()
                         ) {
                             CoilImage(
-                                swapOrder.assetIconUrl,
+                                payAsset?.iconUrl,
                                 modifier = Modifier
                                     .width(47.dp)
                                     .height(47.dp),
                                 placeholder = R.drawable.ic_avatar_place_holder,
                             )
                             CoilImage(
-                                swapOrder.receiveAssetIconUrl,
+                                receiveAsset?.iconUrl,
                                 modifier = Modifier
                                     .offset(x = 16.dp, y = 16.dp)
                                     .width(54.dp)
@@ -169,7 +162,7 @@ fun SwapOrderDetailPage(
                         }
                         Spacer(modifier = Modifier.height(26.dp))
                         Text(
-                            text = "${swapOrder.assetSymbol} → ${swapOrder.receiveAssetSymbol}",
+                            text = "${payAsset?.symbol} → ${receiveAsset?.symbol}",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.W500,
                             color = MixinAppTheme.colors.textPrimary,
@@ -180,9 +173,12 @@ fun SwapOrderDetailPage(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(
-                                    when (swapOrder.state) {
-                                        OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
-                                        OrderState.FAILED.value -> MixinAppTheme.colors.walletRed.copy(alpha = 0.2f)
+                                    when (limitOrder.state) {
+                                        LimitOrderStatus.SETTLED -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
+                                        LimitOrderStatus.FAILED, LimitOrderStatus.CANCELLED, LimitOrderStatus.EXPIRED -> MixinAppTheme.colors.walletRed.copy(
+                                            alpha = 0.2f
+                                        )
+
                                         else -> MixinAppTheme.colors.textMinor.copy(alpha = 0.2f)
                                     }
                                 )
@@ -190,55 +186,99 @@ fun SwapOrderDetailPage(
                                 .align(Alignment.CenterHorizontally)
                         ) {
                             Text(
-                                formatOrderState(context, swapOrder.state), color = when (swapOrder.state) {
-                                    OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen
-                                    OrderState.FAILED.value -> MixinAppTheme.colors.walletRed
+                                formatLimitOrderState(context, limitOrder.state), color = when (limitOrder.state) {
+                                    LimitOrderStatus.SETTLED -> MixinAppTheme.colors.walletGreen
+                                    LimitOrderStatus.FAILED, LimitOrderStatus.CANCELLED, LimitOrderStatus.EXPIRED -> MixinAppTheme.colors.walletRed
                                     else -> MixinAppTheme.colors.textPrimary
                                 }
                             )
                         }
                         Spacer(modifier = Modifier.height(20.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(horizontal = 20.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MixinAppTheme.colors.backgroundWindow),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.Swap_Again),
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontWeight = FontWeight.W500,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
-                                    .clickable {
-                                        onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
-                                    }
-                                    .padding(vertical = 10.dp)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .width(2.dp)
-                                    .height(24.dp)
-                                    .background(Color(0x0D000000))
-                            )
-                            Text(
-                                text = stringResource(R.string.Share_Pair),
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontWeight = FontWeight.W500,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
-                                    .clickable {
-                                        onShare.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
-                                    }
-                                    .padding(vertical = 10.dp)
-                            )
+                        val scope = rememberCoroutineScope()
+                        when (limitOrder.state) {
+                            LimitOrderStatus.PRICING, LimitOrderStatus.CREATED, LimitOrderStatus.QUOTING -> {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .padding(horizontal = 20.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MixinAppTheme.colors.backgroundWindow),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.cancel_order),
+                                        color = MixinAppTheme.colors.walletRed,
+                                        fontWeight = FontWeight.W500,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                scope.launch {
+                                                    viewModel.cancelLimitOrder(limitOrder.limitOrderId)
+                                                    pop()
+                                                }
+                                            }
+                                            .padding(vertical = 10.dp)
+                                    )
+                                }
+                            }
+                            else -> {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .padding(horizontal = 20.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MixinAppTheme.colors.backgroundWindow),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.Swap_Again),
+                                        color = MixinAppTheme.colors.textPrimary,
+                                        fontWeight = FontWeight.W500,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .background(
+                                                MixinAppTheme.colors.backgroundWindow,
+                                                RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                                            )
+                                            .clickable {
+                                                onTryAgain.invoke(
+                                                    limitOrder.assetId,
+                                                    limitOrder.receiveAssetId
+                                                )
+                                            }
+                                            .padding(vertical = 10.dp)
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .width(2.dp)
+                                            .height(24.dp)
+                                            .background(Color(0x0D000000))
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.Share_Pair),
+                                        color = MixinAppTheme.colors.textPrimary,
+                                        fontWeight = FontWeight.W500,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .background(
+                                                MixinAppTheme.colors.backgroundWindow,
+                                                RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
+                                            )
+                                            .clickable {
+                                                onShare.invoke(
+                                                    limitOrder.assetId,
+                                                    limitOrder.receiveAssetId
+                                                )
+                                            }
+                                            .padding(vertical = 10.dp)
+                                    )
+                                }
+                            }
                         }
                         Spacer(modifier = Modifier.height(30.dp))
                     }
@@ -256,37 +296,59 @@ fun SwapOrderDetailPage(
                     ) {
                         DetailItem(
                             context.getString(R.string.swap_order_paid).uppercase(),
-                            "-${swapOrder.payAmount} ${swapOrder.assetSymbol}",
+                            "-${limitOrder.amount} ${payAsset?.symbol}",
                             MixinAppTheme.colors.walletRed,
-                            swapOrder.assetIconUrl,
-                            swapOrder.payChainName ?: ""
+                            payAsset?.iconUrl,
+                            payAsset?.chainName ?: ""
                         )
                         DetailItem(
-                            if (swapOrder.state == OrderState.SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
-                            "+${swapOrder.receiveAmount} ${swapOrder.receiveAssetSymbol}",
+                            if (limitOrder.state == LimitOrderStatus.SETTLED) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
+                            "+${limitOrder.expectedReceiveAmount} ${receiveAsset?.symbol}",
                             MixinAppTheme.colors.walletGreen,
-                            swapOrder.receiveAssetIconUrl,
-                            swapOrder.receiveChainName ?: ""
+                            receiveAsset?.iconUrl,
+                            receiveAsset?.chainName ?: ""
                         )
                         DetailPriceItem(
-                            swapOrder
+                            limitOrder,
+                            payAsset?.symbol ?: "",
+                            receiveAsset?.symbol ?: ""
                         )
+                        run {
+                            val filledReceive = runCatching { BigDecimal(limitOrder.filledReceiveAmount) }.getOrDefault(BigDecimal.ZERO)
+                            val expectedReceive = runCatching { BigDecimal(limitOrder.expectedReceiveAmount) }.getOrDefault(BigDecimal.ZERO)
+                            val percentStr = if (expectedReceive > BigDecimal.ZERO) {
+                                filledReceive
+                                    .divide(expectedReceive, 6, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal(100))
+                                    .setScale(2, RoundingMode.HALF_UP)
+                                    .stripTrailingZeros()
+                                    .toPlainString()
+                            } else {
+                                "0"
+                            }
+                            val endText = "${filledReceive.stripTrailingZeros().toPlainString()} ${payAsset?.symbol ?: ""}"
+                            DetailItem(
+                                label = stringResource(R.string.Filled).uppercase(),
+                                value = "$percentStr%",
+                                end = endText,
+                            )
+                        }
                         DetailItem(
                             label = stringResource(R.string.Type).uppercase(),
-                            value = if (swapOrder.type == "swap") context.getString(R.string.order_type_swap) else if (swapOrder.type == "limit") context.getString(R.string.order_type_limit) else swapOrder.type,
+                            value = context.getString(R.string.order_type_limit),
                         )
                         DetailItem(
                             label = stringResource(R.string.Order_Created).uppercase(),
-                            value = swapOrder.createdAt.fullDate()
+                            value = limitOrder.createdAt.fullDate()
                         )
                         DetailItem(
                             label = stringResource(R.string.Order_ID).uppercase(),
-                            value = swapOrder.orderId,
+                            value = limitOrder.limitOrderId,
                             onCopy = {
                                 context.getClipboardManager().setPrimaryClip(
                                     android.content.ClipData.newPlainText(
                                         null,
-                                        swapOrder.orderId
+                                        limitOrder.limitOrderId
                                     )
                                 )
                                 toast(R.string.copied_to_clipboard)
@@ -294,6 +356,8 @@ fun SwapOrderDetailPage(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
@@ -301,7 +365,9 @@ fun SwapOrderDetailPage(
 
 @Composable
 private fun DetailPriceItem(
-    orderItem: SwapOrderItem
+    orderItem: LimitOrder,
+    paySymbol: String,
+    receiveSymbol: String
 ) {
     val context = LocalContext.current
     Column(
@@ -311,7 +377,7 @@ private fun DetailPriceItem(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = if (orderItem.state == OrderState.SUCCESS.value) context.getString(R.string.Price) else context.getString(R.string.Estimated_Price).uppercase(),
+                text = if (orderItem.state == LimitOrderStatus.SETTLED) context.getString(R.string.Price) else context.getString(R.string.Estimated_Price).uppercase(),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
@@ -319,7 +385,7 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 ${orderItem.assetSymbol} ≈ ${BigDecimal(orderItem.receiveAmount).divide(BigDecimal(orderItem.payAmount), 8, RoundingMode.HALF_UP)} ${orderItem.receiveAssetSymbol}" }.getOrDefault("N/A"),
+            text = runCatching { "1 $paySymbol ≈ ${BigDecimal(orderItem.expectedReceiveAmount).divide(BigDecimal(orderItem.amount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $receiveSymbol" }.getOrDefault("N/A"),
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,
@@ -328,7 +394,45 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 ${orderItem.receiveAssetSymbol} ≈ ${BigDecimal(orderItem.payAmount).divide(BigDecimal(orderItem.receiveAmount), 8, RoundingMode.HALF_UP)} ${orderItem.assetSymbol}" }.getOrDefault("N/A"),
+            text = runCatching { "1 $receiveSymbol ≈ ${BigDecimal(orderItem.amount).divide(BigDecimal(orderItem.expectedReceiveAmount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $paySymbol" }.getOrDefault("N/A"),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Normal,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+    }
+}
+
+@Composable
+private fun DetailItem(
+    label: String,
+    value: String,
+    end: String,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 20.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = value,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = end,
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,
@@ -380,7 +484,6 @@ private fun DetailItem(
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,
         )
-
     }
 }
 
@@ -425,16 +528,5 @@ private fun DetailItem(
                 color = MixinAppTheme.colors.textAssist,
             )
         }
-    }
-}
-
-fun formatOrderState(context: Context, state: String): String {
-    return when (state) {
-        OrderState.CREATED.value -> context.getString(R.string.State_Created)
-        OrderState.PENDING.value -> context.getString(R.string.State_Pending)
-        OrderState.SUCCESS.value -> context.getString(R.string.State_Success)
-        OrderState.FAILED.value -> context.getString(R.string.State_Failed)
-        OrderState.REFUNDED.value -> context.getString(R.string.State_Refunded)
-        else -> state
     }
 }

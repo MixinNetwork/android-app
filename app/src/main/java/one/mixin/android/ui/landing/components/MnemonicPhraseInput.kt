@@ -61,7 +61,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.ExportRequest
@@ -74,7 +74,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.ui.home.web3.swap.KeyboardAwareBox
+import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 
