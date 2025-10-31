@@ -7,4 +7,6 @@ data class DepositEntryRequest(
     val chainId: String,
     @SerializedName("asset_id")
     val assetId: String,
+    @SerializedName("amount")
+    val amount: String? = null,
 )

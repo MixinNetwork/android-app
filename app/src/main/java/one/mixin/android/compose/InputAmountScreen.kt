@@ -20,13 +20,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -57,6 +66,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
+import androidx.hilt.navigation.compose.hiltViewModel
+import one.mixin.android.ui.wallet.WalletViewModel
+import kotlinx.coroutines.launch
+import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
+import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.pow
@@ -84,6 +99,8 @@ fun InputAmountFlow(
     token: TokenItem? = null,
     web3Token: Web3TokenItem? = null,
     address: String? = null,
+    minimum: BigDecimal? = null,
+    maximum: BigDecimal? = null,
     navController: NavHostController = rememberNavController(),
 ) {
     val tokenSymbol = token?.symbol ?: web3Token?.symbol ?: ""
@@ -94,6 +111,11 @@ fun InputAmountFlow(
     val tokenAssetKey = token?.assetKey ?: web3Token?.assetKey
     val tokenChainId = token?.chainId ?: web3Token?.chainId ?: ""
     val tokenPrecision = token?.precision ?: web3Token?.precision
+
+    val walletViewModel: WalletViewModel = hiltViewModel()
+    val scope = rememberCoroutineScope()
+    var resolvedDepositUri by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     NavHost(
         navController = navController,
@@ -108,9 +130,30 @@ fun InputAmountFlow(
                 onDeleteClick = onDeleteClick,
                 onSwitchClick = onSwitchClick,
                 onContinueClick = {
-                    navController.navigate(InputAmountDestinations.PREVIEW)
+                    if (isLoading) return@InputAmountScreen
+                    val amountOnly = tokenAmount.split(" ").first()
+                    if (tokenChainId == ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
+                        scope.launch {
+                            isLoading = true
+                            val dep = try {
+                                walletViewModel.createDepositWithAmount(tokenChainId, tokenAssetId, amountOnly)
+                            } catch (_: Exception) {
+                                null
+                            }
+                            resolvedDepositUri = dep?.destination.orEmpty()
+                            isLoading = false
+                            if (resolvedDepositUri.isNullOrEmpty().not()) {
+                                navController.navigate(InputAmountDestinations.PREVIEW)
+                            }
+                        }
+                    } else {
+                        navController.navigate(InputAmountDestinations.PREVIEW)
+                    }
                 },
                 onCloseClick = onCloseClick,
+                minimum = minimum,
+                maximum = maximum,
+                isLoading = isLoading,
             )
         }
 
@@ -126,6 +169,7 @@ fun InputAmountFlow(
                 tokenChainId = tokenChainId,
                 tokenPrecision = tokenPrecision,
                 address = address,
+                depositUri = resolvedDepositUri,
                 onBackClick = {
                     navController.popBackStack()
                 },
@@ -149,6 +193,9 @@ fun InputAmountScreen(
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
+    minimum: BigDecimal? = null,
+    maximum: BigDecimal? = null,
+    isLoading: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -251,18 +298,36 @@ fun InputAmountScreen(
 
         // Full width button with 20dp horizontal margins
 
-        ActionButton(
-            text = stringResource(id = R.string.Review),
-            onClick = onContinueClick,
-            backgroundColor = MixinAppTheme.colors.accent,
-            contentColor = Color.White,
-            enabled = (inputAmount.toFloatOrNull() ?: 0f) > 0f,
-            disabledContentColor = Color.White,
-            disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
+        val entered = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val withinMin = minimum?.let { entered >= it } ?: true
+        val withinMax = maximum?.let { if (it.compareTo(BigDecimal.ZERO) == 0) true else entered <= it } ?: true
+        val canContinue = (inputAmount.toFloatOrNull() ?: 0f) > 0f && withinMin && withinMax
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 48.dp)
-        )
+                .height(48.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (!isLoading) {
+                ActionButton(
+                    text = stringResource(id = R.string.Review),
+                    onClick = onContinueClick,
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    enabled = canContinue,
+                    disabledContentColor = Color.White,
+                    disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MixinAppTheme.colors.accent
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
     }
@@ -488,9 +553,10 @@ fun InputAmountPreviewScreen(
     tokenChainId: String = "",
     tokenPrecision: Int? = null,
     address: String? = null,
+    depositUri: String? = null
 ) {
     // Generate deposit URI for copy and share operations
-    val depositUri = generateDepositUri(
+    val finalDepositUri = depositUri ?: generateDepositUri(
         assetId = tokenAssetId,
         chainId = tokenChainId,
         assetKey = tokenAssetKey,
@@ -585,7 +651,7 @@ fun InputAmountPreviewScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        bitmap = generateQrCodeBitmap(
+                        bitmap = depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first?.asImageBitmap() ?: generateQrCodeBitmap(
                             assetId = tokenAssetId,
                             chainId = tokenChainId,
                             assetKey = tokenAssetKey,
@@ -622,7 +688,7 @@ fun InputAmountPreviewScreen(
             Spacer(modifier = Modifier.height(20.dp))
             if (address == null) {
                 Text(
-                    text = stringResource(R.string.transfer_qrcode_prompt_amount, "$primaryAmount"),
+                    text = stringResource(R.string.transfer_qrcode_prompt_amount, primaryAmount),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.padding(bottom = 4.dp)
@@ -639,10 +705,12 @@ fun InputAmountPreviewScreen(
                         color = MixinAppTheme.colors.textAssist,
                     )
 
-                    Text(
+                    AutoSizeText(
                         text = addr,
+                        maxLines = 6,
                         color = MixinAppTheme.colors.textPrimary,
                         fontSize = 16.sp,
+                        constraint = AutoSizeConstraint.Height(min = 10.sp),
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(
@@ -695,26 +763,7 @@ fun InputAmountPreviewScreen(
                 .padding(horizontal = 50.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(36.dp)
         ) {
-            if (address == null) {
-                ActionButton(
-                    text = stringResource(R.string.Share),
-                    onClick = { onShareClick(depositUri) },
-                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
-                    contentColor = MixinAppTheme.colors.textPrimary,
-                    modifier = Modifier.weight(1f)
-                )
-
-                ActionButton(
-                    text = stringResource(R.string.Forward),
-                    onClick = {
-                        val tokenDisplayName = "${getChainName(tokenChainId, tokenChainName, tokenAssetKey)}"
-                        onForward(tokenDisplayName, depositUri, primaryAmount)
-                    },
-                    backgroundColor = MixinAppTheme.colors.accent,
-                    contentColor = Color.White,
-                    modifier = Modifier.weight(1f)
-                )
-            } else {
+            if (depositUri != null){
                 ActionButton(
                     text = stringResource(R.string.Copy),
                     onClick = { onCopyClick(depositUri) },
@@ -726,6 +775,41 @@ fun InputAmountPreviewScreen(
                 ActionButton(
                     text = stringResource(R.string.Share),
                     onClick = { onShareClick(depositUri) },
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    modifier = Modifier.weight(1f)
+                )
+            } else if (address == null) {
+                ActionButton(
+                    text = stringResource(R.string.Share),
+                    onClick = { onShareClick(finalDepositUri) },
+                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                    contentColor = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+
+                ActionButton(
+                    text = stringResource(R.string.Forward),
+                    onClick = {
+                        val tokenDisplayName = "${getChainName(tokenChainId, tokenChainName, tokenAssetKey)}"
+                        onForward(tokenDisplayName, finalDepositUri, primaryAmount)
+                    },
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                ActionButton(
+                    text = stringResource(R.string.Copy),
+                    onClick = { onCopyClick(finalDepositUri) },
+                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                    contentColor = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+
+                ActionButton(
+                    text = stringResource(R.string.Share),
+                    onClick = { onShareClick(finalDepositUri) },
                     backgroundColor = MixinAppTheme.colors.accent,
                     contentColor = Color.White,
                     modifier = Modifier.weight(1f)
