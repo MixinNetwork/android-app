@@ -24,12 +24,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -400,6 +403,10 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         } else {
                             processCompleted = true
                             RxBus.publish(WCChangeEvent())
+                            defaultSharedPreferences.putLong(
+                                Constants.BIOMETRIC_PIN_CHECK,
+                                System.currentTimeMillis(),
+                            )
                             Step.Done
                         }
                 } else {

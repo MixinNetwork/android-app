@@ -30,9 +30,11 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -374,6 +376,10 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     throw IllegalArgumentException("invalid signMessage type ${signMessage.type}")
                 }
                 step = Step.Done
+                defaultSharedPreferences.putLong(
+                    Constants.BIOMETRIC_PIN_CHECK,
+                    System.currentTimeMillis(),
+                )
             } catch (e: Exception) {
                 onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, null);")
                 handleException(e)
