@@ -115,8 +115,8 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException

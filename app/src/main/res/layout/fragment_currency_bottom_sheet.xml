@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_upper_round"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/title"

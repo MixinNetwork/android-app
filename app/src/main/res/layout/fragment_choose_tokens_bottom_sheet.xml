@@ -6,8 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical"
-    android:paddingBottom="40dp"
-    android:fitsSystemWindows="true">
+    android:paddingBottom="40dp">
 
     <RelativeLayout
         android:layout_width="match_parent"

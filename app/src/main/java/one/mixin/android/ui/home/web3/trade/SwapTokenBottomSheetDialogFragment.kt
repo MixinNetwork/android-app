@@ -2,35 +2,28 @@ package one.mixin.android.ui.home.web3.trade
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.doOnPreDraw
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import androidx.compose.runtime.Composable
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
-class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class SwapTokenBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "SwapOrderBottomSheetDialogFragment"
 
@@ -44,55 +37,25 @@ class SwapTokenBottomSheetDialogFragment : BottomSheetDialogFragment() {
         requireArguments().getParcelableCompat("TOKEN", SwapToken::class.java)!!
     }
 
-    private var behavior: BottomSheetBehavior<*>? = null
-
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-
-            setContent {
-                SwapTokenPage(token) {
-                    val url =
-                        "${Constants.API.URL}external/explore/${token.chain.chainId}/assets/${token.address}"
-                    context?.openUrl(url)
-                    dismiss()
-                }
-            }
-
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                val ctx = requireContext()
-                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
+    @Composable
+    override fun ComposeContent() {
+        SwapTokenPage(token) {
+            val url =
+                "${Constants.API.URL}external/explore/${token.chain.chainId}/assets/${token.address}"
+            context?.openUrl(url)
+            dismiss()
         }
+    }
 
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-                    else -> {}
-                }
-            }
 
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(

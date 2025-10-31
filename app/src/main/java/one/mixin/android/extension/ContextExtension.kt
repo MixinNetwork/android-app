@@ -48,6 +48,7 @@ import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.TypedValue
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -56,11 +57,15 @@ import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.ui.platform.LocalDensity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.core.database.getStringOrNull
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -99,6 +104,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import kotlin.compareTo
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -208,21 +214,30 @@ fun async(
 ): Future<out Any?> =
     executor.submit(runnable)
 
-fun Context.statusBarHeight(): Int {
-    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun Context.getSystemBarHeight(resourceName: String, defaultDp: Float = 24f): Int {
+    val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
+    return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else dpToPx(defaultDp)
 }
 
-fun Context.navigationBarHeight(): Int {
-    val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun View.getSafeAreaInsetsTop(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+
+    return maxOf(systemBars.top, displayCutout.top)
 }
+
+fun View.getSafeAreaInsetsBottom(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+    return maxOf(systemBars.bottom, displayCutout.bottom)
+}
+
+fun Context.statusBarHeight(): Int = getSystemBarHeight("status_bar_height")
+fun Context.navigationBarHeight(): Int = getSystemBarHeight("navigation_bar_height")
 
 @SuppressLint("PrivateApi")
 fun Context.hasNavigationBar(): Boolean {
