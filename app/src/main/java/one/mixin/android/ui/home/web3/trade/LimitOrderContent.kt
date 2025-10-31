@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,6 +65,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.home.web3.components.FloatingActions
 import one.mixin.android.ui.home.web3.components.InputArea
@@ -73,6 +75,8 @@ import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.handleMixinError
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
@@ -127,6 +131,7 @@ fun LimitOrderContent(
     }
 
     var isButtonEnabled by remember { mutableStateOf(true) }
+    var isSubmitting by remember { mutableStateOf(false) }
 
     var limitOrders by remember { mutableStateOf<List<LimitOrder>>(emptyList()) }
 
@@ -136,7 +141,7 @@ fun LimitOrderContent(
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
-                viewModel.getLimitOrders(category = LimitOrderCategory.ACTIVE.value, offset = null).data?.let {
+                viewModel.getLimitOrders(category = LimitOrderCategory.ALL.value, offset = null).data?.let {
                     limitOrders = it
                 }
                 delay(10000)
@@ -336,6 +341,7 @@ fun LimitOrderContent(
                             onClick = {
                                 if (isButtonEnabled && toToken != null) {
                                     isButtonEnabled = false
+                                    isSubmitting = true
                                     keyboardController?.hide()
                                     focusManager.clearFocus()
                                     scope.launch {
@@ -347,11 +353,17 @@ fun LimitOrderContent(
                                                 expectedReceiveAmount = outputText,
                                                 expiredAt = Instant.now().plus(expiryOption.toDuration()).toString(),
                                             )
-                                            viewModel.createLimitOrder(request).data?.let {
-                                                onLimitReview.invoke(it)
+                                            val response = viewModel.createLimitOrder(request)
+                                            if (response.isSuccess) {
+                                                onLimitReview.invoke(response.data!!)
+                                            } else {
+                                                handleMixinError(response.errorCode, response.errorDescription)
                                             }
+                                        }.onFailure { e ->
+                                            toast(ErrorHandler.getErrorMessage(e))
                                         }
                                         delay(1000)
+                                        isSubmitting = false
                                         isButtonEnabled = true
                                     }
                                 }
@@ -368,10 +380,27 @@ fun LimitOrderContent(
                                 focusedElevation = 0.dp,
                             ),
                         ) {
-                            Text(
-                                text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                color = if (isEnabled) Color.White else MixinAppTheme.colors.textAssist,
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isSubmitting) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .width(18.dp)
+                                            .height(18.dp),
+                                        color = if (isEnabled) Color.White else MixinAppTheme.colors.textAssist,
+                                        strokeWidth = 2.dp,
+                                    )
+                                } else {
+                                    Text(
+                                        text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
+                                        color = if (isEnabled) Color.White else MixinAppTheme.colors.textAssist,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
