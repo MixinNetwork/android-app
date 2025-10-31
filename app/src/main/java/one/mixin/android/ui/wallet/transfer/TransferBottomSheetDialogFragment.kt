@@ -214,8 +214,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         (t as? WithdrawBiometricItem)?.let { withdraw ->
-            val assetChainId = withdraw.asset?.chainId ?: ""
-            val isFeeWaived = Constants.Web3ChainIds.contains(assetChainId)
+            val isFeeWaived = withdraw.toWallet == true
             if (isFeeWaived) {
                 binding.content.renderWithdrawFeeFree(withdraw) {
                     CrossWalletFeeFreeBottomSheetDialogFragment
@@ -711,7 +710,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             is WithdrawBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                                 val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
+                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin, t.toWallet)
                             }
 
                             else -> {

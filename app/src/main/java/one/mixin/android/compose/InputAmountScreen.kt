@@ -98,7 +98,6 @@ fun InputAmountFlow(
     NavHost(
         navController = navController,
         startDestination = InputAmountDestinations.INPUT,
-        modifier = modifier
     ) {
         composable(InputAmountDestinations.INPUT) {
             InputAmountScreen(
@@ -730,7 +729,7 @@ fun InputAmountPreviewScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 

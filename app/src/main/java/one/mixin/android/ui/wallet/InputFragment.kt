@@ -5,7 +5,6 @@ import android.graphics.Paint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -61,7 +60,6 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapActivity
-import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
@@ -520,6 +518,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     toAddress = toAddress,
                                     toUser = user,
                                     chainToken = chainToken,
+                                    isFeeWaived = isFeeWaived,
                                     onTxhash = { _, serializedTx ->
                                     },
                                     onDismiss = { isDone->

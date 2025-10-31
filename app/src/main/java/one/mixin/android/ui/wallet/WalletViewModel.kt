@@ -58,7 +58,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem

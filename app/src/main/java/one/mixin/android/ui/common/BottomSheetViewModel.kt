@@ -132,7 +132,6 @@ import java.io.File
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.String
 
 @HiltViewModel
 class BottomSheetViewModel
@@ -208,6 +207,7 @@ class BottomSheetViewModel
             tag: String?,
             memo: String?,
             pin: String,
+            toWallet: Boolean
         ): MixinResponse<*> {
             val isDifferentFee = feeAssetId != assetId
             val asset = assetIdToAsset(assetId)

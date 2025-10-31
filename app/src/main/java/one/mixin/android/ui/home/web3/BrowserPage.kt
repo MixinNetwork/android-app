@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.ParsedTx
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.composeDp
@@ -73,8 +74,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
@@ -147,11 +148,12 @@ fun BrowserPage(
     MixinAppTheme {
         Column(
             modifier =
-            Modifier
-                .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(MixinAppTheme.colors.background),
+                Modifier
+                    .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(MixinAppTheme.colors.background)
+                    ,
         ) {
             WalletLabel(
                 walletName = walletName,

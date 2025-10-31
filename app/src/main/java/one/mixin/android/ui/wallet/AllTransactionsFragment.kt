@@ -98,9 +98,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        if (requireActivity() !is WalletActivity) {
-            binding.root.fitsSystemWindows = false
-        }
+
         adapter.listener = this
         binding.apply {
             titleView.apply {

@@ -9,6 +9,9 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewTransferContentBinding
+import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.hexString
+import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.session.Session
@@ -240,6 +243,11 @@ class TransferContent : LinearLayout {
                 networkFee.setContent(R.string.Fee, "$sumValue XIN" , amountAs(sumValue, xin))
             } else {
                 networkFee.setContent(R.string.Fee, "0", "")
+            }
+            val invoiceMemo = invoice.entries.firstOrNull { it.memo != null }?.memo
+            if (invoiceMemo != null) {
+                memo.isVisible = true
+                memo.setContent(R.string.Memo, invoiceMemo)
             }
             assetContainer.isVisible = true
             assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens.filterIndexed { index, _ -> invoice.entries[index].isStorage().not() })

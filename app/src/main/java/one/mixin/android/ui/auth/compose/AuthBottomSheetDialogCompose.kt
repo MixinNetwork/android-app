@@ -66,6 +66,7 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
