@@ -9,4 +9,5 @@ data class SwapRequest(
     val source: String,
     val withdrawalDestination: String?,
     val referral: String?,
+    val walletId: String?,
 )

@@ -201,8 +201,8 @@ class SwapFragment : BaseFragment() {
                         },
                     ) {
                         composable(SwapDestination.Swap.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
                             SwapPage(
                                 walletId = walletId,
                                 from = fromToken,
@@ -252,8 +252,8 @@ class SwapFragment : BaseFragment() {
                         }
 
                         composable(SwapDestination.OrderList.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
                             SwapOrderListPage(
                                 walletId = walletId,
                                 pop = {
@@ -265,8 +265,8 @@ class SwapFragment : BaseFragment() {
                             )
                         }
                         composable("${SwapDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
                             navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
                                 SwapOrderDetailPage(
                                     walletId = walletId,
@@ -611,6 +611,7 @@ class SwapFragment : BaseFragment() {
                             if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                         },
                         getReferral(),
+                        walletId,
                     )
                 )
             },
