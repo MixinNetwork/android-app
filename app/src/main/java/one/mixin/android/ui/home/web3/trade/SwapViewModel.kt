@@ -11,9 +11,12 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.LimitOrder
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -28,9 +31,6 @@ import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.api.request.LimitOrderRequest
-import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.LimitOrder
 import javax.inject.Inject
 
 @HiltViewModel

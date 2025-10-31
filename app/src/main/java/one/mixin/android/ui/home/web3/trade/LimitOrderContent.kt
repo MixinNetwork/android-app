@@ -6,28 +6,24 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -45,13 +41,13 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.FlowPreview
@@ -62,29 +58,25 @@ import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.api.response.LimitOrder
+import one.mixin.android.api.response.LimitOrderCategory
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
+import one.mixin.android.ui.home.web3.components.FloatingActions
+import one.mixin.android.ui.home.web3.components.InputArea
+import one.mixin.android.ui.home.web3.components.OpenOrderItem
+import one.mixin.android.ui.home.web3.components.PriceDisplay
+import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.GsonHelper
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
 import java.time.Instant
-
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
-import one.mixin.android.api.response.LimitOrder
-import one.mixin.android.api.response.LimitOrderCategory
-import one.mixin.android.api.response.LimitOrderStatus
-import one.mixin.android.compose.CoilImage
-import one.mixin.android.extension.fullDate
-import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 enum class FocusedField { NONE, AMOUNT, PRICE }
 
@@ -109,7 +101,6 @@ fun LimitOrderContent(
     from: SwapToken?,
     to: SwapToken?,
     inMixin: Boolean,
-    reviewing: Boolean,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -232,7 +223,7 @@ fun LimitOrderContent(
                     },
                     headerCompose = {
                         InputArea(modifier = Modifier.onFocusChanged {
-                            if (it.isFocused) focusedField = FocusedField.AMOUNT
+                            if (it.isFocused) FocusedField.AMOUNT
                         }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) }, onInputChanged = { inputText = it }, onDeposit = onDeposit, onMax = {
                             val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                             if (balance > BigDecimal.ZERO) {
@@ -283,7 +274,7 @@ fun LimitOrderContent(
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                                 .padding(16.dp),
                         ) {
-                            Text(text = stringResource(id = R.string.open_orders), color = MixinAppTheme.colors.textPrimary)
+                            Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                             Spacer(modifier = Modifier.height(8.dp))
                             limitOrders.forEach { order ->
                                 OpenOrderItem(order = order, onClick = { onLimitOrderClick(order.limitOrderId) })
@@ -300,7 +291,7 @@ fun LimitOrderContent(
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                                 .padding(16.dp),
                         ) {
-                            Text(text = stringResource(id = R.string.open_orders), color = MixinAppTheme.colors.textPrimary)
+                            Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -388,241 +379,20 @@ fun LimitOrderContent(
         }, floating = {
             val keyboardController = LocalSoftwareKeyboardController.current
             val focusManager = LocalFocusManager.current
-
-            when (focusedField) {
-                FocusedField.AMOUNT -> {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MixinAppTheme.colors.backgroundWindow)
-                            .padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                        InputAction("25%", showBorder = true) {
-                            if (balance > BigDecimal.ZERO) {
-                                inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
-                            } else {
-                                inputText = ""
-                            }
-                        }
-                        InputAction("50%", showBorder = true) {
-                            if (balance > BigDecimal.ZERO) {
-                                inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
-                            } else {
-                                inputText = ""
-                            }
-                        }
-                        InputAction(stringResource(R.string.Max), showBorder = true) {
-                            if (balance > BigDecimal.ZERO) {
-                                inputText = balance.stripTrailingZeros().toPlainString()
-                            } else {
-                                inputText = ""
-                            }
-                        }
-                        InputAction(stringResource(R.string.Done), showBorder = false) {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                        }
-                    }
+            FloatingActions(
+                focusedField = focusedField,
+                fromBalance = fromBalance,
+                fromToken = fromToken,
+                toToken = toToken,
+                onSetInput = { inputText = it },
+                onSetLimitPrice = { limitPriceText = it },
+                onDone = {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
                 }
-
-                FocusedField.PRICE -> {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MixinAppTheme.colors.backgroundWindow)
-                            .padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        val marketPrice = remember(fromToken, toToken) {
-                            val fromPrice = fromToken?.price?.toBigDecimalOrNull()
-                            val toPrice = toToken?.price?.toBigDecimalOrNull()
-                            if (fromPrice != null && toPrice != null && toPrice > BigDecimal.ZERO) {
-                                fromPrice.divide(toPrice, 8, RoundingMode.HALF_UP)
-                            } else {
-                                null
-                            }
-                        }
-
-                        InputAction(stringResource(R.string.market_price), showBorder = true) {
-                            marketPrice?.let {
-                                limitPriceText = it.stripTrailingZeros().toPlainString()
-                            }
-                        }
-                        InputAction("+10%", showBorder = true) {
-                            marketPrice?.let {
-                                val newPrice = it.multiply(BigDecimal("1.1"))
-                                limitPriceText = newPrice.stripTrailingZeros().toPlainString()
-                            }
-                        }
-                        InputAction("+20%", showBorder = true) {
-                            marketPrice?.let {
-                                val newPrice = it.multiply(BigDecimal("1.2"))
-                                limitPriceText = newPrice.stripTrailingZeros().toPlainString()
-                            }
-                        }
-                        InputAction(stringResource(R.string.Done), showBorder = false) {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                        }
-                    }
-                }
-
-                else -> {}
-            }
+            )
         })
     } ?: run {
         Loading()
-    }
-}
-
-@Composable
-private fun PriceDisplay(
-    fromToken: SwapToken?,
-    toToken: SwapToken?,
-    limitPrice: String,
-    expiryOption: ExpiryOption,
-    onExpiryChange: (ExpiryOption) -> Unit,
-) {
-    var isPriceInverted by remember { mutableStateOf(false) }
-    var expanded by remember { mutableStateOf(false) }
-    val price = limitPrice.toBigDecimalOrNull()
-
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            val priceText = if (price != null && price > BigDecimal.ZERO) {
-                if (!isPriceInverted) {
-                    "1 ${fromToken?.symbol} ≈ ${price.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
-                } else {
-                    val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
-                    "1 ${toToken?.symbol} ≈ ${invertedPrice.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
-                }
-            } else {
-                "..."
-            }
-            Text(
-                text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 16.sp
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.ic_price_switch), contentDescription = "Switch price", tint = MixinAppTheme.colors.iconGray, modifier = Modifier.clickable { isPriceInverted = !isPriceInverted })
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = stringResource(id = R.string.expiry), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp
-            )
-            Box(modifier = Modifier.wrapContentSize()) {
-                Row(
-                    modifier = Modifier.clickable { expanded = true }, verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(expiryOption.labelRes), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_type_down), contentDescription = "Select expiry", tint = MixinAppTheme.colors.iconGray
-                    )
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
-                    ExpiryOption.entries.forEach { option ->
-                        DropdownMenuItem(
-                            onClick = {
-                                expanded = false
-                                onExpiryChange(option)
-                            }) {
-                            Text(text = stringResource(option.labelRes))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun OpenOrderItem(order: LimitOrder, onClick: () -> Unit) {
-    val viewModel = hiltViewModel<SwapViewModel>()
-    val fromToken by viewModel.assetItemFlow(order.assetId).collectAsStateWithLifecycle(null)
-    val toToken by viewModel.assetItemFlow(order.receiveAssetId).collectAsStateWithLifecycle(null)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(modifier = Modifier.wrapContentSize()) {
-            CoilImage(
-                fromToken?.iconUrl,
-                modifier = Modifier
-                    .width(30.dp)
-                    .height(30.dp),
-                placeholder = R.drawable.ic_avatar_place_holder,
-            )
-            CoilImage(
-                toToken?.iconUrl,
-                modifier = Modifier
-                    .offset(x = 10.dp, y = 10.dp)
-                    .width(34.dp)
-                    .height(34.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, MixinAppTheme.colors.background, CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder,
-            )
-        }
-
-        Spacer(modifier = Modifier.width(22.dp))
-
-        Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "${fromToken?.symbol ?: "..."} → ${toToken?.symbol ?: "..."}",
-                    fontSize = 16.sp,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = order.createdAt.fullDate(), fontSize = 14.sp, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End
-                )
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "-${order.amount} ${fromToken?.symbol ?: "..."}",
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.walletRed,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = stringResource(R.string.limit_price),
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.End,
-                    color = MixinAppTheme.colors.textAssist,
-                )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "+${order.expectedReceiveAmount} ${toToken?.symbol ?: "..."}",
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.walletGreen,
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = order.state.value.replaceFirstChar { it.uppercase() }, fontSize = 14.sp, textAlign = TextAlign.End, color = when (order.state) {
-                        LimitOrderStatus.CREATED, LimitOrderStatus.PRICING, LimitOrderStatus.QUOTING -> MixinAppTheme.colors.textAssist
-                        LimitOrderStatus.SETTLED -> MixinAppTheme.colors.green
-                        else -> MixinAppTheme.colors.red
-                    }
-                )
-            }
-        }
     }
 }
