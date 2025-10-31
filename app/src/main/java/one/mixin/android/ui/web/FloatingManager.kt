@@ -7,6 +7,8 @@ import android.graphics.Paint
 import android.view.View
 import android.webkit.WebViewClient
 import androidx.annotation.MainThread
+import androidx.core.graphics.scale
+import androidx.core.graphics.toColorInt
 import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -25,8 +27,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_THREAD
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
-import androidx.core.graphics.scale
-import androidx.core.graphics.toColorInt
 import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"

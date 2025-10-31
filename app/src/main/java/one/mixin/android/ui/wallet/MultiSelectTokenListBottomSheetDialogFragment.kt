@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -18,8 +19,8 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SelectableTokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedTokenAdapter
@@ -71,8 +72,10 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
             selectedTokenItems.addAll(provider.getCurrentTokens())
         }
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

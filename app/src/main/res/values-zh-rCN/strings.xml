@@ -605,6 +605,7 @@
     <string name="Live">直播</string>
     <string name="live_permission">Mixin 需要使用出现在其它应用上的权限以在画中画模式中播放视频。</string>
     <string name="live_shareable_false">该直播已被设置为不允许转发</string>
+    <string name="system_time_is_unusual">系统时间异常</string>
     <string name="loading_time">检测到系统时间异常，请校正后再继续使用</string>
     <string name="Local_IP">本地 IP</string>
     <string name="Location">位置</string>
@@ -1533,6 +1534,7 @@
     <string name="From_address_desc">从其他钱包或交易所转入</string>
     <string name="NO_COLLECTIBLES">没有藏品</string>
     <string name="Collection">合集</string>
+    <string name="Collectible">合集</string>
     <string name="HASH">哈希</string>
     <string name="Collectible_Hash">藏品哈希</string>
     <string name="Swap">交易</string>
@@ -1877,7 +1879,7 @@
     <string name="tag_placeholder">输入数字地址标签（Tag），如果没有请输入任意非 0 数字。</string>
     <string name="withdrawal_label_placeholder">使用一个独特的标签来帮助您找到这个地址，例如钱包、交易所或者朋友的名称。</string>
     <string name="Network_Fee">网络费用</string>
-    <string name="optional_note">转账备注（可选）</string>
+    <string name="Note_Optional">转账备注（可选）</string>
     <string name="add_a_note">添加转账备注</string>
     <string name="Edit_Note">修改转账备注</string>
     <string name="Delete_Note">删除转账备注</string>

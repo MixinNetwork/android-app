@@ -1,7 +1,6 @@
 package one.mixin.android.ui.logs
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +41,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.toast
 import java.io.File

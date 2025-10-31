@@ -8,7 +8,6 @@ import one.mixin.android.databinding.ItemSearchMarketBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment

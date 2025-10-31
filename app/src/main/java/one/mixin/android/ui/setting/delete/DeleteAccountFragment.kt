@@ -18,7 +18,6 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.containsIgnoreCase
-import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.viewDestroyed

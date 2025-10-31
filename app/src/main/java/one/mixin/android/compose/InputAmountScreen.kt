@@ -114,13 +114,12 @@ fun InputAmountFlow(
 
     val walletViewModel: WalletViewModel = hiltViewModel()
     val scope = rememberCoroutineScope()
-    var resolvedDepositUri by remember { mutableStateOf("") }
+    var resolvedDepositUri by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
     NavHost(
         navController = navController,
         startDestination = InputAmountDestinations.INPUT,
-        modifier = modifier
     ) {
         composable(InputAmountDestinations.INPUT) {
             InputAmountScreen(
@@ -143,7 +142,7 @@ fun InputAmountFlow(
                             }
                             resolvedDepositUri = dep?.destination.orEmpty()
                             isLoading = false
-                            if (resolvedDepositUri.isNotEmpty()) {
+                            if (resolvedDepositUri.isNullOrEmpty().not()) {
                                 navController.navigate(InputAmountDestinations.PREVIEW)
                             }
                         }
@@ -520,14 +519,16 @@ private fun generateQrCodeBitmap(
     chainId: String,
     assetKey: String?,
     address: String?,
-    amount: String
+    amount: String,
+    precision: Int? = null
 ): Bitmap {
     val depositUri = generateDepositUri(
         assetId = assetId,
         chainId = chainId,
         assetKey = assetKey,
         address = address,
-        amount = amount.split(" ").first()
+        amount = amount.split(" ").first(),
+        precision = precision
     )
     return depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first
         ?: // Generate a fallback QR code with the address if URI generation fails
@@ -655,7 +656,8 @@ fun InputAmountPreviewScreen(
                             chainId = tokenChainId,
                             assetKey = tokenAssetKey,
                             address = address,
-                            amount = primaryAmount
+                            amount = primaryAmount,
+                            precision = tokenPrecision
                         ).asImageBitmap(),
                         contentDescription = "QR Code",
                         modifier = Modifier
@@ -761,7 +763,23 @@ fun InputAmountPreviewScreen(
                 .padding(horizontal = 50.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(36.dp)
         ) {
-            if (address == null) {
+            if (depositUri != null){
+                ActionButton(
+                    text = stringResource(R.string.Copy),
+                    onClick = { onCopyClick(depositUri) },
+                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                    contentColor = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+
+                ActionButton(
+                    text = stringResource(R.string.Share),
+                    onClick = { onShareClick(depositUri) },
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    modifier = Modifier.weight(1f)
+                )
+            } else if (address == null) {
                 ActionButton(
                     text = stringResource(R.string.Share),
                     onClick = { onShareClick(finalDepositUri) },
@@ -798,7 +816,7 @@ fun InputAmountPreviewScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 

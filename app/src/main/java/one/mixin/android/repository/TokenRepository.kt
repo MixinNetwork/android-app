@@ -247,8 +247,7 @@ class TokenRepository
                 handleMixinResponse(
                     invokeNetwork = {
                         utxoService.createDeposit(
-                            DepositEntryRequest(chainId, assetId),
-                            null,
+                            DepositEntryRequest(chainId, assetId, null),
                         )
                     },
                     failureBlock = {
@@ -276,7 +275,7 @@ class TokenRepository
         }
 
         suspend fun createDepositWithAmount(chainId: String, assetId: String, amount: String): DepositEntry? {
-            val resp = utxoService.createDeposit(DepositEntryRequest(chainId, assetId), amount)
+            val resp = utxoService.createDeposit(DepositEntryRequest(chainId, assetId, amount))
             val pubs = SAFE_PUBLIC_KEY.map { it.hexStringToByteArray() }
             val list = resp.data?.filter {
                 val message =

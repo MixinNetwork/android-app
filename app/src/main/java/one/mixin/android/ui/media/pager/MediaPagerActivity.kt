@@ -32,6 +32,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.net.toFile
+import androidx.core.view.WindowCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -80,7 +81,6 @@ import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.reportEvent
-import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
@@ -164,7 +164,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
-        SystemUIManager.fitsSystem(window)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding.root.doOnPreDraw {
             SystemUIManager.lightUI(window, false)
         }
