@@ -1951,7 +1951,7 @@
     <string name="membership_benefit_safe_members">每个金库最多 %1$d 个共管人，所有金库最多 %2$d 个共管人。</string>
     <string name="membership_benefit_free_recovery_service">资产恢复服务免费使用。</string>
     <string name="membership_benefit_paid_recovery_service">支付 %1$d Mixin Stars 使用资产恢复服务。</string>
-    <string name="Invoice">账单</string>
+    <string name="Invoice">票据</string>
     <string name="Invoices">账单</string>
     <string name="invoice_renew_plan">续订%1$s会员</string>
     <string name="invoice_upgrade_plan">升级到%1$s</string>

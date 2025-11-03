@@ -24,6 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityDepositShareBinding
@@ -211,7 +212,7 @@ class DepositShareActivity : BaseActivity() {
                 binding.icon.badge.loadImage(tokenChainUrl, R.drawable.ic_avatar_place_holder)
             }
 
-            val addr = address ?: ""
+            val addr = if (token?.chainId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) amountUrl ?: "" else address ?: ""
             if (addr.length > 14) {
                 val spannable = android.text.SpannableStringBuilder(addr)
                 val black = colorFromAttribute(R.attr.text_primary)
@@ -230,7 +231,7 @@ class DepositShareActivity : BaseActivity() {
             } else {
                 binding.addressText.text = addr
             }
-            binding.addressTitle.setText(R.string.Address)
+            binding.addressTitle.setText(if (token?.chainId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) R.string.Invoice else R.string.Address)
             binding.networkText.text = tokenChainName
 
             if (amount != null) {

@@ -715,7 +715,7 @@ fun InputAmountPreviewScreen(
                         maxLines = 6,
                         color = MixinAppTheme.colors.textPrimary,
                         fontSize = 16.sp,
-                        constraint = AutoSizeConstraint.Height(min = 10.sp),
+                        constraint = AutoSizeConstraint.Height(min = 8.sp),
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(
@@ -766,7 +766,7 @@ fun InputAmountPreviewScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 50.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(36.dp)
+            horizontalArrangement = Arrangement.spacedBy(28.dp)
         ) {
             if (invoiceUri != null) {
                 ActionButton(
