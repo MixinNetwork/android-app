@@ -251,6 +251,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     lifecycleScope.launch {
                         val app = searchViewModel.findOrSyncApp(appId)
                         if (app != null) {
+                            searchViewModel.updateRecentUsedBots(this@SearchFragment.defaultSharedPreferences, app.appId)
                             WebActivity.show(requireContext(), url = app.homeUri, null, app = app)
                         } else {
                             toast(R.string.Bot_not_found)

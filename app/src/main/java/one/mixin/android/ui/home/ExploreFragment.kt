@@ -519,7 +519,7 @@ class ExploreFragment : BaseFragment() {
                             ).apply {
                                 setAllowDecodeSingleFrame(true)
                                 setAutoRepeat(1)
-                                setAutoRepeatCount(3)
+                                setAutoRepeatCount(Int.MAX_VALUE)
                                 start()
                             },
                         )

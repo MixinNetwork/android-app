@@ -591,6 +591,10 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     System.currentTimeMillis(),
                                 )
                                 context?.updatePinCheck()
+                                defaultSharedPreferences.putLong(
+                                    Constants.BIOMETRIC_PIN_CHECK,
+                                    System.currentTimeMillis(),
+                                )
                                 step = Step.Done
                                 AnalyticsTracker.trackSwapSend()
                             }
@@ -608,6 +612,10 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     System.currentTimeMillis(),
                                 )
                                 context?.updatePinCheck()
+                                defaultSharedPreferences.putLong(
+                                    Constants.BIOMETRIC_PIN_CHECK,
+                                    System.currentTimeMillis(),
+                                )
                                 step = Step.Done
                                 AnalyticsTracker.trackSwapSend()
                             }

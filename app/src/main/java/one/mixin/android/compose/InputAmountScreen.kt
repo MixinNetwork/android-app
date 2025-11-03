@@ -454,14 +454,16 @@ private fun generateQrCodeBitmap(
     chainId: String,
     assetKey: String?,
     address: String?,
-    amount: String
+    amount: String,
+    precision: Int? = null
 ): Bitmap {
     val depositUri = generateDepositUri(
         assetId = assetId,
         chainId = chainId,
         assetKey = assetKey,
         address = address,
-        amount = amount.split(" ").first()
+        amount = amount.split(" ").first(),
+        precision = precision
     )
     return depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first
         ?: // Generate a fallback QR code with the address if URI generation fails
@@ -588,7 +590,8 @@ fun InputAmountPreviewScreen(
                             chainId = tokenChainId,
                             assetKey = tokenAssetKey,
                             address = address,
-                            amount = primaryAmount
+                            amount = primaryAmount,
+                            precision = tokenPrecision
                         ).asImageBitmap(),
                         contentDescription = "QR Code",
                         modifier = Modifier

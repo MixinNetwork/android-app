@@ -232,7 +232,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         assetKey = tokenItem.assetKey ?: t?.assetKey ?: "",
                         symbol = tokenItem.symbol,
                         iconUrl = tokenItem.iconUrl,
-                        precision = t?.precision ?: 0,
+                        precision = t?.precision ?: tokenItem.precision,
                         kernelAssetId = "",
                         balance = t?.balance ?: "0",
                         priceUsd = tokenItem.priceUsd,
