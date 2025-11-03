@@ -50,6 +50,7 @@ fun InputArea(
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
     bottomCompose: (@Composable () -> Unit)? = null,
+    inlineEndCompose: (@Composable () -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
@@ -81,7 +82,7 @@ fun InputArea(
             }
         }
         Box(modifier = Modifier.height(10.dp))
-        InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
+        InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly, inlineEndCompose = inlineEndCompose)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             token?.let { t ->
                 val depositVisible = !readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0

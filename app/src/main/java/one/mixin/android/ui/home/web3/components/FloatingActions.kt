@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.mixin.android.R
+import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.FocusedField
@@ -25,11 +26,13 @@ fun FloatingActions(
     fromBalance: String?,
     fromToken: SwapToken?,
     toToken: SwapToken?,
+    marketPrice: java.math.BigDecimal?,
     onSetInput: (String) -> Unit,
     onSetLimitPrice: (String) -> Unit,
     onDone: () -> Unit,
 ) {
-    when (focusedField) {
+    val effectiveField = if (focusedField == FocusedField.NONE) FocusedField.AMOUNT else focusedField
+    when (effectiveField) {
         FocusedField.AMOUNT -> {
             Row(
                 modifier = Modifier
@@ -71,29 +74,25 @@ fun FloatingActions(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                val marketPrice = remember(fromToken, toToken) {
-                    val fromPrice = fromToken?.price?.toBigDecimalOrNull()
-                    val toPrice = toToken?.price?.toBigDecimalOrNull()
-                    if (fromPrice != null && toPrice != null && toPrice > BigDecimal.ZERO) {
-                        fromPrice.divide(toPrice, 8, RoundingMode.HALF_UP)
-                    } else {
-                        null
-                    }
-                }
+                val mp = remember(marketPrice) { marketPrice }
                 InputAction(stringResource(R.string.market_price), showBorder = true) {
-                    marketPrice?.let { onSetLimitPrice(it.stripTrailingZeros().toPlainString()) }
+                    mp?.let { onSetLimitPrice(it.stripTrailingZeros().toPlainString()) }
                 }
-                InputAction("+10%", showBorder = true) {
-                    marketPrice?.let {
-                        val newPrice = it.multiply(BigDecimal("1.1"))
-                        onSetLimitPrice(newPrice.stripTrailingZeros().toPlainString())
-                    }
-                }
-                InputAction("+20%", showBorder = true) {
-                    marketPrice?.let {
-                        val newPrice = it.multiply(BigDecimal("1.2"))
-                        onSetLimitPrice(newPrice.stripTrailingZeros().toPlainString())
-                    }
+
+                val isToUsd = toToken?.assetId?.let { id ->
+                    Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
+                } == true
+                val isFromUsd = fromToken?.assetId?.let { id ->
+                    Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
+                } == true
+
+                if (isToUsd) {
+                    InputAction("+10%", showBorder = true) { mp?.let { onSetLimitPrice(it.multiply(BigDecimal("1.1")).stripTrailingZeros().toPlainString()) } }
+                    InputAction("+20%", showBorder = true) { mp?.let { onSetLimitPrice(it.multiply(BigDecimal("1.2")).stripTrailingZeros().toPlainString()) } }
+                } else {
+                    // from is USD or other cases -> -10% / -20%
+                    InputAction("-10%", showBorder = true) { mp?.let { onSetLimitPrice(it.multiply(BigDecimal("0.9")).stripTrailingZeros().toPlainString()) } }
+                    InputAction("-20%", showBorder = true) { mp?.let { onSetLimitPrice(it.multiply(BigDecimal("0.8")).stripTrailingZeros().toPlainString()) } }
                 }
                 InputAction(stringResource(R.string.Done), showBorder = false) { onDone() }
             }
