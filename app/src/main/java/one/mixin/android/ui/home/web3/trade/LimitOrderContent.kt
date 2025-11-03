@@ -6,8 +6,10 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +49,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -67,10 +71,10 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.putString
+import one.mixin.android.ui.home.web3.components.ExpirySelector
 import one.mixin.android.ui.home.web3.components.FloatingActions
 import one.mixin.android.ui.home.web3.components.InputArea
 import one.mixin.android.ui.home.web3.components.OpenOrderItem
-import one.mixin.android.ui.home.web3.components.PriceDisplay
 import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -136,6 +140,7 @@ fun LimitOrderContent(
     var limitOrders by remember { mutableStateOf<List<LimitOrder>>(emptyList()) }
 
     var expiryOption by remember { mutableStateOf(ExpiryOption.NEVER) }
+    var isPriceInverted by remember { mutableStateOf(false) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner) {
@@ -260,7 +265,32 @@ fun LimitOrderContent(
                             readOnly = false,
                             selectClick = null,
                             onInputChanged = { limitPriceText = it },
-                            showTokenInfo = false,
+                            bottomCompose = {
+                                Row(
+                                    modifier = Modifier.wrapContentWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                ) {
+                                    val price = limitPriceText.toBigDecimalOrNull()
+                                    val priceText = if (price != null && price > BigDecimal.ZERO) {
+                                        if (!isPriceInverted) {
+                                            "1 ${toToken?.symbol} ≈ ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
+                                        } else {
+                                            val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
+                                            "1 ${fromToken?.symbol} ≈ ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
+                                        }
+                                    } else {
+                                        "..."
+                                    }
+                                    Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_price_switch),
+                                        contentDescription = null,
+                                        tint = MixinAppTheme.colors.textAssist,
+                                        modifier = Modifier.clickable { isPriceInverted = !isPriceInverted }
+                                    )
+                                }
+                            },
                         )
                     },
                     margin = 6.dp,
@@ -323,8 +353,10 @@ fun LimitOrderContent(
                 } else {
                     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                         Spacer(modifier = Modifier.height(14.dp))
-                        PriceDisplay(
-                            fromToken = fromToken, toToken = toToken, limitPrice = limitPriceText, expiryOption = expiryOption, onExpiryChange = { option -> expiryOption = option })
+                        ExpirySelector(
+                            expiryOption = expiryOption,
+                            onExpiryChange = { option -> expiryOption = option }
+                        )
 
                         Spacer(modifier = Modifier.height(14.dp))
                         val keyboardController = LocalSoftwareKeyboardController.current

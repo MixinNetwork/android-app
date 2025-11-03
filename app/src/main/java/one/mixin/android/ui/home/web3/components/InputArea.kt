@@ -49,7 +49,7 @@ fun InputArea(
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
     onMax: (() -> Unit)? = null,
-    showTokenInfo: Boolean = true,
+    bottomCompose: (@Composable () -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
@@ -72,22 +72,22 @@ fun InputArea(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = title, fontSize = 14.sp, color = MixinAppTheme.colors.textPrimary)
-                if (showTokenInfo) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    token?.let {
-                        Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
-                    } ?: run {
-                        Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
-                    }
+                Spacer(modifier = Modifier.weight(1f))
+                token?.let {
+                    Text(text = it.chain.name, fontSize = 12.sp, color = MixinAppTheme.colors.textAssist)
+                } ?: run {
+                    Text(text = stringResource(id = R.string.select_token), fontSize = 14.sp, color = MixinAppTheme.colors.textMinor)
                 }
             }
         }
         Box(modifier = Modifier.height(10.dp))
         InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly)
-        if (showTokenInfo) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                token?.let { t->
-                    val depositVisible = !readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            token?.let { t ->
+                val depositVisible = !readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0
+                if (bottomCompose != null) {
+                    bottomCompose.invoke()
+                } else {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_web3_wallet),
                         contentDescription = null,
@@ -107,38 +107,39 @@ fun InputArea(
                         ),
                         modifier = Modifier.clickable { onMax?.invoke() }
                     )
-                    if (depositVisible) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(id = R.string.Deposit),
-                            style = TextStyle(
-                                fontSize = 12.sp,
-                                color = MixinAppTheme.colors.textBlue,
-                            ),
-                            modifier = Modifier.clickable { onDeposit?.invoke(t) },
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
+                }
+                if (depositVisible) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = token.name,
+                        text = stringResource(id = R.string.Deposit),
                         style = TextStyle(
                             fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist,
-                            textAlign = TextAlign.Start,
-                        )
-                    )
-                } ?: run {
-                    Text(
-                        text = "0",
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            color = MixinAppTheme.colors.textAssist,
-                            textAlign = TextAlign.Start,
+                            color = MixinAppTheme.colors.textBlue,
                         ),
+                        modifier = Modifier.clickable { onDeposit.invoke(t) },
                     )
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = token.name,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        textAlign = TextAlign.Start,
+                    )
+                )
+            } ?: run {
+                Text(
+                    text = "0",
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        textAlign = TextAlign.Start,
+                    ),
+                )
             }
+
         }
     }
 }

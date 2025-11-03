@@ -26,48 +26,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.ExpiryOption
-import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Composable
-fun PriceDisplay(
-    fromToken: SwapToken?,
-    toToken: SwapToken?,
-    limitPrice: String,
+fun ExpirySelector(
     expiryOption: ExpiryOption,
     onExpiryChange: (ExpiryOption) -> Unit,
 ) {
-    var isPriceInverted by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
-    val price = limitPrice.toBigDecimalOrNull()
 
     Column(
         modifier = Modifier
             .padding(horizontal = 24.dp)
             .fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            val priceText = if (price != null && price > BigDecimal.ZERO) {
-                if (!isPriceInverted) {
-                    "1 ${fromToken?.symbol} ≈ ${price.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
-                } else {
-                    val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
-                    "1 ${toToken?.symbol} ≈ ${invertedPrice.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
-                }
-            } else {
-                "..."
-            }
-            Text(
-                text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 16.sp
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.ic_price_switch), contentDescription = "Switch price", tint = MixinAppTheme.colors.iconGray, modifier = Modifier.clickable { isPriceInverted = !isPriceInverted })
-        }
         Row(
             modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween
         ) {
