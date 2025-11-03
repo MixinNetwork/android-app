@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -116,6 +117,7 @@ fun InputAmountFlow(
                 inputAmount = inputAmount,
                 primaryAmount = primaryAmount,
                 minorAmount = minorAmount,
+                tokenNumericAmount = tokenAmount.split(" ").firstOrNull() ?: "",
                 onNumberClick = onNumberClick,
                 onDeleteClick = onDeleteClick,
                 onSwitchClick = onSwitchClick,
@@ -141,6 +143,7 @@ fun InputAmountFlow(
                     }
                 },
                 onCloseClick = onCloseClick,
+                symbol = tokenSymbol,
                 minimum = minimum,
                 maximum = maximum,
                 isLoading = isLoading,
@@ -177,12 +180,14 @@ fun InputAmountScreen(
     inputAmount: String,
     primaryAmount: String,
     minorAmount: String,
+    tokenNumericAmount: String,
     onNumberClick: (String) -> Unit,
     onDeleteClick: () -> Unit,
     onSwitchClick: () -> Unit,
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
+    symbol: String = "",
     minimum: BigDecimal? = null,
     maximum: BigDecimal? = null,
     isLoading: Boolean = false,
@@ -227,13 +232,12 @@ fun InputAmountScreen(
             }
 
         }
-        Spacer(modifier = Modifier.weight(1f))
         Column(
             modifier = Modifier
-                .fillMaxWidth()
                 .weight(1f)
                 .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
 
             Text(
@@ -243,7 +247,7 @@ fun InputAmountScreen(
                 color = MixinAppTheme.colors.textPrimary,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             // Minor amount display with switch button
             Row(
@@ -273,9 +277,34 @@ fun InputAmountScreen(
                     )
                 }
             }
+            val localEntered = (tokenNumericAmount.ifBlank { inputAmount }).toBigDecimalOrNull()
+            val errorMessage: String? = if (localEntered == null || localEntered <= BigDecimal.ZERO) {
+                null
+            } else if (maximum != null && maximum.compareTo(BigDecimal.ZERO) > 0 && localEntered.compareTo(maximum) > 0) {
+                stringResource(
+                    id = R.string.single_transaction_should_be_less_than,
+                    maximum.stripTrailingZeros().toPlainString(),
+                    symbol
+                )
+            } else if (minimum != null && localEntered.compareTo(minimum) < 0) {
+                stringResource(
+                    id = R.string.single_transaction_should_be_greater_than,
+                    minimum.stripTrailingZeros().toPlainString(),
+                    symbol
+                )
+            } else null
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = it,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MixinAppTheme.colors.tipError,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
 
         // Number keyboard
         NumberKeyboard(
@@ -288,10 +317,10 @@ fun InputAmountScreen(
 
         // Full width button with 20dp horizontal margins
 
-        val entered = inputAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val entered = (tokenNumericAmount.ifBlank { inputAmount }).toBigDecimalOrNull() ?: BigDecimal.ZERO
         val withinMin = minimum?.let { entered >= it } ?: true
         val withinMax = maximum?.let { if (it.compareTo(BigDecimal.ZERO) == 0) true else entered <= it } ?: true
-        val canContinue = (inputAmount.toFloatOrNull() ?: 0f) > 0f && withinMin && withinMax
+        val canContinue = (tokenNumericAmount.ifBlank { inputAmount }.toFloatOrNull() ?: 0f) > 0f && withinMin && withinMax
 
         Box(
             modifier = Modifier
