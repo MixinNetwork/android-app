@@ -181,9 +181,11 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
 
     private fun setForwardText() {
         if (adapter.selectItem.size > 0) {
-            binding.forwardGroup.visibility = View.VISIBLE
+            binding.forwardBn.visibility = View.VISIBLE
+            binding.forwardTv.visibility = View.VISIBLE
         } else {
-            binding.forwardGroup.visibility = View.GONE
+            binding.forwardBn.visibility = View.GONE
+            binding.forwardTv.visibility = View.GONE
         }
         val str = StringBuffer()
         for (i in adapter.selectItem.size - 1 downTo 0) {
