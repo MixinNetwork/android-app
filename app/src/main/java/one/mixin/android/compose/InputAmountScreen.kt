@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,12 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
@@ -47,7 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -69,12 +62,9 @@ import one.mixin.android.vo.safe.TokenItem
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
 import kotlinx.coroutines.launch
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
 import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import java.math.BigDecimal
-import java.math.RoundingMode
-import kotlin.math.pow
 import one.mixin.android.extension.dp as dip
 
 object InputAmountDestinations {
@@ -169,7 +159,7 @@ fun InputAmountFlow(
                 tokenChainId = tokenChainId,
                 tokenPrecision = tokenPrecision,
                 address = address,
-                depositUri = resolvedDepositUri,
+                invoiceUri = resolvedDepositUri,
                 onBackClick = {
                     navController.popBackStack()
                 },
@@ -553,10 +543,10 @@ fun InputAmountPreviewScreen(
     tokenChainId: String = "",
     tokenPrecision: Int? = null,
     address: String? = null,
-    depositUri: String? = null
+    invoiceUri: String? = null
 ) {
     // Generate deposit URI for copy and share operations
-    val finalDepositUri = depositUri ?: generateDepositUri(
+    val finalDepositUri = invoiceUri ?: generateDepositUri(
         assetId = tokenAssetId,
         chainId = tokenChainId,
         assetKey = tokenAssetKey,
@@ -605,7 +595,22 @@ fun InputAmountPreviewScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(54.dp))
-            if (address == null) {
+            if (invoiceUri != null) {
+                Text(
+                    text = stringResource(R.string.Deposit_to_Mixin, tokenSymbol),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.transfer_qrcode_prompt_amount, primaryAmount),
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    textAlign = TextAlign.Center,
+                )
+            } else if (address == null) {
                 Text(
                     text = Session.getAccount()?.fullName ?: "",
                     fontSize = 18.sp,
@@ -651,7 +656,7 @@ fun InputAmountPreviewScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        bitmap = depositUri?.generateQRCode(200.dip, 0, 32.dip)?.first?.asImageBitmap() ?: generateQrCodeBitmap(
+                        bitmap = invoiceUri?.generateQRCode(200.dip, 0, 32.dip)?.first?.asImageBitmap() ?: generateQrCodeBitmap(
                             assetId = tokenAssetId,
                             chainId = tokenChainId,
                             assetKey = tokenAssetKey,
@@ -686,7 +691,7 @@ fun InputAmountPreviewScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-            if (address == null) {
+            if (address == null && invoiceUri == null) {
                 Text(
                     text = stringResource(R.string.transfer_qrcode_prompt_amount, primaryAmount),
                     fontSize = 14.sp,
@@ -694,13 +699,13 @@ fun InputAmountPreviewScreen(
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
-            address?.let { addr ->
+            (address ?: invoiceUri)?.let { addr ->
                 Column(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        text = stringResource(R.string.Address),
+                        text = stringResource(if (invoiceUri != null) R.string.Invoice else R.string.Address),
                         fontSize = 14.sp,
                         color = MixinAppTheme.colors.textAssist,
                     )
@@ -763,10 +768,10 @@ fun InputAmountPreviewScreen(
                 .padding(horizontal = 50.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(36.dp)
         ) {
-            if (depositUri != null){
+            if (invoiceUri != null) {
                 ActionButton(
-                    text = stringResource(R.string.Copy),
-                    onClick = { onCopyClick(depositUri) },
+                    text = stringResource(R.string.Copy_Invoice),
+                    onClick = { onCopyClick(invoiceUri) },
                     backgroundColor = MixinAppTheme.colors.backgroundWindow,
                     contentColor = MixinAppTheme.colors.textPrimary,
                     modifier = Modifier.weight(1f)
@@ -774,7 +779,7 @@ fun InputAmountPreviewScreen(
 
                 ActionButton(
                     text = stringResource(R.string.Share),
-                    onClick = { onShareClick(depositUri) },
+                    onClick = { onShareClick(invoiceUri) },
                     backgroundColor = MixinAppTheme.colors.accent,
                     contentColor = Color.White,
                     modifier = Modifier.weight(1f)

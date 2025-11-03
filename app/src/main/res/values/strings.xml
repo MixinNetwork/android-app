@@ -296,6 +296,7 @@
     <string name="Conversation_not_found">Conversation not found.</string>
     <string name="copied_to_clipboard">Copied to Clipboard</string>
     <string name="Copy">Copy</string>
+    <string name="Copy_Invoice">Copy Invoice</string>
     <string name="Copy_hash">Copy Hash</string>
     <string name="Copy_invite">Copy Invite Link</string>
     <string name="Copy_link">Copy Link</string>
