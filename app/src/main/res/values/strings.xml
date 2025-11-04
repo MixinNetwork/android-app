@@ -296,6 +296,7 @@
     <string name="Conversation_not_found">Conversation not found.</string>
     <string name="copied_to_clipboard">Copied to Clipboard</string>
     <string name="Copy">Copy</string>
+    <string name="Copy_Invoice">Copy Invoice</string>
     <string name="Copy_hash">Copy Hash</string>
     <string name="Copy_invite">Copy Invite Link</string>
     <string name="Copy_link">Copy Link</string>
@@ -2111,6 +2112,7 @@
     <string name="Set_Amount">Set Amount</string>
     <string name="BLOCK_CONFIRMATIONS">BLOCK CONFIRMATIONS</string>
     <string name="MINIMUM_DEPOSIT">MINIMUM DEPOSIT</string>
+    <string name="MAXIMUM_DEPOSIT">MAXIMUM DEPOSIT</string>
     <string name="Deposit_to_Mixin">Deposit %1$s to Mixin</string>
     <string name="Deposit_to_Mixin_sub">Scan the QR Code to send me %1$s</string>
     <string name="LIGHTNING_ADDRESS">LIGHTNING ADDRESS</string>

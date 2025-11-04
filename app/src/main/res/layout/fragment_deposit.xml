@@ -363,6 +363,24 @@
                     android:layout_marginTop="8dp"
                     android:textSize="16sp" />
 
+                <!-- Maximum Deposit -->
+                <TextView
+                    android:id="@+id/maximum_deposit_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/MAXIMUM_DEPOSIT"
+                    android:textColor="?attr/text_assist"
+                    android:layout_marginTop="20dp"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/maximum_deposit_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_primary"
+                    android:layout_marginTop="8dp"
+                    android:textSize="16sp" />
+
                 <!-- Block Confirmations -->
                 <LinearLayout
                     android:layout_width="wrap_content"
