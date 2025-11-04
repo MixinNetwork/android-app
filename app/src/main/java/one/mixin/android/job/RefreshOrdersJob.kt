@@ -19,14 +19,14 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
 
     override fun onRun(): Unit =
         runBlocking {
-            val lastCreate = swapOrderDao.lastOrderCreatedAt()
+            val lastCreate = orderDao.lastOrderCreatedAt()
             refreshOrders(lastCreate)
         }
 
     private suspend fun refreshOrders(offset: String?) {
-        val response = routeService.orders(limit = LIMIT, offset = offset)
+        val response = routeService.getLimitOrders(offset = offset, limit = LIMIT)
         if (response.isSuccess && response.data != null) {
-            swapOrderDao.insertListSuspend(response.data!!)
+            orderDao.insertListSuspend(response.data!!)
             if (response.data!!.size >= LIMIT) {
                 val lastCreate = response.data?.last()?.createdAt ?: return
                 refreshOrders(lastCreate)

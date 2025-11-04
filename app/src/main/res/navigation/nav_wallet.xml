@@ -64,8 +64,9 @@
             app:exitAnim="@anim/stay"
             app:popEnterAnim="@anim/stay"
             app:popExitAnim="@anim/slide_out_right" />
-
     </fragment>
+
+
 
     <fragment
         android:id="@+id/market_fragment_details"
@@ -90,7 +91,7 @@
 
         <action
             android:id="@+id/action_market_details_to_swap"
-            app:destination="@id/swap_fragment"
+            app:destination="@id/trade_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
@@ -102,7 +103,7 @@
         android:name="one.mixin.android.ui.wallet.alert.AlertFragment"/>
 
     <fragment
-        android:id="@+id/swap_fragment"
+        android:id="@+id/trade_fragment"
         android:name="one.mixin.android.ui.home.web3.trade.TradeFragment">
 
         <argument
@@ -616,7 +617,7 @@
 
         <action
             android:id="@+id/action_web3_transactions_to_swap"
-            app:destination="@id/swap_fragment"
+            app:destination="@id/trade_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"

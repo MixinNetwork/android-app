@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -18,6 +19,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+ 
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
@@ -66,6 +68,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -98,6 +101,8 @@ class TradeFragment : BaseFragment() {
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_DESTINATION = "args_destination"
+        const val ARGS_ORDER_ID = "args_order_id"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -121,6 +126,12 @@ class TradeFragment : BaseFragment() {
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
+            }
+
+        fun newInstanceForOrderDetail(orderId: String, isLimitOrder: Boolean): TradeFragment =
+            TradeFragment().withArgs {
+                putString(ARGS_DESTINATION, if (isLimitOrder) TradeDestination.LimitOrderPage.name else TradeDestination.OrderDetail.name)
+                putString(ARGS_ORDER_ID, orderId)
             }
     }
 
@@ -244,7 +255,7 @@ class TradeFragment : BaseFragment() {
                                     }
                                 },
                                 onOrderList = {
-                                    navController.navigate(TradeDestination.OrderList.name)
+                                    navTo(AllOrdersFragment(), AllOrdersFragment.TAG)
                                     if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
                                         defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
                                         orderBadge = false
@@ -335,6 +346,17 @@ class TradeFragment : BaseFragment() {
                                     navigateUp(navController)
                                 }
                             )
+                        }
+                    }
+
+                    val target = arguments?.getString(ARGS_DESTINATION)
+                    val targetOrderId = arguments?.getString(ARGS_ORDER_ID)
+                    LaunchedEffect(target, targetOrderId) {
+                        if (!targetOrderId.isNullOrBlank()) {
+                            when (target) {
+                                TradeDestination.LimitOrderPage.name -> navController.navigate("${TradeDestination.LimitOrderPage.name}/$targetOrderId")
+                                TradeDestination.OrderDetail.name -> navController.navigate("${TradeDestination.OrderDetail.name}/$targetOrderId")
+                            }
                         }
                     }
                 }

@@ -41,7 +41,7 @@ import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.LimitOrder
+import one.mixin.android.vo.route.Order
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -391,10 +391,10 @@ class AssetRepository
     ): MixinResponse<SwapResponse> = routeService.web3Swap(swapRequest)
 
     suspend fun createLimitOrder(request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse> = routeService.createLimitOrder(request)
-    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?): MixinResponse<List<LimitOrder>> =
+    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?): MixinResponse<List<Order>> =
         routeService.getLimitOrders(category, limit, offset)
-    suspend fun getLimitOrder(id: String): MixinResponse<LimitOrder> = routeService.getLimitOrder(id)
-    suspend fun cancelLimitOrder(id: String): MixinResponse<LimitOrder> = routeService.cancelLimitOrder(id)
+    suspend fun getLimitOrder(id: String): MixinResponse<Order> = routeService.getLimitOrder(id)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = routeService.cancelLimitOrder(id)
 
     suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
 

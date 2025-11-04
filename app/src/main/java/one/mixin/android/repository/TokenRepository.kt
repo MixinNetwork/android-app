@@ -58,12 +58,12 @@ import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
-import one.mixin.android.db.SwapOrderDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM_NOT_HIDDEN
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
@@ -125,6 +125,7 @@ import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.route.SwapOrderItem
+import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -178,7 +179,7 @@ class TokenRepository
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
-        private val swapOrderDao: SwapOrderDao,
+        private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
         private val web3TransactionDao: Web3TransactionDao,
         private val web3RawTransactionDao: Web3RawTransactionDao,
@@ -576,6 +577,8 @@ class TokenRepository
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
 
+        fun observeOrder(orderId: String) = orderDao.observeOrder(orderId)
+
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
 
         fun getPendingDisplays() = safeSnapshotDao.getPendingDisplays()
@@ -803,7 +806,7 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        fun swapOrders(): Flow<List<SwapOrderItem>> = swapOrderDao.orders()
+        fun swapOrders(): Flow<List<SwapOrderItem>> = orderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
@@ -1426,7 +1429,7 @@ class TokenRepository
 
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 
-    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = swapOrderDao.getOrderById(orderId)
+    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = orderDao.getOrderById(orderId)
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 

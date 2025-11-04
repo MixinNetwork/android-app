@@ -12,7 +12,7 @@ class RefreshPendingOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstan
 
     override fun onRun(): Unit =
         runBlocking {
-            val pendingOrders = swapOrderDao.getPendingOrders()
+            val pendingOrders = orderDao.getPendingOrders()
             if (pendingOrders.isNotEmpty()) {
                 pendingOrders.forEach {
                     launch {
@@ -23,9 +23,9 @@ class RefreshPendingOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstan
         }
 
     private suspend fun refreshPendingOrder(orderId: String) {
-        val response = routeService.orderById(orderId)
+        val response = routeService.getLimitOrder(orderId)
         if (response.isSuccess && response.data != null) {
-            swapOrderDao.insertSuspend(response.data!!)
+            orderDao.insertSuspend(response.data!!)
         }
     }
 }

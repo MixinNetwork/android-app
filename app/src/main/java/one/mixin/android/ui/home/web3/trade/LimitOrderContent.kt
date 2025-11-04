@@ -64,7 +64,6 @@ import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.LimitOrder
 import one.mixin.android.api.response.LimitOrderCategory
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
@@ -83,6 +82,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.handleMixinError
+import one.mixin.android.vo.route.Order
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
@@ -139,7 +139,7 @@ fun LimitOrderContent(
     var isButtonEnabled by remember { mutableStateOf(true) }
     var isSubmitting by remember { mutableStateOf(false) }
 
-    var limitOrders by remember { mutableStateOf<List<LimitOrder>>(emptyList()) }
+    var limitOrders by remember { mutableStateOf<List<Order>>(emptyList()) }
 
     var expiryOption by remember { mutableStateOf(ExpiryOption.NEVER) }
     var isPriceInverted by remember { mutableStateOf(false) }
@@ -367,7 +367,7 @@ fun LimitOrderContent(
                             Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                             Spacer(modifier = Modifier.height(8.dp))
                             limitOrders.forEach { order ->
-                                OpenOrderItem(order = order, onClick = { onLimitOrderClick(order.limitOrderId) })
+                                OpenOrderItem(order = order, onClick = { onLimitOrderClick(order.orderId) })
                             }
                         }
                     } else {

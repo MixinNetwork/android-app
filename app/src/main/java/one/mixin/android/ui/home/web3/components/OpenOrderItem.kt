@@ -32,11 +32,12 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
+import one.mixin.android.vo.route.Order
 
 @Composable
-fun OpenOrderItem(order: LimitOrder, onClick: () -> Unit) {
+fun OpenOrderItem(order: Order, onClick: () -> Unit) {
     val viewModel = hiltViewModel<SwapViewModel>()
-    val fromToken by viewModel.assetItemFlow(order.assetId).collectAsStateWithLifecycle(null)
+    val fromToken by viewModel.assetItemFlow(order.payAssetId).collectAsStateWithLifecycle(null)
     val toToken by viewModel.assetItemFlow(order.receiveAssetId).collectAsStateWithLifecycle(null)
     Row(
         modifier = Modifier
@@ -81,7 +82,7 @@ fun OpenOrderItem(order: LimitOrder, onClick: () -> Unit) {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "-${order.amount} ${fromToken?.symbol ?: "..."}",
+                    text = "-${order.payAmount} ${fromToken?.symbol ?: "..."}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.walletRed,
                 )
@@ -100,13 +101,13 @@ fun OpenOrderItem(order: LimitOrder, onClick: () -> Unit) {
                     color = MixinAppTheme.colors.walletGreen,
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = order.state.value.replaceFirstChar { it.uppercase() }, fontSize = 14.sp, textAlign = TextAlign.End, color = when (order.state) {
-                        LimitOrderStatus.CREATED, LimitOrderStatus.PRICING, LimitOrderStatus.QUOTING -> MixinAppTheme.colors.textAssist
-                        LimitOrderStatus.SETTLED -> MixinAppTheme.colors.green
-                        else -> MixinAppTheme.colors.red
-                    }
-                )
+//                Text(
+//                    text = order.state.value.replaceFirstChar { it.uppercase() }, fontSize = 14.sp, textAlign = TextAlign.End, color = when (order.state) {
+//                        LimitOrderStatus.CREATED, LimitOrderStatus.PRICING, LimitOrderStatus.QUOTING -> MixinAppTheme.colors.textAssist
+//                        LimitOrderStatus.SETTLED -> MixinAppTheme.colors.green
+//                        else -> MixinAppTheme.colors.red
+//                    }
+//                )
             }
         }
     }

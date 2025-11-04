@@ -26,13 +26,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,8 +46,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.LimitOrder
-import one.mixin.android.api.response.LimitOrderStatus
+import one.mixin.android.vo.route.Order
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate
@@ -70,15 +66,8 @@ fun LimitOrderDetailPage(
 ) {
     val context = LocalContext.current
     val viewModel: SwapViewModel = hiltViewModel()
-    var orderItem by remember { mutableStateOf<LimitOrder?>(null) }
-
-    LaunchedEffect(orderId) {
-        viewModel.getLimitOrder(orderId).data?.let {
-            orderItem = it
-        }
-    }
-
-    val payAsset by viewModel.assetItemFlow(orderItem?.assetId ?: "").collectAsState(null)
+    val orderItem by viewModel.observeOrder(orderId).collectAsState(null)
+    val payAsset by viewModel.assetItemFlow(orderItem?.payAssetId ?: "").collectAsState(null)
     val receiveAsset by viewModel.assetItemFlow(orderItem?.receiveAssetId ?: "").collectAsState(null)
 
     MixinAppTheme {
@@ -173,12 +162,9 @@ fun LimitOrderDetailPage(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(
-                                    when (limitOrder.state) {
-                                        LimitOrderStatus.SETTLED -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
-                                        LimitOrderStatus.FAILED, LimitOrderStatus.CANCELLED, LimitOrderStatus.EXPIRED -> MixinAppTheme.colors.walletRed.copy(
-                                            alpha = 0.2f
-                                        )
-
+                                    when (limitOrder.state.lowercase()) {
+                                        "settled" -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
+                                        "failed", "cancelled", "expired" -> MixinAppTheme.colors.walletRed.copy(alpha = 0.2f)
                                         else -> MixinAppTheme.colors.textMinor.copy(alpha = 0.2f)
                                     }
                                 )
@@ -186,17 +172,17 @@ fun LimitOrderDetailPage(
                                 .align(Alignment.CenterHorizontally)
                         ) {
                             Text(
-                                formatLimitOrderState(context, limitOrder.state), color = when (limitOrder.state) {
-                                    LimitOrderStatus.SETTLED -> MixinAppTheme.colors.walletGreen
-                                    LimitOrderStatus.FAILED, LimitOrderStatus.CANCELLED, LimitOrderStatus.EXPIRED -> MixinAppTheme.colors.walletRed
+                                formatLimitOrderState(context, limitOrder.state), color = when (limitOrder.state.lowercase()) {
+                                    "settled" -> MixinAppTheme.colors.walletGreen
+                                    "failed", "cancelled", "expired" -> MixinAppTheme.colors.walletRed
                                     else -> MixinAppTheme.colors.textPrimary
                                 }
                             )
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                         val scope = rememberCoroutineScope()
-                        when (limitOrder.state) {
-                            LimitOrderStatus.PRICING, LimitOrderStatus.CREATED, LimitOrderStatus.QUOTING -> {
+                        when (limitOrder.state.lowercase()) {
+                            "pricing", "created", "quoting" -> {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -215,7 +201,7 @@ fun LimitOrderDetailPage(
                                             .fillMaxWidth()
                                             .clickable {
                                                 scope.launch {
-                                                    viewModel.cancelLimitOrder(limitOrder.limitOrderId)
+                                                    viewModel.cancelLimitOrder(limitOrder.orderId)
                                                     pop()
                                                 }
                                             }
@@ -246,7 +232,7 @@ fun LimitOrderDetailPage(
                                             )
                                             .clickable {
                                                 onTryAgain.invoke(
-                                                    limitOrder.assetId,
+                                                    limitOrder.payAssetId,
                                                     limitOrder.receiveAssetId
                                                 )
                                             }
@@ -271,7 +257,7 @@ fun LimitOrderDetailPage(
                                             )
                                             .clickable {
                                                 onShare.invoke(
-                                                    limitOrder.assetId,
+                                                    limitOrder.payAssetId,
                                                     limitOrder.receiveAssetId
                                                 )
                                             }
@@ -296,13 +282,13 @@ fun LimitOrderDetailPage(
                     ) {
                         DetailItem(
                             context.getString(R.string.swap_order_paid).uppercase(),
-                            "-${limitOrder.amount} ${payAsset?.symbol}",
+                            "-${limitOrder.payAmount} ${payAsset?.symbol}",
                             MixinAppTheme.colors.walletRed,
                             payAsset?.iconUrl,
                             payAsset?.chainName ?: ""
                         )
                         DetailItem(
-                            if (limitOrder.state == LimitOrderStatus.SETTLED) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
+                            if (limitOrder.state.lowercase() == "settled") context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
                             "+${limitOrder.expectedReceiveAmount} ${receiveAsset?.symbol}",
                             MixinAppTheme.colors.walletGreen,
                             receiveAsset?.iconUrl,
@@ -343,12 +329,12 @@ fun LimitOrderDetailPage(
                         )
                         DetailItem(
                             label = stringResource(R.string.Order_ID).uppercase(),
-                            value = limitOrder.limitOrderId,
+                            value = limitOrder.orderId,
                             onCopy = {
                                 context.getClipboardManager().setPrimaryClip(
                                     android.content.ClipData.newPlainText(
                                         null,
-                                        limitOrder.limitOrderId
+                                        limitOrder.orderId
                                     )
                                 )
                                 toast(R.string.copied_to_clipboard)
@@ -365,7 +351,7 @@ fun LimitOrderDetailPage(
 
 @Composable
 private fun DetailPriceItem(
-    orderItem: LimitOrder,
+    orderItem: Order,
     paySymbol: String,
     receiveSymbol: String
 ) {
@@ -377,7 +363,7 @@ private fun DetailPriceItem(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = if (orderItem.state == LimitOrderStatus.SETTLED) context.getString(R.string.Price) else context.getString(R.string.Estimated_Price).uppercase(),
+                text = if (orderItem.state.lowercase() == "settled") context.getString(R.string.Price) else context.getString(R.string.Estimated_Price).uppercase(),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
@@ -385,7 +371,7 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 $paySymbol ≈ ${BigDecimal(orderItem.expectedReceiveAmount).divide(BigDecimal(orderItem.amount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $receiveSymbol" }.getOrDefault("N/A"),
+            text = runCatching { "1 $paySymbol ≈ ${BigDecimal(orderItem.expectedReceiveAmount).divide(BigDecimal(orderItem.payAmount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $receiveSymbol" }.getOrDefault("N/A"),
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,
@@ -394,7 +380,7 @@ private fun DetailPriceItem(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = runCatching { "1 $receiveSymbol ≈ ${BigDecimal(orderItem.amount).divide(BigDecimal(orderItem.expectedReceiveAmount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $paySymbol" }.getOrDefault("N/A"),
+            text = runCatching { "1 $receiveSymbol ≈ ${BigDecimal(orderItem.payAmount).divide(BigDecimal(orderItem.expectedReceiveAmount), 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()} $paySymbol" }.getOrDefault("N/A"),
             fontSize = 12.sp,
             fontWeight = FontWeight.Normal,
             color = MixinAppTheme.colors.textPrimary,

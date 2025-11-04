@@ -46,7 +46,7 @@ import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.route.SwapOrder
+import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
@@ -58,7 +58,7 @@ import retrofit2.http.Path
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.LimitOrder
+ 
 import retrofit2.http.Query
 
 interface RouteService {
@@ -196,32 +196,21 @@ interface RouteService {
         @Path("query") query: String,
     ): MixinResponse<List<Validator>>
 
-    @GET("web3/swap/orders")
-    suspend fun orders(
-        @Query("offset") offset: String?,
-        @Query("limit") limit: Int
-    ) : MixinResponse<List<SwapOrder>>
-
-    @GET("web3/swap/orders/{id}")
-    suspend fun orderById(
-        @Path("id") id: String,
-    ) : MixinResponse<SwapOrder>
-
     @POST("web3/limit_orders")
     suspend fun createLimitOrder(@Body request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse>
 
-    @GET("web3/limit_orders")
+    @GET("web3/swap/orders")
     suspend fun getLimitOrders(
         @Query("category") category: String = "all",
         @Query("limit") limit: Int = 50,
         @Query("offset") offset: String?,
-    ): MixinResponse<List<LimitOrder>>
+    ): MixinResponse<List<Order>>
 
     @GET("web3/limit_orders/{id}")
-    suspend fun getLimitOrder(@Path("id") id: String): MixinResponse<LimitOrder>
+    suspend fun getLimitOrder(@Path("id") id: String): MixinResponse<Order>
 
     @POST("web3/limit_orders/{id}/cancel")
-    suspend fun cancelLimitOrder(@Path("id") id: String): MixinResponse<LimitOrder>
+    suspend fun cancelLimitOrder(@Path("id") id: String): MixinResponse<Order>
 
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(

@@ -68,8 +68,10 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_64_65
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_65_66
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_66_67
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_67_68
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
+ 
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
@@ -126,7 +128,6 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
-import one.mixin.android.vo.route.SwapOrder
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -188,7 +189,6 @@ import kotlin.math.min
         (MarketFavored::class),
         (Alert::class),
         (MarketCapRank::class),
-        (SwapOrder::class),
         (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
@@ -297,10 +297,7 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
-    abstract fun swapOrderDao(): SwapOrderDao
-
     abstract fun memberOrderDao(): MembershipOrderDao
-
     companion object {
         private var INSTANCE: MixinDatabase? = null
 
@@ -385,6 +382,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_65_66,
                                 MIGRATION_66_67,
                                 MIGRATION_67_68,
+                                MIGRATION_68_69
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(

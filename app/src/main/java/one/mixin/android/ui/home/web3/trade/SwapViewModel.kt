@@ -16,7 +16,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.LimitOrder
+import one.mixin.android.vo.route.Order
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -68,10 +68,10 @@ class SwapViewModel
         addRouteBot()
         return assetRepository.createLimitOrder(request)
     }
-    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?): MixinResponse<List<LimitOrder>> =
+    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?): MixinResponse<List<Order>> =
         assetRepository.getLimitOrders(category, limit, offset)
-    suspend fun getLimitOrder(id: String): MixinResponse<LimitOrder> = assetRepository.getLimitOrder(id)
-    suspend fun cancelLimitOrder(id: String): MixinResponse<LimitOrder> = assetRepository.cancelLimitOrder(id)
+    suspend fun getLimitOrder(id: String): MixinResponse<Order> = assetRepository.getLimitOrder(id)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = assetRepository.cancelLimitOrder(id)
 
     suspend fun quote(
         context: Context,
@@ -143,6 +143,8 @@ class SwapViewModel
     fun swapOrders() = tokenRepository.swapOrders()
 
     fun getOrderById(orderId: String) = tokenRepository.getOrderById(orderId)
+
+    fun observeOrder(orderId: String) = tokenRepository.observeOrder(orderId)
 
     private fun addRouteBot() {
         viewModelScope.launch(Dispatchers.IO) {

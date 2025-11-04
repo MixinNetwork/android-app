@@ -20,3 +20,16 @@ fun formatOrderState(context: Context, state: LimitOrderStatus): String {
 // Alias specifically for LimitOrder to avoid overload ambiguity
 fun formatLimitOrderState(context: Context, state: LimitOrderStatus): String =
     formatOrderState(context, state)
+
+// String-based formatter for unified Order.limit state values
+fun formatLimitOrderState(context: Context, state: String): String {
+    return when (state.lowercase()) {
+        "created" -> context.getString(R.string.State_Created)
+        "pricing", "quoting" -> context.getString(R.string.State_Pending)
+        "expired" -> context.getString(R.string.Expired)
+        "settled" -> context.getString(R.string.State_Success)
+        "cancelled" -> context.getString(R.string.Canceled)
+        "failed" -> context.getString(R.string.State_Failed)
+        else -> state
+    }
+}
