@@ -74,7 +74,7 @@ class TransferContentItem : RelativeLayout {
             val start = fullText.lastIndexOf(free)
             val end = start + free.length
             spannableString.setSpan(StrikethroughSpan(), 0, contentStr.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            val backgroundColor = Color.parseColor("#8DCC99")
+            val backgroundColor = Color.parseColor("#3D75E3")
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
             spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

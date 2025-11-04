@@ -116,7 +116,7 @@ class CrossWalletFeeFreeBottomSheetDialogFragment : BottomSheetDialogFragment() 
                         HighlightedTextWithClick(
                             stringResource(R.string.cross_wallet_transaction_free_refund),
                             modifier = Modifier.align(Alignment.Start),
-                            stringResource(R.string.Learn_More),
+                            stringResource(R.string.more_information),
                             textAlign = TextAlign.Start,
                             color = MixinAppTheme.colors.textMinor,
                             fontSize = 14.sp,

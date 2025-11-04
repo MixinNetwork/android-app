@@ -352,6 +352,7 @@
     <string name="cross_wallet_transaction_free_condition_1">隐私钱包转账到普通钱包。</string>
     <string name="cross_wallet_transaction_free_condition_2">普通钱包转账到其他普通钱包、隐私钱包或联系人。</string>
     <string name="cross_wallet_transaction_free_refund">手续费按月、按实际消耗的手续费币种和金额汇总返还到您的隐私钱包，阅读文档了解更多。</string>
+    <string name="more_information">了解更多</string>
     <string name="url_cross_wallet_transaction_free">https://support.mixin.one/zh/article/cross-wallet-transaction-fee-event-1k9b47q</string>
     <string name="desktop_on_hint">桌面版已登入。</string>
     <string name="desktop_upgrade">请升级 Mixin Messenger 桌面端至最新版！</string>
