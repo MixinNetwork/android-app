@@ -178,7 +178,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     lifecycleScope.launch {
                         withContext(Dispatchers.IO) {
                             item.safe.operation.transaction.recipients.forEach { item ->
-                                item.label = bottomViewModel.findAddressByDestination(item.address, "")
+                                item.label = bottomViewModel.findAddressByDestination(item.address, "", t.asset?.chainId)
                             }
                         }
                         binding.content.render(item, emptyList(), emptyList()) {}
@@ -214,7 +214,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         (t as? WithdrawBiometricItem)?.let { withdraw ->
-            val isFeeWaived = withdraw.toWallet == true
+            val isFeeWaived = withdraw.isFeeWaived
             if (isFeeWaived) {
                 binding.content.renderWithdrawFeeFree(withdraw) {
                     CrossWalletFeeFreeBottomSheetDialogFragment

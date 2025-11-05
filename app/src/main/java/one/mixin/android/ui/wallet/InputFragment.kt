@@ -476,6 +476,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val toWallet = web3ViewModel.anyAddressExists(listOf(address.destination))
+                                val (_, index) = web3ViewModel.checkAddressAndGetDisplayName(address.destination, null, chainId = chainId) ?: Pair(null, 0)
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
                                     networkFee,
@@ -486,7 +487,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     null,
                                     PaymentStatus.pending.name,
                                     null,
-                                    toWallet
+                                    toWallet,
+                                    isFeeWaived = index == 3
                                 )
 
                                 prepareCheck(withdrawBiometricItem)
