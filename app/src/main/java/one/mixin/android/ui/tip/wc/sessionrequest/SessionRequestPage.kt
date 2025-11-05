@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -562,11 +563,12 @@ fun FeeInfo(
                         Text(
                             text = stringResource(id = R.string.FREE),
                             color = Color.White,
-                            fontSize = 12.sp,
+                            fontSize = 10.sp,
+                            lineHeight = 10.sp,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(MixinAppTheme.colors.accent)
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .padding(horizontal = 3.dp, vertical = 1.dp)
                                 .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
                         )
                     }

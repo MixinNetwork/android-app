@@ -229,7 +229,6 @@ fun WalletListScreen(
                                 destination = destination,
                                 hasLocalPrivateKey = wallet.hasLocalPrivateKey,
                                 onClick = { onWalletClick(wallet) },
-                                enableFreeLabel = true
                             )
                         } else if (wallet.isWatch()) {
                             val destination = WalletDestination.Watch(wallet.id, wallet.category)
@@ -237,7 +236,6 @@ fun WalletListScreen(
                                 name = wallet.name,
                                 destination = destination,
                                 onClick = { onWalletClick(wallet) },
-                                enableFreeLabel = true
                             )
                         } else {
                             val destination = WalletDestination.Classic(wallet.id)
@@ -245,7 +243,6 @@ fun WalletListScreen(
                                 name = wallet.name,
                                 destination = destination,
                                 onClick = { onWalletClick(wallet) },
-                                enableFreeLabel = true
                             )
                         }
                     }
