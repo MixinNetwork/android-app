@@ -72,15 +72,7 @@ class CrossWalletFeeFreeBottomSheetDialogFragment : BottomSheetDialogFragment() 
                             .padding(vertical = 20.dp, horizontal = 28.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                            Image(
-                                modifier = Modifier.clickable { dismiss() },
-                                painter = painterResource(R.drawable.ic_circle_close),
-                                contentDescription = null,
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(22.dp))
+                        Spacer(modifier = Modifier.height(48.dp))
                         Image(
                             painter = painterResource(R.drawable.ic_limit_free),
                             contentDescription = null,
