@@ -6,11 +6,13 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
+import timber.log.Timber
 
 class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
@@ -72,6 +74,40 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
         }
         if (web3Tokens.isNotEmpty()) {
             web3TokenDao.insertList(web3Tokens)
+        }
+    }
+
+
+    private suspend fun fetchChain(chainIds: List<String>) {
+        chainIds.forEach { chainId ->
+            try {
+                if (web3ChainDao.chainExists(chainId) == null) {
+                    val response = tokenService.getChainById(chainId)
+                    if (response.isSuccess) {
+                        val chain = response.data
+                        if (chain != null) {
+                            web3ChainDao.insert(
+                                Web3Chain(
+                                    chainId = chain.chainId,
+                                    name = chain.name,
+                                    symbol = chain.symbol,
+                                    iconUrl = chain.iconUrl,
+                                    threshold = chain.threshold,
+                                )
+                            )
+                            Timber.d("Successfully inserted ${chain.name} chain into database")
+                        } else {
+                            Timber.d("No chain found for chainId: $chainId")
+                        }
+                    } else {
+                        Timber.e("Failed to fetch chain $chainId: ${response.errorCode} - ${response.errorDescription}")
+                    }
+                } else {
+                    Timber.d("Chain $chainId already exists in local database, skipping fetch")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception occurred while fetching chain $chainId")
+            }
         }
     }
 }

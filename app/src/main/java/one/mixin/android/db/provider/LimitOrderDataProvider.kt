@@ -21,6 +21,7 @@ class LimitOrderDataProvider {
                     val baseSelect = """
                         SELECT 
                             o.order_id,
+                            o.wallet_id,
                             o.user_id,
                             o.pay_asset_id,
                             t.icon_url AS asset_icon_url,
@@ -35,6 +36,10 @@ class LimitOrderDataProvider {
                             pc.name AS pay_chain_name,
                             rc.name AS receive_chain_name,
                             o.created_at,
+                            o.expected_receive_amount,
+                            o.filled_receive_amount,
+                            o.price,
+                            o.expired_at,
                             rt.chain_id AS receive_chain_id,
                             t.chain_id AS pay_chain_id
                         FROM orders o
@@ -82,6 +87,7 @@ class LimitOrderDataProvider {
                             if (cursor == null) return emptyList()
                             val list = ArrayList<OrderItem>(cursor.count)
                             val idxOrderId = cursor.getColumnIndexOrThrow("order_id")
+                            val idxWalletId = cursor.getColumnIndexOrThrow("wallet_id")
                             val idxUserId = cursor.getColumnIndexOrThrow("user_id")
                             val idxPayAssetId = cursor.getColumnIndexOrThrow("pay_asset_id")
                             val idxAssetIconUrl = cursor.getColumnIndexOrThrow("asset_icon_url")
@@ -96,12 +102,17 @@ class LimitOrderDataProvider {
                             val idxPayChainName = cursor.getColumnIndexOrThrow("pay_chain_name")
                             val idxReceiveChainName = cursor.getColumnIndexOrThrow("receive_chain_name")
                             val idxCreatedAt = cursor.getColumnIndexOrThrow("created_at")
+                            val idxExpectedReceiveAmount = cursor.getColumnIndexOrThrow("expected_receive_amount")
+                            val idxFilledReceiveAmount = cursor.getColumnIndexOrThrow("filled_receive_amount")
+                            val idxPrice = cursor.getColumnIndexOrThrow("price")
+                            val idxExpiredAt = cursor.getColumnIndexOrThrow("expired_at")
                             val idxReceiveChainId = cursor.getColumnIndexOrThrow("receive_chain_id")
                             val idxPayChainId = cursor.getColumnIndexOrThrow("pay_chain_id")
 
                             while (cursor.moveToNext()) {
                                 val item = OrderItem(
                                     orderId = cursor.getString(idxOrderId),
+                                    walletId = cursor.getString(idxWalletId),
                                     userId = cursor.getString(idxUserId),
                                     payAssetId = cursor.getString(idxPayAssetId),
                                     payChainId = cursor.getString(idxPayChainId),
@@ -118,6 +129,10 @@ class LimitOrderDataProvider {
                                     payChainName = cursor.getString(idxPayChainName),
                                     receiveChainName = cursor.getString(idxReceiveChainName),
                                     createdAt = cursor.getString(idxCreatedAt),
+                                    expectedReceiveAmount = cursor.getString(idxExpectedReceiveAmount),
+                                    filledReceiveAmount = cursor.getString(idxFilledReceiveAmount),
+                                    price = cursor.getString(idxPrice),
+                                    expiredAt = cursor.getString(idxExpiredAt),
                                 )
                                 list.add(item)
                             }

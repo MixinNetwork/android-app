@@ -10,6 +10,9 @@ data class OrderItem(
     @ColumnInfo(name = "order_id")
     @SerializedName("order_id")
     val orderId: String,
+    @ColumnInfo(name = "wallet_id")
+    @SerializedName("wallet_id")
+    val walletId: String?,
     @ColumnInfo(name = "user_id")
     @SerializedName("user_id")
     val userId: String,
@@ -42,7 +45,7 @@ data class OrderItem(
     val payAmount: String,
     @ColumnInfo(name = "receive_amount")
     @SerializedName("receive_amount")
-    val receiveAmount: String,
+    val receiveAmount: String?,
     @ColumnInfo(name = "state")
     @SerializedName("state")
     val state: String,
@@ -58,4 +61,16 @@ data class OrderItem(
     @ColumnInfo(name = "created_at")
     @SerializedName("created_at")
     val createdAt: String,
+    @ColumnInfo(name = "expected_receive_amount")
+    @SerializedName("expected_receive_amount")
+    val expectedReceiveAmount: String?,
+    @ColumnInfo(name = "filled_receive_amount")
+    @SerializedName("filled_receive_amount")
+    val filledReceiveAmount: String?,
+    @ColumnInfo(name = "price")
+    @SerializedName("price")
+    val price: String?,
+    @ColumnInfo(name = "expired_at")
+    @SerializedName("expired_at")
+    val expiredAt: String?,
 ) : Parcelable

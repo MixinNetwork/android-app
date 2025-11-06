@@ -45,12 +45,13 @@ import one.mixin.android.vo.User
 fun ItemWalletContent(
     title: String,
     fontSize: TextUnit = 16.sp,
+    padding: Dp = 20.dp,
 ) {
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = padding),
     ) {
         Text(
             text = title,
@@ -85,12 +86,13 @@ fun ItemContent(
     label: String? = null,
     footer: String? = null,
     isAddress: Boolean = false,
+    padding: Dp = 20.dp,
 ) {
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = padding),
     ) {
         Text(
             text = title,

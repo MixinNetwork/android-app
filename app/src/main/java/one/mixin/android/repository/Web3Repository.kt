@@ -12,6 +12,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.Web3PropertyHelper
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3TokenDao
@@ -45,6 +46,7 @@ constructor(
     val tokenRepository: TokenRepository,
     val userRepository: UserRepository,
     val web3ChainDao: Web3ChainDao,
+    val orderDao: OrderDao,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
 
@@ -228,5 +230,11 @@ constructor(
 
     suspend fun findChainById(chainId: String): Web3Chain? {
         return web3ChainDao.findChainById(chainId)
+    }
+
+    // Orders
+    suspend fun inserOrders(orders: List<one.mixin.android.vo.route.Order>) {
+        if (orders.isEmpty()) return
+        orderDao.insertListSuspend(orders)
     }
 }

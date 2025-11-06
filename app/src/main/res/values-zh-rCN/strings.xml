@@ -2098,8 +2098,8 @@
     <string name="referral_description">邀请好友赚币</string>
     <string name="Address_not_found">该联系人还没有注册普通钱包</string>
     <string name="limit_price">价格</string>
-    <string name="Order_Type">Order Type</string>
-    <string name="Forever">Forever</string>
+    <string name="Order_Type">订单类型</string>
+    <string name="Forever">永久</string>
     <string name="Trade_Simple">闪兑</string>
     <string name="Trade_Advanced">挂单</string>
     <string name="order_state_created">已创建</string>
@@ -2111,7 +2111,7 @@
     <string name="market_price">市价</string>
     <string name="expiry">有效期</string>
     <string name="forever">永久</string>
-    <string name="no_order">NO ORDERS</string>
+    <string name="no_order">没有订单</string>
     <string name="expiry_never">永不过期</string>
     <string name="expiry_10_min">10 分钟</string>
     <string name="expiry_1_hour">1 小时</string>
@@ -2119,5 +2119,6 @@
     <string name="expiry_3_days">3 天</string>
     <string name="expiry_1_week">1 周</string>
     <string name="expiry_1_month">1 个月</string>
-    <string name="Orders">Orders</string>
+    <string name="Orders">订单</string>
+    <string name="Expiration">到期</string>
 </resources>

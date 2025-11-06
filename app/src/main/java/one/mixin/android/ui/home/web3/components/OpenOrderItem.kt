@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +30,9 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
+import one.mixin.android.ui.home.web3.trade.LimitOrderState
 import one.mixin.android.vo.route.Order
 
 @Composable
@@ -66,46 +69,73 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
         Spacer(modifier = Modifier.width(22.dp))
 
         Column {
+            // Line 1: symbol -> symbol | time
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "${fromToken?.symbol ?: "..."} → ${toToken?.symbol ?: "..."}",
+                    text = "${fromToken?.symbol ?: ""} → ${toToken?.symbol ?: ""}",
                     fontSize = 16.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = order.createdAt.fullDate(), fontSize = 14.sp, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End
+                    text = order.createdAt.fullDate(),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    textAlign = TextAlign.End
                 )
             }
 
+            // Line 2: -xx symbol (red) | type
             Row(verticalAlignment = Alignment.CenterVertically) {
+                val payAmountText = order.payAmount.ifEmpty { "0" }.numberFormat()
                 Text(
-                    text = "-${order.payAmount} ${fromToken?.symbol ?: "..."}",
+                    text = "-${payAmountText} ${fromToken?.symbol ?: ""}",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.walletRed,
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                val typeText = when (order.orderType.lowercase()) {
+                    "swap" -> stringResource(R.string.order_type_swap)
+                    "limit" -> stringResource(R.string.order_type_limit)
+                    else -> order.orderType
+                }
                 Text(
-                    text = stringResource(R.string.limit_price),
+                    text = typeText,
                     fontSize = 14.sp,
                     textAlign = TextAlign.End,
                     color = MixinAppTheme.colors.textAssist,
                 )
             }
+
+            // Line 3: +xx symbol (color by status) | state with color
             Row(verticalAlignment = Alignment.CenterVertically) {
+                val receiveAmountText = (order.receiveAmount ?: "0").ifEmpty { "0" }.numberFormat()
+                val stateLower = order.state.lowercase()
+                val leftColor = when (stateLower) {
+                    "settled" -> MixinAppTheme.colors.walletGreen
+                    "failed", "cancelled", "canceled", "expired" -> MixinAppTheme.colors.walletRed
+                    else -> MixinAppTheme.colors.textPrimary
+                }
                 Text(
-                    text = "+${order.expectedReceiveAmount} ${toToken?.symbol ?: "..."}",
+                    text = "+${receiveAmountText} ${toToken?.symbol ?: ""}",
                     fontSize = 14.sp,
-                    color = MixinAppTheme.colors.walletGreen,
+                    color = leftColor,
                 )
                 Spacer(modifier = Modifier.weight(1f))
-//                Text(
-//                    text = order.state.value.replaceFirstChar { it.uppercase() }, fontSize = 14.sp, textAlign = TextAlign.End, color = when (order.state) {
-//                        LimitOrderStatus.CREATED, LimitOrderStatus.PRICING, LimitOrderStatus.QUOTING -> MixinAppTheme.colors.textAssist
-//                        LimitOrderStatus.SETTLED -> MixinAppTheme.colors.green
-//                        else -> MixinAppTheme.colors.red
-//                    }
-//                )
+                val rightColor = when (stateLower) {
+                    "settled" -> MixinAppTheme.colors.walletGreen
+                    "failed", "cancelled", "canceled", "expired" -> MixinAppTheme.colors.walletRed
+                    "created", "pricing", "quoting" -> MixinAppTheme.colors.textAssist
+                    else -> MixinAppTheme.colors.textAssist
+                }
+                val context = LocalContext.current
+                val stateText = LimitOrderState.from(order.state).format(context)
+                Text(
+                    text = stateText,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                    color = rightColor,
+                )
             }
         }
     }

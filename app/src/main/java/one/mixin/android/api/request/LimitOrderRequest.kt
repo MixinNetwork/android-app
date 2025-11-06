@@ -3,6 +3,8 @@ package one.mixin.android.api.request
 import com.google.gson.annotations.SerializedName
 
 data class LimitOrderRequest(
+    @SerializedName("wallet_id")
+    val walletId: String,
     @SerializedName("asset_id")
     val assetId: String,
     @SerializedName("amount")

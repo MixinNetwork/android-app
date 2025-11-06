@@ -2176,4 +2176,5 @@
     <string name="expiry_1_week">1 week</string>
     <string name="expiry_1_month">1 month</string>
     <string name="Orders">Orders</string>
+    <string name="Expiration">Expiration</string>
 </resources>

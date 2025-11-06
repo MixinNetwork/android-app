@@ -71,6 +71,7 @@ import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.putString
+import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.ExpirySelector
 import one.mixin.android.ui.home.web3.components.FloatingActions
 import one.mixin.android.ui.home.web3.components.InputArea
@@ -150,7 +151,7 @@ fun LimitOrderContent(
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
-                viewModel.getLimitOrders(category = "all", offset = null).data?.let {
+                viewModel.getLimitOrders(category = "active", offset = null).data?.let {
                     limitOrders = it
                 }
                 delay(10000)
@@ -433,6 +434,7 @@ fun LimitOrderContent(
                                     scope.launch {
                                         runCatching {
                                             val request = LimitOrderRequest(
+                                                walletId = Session.getAccountId()!!,
                                                 assetId = requireNotNull(fromToken).assetId,
                                                 amount = inputText,
                                                 receiveAssetId = requireNotNull(toToken).assetId,
