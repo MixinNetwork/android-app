@@ -68,10 +68,11 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositFragment
-import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.ui.home.web3.trade.OrderDetailFragment
+import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -101,8 +102,6 @@ class TradeFragment : BaseFragment() {
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
         const val ARGS_WALLET_ID = "args_wallet_id"
-        const val ARGS_DESTINATION = "args_destination"
-        const val ARGS_ORDER_ID = "args_order_id"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -127,19 +126,10 @@ class TradeFragment : BaseFragment() {
                 referral?.let { putString(ARGS_REFERRAL, it) }
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
             }
-
-        fun newInstanceForOrderDetail(orderId: String, isLimitOrder: Boolean): TradeFragment =
-            TradeFragment().withArgs {
-                putString(ARGS_DESTINATION, if (isLimitOrder) TradeDestination.LimitOrderPage.name else TradeDestination.OrderDetail.name)
-                putString(ARGS_ORDER_ID, orderId)
-            }
     }
 
     enum class TradeDestination {
         Swap,
-        OrderList,
-        OrderDetail,
-        LimitOrderPage
     }
 
     @Inject
@@ -256,14 +246,9 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onOrderList = {
                                     navTo(AllOrdersFragment(), AllOrdersFragment.TAG)
-                                    if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
-                                        defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
-                                        orderBadge = false
-                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP_TRANSACTION))
-                                    }
                                 },
                                 onLimitOrderClick = { orderId ->
-                                    navController.navigate("${TradeDestination.LimitOrderPage.name}/$orderId")
+                                    navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
                                 pop = {
                                     navigateUp(navController)
@@ -271,94 +256,9 @@ class TradeFragment : BaseFragment() {
                             )
                         }
 
-                        composable(TradeDestination.OrderList.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
-                            SwapOrderListPage(
-                                walletId = walletId,
-                                pop = {
-                                    navigateUp(navController)
-                                },
-                                onOrderClick = { orderId, isLimitOrder ->
-                                    navController.navigate("${TradeDestination.OrderDetail.name}/$orderId")
-                                }
-                            )
-                        }
-                        composable("${TradeDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
-                            navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
-                                SwapOrderDetailPage(
-                                    walletId = walletId,
-                                    orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
-                                    onShare = { payAssetId, receiveAssetId ->
-                                        lifecycleScope.launch {
-                                            shareSwap(payAssetId, receiveAssetId)
-                                        }
-                                    },
-                                    onTryAgain = { fromAssetId, toAssetId ->
-                                        lifecycleScope.launch {
-                                            val fromToken = swapViewModel.findToken(fromAssetId)?.toSwapToken()
-                                            val toToken = swapViewModel.findToken(toAssetId)?.toSwapToken()
-                                            if (fromToken != null && toToken != null) {
-                                                this@TradeFragment.fromToken = fromToken
-                                                this@TradeFragment.toToken = toToken
-                                                navController.navigate(TradeDestination.Swap.name) {
-                                                    popUpTo(TradeDestination.Swap.name) {
-                                                        inclusive = true
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    },
-                                    pop = {
-                                        navigateUp(navController)
-                                    }
-                                )
-                            }
-                        }
-                        composable("${TradeDestination.LimitOrderPage.name}/{orderId}") { navBackStackEntry ->
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
-                            LimitOrderDetailPage(
-                                orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
-                                onShare = { payAssetId, receiveAssetId ->
-                                    lifecycleScope.launch {
-                                        shareSwap(payAssetId, receiveAssetId)
-                                    }
-                                },
-                                onTryAgain = { fromAssetId, toAssetId ->
-                                    lifecycleScope.launch {
-                                        val fromToken = swapViewModel.findToken(fromAssetId)?.toSwapToken()
-                                        val toToken = swapViewModel.findToken(toAssetId)?.toSwapToken()
-                                        if (fromToken != null && toToken != null) {
-                                            this@TradeFragment.fromToken = fromToken
-                                            this@TradeFragment.toToken = toToken
-                                            navController.navigate(TradeDestination.Swap.name) {
-                                                popUpTo(TradeDestination.Swap.name) {
-                                                    inclusive = true
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                pop = {
-                                    navigateUp(navController)
-                                }
-                            )
-                        }
+                        // OrderList removed: no entry now
                     }
 
-                    val target = arguments?.getString(ARGS_DESTINATION)
-                    val targetOrderId = arguments?.getString(ARGS_ORDER_ID)
-                    LaunchedEffect(target, targetOrderId) {
-                        if (!targetOrderId.isNullOrBlank()) {
-                            when (target) {
-                                TradeDestination.LimitOrderPage.name -> navController.navigate("${TradeDestination.LimitOrderPage.name}/$targetOrderId")
-                                TradeDestination.OrderDetail.name -> navController.navigate("${TradeDestination.OrderDetail.name}/$targetOrderId")
-                            }
-                        }
-                    }
                 }
             }
         }

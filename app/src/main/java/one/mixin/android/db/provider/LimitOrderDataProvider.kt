@@ -4,11 +4,10 @@ import android.annotation.SuppressLint
 import android.database.Cursor
 import androidx.paging.DataSource
 import androidx.room.RoomSQLiteQuery
-import one.mixin.android.vo.route.Order
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
 import one.mixin.android.ui.wallet.OrderFilterParams
+import one.mixin.android.vo.route.OrderItem
 
 @SuppressLint("RestrictedApi")
 class LimitOrderDataProvider {
@@ -16,9 +15,9 @@ class LimitOrderDataProvider {
         fun allOrders(
             database: WalletDatabase,
             filter: OrderFilterParams,
-        ): DataSource.Factory<Int, one.mixin.android.vo.route.OrderItem> {
-            return object : DataSource.Factory<Int, one.mixin.android.vo.route.OrderItem>() {
-                override fun create(): DataSource<Int, one.mixin.android.vo.route.OrderItem> {
+        ): DataSource.Factory<Int, OrderItem> {
+            return object : DataSource.Factory<Int, OrderItem>() {
+                override fun create(): DataSource<Int, OrderItem> {
                     val baseSelect = """
                         SELECT 
                             o.order_id,
@@ -75,16 +74,16 @@ class LimitOrderDataProvider {
                         return RoomSQLiteQuery.acquire(querySql, 0)
                     }
 
-                    return object : MixinLimitOffsetDataSource<one.mixin.android.vo.route.OrderItem>(
+                    return object : MixinLimitOffsetDataSource<OrderItem>(
                         database,
                         countStmt,
                         offsetStmt,
                         sqlGenerator,
                         arrayOf("orders"),
                     ) {
-                        override fun convertRows(cursor: Cursor?): List<one.mixin.android.vo.route.OrderItem> {
+                        override fun convertRows(cursor: Cursor?): List<OrderItem> {
                             if (cursor == null) return emptyList()
-                            val list = ArrayList<one.mixin.android.vo.route.OrderItem>(cursor.count)
+                            val list = ArrayList<OrderItem>(cursor.count)
                             val idxOrderId = cursor.getColumnIndexOrThrow("order_id")
                             val idxUserId = cursor.getColumnIndexOrThrow("user_id")
                             val idxPayAssetId = cursor.getColumnIndexOrThrow("pay_asset_id")
@@ -109,7 +108,7 @@ class LimitOrderDataProvider {
                             val idxExpiredAt = cursor.getColumnIndexOrThrow("expired_at")
 
                             while (cursor.moveToNext()) {
-                                val item = one.mixin.android.vo.route.OrderItem(
+                                val item = OrderItem(
                                     orderId = cursor.getString(idxOrderId),
                                     userId = cursor.getString(idxUserId),
                                     payAssetId = cursor.getString(idxPayAssetId),

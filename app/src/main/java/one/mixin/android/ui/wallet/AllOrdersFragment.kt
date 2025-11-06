@@ -25,7 +25,7 @@ import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.OrderDetailFragment
 import one.mixin.android.ui.wallet.adapter.OrderPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.SpacesItemDecoration
@@ -66,8 +66,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             transactionsRv.addItemDecoration(SpacesItemDecoration(requireContext().dpToPx(4f), true))
 
             adapter.onItemClick = { order: OrderItem ->
-                val isLimit: Boolean = order.orderType.equals("limit", ignoreCase = true)
-                navTo(TradeFragment.newInstanceForOrderDetail(order.orderId, isLimit), TradeFragment.TAG)
+                navTo(OrderDetailFragment.newInstance(order.orderId), OrderDetailFragment.TAG)
             }
 
             filterUser.visibility = VISIBLE
