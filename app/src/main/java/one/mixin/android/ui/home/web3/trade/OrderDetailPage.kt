@@ -71,7 +71,7 @@ import java.math.RoundingMode
 fun OrderDetailPage(
     walletId: String?,
     orderId: String,
-    onShare: (String, String) -> Unit,
+    onShare: (String, String, String) -> Unit,
     onTryAgain: (String, String) -> Unit,
     pop: () -> Unit,
 ) {
@@ -302,7 +302,7 @@ fun DetailItem(
                                         modifier = Modifier
                                             .weight(1f)
                                             .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
-                                            .clickable { onShare.invoke(order.payAssetId, order.receiveAssetId) }
+                                            .clickable { onShare.invoke(order.payAssetId, order.receiveAssetId, order.type) }
                                             .padding(vertical = 10.dp)
                                     )
                                 }
@@ -342,7 +342,7 @@ fun DetailItem(
                                         modifier = Modifier
                                             .weight(1f)
                                             .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
-                                            .clickable { onShare.invoke(order.payAssetId, order.receiveAssetId) }
+                                            .clickable { onShare.invoke(order.payAssetId, order.receiveAssetId, order.type) }
                                             .padding(vertical = 10.dp)
                                     )
                                 }

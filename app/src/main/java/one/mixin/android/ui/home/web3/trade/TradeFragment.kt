@@ -102,6 +102,7 @@ class TradeFragment : BaseFragment() {
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_OPEN_LIMIT = "args_open_limit"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -117,6 +118,7 @@ class TradeFragment : BaseFragment() {
             inMixin: Boolean = true,
             referral: String? = null,
             walletId: String? = null,
+            openLimit: Boolean = false,
         ): TradeFragment =
             TradeFragment().withArgs {
                 input?.let { putString(ARGS_INPUT, it) }
@@ -125,6 +127,7 @@ class TradeFragment : BaseFragment() {
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
+                putBoolean(ARGS_OPEN_LIMIT, openLimit)
             }
     }
 
@@ -216,6 +219,8 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
+                                openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true,
+                                source = getSource(),
                                 onSelectToken = { isReverse, type ->
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
                                         selectCallback(swapTokens, isReverse, type)
@@ -231,7 +236,6 @@ class TradeFragment : BaseFragment() {
                                 onLimitReview = { order ->
                                     openLimitTransfer(order)
                                 },
-                                source = getSource(),
                                 onDeposit = { token ->
                                     hideKeyboard()
                                     if (inMixin()) {
@@ -386,147 +390,6 @@ class TradeFragment : BaseFragment() {
         }
     }
 
-    private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
-        val formatVol = try {
-            BigDecimal(vol).multiply(rate).numberFormatCompact()
-        } catch (_: NumberFormatException) {
-            null
-        }
-        if (formatVol != null) {
-            return "$symbol$formatVol"
-        }
-        return requireContext().getString(R.string.N_A)
-    }
-
-    private suspend fun shareSwap(payAssetId: String, receiveAssetId: String) {
-        dialog.show()
-        runCatching {
-            var payId = payAssetId
-            var receiveId =
-                if (receiveAssetId in Constants.AssetId.usdcAssets || receiveAssetId in Constants.AssetId.usdtAssets) {
-                    payId = receiveAssetId
-                    payAssetId
-                } else {
-                    receiveAssetId
-                }
-
-            var forwardMessage: ForwardMessage? = null
-            swapViewModel.checkMarketById(receiveId)?.let { market ->
-                forwardMessage = buildForwardMessage(market, payId, receiveId)
-            }
-            if (forwardMessage == null) {
-                swapViewModel.syncAsset(receiveId)?.let { token ->
-                    forwardMessage = buildForwardMessage(token, payId, receiveId)
-                }
-            }
-            if (forwardMessage == null) {
-                toast(R.string.Data_error)
-                return@runCatching
-            }
-            ShareMessageBottomSheetDialogFragment.newInstance(forwardMessage!!, null)
-                .showNow(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-        }.onFailure { e ->
-            ErrorHandler.handleError(e)
-        }
-        dialog.dismiss()
-    }
-
-    private fun buildForwardMessage(marketItem: MarketItem, payId: String, receiveId: String): ForwardMessage {
-        val description = buildString {
-            append("🔥 ${marketItem.name} (${marketItem.symbol})\n\n")
-            append(
-                "📈 ${getString(R.string.Market_Cap)}: ${
-                    capFormat(
-                        marketItem.marketCap,
-                        BigDecimal(Fiats.getRate()),
-                        Fiats.getSymbol()
-                    )
-                }\n"
-            )
-            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(marketItem.currentPrice).priceFormat()}\n")
-            append("💰 ${getString(R.string.price_change_24h)}: ${marketItem.priceChangePercentage24H}%")
-        }
-
-        val actions = listOf(
-            ActionButtonData(
-                label = getString(R.string.buy_token, marketItem.symbol),
-                color = "#50BD5C",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = getString(R.string.sell_token, marketItem.symbol),
-                color = "#DB454F",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = "${marketItem.symbol} ${getString(R.string.Market)}",
-                color = "#3D75E3",
-                action = "${Constants.Scheme.HTTPS_MARKET}/${marketItem.coinId}"
-            )
-        )
-
-        val appCard = AppCardData(
-            appId = ROUTE_BOT_USER_ID,
-            iconUrl = null,
-            coverUrl = null,
-            cover = null,
-            title = "${getString(R.string.Swap)} ${marketItem.symbol}",
-            description = description,
-            action = null,
-            updatedAt = null,
-            shareable = true,
-            actions = actions,
-        )
-
-        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
-    }
-
-    private fun buildForwardMessage(token: TokenItem, payId: String, receiveId: String): ForwardMessage {
-        val description = buildString {
-            append("🔥 ${token.name} (${token.symbol})\n\n")
-            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).priceFormat()}\n")
-            append(
-                "💰 ${getString(R.string.price_change_24h)}: ${
-                    runCatching { "${(BigDecimal(token.changeUsd) * BigDecimal(100)).numberFormat2()}%" }.getOrDefault(
-                        "N/A"
-                    )
-                }"
-            )
-        }
-
-        val actions = listOf(
-            ActionButtonData(
-                label = getString(R.string.buy_token, token.symbol),
-                color = "#50BD5C",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = getString(R.string.sell_token, token.symbol),
-                color = "#DB454F",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = "${token.symbol} ${getString(R.string.Market)}",
-                color = "#3D75E3",
-                action = "${Constants.Scheme.HTTPS_MARKET}/${token.assetId}"
-            )
-        )
-
-        val appCard = AppCardData(
-            appId = ROUTE_BOT_USER_ID,
-            iconUrl = null,
-            coverUrl = null,
-            cover = null,
-            title = "${getString(R.string.Swap)} ${token.symbol}",
-            description = description,
-            action = null,
-            updatedAt = null,
-            shareable = true,
-            actions = actions,
-        )
-
-        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
-    }
 
     private fun saveQuoteToken(
         token: SwapToken,

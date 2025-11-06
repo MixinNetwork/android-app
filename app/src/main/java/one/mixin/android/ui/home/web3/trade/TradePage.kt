@@ -65,6 +65,7 @@ fun TradePage(
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
+    openLimit: Boolean,
     source: String,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
@@ -120,6 +121,11 @@ fun TradePage(
         }
     )
     val pagerState = rememberPagerState { tabs.size }
+    LaunchedEffect(openLimit) {
+        if (openLimit && walletId.isNullOrBlank()) {
+            pagerState.scrollToPage(1)
+        }
+    }
     val coroutineScope = rememberCoroutineScope()
 
     PageScaffold(
@@ -219,18 +225,30 @@ fun TradePage(
                 tabs[page].screen()
             }
         } else {
-            SwapContent(
-                from = from,
-                to = to,
-                inMixin = inMixin,
-                initialAmount = initialAmount,
-                lastOrderTime = lastOrderTime,
-                reviewing = reviewing,
-                source = source,
-                onSelectToken = onSelectToken,
-                onReview = onReview,
-                onDeposit = onDeposit,
-            )
+            if (openLimit) {
+                LimitOrderContent(
+                    from = from,
+                    to = to,
+                    inMixin = inMixin,
+                    onSelectToken = onSelectToken,
+                    onLimitReview = onLimitReview,
+                    onDeposit = onDeposit,
+                    onLimitOrderClick = onLimitOrderClick,
+                )
+            } else {
+                SwapContent(
+                    from = from,
+                    to = to,
+                    inMixin = inMixin,
+                    initialAmount = initialAmount,
+                    lastOrderTime = lastOrderTime,
+                    reviewing = reviewing,
+                    source = source,
+                    onSelectToken = onSelectToken,
+                    onReview = onReview,
+                    onDeposit = onDeposit,
+                )
+            }
         }
     }
 }

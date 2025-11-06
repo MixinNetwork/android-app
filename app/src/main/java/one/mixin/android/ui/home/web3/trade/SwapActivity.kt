@@ -27,6 +27,7 @@ class SwapActivity : BaseActivity(){
             referral: String? = null,
             inMixin: Boolean = true,
             walletId: String? = null,
+            openLimit: Boolean = false,
         ) {
             context.startActivity(
                 Intent(context, SwapActivity::class.java).apply {
@@ -36,6 +37,7 @@ class SwapActivity : BaseActivity(){
                     referral?.let { putExtra(ARGS_REFERRAL, it) }
                     putExtra(ARGS_IN_MIXIN, inMixin)
                     walletId?.let { putExtra(TradeFragment.ARGS_WALLET_ID, it) }
+                    putExtra(TradeFragment.ARGS_OPEN_LIMIT, openLimit)
                     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
                 },
             )
@@ -53,7 +55,8 @@ class SwapActivity : BaseActivity(){
             intent.getStringExtra(ARGS_AMOUNT),
             inMixin =  intent.getBooleanExtra(ARGS_IN_MIXIN, true),
             referral = intent.getStringExtra(ARGS_REFERRAL),
-            walletId = intent.getStringExtra(TradeFragment.ARGS_WALLET_ID)
+            walletId = intent.getStringExtra(TradeFragment.ARGS_WALLET_ID),
+            openLimit = intent.getBooleanExtra(TradeFragment.ARGS_OPEN_LIMIT, false)
         )
         replaceFragment(swapFragment, R.id.container, TradeFragment.TAG)}
 }

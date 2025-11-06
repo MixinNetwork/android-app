@@ -924,6 +924,10 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             lifecycleScope.launch(errorHandler) {
                 handleSwapScheme(url.toUri())
             }
+        } else if (url.startsWith(Scheme.HTTPS_TRADE) || url.startsWith(Scheme.MIXIN_TRADE)) {
+            lifecycleScope.launch(errorHandler) {
+                handleTradeScheme(url.toUri())
+            }
         } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
             url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
@@ -1062,6 +1066,22 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         val referral = uri.getQueryParameter("referral")
         AnalyticsTracker.trackSwapStart("mixin", "url")
         SwapActivity.show(requireContext(), input, output, amount, referral)
+        dismiss()
+    }
+
+    private suspend fun handleTradeScheme(uri: Uri) {
+        val input = uri.getQueryParameter("input")
+        val output = uri.getQueryParameter("output")
+        val amount = uri.getQueryParameter("amount")
+        if (output != null && output.isUUID()) {
+            checkToken(output)
+        }
+        if (input != null && input.isUUID()) {
+            checkToken(input)
+        }
+        val referral = uri.getQueryParameter("referral")
+        AnalyticsTracker.trackSwapStart("mixin", "trade_url")
+        SwapActivity.show(requireContext(), input, output, amount, referral, openLimit = true)
         dismiss()
     }
 

@@ -317,33 +317,28 @@ fun LimitOrderContent(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
                                     val price = limitPriceText.toBigDecimalOrNull()
-                                    Box(
-                                        modifier = Modifier
-                                            .wrapContentWidth()
-                                            .height(18.dp),
-                                        contentAlignment = Alignment.CenterStart,
-                                    ) {
-                                        val priceText = if (price != null && price > BigDecimal.ZERO) {
-                                            if (!isPriceInverted) {
-                                                "1 ${toToken?.symbol} ≈ ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
-                                            } else {
-                                                val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
-                                                "1 ${fromToken?.symbol} ≈ ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
-                                            }
+                                    val priceText = if (price != null && price > BigDecimal.ZERO) {
+                                        if (!isPriceInverted) {
+                                            "1 ${toToken?.symbol} ≈ ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
                                         } else {
-                                            "..."
+                                            val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
+                                            "1 ${fromToken?.symbol} ≈ ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
                                         }
-                                        Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                                    } else {
+                                        null
                                     }
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_price_switch),
-                                        contentDescription = null,
-                                        tint = MixinAppTheme.colors.textAssist,
-                                        modifier = Modifier
-                                            .size(18.dp)
-                                            .clickable { isPriceInverted = !isPriceInverted }
-                                    )
+                                    if (priceText != null) {
+                                        Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_price_switch),
+                                            contentDescription = null,
+                                            tint = MixinAppTheme.colors.textAssist,
+                                            modifier = Modifier
+                                                .size(12.dp)
+                                                .clickable { isPriceInverted = !isPriceInverted }
+                                        )
+                                    }
                                 }
                             },
                         )
