@@ -88,7 +88,7 @@ abstract class WalletDatabase : RoomDatabase() {
 
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `orders` (`order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT NOT NULL, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `updated_at` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `orders` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `updated_at` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `orders` (`state`, `created_at`)")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `orders` (`order_type`, `created_at`)")
             }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "2383253e5de1c3db9f3a1324e873c2fe",
+    "identityHash": "6deeeb24e627857919ff59e2a4605fa7",
     "entities": [
       {
         "tableName": "tokens",
@@ -489,11 +489,17 @@
       },
       {
         "tableName": "orders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `updated_at` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `updated_at` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))",
         "fields": [
           {
             "fieldPath": "orderId",
             "columnName": "order_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -622,7 +628,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2383253e5de1c3db9f3a1324e873c2fe')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6deeeb24e627857919ff59e2a4605fa7')"
     ]
   }
 }

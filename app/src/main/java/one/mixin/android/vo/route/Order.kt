@@ -21,6 +21,9 @@ data class Order(
     @ColumnInfo(name = "order_id")
     @SerializedName("order_id")
     val orderId: String,
+    @ColumnInfo(name = "wallet_id")
+    @SerializedName("wallet_id")
+    val walletId: String,
     @ColumnInfo(name = "user_id")
     @SerializedName("user_id")
     val userId: String,
