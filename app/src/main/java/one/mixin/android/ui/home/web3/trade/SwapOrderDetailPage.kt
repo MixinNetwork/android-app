@@ -57,12 +57,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.OrderState
-import one.mixin.android.vo.route.SwapOrderItem
+import one.mixin.android.vo.route.OrderItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Composable
-fun SwapOrderDetailPage(
+fun OrderDetailPage(
     walletId: String?,
     orderId: String,
     onShare: (String, String) -> Unit,
@@ -132,7 +132,7 @@ fun SwapOrderDetailPage(
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
-                orderItem.value?.let { swapOrder ->
+                orderItem.value?.let { order ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -150,14 +150,14 @@ fun SwapOrderDetailPage(
                                 .padding()
                         ) {
                             CoilImage(
-                                swapOrder.assetIconUrl,
+                                order.assetIconUrl,
                                 modifier = Modifier
                                     .width(47.dp)
                                     .height(47.dp),
                                 placeholder = R.drawable.ic_avatar_place_holder,
                             )
                             CoilImage(
-                                swapOrder.receiveAssetIconUrl,
+                                order.receiveAssetIconUrl,
                                 modifier = Modifier
                                     .offset(x = 16.dp, y = 16.dp)
                                     .width(54.dp)
@@ -169,7 +169,7 @@ fun SwapOrderDetailPage(
                         }
                         Spacer(modifier = Modifier.height(26.dp))
                         Text(
-                            text = "${swapOrder.assetSymbol} → ${swapOrder.receiveAssetSymbol}",
+                            text = "${order.assetSymbol} → ${order.receiveAssetSymbol}",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.W500,
                             color = MixinAppTheme.colors.textPrimary,
@@ -180,7 +180,7 @@ fun SwapOrderDetailPage(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(
-                                    when (swapOrder.state) {
+                                    when (order.state) {
                                         OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
                                         OrderState.FAILED.value -> MixinAppTheme.colors.walletRed.copy(alpha = 0.2f)
                                         else -> MixinAppTheme.colors.textMinor.copy(alpha = 0.2f)
@@ -190,7 +190,7 @@ fun SwapOrderDetailPage(
                                 .align(Alignment.CenterHorizontally)
                         ) {
                             Text(
-                                formatOrderState(context, swapOrder.state), color = when (swapOrder.state) {
+                                formatOrderState(context, order.state), color = when (order.state) {
                                     OrderState.SUCCESS.value -> MixinAppTheme.colors.walletGreen
                                     OrderState.FAILED.value -> MixinAppTheme.colors.walletRed
                                     else -> MixinAppTheme.colors.textPrimary
@@ -216,7 +216,7 @@ fun SwapOrderDetailPage(
                                     .weight(1f)
                                     .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
                                     .clickable {
-                                        onTryAgain.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
+                                        onTryAgain.invoke(order.payAssetId, order.receiveAssetId)
                                     }
                                     .padding(vertical = 10.dp)
                             )
@@ -235,7 +235,7 @@ fun SwapOrderDetailPage(
                                     .weight(1f)
                                     .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
                                     .clickable {
-                                        onShare.invoke(swapOrder.payAssetId, swapOrder.receiveAssetId)
+                                        onShare.invoke(order.payAssetId, order.receiveAssetId)
                                     }
                                     .padding(vertical = 10.dp)
                             )
@@ -256,37 +256,37 @@ fun SwapOrderDetailPage(
                     ) {
                         DetailItem(
                             context.getString(R.string.swap_order_paid).uppercase(),
-                            "-${swapOrder.payAmount} ${swapOrder.assetSymbol}",
+                            "-${order.payAmount} ${order.assetSymbol}",
                             MixinAppTheme.colors.walletRed,
-                            swapOrder.assetIconUrl,
-                            swapOrder.payChainName ?: ""
+                            order.assetIconUrl,
+                            order.payChainName ?: ""
                         )
                         DetailItem(
-                            if (swapOrder.state == OrderState.SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
-                            "+${swapOrder.receiveAmount} ${swapOrder.receiveAssetSymbol}",
+                            if (order.state == OrderState.SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
+                            "+${order.receiveAmount} ${order.receiveAssetSymbol}",
                             MixinAppTheme.colors.walletGreen,
-                            swapOrder.receiveAssetIconUrl,
-                            swapOrder.receiveChainName ?: ""
+                            order.receiveAssetIconUrl,
+                            order.receiveChainName ?: ""
                         )
                         DetailPriceItem(
-                            swapOrder
+                            order
                         )
                         DetailItem(
                             label = stringResource(R.string.Type).uppercase(),
-                            value = if (swapOrder.type == "swap") context.getString(R.string.order_type_swap) else if (swapOrder.type == "limit") context.getString(R.string.order_type_limit) else swapOrder.type,
+                            value = if (order.type == "swap") context.getString(R.string.order_type_swap) else if (order.type == "limit") context.getString(R.string.order_type_limit) else order.type,
                         )
                         DetailItem(
                             label = stringResource(R.string.Order_Created).uppercase(),
-                            value = swapOrder.createdAt.fullDate()
+                            value = order.createdAt.fullDate()
                         )
                         DetailItem(
                             label = stringResource(R.string.Order_ID).uppercase(),
-                            value = swapOrder.orderId,
+                            value = order.orderId,
                             onCopy = {
                                 context.getClipboardManager().setPrimaryClip(
                                     android.content.ClipData.newPlainText(
                                         null,
-                                        swapOrder.orderId
+                                        order.orderId
                                     )
                                 )
                                 toast(R.string.copied_to_clipboard)
@@ -301,7 +301,7 @@ fun SwapOrderDetailPage(
 
 @Composable
 private fun DetailPriceItem(
-    orderItem: SwapOrderItem
+    orderItem: OrderItem
 ) {
     val context = LocalContext.current
     Column(

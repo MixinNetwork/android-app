@@ -47,7 +47,7 @@ class OrderFilterParams(
         val orderSql = when (order) {
             SortOrder.Recent -> "ORDER BY o.created_at DESC"
             SortOrder.Oldest -> "ORDER BY o.created_at ASC"
-            else -> "ORDER BY o.created_at ASC"
+            else -> "ORDER BY o.created_at DESC"
         }
         val sql = "SELECT * FROM orders o $whereSql $orderSql"
         return SimpleSQLiteQuery(sql)

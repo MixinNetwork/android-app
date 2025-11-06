@@ -64,7 +64,6 @@ import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.LimitOrderCategory
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -151,7 +150,7 @@ fun LimitOrderContent(
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
-                viewModel.getLimitOrders(category = LimitOrderCategory.ALL.value, offset = null).data?.let {
+                viewModel.getLimitOrders(category = "all", offset = null).data?.let {
                     limitOrders = it
                 }
                 delay(10000)

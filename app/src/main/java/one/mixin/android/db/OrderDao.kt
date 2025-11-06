@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.vo.route.Order
-import one.mixin.android.vo.route.SwapOrderItem
+import one.mixin.android.vo.route.OrderItem
 
 @Dao
 interface OrderDao : BaseDao<Order> {
@@ -19,7 +19,7 @@ interface OrderDao : BaseDao<Order> {
         ORDER BY o.created_at DESC
 """
     )
-    fun orders(): Flow<List<SwapOrderItem>>
+    fun orders(): Flow<List<OrderItem>>
 
     @Query(
         """
@@ -32,7 +32,7 @@ interface OrderDao : BaseDao<Order> {
         WHERE o.order_id = :orderId
     """
     )
-    fun getOrderById(orderId: String): Flow<SwapOrderItem?>
+    fun getOrderById(orderId: String): Flow<OrderItem?>
 
     @Query("SELECT * FROM orders WHERE order_id = :orderId LIMIT 1")
     fun observeOrder(orderId: String): Flow<Order?>

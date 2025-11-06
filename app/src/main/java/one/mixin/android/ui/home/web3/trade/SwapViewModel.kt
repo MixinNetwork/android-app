@@ -140,7 +140,7 @@ class SwapViewModel
 
     suspend fun findWeb3AssetItems(walletId: String) = tokenRepository.findWeb3TokenItems(walletId)
 
-    fun swapOrders() = tokenRepository.swapOrders()
+    fun walletOrders() = tokenRepository.walletOrders()
 
     fun getOrderById(orderId: String) = tokenRepository.getOrderById(orderId)
 

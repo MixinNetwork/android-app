@@ -7,7 +7,6 @@ import androidx.paging.PagedList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.vo.route.OrderItem
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.provider.LimitOrderDataProvider
 import javax.inject.Inject

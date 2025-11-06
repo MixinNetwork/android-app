@@ -52,7 +52,7 @@ class OrderDetailFragment : BaseFragment() {
                 MixinAppTheme(
                     darkTheme = context.isNightMode(),
                 ) {
-                    SwapOrderDetailPage(
+                    OrderDetailPage(
                         walletId = walletId,
                         orderId = orderId,
                         onShare = { payAssetId, receiveAssetId ->

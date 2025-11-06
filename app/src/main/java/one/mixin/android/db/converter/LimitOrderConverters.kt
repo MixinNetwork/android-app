@@ -1,8 +1,8 @@
 package one.mixin.android.db.converter
 
 import androidx.room.TypeConverter
-import one.mixin.android.api.response.LimitOrderFundStatus
-import one.mixin.android.api.response.LimitOrderStatus
+import one.mixin.android.vo.route.LimitOrderFundStatus
+import one.mixin.android.vo.route.LimitOrderStatus
 
 class LimitOrderConverters {
     @TypeConverter

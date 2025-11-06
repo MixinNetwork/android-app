@@ -23,28 +23,25 @@ class LimitOrderDataProvider {
                             o.order_id,
                             o.user_id,
                             o.pay_asset_id,
-                            ps.icon_url AS asset_icon_url,
-                            ps.symbol AS asset_symbol,
+                            t.icon_url AS asset_icon_url,
+                            t.symbol AS asset_symbol,
                             o.receive_asset_id,
-                            rs.icon_url AS receive_asset_icon_url,
-                            rs.symbol AS receive_asset_symbol,
+                            rt.icon_url AS receive_asset_icon_url,
+                            rt.symbol AS receive_asset_symbol,
                             o.pay_amount,
                             o.receive_amount,
-                            o.pay_trace_id,
-                            o.receive_trace_id,
                             o.state,
-                            o.created_at,
                             o.order_type,
-                            o.fund_status,
-                            o.price,
-                            o.pending_amount,
-                            o.filled_receive_amount,
-                            o.expected_receive_amount,
-                            o.updated_at,
-                            o.expired_at
+                            pc.name AS pay_chain_name,
+                            rc.name AS receive_chain_name,
+                            o.created_at,
+                            rt.chain_id AS receive_chain_id,
+                            t.chain_id AS pay_chain_id
                         FROM orders o
-                        LEFT JOIN tokens ps ON ps.asset_id = o.pay_asset_id
-                        LEFT JOIN tokens rs ON rs.asset_id = o.receive_asset_id
+                        LEFT JOIN tokens t ON o.pay_asset_id = t.asset_id
+                        LEFT JOIN tokens rt ON o.receive_asset_id = rt.asset_id
+                        LEFT JOIN chains pc ON t.chain_id = pc.chain_id
+                        LEFT JOIN chains rc ON rt.chain_id = rc.chain_id
                     """.trimIndent()
 
                     val query = filter.buildQuery()
@@ -94,43 +91,33 @@ class LimitOrderDataProvider {
                             val idxReceiveAssetSymbol = cursor.getColumnIndexOrThrow("receive_asset_symbol")
                             val idxPayAmount = cursor.getColumnIndexOrThrow("pay_amount")
                             val idxReceiveAmount = cursor.getColumnIndexOrThrow("receive_amount")
-                            val idxPayTraceId = cursor.getColumnIndexOrThrow("pay_trace_id")
-                            val idxReceiveTraceId = cursor.getColumnIndexOrThrow("receive_trace_id")
                             val idxState = cursor.getColumnIndexOrThrow("state")
-                            val idxCreatedAt = cursor.getColumnIndexOrThrow("created_at")
                             val idxOrderType = cursor.getColumnIndexOrThrow("order_type")
-                            val idxFundStatus = cursor.getColumnIndexOrThrow("fund_status")
-                            val idxPrice = cursor.getColumnIndexOrThrow("price")
-                            val idxPendingAmount = cursor.getColumnIndexOrThrow("pending_amount")
-                            val idxFilledRecvAmount = cursor.getColumnIndexOrThrow("filled_receive_amount")
-                            val idxExpectedRecvAmount = cursor.getColumnIndexOrThrow("expected_receive_amount")
-                            val idxUpdatedAt = cursor.getColumnIndexOrThrow("updated_at")
-                            val idxExpiredAt = cursor.getColumnIndexOrThrow("expired_at")
+                            val idxPayChainName = cursor.getColumnIndexOrThrow("pay_chain_name")
+                            val idxReceiveChainName = cursor.getColumnIndexOrThrow("receive_chain_name")
+                            val idxCreatedAt = cursor.getColumnIndexOrThrow("created_at")
+                            val idxReceiveChainId = cursor.getColumnIndexOrThrow("receive_chain_id")
+                            val idxPayChainId = cursor.getColumnIndexOrThrow("pay_chain_id")
 
                             while (cursor.moveToNext()) {
                                 val item = OrderItem(
                                     orderId = cursor.getString(idxOrderId),
                                     userId = cursor.getString(idxUserId),
                                     payAssetId = cursor.getString(idxPayAssetId),
+                                    payChainId = cursor.getString(idxPayChainId),
                                     assetIconUrl = cursor.getString(idxAssetIconUrl),
                                     assetSymbol = cursor.getString(idxAssetSymbol),
                                     receiveAssetId = cursor.getString(idxReceiveAssetId),
+                                    receiveChainId = cursor.getString(idxReceiveChainId),
                                     receiveAssetIconUrl = cursor.getString(idxReceiveAssetIconUrl),
                                     receiveAssetSymbol = cursor.getString(idxReceiveAssetSymbol),
                                     payAmount = cursor.getString(idxPayAmount),
                                     receiveAmount = cursor.getString(idxReceiveAmount),
-                                    payTraceId = cursor.getString(idxPayTraceId),
-                                    receiveTraceId = cursor.getString(idxReceiveTraceId),
                                     state = cursor.getString(idxState),
+                                    type = cursor.getString(idxOrderType),
+                                    payChainName = cursor.getString(idxPayChainName),
+                                    receiveChainName = cursor.getString(idxReceiveChainName),
                                     createdAt = cursor.getString(idxCreatedAt),
-                                    orderType = cursor.getString(idxOrderType),
-                                    fundStatus = cursor.getString(idxFundStatus),
-                                    price = cursor.getString(idxPrice),
-                                    pendingAmount = cursor.getString(idxPendingAmount),
-                                    filledReceiveAmount = cursor.getString(idxFilledRecvAmount),
-                                    expectedReceiveAmount = cursor.getString(idxExpectedRecvAmount),
-                                    updatedAt = cursor.getString(idxUpdatedAt),
-                                    expiredAt = cursor.getString(idxExpiredAt),
                                 )
                                 list.add(item)
                             }

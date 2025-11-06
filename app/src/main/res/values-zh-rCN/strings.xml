@@ -2119,4 +2119,5 @@
     <string name="expiry_3_days">3 天</string>
     <string name="expiry_1_week">1 周</string>
     <string name="expiry_1_month">1 个月</string>
+    <string name="Orders">Orders</string>
 </resources>

@@ -16,7 +16,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentAllTransactionsBinding
+import one.mixin.android.databinding.FragmentAllOrdersBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navTo
@@ -32,14 +32,14 @@ import one.mixin.android.widget.SpacesItemDecoration
 import one.mixin.android.vo.route.OrderItem
 
 @AndroidEntryPoint
-class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layout.fragment_all_transactions) {
+class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layout.fragment_all_orders) {
 
     companion object {
         const val TAG: String = "AllOrdersFragment"
         const val ARGS_FILTER_PARAMS: String = "order_filter_params"
     }
 
-    private val binding by viewBinding(FragmentAllTransactionsBinding::bind)
+    private val binding by viewBinding(FragmentAllOrdersBinding::bind)
 
     private val ordersViewModel by viewModels<OrdersViewModel>()
 
@@ -96,7 +96,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private fun loadFilter() {
         binding.apply {
-            titleView.setSubTitle(getString(R.string.All_Transactions), getString(
+            titleView.setSubTitle(getString(R.string.Orders), getString(
                 when (filterParams.order) {
                     SortOrder.Oldest -> R.string.sort_by_oldest
                     else -> R.string.sort_by_recent

@@ -26,8 +26,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.mixin.android.R
-import one.mixin.android.api.response.LimitOrder
-import one.mixin.android.api.response.LimitOrderStatus
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate

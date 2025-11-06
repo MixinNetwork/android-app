@@ -24,20 +24,22 @@ class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.Vie
         val payAmountText = order.payAmount.ifEmpty { "0" }.numberFormat()
         binding.line2Left.setTextColor(itemView.context.getColor(R.color.wallet_pink))
         binding.line2Left.text = "-${payAmountText} ${left}"
-        binding.line2Right.text = when (order.orderType.lowercase()) {
+        binding.line2Right.text = when (order.type.lowercase()) {
             "swap" -> itemView.context.getString(R.string.order_type_swap)
             "limit" -> itemView.context.getString(R.string.order_type_limit)
-            else -> order.orderType
+            else -> order.type
         }
 
-        // Line 3: +xx symbol (green if settled else primary) | state with color
-        val receiveAmountText = order.receiveAmount?.ifEmpty { null }?.numberFormat()
-        binding.line3Left.text = if (receiveAmountText != null) "+${receiveAmountText} ${right}" else "+${order.pendingAmount} ${right}"
-        val isSettled = order.state.equals("settled", ignoreCase = true)
-        binding.line3Left.setTextColor(
-            if (isSettled) itemView.context.getColor(R.color.wallet_green)
-            else resolveAttrColor(R.attr.text_primary)
-        )
+        // Line 3: +xx symbol (color by status) | state with color
+        val receiveAmountText = order.receiveAmount.ifEmpty { "0" }.numberFormat()
+        binding.line3Left.text = "+${receiveAmountText} ${right}"
+        val stateLower = order.state.lowercase()
+        val leftColor = when (stateLower) {
+            "settled" -> itemView.context.getColor(R.color.wallet_green)
+            "failed", "cancelled", "canceled", "expired" -> itemView.context.getColor(R.color.wallet_pink)
+            else -> resolveAttrColor(R.attr.text_primary)
+        }
+        binding.line3Left.setTextColor(leftColor)
 
         binding.line3Right.text = order.state
         binding.line3Right.setTextColor(getStatusColor(order.state))

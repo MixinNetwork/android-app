@@ -121,8 +121,8 @@ class LimitTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 putString(ARGS_LINK, order.tx)
                 putParcelable(ARGS_IN_ASSET, from)
                 putParcelable(ARGS_OUT_ASSET, to)
-                putString(ARGS_IN_AMOUNT, order.order.amount)
-                putString(ARGS_OUT_AMOUNT, order.order.expectedReceiveAmount)
+                putString(ARGS_IN_AMOUNT, order.order.payAmount)
+                putString(ARGS_OUT_AMOUNT, order.order.expectedReceiveAmount ?: "0")
             }
         }
     }
