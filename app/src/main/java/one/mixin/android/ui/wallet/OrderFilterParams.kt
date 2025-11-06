@@ -8,8 +8,10 @@ import org.threeten.bp.Instant
 class OrderFilterParams(
     var order: SortOrder = SortOrder.Recent,
     var tokenItems: List<Web3TokenItem>? = null,
+    var walletIds: List<String>? = null,
     var statuses: List<String>? = null,
     var fundStatuses: List<String>? = null,
+    var orderTypes: List<String>? = null, // "swap" or "limit"
     var startTime: Long? = null,
     var endTime: Long? = null,
 ) {
@@ -25,10 +27,22 @@ class OrderFilterParams(
                 filters.add("(o.pay_asset_id IN ($tokenIds) OR o.receive_asset_id IN ($tokenIds))")
             }
         }
+        walletIds?.let { list ->
+            if (list.isNotEmpty()) {
+                val s = list.joinToString(", ") { v -> "'$v'" }
+                filters.add("o.wallet_id IN ($s)")
+            }
+        }
         statuses?.let { list ->
             if (list.isNotEmpty()) {
                 val s = list.joinToString(", ") { v -> "'$v'" }
                 filters.add("o.state IN ($s)")
+            }
+        }
+        orderTypes?.let { list ->
+            if (list.isNotEmpty()) {
+                val s = list.joinToString(", ") { v -> "'$v'" }
+                filters.add("o.order_type IN ($s)")
             }
         }
         fundStatuses?.let { list ->

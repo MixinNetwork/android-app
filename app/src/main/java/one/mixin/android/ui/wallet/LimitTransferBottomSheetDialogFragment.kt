@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -48,12 +47,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -69,10 +66,13 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsBottom
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -89,6 +89,7 @@ import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.components.WalletLabel
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -106,7 +107,7 @@ import one.mixin.android.ui.wallet.ItemUserContent
 import java.math.RoundingMode
 
 @AndroidEntryPoint
-class LimitTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "LimitTransferBottomSheetDialogFragment"
@@ -126,8 +127,6 @@ class LimitTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         }
     }
-
-    private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -171,206 +170,203 @@ class LimitTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var receiver: User? by mutableStateOf(null)
     private var errorInfo: String? by mutableStateOf(null)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        ComposeView(requireContext()).apply {
-            roundTopOrBottom(11f, top = true, bottom = false)
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                MixinAppTheme {
-                    Column(
-                        modifier =
-                        Modifier
-                            .clip(shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .background(MixinAppTheme.colors.background),
-                    ) {
-                        // No wallet label for mixin internal transfer
-                        Column(
-                            modifier =
-                            Modifier
-                                .weight(weight = 1f, fill = true),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Box(modifier = Modifier.height(50.dp))
-                            when (step) {
-                                Step.Sending -> {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(70.dp),
-                                        color = MixinAppTheme.colors.accent,
-                                    )
-                                }
-                                Step.Error -> {
-                                    Icon(
-                                        modifier = Modifier.size(70.dp),
-                                        painter = painterResource(id = R.drawable.ic_transfer_status_failed),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified,
-                                    )
-                                }
-                                Step.Done -> {
-                                    Icon(
-                                        modifier = Modifier.size(70.dp),
-                                        painter = painterResource(id = R.drawable.ic_transfer_status_success),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified,
-                                    )
-                                }
-                                else ->
-                                    Box(
-                                        modifier = Modifier.wrapContentWidth(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Box(
-                                            modifier =
-                                                Modifier
-                                                    .size(70.dp)
-                                                    .offset(x = (-27).dp)
-                                                    .border(
-                                                        1.5.dp,
-                                                        MixinAppTheme.colors.background,
-                                                        CircleShape
-                                                    )
-                                        ) {
-                                            CoilImage(
-                                                model = inAsset.icon,
-                                                placeholder = R.drawable.ic_avatar_place_holder,
-                                                modifier = Modifier
-                                                    .size(67.dp)
-                                                    .align(Alignment.Center)
-                                                    .clip(CircleShape)
-                                            )
-                                        }
-                                        Box(
-                                            modifier =
-                                                Modifier
-                                                    .size(70.dp)
-                                                    .offset(x = 27.dp)
-                                                    .border(
-                                                        1.5.dp,
-                                                        MixinAppTheme.colors.background,
-                                                        CircleShape
-                                                    )
-                                        ) {
-                                            CoilImage(
-                                                model = outAsset.icon,
-                                                placeholder = R.drawable.ic_avatar_place_holder,
-                                                modifier = Modifier
-                                                    .size(67.dp)
-                                                    .align(Alignment.Center)
-                                                    .clip(CircleShape)
-                                            )
-                                        }
-                                    }
-                            }
-                            Box(modifier = Modifier.height(20.dp))
-                            Text(
-                                text = stringResource(
-                                    id = when (step) {
-                                        Step.Pending -> R.string.swap_confirmation
-                                        Step.Done -> R.string.web3_sending_success
-                                        Step.Error -> R.string.swap_failed
-                                        Step.Sending -> R.string.Sending
-                                    }
-                                ),
-                                style = TextStyle(
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.W600,
-                                ),
-                            )
-                            Box(modifier = Modifier.height(8.dp))
-                            Text(
-                                modifier = Modifier.padding(horizontal = 24.dp),
-                                text = errorInfo ?: stringResource(id = if (step == Step.Done) R.string.swap_message_success else R.string.swap_inner_desc),
-                                textAlign = TextAlign.Center,
-                                style = TextStyle(
-                                    color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W400,
-                                ),
-                                maxLines = 3,
-                                minLines = 3,
-                            )
-                            Box(modifier = Modifier.height(10.dp))
-                            Box(
-                                modifier = Modifier
-                                    .height(10.dp)
-                                    .fillMaxWidth()
-                                    .background(MixinAppTheme.colors.backgroundWindow),
-                            )
-                            Box(modifier = Modifier.height(20.dp))
-                            AssetChanges(title = stringResource(id = R.string.Balance_Change).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
-                            Box(modifier = Modifier.height(20.dp))
-                            ItemContent(title = stringResource(id = R.string.Order_Type).uppercase(), subTitle = stringResource(id = R.string.Forever))
-                            Box(modifier = Modifier.height(20.dp))
-                            ItemLimitPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
-                            Box(modifier = Modifier.height(20.dp))
-                            // Receiver
-                            ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), user = receiver, address = null)
-                            // Sender
-                            ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
-                            Box(modifier = Modifier.height(20.dp))
-                            ItemContent(title = stringResource(id = R.string.Memo).uppercase(), subTitle = parsedLink?.memo ?: stringResource(id = R.string.None))
-                            Box(modifier = Modifier.height(20.dp))
-                            Box(modifier = Modifier.height(16.dp))
-                        }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val view = super.onCreateView(inflater, container, savedInstanceState)
+        parse()
+        return view
+    }
 
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            when (step) {
-                                Step.Done -> {
-                                    Row(
-                                        modifier =
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            Column(
+                modifier =
+                    Modifier
+                        .clip(shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .background(MixinAppTheme.colors.background),
+            ) {
+                // No wallet label for mixin internal transfer
+                Column(
+                    modifier =
+                        Modifier
+                            .weight(weight = 1f, fill = true),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(modifier = Modifier.height(50.dp))
+                    when (step) {
+                        Step.Sending -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(70.dp),
+                                color = MixinAppTheme.colors.accent,
+                            )
+                        }
+                        Step.Error -> {
+                            Icon(
+                                modifier = Modifier.size(70.dp),
+                                painter = painterResource(id = R.drawable.ic_transfer_status_failed),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                            )
+                        }
+                        Step.Done -> {
+                            Icon(
+                                modifier = Modifier.size(70.dp),
+                                painter = painterResource(id = R.drawable.ic_transfer_status_success),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                            )
+                        }
+                        else ->
+                            Box(
+                                modifier = Modifier.wrapContentWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Box(
+                                    modifier =
                                         Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .background(MixinAppTheme.colors.background)
-                                            .padding(20.dp)
-                                            .fillMaxWidth(),
-                                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
-                                    ) {
-                                        Button(
-                                            onClick = { onDoneAction?.invoke(); dismiss() },
-                                            colors = ButtonDefaults.outlinedButtonColors(backgroundColor = MixinAppTheme.colors.accent),
-                                            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
-                                        ) { Text(text = stringResource(id = R.string.Done), color = Color.White) }
-                                    }
-                                }
-                                Step.Error -> {
-                                    ActionBottom(
-                                        modifier = Modifier.align(Alignment.BottomCenter),
-                                        cancelTitle = stringResource(R.string.Cancel),
-                                        confirmTitle = stringResource(id = R.string.Retry),
-                                        cancelAction = { dismiss() },
-                                        confirmAction = { showPin() },
+                                            .size(70.dp)
+                                            .offset(x = (-27).dp)
+                                            .border(
+                                                1.5.dp,
+                                                MixinAppTheme.colors.background,
+                                                CircleShape
+                                            )
+                                ) {
+                                    CoilImage(
+                                        model = inAsset.icon,
+                                        placeholder = R.drawable.ic_avatar_place_holder,
+                                        modifier = Modifier
+                                            .size(67.dp)
+                                            .align(Alignment.Center)
+                                            .clip(CircleShape)
                                     )
                                 }
-                                Step.Pending -> {
-                                    ActionBottom(
-                                        modifier = Modifier.align(Alignment.BottomCenter),
-                                        cancelTitle = stringResource(R.string.Cancel),
-                                        confirmTitle = stringResource(id = R.string.Continue),
-                                        cancelAction = { dismiss() },
-                                        confirmAction = { showPin() },
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .size(70.dp)
+                                            .offset(x = 27.dp)
+                                            .border(
+                                                1.5.dp,
+                                                MixinAppTheme.colors.background,
+                                                CircleShape
+                                            )
+                                ) {
+                                    CoilImage(
+                                        model = outAsset.icon,
+                                        placeholder = R.drawable.ic_avatar_place_holder,
+                                        modifier = Modifier
+                                            .size(67.dp)
+                                            .align(Alignment.Center)
+                                            .clip(CircleShape)
                                     )
                                 }
-                                Step.Sending -> {}
+                            }
+                    }
+                    Box(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = stringResource(
+                            id = when (step) {
+                                Step.Pending -> R.string.swap_confirmation
+                                Step.Done -> R.string.web3_sending_success
+                                Step.Error -> R.string.swap_failed
+                                Step.Sending -> R.string.Sending
+                            }
+                        ),
+                        style = TextStyle(
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W600,
+                        ),
+                    )
+                    Box(modifier = Modifier.height(8.dp))
+                    Text(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        text = errorInfo ?: stringResource(id = if (step == Step.Done) R.string.swap_message_success else R.string.swap_inner_desc),
+                        textAlign = TextAlign.Center,
+                        style = TextStyle(
+                            color = if (errorInfo != null) MixinAppTheme.colors.tipError else MixinAppTheme.colors.textMinor,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W400,
+                        ),
+                        maxLines = 3,
+                        minLines = 3,
+                    )
+                    Box(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .height(10.dp)
+                            .fillMaxWidth()
+                            .background(MixinAppTheme.colors.backgroundWindow),
+                    )
+                    Box(modifier = Modifier.height(20.dp))
+                    AssetChanges(title = stringResource(id = R.string.Balance_Change).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
+                    Box(modifier = Modifier.height(20.dp))
+                    ItemContent(title = stringResource(id = R.string.Order_Type).uppercase(), subTitle = stringResource(id = R.string.Forever))
+                    Box(modifier = Modifier.height(20.dp))
+                    ItemLimitPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
+                    Box(modifier = Modifier.height(20.dp))
+                    // Receiver
+                    ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), user = receiver, address = null)
+                    // Sender
+                    ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
+                    Box(modifier = Modifier.height(20.dp))
+                    ItemContent(title = stringResource(id = R.string.Memo).uppercase(), subTitle = parsedLink?.memo ?: stringResource(id = R.string.None))
+                    Box(modifier = Modifier.height(20.dp))
+                    Box(modifier = Modifier.height(16.dp))
+                }
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    when (step) {
+                        Step.Done -> {
+                            Row(
+                                modifier =
+                                Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .background(MixinAppTheme.colors.background)
+                                    .padding(20.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                            ) {
+                                Button(
+                                    onClick = { onDoneAction?.invoke(); dismiss() },
+                                    colors = ButtonDefaults.outlinedButtonColors(backgroundColor = MixinAppTheme.colors.accent),
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                                ) { Text(text = stringResource(id = R.string.Done), color = Color.White) }
                             }
                         }
-                        Box(modifier = Modifier.height(36.dp))
+                        Step.Error -> {
+                            ActionBottom(
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                                cancelTitle = stringResource(R.string.Cancel),
+                                confirmTitle = stringResource(id = R.string.Retry),
+                                cancelAction = { dismiss() },
+                                confirmAction = { showPin() },
+                            )
+                        }
+                        Step.Pending -> {
+                            ActionBottom(
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                                cancelTitle = stringResource(R.string.Cancel),
+                                confirmTitle = stringResource(id = R.string.Continue),
+                                cancelAction = { dismiss() },
+                                confirmAction = { showPin() },
+                            )
+                        }
+                        Step.Sending -> {}
                     }
                 }
+                Box(modifier = Modifier.height(36.dp))
             }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                val ctx = requireContext()
-                behavior?.peekHeight = max(0, ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight())
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-            parse()
         }
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+    }
 
     private var onDoneAction: (() -> Unit)? = null
     private var onDestroyAction: (() -> Unit)? = null
@@ -452,15 +448,7 @@ class LimitTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     fun getBiometricInfo() = BiometricInfo(getString(R.string.Verify_by_Biometric), "", "")
 
-    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            when (newState) {
-                BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-                else -> {}
-            }
-        }
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-    }
+    // No explicit BottomSheetBehavior callback needed with MixinComposeBottomSheetDialogFragment
 
     override fun onDetach() {
         super.onDetach()
@@ -491,6 +479,9 @@ class LimitTransferBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val memo = uri.getQueryParameter("memo")
         val traceId = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
         parsedLink = ParsedLink(assetId, amount, receiverIds, memo, traceId)
+    }
+
+    override fun showError(error: String) {
     }
 }
 

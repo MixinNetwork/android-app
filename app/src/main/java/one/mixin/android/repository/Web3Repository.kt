@@ -167,9 +167,14 @@ constructor(
     suspend fun findWalletById(walletId: String) =
         web3WalletDao.getWalletById(walletId)?.updateWithLocalKeyInfo(context)
 
-    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) =
-        web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
-            .updateWithLocalKeyInfo(context)
+    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String): List<Web3Wallet> {
+        val wallets = if (chainId.isBlank()) {
+            web3WalletDao.getWalletsExcludingByNameAllChains(excludeWalletId, query)
+        } else {
+            web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
+        }
+        return wallets.updateWithLocalKeyInfo(context)
+    }
 
     suspend fun getAllWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }
     suspend fun anyAddressExists(destinations: List<String>) = web3AddressDao.anyAddressExists(destinations)

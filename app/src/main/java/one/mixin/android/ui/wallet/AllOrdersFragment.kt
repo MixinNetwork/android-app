@@ -21,6 +21,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.navTo
 import one.mixin.android.job.RefreshOrdersJob
+import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
@@ -71,11 +72,15 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
             filterUser.visibility = VISIBLE
             filterReputation.visibility = VISIBLE
+            filterUser.setOnClickListener {
+                selectWallet()
+            }
             filterType.setOnClickListener {
                 filterType.open()
                 typeMenu.show()
             }
             filterReputation.setOnClickListener {
+                filterReputation.open()
                 statusMenu.show()
             }
             filterAsset.setOnClickListener {
@@ -159,19 +164,20 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     private val typeMenu by lazy {
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.filterType
-            val items = listOf(
-                getString(R.string.All),
-                "pending",
-                "held",
-                "transferring",
-                "transferred",
+            verticalOffset = requireContext().dpToPx(8f)
+            val rawValues = listOf<String?>(
+                null, // All
+                "swap",
+                "limit",
             )
-            setAdapter(android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items))
+            val display = listOf(
+                getString(R.string.All),
+                getString(R.string.order_type_swap),
+                getString(R.string.order_type_limit),
+            )
+            setAdapter(android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, display))
             setOnItemClickListener { _, _, position, _ ->
-                filterParams.fundStatuses = when (position) {
-                    0 -> null
-                    else -> listOf(items[position])
-                }
+                filterParams.orderTypes = rawValues[position]?.let { listOf(it) }
                 loadFilter()
                 dismiss()
             }
@@ -187,8 +193,9 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     private val statusMenu by lazy {
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.filterReputation
-            val items = listOf(
-                getString(R.string.All),
+            verticalOffset = requireContext().dpToPx(8f)
+            val rawValues = listOf<String?>(
+                null,
                 "created",
                 "pricing",
                 "quoting",
@@ -197,12 +204,19 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                 "cancelled",
                 "failed",
             )
-            setAdapter(android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items))
+            val display = listOf(
+                getString(R.string.All),
+                getString(R.string.order_state_created),
+                getString(R.string.order_state_pricing),
+                getString(R.string.order_state_quoting),
+                getString(R.string.Success),
+                getString(R.string.Expired),
+                getString(R.string.Canceled),
+                getString(R.string.State_Failed)
+            )
+            setAdapter(android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, display))
             setOnItemClickListener { _, _, position, _ ->
-                filterParams.statuses = when (position) {
-                    0 -> null
-                    else -> listOf(items[position])
-                }
+                filterParams.statuses = rawValues[position]?.let { listOf(it) }
                 loadFilter()
                 dismiss()
             }
@@ -211,6 +225,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             isModal = true
             setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
             setDropDownGravity(Gravity.START)
+            setOnDismissListener { binding.filterReputation.close() }
         }
     }
 
@@ -220,9 +235,30 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             .showNow(parentFragmentManager, MultiSelectWeb3TokenListBottomSheetDialogFragment.TAG)
     }
 
+    private fun selectWallet() {
+        binding.filterUser.open()
+        WalletListBottomSheetDialogFragment.newInstance(excludeWalletId = "", chainId = null)
+            .apply {
+                setOnWalletClickListener { wallet ->
+                    filterParams.walletIds = if (wallet == null) {
+                        listOfNotNull(Session.getAccountId())
+                    } else {
+                        listOf(wallet.id)
+                    }
+                    val title = wallet?.name ?: getString(R.string.Privacy_Wallet)
+                    binding.filterUser.setTitle(title)
+                    loadFilter()
+                    binding.filterUser.close()
+                }
+                setOnDismissListener {
+                    binding.filterUser.close()
+                }
+            }
+            .showNow(parentFragmentManager, WalletListBottomSheetDialogFragment.TAG)
+    }
+
     private val multiSelectWeb3TokenListBottomSheetDialogFragment by lazy {
-        val walletId: String? = null
-        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId)
+        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(walletId = Session.getAccountId())
             .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
                 override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
                     filterParams.tokenItems = tokenItems

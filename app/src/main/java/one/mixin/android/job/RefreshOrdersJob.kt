@@ -38,11 +38,17 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
                 .toSet()
                 .toList()
             if (assetIds.isNotEmpty()) {
-                val existing = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds)
-                val existingIds = existing.map { it.assetId }.toSet()
+                val tokensNow = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds)
+                val existingIds = tokensNow.map { it.assetId }.toSet()
                 val missingIds = assetIds.filter { it !in existingIds }
                 if (missingIds.isNotEmpty()) {
                     refreshAsset(missingIds)
+                }
+                // refresh tokens again after potential insert to make sure we have chainIds
+                val tokensReady = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds)
+                val chainIds = tokensReady.mapNotNull { it.chainId }.distinct()
+                if (chainIds.isNotEmpty()) {
+                    fetchChain(chainIds)
                 }
             }
             if (response.data!!.size >= LIMIT) {
