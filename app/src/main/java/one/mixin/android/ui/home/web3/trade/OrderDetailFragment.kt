@@ -111,9 +111,9 @@ class OrderDetailFragment : BaseFragment() {
                 // Fallback: share plain URL when token not found
                 val isLimit = type.equals("limit", true)
                 val url = if (isLimit) {
-                    "${Constants.Scheme.HTTPS_TRADE}?type=limit&input=$payId&output=$receiveId"
+                    "${Constants.Scheme.MIXIN_TRADE}?type=limit&input=$payId&output=$receiveId"
                 } else {
-                    "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId"
+                    "${Constants.Scheme.MIXIN_SWAP}?input=$payId&output=$receiveId"
                 }
                 ForwardMessage(ShareCategory.Text, url)
             }
@@ -134,8 +134,8 @@ class OrderDetailFragment : BaseFragment() {
         }
         val isLimit = type.equals("limit", true)
         val buildTradeUrl = { inId: String, outId: String ->
-            if (isLimit) "${Constants.Scheme.HTTPS_TRADE}?type=limit&input=$inId&output=$outId&referral=${one.mixin.android.session.Session.getAccount()?.identityNumber}"
-            else "${Constants.Scheme.HTTPS_SWAP}?input=$inId&output=$outId&referral=${one.mixin.android.session.Session.getAccount()?.identityNumber}"
+            if (isLimit) "${Constants.Scheme.MIXIN_TRADE}?type=limit&input=$inId&output=$outId&referral=${one.mixin.android.session.Session.getAccount()?.identityNumber}"
+            else "${Constants.Scheme.MIXIN_SWAP}?input=$inId&output=$outId&referral=${one.mixin.android.session.Session.getAccount()?.identityNumber}"
         }
         val actions: List<ActionButtonData> = listOf(
             ActionButtonData(

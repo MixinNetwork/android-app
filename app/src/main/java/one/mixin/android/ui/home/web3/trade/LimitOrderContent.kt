@@ -145,6 +145,8 @@ fun LimitOrderContent(
     var isPriceInverted by remember { mutableStateOf(false) }
 
     var isPriceLoading by remember { mutableStateOf(false) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -267,14 +269,18 @@ fun LimitOrderContent(
                     headerCompose = {
                         InputArea(modifier = Modifier.onFocusChanged {
                             if (it.isFocused) focusedField = FocusedField.AMOUNT
-                        }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) }, onInputChanged = { inputText = it }, onDeposit = onDeposit, onMax = {
+                        }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                            onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From)
+                        }, onInputChanged = { inputText = it }, onDeposit = onDeposit, onMax = {
                             val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                             if (balance > BigDecimal.ZERO) {
                                 inputText = balance.stripTrailingZeros().toPlainString()
                             } else {
                                 inputText = ""
                             }
-                        })
+                        }, autoFocus = true)
                     },
                     bottomCompose = {
                         InputArea(
@@ -283,7 +289,11 @@ fun LimitOrderContent(
                             text = outputText,
                             title = stringResource(id = R.string.swap_receive),
                             readOnly = true,
-                            selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
+                            selectClick = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To)
+                            },
                             onDeposit = null,
                         )
                     },
@@ -341,6 +351,7 @@ fun LimitOrderContent(
                                     }
                                 }
                             },
+                            autoFocus = false,
                         )
                     },
                     margin = 6.dp,
@@ -362,7 +373,11 @@ fun LimitOrderContent(
                             Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                             Spacer(modifier = Modifier.height(8.dp))
                             limitOrders.forEach { order ->
-                                OpenOrderItem(order = order, onClick = { onLimitOrderClick(order.orderId) })
+                                OpenOrderItem(order = order, onClick = {
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                    onLimitOrderClick(order.orderId)
+                                })
                             }
                         }
                     } else {
@@ -421,6 +436,8 @@ fun LimitOrderContent(
                                 .fillMaxWidth()
                                 .height(48.dp),
                             onClick = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
                                 if (isButtonEnabled && toToken != null) {
                                     isButtonEnabled = false
                                     isSubmitting = true
@@ -489,8 +506,6 @@ fun LimitOrderContent(
                 }
             }
         }, floating = {
-            val keyboardController = LocalSoftwareKeyboardController.current
-            val focusManager = LocalFocusManager.current
             FloatingActions(
                 focusedField = focusedField,
                 fromBalance = fromBalance,
