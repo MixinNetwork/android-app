@@ -107,7 +107,6 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                     else -> R.string.sort_by_recent
                 }
             ))
-            filterUser.setTitle(getString(R.string.Wallet))
             filterType.setTitle(getString(R.string.Type))
             filterReputation.setTitle(getString(R.string.Status))
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
@@ -117,6 +116,9 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                 formatDateRange(filterParams.startTime, filterParams.endTime)
             }
             filterTime.setTitle(dateTitle)
+            if (filterParams.walletIds.isNullOrEmpty()) {
+                filterUser.setTitle(getString(R.string.Wallets))
+            }
             bindLiveData()
         }
     }
@@ -237,24 +239,29 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private fun selectWallet() {
         binding.filterUser.open()
-        WalletListBottomSheetDialogFragment.newInstance(excludeWalletId = "", chainId = null)
-            .apply {
-                setOnWalletClickListener { wallet ->
-                    filterParams.walletIds = if (wallet == null) {
-                        listOfNotNull(Session.getAccountId())
-                    } else {
-                        listOf(wallet.id)
-                    }
-                    val title = wallet?.name ?: getString(R.string.Privacy_Wallet)
-                    binding.filterUser.setTitle(title)
-                    loadFilter()
-                    binding.filterUser.close()
+        val accountId = Session.getAccountId()
+        val currentIds = filterParams.walletIds ?: emptyList()
+        val privacySelected = accountId != null && currentIds.contains(accountId)
+        val initialIds = if (privacySelected) currentIds.filterNot { it == accountId } else currentIds
+        WalletMultiSelectBottomSheetDialogFragment.newInstance()
+            .setInitialSelection(initialIds, privacySelected)
+            .setOnConfirmListener { selected ->
+                val ids = selected.mapNotNull { w -> w?.id ?: accountId }
+                filterParams.walletIds = ids.ifEmpty { null }
+                val names = selected.map { it?.name ?: getString(R.string.Privacy_Wallet) }
+                val title = when (names.size) {
+                    0 -> getString(R.string.Wallets)
+                    1 -> names.first()
+                    else -> getString(R.string.Wallets_Selected_Count, names.size)
                 }
-                setOnDismissListener {
-                    binding.filterUser.close()
-                }
+                binding.filterUser.setTitle(title)
+                loadFilter()
+                binding.filterUser.close()
             }
-            .showNow(parentFragmentManager, WalletListBottomSheetDialogFragment.TAG)
+            .setOnDismissListener {
+                binding.filterUser.close()
+            }
+            .showNow(parentFragmentManager, WalletMultiSelectBottomSheetDialogFragment.TAG)
     }
 
     private val multiSelectWeb3TokenListBottomSheetDialogFragment by lazy {

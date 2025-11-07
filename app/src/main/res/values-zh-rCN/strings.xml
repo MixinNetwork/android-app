@@ -2121,4 +2121,5 @@
     <string name="expiry_1_month">1 个月</string>
     <string name="Orders">订单</string>
     <string name="Expiration">到期</string>
+    <string name="Wallets_Selected_Count">%1$d 钱包</string>
 </resources>

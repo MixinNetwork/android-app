@@ -53,6 +53,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -64,6 +65,8 @@ fun WalletCard(
     hasLocalPrivateKey: Boolean = true,
     destination: WalletDestination?,
     onClick: () -> Unit,
+    isSelectable: Boolean = false,
+    isSelected: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
 ) {
     var web3TokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
@@ -224,11 +227,20 @@ fun WalletCard(
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_right),
-                        tint = Color.Unspecified,
-                        contentDescription = null,
-                    )
+                    if (isSelectable) {
+                        val iconRes = if (isSelected) R.drawable.ic_wallet_select else R.drawable.ic_wallet_unselect
+                        Icon(
+                            painter = painterResource(id = iconRes),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_right),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
