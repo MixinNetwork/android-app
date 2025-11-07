@@ -121,16 +121,17 @@ fun InputArea(
                         modifier = Modifier.clickable { onDeposit.invoke(t) },
                     )
                 }
-
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = token.name,
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        textAlign = TextAlign.Start,
+                if (bottomCompose == null) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = token.name,
+                        style = TextStyle(
+                            fontSize = 12.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            textAlign = TextAlign.Start,
+                        )
                     )
-                )
+                }
             } ?: run {
                 Text(
                     text = "0",

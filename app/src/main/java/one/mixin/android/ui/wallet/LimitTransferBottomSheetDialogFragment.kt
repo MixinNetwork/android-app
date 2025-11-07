@@ -12,6 +12,8 @@ import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -105,6 +107,8 @@ import one.mixin.android.ui.wallet.AssetChanges
 import one.mixin.android.ui.wallet.ItemPriceContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import java.math.RoundingMode
+import java.time.Duration
+import java.time.Instant
 
 @AndroidEntryPoint
 class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -116,6 +120,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         private const val ARGS_IN_ASSET = "args_in_asset"
         private const val ARGS_OUT_AMOUNT = "args_out_amount"
         private const val ARGS_OUT_ASSET = "args_out_asset"
+        private const val ARGS_EXPIRED_AT = "args_expired_at"
 
         fun newInstance(order: CreateLimitOrderResponse, from: SwapToken, to: SwapToken): LimitTransferBottomSheetDialogFragment {
             return LimitTransferBottomSheetDialogFragment().withArgs {
@@ -124,6 +129,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 putParcelable(ARGS_OUT_ASSET, to)
                 putString(ARGS_IN_AMOUNT, order.order.payAmount)
                 putString(ARGS_OUT_AMOUNT, order.order.expectedReceiveAmount ?: "0")
+                putString(ARGS_EXPIRED_AT, order.order.expiredAt)
             }
         }
     }
@@ -164,6 +170,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private val self by lazy { requireNotNull(Session.getAccount()).toUser() }
     private val link by lazy { Uri.parse(requireNotNull(requireArguments().getString(ARGS_LINK))) }
+    private val expiredAt: String? by lazy { requireArguments().getString(ARGS_EXPIRED_AT) }
 
     private var step by mutableStateOf(Step.Pending)
     private var parsedLink: ParsedLink? = null
@@ -191,7 +198,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 Column(
                     modifier =
                         Modifier
-                            .weight(weight = 1f, fill = true),
+                            .weight(weight = 1f, fill = true)
+                            .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(modifier = Modifier.height(50.dp))
@@ -304,18 +312,19 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     Box(modifier = Modifier.height(20.dp))
                     AssetChanges(title = stringResource(id = R.string.Balance_Change).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
                     Box(modifier = Modifier.height(20.dp))
-                    ItemContent(title = stringResource(id = R.string.Order_Type).uppercase(), subTitle = stringResource(id = R.string.Forever))
+                    ItemContent(title = stringResource(id = R.string.Order_Type).uppercase(), subTitle = stringResource(id = R.string.order_type_limit))
                     Box(modifier = Modifier.height(20.dp))
                     ItemLimitPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
                     Box(modifier = Modifier.height(20.dp))
-                    // Receiver
+                    val expiryLabel = remember(expiredAt) { mapExpiryToLabel(expiredAt) }
+                    ItemContent(title = stringResource(id = R.string.expiry).uppercase(), subTitle = stringResource(id = expiryLabel))
+                    Box(modifier = Modifier.height(20.dp))
                     ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), user = receiver, address = null)
-                    // Sender
+                    Box(modifier = Modifier.height(20.dp))
                     ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
                     Box(modifier = Modifier.height(20.dp))
                     ItemContent(title = stringResource(id = R.string.Memo).uppercase(), subTitle = parsedLink?.memo ?: stringResource(id = R.string.None))
                     Box(modifier = Modifier.height(20.dp))
-                    Box(modifier = Modifier.height(16.dp))
                 }
 
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -469,6 +478,27 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         val traceId: String,
     )
 
+    private fun mapExpiryToLabel(expiredAt: String?): Int {
+        if (expiredAt.isNullOrBlank()) return R.string.expiry_never
+        return runCatching {
+            val target = Instant.parse(expiredAt)
+            val now = Instant.now()
+            val seconds = Duration.between(now, target).seconds
+            if (seconds >= Duration.ofDays(365L * 50L).seconds) return R.string.expiry_never
+            val mins = seconds / 60
+            val hours = seconds / 3600
+            val days = seconds / (24 * 3600)
+            return when {
+                mins <= 15 -> R.string.expiry_10_min
+                hours <= 1 -> R.string.expiry_1_hour
+                days <= 1 -> R.string.expiry_1_day
+                days <= 3 -> R.string.expiry_3_days
+                days <= 7 -> R.string.expiry_1_week
+                else -> R.string.expiry_1_month
+            }
+        }.getOrElse { R.string.expiry_never }
+    }
+
     private fun parse() = lifecycleScope.launch {
         val uri = link
         val assetId = requireNotNull(uri.getQueryParameter("asset"))
@@ -493,7 +523,11 @@ fun ItemLimitPriceContent(
     outAmount: BigDecimal,
     outAsset: SwapToken
 ) {
-    val price = outAmount.divide(inAmount, 8, RoundingMode.HALF_UP)
+
+    val price = runCatching {
+        if (inAmount.compareTo(BigDecimal.ZERO) == 0) null else outAmount.divide(inAmount, 8, RoundingMode.HALF_UP)
+    }.getOrNull()
+
     Column(
         modifier =
             Modifier
@@ -507,23 +541,34 @@ fun ItemLimitPriceContent(
             maxLines = 1,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        if (price != null && price.compareTo(BigDecimal.ZERO) > 0) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "1 ${inAsset.symbol} = ${price.stripTrailingZeros().toPlainString()} ${outAsset.symbol}",
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W400
+                )
+            }
+            Box(modifier = Modifier.height(4.dp))
+            val inverted = runCatching { BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP) }.getOrNull()
+            if (inverted != null) {
+                Text(
+                    text = "1 ${outAsset.symbol} = ${inverted.stripTrailingZeros().toPlainString()} ${inAsset.symbol}",
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W400
+                )
+            }
+            Box(modifier = Modifier.height(4.dp))
+        } else {
             Text(
-                modifier = Modifier.weight(1f),
-                text = "1 ${inAsset.symbol} = ${price.toPlainString()} ${outAsset.symbol}",
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
+                text = "-",
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.W400
             )
+            Box(modifier = Modifier.height(4.dp))
         }
-        Box(modifier = Modifier.height(4.dp))
-        Text(
-            modifier = Modifier.weight(1f),
-            text = "1 ${outAsset.symbol} = ${BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP).toPlainString()} ${inAsset.symbol}",
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.W400
-        )
-        Box(modifier = Modifier.height(4.dp))
     }
 }

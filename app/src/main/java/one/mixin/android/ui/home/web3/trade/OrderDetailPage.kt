@@ -262,7 +262,7 @@ fun DetailItem(
                         Spacer(modifier = Modifier.height(20.dp))
                         val scope = rememberCoroutineScope()
                         when {
-                            order.type == "limit" && (uiState == LimitOrderState.PRICING || uiState == LimitOrderState.CREATED || uiState == LimitOrderState.QUOTING) -> {
+                            order.type == "limit" && (uiState == LimitOrderState.PRICING || uiState == LimitOrderState.CREATED || uiState == LimitOrderState.QUOTING || uiState == LimitOrderState.PENDING) -> {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()

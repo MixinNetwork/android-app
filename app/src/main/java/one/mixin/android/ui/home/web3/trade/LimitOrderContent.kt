@@ -49,6 +49,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -268,7 +270,7 @@ fun LimitOrderContent(
                     },
                     headerCompose = {
                         InputArea(modifier = Modifier.onFocusChanged {
-                            if (it.isFocused) focusedField = FocusedField.AMOUNT
+                            if (it.isFocused) FocusedField.AMOUNT
                         }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
                             keyboardController?.hide()
                             focusManager.clearFocus()
@@ -300,9 +302,9 @@ fun LimitOrderContent(
                     tailCompose = {
                         InputArea(
                             modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) focusedField = FocusedField.PRICE
+                                if (it.isFocused) FocusedField.PRICE
                             },
-                            token = toToken,
+                            token = if (isPriceInverted) fromToken else toToken,
                             text = limitPriceText,
                             title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
                             readOnly = false,
@@ -319,13 +321,7 @@ fun LimitOrderContent(
                                 }
                             } else null,
                             bottomCompose = {
-                                Row(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .height(18.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                                     val price = limitPriceText.toBigDecimalOrNull()
                                     val priceText = if (price != null && price > BigDecimal.ZERO) {
                                         if (!isPriceInverted) {
@@ -338,17 +334,37 @@ fun LimitOrderContent(
                                         null
                                     }
                                     if (priceText != null) {
-                                        Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                                        Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterVertically))
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Icon(
                                             painter = painterResource(id = R.drawable.ic_price_switch),
                                             contentDescription = null,
                                             tint = MixinAppTheme.colors.textAssist,
                                             modifier = Modifier
-                                                .size(12.dp)
-                                                .clickable { isPriceInverted = !isPriceInverted }
+                                                .size(16.dp)
+                                                .clickable {
+                                                    val current = limitPriceText.toBigDecimalOrNull()
+                                                    if (current != null && current > BigDecimal.ZERO) {
+                                                        val inverted = BigDecimal.ONE.divide(current, 8, RoundingMode.HALF_UP)
+                                                        limitPriceText = inverted.stripTrailingZeros().toPlainString()
+                                                    }
+                                                    isPriceInverted = !isPriceInverted
+                                                }
                                         )
                                     }
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Text(
+                                        text = if (!isPriceInverted) {
+                                            fromToken?.name
+                                        } else {
+                                            toToken?.name
+                                        } ?: "",
+                                        style = TextStyle(
+                                            fontSize = 12.sp,
+                                            color = MixinAppTheme.colors.textAssist,
+                                            textAlign = TextAlign.Start,
+                                        )
+                                    )
                                 }
                             },
                             autoFocus = false,

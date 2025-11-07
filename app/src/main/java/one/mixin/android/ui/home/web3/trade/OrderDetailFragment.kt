@@ -57,7 +57,7 @@ class OrderDetailFragment : BaseFragment() {
 
     private val swapViewModel by viewModels<SwapViewModel>()
 
-    private val dialog by lazy { indeterminateProgressDialog(message = one.mixin.android.R.string.Please_wait_a_bit).apply { setCancelable(false) } }
+    private val dialog by lazy { indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply { setCancelable(false) } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

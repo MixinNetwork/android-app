@@ -229,11 +229,13 @@ class TradeFragment : BaseFragment() {
                                     }
                                 },
                                 onReview = { quote, from, to, amount ->
+                                    this@apply.hideKeyboard()
                                     lifecycleScope.launch {
                                         handleReview(quote, from, to, amount, navController)
                                     }
                                 },
                                 onLimitReview = { order ->
+                                    this@apply.hideKeyboard()
                                     openLimitTransfer(order)
                                 },
                                 onDeposit = { token ->
@@ -249,9 +251,17 @@ class TradeFragment : BaseFragment() {
                                     }
                                 },
                                 onOrderList = {
-                                    navTo(AllOrdersFragment(), AllOrdersFragment.TAG)
+                                    this@apply.hideKeyboard()
+                                    val accountId = one.mixin.android.session.Session.getAccountId()
+                                    val target = if (accountId != null) {
+                                        AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(accountId))
+                                    } else {
+                                        AllOrdersFragment()
+                                    }
+                                    navTo(target, AllOrdersFragment.TAG)
                                 },
                                 onLimitOrderClick = { orderId ->
+                                    this@apply.hideKeyboard()
                                     navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
                                 pop = {

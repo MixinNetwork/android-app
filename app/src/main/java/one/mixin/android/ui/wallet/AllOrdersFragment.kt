@@ -38,6 +38,15 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     companion object {
         const val TAG: String = "AllOrdersFragment"
         const val ARGS_FILTER_PARAMS: String = "order_filter_params"
+        private const val ARGS_WALLET_IDS: String = "args_wallet_ids"
+
+        fun newInstanceWithWalletIds(walletIds: ArrayList<String>): AllOrdersFragment {
+            val f = AllOrdersFragment()
+            val args = android.os.Bundle()
+            args.putStringArrayList(ARGS_WALLET_IDS, walletIds)
+            f.arguments = args
+            return f
+        }
     }
 
     private val binding by viewBinding(FragmentAllOrdersBinding::bind)
@@ -101,6 +110,11 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private fun loadFilter() {
         binding.apply {
+            arguments?.getStringArrayList(ARGS_WALLET_IDS)?.let { ids ->
+                if (ids.isNotEmpty()) {
+                    filterParams.walletIds = ids
+                }
+            }
             titleView.setSubTitle(getString(R.string.Orders), getString(
                 when (filterParams.order) {
                     SortOrder.Oldest -> R.string.sort_by_oldest
@@ -118,6 +132,15 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             filterTime.setTitle(dateTitle)
             if (filterParams.walletIds.isNullOrEmpty()) {
                 filterUser.setTitle(getString(R.string.Wallets))
+            } else {
+                val current = filterParams.walletIds ?: emptyList()
+                val accountId = Session.getAccountId()
+                val title = if (current.size == 1 && accountId != null && current.first() == accountId) {
+                    getString(R.string.Privacy_Wallet)
+                } else {
+                    getString(R.string.Wallets_Selected_Count, current.size)
+                }
+                filterUser.setTitle(title)
             }
             bindLiveData()
         }
