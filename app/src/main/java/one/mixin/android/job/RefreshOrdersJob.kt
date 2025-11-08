@@ -28,12 +28,12 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
         }
 
     private suspend fun refreshOrders(offset: String?) {
-        val response = routeService.getLimitOrders(offset = offset, limit = LIMIT)
+        val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null)
         if (response.isSuccess && response.data != null) {
             val orders = response.data!!
             orderDao.insertListSuspend(orders)
             val walletId = Session.getAccountId()!!
-            val assetIds = orders.flatMap { listOfNotNull(it.payAssetId, it.receiveAssetId) }
+            val assetIds = orders.flatMap { listOfNotNull<String>(it.payAssetId, it.receiveAssetId) }
                 .filter { it.isNotEmpty() }
                 .toSet()
                 .toList()
@@ -46,13 +46,14 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
                 }
                 // refresh tokens again after potential insert to make sure we have chainIds
                 val tokensReady = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds)
-                val chainIds = tokensReady.mapNotNull { it.chainId }.distinct()
+                val chainIds = tokensReady.map { it.chainId }.distinct()
                 if (chainIds.isNotEmpty()) {
                     fetchChain(chainIds)
                 }
             }
-            if (response.data!!.size >= LIMIT) {
-                val lastCreate = response.data?.last()?.createdAt ?: return
+            val fetchedSize = orders.size
+            if (fetchedSize >= LIMIT) {
+                val lastCreate = orders.lastOrNull()?.createdAt ?: return
                 refreshOrders(lastCreate)
             }
         }

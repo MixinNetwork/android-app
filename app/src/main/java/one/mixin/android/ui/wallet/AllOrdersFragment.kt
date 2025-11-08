@@ -9,6 +9,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -59,6 +63,8 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
+    private var refreshJob: Job? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(RefreshOrdersJob())
@@ -106,6 +112,8 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
         }
 
         loadFilter()
+
+        startPendingOrdersPolling()
     }
 
     private fun loadFilter() {
@@ -347,5 +355,25 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
         if (start == null || end == null) return getString(R.string.Date)
         val df = java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM)
         return "${df.format(java.util.Date(start))} - ${df.format(java.util.Date(end))}"
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        stopPendingOrdersPolling()
+    }
+
+    private fun startPendingOrdersPolling() {
+        refreshJob?.cancel()
+        refreshJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (true) {
+                val hadPending: Boolean = ordersViewModel.refreshPendingOrders()
+                delay(if (hadPending) 5_000 else 10_000)
+            }
+        }
+    }
+
+    private fun stopPendingOrdersPolling() {
+        refreshJob?.cancel()
+        refreshJob = null
     }
 }

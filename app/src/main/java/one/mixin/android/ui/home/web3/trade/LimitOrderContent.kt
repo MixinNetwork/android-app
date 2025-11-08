@@ -85,6 +85,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.handleMixinError
 import one.mixin.android.vo.route.Order
+import one.mixin.android.vo.route.OrderState
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
@@ -155,7 +156,7 @@ fun LimitOrderContent(
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
-                viewModel.getLimitOrders(category = "active", offset = null).data?.let {
+                viewModel.getLimitOrders(state = OrderState.PENDING.value, offset = null).data?.let {
                     limitOrders = it
                 }
                 delay(10000)

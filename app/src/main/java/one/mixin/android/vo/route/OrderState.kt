@@ -8,6 +8,7 @@ enum class OrderState(val value: String) {
     PENDING("pending"),
     SUCCESS("success"),
     FAILED("failed"),
+    EXPIRED("expired"),
     REFUNDED("refunded");
 
     companion object {
@@ -28,6 +29,7 @@ enum class OrderState(val value: String) {
         PENDING -> context.getString(R.string.State_Pending)
         SUCCESS -> context.getString(R.string.State_Success)
         FAILED -> context.getString(R.string.State_Failed)
+        EXPIRED -> context.getString(R.string.Expired)
         REFUNDED -> context.getString(R.string.State_Refunded)
     }
 }

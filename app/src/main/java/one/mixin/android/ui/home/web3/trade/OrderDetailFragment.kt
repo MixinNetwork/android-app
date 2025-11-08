@@ -8,6 +8,13 @@ import androidx.compose.ui.platform.ComposeView
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.first
 import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -17,7 +24,8 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOrdersJob
-import one.mixin.android.job.RefreshPendingOrdersJob
+import one.mixin.android.api.service.RouteService
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -55,14 +63,21 @@ class OrderDetailFragment : BaseFragment() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    @Inject
+    lateinit var routeService: RouteService
+
+    @Inject
+    lateinit var walletDatabase: WalletDatabase
+
     private val swapViewModel by viewModels<SwapViewModel>()
 
     private val dialog by lazy { indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply { setCancelable(false) } }
 
+    private var refreshJob: Job? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         jobManager.addJobInBackground(RefreshOrdersJob())
-        jobManager.addJobInBackground(RefreshPendingOrdersJob())
     }
 
     override fun onCreateView(
@@ -93,6 +108,40 @@ class OrderDetailFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val orderId: String = arguments?.getString(ARGS_ORDER_ID) ?: return
+        startOrderPolling(orderId)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        stopOrderPolling()
+    }
+
+    private fun startOrderPolling(orderId: String) {
+        refreshJob?.cancel()
+        refreshJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (isActive) {
+                val local = withContext(Dispatchers.IO) { walletDatabase.orderDao().observeOrder(orderId).first() }
+                val isPending = local?.state == "pending"
+                if (!isPending) break
+                withContext(Dispatchers.IO) {
+                    val resp = routeService.getLimitOrder(orderId)
+                    if (resp.isSuccess && resp.data != null) {
+                        walletDatabase.orderDao().insertListSuspend(listOf(resp.data!!))
+                    }
+                }
+                delay(5_000)
+            }
+        }
+    }
+
+    private fun stopOrderPolling() {
+        refreshJob?.cancel()
+        refreshJob = null
     }
 
     private suspend fun shareOrder(payAssetId: String, receiveAssetId: String, type: String) {
