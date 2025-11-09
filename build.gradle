@@ -122,7 +122,7 @@ buildscript {
         ext.protobufVersion = '3.11.0'
         ext.appsFlyerVersion ='6.17.3'
         ext.installreferrerVersion ='2.2'
-        ext.billingVersion ='8.0.0'
+        ext.billingVersion ='8.1.0'
 
         ext.lottieComposeVersion = '6.7.1'
         ext.composeBomVersion = '2025.10.01'
