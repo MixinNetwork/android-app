@@ -40,22 +40,16 @@ import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.api.response.referral.ReferralCodeInfo
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
+import one.mixin.android.api.response.referral.ReferralCodeInfo
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.compose.MaterialInputField
 import one.mixin.android.ui.home.web3.components.ActionButton
-import one.mixin.android.ui.landing.components.HighlightedTextWithClick
-import one.mixin.android.ui.landing.components.NumberedText
-import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
 

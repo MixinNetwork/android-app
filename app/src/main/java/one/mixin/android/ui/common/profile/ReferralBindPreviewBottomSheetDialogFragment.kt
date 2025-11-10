@@ -8,8 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +23,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,9 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -49,18 +43,18 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.User
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.User
 
 @AndroidEntryPoint
 class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -259,7 +253,6 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                 },
                 successBlock = {
                     step = Step.Done
-                    onDoneAction?.invoke()
                     dismiss()
                     true
                 },
