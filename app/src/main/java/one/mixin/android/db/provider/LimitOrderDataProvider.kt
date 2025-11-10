@@ -19,7 +19,7 @@ class LimitOrderDataProvider {
             return object : DataSource.Factory<Int, OrderItem>() {
                 override fun create(): DataSource<Int, OrderItem> {
                     val baseSelect = """
-                        SELECT 
+                        SELECT DISTINCT
                             o.order_id,
                             o.wallet_id,
                             o.user_id,
@@ -53,11 +53,11 @@ class LimitOrderDataProvider {
 
                     val whereOrderSql = query.sql.substringAfter("FROM orders o")
 
-                    val countSql = "SELECT count(1) FROM orders o $whereOrderSql"
+                    val countSql = "SELECT COUNT(DISTINCT o.rowid) FROM orders o $whereOrderSql"
                     val countStmt = RoomSQLiteQuery.acquire(countSql, 0)
 
                     val offsetSql = """
-                        SELECT o.rowid FROM orders o
+                        SELECT DISTINCT o.rowid FROM orders o
                         $whereOrderSql
                         LIMIT ? OFFSET ?
                     """.trimIndent()

@@ -130,7 +130,7 @@ fun LimitOrderContent(
 
     var isReverse by remember { mutableStateOf(false) }
 
-    var focusedField by remember { mutableStateOf(FocusedField.AMOUNT) }
+    var focusedField by remember { mutableStateOf(FocusedField.PRICE) }
 
     var fromToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) to else from)
@@ -271,7 +271,7 @@ fun LimitOrderContent(
                     },
                     headerCompose = {
                         InputArea(modifier = Modifier.onFocusChanged {
-                            if (it.isFocused) FocusedField.AMOUNT
+                            if (it.isFocused) focusedField = FocusedField.AMOUNT
                         }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
                             keyboardController?.hide()
                             focusManager.clearFocus()
@@ -283,7 +283,7 @@ fun LimitOrderContent(
                             } else {
                                 inputText = ""
                             }
-                        }, autoFocus = true)
+                        })
                     },
                     bottomCompose = {
                         InputArea(
@@ -303,7 +303,7 @@ fun LimitOrderContent(
                     tailCompose = {
                         InputArea(
                             modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) FocusedField.PRICE
+                                if (it.isFocused) focusedField = FocusedField.PRICE
                             },
                             token = if (isPriceInverted) fromToken else toToken,
                             text = limitPriceText,
@@ -368,7 +368,6 @@ fun LimitOrderContent(
                                     )
                                 }
                             },
-                            autoFocus = false,
                         )
                     },
                     margin = 6.dp,

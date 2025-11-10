@@ -394,7 +394,7 @@ fun DetailItem(
                             } else {
                                 "0"
                             }
-                            val endText = "${filled.stripTrailingZeros().toPlainString()} ${order.assetSymbol}"
+                            val endText = "${filled.stripTrailingZeros().toPlainString()} ${order.receiveAssetSymbol}"
                             DetailItem(
                                 label = stringResource(R.string.Filled).uppercase(),
                                 value = "$percentStr%",

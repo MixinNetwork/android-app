@@ -239,7 +239,6 @@ fun SwapContent(
                                         inputText = ""
                                     }
                                 },
-                                autoFocus = true
                             )
                         },
                         bottomCompose = {

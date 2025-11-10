@@ -62,7 +62,6 @@ fun InputContent(
     onInputChanged: ((String) -> Unit)? = null,
     readOnly: Boolean = false,
     inlineEndCompose: (@Composable () -> Unit)? = null,
-    autoFocus: Boolean = false,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -111,11 +110,10 @@ fun InputContent(
             }
         }
 
-        LaunchedEffect(autoFocus) {
-            if (autoFocus) {
+        LaunchedEffect(Unit) {
+            if (text.isBlank()) {
                 delay(100)
                 focusRequester.requestFocus()
-                keyboardController?.show()
             }
         }
 
