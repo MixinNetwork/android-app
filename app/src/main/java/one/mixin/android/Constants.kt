@@ -189,7 +189,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 67
+        const val CURRENT_VERSION = 68
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -260,6 +260,7 @@ object Constants {
         const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
         const val MobileCoin = "eea900a8-b327-488c-8d8d-1428702fe240"
+
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }
 

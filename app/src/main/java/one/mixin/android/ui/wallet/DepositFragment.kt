@@ -51,6 +51,7 @@ import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
@@ -334,6 +335,7 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Dash,
                 Constants.ChainId.Monero,
                 Constants.ChainId.Solana,
+                Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID,
                 Constants.ChainId.TON_CHAIN_ID -> true
 
                 else -> false
@@ -388,6 +390,19 @@ class DepositFragment : BaseFragment() {
                     hideCopy = noTag
                 )
 
+                // Set minimum and maximum using server-provided values
+                minimumDepositValue.text = "${depositEntry.minimum} ${asset.symbol}"
+
+                // Set maximum and maximum using server-provided values
+                if ((depositEntry.maximum.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
+                    maximumDepositValue.isVisible = false
+                    maximumDepositTitle.isVisible = false
+                } else {
+                    maximumDepositValue.text = "${depositEntry.maximum} ${asset.symbol}"
+                    maximumDepositTitle.isVisible = true
+                    maximumDepositValue.isVisible = true
+                }
+
                 binding.copy.setOnClickListener {
                     context?.heavyClickVibrate()
                     context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositEntry.destination))
@@ -401,7 +416,9 @@ class DepositFragment : BaseFragment() {
                     binding.amount.setOnClickListener {
                         InputAmountBottomSheetDialogFragment.newInstance(
                             asset,
-                            depositEntry.destination
+                            if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) null else depositEntry.destination,
+                            minimum = depositEntry.minimum,
+                            maximum = depositEntry.maximum,
                         ).apply {
                             this.onCopyClick = { address ->
                                 this@DepositFragment.lifecycleScope.launch {

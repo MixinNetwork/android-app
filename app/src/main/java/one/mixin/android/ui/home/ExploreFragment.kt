@@ -2,11 +2,11 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.edit
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -76,7 +76,6 @@ import one.mixin.android.vo.Plan
 import one.mixin.android.widget.SegmentationItemDecoration
 import one.mixin.android.widget.lottie.RLottieDrawable
 import javax.inject.Inject
-import androidx.core.content.edit
 
 @AndroidEntryPoint
 class ExploreFragment : BaseFragment() {
@@ -513,11 +512,7 @@ class ExploreFragment : BaseFragment() {
                     if (app == InternalReferral) {
                         lottie.setImageDrawable(
                             RLottieDrawable(
-                                if (root.context.isNightMode()) {
-                                    R.raw.referral_night
-                                } else {
-                                    R.raw.referral
-                                },
+                                R.raw.referral,
                                 "referral",
                                 35.dp,
                                 35.dp,

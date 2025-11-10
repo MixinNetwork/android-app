@@ -30,6 +30,7 @@ import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toFile
+import androidx.core.view.WindowCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -136,7 +137,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
-        SystemUIManager.fitsSystem(window)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding.root.doOnPreDraw {
             SystemUIManager.lightUI(window, false)
         }

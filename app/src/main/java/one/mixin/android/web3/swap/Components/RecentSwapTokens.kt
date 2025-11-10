@@ -58,7 +58,7 @@ fun RecentSwapTokens(key: String, callback: (SwapToken) -> Unit) {
         viewModel.getRecentSwapTokens(context.defaultSharedPreferences, key)
     }
     if (recentToken.isEmpty()) return
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         Column(
             modifier = Modifier
                 .background(MixinAppTheme.colors.background)

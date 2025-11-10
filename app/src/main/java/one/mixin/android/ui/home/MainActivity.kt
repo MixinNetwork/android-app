@@ -398,7 +398,7 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.hasSafe()) {
                 jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                 if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
-                    AnalyticsTracker.trackLoginPinVerify("verify_pin")
+                    AnalyticsTracker.trackLoginPinVerify("pin_verify")
                     LoginVerifyBottomSheetDialogFragment.newInstance().apply {
                         onDismissCallback = { success ->
                             if (success) {
@@ -982,6 +982,8 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun initBottomNav() {
         binding.apply {
+            bottomNav.setOnApplyWindowInsetsListener(null)
+            bottomNav.setPadding(0,0,0,0)
             bottomNav.itemIconTintList = null
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 
@@ -1026,6 +1028,9 @@ class MainActivity : BlazeBaseActivity() {
                 is NavigationController.Explore -> ExploreFragment()
                 is NavigationController.Market -> MarketFragment()
             }
+        } else if (fragment is WalletFragment) {
+            // Ensure wallet fragment refreshes its content when switching back
+            fragment.update()
         }
 
         navigationController.navigate(fm, destination, fragment)

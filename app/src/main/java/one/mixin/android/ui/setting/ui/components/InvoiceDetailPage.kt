@@ -44,7 +44,7 @@ fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MembershipO
     val orderState = viewModel.getOrdersFlow(orderId).collectAsState(null)
     MixinAppTheme {
         PageScaffold(
-            title = stringResource(R.string.Invoice),
+            title = stringResource(R.string.Invoices),
             verticalScrollable = false,
             pop = onPop,
             actions = {

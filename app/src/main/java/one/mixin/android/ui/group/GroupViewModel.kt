@@ -20,13 +20,13 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.ConversationIdUtil
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
-import one.mixin.android.util.ConversationIdUtil
 import java.util.UUID
 import javax.inject.Inject
 
