@@ -320,4 +320,9 @@ interface RouteService {
         @Path("user_id") userId: String,
         @Query("chain_id") chainId: String
     ): MixinResponse<UserAddressView>
+
+    @GET("referral/codes/{code}/info")
+    suspend fun getReferralCodeInfo(
+        @Path("code") code: String,
+    ): MixinResponse<one.mixin.android.api.response.referral.ReferralCodeInfo>
 }

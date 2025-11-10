@@ -40,6 +40,7 @@ import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.api.response.referral.ReferralCodeInfo
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -56,11 +57,11 @@ import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFr
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.getMixinErrorStringByCode
 
 private sealed class UiState {
     object Initial : UiState()
     object Loading : UiState()
-    object Success : UiState()
     data class Failure(val error: String?) : UiState()
 }
 
@@ -120,131 +121,6 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             ) {
 
                 when (val state = uiState) {
-                    is UiState.Success -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.bg_referral),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(bottom = 16.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_order_success),
-                                    contentDescription = null
-                                )
-                                Spacer(Modifier.height(16.dp))
-                                Text(
-                                    text = stringResource(R.string.referral_code_applied),
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.W600,
-                                    color = MixinAppTheme.colors.textPrimary,
-                                )
-                            }
-                        }
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 20.dp)
-                                .imePadding(),
-                        ) {
-                            Spacer(Modifier.height(27.dp))
-                            Text(
-                                text = stringResource(R.string.referral_code_applied_header),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.W400,
-                                color = MixinAppTheme.colors.textPrimary,
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            Column {
-                                NumberedText(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    numberStr = "1",
-                                    instructionStr = stringResource(R.string.referral_program_introduction_1)
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                NumberedText(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    numberStr = "2",
-                                    instructionStr = stringResource(R.string.referral_program_introduction_2)
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                NumberedText(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    numberStr = "3",
-                                    instructionStr = stringResource(R.string.referral_program_introduction_3),
-                                    color = MixinAppTheme.colors.red
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(24.dp))
-                            HighlightedTextWithClick(
-                                stringResource(
-                                    R.string.referral_code_applied_footer,
-                                    stringResource(R.string.Learn_More)
-                                ),
-                                modifier = Modifier.align(Alignment.CenterHorizontally),
-                                stringResource(R.string.Learn_More),
-                                color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp,
-                                lineHeight = 21.sp,
-                                textAlign = TextAlign.Start
-                            ) {
-                                context?.openUrl(getString(R.string.referral_url))
-                            }
-
-                            Spacer(Modifier.weight(1f))
-
-                            ActionButton(
-                                text = stringResource(R.string.got_it),
-                                onClick = {
-                                    dismiss()
-                                },
-                                backgroundColor = MixinAppTheme.colors.accent,
-                                contentColor = Color.White,
-                                modifier = Modifier
-                                    .wrapContentHeight()
-                                    .fillMaxWidth()
-                            )
-
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                text = stringResource(R.string.Upgrade),
-                                color = MixinAppTheme.colors.accent,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W500,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                                    .clickable {
-                                        MixinMemberUpgradeBottomSheetDialogFragment.newInstance()
-                                            .showNow(
-                                                parentFragmentManager,
-                                                MixinMemberUpgradeBottomSheetDialogFragment.TAG
-                                            )
-                                        dismissNow()
-                                    }
-                            )
-                            Spacer(Modifier.height(12.dp))
-                        }
-                    }
-
                     else -> {
                         Box(
                             modifier = Modifier
@@ -326,32 +202,26 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                     onClick = {
                                         scope.launch {
                                             uiState = UiState.Loading
-                                            requestRouteAPI(
-                                                invokeNetwork = {
-                                                    viewModel.bindReferral(
-                                                        input.trim()
-                                                    )
-                                                },
-                                                successBlock = {
-                                                    uiState = UiState.Success
-                                                    true
-                                                },
-                                                failureBlock = {
-                                                    uiState =
-                                                        UiState.Failure(it.errorDescription)
-                                                    true
-                                                },
-                                                exceptionBlock = {
-                                                    uiState =
-                                                        UiState.Failure(it.localizedMessage)
-                                                    true
-                                                },
-                                                requestSession = {
-                                                    viewModel.fetchSessionsSuspend(
-                                                        listOf(ROUTE_BOT_USER_ID)
-                                                    )
-                                                },
-                                            )
+                                            val code = input.trim()
+                                            val infoResponse = viewModel.getReferralCodeInfo(code)
+                                            if (infoResponse.isSuccess && infoResponse.data != null) {
+                                                val info: ReferralCodeInfo = infoResponse.data!!
+                                                val inviter = viewModel.refreshUser(info.inviterUserId)
+                                                uiState = UiState.Initial
+                                                if (inviter != null) {
+                                                    ReferralBindPreviewBottomSheetDialogFragment
+                                                        .newInstance(code, inviter, info.inviteePercent)
+                                                        .setOnDone {
+                                                            dismissNow()
+                                                        }
+                                                        .showNow(parentFragmentManager, ReferralBindPreviewBottomSheetDialogFragment.TAG)
+                                                } else {
+                                                    uiState = UiState.Failure(getString(R.string.Data_error))
+                                                }
+                                            } else {
+                                                val msg = requireContext().getMixinErrorStringByCode(infoResponse.errorCode, infoResponse.errorDescription)
+                                                uiState = UiState.Failure(msg)
+                                            }
                                         }
                                     },
                                     backgroundColor = MixinAppTheme.colors.accent,

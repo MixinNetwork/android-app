@@ -2081,6 +2081,7 @@
     <string name="referral_code_applied_introduction_2">升级会员返现单笔最高 1000 USD</string>
     <string name="referral_code_applied_introduction_3">自动获得后续所有新权益</string>
     <string name="apply_referral_code">绑定邀请码</string>
+    <string name="bind_referral_code">绑定邀请码</string>
     <string name="apply_referral_code_benefit">将邀请码绑定到你的账户，解锁 Mixin 专属福利。</string>
     <string name="referral_program_introduction_header">参与邀请计划，邀请好友分享赚币：</string>
     <string name="referral_program_introduction_footer">* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
@@ -2092,7 +2093,10 @@
     <string name="Referral">邀请</string>
     <string name="referral_banner">邀请好友赢取最高 60% 手续费分佣！</string>
     <string name="referral_hint">邀请码</string>
+    <string name="bind_referral_footer">手续费按月、按实际消耗的手续费币种和金额汇总返还到您的 Mixin 隐私钱包，阅读文档了解更多。</string>
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>
     <string name="Address_not_found">该联系人还没有注册普通钱包</string>
+    <string name="Invitee_Commission">Invitee Commission</string>
+    <string name="Inviter">Inviter</string>
 </resources>

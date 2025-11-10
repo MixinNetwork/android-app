@@ -2133,6 +2133,7 @@
     <string name="referral_banner">Invite friends and earn up to 60% of their trading fees!</string>
     <string name="Mixin_Referral">Mixin Referral</string>
     <string name="apply_referral_code">Apply Referral Code</string>
+    <string name="bind_referral_code">Bind Referral Code</string>
     <string name="apply_referral_code_benefit">Apply a referral code to your account to unlock exclusive benefits on Mixin</string>
     <string name="referral_program_introduction_header">Join the referral program and invite friends to earn crypto together:</string>
     <string name="referral_program_introduction_1">Up to 60% commission on trading fees</string>
@@ -2143,6 +2144,7 @@
     <string name="referral_code_applied_introduction_3">Automatic access to all future new benefits</string>
     <string name="referral_program_introduction_footer">* Referral rewards are available only to paid Mixin One members. Learn more</string>
     <string name="referral_code_applied_footer">All cashback will be settled monthly to your Mixin privacy wallet. Learn more</string>
+    <string name="bind_referral_footer">Fees are refunded monthly by actual consumed fee currency and amount to your Mixin privacy wallet. Learn more</string>
     <string name="referral_code_applied_header">🎉 Referral code successfully applied! You’ve unlocked the following benefits:</string>
     <string name="referral_code_applied">Applied</string>
     <string name="got_it">Got It</string>
@@ -2150,4 +2152,6 @@
     <string name="input_referral_code_hint">Invited by a friend?</string>
     <string name="referral_description">Invite friends earn crypto</string>
     <string name="Address_not_found">This user has not registered a common wallet</string>
+    <string name="Invitee_Commission">Invitee Commission</string>
+    <string name="Inviter">Inviter</string>
 </resources>

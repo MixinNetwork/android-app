@@ -60,6 +60,7 @@ class UserRepository
         private val userDao: UserDao,
         private val userService: UserService,
         private val accountService: AccountService,
+        private val routeService: RouteService,
     ) {
         fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 
@@ -404,4 +405,6 @@ class UserRepository
         }
 
         suspend fun bindReferral(code: String) = accountService.bindReferral(BindInviteRequest(code))
+
+        suspend fun getReferralCodeInfo(code: String) = routeService.getReferralCodeInfo(code)
     }
