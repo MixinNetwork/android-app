@@ -337,7 +337,16 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         val memoEnabled =
                                             token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE
                                         if (memoEnabled) {
-                                            navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
+                                            token?.let { t -> // Only privacy wallet
+                                                validateAndNavigateToInput(
+                                                    assetId = t.assetId,
+                                                    chainId = t.chainId,
+                                                    destination = address,
+                                                    asset = t,
+                                                ) {
+                                                    navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
+                                                }
+                                            }
                                         } else if (web3Token != null) {
                                             lifecycleScope.launch {
                                                 web3Token?.let { token ->
@@ -364,7 +373,6 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                     chainId = t.chainId,
                                                     destination = address,
                                                     asset = t,
-                                                    toAccount = true
                                                 )
                                             }
                                         }
@@ -593,7 +601,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         web3Token: Web3TokenItem? = null,
         chainToken: Web3TokenItem? = null,
         asset: TokenItem? = null,
-        toAccount: Boolean? = null,
+        callback: (()-> Unit)? = null
     ) {
         requireView().hideKeyboard()
         val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
@@ -608,6 +616,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     if (response.isSuccess) {
                         errorInfo = null
                         when {
+                            callback != null -> {
+                                callback.invoke()
+                            }
                             asset != null && destination.isNotEmpty() && tag != null -> {
                                 navigateToInputFragmentWithBundle(Bundle().apply {
                                     putParcelable(InputFragment.ARGS_TOKEN, asset)
