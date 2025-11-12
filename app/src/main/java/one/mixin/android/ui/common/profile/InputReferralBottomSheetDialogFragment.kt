@@ -191,7 +191,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 Spacer(Modifier.height(40.dp))
                             } else {
                                 ActionButton(
-                                    text = stringResource(R.string.Confirm),
+                                    text = stringResource(R.string.Review),
                                     enabled = input.trim().length >= 8,
                                     onClick = {
                                         scope.launch {

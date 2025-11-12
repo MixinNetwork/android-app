@@ -406,5 +406,5 @@ class UserRepository
 
         suspend fun bindReferral(code: String) = accountService.bindReferral(BindInviteRequest(code))
 
-        suspend fun getReferralCodeInfo(code: String) = routeService.getReferralCodeInfo(code)
+        suspend fun getReferralCodeInfo(code: String) = accountService.getReferralCodeInfo(code)
     }

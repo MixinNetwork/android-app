@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -120,27 +121,27 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         Image(
                             painter = painterResource(R.drawable.ic_bind_referral),
                             contentDescription = null,
-                            modifier = Modifier.size(80.dp)
+                            modifier = Modifier.size(70.dp)
                         )
                     }
                     Step.Sending -> {
                         CircularProgressIndicator(
                             color = MixinAppTheme.colors.accent,
-                            modifier = Modifier.size(80.dp)
+                            modifier = Modifier.size(70.dp)
                         )
                     }
                     Step.Done -> {
                         Image(
                             painter = painterResource(R.drawable.ic_order_success),
                             contentDescription = null,
-                            modifier = Modifier.size(80.dp)
+                            modifier = Modifier.size(70.dp)
                         )
                     }
                     Step.Error -> {
                         Image(
                             painter = painterResource(R.drawable.ic_order_failed),
                             contentDescription = null,
-                            modifier = Modifier.size(80.dp)
+                            modifier = Modifier.size(70.dp)
                         )
                     }
                 }
@@ -156,7 +157,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.TopCenter
                 ) {
                     HighlightedTextWithClick(
                         fullText = stringResource(R.string.bind_referral_footer),
@@ -186,11 +187,11 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         .background(MixinAppTheme.colors.backgroundWindow)
                 )
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(R.string.referral_hint), subTitle = code)
+                ItemContent(title = stringResource(R.string.referral_hint).uppercase(), subTitle = code)
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(R.string.Invitee_Commission), subTitle = "$percent%")
+                ItemContent(title = stringResource(R.string.Invitee_Commission).uppercase(), subTitle = "${(percent.toFloatOrNull() ?: 0f) * 100f}%")
                 Box(modifier = Modifier.height(20.dp))
-                ItemUserContent(title = stringResource(R.string.Inviter), user = inviter, address = null)
+                ItemUserContent(title = stringResource(R.string.Inviter).uppercase(), user = inviter, address = null)
                 Box(modifier = Modifier.height(20.dp))
                 Spacer(modifier = Modifier.weight(1f))
                 when (step) {
@@ -202,7 +203,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                                 .fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            androidx.compose.material.Button(
+                            Button(
                                 onClick = {
                                     onDoneAction?.invoke()
                                     dismiss()
@@ -253,7 +254,6 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                 },
                 successBlock = {
                     step = Step.Done
-                    dismiss()
                     true
                 },
                 failureBlock = {
