@@ -208,8 +208,8 @@ class TradeFragment : BaseFragment() {
                         },
                     ) {
                         composable(TradeDestination.Swap.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob())
+                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+                            jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
                             TradePage(
                                 walletId = walletId,
                                 from = fromToken,
@@ -269,8 +269,6 @@ class TradeFragment : BaseFragment() {
                                 }
                             )
                         }
-
-                        // OrderList removed: no entry now
                     }
 
                 }
@@ -445,6 +443,7 @@ class TradeFragment : BaseFragment() {
                             if (to.chain.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
                         },
                         getReferral(),
+                        walletId,
                     )
                 )
             },

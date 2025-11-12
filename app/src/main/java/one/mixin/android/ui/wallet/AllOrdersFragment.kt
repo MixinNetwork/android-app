@@ -67,7 +67,9 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        jobManager.addJobInBackground(RefreshOrdersJob())
+        val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
+        val walletId = walletIds?.firstOrNull()
+        jobManager.addJobInBackground(RefreshOrdersJob(walletId))
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }

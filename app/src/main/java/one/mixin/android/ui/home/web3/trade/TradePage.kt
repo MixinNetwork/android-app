@@ -159,29 +159,27 @@ fun TradePage(
         verticalScrollable = true,
         pop = pop,
         actions = {
-            if (source != "web3") {
-                Box {
-                    IconButton(onClick = {
-                        onOrderList()
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_order),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.icon,
-                        )
-                    }
-                    if (orderBadge) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .offset(x = (-12).dp, y = (12).dp)
-                                .background(
-                                    color = MixinAppTheme.colors.badgeRed,
-                                    shape = CircleShape
-                                )
-                                .align(Alignment.TopEnd)
-                        )
-                    }
+            Box {
+                IconButton(onClick = {
+                    onOrderList()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_order),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+                if (orderBadge) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .offset(x = (-12).dp, y = (12).dp)
+                            .background(
+                                color = MixinAppTheme.colors.badgeRed,
+                                shape = CircleShape
+                            )
+                            .align(Alignment.TopEnd)
+                    )
                 }
             }
             IconButton(onClick = {

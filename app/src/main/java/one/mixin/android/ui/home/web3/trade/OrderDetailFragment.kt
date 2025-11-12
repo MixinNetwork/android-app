@@ -77,7 +77,8 @@ class OrderDetailFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        jobManager.addJobInBackground(RefreshOrdersJob())
+        val walletId: String? = arguments?.getString(ARGS_WALLET_ID)
+        jobManager.addJobInBackground(RefreshOrdersJob(walletId))
     }
 
     override fun onCreateView(
@@ -129,7 +130,8 @@ class OrderDetailFragment : BaseFragment() {
                 val isPending = local?.state == "pending"
                 if (!isPending) break
                 withContext(Dispatchers.IO) {
-                    val resp = routeService.getLimitOrder(orderId)
+                    val walletId: String? = arguments?.getString(ARGS_WALLET_ID)
+                    val resp = routeService.getLimitOrder(orderId, walletId)
                     if (resp.isSuccess && resp.data != null) {
                         walletDatabase.orderDao().insertListSuspend(listOf(resp.data!!))
                     }

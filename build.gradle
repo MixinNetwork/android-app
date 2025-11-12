@@ -134,7 +134,7 @@ buildscript {
         ext.playServicesMapsVersion = '19.2.0'
         ext.playServicesLocationVersion = '21.3.0'
         firebaseBomVersion = "34.5.0"
-        billingKtxVersion = "8.0.0"
+        billingKtxVersion = "8.1.0"
         webpdecoderVersion = "2.7.4.16.0"
 
         ext.tweetnaclVersion = '0.1.6'
@@ -150,7 +150,7 @@ buildscript {
         maven { url "https://maven.sumsub.com/repository/maven-public/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.android.tools.build:gradle:8.13.1'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
         classpath 'com.google.gms:google-services:4.4.3'
@@ -161,8 +161,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.13.0' apply false
-    id 'com.android.library' version '8.13.0' apply false
+    id 'com.android.application' version '8.13.1' apply false
+    id 'com.android.library' version '8.13.1' apply false
     id 'org.jetbrains.kotlin.android' version "${kotlinVersion}" apply false
     id "org.jetbrains.kotlin.kapt" version "${kotlinVersion}" apply false
     id 'com.google.dagger.hilt.android' version '2.57.2' apply false
@@ -170,7 +170,7 @@ plugins {
     id "de.undercouch.download" version "5.5.0" apply false
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' version '2.0.1' apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version "${kotlinVersion}" apply false
-    id "com.google.devtools.ksp" version "2.3.1" apply false
+    id "com.google.devtools.ksp" version "2.3.2" apply false
     id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}" apply false
     id 'com.google.firebase.firebase-perf' version '2.0.2' apply false
 }

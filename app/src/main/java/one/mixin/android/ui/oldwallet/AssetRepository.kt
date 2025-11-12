@@ -392,12 +392,12 @@ class AssetRepository
     ): MixinResponse<SwapResponse> = routeService.web3Swap(swapRequest)
 
     suspend fun createLimitOrder(request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse> = routeService.createLimitOrder(request)
-    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?, state: String?): MixinResponse<List<Order>> =
-        routeService.getLimitOrders(category, limit, offset, state)
+    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?, state: String?, walletId: String? = null): MixinResponse<List<Order>> =
+        routeService.getLimitOrders(category, limit, offset, state, walletId)
 
     suspend fun getLimitOrders(ids: List<String>): MixinResponse<List<Order>> = routeService.getLimitOrders(ids)
 
-    suspend fun getLimitOrder(id: String): MixinResponse<Order> = routeService.getLimitOrder(id)
+    suspend fun getLimitOrder(id: String, walletId: String? = null): MixinResponse<Order> = routeService.getLimitOrder(id, walletId)
     suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = routeService.cancelLimitOrder(id)
 
     suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)

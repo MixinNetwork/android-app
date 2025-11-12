@@ -2,19 +2,14 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.Constants
-import one.mixin.android.Constants.Account
-import one.mixin.android.MixinApplication
-import one.mixin.android.RxBus
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.event.BadgeEvent
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putInt
 import one.mixin.android.session.Session
 import timber.log.Timber
 
-class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
+class RefreshOrdersJob(
+    val walletId: String?,
+) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
         private const val serialVersionUID = 2L
         const val GROUP = "RefreshOrdersJob"
@@ -28,7 +23,7 @@ class RefreshOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GR
         }
 
     private suspend fun refreshOrders(offset: String?) {
-        val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null)
+        val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null, walletId = walletId)
         if (response.isSuccess && response.data != null) {
             val orders = response.data!!
             orderDao.insertListSuspend(orders)
