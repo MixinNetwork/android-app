@@ -897,6 +897,7 @@ fun ItemUserContent(
     title: String,
     user: User?,
     address: String?,
+    onClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier =
@@ -927,7 +928,13 @@ fun ItemUserContent(
                 )
             }
         } else if (user != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(
+                    enabled = onClick != null,
+                    onClick = { onClick?.invoke() }
+                )
+            ) {
                 CoilImage(
                     model = user.avatarUrl,
                     placeholder = R.drawable.ic_avatar_place_holder,

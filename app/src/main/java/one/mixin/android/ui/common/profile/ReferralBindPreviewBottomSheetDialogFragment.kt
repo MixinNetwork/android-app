@@ -48,11 +48,13 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.User
@@ -97,7 +99,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 
-    enum class Step { Pending, Sending, Done, Error }
+    enum class Step { Pending, Sending, Done, Error, Retry }
 
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo by mutableStateOf<String?>(null)
@@ -137,7 +139,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                             modifier = Modifier.size(70.dp)
                         )
                     }
-                    Step.Error -> {
+                    Step.Error, Step.Retry -> {
                         Image(
                             painter = painterResource(R.drawable.ic_order_failed),
                             contentDescription = null,
@@ -161,7 +163,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                 ) {
                     HighlightedTextWithClick(
                         fullText = stringResource(R.string.bind_referral_footer),
-                        modifier = Modifier.alpha(if (step == Step.Error) 0f else 1f),
+                        modifier = Modifier.alpha(if (step == Step.Error || step == Step.Retry) 0f else 1f),
                         stringResource(R.string.Learn_More),
                         color = MixinAppTheme.colors.textAssist,
                         fontSize = 14.sp,
@@ -169,7 +171,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         textAlign = TextAlign.Center,
                         onTextClick = { context?.openUrl(getString(R.string.referral_url)) }
                     )
-                    if (step == Step.Error) {
+                    if (step == Step.Error || step == Step.Retry) {
                         Text(
                             text = errorInfo ?: stringResource(R.string.Unknown),
                             color = MixinAppTheme.colors.tipError,
@@ -187,15 +189,31 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         .background(MixinAppTheme.colors.backgroundWindow)
                 )
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(R.string.referral_hint).uppercase(), subTitle = code)
+                ItemContent(
+                    title = stringResource(R.string.referral_hint).uppercase(),
+                    subTitle = code,
+                    subTitleFontWeight = FontWeight.W500
+                )
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(R.string.Invitee_Commission).uppercase(), subTitle = "${(percent.toFloatOrNull() ?: 0f) * 100f}%")
+                ItemContent(
+                    title = stringResource(R.string.Invitee_Commission).uppercase(),
+                    subTitle = "${(percent.toFloatOrNull() ?: 0f) * 100f}%",
+                    subTitleFontWeight = FontWeight.W500
+                )
                 Box(modifier = Modifier.height(20.dp))
-                ItemUserContent(title = stringResource(R.string.Inviter).uppercase(), user = inviter, address = null)
+                ItemUserContent(
+                    title = stringResource(R.string.Inviter).uppercase(),
+                    user = inviter,
+                    address = null,
+                    onClick = {
+                        UserBottomSheetDialogFragment.newInstance(inviter)
+                            ?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }
+                )
                 Box(modifier = Modifier.height(20.dp))
                 Spacer(modifier = Modifier.weight(1f))
                 when (step) {
-                    Step.Done -> {
+                    Step.Done, Step.Error -> {
                         Row(
                             modifier = Modifier
                                 .background(MixinAppTheme.colors.background)
@@ -205,7 +223,9 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         ) {
                             Button(
                                 onClick = {
-                                    onDoneAction?.invoke()
+                                    if (step == Step.Done) {
+                                        onDoneAction?.invoke()
+                                    }
                                     dismiss()
                                 },
                                 colors = androidx.compose.material.ButtonDefaults.outlinedButtonColors(
@@ -214,11 +234,20 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                                 shape = RoundedCornerShape(20.dp),
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 36.dp, vertical = 11.dp)
                             ) {
-                                Text(text = stringResource(R.string.Done), color = Color.White)
+                                Text(
+                                    text = stringResource(
+                                        if (step == Step.Done) {
+                                            R.string.Got_it
+                                        } else {
+                                            R.string.Done
+                                        }
+                                    ), color = Color.White
+                                )
                             }
                         }
                     }
-                    Step.Error -> {
+
+                    Step.Retry -> {
                         ActionBottom(
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             cancelTitle = stringResource(R.string.Cancel),
@@ -262,8 +291,8 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                     true
                 },
                 exceptionBlock = {
-                    errorInfo = it.localizedMessage
-                    step = Step.Error
+                    errorInfo = ErrorHandler.getErrorMessage(it)
+                    step = Step.Retry
                     true
                 },
                 requestSession = {

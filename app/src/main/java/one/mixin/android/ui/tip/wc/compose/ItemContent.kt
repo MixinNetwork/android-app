@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -85,6 +86,7 @@ fun ItemContent(
     label: String? = null,
     footer: String? = null,
     isAddress: Boolean = false,
+    subTitleFontWeight: FontWeight = FontWeight.Normal,
 ) {
     Column(
         modifier =
@@ -107,6 +109,7 @@ fun ItemContent(
                 text = subTitle,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 16.sp,
+                fontWeight = subTitleFontWeight,
             )
         }
 
