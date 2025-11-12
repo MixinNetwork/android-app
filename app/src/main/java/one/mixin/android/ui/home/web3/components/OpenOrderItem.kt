@@ -32,7 +32,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
-import one.mixin.android.ui.home.web3.trade.LimitOrderState
+import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.Order
 
 @Composable
@@ -129,7 +129,7 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
                     else -> MixinAppTheme.colors.textAssist
                 }
                 val context = LocalContext.current
-                val stateText = LimitOrderState.from(order.state).format(context)
+                val stateText = OrderState.from(order.state).format(context)
                 Text(
                     text = stateText,
                     fontSize = 14.sp,

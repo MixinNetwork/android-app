@@ -237,14 +237,14 @@ fun DetailItem(
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        val uiState = LimitOrderState.from(order.state)
+                        val uiState = OrderState.from(order.state)
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(
                                     when (uiState) {
-                                        LimitOrderState.SETTLED -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
-                                        LimitOrderState.FAILED, LimitOrderState.CANCELLED, LimitOrderState.EXPIRED -> MixinAppTheme.colors.walletRed.copy(alpha = 0.2f)
+                                        OrderState.SETTLED -> MixinAppTheme.colors.walletGreen.copy(alpha = 0.2f)
+                                        OrderState.FAILED, OrderState.CANCELLED, OrderState.EXPIRED -> MixinAppTheme.colors.walletRed.copy(alpha = 0.2f)
                                         else -> MixinAppTheme.colors.textMinor.copy(alpha = 0.2f)
                                     }
                                 )
@@ -253,8 +253,8 @@ fun DetailItem(
                         ) {
                             Text(
                                 formatOrderState(context, order.state), color = when (uiState) {
-                                    LimitOrderState.SETTLED -> MixinAppTheme.colors.walletGreen
-                                    LimitOrderState.FAILED, LimitOrderState.CANCELLED, LimitOrderState.EXPIRED -> MixinAppTheme.colors.walletRed
+                                    OrderState.SETTLED -> MixinAppTheme.colors.walletGreen
+                                    OrderState.FAILED, OrderState.CANCELLED, OrderState.EXPIRED -> MixinAppTheme.colors.walletRed
                                     else -> MixinAppTheme.colors.textPrimary
                                 }
                             )
@@ -262,7 +262,7 @@ fun DetailItem(
                         Spacer(modifier = Modifier.height(20.dp))
                         val scope = rememberCoroutineScope()
                         when {
-                            order.type == "limit" && (uiState == LimitOrderState.PRICING || uiState == LimitOrderState.CREATED || uiState == LimitOrderState.QUOTING || uiState == LimitOrderState.PENDING) -> {
+                            order.type == "limit" && (uiState == OrderState.PRICING || uiState == OrderState.CREATED || uiState == OrderState.QUOTING || uiState == OrderState.PENDING) -> {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -667,6 +667,7 @@ fun formatOrderState(context: Context, state: String): String {
         OrderState.SUCCESS.value -> context.getString(R.string.State_Success)
         OrderState.FAILED.value -> context.getString(R.string.State_Failed)
         OrderState.REFUNDED.value -> context.getString(R.string.State_Refunded)
+        OrderState.CANCELLING.value -> context.getString(R.string.order_state_cancelling)
         else -> state
     }
 }

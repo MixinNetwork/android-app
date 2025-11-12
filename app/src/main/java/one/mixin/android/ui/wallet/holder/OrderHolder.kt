@@ -7,7 +7,7 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.vo.route.OrderItem
-import one.mixin.android.ui.home.web3.trade.LimitOrderState
+import one.mixin.android.vo.route.OrderState
 
 class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.ViewHolder(binding.root) {
 
@@ -42,7 +42,7 @@ class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.Vie
         }
         binding.line3Left.setTextColor(leftColor)
 
-        binding.line3Right.text = LimitOrderState.from(order.state).format(itemView.context)
+        binding.line3Right.text = OrderState.from(order.state).format(itemView.context)
         binding.line3Right.setTextColor(getStatusColor(order.state))
     }
 
