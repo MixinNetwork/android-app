@@ -147,14 +147,14 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         )
                     }
                 }
-                Box(modifier = Modifier.height(16.dp))
+                Box(modifier = Modifier.height(20.dp))
                 Text(
                     text = stringResource(R.string.bind_referral_code),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.W600,
                     color = MixinAppTheme.colors.textPrimary
                 )
-                Box(modifier = Modifier.height(32.dp))
+                Box(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -181,7 +181,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                         )
                     }
                 }
-                Box(modifier = Modifier.height(10.dp))
+                Box(modifier = Modifier.height(32.dp))
                 Box(
                     modifier = Modifier
                         .height(10.dp)
@@ -237,9 +237,9 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                                 Text(
                                     text = stringResource(
                                         if (step == Step.Done) {
-                                            R.string.Got_it
-                                        } else {
                                             R.string.Done
+                                        } else {
+                                            R.string.Got_it
                                         }
                                     ), color = Color.White
                                 )
