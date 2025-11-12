@@ -206,7 +206,7 @@ fun MemoInputPage(
                         .align(Alignment.CenterHorizontally)
                         .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                 )
-
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()

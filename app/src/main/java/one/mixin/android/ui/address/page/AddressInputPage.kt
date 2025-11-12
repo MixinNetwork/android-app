@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -59,6 +60,7 @@ fun AddressInputPage(
     onNext: (String) -> Unit,
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
+    errorInfo: String? = null
 ) {
     var address by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
@@ -181,6 +183,15 @@ fun AddressInputPage(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                Text(
+                    text = errorInfo ?: "",
+                    color = MixinAppTheme.colors.red,
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()

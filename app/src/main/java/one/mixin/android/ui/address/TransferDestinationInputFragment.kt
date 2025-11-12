@@ -338,6 +338,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE
                                         if (memoEnabled) {
                                             token?.let { t -> // Only privacy wallet
+                                                errorInfo = null
                                                 validateAndNavigateToInput(
                                                     assetId = t.assetId,
                                                     chainId = t.chainId,
@@ -368,6 +369,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             }
                                         } else {
                                             token?.let { t ->
+                                                errorInfo = null
                                                 validateAndNavigateToInput(
                                                     assetId = t.assetId,
                                                     chainId = t.chainId,
@@ -435,11 +437,23 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 token = token,
                                 web3Token = web3Token,
                                 contentText = scannedAddress,
+                                errorInfo = errorInfo,
                                 onNext = { address ->
-                                    if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE)
-                                        navController.navigate("${TransferDestination.Memo.name}?address=$address")
-                                    else
-                                        navController.navigate("${TransferDestination.Label.name}?address=$address")
+                                    errorInfo = null
+                                    requireView().hideKeyboard()
+                                    validateAndNavigateToInput(
+                                        assetId = token?.assetId ?: web3Token?.assetId ?: "",
+                                        chainId = token?.chainId ?: web3Token?.chainId ?: "",
+                                        destination = address,
+                                        asset = token,
+                                        web3Token = web3Token
+                                    ) {
+                                        if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE) {
+                                            navController.navigate("${TransferDestination.Memo.name}?address=$address")
+                                        } else {
+                                            navController.navigate("${TransferDestination.Label.name}?address=$address")
+                                        }
+                                    }
                                 },
                                 onScan = { startQrScan(ScanType.ADDRESS) },
                                 pop = { navController.popBackStack() }
@@ -460,15 +474,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onNext = { memo ->
                                     errorInfo = null
                                     requireView().hideKeyboard()
-                                    token?.let { t ->
-                                        validateAndNavigateToInput(
-                                            assetId = t.assetId,
-                                            chainId = t.chainId,
-                                            destination = address,
-                                            tag = memo,
-                                            asset = t
-                                        )
-                                    }
+                                    validateAndNavigateToInput(
+                                        assetId = token?.assetId ?: web3Token?.assetId ?: "",
+                                        chainId = token?.chainId ?: web3Token?.chainId ?: "",
+                                        destination = address,
+                                        asset = token,
+                                        web3Token = web3Token,
+                                        tag = memo
+                                    )
                                 },
                                 onScan = { startQrScan(ScanType.MEMO) },
                                 pop = { navController.popBackStack() }
