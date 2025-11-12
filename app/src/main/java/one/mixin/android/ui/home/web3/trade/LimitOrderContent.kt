@@ -465,11 +465,11 @@ fun LimitOrderContent(
                                             val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
                                             val fromTokenValue = requireNotNull(fromToken)
                                             val toTokenValue = requireNotNull(toToken)
-                                            val fromAddress = if (!inMixin && fromTokenValue.walletId != null) {
+                                            val fromAddress = if (!inMixin) {
                                                 viewModel.getAddressesByChainId(Web3Signer.currentWalletId, fromTokenValue.chain.chainId)?.destination
                                             } else null
                                             
-                                            val toAddress = if (!inMixin && toTokenValue.walletId != null) {
+                                            val toAddress = if (!inMixin) {
                                                 viewModel.getAddressesByChainId(Web3Signer.currentWalletId, toTokenValue.chain.chainId)?.destination
                                             } else null
 
