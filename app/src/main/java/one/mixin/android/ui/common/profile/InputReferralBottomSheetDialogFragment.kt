@@ -50,6 +50,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.compose.MaterialInputField
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
 
@@ -194,7 +195,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                     text = stringResource(R.string.Review),
                                     enabled = input.trim().length >= 8,
                                     onClick = {
-                                        scope.launch {
+                                        scope.launch(errorHandler) {
                                             uiState = UiState.Loading
                                             val code = input.trim()
                                             val infoResponse = viewModel.getReferralCodeInfo(code)
