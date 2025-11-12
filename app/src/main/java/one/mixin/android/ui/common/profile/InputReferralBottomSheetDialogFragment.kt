@@ -204,11 +204,9 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                                 val inviter = viewModel.refreshUser(info.inviterUserId)
                                                 uiState = UiState.Initial
                                                 if (inviter != null) {
+                                                    this@InputReferralBottomSheetDialogFragment.dismiss()
                                                     ReferralBindPreviewBottomSheetDialogFragment
                                                         .newInstance(code, inviter, info.inviteePercent)
-                                                        .setOnDone {
-                                                            dismissNow()
-                                                        }
                                                         .showNow(parentFragmentManager, ReferralBindPreviewBottomSheetDialogFragment.TAG)
                                                 } else {
                                                     uiState = UiState.Failure(getString(R.string.Data_error))
