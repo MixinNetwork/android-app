@@ -9,7 +9,8 @@ enum class OrderState(val value: String) {
     SUCCESS("success"),
     FAILED("failed"),
     EXPIRED("expired"),
-    REFUNDED("refunded");
+    REFUNDED("refunded"),
+    CANCELLING("cancelling");
 
     companion object {
         fun from(raw: String?): OrderState {
@@ -19,6 +20,7 @@ enum class OrderState(val value: String) {
                 SUCCESS.value -> SUCCESS
                 FAILED.value -> FAILED
                 REFUNDED.value -> REFUNDED
+                CANCELLING.value -> CANCELLING
                 else -> PENDING
             }
         }
@@ -31,5 +33,6 @@ enum class OrderState(val value: String) {
         FAILED -> context.getString(R.string.State_Failed)
         EXPIRED -> context.getString(R.string.Expired)
         REFUNDED -> context.getString(R.string.State_Refunded)
+        CANCELLING -> context.getString(R.string.order_state_cancelling)
     }
 }

@@ -208,7 +208,7 @@ class TradeFragment : BaseFragment() {
                         },
                     ) {
                         composable(TradeDestination.Swap.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+                            jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
                             TradePage(
                                 walletId = walletId,
@@ -503,7 +503,8 @@ class TradeFragment : BaseFragment() {
             toast(R.string.Data_error)
             return
         }
-        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to).apply {
+        val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
+        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
             setOnDone {
                 initialAmount = null
                 lastOrderTime = System.currentTimeMillis()

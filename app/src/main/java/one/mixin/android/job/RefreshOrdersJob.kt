@@ -8,7 +8,6 @@ import one.mixin.android.session.Session
 import timber.log.Timber
 
 class RefreshOrdersJob(
-    val walletId: String?,
 ) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
         private const val serialVersionUID = 2L
@@ -23,7 +22,7 @@ class RefreshOrdersJob(
         }
 
     private suspend fun refreshOrders(offset: String?) {
-        val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null, walletId = walletId)
+        val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null)
         if (response.isSuccess && response.data != null) {
             val orders = response.data!!
             orderDao.insertListSuspend(orders)

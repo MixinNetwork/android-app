@@ -15,4 +15,8 @@ data class LimitOrderRequest(
     val expectedReceiveAmount: String,
     @SerializedName("expired_at")
     val expiredAt: String,
+    @SerializedName("asset_destination")
+    val assetDestination: String? = null,
+    @SerializedName("receive_asset_destination")
+    val receiveAssetDestination: String? = null,
 )

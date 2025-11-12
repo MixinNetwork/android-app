@@ -86,6 +86,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.handleMixinError
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderState
+import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
@@ -461,13 +462,26 @@ fun LimitOrderContent(
                                     focusManager.clearFocus()
                                     scope.launch {
                                         runCatching {
+                                            val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
+                                            val fromTokenValue = requireNotNull(fromToken)
+                                            val toTokenValue = requireNotNull(toToken)
+                                            val fromAddress = if (!inMixin && fromTokenValue.walletId != null) {
+                                                viewModel.getAddressesByChainId(Web3Signer.currentWalletId, fromTokenValue.chain.chainId)?.destination
+                                            } else null
+                                            
+                                            val toAddress = if (!inMixin && toTokenValue.walletId != null) {
+                                                viewModel.getAddressesByChainId(Web3Signer.currentWalletId, toTokenValue.chain.chainId)?.destination
+                                            } else null
+
                                             val request = LimitOrderRequest(
-                                                walletId = Session.getAccountId()!!,
-                                                assetId = requireNotNull(fromToken).assetId,
+                                                walletId = walletId,
+                                                assetId = fromTokenValue.assetId,
                                                 amount = inputText,
-                                                receiveAssetId = requireNotNull(toToken).assetId,
+                                                receiveAssetId = toTokenValue.assetId,
                                                 expectedReceiveAmount = outputText,
                                                 expiredAt = Instant.now().plus(expiryOption.toDuration()).toString(),
+                                                assetDestination = fromAddress,
+                                                receiveAssetDestination = toAddress,
                                             )
                                             val response = viewModel.createLimitOrder(request)
                                             if (response.isSuccess) {

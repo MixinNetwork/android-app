@@ -102,6 +102,33 @@ import one.mixin.android.vo.toUser
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.UUID
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.buildTransaction
+import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putLong
+import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.tip.isTipNodeException
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.buildTipGas
+import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.tip.wc.sessionrequest.FeeInfo
+import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.Web3Signer
+import org.sol4kt.VersionedTransactionCompat
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
+import one.mixin.android.util.tickerFlow
+import kotlin.time.Duration.Companion.seconds
+import javax.inject.Inject
 import kotlin.math.max
 import one.mixin.android.ui.wallet.AssetChanges
 import one.mixin.android.ui.wallet.ItemPriceContent
@@ -121,15 +148,21 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         private const val ARGS_OUT_AMOUNT = "args_out_amount"
         private const val ARGS_OUT_ASSET = "args_out_asset"
         private const val ARGS_EXPIRED_AT = "args_expired_at"
+        private const val ARGS_DEPOSIT_DESTINATION = "args_deposit_destination"
+        private const val ARGS_WALLET_ID = "args_wallet_id"
+        private const val ARGS_DISPLAY_USER_ID = "args_display_user_id"
 
-        fun newInstance(order: CreateLimitOrderResponse, from: SwapToken, to: SwapToken): LimitTransferBottomSheetDialogFragment {
+        fun newInstance(order: CreateLimitOrderResponse, from: SwapToken, to: SwapToken, walletId: String): LimitTransferBottomSheetDialogFragment {
             return LimitTransferBottomSheetDialogFragment().withArgs {
                 putString(ARGS_LINK, order.tx)
+                putString(ARGS_DEPOSIT_DESTINATION, order.depositDestination)
                 putParcelable(ARGS_IN_ASSET, from)
                 putParcelable(ARGS_OUT_ASSET, to)
                 putString(ARGS_IN_AMOUNT, order.order.payAmount)
                 putString(ARGS_OUT_AMOUNT, order.order.expectedReceiveAmount ?: "0")
                 putString(ARGS_EXPIRED_AT, order.order.expiredAt)
+                putString(ARGS_WALLET_ID, walletId)
+                putString(ARGS_DISPLAY_USER_ID, order.displayUserId)
             }
         }
     }
@@ -160,22 +193,42 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     enum class Step { Pending, Sending, Done, Error }
+
+    @Inject
+    lateinit var rpc: Rpc
 
     private val inAsset by lazy { requireNotNull(requireArguments().getParcelableCompat(ARGS_IN_ASSET, SwapToken::class.java)) }
     private val inAmount by lazy { BigDecimal(requireNotNull(requireArguments().getString(ARGS_IN_AMOUNT))) }
     private val outAsset by lazy { requireNotNull(requireArguments().getParcelableCompat(ARGS_OUT_ASSET, SwapToken::class.java)) }
     private val outAmount by lazy { BigDecimal(requireNotNull(requireArguments().getString(ARGS_OUT_AMOUNT))) }
+    private val senderWalletId by lazy { requireNotNull(requireArguments().getString(ARGS_WALLET_ID)) }
 
     private val self by lazy { requireNotNull(Session.getAccount()).toUser() }
-    private val link by lazy { Uri.parse(requireNotNull(requireArguments().getString(ARGS_LINK))) }
+    private val link by lazy { 
+        val linkStr = requireArguments().getString(ARGS_LINK)
+        if (!linkStr.isNullOrBlank()) Uri.parse(linkStr) else null
+    }
+    private val depositDestination by lazy { requireArguments().getString(ARGS_DEPOSIT_DESTINATION) }
     private val expiredAt: String? by lazy { requireArguments().getString(ARGS_EXPIRED_AT) }
+    private val displayUserId by lazy { requireArguments().getString(ARGS_DISPLAY_USER_ID) }
 
     private var step by mutableStateOf(Step.Pending)
     private var parsedLink: ParsedLink? = null
     private var receiver: User? by mutableStateOf(null)
     private var errorInfo: String? by mutableStateOf(null)
+
+    private var web3Transaction: JsSignMessage? by mutableStateOf(null)
+    private var tipGas: TipGas? by mutableStateOf(null)
+    private var solanaFee: BigDecimal? by mutableStateOf(null)
+    private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
+    private var chainToken: Web3TokenItem? by mutableStateOf(null)
+    private var token: Web3TokenItem? by mutableStateOf(null)
+    private var insufficientGas by mutableStateOf(false)
+    private var walletName by mutableStateOf<String?>(null)
+    private var isWeb3 by mutableStateOf(false)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
@@ -321,7 +374,13 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     Box(modifier = Modifier.height(20.dp))
                     ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), user = receiver, address = null)
                     Box(modifier = Modifier.height(20.dp))
-                    ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
+                    val isPrivacyWallet = senderWalletId == Session.getAccountId()
+                    ItemWalletContent(
+                        title = stringResource(id = R.string.Senders).uppercase(),
+                        fontSize = 16.sp,
+                        walletId = if (isPrivacyWallet) null else senderWalletId,
+                        walletName = if (isPrivacyWallet) null else walletName
+                    )
                     Box(modifier = Modifier.height(20.dp))
                     ItemContent(title = stringResource(id = R.string.Memo).uppercase(), subTitle = parsedLink?.memo ?: stringResource(id = R.string.None))
                     Box(modifier = Modifier.height(20.dp))
@@ -374,7 +433,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -396,22 +455,65 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private fun doAfterPinComplete(pin: String) = lifecycleScope.launch(Dispatchers.IO) {
         try {
             step = Step.Sending
-            val parsed = this@LimitTransferBottomSheetDialogFragment.parsedLink ?: return@launch
-            val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsed.assetId, parsed.amount)
-            val token = bottomViewModel.findAssetItemById(parsed.assetId)
-            if (consolidationAmount != null && token != null) {
-                UtxoConsolidationBottomSheetDialogFragment.newInstance(
-                    buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null)
-                ).show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
-                step = Step.Pending
-                return@launch
-            } else if (token == null) {
-                errorInfo = getString(R.string.Data_error)
-                step = Step.Error
-                return@launch
+            if (isWeb3 && web3Transaction != null) {
+                try {
+                    when (web3Transaction!!.type) {
+                        JsSignMessage.TYPE_RAW_TRANSACTION -> {
+                            val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
+                            val tx = Web3Signer.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
+                                val blockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
+                                return@signSolanaTransaction blockhash
+                            }
+                            val sig = tx.signatures.first()
+                            val rawTx = tx.serialize().base64Encode()
+                            val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58(), null)
+                            val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), inAsset.assetId)
+                            defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
+                            context?.updatePinCheck()
+                            step = Step.Done
+                            AnalyticsTracker.trackSwapSend()
+                        }
+
+                        JsSignMessage.TYPE_TRANSACTION -> {
+                            val transaction = requireNotNull(web3Transaction!!.wcEthereumTransaction)
+                            val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, inAsset.chain.chainId)
+                            val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
+                                val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
+                                return@ethSignTransaction nonce
+                            }
+                            val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, inAsset.assetId)
+                            defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
+                            context?.updatePinCheck()
+                            step = Step.Done
+                            AnalyticsTracker.trackSwapSend()
+                        }
+
+                        else -> {
+                            throw IllegalArgumentException("invalid signMessage type ${web3Transaction!!.type}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    handleException(e)
+                    return@launch
+                }
+            } else {
+                val parsed = this@LimitTransferBottomSheetDialogFragment.parsedLink ?: return@launch
+                val consolidationAmount = bottomViewModel.checkUtxoSufficiency(parsed.assetId, parsed.amount)
+                val token = bottomViewModel.findAssetItemById(parsed.assetId)
+                if (consolidationAmount != null && token != null) {
+                    UtxoConsolidationBottomSheetDialogFragment.newInstance(
+                        buildTransferBiometricItem(Session.getAccount()!!.toUser(), token, consolidationAmount, UUID.randomUUID().toString(), null, null)
+                    ).show(parentFragmentManager, UtxoConsolidationBottomSheetDialogFragment.TAG)
+                    step = Step.Pending
+                    return@launch
+                } else if (token == null) {
+                    errorInfo = getString(R.string.Data_error)
+                    step = Step.Error
+                    return@launch
+                }
+                val response = bottomViewModel.kernelTransaction(parsed.assetId, parsed.receiverIds, 1.toByte(), parsed.amount, pin, parsed.traceId, parsed.memo)
+                handleTransactionResponse(response)
             }
-            val response = bottomViewModel.kernelTransaction(parsed.assetId, parsed.receiverIds, 1.toByte(), parsed.amount, pin, parsed.traceId, parsed.memo)
-            handleTransactionResponse(response)
         } catch (e: Exception) { handleException(e) }
     }
 
@@ -442,17 +544,6 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         } else {
             return null
         }
-    }
-
-    private fun handleException(t: Throwable) {
-        Timber.e(t)
-        errorInfo = if (t.isUtxoException()) {
-            t.getUtxoExceptionMsg(requireContext())
-        } else {
-            t.message ?: t.toString()
-        }
-        reportException("$TAG handleException", t)
-        step = Step.Error
     }
 
     fun getBiometricInfo() = BiometricInfo(getString(R.string.Verify_by_Biometric), "", "")
@@ -501,14 +592,151 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private fun parse() = lifecycleScope.launch {
         val uri = link
-        val assetId = requireNotNull(uri.getQueryParameter("asset"))
-        val amount = requireNotNull(uri.getQueryParameter("amount"))
-        val receiverId = requireNotNull(uri.lastPathSegment)
-        receiver = bottomViewModel.refreshUser(receiverId)
-        val receiverIds = listOf(receiverId)
-        val memo = uri.getQueryParameter("memo")
-        val traceId = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
-        parsedLink = ParsedLink(assetId, amount, receiverIds, memo, traceId)
+        if (uri != null) {
+            val assetId = requireNotNull(uri.getQueryParameter("asset"))
+            val amount = requireNotNull(uri.getQueryParameter("amount"))
+            val receiverId = requireNotNull(uri.lastPathSegment)
+            receiver = bottomViewModel.refreshUser(receiverId)
+            val receiverIds = listOf(receiverId)
+            val memo = uri.getQueryParameter("memo")
+            val traceId = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+            parsedLink = ParsedLink(assetId, amount, receiverIds, memo, traceId)
+            isWeb3 = false
+        } else if (!depositDestination.isNullOrBlank()) {
+            if (!displayUserId.isNullOrBlank()) {
+                receiver = bottomViewModel.refreshUser(displayUserId!!)
+            }
+            isWeb3 = true
+            val wallet = web3ViewModel.findWalletById(Web3Signer.currentWalletId)
+            walletName = wallet?.name.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.Common_Wallet)
+            
+            val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
+            if (token != null) {
+                try {
+                    val transaction = token.buildTransaction(
+                        rpc,
+                        if (token.chainId == Constants.ChainId.Solana) Web3Signer.solanaAddress else Web3Signer.evmAddress,
+                        depositDestination!!,
+                        inAmount.toPlainString()
+                    )
+                    web3Transaction = transaction
+                    this@LimitTransferBottomSheetDialogFragment.token = token
+                    
+                    val chain = token.getChainFromName()
+                    refreshEstimatedGasAndAsset(chain)
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to build transaction")
+                    errorInfo = e.message
+                    step = Step.Error
+                }
+            }
+        }
+    }
+
+    private fun refreshEstimatedGasAndAsset(chain: Chain) {
+        if (chain == Chain.Solana) {
+            refreshSolana()
+            return
+        }
+
+        val assetId = chain.assetId
+        val transaction = web3Transaction?.wcEthereumTransaction ?: return
+
+        tickerFlow(15.seconds)
+            .onEach {
+                try {
+                    tipGas = withContext(Dispatchers.IO) {
+                        val r = bottomViewModel.estimateFee(
+                            EstimateFeeRequest(
+                                assetId,
+                                null,
+                                transaction.data,
+                                transaction.from,
+                                transaction.to,
+                                transaction.value,
+                            )
+                        )
+                        if (!r.isSuccess) {
+                            step = Step.Error
+                            errorInfo = r.errorDescription
+                            return@withContext null
+                        }
+                        buildTipGas(chain.chainId, r.data!!)
+                    } ?: return@onEach
+                    chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, token?.chainId ?: "")
+                    insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
+                    if (insufficientGas) {
+                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: chain.symbol)))
+                    }
+
+                    val hex = Web3Signer.ethPreviewTransaction(
+                        Web3Signer.evmAddress,
+                        transaction,
+                        tipGas!!,
+                        chain = token?.getChainFromName()
+                    ) { _ ->
+                        val nonce = rpc.nonceAt(chain.assetId, Web3Signer.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
+                        return@ethPreviewTransaction nonce
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+            }
+            .launchIn(lifecycleScope)
+    }
+
+    private fun refreshSolana() {
+        tickerFlow(15.seconds)
+            .onEach {
+                try {
+                    if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
+                        val tx = solanaTx ?: VersionedTransactionCompat.from(web3Transaction?.data ?: "").apply {
+                            solanaTx = this
+                        }
+                        solanaFee = solanaTx?.calcFee(tx.message.accounts[0].toBase58())
+                    }
+                } catch (e: Exception) {
+                    handleException(e)
+                }
+            }.launchIn(lifecycleScope)
+    }
+
+    private fun checkGas(
+        web3Token: Web3TokenItem?,
+        chainToken: Web3TokenItem?,
+        tipGas: TipGas?,
+        value: String?,
+        maxFeePerGas: String?,
+    ): Boolean {
+        return if (web3Token != null) {
+            if (chainToken == null) {
+                true
+            } else if (tipGas != null) {
+                val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
+                if (web3Token.assetId == chainToken.assetId && web3Token.chainId == chainToken.chainId) {
+                    Convert.fromWei(Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
+                } else {
+                    maxGas > BigDecimal(chainToken.balance)
+                }
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
+
+    private fun handleException(t: Throwable) {
+        Timber.e(t)
+        errorInfo = if (t.isTipNodeException()) {
+            t.getTipExceptionMsg(requireContext(), null)
+        } else if (t.isUtxoException()) {
+            t.getUtxoExceptionMsg(requireContext())
+        } else {
+            t.message ?: t.toString()
+        }
+        reportException("$TAG handleException", t)
+        step = Step.Error
     }
 
     override fun showError(error: String) {

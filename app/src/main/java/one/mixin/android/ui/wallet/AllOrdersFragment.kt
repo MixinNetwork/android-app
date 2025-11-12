@@ -69,7 +69,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
         super.onViewCreated(view, savedInstanceState)
         val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
         val walletId = walletIds?.firstOrNull()
-        jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+        jobManager.addJobInBackground(RefreshOrdersJob())
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }

@@ -2108,6 +2108,7 @@
     <string name="order_state_rejected">已拒绝</string>
     <string name="order_state_canceled">已取消</string>
     <string name="order_state_expired">已过期</string>
+    <string name="order_state_cancelling">取消中</string>
     <string name="market_price">市价</string>
     <string name="expiry">有效期</string>
     <string name="forever">永久</string>

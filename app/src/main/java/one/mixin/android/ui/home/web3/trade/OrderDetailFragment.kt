@@ -78,7 +78,7 @@ class OrderDetailFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val walletId: String? = arguments?.getString(ARGS_WALLET_ID)
-        jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+        jobManager.addJobInBackground(RefreshOrdersJob())
     }
 
     override fun onCreateView(

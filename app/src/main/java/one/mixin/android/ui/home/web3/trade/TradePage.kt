@@ -122,7 +122,7 @@ fun TradePage(
     )
     val pagerState = rememberPagerState { tabs.size }
     LaunchedEffect(openLimit) {
-        if (openLimit && walletId.isNullOrBlank()) {
+        if (openLimit) {
             pagerState.scrollToPage(1)
         }
     }
@@ -193,60 +193,33 @@ fun TradePage(
             }
         },
     ) {
-        if (walletId.isNullOrBlank()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.Start,
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    OutlinedTab(
-                        text = tab.title,
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            tabs.forEachIndexed { index, tab ->
+                OutlinedTab(
+                    text = tab.title,
+                    selected = pagerState.currentPage == index,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
                         }
-                    )
-                    if (index < tabs.size - 1) {
-                        Spacer(modifier = Modifier.width(10.dp))
                     }
+                )
+                if (index < tabs.size - 1) {
+                    Spacer(modifier = Modifier.width(10.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-            ) { page ->
-                tabs[page].screen()
-            }
-        } else {
-            if (openLimit) {
-                LimitOrderContent(
-                    from = from,
-                    to = to,
-                    inMixin = inMixin,
-                    onSelectToken = onSelectToken,
-                    onLimitReview = onLimitReview,
-                    onDeposit = onDeposit,
-                    onLimitOrderClick = onLimitOrderClick,
-                )
-            } else {
-                SwapContent(
-                    from = from,
-                    to = to,
-                    inMixin = inMixin,
-                    initialAmount = initialAmount,
-                    lastOrderTime = lastOrderTime,
-                    reviewing = reviewing,
-                    source = source,
-                    onSelectToken = onSelectToken,
-                    onReview = onReview,
-                    onDeposit = onDeposit,
-                )
-            }
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+        ) { page ->
+            tabs[page].screen()
         }
     }
 }

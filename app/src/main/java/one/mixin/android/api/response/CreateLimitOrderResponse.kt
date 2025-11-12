@@ -8,4 +8,8 @@ data class CreateLimitOrderResponse(
     val order: Order,
     @SerializedName("tx")
     val tx: String,
+    @SerializedName("deposit_destination")
+    val depositDestination: String? = null,
+    @SerializedName("display_user_id")
+    val displayUserId: String? = null,
 )
