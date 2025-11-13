@@ -2,7 +2,7 @@ package one.mixin.android.util
 
 import android.annotation.SuppressLint
 import android.view.Window
-import android.view.WindowInsets
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -43,9 +43,9 @@ object SystemUIManager {
         onlyStatus: Boolean = false,
         onlyNav: Boolean = false,
     ) {
-        window.decorView.setOnApplyWindowInsetsListener { view, insets ->
-            val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
-            val navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars())
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             view.setPadding(
                 0,
                 if (onlyNav) 0 else statusBarInsets.top,
@@ -58,8 +58,8 @@ object SystemUIManager {
     }
 
     fun fullScreen(window: Window) {
-        window.decorView.setOnApplyWindowInsetsListener { view, insets ->
-            view.setPadding(0, 0, 0, 0,)
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            view.setPadding(0, 0, 0, 0)
             insets
         }
     }
