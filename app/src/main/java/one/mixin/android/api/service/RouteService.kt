@@ -204,6 +204,7 @@ interface RouteService {
         @Query("limit") limit: Int = 50,
         @Query("offset") offset: String?,
         @Query("state") state: String?,
+        @Query("walletId") walletId: String? = null,
     ): MixinResponse<List<Order>>
 
     @POST("web3/swap/orders")

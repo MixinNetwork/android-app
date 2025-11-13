@@ -130,6 +130,7 @@ fun LimitOrderContent(
     var outputText by remember { mutableStateOf("") }
 
     var isReverse by remember { mutableStateOf(false) }
+    val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
 
     var focusedField by remember { mutableStateOf(FocusedField.PRICE) }
 
@@ -157,7 +158,7 @@ fun LimitOrderContent(
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
-                viewModel.getLimitOrders(state = OrderState.PENDING.value, offset = null).data?.let {
+                viewModel.getLimitOrders(state = OrderState.PENDING.value, offset = null, walletId = walletId).data?.let {
                     limitOrders = it
                 }
                 delay(10000)
@@ -462,7 +463,6 @@ fun LimitOrderContent(
                                     focusManager.clearFocus()
                                     scope.launch {
                                         runCatching {
-                                            val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
                                             val fromTokenValue = requireNotNull(fromToken)
                                             val toTokenValue = requireNotNull(toToken)
                                             val fromAddress = if (!inMixin) {
@@ -541,6 +541,7 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
+                currentLimitPrice = limitPriceText.toBigDecimalOrNull(),
                 marketPrice = marketPrice,
                 onSetInput = { inputText = it },
                 onSetLimitPrice = { limitPriceText = it },

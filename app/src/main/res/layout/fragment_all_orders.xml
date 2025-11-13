@@ -19,8 +19,8 @@
         android:layout_height="wrap_content"
         android:background="?attr/bg_white"
         android:scrollbars="none"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:clipToPadding="false">
 
         <LinearLayout

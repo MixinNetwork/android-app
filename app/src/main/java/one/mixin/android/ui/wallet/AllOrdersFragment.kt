@@ -69,6 +69,11 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
         super.onViewCreated(view, savedInstanceState)
         val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
         val walletId = walletIds?.firstOrNull()
+        walletIds?.let { ids ->
+            if (ids.isNotEmpty()) {
+                filterParams.walletIds = ids
+            }
+        }
         jobManager.addJobInBackground(RefreshOrdersJob())
         binding.apply {
             titleView.apply {
@@ -120,11 +125,6 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private fun loadFilter() {
         binding.apply {
-            arguments?.getStringArrayList(ARGS_WALLET_IDS)?.let { ids ->
-                if (ids.isNotEmpty()) {
-                    filterParams.walletIds = ids
-                }
-            }
             titleView.setSubTitle(getString(R.string.Orders), getString(
                 when (filterParams.order) {
                     SortOrder.Oldest -> R.string.sort_by_oldest
@@ -145,12 +145,20 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             } else {
                 val current = filterParams.walletIds ?: emptyList()
                 val accountId = Session.getAccountId()
-                val title = if (current.size == 1 && accountId != null && current.first() == accountId) {
-                    getString(R.string.Privacy_Wallet)
+                if (current.size == 1) {
+                    val onlyId = current.first()
+                    if (accountId != null && onlyId == accountId) {
+                        filterUser.setPrivacyWalletIcon(getString(R.string.Privacy_Wallet))
+                    } else {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            val name = web3ViewModel.getWalletName(onlyId)
+                            filterUser.setTitle(name ?: getString(R.string.Wallets_Selected_Count, 1))
+                        }
+                    }
                 } else {
-                    getString(R.string.Wallets_Selected_Count, current.size)
+                    val title = getString(R.string.Wallets_Selected_Count, current.size)
+                    filterUser.setTitle(title)
                 }
-                filterUser.setTitle(title)
             }
             bindLiveData()
         }
