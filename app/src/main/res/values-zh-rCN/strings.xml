@@ -478,6 +478,7 @@
     <string name="error_used_phone">错误 20122：电话号码已经被占用。</string>
     <string name="error_watch_address_not_supported">错误 10633：当前地址为合约地址或交易所地址，暂不支持观察。</string>
     <string name="error_invalid_referral_code">错误 10730：无效的邀请码</string>
+    <string name="Filled">成交</string>
     <string name="error_already_bonded_referral_code">错误 10731：当前账户已绑定邀请码，无法修改绑定。</string>
     <string name="error_cannot_apply_your_own_referral_code">错误 10732：不可绑定自己的邀请码</string>
     <string name="error_inviter_plan_expired">错误 10737：邀请人的会员已过期</string>

@@ -38,7 +38,7 @@ class SwapActivity : BaseActivity(){
                     putExtra(ARGS_IN_MIXIN, inMixin)
                     walletId?.let { putExtra(TradeFragment.ARGS_WALLET_ID, it) }
                     putExtra(TradeFragment.ARGS_OPEN_LIMIT, openLimit)
-                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 },
             )
         }

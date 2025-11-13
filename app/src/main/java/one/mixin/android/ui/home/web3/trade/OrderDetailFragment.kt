@@ -26,7 +26,9 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOrdersJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
@@ -36,6 +38,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -73,7 +76,6 @@ class OrderDetailFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val walletId: String? = arguments?.getString(ARGS_WALLET_ID)
         jobManager.addJobInBackground(RefreshOrdersJob())
     }
 
@@ -95,8 +97,15 @@ class OrderDetailFragment : BaseFragment() {
                         onShare = { payAssetId: String, receiveAssetId: String, type: String ->
                             viewLifecycleOwner.lifecycleScope.launch { shareOrder(payAssetId, receiveAssetId, type) }
                         },
-                        onTryAgain = { _, _ ->
-                            // no-op in standalone detail; user can go back to Trade
+                        onTryAgain = {walletId, type, payAssetId, receiveAssetId ->
+                            val inMixin = walletId == null || walletId == Session.getAccountId()
+                            val isLimit = type.equals("limit", true)
+                            activity?.finish()
+                            if (inMixin) {
+                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = true, walletId = null, openLimit = isLimit)
+                            } else {
+                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = false, walletId = walletId, openLimit = isLimit)
+                            }
                         },
                         pop = {
                             activity?.onBackPressedDispatcher?.onBackPressed()

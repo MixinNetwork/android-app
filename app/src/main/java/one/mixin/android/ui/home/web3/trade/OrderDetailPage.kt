@@ -71,7 +71,7 @@ fun OrderDetailPage(
     walletId: String?,
     orderId: String,
     onShare: (String, String, String) -> Unit,
-    onTryAgain: (String, String) -> Unit,
+    onTryAgain: (String?, String, String, String) -> Unit,
     pop: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -324,7 +324,7 @@ fun DetailItem(
                                         modifier = Modifier
                                             .weight(1f)
                                             .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
-                                            .clickable { onTryAgain.invoke(order.payAssetId, order.receiveAssetId) }
+                                            .clickable { onTryAgain.invoke(order.walletId, order.type, order.payAssetId, order.receiveAssetId) }
                                             .padding(vertical = 10.dp)
                                     )
                                     Box(
@@ -453,6 +453,7 @@ fun DetailItem(
                             }
                         )
                     }
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }
@@ -667,6 +668,7 @@ fun formatOrderState(context: Context, state: String): String {
         OrderState.FAILED.value -> context.getString(R.string.State_Failed)
         OrderState.REFUNDED.value -> context.getString(R.string.State_Refunded)
         OrderState.CANCELLING.value -> context.getString(R.string.order_state_cancelling)
+        OrderState.CANCELLED.value -> context.getString(R.string.Canceled)
         else -> state
     }
 }

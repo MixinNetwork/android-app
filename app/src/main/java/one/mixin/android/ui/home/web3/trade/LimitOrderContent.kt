@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -50,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -206,12 +208,16 @@ fun LimitOrderContent(
         }
     }
 
-    LaunchedEffect(inputText, limitPriceText, fromToken, toToken) {
+    LaunchedEffect(inputText, limitPriceText, fromToken, toToken, isPriceInverted) {
         val fromAmount = inputText.toBigDecimalOrNull()
         val limitPrice = limitPriceText.toBigDecimalOrNull()
 
         if (fromAmount != null && limitPrice != null && fromAmount > BigDecimal.ZERO && limitPrice > BigDecimal.ZERO) {
-            val toAmount = fromAmount.multiply(limitPrice).setScale(8, RoundingMode.DOWN)
+            val toAmount = if (!isPriceInverted) {
+                fromAmount.multiply(limitPrice)
+            } else {
+                fromAmount.divide(limitPrice, 8, RoundingMode.DOWN)
+            }.setScale(8, RoundingMode.DOWN)
             outputText = toAmount.stripTrailingZeros().toPlainString()
         } else {
             outputText = ""
@@ -327,10 +333,10 @@ fun LimitOrderContent(
                                     val price = limitPriceText.toBigDecimalOrNull()
                                     val priceText = if (price != null && price > BigDecimal.ZERO) {
                                         if (!isPriceInverted) {
-                                            "1 ${toToken?.symbol} ≈ ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
+                                            "1 ${toToken?.symbol} = ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
                                         } else {
                                             val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
-                                            "1 ${fromToken?.symbol} ≈ ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
+                                            "1 ${fromToken?.symbol} = ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
                                         }
                                     } else {
                                         null
@@ -354,6 +360,7 @@ fun LimitOrderContent(
                                                 }
                                         )
                                     }
+                                    Spacer(modifier = Modifier.width(16.dp))
                                     Spacer(modifier = Modifier.weight(1f))
                                     Text(
                                         text = if (!isPriceInverted) {
@@ -361,11 +368,13 @@ fun LimitOrderContent(
                                         } else {
                                             toToken?.name
                                         } ?: "",
+                                        maxLines = 1,
+                                        overflow = TextOverflow.MiddleEllipsis,
                                         style = TextStyle(
                                             fontSize = 12.sp,
                                             color = MixinAppTheme.colors.textAssist,
                                             textAlign = TextAlign.Start,
-                                        )
+                                        ),
                                     )
                                 }
                             },

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllOrdersBinding
@@ -99,7 +100,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
             val layoutManager = LinearLayoutManager(requireContext())
             transactionsRv.layoutManager = layoutManager
-            transactionsRv.addItemDecoration(com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration(adapter))
+            transactionsRv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
             transactionsRv.addItemDecoration(SpacesItemDecoration(requireContext().dpToPx(4f), true))
 
             adapter.onItemClick = { order: OrderItem ->

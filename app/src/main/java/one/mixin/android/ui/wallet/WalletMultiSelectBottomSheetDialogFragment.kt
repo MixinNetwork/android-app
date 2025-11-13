@@ -219,7 +219,7 @@ private fun WalletMultiSelectScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MixinAppTheme.colors.background, RoundedCornerShape(8.dp))
-                        .padding(8.dp),
+                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
