@@ -29,6 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.ServerErrorException
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -60,6 +61,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.isIcapAddress
@@ -659,7 +661,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     }
                 }
             } catch (e: Exception) {
-                errorInfo = e.message ?: getString(R.string.Unknown)
+                errorInfo = ErrorHandler.getErrorMessage(e)
             } finally {
                 dialog.dismiss()
             }
