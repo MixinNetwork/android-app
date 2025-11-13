@@ -34,16 +34,20 @@ class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.Vie
         // Line 3: +xx symbol (color by status) | state with color
         val receiveAmountText = (order.receiveAmount ?: "0").ifEmpty { "0" }.numberFormat()
         binding.line3Left.text = "+${receiveAmountText} ${right}"
-        val stateLower = order.state.lowercase()
-        val leftColor = when (stateLower) {
-            "settled" -> itemView.context.getColor(R.color.wallet_green)
-            "failed", "cancelled", "canceled", "expired" -> itemView.context.getColor(R.color.wallet_pink)
-            else -> resolveAttrColor(R.attr.text_primary)
+        
+        val orderState = OrderState.from(order.state)
+        val hasReceivedAmount = !order.receiveAmount.isNullOrEmpty() && order.receiveAmount != "0"
+        
+        // Pending orders without received amount should be gray
+        val leftColor = when {
+            orderState.isPending() && !hasReceivedAmount -> resolveAttrColor(R.attr.text_assist)
+            orderState.isDone() -> itemView.context.getColor(R.color.wallet_green)
+            else -> itemView.context.getColor(R.color.wallet_pink)
         }
         binding.line3Left.setTextColor(leftColor)
 
-        binding.line3Right.text = OrderState.from(order.state).format(itemView.context)
-        binding.line3Right.setTextColor(getStatusColor(order.state))
+        binding.line3Right.text = orderState.format(itemView.context)
+        binding.line3Right.setTextColor(getStatusColor(orderState))
     }
 
     private fun resolveAttrColor(attr: Int): Int {
@@ -53,13 +57,11 @@ class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.Vie
         return color
     }
 
-    private fun getStatusColor(state: String?): Int {
-        state ?: return resolveAttrColor(R.attr.text_assist)
-        return when (state.lowercase()) {
-            "settled" -> itemView.context.getColor(R.color.wallet_green)
-            "failed", "cancelled", "canceled", "expired" -> itemView.context.getColor(R.color.wallet_pink)
-            "created", "pricing", "quoting" -> resolveAttrColor(R.attr.text_assist)
-            else -> resolveAttrColor(R.attr.text_assist)
+    private fun getStatusColor(state: OrderState): Int {
+        return when {
+            state.isPending() -> resolveAttrColor(R.attr.text_assist)
+            state.isDone() -> itemView.context.getColor(R.color.wallet_green)
+            else -> itemView.context.getColor(R.color.wallet_pink)
         }
     }
 }

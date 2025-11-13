@@ -229,29 +229,21 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.filterReputation
             verticalOffset = requireContext().dpToPx(8f)
-            val rawValues = listOf<String?>(
-                null,
-                "created",
-                "pricing",
-                "quoting",
-                "settled",
-                "expired",
-                "cancelled",
-                "failed",
+            val rawValues = listOf<List<String>?>(
+                null, // All
+                listOf("created", "pricing", "quoting", "pending"), // Pending
+                listOf("settled", "success"), // Done
+                listOf("expired", "cancelled", "canceled", "failed", "refunded", "cancelling"), // Other
             )
             val display = listOf(
                 getString(R.string.All),
-                getString(R.string.order_state_created),
-                getString(R.string.order_state_pricing),
-                getString(R.string.order_state_quoting),
-                getString(R.string.Success),
-                getString(R.string.Expired),
-                getString(R.string.Canceled),
-                getString(R.string.State_Failed)
+                getString(R.string.State_Pending),
+                getString(R.string.Done),
+                getString(R.string.Other)
             )
             setAdapter(android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, display))
             setOnItemClickListener { _, _, position, _ ->
-                filterParams.statuses = rawValues[position]?.let { listOf(it) }
+                filterParams.statuses = rawValues[position]
                 loadFilter()
                 dismiss()
             }
