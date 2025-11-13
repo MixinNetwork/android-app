@@ -88,6 +88,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderState
 import one.mixin.android.web3.js.Web3Signer
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
@@ -117,7 +118,7 @@ fun LimitOrderContent(
     to: SwapToken?,
     inMixin: Boolean,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
-    onLimitReview: (CreateLimitOrderResponse) -> Unit,
+    onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onLimitOrderClick: (String) -> Unit,
 ) {
@@ -175,8 +176,8 @@ fun LimitOrderContent(
         val toT = toToken
         if (fromT != null && toT != null) {
             // Prefer MarketDao prices
-            val fromMarket = viewModel.checkMarketById(fromT.assetId)
-            val toMarket = viewModel.checkMarketById(toT.assetId)
+            val fromMarket = viewModel.checkMarketById(fromT.assetId, false)
+            val toMarket = viewModel.checkMarketById(toT.assetId, false)
             val fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
             val toP = toMarket?.currentPrice?.toBigDecimalOrNull()
             if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
@@ -194,12 +195,12 @@ fun LimitOrderContent(
                             marketPrice = rate.setScale(8, RoundingMode.HALF_UP)
                             limitPriceText = marketPrice!!.stripTrailingZeros().toPlainString()
                         } else {
-                            limitPriceText = ""
+                            limitPriceText = "0"
                         }
                         isPriceLoading = false
                     }
                     .onFailure {
-                        limitPriceText = ""
+                        limitPriceText = "0"
                         isPriceLoading = false
                     }
             }
@@ -286,7 +287,7 @@ fun LimitOrderContent(
                         }, onInputChanged = { inputText = it }, onDeposit = onDeposit, onMax = {
                             val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                             if (balance > BigDecimal.ZERO) {
-                                inputText = balance.stripTrailingZeros().toPlainString()
+                                inputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
                             } else {
                                 inputText = ""
                             }
@@ -481,19 +482,21 @@ fun LimitOrderContent(
                                                 viewModel.getAddressesByChainId(Web3Signer.currentWalletId, toTokenValue.chain.chainId)?.destination
                                             } else null
 
+                                            val scaledAmount = inputText.toBigDecimalOrNull()?.setScale(8, RoundingMode.DOWN)?.stripTrailingZeros()?.toPlainString() ?: inputText
+                                            val scaledExpected = outputText.toBigDecimalOrNull()?.setScale(8, RoundingMode.DOWN)?.stripTrailingZeros()?.toPlainString() ?: outputText
                                             val request = LimitOrderRequest(
                                                 walletId = walletId,
                                                 assetId = fromTokenValue.assetId,
-                                                amount = inputText,
+                                                amount = scaledAmount,
                                                 receiveAssetId = toTokenValue.assetId,
-                                                expectedReceiveAmount = outputText,
+                                                expectedReceiveAmount = scaledExpected,
                                                 expiredAt = Instant.now().plus(expiryOption.toDuration()).toString(),
                                                 assetDestination = fromAddress,
                                                 receiveAssetDestination = toAddress,
                                             )
                                             val response = viewModel.createLimitOrder(request)
                                             if (response.isSuccess) {
-                                                onLimitReview.invoke(response.data!!)
+                                                onLimitReview.invoke(fromTokenValue, toTokenValue, response.data!!)
                                             } else {
                                                 handleMixinError(response.errorCode, response.errorDescription)
                                             }

@@ -69,7 +69,7 @@ fun TradePage(
     source: String,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
-    onLimitReview: (CreateLimitOrderResponse) -> Unit,
+    onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onOrderList: () -> Unit,
     pop: () -> Unit,

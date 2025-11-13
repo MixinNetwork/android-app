@@ -15,6 +15,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
+import android.widget.ArrayAdapter
+import android.widget.TextView
+import android.view.ViewGroup
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
@@ -51,6 +54,22 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             f.arguments = args
             return f
         }
+    }
+    private fun createMenuAdapter(items: List<String>): ArrayAdapter<String> {
+        return object : ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, items) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                (view as? TextView)?.setTextColor(resolveAttrColor(R.attr.text_primary))
+                return view
+            }
+        }
+    }
+
+    private fun resolveAttrColor(attr: Int): Int {
+        val ta = requireContext().obtainStyledAttributes(intArrayOf(attr))
+        val color = ta.getColor(0, 0)
+        ta.recycle()
+        return color
     }
 
     private val binding by viewBinding(FragmentAllOrdersBinding::bind)
@@ -146,8 +165,28 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                     else -> R.string.sort_by_recent
                 }
             ))
-            filterType.setTitle(getString(R.string.Type))
-            filterReputation.setTitle(getString(R.string.Status))
+            // Update Type chip title
+            val typeSet = filterParams.orderTypes?.toSet()
+            val typeTitle = when {
+                typeSet == null || typeSet.isEmpty() -> getString(R.string.Type)
+                typeSet == setOf("swap") -> getString(R.string.order_type_swap)
+                typeSet == setOf("limit") -> getString(R.string.order_type_limit)
+                else -> getString(R.string.Type)
+            }
+            filterType.setTitle(typeTitle)
+            // Update Status chip title
+            val pendingSet = setOf("created", "pricing", "quoting", "pending")
+            val doneSet = setOf("settled", "success")
+            val otherSet = setOf("expired", "cancelled", "canceled", "failed", "refunded", "cancelling")
+            val statusesSet = filterParams.statuses?.toSet()
+            val statusTitle = when {
+                statusesSet == null || statusesSet.isEmpty() -> getString(R.string.Status)
+                statusesSet == pendingSet -> getString(R.string.State_Pending)
+                statusesSet == doneSet -> getString(R.string.Done)
+                statusesSet == otherSet -> getString(R.string.Other)
+                else -> getString(R.string.Status)
+            }
+            filterReputation.setTitle(statusTitle)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
             val dateTitle = if (filterParams.startTime == null && filterParams.endTime == null) {
                 getString(R.string.Date)
@@ -214,6 +253,8 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             isModal = true
             setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
             setDropDownGravity(Gravity.END)
+            horizontalOffset = requireContext().dpToPx(2f)
+            verticalOffset = requireContext().dpToPx(10f)
         }
     }
 
@@ -231,7 +272,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                 getString(R.string.order_type_swap),
                 getString(R.string.order_type_limit),
             )
-            setAdapter(android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, display))
+            setAdapter(createMenuAdapter(display))
             setOnItemClickListener { _, _, position, _ ->
                 filterParams.orderTypes = rawValues[position]?.let { listOf(it) }
                 loadFilter()
@@ -242,6 +283,8 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             isModal = true
             setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
             setDropDownGravity(Gravity.START)
+            horizontalOffset = 0
+            verticalOffset = requireContext().dpToPx(10f)
             setOnDismissListener { binding.filterType.close() }
         }
     }
@@ -262,7 +305,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                 getString(R.string.Done),
                 getString(R.string.Other)
             )
-            setAdapter(android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, display))
+            setAdapter(createMenuAdapter(display))
             setOnItemClickListener { _, _, position, _ ->
                 filterParams.statuses = rawValues[position]
                 loadFilter()
@@ -273,6 +316,8 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             isModal = true
             setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bg_round_white_8dp))
             setDropDownGravity(Gravity.START)
+            horizontalOffset = 0
+            verticalOffset = requireContext().dpToPx(10f)
             setOnDismissListener { binding.filterReputation.close() }
         }
     }

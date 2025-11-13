@@ -217,9 +217,9 @@ class TradeFragment : BaseFragment() {
                                         handleReview(quote, from, to, amount, navController)
                                     }
                                 },
-                                onLimitReview = { order ->
+                                onLimitReview = { from, to, order ->
                                     this@apply.hideKeyboard()
-                                    openLimitTransfer(order)
+                                    openLimitTransfer(from, to, order)
                                 },
                                 onDeposit = { token ->
                                     hideKeyboard()
@@ -474,13 +474,7 @@ class TradeFragment : BaseFragment() {
         }
     }
 
-    private fun openLimitTransfer(order: CreateLimitOrderResponse) {
-        val from = fromToken
-        val to = toToken
-        if (from == null || to == null) {
-            toast(R.string.Data_error)
-            return
-        }
+    private fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
         val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
         LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
             setOnDone {

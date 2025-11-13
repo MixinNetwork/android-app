@@ -161,8 +161,8 @@ class SwapViewModel
         }
     }
 
-    suspend fun checkMarketById(assetId: String): MarketItem? = withContext(Dispatchers.IO) {
-        return@withContext tokenRepository.checkMarketById(assetId, true)
+    suspend fun checkMarketById(assetId: String, force: Boolean): MarketItem? = withContext(Dispatchers.IO) {
+        return@withContext tokenRepository.checkMarketById(assetId, force)
     }
 
     fun tokenExtraFlow(token: SwapToken): Flow<String?> {
