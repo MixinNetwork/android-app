@@ -28,11 +28,11 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,10 +60,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.OrderItem
+import one.mixin.android.vo.route.OrderState
 import java.math.BigDecimal
 import java.math.RoundingMode
 

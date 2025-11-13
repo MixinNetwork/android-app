@@ -2,6 +2,7 @@ package one.mixin.android.db.provider
 
 import android.annotation.SuppressLint
 import android.database.Cursor
+import android.util.Log
 import androidx.paging.DataSource
 import androidx.room.RoomSQLiteQuery
 import one.mixin.android.db.WalletDatabase
@@ -52,6 +53,8 @@ class LimitOrderDataProvider {
                     val query = filter.buildQuery()
 
                     val whereOrderSql = query.sql.substringAfter("FROM orders o")
+                    val whereBody = whereOrderSql.substringAfter("WHERE ", missingDelimiterValue = "").substringBefore("ORDER BY", missingDelimiterValue = "").trim()
+                    val orderByBody = whereOrderSql.substringAfter("ORDER BY", missingDelimiterValue = "").trim()
 
                     val countSql = "SELECT COUNT(DISTINCT o.rowid) FROM orders o $whereOrderSql"
                     val countStmt = RoomSQLiteQuery.acquire(countSql, 0)
@@ -68,11 +71,19 @@ class LimitOrderDataProvider {
                             .append(baseSelect)
                             .append('\n')
                             .append("WHERE o.rowid IN ($ids)")
-                            .append('\n')
-                            .append(whereOrderSql.substringAfter("WHERE ", missingDelimiterValue = "").let { tail ->
-                                if (tail.isNotEmpty() && !tail.startsWith("ORDER BY")) "AND $tail" else tail
-                            })
+                            .apply {
+                                if (whereBody.isNotEmpty()) {
+                                    append('\n').append("AND ").append(whereBody)
+                                }
+                                append('\n').append("ORDER BY ")
+                                if (orderByBody.isNotEmpty()) {
+                                    append(orderByBody)
+                                } else {
+                                    append("o.created_at DESC")
+                                }
+                            }
                             .toString()
+                        Log.e("LimitOrderDataProvider", querySql)
                         return RoomSQLiteQuery.acquire(querySql, 0)
                     }
 

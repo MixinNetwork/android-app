@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,7 +18,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
- 
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
@@ -32,7 +30,6 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
@@ -42,7 +39,6 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -51,11 +47,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openMarket
-import one.mixin.android.extension.priceFormat
-import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
@@ -65,30 +57,21 @@ import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
-import one.mixin.android.ui.home.web3.trade.OrderDetailFragment
-import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.vo.ActionButtonData
-import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -252,12 +235,7 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onOrderList = {
                                     this@apply.hideKeyboard()
-                                    val accountId = one.mixin.android.session.Session.getAccountId()
-                                    val target = if (accountId != null) {
-                                        AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(accountId))
-                                    } else {
-                                        AllOrdersFragment()
-                                    }
+                                    val target = AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(walletId?: Session.getAccountId()!!))
                                     navTo(target, AllOrdersFragment.TAG)
                                 },
                                 onLimitOrderClick = { orderId ->

@@ -16,7 +16,6 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.vo.route.Order
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -30,6 +29,7 @@ import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 

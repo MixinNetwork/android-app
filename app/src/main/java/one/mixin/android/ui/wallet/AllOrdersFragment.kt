@@ -41,12 +41,11 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     companion object {
         const val TAG: String = "AllOrdersFragment"
-        const val ARGS_FILTER_PARAMS: String = "order_filter_params"
         private const val ARGS_WALLET_IDS: String = "args_wallet_ids"
 
         fun newInstanceWithWalletIds(walletIds: ArrayList<String>): AllOrdersFragment {
             val f = AllOrdersFragment()
-            val args = android.os.Bundle()
+            val args = Bundle()
             args.putStringArrayList(ARGS_WALLET_IDS, walletIds)
             f.arguments = args
             return f
@@ -65,10 +64,18 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private var refreshJob: Job? = null
 
+    private val sortAdapter by lazy {
+        SortMenuAdapter(requireContext(), listOf(
+            SortMenuData(SortOrder.Recent, R.drawable.ic_menu_recent, R.string.Recent),
+            SortMenuData(SortOrder.Oldest, R.drawable.ic_menu_oldest, R.string.Oldest)
+        )).apply {
+            checkPosition = 0
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
-        val walletId = walletIds?.firstOrNull()
         walletIds?.let { ids ->
             if (ids.isNotEmpty()) {
                 filterParams.walletIds = ids
@@ -78,7 +85,14 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
         binding.apply {
             titleView.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-                rightAnimator.setOnClickListener { sortMenu.show() }
+                rightAnimator.setOnClickListener {
+                    sortAdapter.checkPosition = when (filterParams.order) {
+                        SortOrder.Recent -> 0
+                        SortOrder.Oldest -> 1
+                        else -> 0
+                    }
+                    sortMenu.show()
+                }
             }
             transactionsRv.itemAnimator = null
             transactionsRv.adapter = adapter
@@ -187,11 +201,9 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     private val sortMenu by lazy {
         ListPopupWindow(requireContext()).apply {
             anchorView = binding.titleView.rightIb
-            setAdapter(SortMenuAdapter(requireContext(), listOf(
-                SortMenuData(SortOrder.Recent, R.drawable.ic_menu_recent, R.string.Recent),
-                SortMenuData(SortOrder.Oldest, R.drawable.ic_menu_oldest, R.string.Oldest)
-            )))
+            setAdapter(sortAdapter)
             setOnItemClickListener { _, _, position, _ ->
+                sortAdapter.checkPosition = position
                 filterParams.order = when (position) { 0 -> SortOrder.Recent else -> SortOrder.Oldest }
                 loadFilter()
                 dismiss()
