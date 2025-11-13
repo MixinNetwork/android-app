@@ -477,7 +477,10 @@
     <string name="error_unknown_with_message">错误：%1$s</string>
     <string name="error_used_phone">错误 20122：电话号码已经被占用。</string>
     <string name="error_watch_address_not_supported">错误 10633：当前地址为合约地址或交易所地址，暂不支持观察。</string>
-    <string name="error_invitation_already_bound">错误 10731：当前账户已绑定邀请码，无法修改绑定</string>
+    <string name="error_invalid_referral_code">错误 10730：无效的邀请码</string>
+    <string name="error_already_bonded_referral_code">错误 10731：当前账户已绑定邀请码，无法修改绑定。</string>
+    <string name="error_cannot_apply_your_own_referral_code">错误 10732：不可绑定自己的邀请码</string>
+    <string name="error_inviter_plan_expired">错误 10737：邀请人的会员已过期</string>
     <string name="error_user_invalid_format">用户数据不合法</string>
     <string name="error_withdrawal_memo_format_incorrect">错误 20131：提现备注格式不正确</string>
     <string name="error_withdrawal_suspend">错误 20137：提现暂停</string>
@@ -2083,6 +2086,7 @@
     <string name="referral_code_applied_introduction_2">升级会员返现单笔最高 1000 USD</string>
     <string name="referral_code_applied_introduction_3">自动获得后续所有新权益</string>
     <string name="apply_referral_code">绑定邀请码</string>
+    <string name="bind_referral_code">绑定邀请码</string>
     <string name="apply_referral_code_benefit">将邀请码绑定到你的账户，解锁 Mixin 专属福利。</string>
     <string name="referral_program_introduction_header">参与邀请计划，邀请好友分享赚币：</string>
     <string name="referral_program_introduction_footer">* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
@@ -2094,6 +2098,7 @@
     <string name="Referral">邀请</string>
     <string name="referral_banner">邀请好友赢取最高 60% 手续费分佣！</string>
     <string name="referral_hint">邀请码</string>
+    <string name="bind_referral_footer">手续费按月、按实际消耗的手续费币种和金额汇总返还到您的 Mixin 隐私钱包，阅读文档了解更多。</string>
     <string name="input_referral_code_hint">输入邀请码？</string>
     <string name="referral_description">邀请好友赚币</string>
     <string name="Address_not_found">该联系人还没有注册普通钱包</string>
@@ -2123,4 +2128,6 @@
     <string name="Orders">订单</string>
     <string name="Expiration">到期</string>
     <string name="Wallets_Selected_Count">%1$d 钱包</string>
+    <string name="Invitee_Commission">被邀请人返现</string>
+    <string name="Inviter">邀请人</string>
 </resources>

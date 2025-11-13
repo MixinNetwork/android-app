@@ -110,11 +110,14 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
             // Line 3: +xx symbol (color by status) | state with color
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val receiveAmountText = (order.receiveAmount ?: "0").ifEmpty { "0" }.numberFormat()
-                val stateLower = order.state.lowercase()
-                val leftColor = when (stateLower) {
-                    "settled" -> MixinAppTheme.colors.walletGreen
-                    "failed", "cancelled", "canceled", "expired" -> MixinAppTheme.colors.walletRed
-                    else -> MixinAppTheme.colors.textPrimary
+                val orderState = OrderState.from(order.state)
+                val hasReceivedAmount = !order.receiveAmount.isNullOrEmpty() && order.receiveAmount != "0"
+                
+                // Pending orders without received amount should be gray
+                val leftColor = when {
+                    orderState.isPending() && !hasReceivedAmount -> MixinAppTheme.colors.textAssist
+                    orderState.isDone() -> MixinAppTheme.colors.walletGreen
+                    else -> MixinAppTheme.colors.walletRed
                 }
                 Text(
                     text = "+${receiveAmountText} ${toToken?.symbol ?: ""}",
@@ -122,14 +125,13 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
                     color = leftColor,
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                val rightColor = when (stateLower) {
-                    "settled" -> MixinAppTheme.colors.walletGreen
-                    "failed", "cancelled", "canceled", "expired" -> MixinAppTheme.colors.walletRed
-                    "created", "pricing", "quoting" -> MixinAppTheme.colors.textAssist
-                    else -> MixinAppTheme.colors.textAssist
+                val rightColor = when {
+                    orderState.isPending() -> MixinAppTheme.colors.textAssist
+                    orderState.isDone() -> MixinAppTheme.colors.walletGreen
+                    else -> MixinAppTheme.colors.walletRed
                 }
                 val context = LocalContext.current
-                val stateText = OrderState.from(order.state).format(context)
+                val stateText = orderState.format(context)
                 Text(
                     text = stateText,
                     fontSize = 14.sp,

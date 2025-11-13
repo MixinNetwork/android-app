@@ -44,7 +44,7 @@ enum class OrderState(val value: String) {
         REFUNDED -> context.getString(R.string.State_Refunded)
         CANCELLING -> context.getString(R.string.order_state_cancelling)
     }
-    
+
     fun isPending(): Boolean = when (this) {
         CREATED, PRICING, QUOTING, PENDING -> true
         else -> false
