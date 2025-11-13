@@ -126,6 +126,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     private var scannedLabel by mutableStateOf("")
     private var scannedTransferDest by mutableStateOf("")
     private var errorInfo by mutableStateOf<String?>(null)
+    private var isLoading by mutableStateOf(false)
 
     enum class ScanType { ADDRESS, MEMO, LABEL, TRANSFER_DEST }
 
@@ -208,6 +209,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 web3Token = web3Token,
                                 name = if (wallet?.isWatch() == true || wallet?.isImported() == true) wallet?.name else null,
                                 addressShown = addressShown,
+                                isLoading = isLoading,
                                 pop = {
                                     requireActivity().onBackPressedDispatcher.onBackPressed()
                                 },
@@ -440,6 +442,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 web3Token = web3Token,
                                 contentText = scannedAddress,
                                 errorInfo = errorInfo,
+                                isLoading = isLoading,
                                 onNext = { address ->
                                     errorInfo = null
                                     requireView().hideKeyboard()
@@ -473,6 +476,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 address = address,
                                 contentText = scannedMemo,
                                 errorInfo = errorInfo,
+                                isLoading = isLoading,
                                 onNext = { memo ->
                                     errorInfo = null
                                     requireView().hideKeyboard()
@@ -619,12 +623,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         callback: (()-> Unit)? = null
     ) {
         requireView().hideKeyboard()
-        val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-            setCancelable(false)
-        }
-
         lifecycleScope.launch {
-            dialog.show()
+            isLoading = true
             try {
                 if (assetId.isNotEmpty() && destination.isNotEmpty()) {
                     val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
@@ -663,7 +663,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             } catch (e: Exception) {
                 errorInfo = ErrorHandler.getErrorMessage(e)
             } finally {
-                dialog.dismiss()
+                isLoading = false
             }
         }
     }
