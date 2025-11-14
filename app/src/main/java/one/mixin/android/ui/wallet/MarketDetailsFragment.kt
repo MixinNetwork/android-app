@@ -98,7 +98,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
             }
             swapAlert.swap.setOnClickListener {
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
                     val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
                     if (ids.size > tokens.size) {
@@ -160,7 +160,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 swapAlert.setAlertTitle(if (exist) R.string.Alert else R.string.Add_Alert)
                 swapAlert.alertVa.setOnClickListener {
                     if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
                             var coinItem = if (marketItem.coinId.isBlank()) {
                                 walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
                             } else {
@@ -392,7 +392,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         val changeUsd = BigDecimal(marketItem.priceChange24h)
         val isPositive = changeUsd >= BigDecimal.ZERO
         binding.apply {
-            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                 Timber.e(error)
                 balanceRl.isVisible = false
             }) {
