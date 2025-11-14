@@ -6,11 +6,14 @@ import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
 import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.provider.Web3DataProvider
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
@@ -102,7 +105,8 @@ constructor(
         }
 
     fun allWeb3Transaction(filterParams: Web3FilterParams): DataSource.Factory<Int, Web3TransactionItem> {
-        return web3TransactionDao.allTransactions(filterParams.buildQuery()).map { transaction ->
+        val database = WalletDatabase.getDatabase(context)
+        return Web3DataProvider.allTransactions(database, filterParams).map { transaction ->
             val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
             val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(filterParams.walletId, assetIds.distinct()).associateBy { it.assetId }
             transaction.copy(
