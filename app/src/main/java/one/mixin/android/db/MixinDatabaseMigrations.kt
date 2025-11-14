@@ -582,9 +582,9 @@ class MixinDatabaseMigrations private constructor() {
         val MIGRATION_67_68: Migration =
             object : Migration(67, 68) {
                 override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("DELETE FROM deposit_entries")
-                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `minimum` TEXT NOT NULL")
-                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `maximum` TEXT NOT NULL")
+                    db.execSQL("DROP TABLE IF EXISTS `deposit_entries`")
+                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `minimum` TEXT NOT NULL DEFAULT '0'")
+                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `maximum` TEXT NOT NULL DEFAULT '0'")
                 }
             }
 
