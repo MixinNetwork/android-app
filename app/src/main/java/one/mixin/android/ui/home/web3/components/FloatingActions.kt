@@ -26,8 +26,7 @@ fun FloatingActions(
     fromBalance: String?,
     fromToken: SwapToken?,
     toToken: SwapToken?,
-    currentLimitPrice: BigDecimal?,
-    marketPrice: java.math.BigDecimal?,
+    marketPrice: BigDecimal?,
     onSetInput: (String) -> Unit,
     onSetLimitPrice: (String) -> Unit,
     onDone: () -> Unit,
@@ -87,7 +86,7 @@ fun FloatingActions(
                     Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
                 } == true
 
-                val base: BigDecimal? = currentLimitPrice?.takeIf { it > BigDecimal.ZERO } ?: mp
+                val base: BigDecimal? = marketPrice ?: BigDecimal.ZERO
 
                 if (isToUsd) {
                     InputAction("+10%", showBorder = true) { base?.let { onSetLimitPrice(it.multiply(BigDecimal("1.1")).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) } }

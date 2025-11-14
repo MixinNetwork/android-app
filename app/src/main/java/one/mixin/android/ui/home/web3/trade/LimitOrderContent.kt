@@ -552,7 +552,6 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
-                currentLimitPrice = limitPriceText.toBigDecimalOrNull(),
                 marketPrice = marketPrice,
                 onSetInput = { inputText = it },
                 onSetLimitPrice = { limitPriceText = it },
