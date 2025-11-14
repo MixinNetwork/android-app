@@ -1680,6 +1680,7 @@ class WebFragment : BaseFragment() {
             val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
+            Timber.e("setStatusBarColor error: ${e.stackTraceToString()}")
             context?.let {
                 refreshByLuminance(it.isNightMode(), it.colorFromAttribute(R.attr.icon_white))
             }
@@ -1693,7 +1694,7 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         requireActivity().window?.let {
-            SystemUIManager.setSafePadding(it, color)
+            it.decorView.setBackgroundColor(color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color
