@@ -710,7 +710,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             is WithdrawBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                                 val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin, t.toWallet)
+                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin, t.toWallet, t.isFeeWaived)
                             }
 
                             else -> {
