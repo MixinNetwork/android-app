@@ -583,8 +583,8 @@ class MixinDatabaseMigrations private constructor() {
             object : Migration(67, 68) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("DELETE FROM deposit_entries")
-                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `minimum` TEXT NOT NULL")
-                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `maximum` TEXT NOT NULL")
+                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `minimum` TEXT NOT NULL DEFAULT ''")
+                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `maximum` TEXT NOT NULL DEFAULT ''")
                 }
             }
 
