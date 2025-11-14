@@ -1828,4 +1828,6 @@ class BottomSheetViewModel
         suspend fun bindReferral(code: String) = userRepository.bindReferral(code)
 
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+        suspend fun getReferralCodeInfo(code: String) = userRepository.getReferralCodeInfo(code)
 }
