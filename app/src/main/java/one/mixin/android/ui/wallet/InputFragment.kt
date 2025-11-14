@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_FREE_FEE
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.databinding.FragmentInputBinding
@@ -484,7 +485,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     trace,
                                     token,
                                     amount,
-                                    null,
+                                    if(index == 3) MIXIN_FREE_FEE else null,
                                     PaymentStatus.pending.name,
                                     null,
                                     toWallet,

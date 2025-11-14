@@ -149,7 +149,6 @@ interface RouteService {
     @POST("web3/transactions")
     suspend fun postWeb3Tx(
         @Body rawTx: Web3RawTransactionRequest,
-        @Query("fee_waived") feeWaived: Boolean? = null,
     ): MixinResponse<Web3RawTransaction>
 
     @POST("web3/transactions/simulate")
