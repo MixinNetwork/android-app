@@ -455,9 +455,8 @@ class TokenRepository
         ) =
             safeSnapshotDao.snapshotLocal(assetId, snapshotId)
 
-        fun findAddressByDestination(receiver: String, tag: String, chainId: String) = addressDao.findAddressByDestination(receiver, tag, chainId)
-
-        fun findAddressByDestination(receiver: String, tag: String) = addressDao.findAddressByDestination(receiver, tag)
+        fun findAddressByDestination(receiver: String, tag: String, chainId: String?) = if (chainId == null) addressDao.findAddressByDestination(receiver, tag)
+            else addressDao.findAddressByDestination(receiver, tag, chainId)
 
         fun insertSnapshot(snapshot: SafeSnapshot) = safeSnapshotDao.insert(snapshot)
 
@@ -544,7 +543,7 @@ class TokenRepository
         fun allSnapshots(filterParams: FilterParams): DataSource.Factory<Int, SnapshotItem> {
             return safeSnapshotDao.getSnapshots(filterParams.buildQuery()).map {
                 if (!it.withdrawal?.receiver.isNullOrBlank()) {
-                    val receiver = it.withdrawal!!.receiver
+                    val receiver = it.withdrawal.receiver
                     val index: Int = receiver.indexOf(":")
                     if (index == -1) {
                         it.label = addressDao.findAddressByDestination(receiver, "")

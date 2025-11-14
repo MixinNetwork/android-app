@@ -30,12 +30,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -91,6 +95,8 @@ fun SessionRequestPage(
     asset: Token?,
     tipGas: TipGas?,
     errorInfo: String?,
+    isFeeWaived: Boolean = false,
+    onFreeClick: (() -> Unit)? = null,
     onPreviewMessage: (String) -> Unit,
     onDismissRequest: () -> Unit,
     showPin: () -> Unit,
@@ -324,6 +330,8 @@ fun SessionRequestPage(
                     FeeInfo(
                         amount = "$fee",
                         fee = fee.multiply(asset.priceUSD()),
+                        isFree = isFeeWaived,
+                        onFreeClick = onFreeClick,
                     )
                 } else {
                     FeeInfo(
@@ -335,7 +343,9 @@ fun SessionRequestPage(
                             } else {
                                 null
                             }
-                        )?.numberFormat12()
+                        )?.numberFormat12(),
+                        isFree = isFeeWaived,
+                        onFreeClick = onFreeClick,
                     )
                 }
                 Box(modifier = Modifier.height(20.dp))
@@ -512,6 +522,8 @@ fun FeeInfo(
     amount: String,
     fee: BigDecimal,
     gasPrice: String? = null,
+    isFree: Boolean = false,
+    onFreeClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier =
@@ -531,11 +543,36 @@ fun FeeInfo(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
-                Text(
-                    text = amount + if (gasPrice != null) " ($gasPrice Gwei)" else "",
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 14.sp,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = amount,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 14.sp,
+                        style = TextStyle(textDecoration = if (isFree) TextDecoration.LineThrough else TextDecoration.None),
+                    )
+                    if (gasPrice != null) {
+                        Box(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "($gasPrice Gwei)",
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 12.sp,
+                        )
+                    }
+                    if (isFree) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(id = R.string.FREE),
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            lineHeight = 10.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MixinAppTheme.colors.accent)
+                                .padding(horizontal = 3.dp, vertical = 1.dp)
+                                .let { m -> if (onFreeClick != null) m.clickable { onFreeClick.invoke() } else m }
+                        )
+                    }
+                }
                 Box(modifier = Modifier.height(4.dp))
                 Text(
                     text = fee.currencyFormat(),
@@ -543,6 +580,7 @@ fun FeeInfo(
                     fontSize = 14.sp,
                 )
             }
+            Box(modifier = Modifier)
         }
     }
 }

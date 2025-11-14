@@ -68,6 +68,21 @@ class TransferContent : LinearLayout {
         }
     }
 
+    fun renderWithdrawFeeFree(withdrawBiometricItem: WithdrawBiometricItem, onFreeClick: (() -> Unit)? = null) {
+        _binding.apply {
+            val fee = withdrawBiometricItem.fee ?: return
+            networkFee.isVisible = true
+            networkFee.setContentWithFree(
+                R.string.Fee,
+                "${fee.fee} ${fee.token.symbol}",
+                amountAs(fee.fee, fee.token),
+                true
+            ) {
+                onFreeClick?.invoke()
+            }
+        }
+    }
+
     fun render(
         invoice: MixinInvoice,
         tokens: List<TokenItem>,
@@ -388,7 +403,7 @@ class TransferContent : LinearLayout {
         }
     }
 
-    private fun renderWithdrawTransfer(withdrawBiometricItem: WithdrawBiometricItem) {
+    private fun renderWithdrawTransfer(withdrawBiometricItem: WithdrawBiometricItem, isFree: Boolean = false, onFreeClick: (() -> Unit)? = null) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}", amountAs(withdrawBiometricItem.amount, withdrawBiometricItem.asset!!))
             receive.isVisible = false
@@ -410,7 +425,13 @@ class TransferContent : LinearLayout {
 
             val fee = withdrawBiometricItem.fee!!
             networkFee.isVisible = true
-            networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
+            if (isFree) {
+                networkFee.setContentWithFree(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token), true) {
+                    onFreeClick?.invoke()
+                }
+            } else {
+                networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
+            }
 
             val tokenItem = withdrawBiometricItem.asset!!
             network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
