@@ -112,7 +112,7 @@ buildscript {
         ext.sol4kVersion = '0.5.18'
 
         ext.sumsubVersion = '1.38.0'
-        ext.checkoutFramesVersion = '4.2.3'
+        ext.checkoutFramesVersion = '4.3.0'
         ext.checkoutSecureVersion = '3.2.6'
         ext.checkoutRiskVersion = '1.0.6'
 
