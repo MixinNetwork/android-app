@@ -61,7 +61,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
 import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
-import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
@@ -264,9 +264,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
-                                putString(SwapFragment.ARGS_INPUT, token.assetId)
-                                putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
-                                putString(SwapFragment.ARGS_WALLET_ID, token.walletId)
+                                putString(TradeFragment.ARGS_INPUT, token.assetId)
+                                putBoolean(TradeFragment.ARGS_IN_MIXIN, false)
+                                putString(TradeFragment.ARGS_WALLET_ID, token.walletId)
                             }
                         )
                     }

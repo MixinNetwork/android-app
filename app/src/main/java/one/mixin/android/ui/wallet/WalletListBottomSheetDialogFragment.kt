@@ -69,13 +69,14 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     private val viewModel by viewModels<WalletViewModel>()
     private var onWalletClickListener: ((Web3Wallet?) -> Unit)? = null
+    private var onDismissListener: (() -> Unit)? = null
 
     private val excludeWalletId: String? by lazy {
         requireArguments().getString(ARGS_EXCLUDE_WALLET_ID)
     }
 
-    private val chainId: String by lazy {
-        requireNotNull(requireArguments().getString(ARGS_CHAIN_ID))
+    private val chainId: String? by lazy {
+        requireArguments().getString(ARGS_CHAIN_ID)
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -90,7 +91,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 launch {
                     searchQuery.collect { query ->
                         if (query.isEmpty()) {
-                            viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                            viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
                         }
                     }
                 }
@@ -99,7 +100,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         .debounce(150)
                         .collect { query ->
                             if (query.isNotEmpty()) {
-                                viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                                viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
                             }
                         }
                 }
@@ -141,7 +142,17 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         onWalletClickListener = listener
     }
 
+    fun setOnDismissListener(listener: () -> Unit): WalletListBottomSheetDialogFragment {
+        onDismissListener = listener
+        return this
+    }
+
     override fun showError(error: String) {
+    }
+
+    override fun onDismiss(dialog: android.content.DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissListener?.invoke()
     }
 
     companion object {
@@ -149,7 +160,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         private const val ARGS_EXCLUDE_WALLET_ID = "args_exclude_wallet_id"
         private const val ARGS_CHAIN_ID = "args_chain_id"
 
-        fun newInstance(excludeWalletId: String?, chainId: String): WalletListBottomSheetDialogFragment {
+        fun newInstance(excludeWalletId: String?, chainId: String? = null): WalletListBottomSheetDialogFragment {
             return WalletListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_EXCLUDE_WALLET_ID, excludeWalletId)
                 putString(ARGS_CHAIN_ID, chainId)

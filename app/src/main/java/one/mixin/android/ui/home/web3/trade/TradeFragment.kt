@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.app.Dialog
 import android.os.Bundle
@@ -30,8 +30,8 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -39,7 +39,6 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -48,11 +47,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openMarket
-import one.mixin.android.extension.priceFormat
-import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
@@ -62,31 +57,25 @@ import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
+import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.vo.ActionButtonData
-import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.Fiats
-import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SwapFragment : BaseFragment() {
+class TradeFragment : BaseFragment() {
     companion object {
         const val TAG = "SwapFragment"
         const val ARGS_WEB3_TOKENS = "args_web3_tokens"
@@ -96,6 +85,7 @@ class SwapFragment : BaseFragment() {
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_OPEN_LIMIT = "args_open_limit"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -111,21 +101,21 @@ class SwapFragment : BaseFragment() {
             inMixin: Boolean = true,
             referral: String? = null,
             walletId: String? = null,
-        ): SwapFragment =
-            SwapFragment().withArgs {
+            openLimit: Boolean = false,
+        ): TradeFragment =
+            TradeFragment().withArgs {
                 input?.let { putString(ARGS_INPUT, it) }
                 output?.let { putString(ARGS_OUTPUT, it) }
                 amount?.let { putString(ARGS_AMOUNT, it) }
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
+                putBoolean(ARGS_OPEN_LIMIT, openLimit)
             }
     }
 
-    enum class SwapDestination {
+    enum class TradeDestination {
         Swap,
-        OrderList,
-        OrderDetail
     }
 
     @Inject
@@ -174,7 +164,7 @@ class SwapFragment : BaseFragment() {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = SwapDestination.Swap.name,
+                        startDestination = TradeDestination.Swap.name,
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -200,10 +190,10 @@ class SwapFragment : BaseFragment() {
                             )
                         },
                     ) {
-                        composable(SwapDestination.Swap.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
+                        composable(TradeDestination.Swap.name) {
+                            jobManager.addJobInBackground(RefreshOrdersJob())
                             jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
-                            SwapPage(
+                            TradePage(
                                 walletId = walletId,
                                 from = fromToken,
                                 to = toToken,
@@ -212,6 +202,8 @@ class SwapFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
+                                openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true,
+                                source = getSource(),
                                 onSelectToken = { isReverse, type ->
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
                                         selectCallback(swapTokens, isReverse, type)
@@ -220,17 +212,21 @@ class SwapFragment : BaseFragment() {
                                     }
                                 },
                                 onReview = { quote, from, to, amount ->
+                                    this@apply.hideKeyboard()
                                     lifecycleScope.launch {
                                         handleReview(quote, from, to, amount, navController)
                                     }
                                 },
-                                source = getSource(),
+                                onLimitReview = { from, to, order ->
+                                    this@apply.hideKeyboard()
+                                    openLimitTransfer(from, to, order)
+                                },
                                 onDeposit = { token ->
                                     hideKeyboard()
                                     if (inMixin()) {
                                         deposit(token.assetId)
                                     } else {
-                                        this@SwapFragment.lifecycleScope.launch {
+                                        this@TradeFragment.lifecycleScope.launch {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
                                             val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
                                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
@@ -238,66 +234,21 @@ class SwapFragment : BaseFragment() {
                                     }
                                 },
                                 onOrderList = {
-                                    navController.navigate(SwapDestination.OrderList.name)
-                                    if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
-                                        defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
-                                        orderBadge = false
-                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP_TRANSACTION))
-                                    }
+                                    this@apply.hideKeyboard()
+                                    val target = AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(walletId?: Session.getAccountId()!!))
+                                    navTo(target, AllOrdersFragment.TAG)
+                                },
+                                onLimitOrderClick = { orderId ->
+                                    this@apply.hideKeyboard()
+                                    navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
                                 },
                                 pop = {
                                     navigateUp(navController)
                                 }
                             )
-                        }
-
-                        composable(SwapDestination.OrderList.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
-                            SwapOrderListPage(
-                                walletId = walletId,
-                                pop = {
-                                    navigateUp(navController)
-                                },
-                                onOrderClick = { orderId ->
-                                    navController.navigate("${SwapDestination.OrderDetail.name}/$orderId")
-                                }
-                            )
-                        }
-                        composable("${SwapDestination.OrderDetail.name}/{orderId}") { navBackStackEntry ->
-                            jobManager.addJobInBackground(RefreshOrdersJob(walletId))
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
-                            navBackStackEntry.arguments?.getString("orderId")?.toIntOrNull().let { orderId ->
-                                SwapOrderDetailPage(
-                                    walletId = walletId,
-                                    orderId = navBackStackEntry.arguments?.getString("orderId") ?: "",
-                                    onShare = { payAssetId, receiveAssetId ->
-                                        lifecycleScope.launch {
-                                            shareSwap(payAssetId, receiveAssetId)
-                                        }
-                                    },
-                                    onTryAgain = { fromAssetId, toAssetId ->
-                                        lifecycleScope.launch {
-                                            val fromToken = swapViewModel.findToken(fromAssetId)?.toSwapToken()
-                                            val toToken = swapViewModel.findToken(toAssetId)?.toSwapToken()
-                                            if (fromToken != null && toToken != null) {
-                                                this@SwapFragment.fromToken = fromToken
-                                                this@SwapFragment.toToken = toToken
-                                                navController.navigate(SwapDestination.Swap.name) {
-                                                    popUpTo(SwapDestination.Swap.name) {
-                                                        inclusive = true
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    },
-                                    pop = {
-                                        navigateUp(navController)
-                                    }
-                                )
-                            }
                         }
                     }
+
                 }
             }
         }
@@ -337,7 +288,7 @@ class SwapFragment : BaseFragment() {
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        this@SwapFragment.lifecycleScope.launch {
+                        this@TradeFragment.lifecycleScope.launch {
                             val t = swapViewModel.getTokenByWalletAndAssetId(
                                 Web3Signer.currentWalletId, if (Web3Signer.evmAddress.isBlank()) {
                                     Constants.ChainId.SOLANA_CHAIN_ID
@@ -425,147 +376,6 @@ class SwapFragment : BaseFragment() {
         }
     }
 
-    private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
-        val formatVol = try {
-            BigDecimal(vol).multiply(rate).numberFormatCompact()
-        } catch (_: NumberFormatException) {
-            null
-        }
-        if (formatVol != null) {
-            return "$symbol$formatVol"
-        }
-        return requireContext().getString(R.string.N_A)
-    }
-
-    private suspend fun shareSwap(payAssetId: String, receiveAssetId: String) {
-        dialog.show()
-        runCatching {
-            var payId = payAssetId
-            var receiveId =
-                if (receiveAssetId in Constants.AssetId.usdcAssets || receiveAssetId in Constants.AssetId.usdtAssets) {
-                    payId = receiveAssetId
-                    payAssetId
-                } else {
-                    receiveAssetId
-                }
-
-            var forwardMessage: ForwardMessage? = null
-            swapViewModel.checkMarketById(receiveId)?.let { market ->
-                forwardMessage = buildForwardMessage(market, payId, receiveId)
-            }
-            if (forwardMessage == null) {
-                swapViewModel.syncAsset(receiveId)?.let { token ->
-                    forwardMessage = buildForwardMessage(token, payId, receiveId)
-                }
-            }
-            if (forwardMessage == null) {
-                toast(R.string.Data_error)
-                return@runCatching
-            }
-            ShareMessageBottomSheetDialogFragment.newInstance(forwardMessage!!, null)
-                .showNow(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-        }.onFailure { e ->
-            ErrorHandler.handleError(e)
-        }
-        dialog.dismiss()
-    }
-
-    private fun buildForwardMessage(marketItem: MarketItem, payId: String, receiveId: String): ForwardMessage {
-        val description = buildString {
-            append("🔥 ${marketItem.name} (${marketItem.symbol})\n\n")
-            append(
-                "📈 ${getString(R.string.Market_Cap)}: ${
-                    capFormat(
-                        marketItem.marketCap,
-                        BigDecimal(Fiats.getRate()),
-                        Fiats.getSymbol()
-                    )
-                }\n"
-            )
-            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(marketItem.currentPrice).priceFormat()}\n")
-            append("💰 ${getString(R.string.price_change_24h)}: ${marketItem.priceChangePercentage24H}%")
-        }
-
-        val actions = listOf(
-            ActionButtonData(
-                label = getString(R.string.buy_token, marketItem.symbol),
-                color = "#50BD5C",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = getString(R.string.sell_token, marketItem.symbol),
-                color = "#DB454F",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = "${marketItem.symbol} ${getString(R.string.Market)}",
-                color = "#3D75E3",
-                action = "${Constants.Scheme.HTTPS_MARKET}/${marketItem.coinId}"
-            )
-        )
-
-        val appCard = AppCardData(
-            appId = ROUTE_BOT_USER_ID,
-            iconUrl = null,
-            coverUrl = null,
-            cover = null,
-            title = "${getString(R.string.Swap)} ${marketItem.symbol}",
-            description = description,
-            action = null,
-            updatedAt = null,
-            shareable = true,
-            actions = actions,
-        )
-
-        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
-    }
-
-    private fun buildForwardMessage(token: TokenItem, payId: String, receiveId: String): ForwardMessage {
-        val description = buildString {
-            append("🔥 ${token.name} (${token.symbol})\n\n")
-            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).priceFormat()}\n")
-            append(
-                "💰 ${getString(R.string.price_change_24h)}: ${
-                    runCatching { "${(BigDecimal(token.changeUsd) * BigDecimal(100)).numberFormat2()}%" }.getOrDefault(
-                        "N/A"
-                    )
-                }"
-            )
-        }
-
-        val actions = listOf(
-            ActionButtonData(
-                label = getString(R.string.buy_token, token.symbol),
-                color = "#50BD5C",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$payId&output=$receiveId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = getString(R.string.sell_token, token.symbol),
-                color = "#DB454F",
-                action = "${Constants.Scheme.HTTPS_SWAP}?input=$receiveId&output=$payId&referral=${Session.getAccount()?.identityNumber}"
-            ),
-            ActionButtonData(
-                label = "${token.symbol} ${getString(R.string.Market)}",
-                color = "#3D75E3",
-                action = "${Constants.Scheme.HTTPS_MARKET}/${token.assetId}"
-            )
-        )
-
-        val appCard = AppCardData(
-            appId = ROUTE_BOT_USER_ID,
-            iconUrl = null,
-            coverUrl = null,
-            cover = null,
-            title = "${getString(R.string.Swap)} ${token.symbol}",
-            description = description,
-            action = null,
-            updatedAt = null,
-            shareable = true,
-            actions = actions,
-        )
-
-        return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
-    }
 
     private fun saveQuoteToken(
         token: SwapToken,
@@ -662,6 +472,20 @@ class SwapFragment : BaseFragment() {
                 GasCheckBottomSheetDialogFragment.TAG
             )
         }
+    }
+
+    private fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
+        val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
+        LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
+            setOnDone {
+                initialAmount = null
+                lastOrderTime = System.currentTimeMillis()
+            }
+            setOnDestroy {
+                reviewing = false
+            }
+        }.showNow(parentFragmentManager, LimitTransferBottomSheetDialogFragment.TAG)
+        reviewing = true
     }
 
     private suspend fun initFromTo() {

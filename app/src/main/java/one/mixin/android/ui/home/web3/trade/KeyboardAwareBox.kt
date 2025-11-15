@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.view.ViewTreeObserver
 import androidx.compose.foundation.layout.Box

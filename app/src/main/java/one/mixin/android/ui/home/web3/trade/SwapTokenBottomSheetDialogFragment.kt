@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -25,7 +25,7 @@ import one.mixin.android.util.SystemUIManager
 @AndroidEntryPoint
 class SwapTokenBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "SwapOrderBottomSheetDialogFragment"
+        const val TAG = "SwapTokenBottomSheetDialogFragment"
 
         fun newInstance(token: SwapToken) =
             SwapTokenBottomSheetDialogFragment().withArgs {

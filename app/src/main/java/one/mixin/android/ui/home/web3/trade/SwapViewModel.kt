@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -11,9 +11,11 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.web3.SwapRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
@@ -27,11 +29,13 @@ import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
 import javax.inject.Inject
 
 @HiltViewModel
 class SwapViewModel
+
     @Inject
     internal constructor(
         private val assetRepository: AssetRepository,
@@ -58,6 +62,22 @@ class SwapViewModel
         addRouteBot()
         return assetRepository.web3Swap(swapRequest)
     }
+
+    // Limit order APIs (create is used by UI; others not used yet)
+    suspend fun createLimitOrder(request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse> {
+        addRouteBot()
+        return assetRepository.createLimitOrder(request)
+    }
+    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?, state: String?, walletId: String?): MixinResponse<List<Order>>  {
+        val response = assetRepository.getLimitOrders(category, limit, offset, state, walletId)
+        response.data?.let {
+            web3Repository.inserOrders(it)
+        }
+        return response
+    }
+
+    suspend fun getLimitOrder(id: String, walletId: String? = null): MixinResponse<Order> = assetRepository.getLimitOrder(id, walletId)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = assetRepository.cancelLimitOrder(id)
 
     suspend fun quote(
         context: Context,
@@ -126,9 +146,11 @@ class SwapViewModel
 
     suspend fun findWeb3AssetItems(walletId: String) = tokenRepository.findWeb3TokenItems(walletId)
 
-    fun swapOrders() = tokenRepository.swapOrders()
+    fun walletOrders() = tokenRepository.walletOrders()
 
     fun getOrderById(orderId: String) = tokenRepository.getOrderById(orderId)
+
+    fun observeOrder(orderId: String) = tokenRepository.observeOrder(orderId)
 
     private fun addRouteBot() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -139,8 +161,8 @@ class SwapViewModel
         }
     }
 
-    suspend fun checkMarketById(assetId: String): MarketItem? = withContext(Dispatchers.IO) {
-        return@withContext tokenRepository.checkMarketById(assetId, true)
+    suspend fun checkMarketById(assetId: String, force: Boolean): MarketItem? = withContext(Dispatchers.IO) {
+        return@withContext tokenRepository.checkMarketById(assetId, force)
     }
 
     fun tokenExtraFlow(token: SwapToken): Flow<String?> {
@@ -164,4 +186,12 @@ class SwapViewModel
     suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? = withContext(Dispatchers.IO) {
         web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
     }
+
+    fun assetItemFlow(assetId: String): Flow<TokenItem?> {
+        return tokenRepository.assetItemFlow(assetId)
+    }
+
+    suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3Repository.getAddressesByChainId(walletId, chainId)
+
+    suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
 }

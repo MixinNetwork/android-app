@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
+
+    <FrameLayout
+        android:id="@+id/iconContainer"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/iconA"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_gravity="start|top"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_avatar_place_holder"/>
+
+        <ImageView
+            android:id="@+id/iconB"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_gravity="bottom|end"
+            android:padding="1dp"
+            android:background="@drawable/bg_circle_border_1dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_avatar_place_holder"/>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/line1Left"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/iconContainer"
+        app:layout_constraintTop_toTopOf="@id/iconContainer"
+        app:layout_constraintEnd_toStartOf="@id/line1Right"
+        android:layout_marginStart="12dp"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:textColor="?attr/text_primary"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="--"/>
+
+    <TextView
+        android:id="@+id/line1Right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/line1Left"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="?attr/text_assist"
+        android:text="--"/>
+
+    <TextView
+        android:id="@+id/line2Left"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/line1Left"
+        app:layout_constraintTop_toBottomOf="@id/line1Left"
+        app:layout_constraintEnd_toStartOf="@id/line2Right"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="@color/wallet_pink"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="--"/>
+
+    <TextView
+        android:id="@+id/line2Right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/line2Left"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="?attr/text_assist"
+        android:text="--"/>
+
+    <TextView
+        android:id="@+id/line3Left"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/line1Left"
+        app:layout_constraintTop_toBottomOf="@id/line2Left"
+        app:layout_constraintEnd_toStartOf="@id/line3Right"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="?attr/text_primary"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="--"/>
+
+    <TextView
+        android:id="@+id/line3Right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/line3Left"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="?attr/text_assist"
+        android:text="--"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

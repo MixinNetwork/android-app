@@ -157,6 +157,7 @@ object Constants {
         const val MIXIN_SCHEME = "mixin://mixin.one/scheme"
         const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
         const val MIXIN_SWAP = "mixin://mixin.one/swap"
+        const val MIXIN_TRADE = "mixin://mixin.one/trade"
         const val MIXIN_MARKET = "mixin://mixin.one/markets"
         const val MIXIN_REFERRALS = "mixin://mixin.one/referrals"
         const val HTTPS_USERS = "https://mixin.one/users"
@@ -172,6 +173,7 @@ object Constants {
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
         const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
         const val HTTPS_SWAP = "https://mixin.one/swap"
+        const val HTTPS_TRADE = "https://mixin.one/trade"
         const val HTTPS_MEMBERSHIP = "https://mixin.one/membership"
 
         // web3
@@ -189,7 +191,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 68
+        const val CURRENT_VERSION = 69
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"

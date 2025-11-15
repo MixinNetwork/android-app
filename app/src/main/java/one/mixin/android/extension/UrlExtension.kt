@@ -100,6 +100,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.MIXIN_TIP_SIGN, true) ||
         startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
         startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
+        startsWith(Constants.Scheme.HTTPS_TRADE, true) ||
+        startsWith(Constants.Scheme.MIXIN_TRADE, true) ||
         startsWith(Constants.Scheme.DEBUG, true)
     ) {
         true

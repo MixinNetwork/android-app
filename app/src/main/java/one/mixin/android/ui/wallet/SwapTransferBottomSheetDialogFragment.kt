@@ -535,7 +535,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
 
@@ -614,7 +614,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 context?.updatePinCheck()
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
-                                    System.currentTimeMillis(),
+                                       System.currentTimeMillis(),
                                 )
                                 step = Step.Done
                                 AnalyticsTracker.trackSwapSend()

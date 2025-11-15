@@ -1,4 +1,4 @@
-package one.mixin.android.ui.home.web3.swap
+package one.mixin.android.ui.home.web3.trade
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.border
@@ -58,9 +58,10 @@ import java.math.BigDecimal
 fun InputContent(
     token: SwapToken?,
     text: String,
-    selectClick: () -> Unit,
+    selectClick: (() -> Unit)?,
     onInputChanged: ((String) -> Unit)? = null,
     readOnly: Boolean = false,
+    inlineEndCompose: (@Composable () -> Unit)? = null,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -70,16 +71,19 @@ fun InputContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.fillMaxWidth()) {
-                        AutoSizeText(
-                            text = text,
-                            color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Black,
-                            textAlign = TextAlign.Start,
-                        )
+                        if (inlineEndCompose != null) {
+                            inlineEndCompose.invoke()
+                        } else {
+                            AutoSizeText(
+                                text = text,
+                                color = if (text == "0") MixinAppTheme.colors.textRemarks else MixinAppTheme.colors.textPrimary,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Black,
+                                textAlign = TextAlign.Start,
+                            )
+                        }
                     }
                 }
-
                 Right(token, selectClick)
             }
             Text(text = "", style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Light)) // placeholder
@@ -119,54 +123,63 @@ fun InputContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = {
-                            textFieldValue = it
-                            val v = try {
-                                if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
-                            } catch (e: Exception) {
-                                return@BasicTextField
-                            }
-                            onInputChanged?.invoke(it.text)
-                        },
-                        maxLines = 1,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .onFocusChanged {
-                                if (it.isFocused) {
-                                    keyboardController?.show()
+                    if (inlineEndCompose != null) {
+                        // Replace input text with inline compose (e.g., spinner)
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                            inlineEndCompose.invoke()
+                        }
+                    } else {
+                        BasicTextField(
+                            value = textFieldValue,
+                            onValueChange = {
+                                textFieldValue = it
+                                val v = try {
+                                    if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
+                                } catch (e: Exception) {
+                                    return@BasicTextField
                                 }
+                                onInputChanged?.invoke(it.text)
                             },
-                        textStyle = TextStyle(
-                            fontSize = when {
-                                textFieldValue.text.length <= 15 -> 24.sp
-                                else -> {
-                                    val excess = textFieldValue.text.length - 15
-                                    val reduction = excess * 2
-                                    (24 - reduction).coerceAtLeast(16).sp
-                                }
-                            },
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontWeight = FontWeight.Black,
-                            textAlign = TextAlign.Start,
-                        ),
-                        cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        interactionSource = interactionSource,
-                    )
-
-                    if (text.isEmpty()) {
-                        AutoSizeText(
-                            text = "0",
-                            color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Black,
-                            modifier = Modifier.align(Alignment.CenterStart)
+                            maxLines = 1,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(focusRequester)
+                                .onFocusChanged {
+                                    if (it.isFocused) {
+                                        keyboardController?.show()
+                                    }
+                                },
+                            textStyle = TextStyle(
+                                fontSize = when {
+                                    textFieldValue.text.length <= 15 -> 24.sp
+                                    else -> {
+                                        val excess = textFieldValue.text.length - 15
+                                        val reduction = excess * 2
+                                        (24 - reduction).coerceAtLeast(16).sp
+                                    }
+                                },
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontWeight = FontWeight.Black,
+                                textAlign = TextAlign.Start,
+                            ),
+                            cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            interactionSource = interactionSource,
                         )
+
+                        if (text.isEmpty()) {
+                            AutoSizeText(
+                                text = "0",
+                                color = MixinAppTheme.colors.textRemarks,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier.align(Alignment.CenterStart)
+                            )
+                        }
                     }
                 }
                 Right(token, selectClick)
@@ -179,9 +192,9 @@ fun InputContent(
 @Composable
 private fun Right(
     token: SwapToken?,
-    selectClick: () -> Unit,
+    selectClick: (() -> Unit)? = null,
 ) {
-    Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick.invoke() }, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { selectClick?.invoke() }, verticalAlignment = Alignment.CenterVertically) {
         if (token?.collectionHash != null) {
             CoilImage(
                 model = ImageRequest.Builder(LocalContext.current).data(token.icon).transformations(CoilRoundedHexagonTransformation()).build(),
@@ -226,11 +239,13 @@ private fun Right(
                 stepSize = 1.sp
             )
         )
-        Box(modifier = Modifier.width(8.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.ic_web3_drop_down),
-            contentDescription = null,
-            tint = MixinAppTheme.colors.iconGray,
-        )
+        if (selectClick != null) {
+            Box(modifier = Modifier.width(8.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_web3_drop_down),
+                contentDescription = null,
+                tint = MixinAppTheme.colors.iconGray,
+            )
+        }
     }
 }
