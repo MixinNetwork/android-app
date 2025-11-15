@@ -240,6 +240,7 @@ interface AccountService {
         @Query("asset") assetId: String,
         @Query("chain") chain: String,
         @Query("destination") destination: String,
+        @Query("insecureSkipTagCheck") insecureSkipTagCheck: Boolean? = null,
         @Query("tag") tag: String?,
     ): MixinResponse<AddressResponse>
 
