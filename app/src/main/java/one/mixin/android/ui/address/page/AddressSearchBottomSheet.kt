@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -43,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.compose.GetActionBarHeight
+import one.mixin.android.compose.GetStatusBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.ui.address.component.SearchTextField
@@ -80,10 +83,20 @@ fun AddressSearchBottomSheet(
         }
     }
 
+    val actionBarHeight = with(LocalDensity.current) {
+        val attrs = intArrayOf(android.R.attr.actionBarSize)
+        val typedArray = LocalContext.current.obtainStyledAttributes(attrs)
+        val height = typedArray.getDimensionPixelSize(0, 0)
+        typedArray.recycle()
+        height.toDp()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(LocalConfiguration.current.screenHeightDp.dp - 56.dp)
+            .height(
+                LocalConfiguration.current.screenHeightDp.dp - GetActionBarHeight() - GetStatusBarHeightValue()
+            )
             .background(
                 MixinAppTheme.colors.background,
                 shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)

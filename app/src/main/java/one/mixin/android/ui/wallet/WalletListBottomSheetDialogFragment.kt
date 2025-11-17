@@ -1,13 +1,7 @@
 package one.mixin.android.ui.wallet
 
-import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
-import android.os.Bundle
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,37 +32,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.edit
-import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
-import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
@@ -76,15 +63,12 @@ import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletInfoCard
-import one.mixin.android.util.SystemUIManager
-import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
-class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletViewModel>()
     private var onWalletClickListener: ((Web3Wallet?) -> Unit)? = null
-    private var behavior: BottomSheetBehavior<*>? = null
 
     private val excludeWalletId: String? by lazy {
         requireArguments().getString(ARGS_EXCLUDE_WALLET_ID)
@@ -97,112 +81,67 @@ class WalletListBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @OptIn(FlowPreview::class)
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(12.dip.toFloat(), top = true, bottom = false)
-            setContent {
-                MixinAppTheme {
-                    val searchQuery = remember { MutableStateFlow("") }
-                    val wallets by viewModel.walletsFlow.collectAsState()
-                    LaunchedEffect(Unit) {
-                        launch {
-                            searchQuery.collect { query ->
-                                if (query.isEmpty()) {
-                                    viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
-                                }
-                            }
-                        }
-                        launch {
-                            searchQuery
-                                .debounce(150)
-                                .collect { query ->
-                                    if (query.isNotEmpty()) {
-                                        viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
-                                    }
-                                }
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            val searchQuery = remember { MutableStateFlow("") }
+            val wallets by viewModel.walletsFlow.collectAsState()
+            LaunchedEffect(Unit) {
+                launch {
+                    searchQuery.collect { query ->
+                        if (query.isEmpty()) {
+                            viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
                         }
                     }
-
-                    WalletListScreen(
-                        wallets = wallets,
-                        excludeWalletId = excludeWalletId,
-                        onQueryChanged = { query ->
-                            lifecycleScope.launch {
-                                searchQuery.emit(query)
+                }
+                launch {
+                    searchQuery
+                        .debounce(150)
+                        .collect { query ->
+                            if (query.isNotEmpty()) {
+                                viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
                             }
-                        },
-                        onWalletClick = { wallet ->
-                            if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
-                                NoKeyWarningBottomSheetDialogFragment.newInstance(wallet).apply {
-                                    onConfirm = {
-                                        this@WalletListBottomSheetDialogFragment.onWalletClickListener?.invoke(wallet)
-                                        this@WalletListBottomSheetDialogFragment.dismiss()
-                                    }
-                                }.show(parentFragmentManager, NoKeyWarningBottomSheetDialogFragment.TAG)
-                            } else {
-                                onWalletClickListener?.invoke(wallet)
-                                dismiss()
-                            }
-                        },
-                        onCancel = {
-                            dismiss()
                         }
-                    )
                 }
             }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight =
-                    requireContext().realSize().y - requireContext().statusBarHeight() - requireContext().navigationBarHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-        }
-    }
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, R.style.MixinBottomSheet)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-            window.setGravity(Gravity.BOTTOM)
-            window.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
+            WalletListScreen(
+                wallets = wallets,
+                excludeWalletId = excludeWalletId,
+                onQueryChanged = { query ->
+                    lifecycleScope.launch {
+                        searchQuery.emit(query)
+                    }
+                },
+                onWalletClick = { wallet ->
+                    if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
+                        NoKeyWarningBottomSheetDialogFragment.newInstance(wallet).apply {
+                            onConfirm = {
+                                this@WalletListBottomSheetDialogFragment.onWalletClickListener?.invoke(wallet)
+                                this@WalletListBottomSheetDialogFragment.dismiss()
+                            }
+                        }.show(parentFragmentManager, NoKeyWarningBottomSheetDialogFragment.TAG)
+                    } else {
+                        onWalletClickListener?.invoke(wallet)
+                        dismiss()
+                    }
+                },
+                onCancel = {
+                    dismiss()
+                }
             )
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.let { window ->
-            SystemUIManager.lightUI(window, !requireContext().isNightMode())
-        }
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
-
-    override fun dismiss() {
-        dismissAllowingStateLoss()
-    }
-
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    dismissAllowingStateLoss()
-                }
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-        }
 
     fun setOnWalletClickListener(listener: (Web3Wallet?) -> Unit) {
         onWalletClickListener = listener
+    }
+
+    override fun showError(error: String) {
     }
 
     companion object {
@@ -249,7 +188,8 @@ fun WalletListScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier
+        .fillMaxSize()) {
         SearchBar(
             query = query,
             onQueryChanged = {
@@ -260,7 +200,13 @@ fun WalletListScreen(
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
         )
-        Column(modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp).fillMaxSize().verticalScroll(rememberScrollState())) {
+
+        Column(
+            modifier = Modifier
+                .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
                 when (item) {
@@ -273,6 +219,7 @@ fun WalletListScreen(
                             }
                         )
                     }
+
                     is WalletListItem.RegularWallet -> {
                         val wallet = item.wallet
                         if (wallet.isImported()) {

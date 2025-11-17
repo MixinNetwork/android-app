@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
-import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -195,9 +194,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         jobManager.addJobInBackground(SyncOutputJob())
         lifecycleScope.launch {
             binding.apply {
-                if (requireActivity() !is WalletActivity){
-                    root.fitsSystemWindows = false
-                }
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
@@ -511,6 +507,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     token = token,
                                     amount = amount,
                                     toAddress = toAddress,
+                                    toUser = user,
                                     chainToken = chainToken,
                                     onTxhash = { _, serializedTx ->
                                     },
@@ -619,7 +616,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     renderTitle(requireNotNull(toAddress), addressTag)
                 }
                 TransferType.WEB3 -> {
-                    renderTitle(requireNotNull(toAddress))
+                    if (user != null) {
+                        titleView.setSubTitle(getString(R.string.Send_To_Title), user)
+                    } else {
+                        renderTitle(requireNotNull(toAddress))
+                    }
                 }
                 TransferType.BIOMETRIC_ITEM -> {
                     assetBiometricItem?.let { item ->

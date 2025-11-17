@@ -287,6 +287,7 @@
     <string name="Conversation_not_found">找不到该会话</string>
     <string name="copied_to_clipboard">已拷贝</string>
     <string name="Copy">复制</string>
+    <string name="Copy_Invoice">复制票据</string>
     <string name="Copy_hash">复制 Hash</string>
     <string name="Copy_invite">复制邀请链接</string>
     <string name="Copy_link">复制链接</string>
@@ -475,6 +476,11 @@
     <string name="error_unknown_with_code">错误：%1$d</string>
     <string name="error_unknown_with_message">错误：%1$s</string>
     <string name="error_used_phone">错误 20122：电话号码已经被占用。</string>
+    <string name="error_watch_address_not_supported">错误 10633：当前地址为合约地址或交易所地址，暂不支持观察。</string>
+    <string name="error_invalid_referral_code">错误 10730：无效的邀请码</string>
+    <string name="error_already_bonded_referral_code">错误 10731：当前账户已绑定邀请码，无法修改绑定。</string>
+    <string name="error_cannot_apply_your_own_referral_code">错误 10732：不可绑定自己的邀请码</string>
+    <string name="error_inviter_plan_expired">错误 10737：邀请人的会员已过期</string>
     <string name="error_user_invalid_format">用户数据不合法</string>
     <string name="error_withdrawal_memo_format_incorrect">错误 20131：提现备注格式不正确</string>
     <string name="error_withdrawal_suspend">错误 20137：提现暂停</string>
@@ -603,6 +609,7 @@
     <string name="Live">直播</string>
     <string name="live_permission">Mixin 需要使用出现在其它应用上的权限以在画中画模式中播放视频。</string>
     <string name="live_shareable_false">该直播已被设置为不允许转发</string>
+    <string name="system_time_is_unusual">系统时间异常</string>
     <string name="loading_time">检测到系统时间异常，请校正后再继续使用</string>
     <string name="Local_IP">本地 IP</string>
     <string name="Location">位置</string>
@@ -1388,6 +1395,7 @@
     <string name="send_to_address_description">转到我地址薄中的地址，地址受到 PIN 保护，避免地址钓鱼攻击。</string>
     <string name="send_to_my_wallet_description">使用加密网络发送到我的另一个钱包。</string>
     <string name="send_to_contact_description">转给我的 Mixin 好友，转账隐私、零手续费且秒到账。</string>
+    <string name="send_to_mixin_contact_description">转到 Mixin 好友的普通钱包，转账快捷又方便。</string>
     <string name="send_to_privacy_wallet_description">转到我的隐私钱包，保护资产的隐私和安全，避免各种潜在风险。</string>
     <string name="Withdrawal_Suspended">%1$s 提现暂停</string>
     <string name="Withdrawal_Suspended_Content">%1$s 提现已暂停，可能的原因是因为节点故障、区块链网络硬分叉或者拥堵，请耐心等候并稍后重试</string>
@@ -1530,6 +1538,7 @@
     <string name="From_address_desc">从其他钱包或交易所转入</string>
     <string name="NO_COLLECTIBLES">没有藏品</string>
     <string name="Collection">合集</string>
+    <string name="Collectible">合集</string>
     <string name="HASH">哈希</string>
     <string name="Collectible_Hash">藏品哈希</string>
     <string name="Swap">交易</string>
@@ -1874,7 +1883,7 @@
     <string name="tag_placeholder">输入数字地址标签（Tag），如果没有请输入任意非 0 数字。</string>
     <string name="withdrawal_label_placeholder">使用一个独特的标签来帮助您找到这个地址，例如钱包、交易所或者朋友的名称。</string>
     <string name="Network_Fee">网络费用</string>
-    <string name="optional_note">转账备注（可选）</string>
+    <string name="Note_Optional">转账备注（可选）</string>
     <string name="add_a_note">添加转账备注</string>
     <string name="Edit_Note">修改转账备注</string>
     <string name="Delete_Note">删除转账备注</string>
@@ -1945,7 +1954,7 @@
     <string name="membership_benefit_safe_members">每个金库最多 %1$d 个共管人，所有金库最多 %2$d 个共管人。</string>
     <string name="membership_benefit_free_recovery_service">资产恢复服务免费使用。</string>
     <string name="membership_benefit_paid_recovery_service">支付 %1$d Mixin Stars 使用资产恢复服务。</string>
-    <string name="Invoice">账单</string>
+    <string name="Invoice">票据</string>
     <string name="Invoices">账单</string>
     <string name="invoice_renew_plan">续订%1$s会员</string>
     <string name="invoice_upgrade_plan">升级到%1$s</string>
@@ -1983,6 +1992,8 @@
     <string name="add_wallet">导入钱包</string>
     <string name="fetching_in_to_your_wallet">正在查找你的钱包…</string>
     <string name="importing_into_your_wallet">正在导入到您的钱包…</string>
+    <string name="Fetching_address">查询地址…</string>
+    <string name="Fetch_Failed">查询失败</string>
     <string name="fetching_shouldnt_take_long">这应该不会花太长时间。</string>
     <string name="import_mnemonic_phrase">导入助记词</string>
     <string name="Import_wallets_from_another_wallet">从其他钱包导入钱包。</string>
@@ -2050,6 +2061,7 @@
     <string name="Set_Amount">设置金额</string>
     <string name="BLOCK_CONFIRMATIONS">最小区块确认</string>
     <string name="MINIMUM_DEPOSIT">最小充值数</string>
+    <string name="MAXIMUM_DEPOSIT">最大充值数</string>
     <string name="Deposit_to_Mixin">充值 %1$s 到 Mixin</string>
     <string name="Deposit_to_Mixin_sub">扫码充值 %1$s</string>
     <string name="LIGHTNING_ADDRESS">闪电网络地址</string>
@@ -2059,9 +2071,35 @@
     <string name="lightning_address_tip_3">主流闪电网络钱包都支持。</string>
     <string name="lightning_address_mao_tip">每一个 MAO 域名对应一个闪电网络地址，如果您拥有 MAO 域名，可以按 name@mao.id 格式接收闪电网络转账。了解更多</string>
     <string name="Lightning_link">https://support.mixin.one/zh/article/lightning-address-1fzf8s4/</string>
+    <string name="referral_url">https://support.mixin.one/zh/article/5aac5l2v6i635b6x6yka6k35aww5yqx-2tmv1n/</string>
     <string name="Copy_Address">复制地址</string>
     <string name="Enter_Amount">输入金额</string>
     <string name="mixin_payment_title">📣 Mixin 收款</string>
     <string name="payment_details">💰 金额：%1$s\n🌐 网络：%2$s\n🤝 收款人：%3$s</string>
     <string name="pay_now">立刻支付</string>
+    <string name="referral_program_introduction_1">最高 60% 交易手续费分佣。</string>
+    <string name="referral_program_introduction_2">会员返佣单比最高 1000 USD。</string>
+    <string name="referral_program_introduction_3">返佣资格终生有效。</string>
+    <string name="referral_code_applied_introduction_1">最高 50%% 交易手续费返现</string>
+    <string name="referral_code_applied_introduction_2">升级会员返现单笔最高 1000 USD</string>
+    <string name="referral_code_applied_introduction_3">自动获得后续所有新权益</string>
+    <string name="apply_referral_code">绑定邀请码</string>
+    <string name="bind_referral_code">绑定邀请码</string>
+    <string name="apply_referral_code_benefit">将邀请码绑定到你的账户，解锁 Mixin 专属福利。</string>
+    <string name="referral_program_introduction_header">参与邀请计划，邀请好友分享赚币：</string>
+    <string name="referral_program_introduction_footer">* 推荐奖励仅限于付费 Mixin One 会员。了解更多</string>
+    <string name="referral_code_applied_footer">所有返现将按月结算到您的 Mixin 隐私钱包。了解更多</string>
+    <string name="referral_code_applied_header">🎉 邀请码绑定成功，您已自动获得以下权益：</string>
+    <string name="referral_code_applied">绑定成功</string>
+    <string name="got_it">知道了</string>
+    <string name="upgrade_membership_now">升级会员</string>
+    <string name="Referral">邀请</string>
+    <string name="referral_banner">邀请好友赢取最高 60% 手续费分佣！</string>
+    <string name="referral_hint">邀请码</string>
+    <string name="bind_referral_footer">手续费按月、按实际消耗的手续费币种和金额汇总返还到您的 Mixin 隐私钱包，阅读文档了解更多。</string>
+    <string name="input_referral_code_hint">输入邀请码？</string>
+    <string name="referral_description">邀请好友赚币</string>
+    <string name="Address_not_found">该联系人还没有注册普通钱包</string>
+    <string name="Invitee_Commission">被邀请人返现</string>
+    <string name="Inviter">邀请人</string>
 </resources>

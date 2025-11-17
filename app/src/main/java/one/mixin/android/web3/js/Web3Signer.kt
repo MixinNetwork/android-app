@@ -363,7 +363,7 @@ object Web3Signer {
     }
 
     fun signSolanaMessage(
-        priv: ByteArray,
+        secret: ByteArray,
         message: String,
     ): String {
         val m =
@@ -372,14 +372,14 @@ object Web3Signer {
             } catch (e: Exception) {
                 message.removePrefix("0x").hexStringToByteArray()
             }
-        return signSolanaMessage(priv, m)
+        return signSolanaMessage(secret, m)
     }
 
     fun signSolanaMessage(
-        priv: ByteArray,
+        secret: ByteArray,
         message: ByteArray,
     ): String {
-        val keyPair = Keypair.fromSecretKey(priv)
+        val keyPair = Keypair.fromSecretKey(secret)
         val sig = keyPair.sign(message)
         return sig.toHex()
     }

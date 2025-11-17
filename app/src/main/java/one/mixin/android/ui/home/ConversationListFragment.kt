@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -177,13 +178,8 @@ class ConversationListFragment : LinkFragment() {
     private var enterJob: Job? = null
 
     companion object {
-        @Volatile
-        private var INSTANCE: ConversationListFragment? = null
-
-        fun getInstance(): ConversationListFragment {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: ConversationListFragment().also { INSTANCE = it }
-            }
+        fun newInstance(): ConversationListFragment {
+            return ConversationListFragment()
         }
 
         const val TAG = "ConversationListFragment"
@@ -207,7 +203,7 @@ class ConversationListFragment : LinkFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        navigationController = NavigationController(activity as MainActivity)
+        navigationController = NavigationController()
         binding.messageRv.adapter = messageAdapter
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
@@ -330,7 +326,7 @@ class ConversationListFragment : LinkFragment() {
             if (cid != null) {
                 openCircleEdit(cid)
             } else {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
         }
 
@@ -432,7 +428,7 @@ class ConversationListFragment : LinkFragment() {
                 openSearch()
             }
             searchBar.setOnGroupClickListener {
-                navigationController.pushContacts()
+                navigationController.pushContacts(requireActivity())
             }
             searchBar.setOnAddClickListener {
                 addCircle(it.context)
@@ -459,7 +455,7 @@ class ConversationListFragment : LinkFragment() {
             searchBar.setSearchViewListener(
                 object : MaterialSearchView.SearchViewListener {
                     override fun onSearchViewClosed() {
-                        navigationController.hideSearch()
+                        navigationController.hideSearch(parentFragmentManager)
                     }
 
                     override fun onSearchViewOpened() {
@@ -496,7 +492,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         if (!binding.searchBar.isOpen) {
-            navigationController.removeSearch()
+            navigationController.removeSearch(parentFragmentManager)
         }
     }
 
@@ -680,6 +676,7 @@ class ConversationListFragment : LinkFragment() {
 
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationItem: ConversationItem) {
+        if (!isAdded) return
         val conversationId = conversationItem.conversationId
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
@@ -703,6 +700,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         viewBinding.deleteTv.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
             alertDialogBuilder()
                 .setTitle(getString(R.string.conversation_delete_title, conversationItem.getConversationName()))
                 .setMessage(getString(R.string.conversation_delete_tip))
@@ -1270,75 +1268,83 @@ class ConversationListFragment : LinkFragment() {
         }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        val choices =
-            arrayOf(
-                getString(R.string.one_hour),
-                resources.getQuantityString(R.plurals.Hour, 8, 8),
-                getString(R.string.one_week),
-                getString(R.string.one_year),
-            )
-        var duration = MUTE_8_HOURS
-        var whichItem = 1 // default choice
-        alertDialogBuilder()
-            .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.Cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                if (conversationItem.isGroupConversation()) {
-                    lifecycleScope.launch {
-                        handleMixinResponse(
-                            invokeNetwork = {
-                                conversationListViewModel.mute(
-                                    duration.toLong(),
-                                    conversationId = conversationItem.conversationId,
-                                )
-                            },
-                            successBlock = { response ->
-                                conversationListViewModel.updateGroupMuteUntil(
-                                    conversationItem.conversationId,
-                                    response.data!!.muteUntil,
-                                )
-                                toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
-                            },
-                        )
-                    }
-                } else {
-                    val account = Session.getAccount()
-                    account?.let {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }) {
+            val choices =
+                arrayOf(
+                    getString(R.string.one_hour),
+                    resources.getQuantityString(R.plurals.Hour, 8, 8),
+                    getString(R.string.one_week),
+                    getString(R.string.one_year),
+                )
+            var duration = MUTE_8_HOURS
+            var whichItem = 1 // default choice
+            val builder = alertDialogBuilder()
+                .setTitle(getString(R.string.contact_mute_title))
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                    if (conversationItem.isGroupConversation()) {
                         lifecycleScope.launch {
                             handleMixinResponse(
                                 invokeNetwork = {
                                     conversationListViewModel.mute(
                                         duration.toLong(),
-                                        senderId = it.userId,
-                                        recipientId = conversationItem.ownerId,
+                                        conversationId = conversationItem.conversationId,
                                     )
                                 },
                                 successBlock = { response ->
-                                    conversationListViewModel.updateMuteUntil(
-                                        conversationItem.ownerId,
+                                    conversationListViewModel.updateGroupMuteUntil(
+                                        conversationItem.conversationId,
                                         response.data!!.muteUntil,
                                     )
-                                    toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                                 },
                             )
                         }
+                    } else {
+                        val account = Session.getAccount()
+                        account?.let {
+                            lifecycleScope.launch {
+                                handleMixinResponse(
+                                    invokeNetwork = {
+                                        conversationListViewModel.mute(
+                                            duration.toLong(),
+                                            senderId = it.userId,
+                                            recipientId = conversationItem.ownerId,
+                                        )
+                                    },
+                                    successBlock = { response ->
+                                        conversationListViewModel.updateMuteUntil(
+                                            conversationItem.ownerId,
+                                            response.data!!.muteUntil,
+                                        )
+                                        toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    dialog.dismiss()
+                }
+                .setSingleChoiceItems(choices, whichItem) { _, which ->
+                    whichItem = which
+                    when (which) {
+                        0 -> duration = MUTE_1_HOUR
+                        1 -> duration = MUTE_8_HOURS
+                        2 -> duration = MUTE_1_WEEK
+                        3 -> duration = MUTE_1_YEAR
                     }
                 }
 
-                dialog.dismiss()
+            if (!isAdded) {
+                return@launch
             }
-            .setSingleChoiceItems(choices, whichItem) { _, which ->
-                whichItem = which
-                when (which) {
-                    0 -> duration = MUTE_1_HOUR
-                    1 -> duration = MUTE_8_HOURS
-                    2 -> duration = MUTE_1_WEEK
-                    3 -> duration = MUTE_1_YEAR
-                }
-            }
-            .show()
+            builder.show()
+        }
     }
 
     private fun unMute(conversationItem: ConversationItem) {

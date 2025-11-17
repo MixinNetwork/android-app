@@ -35,6 +35,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
@@ -223,6 +224,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
 
         contentView.doOnPreDraw {
+            binding.opsLl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = requireContext().navigationBarHeight() + 24.dp
+            }
             behavior?.peekHeight = binding.title.height + binding.scrollContent.height -
                 (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
         }

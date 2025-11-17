@@ -54,7 +54,6 @@ import one.mixin.android.ui.home.web3.market.TopPercentageAdapter
 import one.mixin.android.ui.home.web3.market.Web3MarketAdapter
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.search.SearchExploreFragment
-import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
@@ -343,6 +342,10 @@ class MarketFragment : Web3Fragment(R.layout.fragment_market) {
     }
 
     override fun updateUI() {
+        if (!::jobManager.isInitialized) {
+            Timber.e("JobManager not initialized yet, skipping updateUI")
+            return
+        }
         jobManager.addJobInBackground(RefreshMarketsJob())
         jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
         jobManager.addJobInBackground(RefreshMarketsJob("favorite"))

@@ -162,7 +162,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
                 if (doWhenInvokeNetworkSuccess(response, pin)) {
                     dismiss()
-                    toast(R.string.Successful)
+                    if (skip.not()) {
+                        toast(R.string.Successful)
+                    }
                 }
             } else {
                 handleWithErrorCodeAndDesc(pin, requireNotNull(response.error))
@@ -260,6 +262,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     fun setCallback(cb: Callback) {
         callback = cb
     }
+
+    protected var skip = false
 
     // Keeping these callback methods can only be called at most once.
     open class Callback {

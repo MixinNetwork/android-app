@@ -4,10 +4,10 @@ import android.os.Parcelable
 import com.github.salomonbrys.kotson.jsonDeserializer
 import kotlinx.parcelize.Parcelize
 import org.web3j.protocol.core.methods.request.Transaction
+import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.BigInteger
-import org.web3j.utils.Convert
 
 @Parcelize
 data class WCEthereumTransaction(

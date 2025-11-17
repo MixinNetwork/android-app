@@ -22,9 +22,9 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
             r.icon_url as receive_asset_icon_url,
             r.symbol as receive_asset_symbol
         FROM transactions w 
-        LEFT JOIN tokens c ON c.asset_id = w.chain_id
-        LEFT JOIN tokens s ON s.asset_id = w.send_asset_id
-        LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id
+        LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = :walletId
+        LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
+        LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
         WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND (s.wallet_id = :walletId OR c.wallet_id = :walletId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
         AND w.address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)
         ORDER BY w.transaction_at DESC 

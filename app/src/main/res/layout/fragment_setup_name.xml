@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/ph"
@@ -62,6 +61,7 @@
             android:textColorHint="?attr/text_assist"
             android:textSize="16sp"
             android:inputType="text"
+            android:maxLength="48"
             android:imeOptions="actionDone"
             tools:ignore="Autofill,TextFields" />
     </com.google.android.material.textfield.TextInputLayout>

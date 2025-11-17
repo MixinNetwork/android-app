@@ -79,7 +79,7 @@ fun AppCard(
     val textSize = (context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).textDp)
     val titleSize = ((context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14) + 2).textDp)
 
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         Column(modifier = Modifier
             .width(width?.let { with(LocalDensity.current) { it.toDp() } } ?: min(340.dp, max(240.dp, (screenWidthDp * 3 / 4))))
             .combinedClickable(

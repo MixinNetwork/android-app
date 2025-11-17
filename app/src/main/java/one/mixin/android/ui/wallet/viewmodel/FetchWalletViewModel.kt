@@ -520,11 +520,10 @@ class FetchWalletViewModel @Inject constructor(
         privateKey: String,
         category: String
     ): Web3AddressRequest {
+        val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
         return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-            val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
             createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
         } else {
-            val privateKeyBytes = Base58.decode(privateKey)
             createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
         }
     }
@@ -542,8 +541,6 @@ class FetchWalletViewModel @Inject constructor(
                 destination = destination,
                 chainId = chainId,
                 path = path,
-                signature = null,
-                timestamp = null
             )
         }
         val now = Instant.now()

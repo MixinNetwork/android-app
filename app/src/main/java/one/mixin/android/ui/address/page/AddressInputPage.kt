@@ -49,7 +49,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
@@ -130,7 +129,8 @@ fun AddressInputPage(
                             textAlign = TextAlign.Start
                         ),
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
                         ),
                         minLines = 3,
                         maxLines = 3

@@ -52,7 +52,7 @@ fun toTimeIntervalIndex(interval: Long): Pair<Int, Int> =
 
 fun Long?.getTimeInterval(): String {
     return when {
-        this == null || this <= 0L -> "off"
+        this == null || this <= 0L -> MixinApplication.appContext.getString(R.string.Off)
         else -> toTimeInterval(this)
     }
 }

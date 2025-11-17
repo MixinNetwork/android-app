@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -102,6 +101,12 @@ fun MemberUpgradePaymentButton(
                 shape = RoundedCornerShape(24.dp),
                 onClick = {},
                 interactionSource = interactionSource,
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF50BD5C)),
             ) {
                 Image(
@@ -166,6 +171,12 @@ fun MemberUpgradePaymentButton(
                     .padding(16.dp)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
+                ),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = when {
                         selectedPlan == Plan.PROSPERITY -> MixinAppTheme.colors.accent

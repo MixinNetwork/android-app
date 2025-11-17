@@ -16,7 +16,7 @@ class RoundBackgroundColorSpan(private val bgColor: Int, private val textColor: 
         end: Int,
         fm: FontMetricsInt?,
     ): Int {
-        return (paint.measureText(text, start, end).toInt() + 12.dp)
+        return (paint.measureText(text, start, end).toInt() + 14.dp)
     }
 
     override fun draw(
@@ -35,16 +35,16 @@ class RoundBackgroundColorSpan(private val bgColor: Int, private val textColor: 
         canvas.drawRoundRect(
             RectF(
                 x,
-                (top + paint.textSize * 0.02).toFloat(),
-                x + (paint.measureText(text, start, end).toInt() + 8.dp),
-                (bottom - paint.textSize * 0.02).toFloat(),
+                (top + paint.textSize * 0.15).toFloat(),
+                x + (paint.measureText(text, start, end).toInt() + 9.dp),
+                (bottom - paint.textSize * 0.15).toFloat(),
             ),
             4.dp.toFloat(),
             4.dp.toFloat(),
             paint,
         )
         paint.color = textColor
-        canvas.drawText(text, start, end, (x + 4.dp), (y + paint.textSize * 0.02).toFloat(), paint)
+        canvas.drawText(text, start, end, (x + 5.dp), (y + paint.textSize * 0.04).toFloat(), paint)
         paint.color = originalColor
     }
 }

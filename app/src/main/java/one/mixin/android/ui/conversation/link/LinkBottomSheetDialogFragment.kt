@@ -72,6 +72,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.parser.BalanceError
@@ -114,8 +115,8 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -696,6 +697,22 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     else -> showError()
                 }
             }
+        } else if (url.startsWith(Scheme.MIXIN_REFERRALS, true) || url.startsWith(Scheme.HTTPS_REFERRALS, true)) {
+            val uri = url.toUri()
+            val referralCode = uri.lastPathSegment
+            if (uri.pathSegments.size == 1) {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance("")
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            } else if (referralCode.isNullOrBlank()) {
+                showError()
+            } else {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance(referralCode)
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            }
         } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
@@ -1224,7 +1241,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
     @SuppressLint("SetTextI18n")
     override fun showError(
-        @StringRes errorRes: Int
+        @StringRes errorRes: Int,
     ) {
         if (!isAdded) return
 

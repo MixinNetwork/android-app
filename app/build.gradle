@@ -16,9 +16,9 @@ plugins {
 }
 
 def versionMajor = 3
-def versionMinor = 4
-def versionPatch = 0
-def versionBuild = 3
+def versionMinor = 5
+def versionPatch = 2
+def versionBuild = 0
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -61,6 +61,7 @@ android {
         }
 
         lintOptions{
+            disable "ObjectAnimatorBinding", "AnimatorKeep"
             disable 'MissingTranslation'
         }
 
@@ -200,6 +201,7 @@ android {
         jniLibs {
             useLegacyPackaging true
         }
+        exclude 'lib/x86_64/libcurve25519.so'
     }
 
     configurations.configureEach {

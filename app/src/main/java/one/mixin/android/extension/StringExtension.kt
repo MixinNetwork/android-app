@@ -60,11 +60,6 @@ private val radii = FloatArray(8)
 fun String.generateQRCode(
     qrSize: Int,
     padding: Int = 32.dp,
-): Pair<Bitmap, Int>  = generateQRCode(qrSize, padding, padding)
-
-fun String.generateQRCode(
-    qrSize: Int,
-    padding: Int = 32.dp,
     innerPadding: Int = 0.dp,
 ): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }

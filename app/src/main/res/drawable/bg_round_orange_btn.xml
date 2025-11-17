@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="#33FFFFFF">
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#33FFFFFF">
     <item>
-        <shape android:shape="rectangle">
-            <solid android:color="#F6A417"/>
-            <corners android:radius="20dp"/>
-        </shape>
+        <selector>
+            <item android:state_enabled="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/bg_button_orange" />
+                    <corners android:radius="24dp" />
+                </shape>
+            </item>
+            <item android:state_enabled="false">
+                <shape android:shape="rectangle">
+                    <solid android:color="#E3E4E5" />
+                    <corners android:radius="24dp" />
+                </shape>
+            </item>
+        </selector>
     </item>
 </ripple>

@@ -14,6 +14,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
@@ -156,7 +157,7 @@ class TransferErrorContent : LinearLayout {
                 total.isVisible = false
             }
             sender.setContent(R.string.Sender, Web3Signer.evmAddress)
-            network.setContent(R.string.network, getChainName(asset.chainId, asset.chainName, asset.assetKey) ?: "")
+            network.setContent(R.string.network, getChainNetwork(assetId = asset.assetId, asset.chainId, asset.assetKey) ?: "")
         }
     }
 

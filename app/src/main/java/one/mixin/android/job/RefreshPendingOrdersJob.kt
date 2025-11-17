@@ -4,7 +4,9 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class RefreshPendingOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
+class RefreshPendingOrdersJob(
+    val walletId: String?,
+) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
         private const val serialVersionUID = 2L
         const val GROUP = "RefreshPendingOrdersJob"
@@ -23,7 +25,7 @@ class RefreshPendingOrdersJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstan
         }
 
     private suspend fun refreshPendingOrder(orderId: String) {
-        val response = routeService.orderById(orderId)
+        val response = routeService.orderById(orderId, walletId)
         if (response.isSuccess && response.data != null) {
             swapOrderDao.insertSuspend(response.data!!)
         }

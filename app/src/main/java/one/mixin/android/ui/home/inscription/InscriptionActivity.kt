@@ -14,7 +14,6 @@ import android.graphics.RectF
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
-import android.util.Base64
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
@@ -54,6 +53,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.ActivityInscriptionBinding
 import one.mixin.android.databinding.ViewInscriptionMenuBinding
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
@@ -137,7 +137,8 @@ class InscriptionActivity : BaseActivity() {
                 ::callbackSend,
             )
         SystemUIManager.lightUI(window, false)
-        window.statusBarColor = Color.TRANSPARENT
+        SystemUIManager.setSafePadding(window, Color.TRANSPARENT)
+        SystemUIManager.fullScreen(window)
         binding = ActivityInscriptionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
@@ -370,7 +371,7 @@ class InscriptionActivity : BaseActivity() {
             if (data != null) {
                 val resultUri = UCrop.getOutput(data)
                 val bitmap = resultUri?.getCapturedImage(this.contentResolver)
-                update(Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP))
+                update(bitmap?.toBytes()?.base64RawURLEncode() ?: "")
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {
