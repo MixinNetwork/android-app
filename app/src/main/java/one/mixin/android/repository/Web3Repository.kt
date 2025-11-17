@@ -21,6 +21,7 @@ import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -51,8 +52,37 @@ constructor(
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     suspend fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)
-    
-    suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>) = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds)
+
+    suspend fun findAndRefreshWeb3TokenItem(walletId: String, assetId: String): Web3TokenItem? {
+        val localToken = web3TokenDao.web3TokenItemById(walletId, assetId)
+        if (localToken != null) {
+            return localToken
+        }
+
+        return try {
+            val token = tokenRepository.findOrSyncAsset(assetId) ?: return null
+            val w = token.toWeb3TokenItem(walletId)
+            web3TokenDao.insert(
+                Web3Token(
+                    walletId = walletId,
+                    assetId = token.assetId,
+                    chainId = token.chainId,
+                    assetKey = token.assetKey ?: "",
+                    name = token.name,
+                    symbol = token.symbol,
+                    iconUrl = token.chainIconUrl?:"",
+                    priceUsd = token.priceUsd,
+                    precision = token.precision,
+                    balance = "0",
+                    changeUsd = "0"
+                )
+            )
+            w
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        }
+    }
 
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 

@@ -33,11 +33,13 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isEthereumOrSolURLString
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openPermissionSetting
@@ -45,6 +47,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.SyncOutputJob
+import one.mixin.android.pay.ExternalTransfer
+import one.mixin.android.pay.parseExternalTransferUri
 import one.mixin.android.ui.address.FetchUserAddressFragment.Companion.ARGS_TO_USER
 import one.mixin.android.ui.address.page.AddressInputPage
 import one.mixin.android.ui.address.page.LabelInputPage
@@ -54,6 +58,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -68,6 +73,8 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -79,6 +86,84 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
         const val ARGS_WALLET = "args_wallet"
+    }
+
+    private suspend fun handleWeb3ExternalTransfer(url: String) {
+        Timber.d("[$TAG] handleWeb3ExternalTransfer url=%s", url)
+        val ext = parseExternalForWeb3(url) ?: run {
+            Timber.e("[$TAG] handleWeb3ExternalTransfer parseExternalForWeb3 returned null, url=%s", url)
+            toast(R.string.Data_error)
+            return
+        }
+        Timber.d("[$TAG] handleWeb3ExternalTransfer parsed assetId=%s destination=%s amount=%s", ext.assetId, ext.destination, ext.amount)
+        val t = web3ViewModel.findAndRefreshWeb3TokenItem(Web3Signer.currentWalletId, ext.assetId)
+        if (t == null) {
+            Timber.e("[$TAG] handleWeb3ExternalTransfer web3 token not found for assetId=%s", ext.assetId)
+            toast(R.string.Data_error)
+            return
+        }
+        val c = web3ViewModel.findAndRefreshWeb3TokenItem(Web3Signer.currentWalletId, t.chainId)
+        if (c == null) {
+            Timber.e("[$TAG] handleWeb3ExternalTransfer web3 chain token not found for chainId=%s", t.chainId)
+            toast(R.string.Data_error)
+            return
+        }
+        val from = web3ViewModel.getAddressesByChainId(walletId = Web3Signer.currentWalletId, c.chainId)?.destination
+        if (from == null) {
+            Timber.e("[$TAG] handleWeb3ExternalTransfer from address not found for chainId=%s", c.chainId)
+            toast(R.string.Data_error)
+            return
+        }
+        val to = ext.destination
+        val amount = ext.amount
+        if (amount.isNullOrBlank() || amount == "0") {
+            navigateToInputFragmentWithBundle(
+                Bundle().apply {
+                    putString(InputFragment.ARGS_FROM_ADDRESS, from)
+                    putString(InputFragment.ARGS_TO_ADDRESS, to)
+                    putParcelable(InputFragment.ARGS_WEB3_TOKEN, t)
+                    putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, c)
+                    putParcelable(ARGS_WALLET, wallet)
+                }
+            )
+        } else {
+            val transaction = t.buildTransaction(rpc, from, to, amount)
+            showGasCheckAndBrowserBottomSheetDialogFragment(
+                requireActivity(),
+                transaction,
+                amount = amount,
+                token = t,
+                chainToken = c,
+                toAddress = to,
+                onTxhash = { _, _ -> },
+                onDismiss = { _ -> }
+            )
+        }
+    }
+
+    private suspend fun parseExternalForWeb3(url: String): ExternalTransfer? {
+        return parseExternalTransferUri(
+            url,
+            validateAddress = { assetId, chainId, destination ->
+                web3ViewModel.validateExternalAddress(assetId, chainId, destination, null).data
+            },
+            getFee = { assetId, destination ->
+                web3ViewModel.getFees(assetId, destination).data
+            },
+            findAssetIdByAssetKey = { assetKey ->
+                web3ViewModel.findAssetIdByAssetKey(assetKey)
+            },
+            getAssetPrecisionById = { assetId ->
+                web3ViewModel.getAssetPrecisionById(assetId).data
+            },
+            balanceCheck = { _, _, _, _ ->
+               // do nothing
+            },
+            parseLighting = { ln ->
+                val r = web3ViewModel.paySuspend(one.mixin.android.api.request.TransferRequest(assetId = one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, rawPaymentUrl = ln))
+                r.data
+            }
+        )
     }
 
     private val token: TokenItem? by lazy {
@@ -147,6 +232,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var rpc: Rpc
 
     enum class TransferDestination {
         Initial,
@@ -327,12 +415,17 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     navController.navigate(TransferDestination.Address.name)
                                 },
                                 onSend = { address ->
+                                    Timber.d("[$TAG] onSend address=%s token=%s web3Token=%s", address, token, web3Token)
                                     errorInfo = null
                                     if (token != null && (address.isExternalTransferUrl() || address.isLightningUrl())) {
                                         LinkBottomSheetDialogFragment.newInstance(address).show(
                                             parentFragmentManager,
                                             LinkBottomSheetDialogFragment.TAG
                                         )
+                                    } else if (web3Token != null && address.isEthereumOrSolURLString()) {
+                                        lifecycleScope.launch {
+                                            handleWeb3ExternalTransfer(address)
+                                        }
                                     } else {
                                         val memoEnabled =
                                             token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE
@@ -340,6 +433,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             navController.navigate("${TransferDestination.SendMemo.name}?address=${address}")
                                         } else if (web3Token != null) {
                                             lifecycleScope.launch {
+                                                Timber.d("[$TAG] onSend web3 normal address=%s", address)
                                                 web3Token?.let { token ->
                                                     val fromAddress = web3ViewModel.getAddressesByChainId(token.walletId, token.chainId)?.destination
                                                     if (fromAddress.isNullOrBlank()) {
@@ -359,6 +453,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             }
                                         } else {
                                             token?.let { t ->
+                                                Timber.d("[$TAG] onSend normal token address=%s", address)
                                                 validateAndNavigateToInput(
                                                     assetId = t.assetId,
                                                     chainId = t.chainId,
@@ -539,13 +634,19 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     private fun handleScanResult(data: Intent?, isAddr: Boolean = true) {
         if (data == null) return
-
-        data.getStringExtra(CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT)?.let { result ->
+        data.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT)?.let { result ->
+            Timber.d("[$TAG] handleScanResult result=%s currentScanType=%s", result, currentScanType)
             if (token != null && (result.isLightningUrl() || result.isExternalTransferUrl())) {
                 LinkBottomSheetDialogFragment.newInstance(result).show(
                     parentFragmentManager,
                     LinkBottomSheetDialogFragment.TAG
                 )
+                return@let
+            }
+            if (web3Token != null && result.isEthereumOrSolURLString()) {
+                lifecycleScope.launch {
+                    handleWeb3ExternalTransfer(result)
+                }
                 return@let
             }
             when (currentScanType) {

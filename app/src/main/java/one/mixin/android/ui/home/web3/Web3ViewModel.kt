@@ -19,6 +19,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
@@ -43,6 +44,7 @@ import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.Account
@@ -98,6 +100,11 @@ internal constructor(
         web3Repository.web3TokenItemById(walletId, assetId)
     }
 
+
+    suspend fun findAndRefreshWeb3TokenItem(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.findAndRefreshWeb3TokenItem(walletId, assetId)
+    }
+
     fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
         val item = tokenRepository.findAssetItemById(assetId)?.priceUsd
         emit(item)
@@ -131,20 +138,6 @@ internal constructor(
         }
     }
 
-    fun getLatestActiveSignSessions(): List<ConnectionUI> {
-        val v2List =
-            WalletConnectV2.getListOfActiveSessions().mapIndexed { index, wcSession ->
-                ConnectionUI(
-                    index = index,
-                    icon = wcSession.metaData?.icons?.firstOrNull(),
-                    name = wcSession.metaData!!.name.takeIf { it.isNotBlank() } ?: "Dapp",
-                    uri = wcSession.metaData!!.url.takeIf { it.isNotBlank() } ?: "Not provided",
-                    data = wcSession.topic,
-                )
-            }
-        return v2List
-    }
-
     fun dapps(chainId: String): List<Dapp> {
         val gson = GsonHelper.customGson
         val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$chainId", null)
@@ -160,24 +153,6 @@ internal constructor(
             null
         } else {
             firstUrl(query)
-        }
-    }
-
-    private fun updateTokens(chain: String, tokens: List<Web3Token>) {
-        val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
-        val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}" }.toSet()
-
-        val missingTokenIds = tokenMap.keys - newTokenIds
-        missingTokenIds.forEach { tokenId ->
-            val token = tokenMap[tokenId]
-            if (token != null) {
-                tokenMap[tokenId] = token.copy(balance = "0")
-            }
-        }
-
-        tokens.forEach { token ->
-            val tokenId = "${token.chainId}${token.assetKey}"
-            tokenMap[tokenId] = token
         }
     }
 
@@ -197,18 +172,31 @@ internal constructor(
             tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
         }
 
-    suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)
-
     suspend fun getFees(
         id: String,
         destination: String,
     ) = tokenRepository.getFees(id, destination)
 
+    suspend fun validateExternalAddress(
+        assetId: String,
+        chain: String,
+        destination: String,
+        tag: String?,
+    ) = accountRepository.validateExternalAddress(assetId, chain, destination, tag)
+
+    suspend fun findAssetIdByAssetKey(assetKey: String): String? =
+        tokenRepository.findAssetIdByAssetKey(assetKey)
+
+    suspend fun getAssetPrecisionById(assetId: String): MixinResponse<AssetPrecision> =
+        tokenRepository.getAssetPrecisionById(assetId)
+
+    suspend fun paySuspend(request: TransferRequest) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.paySuspend(request)
+        }
+
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
         tokenRepository.findTokenItems(ids)
-
-    suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem> =
-        tokenRepository.findWeb3TokenItems(walletId)
 
     suspend fun findTokensExtra(assetId: String) =
         withContext(Dispatchers.IO) {
@@ -319,7 +307,6 @@ internal constructor(
         }
     }
 
-    suspend fun getWeb3Tx(txhash: String) = assetRepository.getWeb3Tx(txhash)
 
     suspend fun isBlockhashValid(blockhash: String): Boolean =
         withContext(Dispatchers.IO) {
@@ -425,18 +412,6 @@ internal constructor(
         return web3Repository.getAddressesByChainId(walletId, chainId)
     }
 
-    suspend fun getClassicWalletId(): String? = web3Repository.getClassicWalletId()
-
-    suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
-
-    suspend fun findTokensByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
-        return@withContext web3Repository.findWeb3TokenItemsByIds(walletId, assetIds)
-    }
-
-    suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)
-
-    suspend fun getWalletName(walletId: String): String? = web3Repository.findWalletById(walletId)?.name
-
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
@@ -453,8 +428,6 @@ internal constructor(
     suspend fun getPendingRawTransactions(walletId: String) = tokenRepository.getPendingRawTransactions(walletId)
 
     suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
-
-    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = tokenRepository.getPendingRawTransactions(walletId, chainId)
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 
