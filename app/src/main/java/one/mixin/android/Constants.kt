@@ -444,6 +444,8 @@ object Constants {
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
     const val MIXIN_BOND_USER_NAME = "Bond Bot"
 
+    const val MIXIN_FREE_FEE = "mixin free fee"
+
     const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 
     val SAFE_PUBLIC_KEY = listOf(
