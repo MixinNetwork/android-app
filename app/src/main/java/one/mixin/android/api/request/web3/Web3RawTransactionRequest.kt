@@ -11,4 +11,6 @@ data class Web3RawTransactionRequest(
     val from: String?,
     @SerializedName("to")
     val to : String?,
+    @SerializedName("fee_type")
+    val feeType: String? = null,
 )
