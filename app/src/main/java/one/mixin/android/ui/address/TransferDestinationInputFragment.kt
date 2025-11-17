@@ -451,7 +451,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         )
                                     } else if (web3Token != null && address.isEthereumOrSolURLString()) {
                                         lifecycleScope.launch {
+                                            isLoading = true
                                             handleWeb3ExternalTransfer(address)
+                                            isLoading = false
                                         }
                                     } else {
                                         val memoEnabled =
@@ -718,7 +720,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             }
             if (web3Token != null && result.isEthereumOrSolURLString()) {
                 lifecycleScope.launch {
+                    isLoading = true
                     handleWeb3ExternalTransfer(result)
+                    isLoading = false
                 }
                 return@let
             }
