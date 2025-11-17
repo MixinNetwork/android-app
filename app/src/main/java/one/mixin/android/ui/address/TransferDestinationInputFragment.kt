@@ -529,7 +529,12 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     errorInfo = null
                                     if (web3Token != null && address.isEthereumOrSolURLString()) {
                                         lifecycleScope.launch {
-                                            handleWeb3ExternalTransfer(address)
+                                            isLoading = true
+                                            try {
+                                                handleWeb3ExternalTransfer(address)
+                                            } finally {
+                                                isLoading = false
+                                            }
                                         }
                                     } else if (address.isExternalTransferUrl() || address.isLightningUrl()) {
                                         LinkBottomSheetDialogFragment.newInstance(address).show(
@@ -865,7 +870,12 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             Timber.d("[$TAG] handleScanResult result=%s currentScanType=%s", result, currentScanType)
             if (web3Token != null && result.isEthereumOrSolURLString()) {
                 lifecycleScope.launch {
-                    handleWeb3ExternalTransfer(result)
+                    isLoading = true
+                    try {
+                        handleWeb3ExternalTransfer(result)
+                    } finally {
+                        isLoading = false
+                    }
                 }
                 return@let
             }
