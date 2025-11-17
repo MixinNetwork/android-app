@@ -359,7 +359,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     step = Step.Sending
                     val hex = pair.first
                     val hash = Hash.sha3(hex)
-                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, toAddress, token?.assetId)
+                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
                     onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
@@ -371,7 +371,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     val sig = tx.signatures.first { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
                     val rawTx = tx.serialize().base64Encode()
                     if (tx.allSignerSigned()) {
-                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress, token?.assetId)
+                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
                         onTxhash?.invoke(sig, rawTx)
                     }
                     onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
