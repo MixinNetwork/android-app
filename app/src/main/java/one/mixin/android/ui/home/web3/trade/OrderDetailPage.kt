@@ -368,13 +368,31 @@ fun DetailItem(
                             order.assetIconUrl,
                             order.payChainName ?: ""
                         )
-                        DetailItem(
-                            if (order.state == OrderState.SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
-                            "+${if (order.state == OrderState.SUCCESS.value) (order.receiveAmount ?: "0") else (order.expectedReceiveAmount ?: "0")} ${order.receiveAssetSymbol}",
-                            MixinAppTheme.colors.walletGreen,
-                            order.receiveAssetIconUrl,
-                            order.receiveChainName ?: ""
-                        )
+                        
+                        val filledAmount = runCatching { BigDecimal(order.filledReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
+                        val expectedAmount = runCatching { BigDecimal(order.expectedReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
+                        val hasPartialFill = filledAmount > BigDecimal.ZERO && order.state == OrderState.CANCELLED.value
+                        
+                        if (hasPartialFill) {
+                            val pendingAmount = expectedAmount.subtract(filledAmount)
+                            DetailItemMultipleReceive(
+                                label = context.getString(R.string.swap_order_received).uppercase(),
+                                filledAmount = "+${filledAmount.stripTrailingZeros().toPlainString()} ${order.receiveAssetSymbol}",
+                                pendingAmount = if (pendingAmount > BigDecimal.ZERO) "+${pendingAmount.stripTrailingZeros().toPlainString()} ${order.assetSymbol}" else null,
+                                icon = order.receiveAssetIconUrl,
+                                chain = order.receiveChainName ?: "",
+                                pendingChain = order.payChainName,
+                                pendingIcon = order.assetIconUrl
+                            )
+                        } else {
+                            DetailItem(
+                                if (order.state == OrderState.SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
+                                "+${if (order.state == OrderState.SUCCESS.value) (order.receiveAmount ?: "0") else (order.expectedReceiveAmount ?: "0")} ${order.receiveAssetSymbol}",
+                                MixinAppTheme.colors.walletGreen,
+                                order.receiveAssetIconUrl,
+                                order.receiveChainName ?: ""
+                            )
+                        }
                         if (order.type == "limit") {
                             DetailPriceItemLimit(order)
                         } else {
@@ -656,6 +674,77 @@ private fun DetailItem(
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
             )
+        }
+    }
+}
+
+@Composable
+private fun DetailItemMultipleReceive(
+    label: String,
+    filledAmount: String,
+    icon: String?,
+    chain: String,
+    pendingAmount: String?,
+    pendingIcon:String?,
+    pendingChain:String?
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+    ) {
+        Text(
+            text = label.uppercase(),
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textAssist,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CoilImage(
+                model = icon,
+                modifier =
+                    Modifier
+                        .size(18.dp)
+                        .clip(CircleShape),
+                placeholder = R.drawable.ic_avatar_place_holder,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = filledAmount,
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.walletGreen
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = chain,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        }
+        if (pendingAmount != null) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CoilImage(
+                    model = pendingIcon,
+                    modifier =
+                        Modifier
+                            .size(18.dp)
+                            .clip(CircleShape),
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = pendingAmount,
+                    fontSize = 16.sp,
+                    color = MixinAppTheme.colors.walletGreen
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = pendingChain ?: "",
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+            }
         }
     }
 }

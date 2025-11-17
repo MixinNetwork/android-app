@@ -41,6 +41,7 @@ import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.db.OrderDao
 import one.mixin.android.vo.route.Order
 import retrofit2.http.Body
 
@@ -59,7 +60,7 @@ class AssetRepository
         private val addressService: AddressService,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
-        private val web3WalletDao: Web3WalletDao,
+        private val orderDao: OrderDao
     ) {
     fun assets() = assetService.assets()
 
@@ -398,7 +399,13 @@ class AssetRepository
     suspend fun getLimitOrders(ids: List<String>): MixinResponse<List<Order>> = routeService.getLimitOrders(ids)
 
     suspend fun getLimitOrder(id: String, walletId: String? = null): MixinResponse<Order> = routeService.getLimitOrder(id, walletId)
-    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = routeService.cancelLimitOrder(id)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> {
+        val o = routeService.cancelLimitOrder(id)
+        if (o.isSuccess) {
+            orderDao.insert(o.data!!)
+        }
+        return o
+    }
 
     suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
 
