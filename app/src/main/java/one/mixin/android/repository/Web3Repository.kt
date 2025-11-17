@@ -70,7 +70,7 @@ constructor(
                     assetKey = token.assetKey ?: "",
                     name = token.name,
                     symbol = token.symbol,
-                    iconUrl = token.chainIconUrl?:"",
+                    iconUrl = token.chainIconUrl ?: "",
                     priceUsd = token.priceUsd,
                     precision = token.precision,
                     balance = "0",

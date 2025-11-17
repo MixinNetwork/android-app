@@ -76,6 +76,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -90,7 +91,15 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     private suspend fun handleWeb3ExternalTransfer(url: String) {
         Timber.d("[$TAG] handleWeb3ExternalTransfer url=%s", url)
-        val ext = parseExternalForWeb3(url) ?: run {
+        val (ext, insufficientSymbol) = parseExternalForWeb3(url)
+        if (insufficientSymbol != null) {
+            withContext(Dispatchers.Main) {
+                val message: String = getString(R.string.insufficient_balance_symbol, insufficientSymbol)
+                toast(message)
+            }
+            return
+        }
+        if (ext == null) {
             Timber.e("[$TAG] handleWeb3ExternalTransfer parseExternalForWeb3 returned null, url=%s", url)
             toast(R.string.Data_error)
             return
@@ -141,8 +150,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         }
     }
 
-    private suspend fun parseExternalForWeb3(url: String): ExternalTransfer? {
-        return parseExternalTransferUri(
+    private suspend fun parseExternalForWeb3(url: String): Pair<ExternalTransfer?,String?> {
+        var insufficientSymbol:String? = null
+        val result = parseExternalTransferUri(
             url,
             validateAddress = { assetId, chainId, destination ->
                 web3ViewModel.validateExternalAddress(assetId, chainId, destination, null).data
@@ -156,14 +166,26 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             getAssetPrecisionById = { assetId ->
                 web3ViewModel.getAssetPrecisionById(assetId).data
             },
-            balanceCheck = { _, _, _, _ ->
-               // do nothing
+            balanceCheck = { assetId, amount, feeAssetId, feeAmount ->
+                if (feeAssetId != null && feeAmount != null) {
+                    val feeExtra = web3ViewModel.findAndRefreshWeb3TokenItem(Web3Signer.currentWalletId, feeAssetId)
+                    val feeBalance = feeExtra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    if (feeBalance < feeAmount) {
+                        insufficientSymbol = feeExtra?.symbol
+                    }
+                }
+                val extra = web3ViewModel.findAndRefreshWeb3TokenItem(Web3Signer.currentWalletId, assetId)
+                val balance = extra?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                if (balance < amount) {
+                    insufficientSymbol = extra?.symbol
+                }
             },
             parseLighting = { ln ->
                 val r = web3ViewModel.paySuspend(one.mixin.android.api.request.TransferRequest(assetId = one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID, rawPaymentUrl = ln))
                 r.data
             }
         )
+        return Pair(result, insufficientSymbol)
     }
 
     private val token: TokenItem? by lazy {
