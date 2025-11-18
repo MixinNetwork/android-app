@@ -161,6 +161,10 @@ fun LimitOrderContent(
     var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(walletId) {
+        limitOrders = viewModel.getPendingOrdersFromDb(walletId)
+    }
+
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {

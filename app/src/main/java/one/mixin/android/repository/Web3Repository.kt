@@ -243,4 +243,8 @@ constructor(
         if (orders.isEmpty()) return
         orderDao.insertListSuspend(orders)
     }
+
+    suspend fun getPendingOrdersByWallet(walletId: String): List<one.mixin.android.vo.route.Order> {
+        return orderDao.getPendingOrdersByWallet(walletId)
+    }
 }
