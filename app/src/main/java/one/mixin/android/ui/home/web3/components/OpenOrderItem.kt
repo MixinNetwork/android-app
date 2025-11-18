@@ -109,8 +109,12 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
 
             // Line 3: +xx symbol (color by status) | state with color
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val receiveAmountText = (order.receiveAmount ?: "0").ifEmpty { "0" }.numberFormat()
                 val orderState = OrderState.from(order.state)
+                val receiveAmountText = (if (orderState.isPending()) {
+                    order.expectedReceiveAmount
+                } else {
+                    order.receiveAmount
+                } ?: "0").ifEmpty { "0" }.numberFormat()
                 val hasReceivedAmount = !order.receiveAmount.isNullOrEmpty() && order.receiveAmount != "0"
                 
                 // Pending orders without received amount should be gray

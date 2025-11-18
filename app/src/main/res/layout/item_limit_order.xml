@@ -18,23 +18,26 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <ImageView
+        <one.mixin.android.widget.CircleImageView
             android:id="@+id/iconA"
-            android:layout_width="34dp"
-            android:layout_height="34dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_gravity="start|top"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_avatar_place_holder"/>
 
-        <ImageView
+        <one.mixin.android.widget.CircleImageView
             android:id="@+id/iconB"
             android:layout_width="34dp"
             android:layout_height="34dp"
-            android:layout_gravity="bottom|end"
-            android:padding="1dp"
-            android:background="@drawable/bg_circle_border_1dp"
+            android:layout_gravity="start|top"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:padding="2dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_avatar_place_holder"/>
+            android:src="@drawable/ic_avatar_place_holder"
+            app:border_color="?attr/bg_white"
+            app:border_width="2dp" />
     </FrameLayout>
 
     <TextView

@@ -30,12 +30,16 @@ class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.Vie
             "limit" -> itemView.context.getString(R.string.order_type_limit)
             else -> order.type
         }
+        val orderState = OrderState.from(order.state)
 
         // Line 3: +xx symbol (color by status) | state with color
-        val receiveAmountText = (order.receiveAmount ?: "0").ifEmpty { "0" }.numberFormat()
+        val receiveAmountText = (if (orderState.isPending()) {
+            order.expectedReceiveAmount
+        } else {
+            order.receiveAmount
+        } ?: "0").ifEmpty { "0" }.numberFormat()
         binding.line3Left.text = "+${receiveAmountText} ${right}"
         
-        val orderState = OrderState.from(order.state)
         val hasReceivedAmount = !order.receiveAmount.isNullOrEmpty() && order.receiveAmount != "0"
         
         // Pending orders without received amount should be gray
