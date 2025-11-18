@@ -381,8 +381,10 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         walletId = if (isPrivacyWallet) null else senderWalletId,
                         walletName = if (isPrivacyWallet) null else walletName
                     )
-                    Box(modifier = Modifier.height(20.dp))
-                    ItemContent(title = stringResource(id = R.string.Memo).uppercase(), subTitle = parsedLink?.memo ?: stringResource(id = R.string.None))
+                    if (parsedLink?.memo.isNullOrBlank().not()) {
+                        Box(modifier = Modifier.height(20.dp))
+                        ItemContent(title = stringResource(id = R.string.Memo).uppercase(), subTitle = parsedLink?.memo ?: stringResource(id = R.string.None))
+                    }
                     Box(modifier = Modifier.height(20.dp))
                 }
 
@@ -412,9 +414,13 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                confirmAction = {
+                                    errorInfo = null
+                                    showPin()
+                                },
                             )
                         }
+
                         Step.Pending -> {
                             ActionBottom(
                                 modifier = Modifier.align(Alignment.BottomCenter),

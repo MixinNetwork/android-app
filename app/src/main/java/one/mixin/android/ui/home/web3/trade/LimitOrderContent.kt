@@ -538,6 +538,7 @@ fun LimitOrderContent(
                                 })
                             }
                         }
+                        Spacer(modifier = Modifier.height(20.dp))
                     } else {
                         Spacer(modifier = Modifier.height(14.dp))
                         Column(
@@ -572,6 +573,7 @@ fun LimitOrderContent(
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
             }
