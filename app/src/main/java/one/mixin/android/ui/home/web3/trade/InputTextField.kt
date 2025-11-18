@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -120,58 +121,60 @@ fun InputContent(
                         .fillMaxWidth()
                         .weight(1f)
                 ) {
+                    // Always render BasicTextField to keep focus
+                    BasicTextField(
+                        value = textFieldValue,
+                        onValueChange = {
+                            textFieldValue = it
+                            val v = try {
+                                if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
+                            } catch (e: Exception) {
+                                return@BasicTextField
+                            }
+                            onInputChanged?.invoke(it.text)
+                        },
+                        maxLines = 1,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .onFocusChanged {
+                                if (it.isFocused) {
+                                    keyboardController?.show()
+                                }
+                            }
+                            .alpha(if (inlineEndCompose != null) 0f else 1f),
+                        textStyle = TextStyle(
+                            fontSize = when {
+                                textFieldValue.text.length <= 15 -> 24.sp
+                                else -> {
+                                    val excess = textFieldValue.text.length - 15
+                                    val reduction = excess * 2
+                                    (24 - reduction).coerceAtLeast(16).sp
+                                }
+                            },
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Start,
+                        ),
+                        cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        interactionSource = interactionSource,
+                    )
+
+                    if (text.isEmpty() && inlineEndCompose == null) {
+                        AutoSizeText(
+                            text = "0",
+                            color = MixinAppTheme.colors.textRemarks,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        )
+                    }
+                    
+                    // Overlay inline compose (e.g., spinner) on top
                     if (inlineEndCompose != null) {
-                        // Replace input text with inline compose (e.g., spinner)
                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
                             inlineEndCompose.invoke()
-                        }
-                    } else {
-                        BasicTextField(
-                            value = textFieldValue,
-                            onValueChange = {
-                                textFieldValue = it
-                                val v = try {
-                                    if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
-                                } catch (e: Exception) {
-                                    return@BasicTextField
-                                }
-                                onInputChanged?.invoke(it.text)
-                            },
-                            maxLines = 1,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .focusRequester(focusRequester)
-                                .onFocusChanged {
-                                    if (it.isFocused) {
-                                        keyboardController?.show()
-                                    }
-                                },
-                            textStyle = TextStyle(
-                                fontSize = when {
-                                    textFieldValue.text.length <= 15 -> 24.sp
-                                    else -> {
-                                        val excess = textFieldValue.text.length - 15
-                                        val reduction = excess * 2
-                                        (24 - reduction).coerceAtLeast(16).sp
-                                    }
-                                },
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontWeight = FontWeight.Black,
-                                textAlign = TextAlign.Start,
-                            ),
-                            cursorBrush = SolidColor(MixinAppTheme.colors.textPrimary),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            interactionSource = interactionSource,
-                        )
-
-                        if (text.isEmpty()) {
-                            AutoSizeText(
-                                text = "0",
-                                color = MixinAppTheme.colors.textRemarks,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Black,
-                                modifier = Modifier.align(Alignment.CenterStart)
-                            )
                         }
                     }
                 }

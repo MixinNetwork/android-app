@@ -8,6 +8,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.route.OrderState
+import java.math.BigDecimal
 
 class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.ViewHolder(binding.root) {
 
@@ -32,23 +33,37 @@ class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.Vie
         }
         val orderState = OrderState.from(order.state)
 
-        // Line 3: +xx symbol (color by status) | state with color
-        val receiveAmountText = (if (orderState.isPending()) {
-            order.expectedReceiveAmount
+        // Line 3: Check for partial fill
+        val filledAmount = runCatching { BigDecimal(order.filledReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
+        val expectedAmount = runCatching { BigDecimal(order.expectedReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
+        val hasPartialFill = filledAmount > BigDecimal.ZERO && (order.state == OrderState.CANCELLED.value || order.state == OrderState.SUCCESS.value)
+        
+        if (hasPartialFill && expectedAmount > filledAmount) {
+            // Show both filled and pending amounts
+            val pendingAmount = expectedAmount.subtract(filledAmount)
+            val filledText = "+${filledAmount.stripTrailingZeros().toPlainString()} ${order.receiveAssetSymbol}"
+            val pendingText = "+${pendingAmount.stripTrailingZeros().toPlainString()} ${order.assetSymbol}"
+            binding.line3Left.text = "$filledText\n$pendingText"
+            binding.line3Left.setTextColor(itemView.context.getColor(R.color.wallet_green))
         } else {
-            order.receiveAmount
-        } ?: "0").ifEmpty { "0" }.numberFormat()
-        binding.line3Left.text = "+${receiveAmountText} ${right}"
-        
-        val hasReceivedAmount = !order.receiveAmount.isNullOrEmpty() && order.receiveAmount != "0"
-        
-        // Pending orders without received amount should be gray
-        val leftColor = when {
-            orderState.isPending() && !hasReceivedAmount -> resolveAttrColor(R.attr.text_assist)
-            orderState.isDone() -> itemView.context.getColor(R.color.wallet_green)
-            else -> itemView.context.getColor(R.color.wallet_pink)
+            // Original logic
+            val receiveAmountText = (if (orderState.isPending()) {
+                order.expectedReceiveAmount
+            } else {
+                order.receiveAmount
+            } ?: "0").ifEmpty { "0" }.numberFormat()
+            binding.line3Left.text = "+${receiveAmountText} ${right}"
+            
+            val hasReceivedAmount = !order.receiveAmount.isNullOrEmpty() && order.receiveAmount != "0"
+            
+            // Pending orders without received amount should be gray
+            val leftColor = when {
+                orderState.isPending() && !hasReceivedAmount -> resolveAttrColor(R.attr.text_assist)
+                orderState.isDone() -> itemView.context.getColor(R.color.wallet_green)
+                else -> itemView.context.getColor(R.color.wallet_pink)
+            }
+            binding.line3Left.setTextColor(leftColor)
         }
-        binding.line3Left.setTextColor(leftColor)
 
         binding.line3Right.text = orderState.format(itemView.context)
         binding.line3Right.setTextColor(getStatusColor(orderState))

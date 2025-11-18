@@ -23,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -60,6 +61,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.route.OrderState
@@ -90,6 +92,7 @@ fun OrderDetailPage(
     val orderItem = viewModel.getOrderById(orderId).collectAsState(null)
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var toAddress by remember { mutableStateOf<String?>(null) }
+    var isCancelling by remember { mutableStateOf(false) }
 
 @Composable
 fun DetailItem(
@@ -282,22 +285,41 @@ fun DetailItem(
                                         .background(MixinAppTheme.colors.backgroundWindow),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        text = stringResource(R.string.cancel_order),
-                                        color = MixinAppTheme.colors.walletRed,
-                                        fontWeight = FontWeight.W500,
-                                        textAlign = TextAlign.Center,
+                                    Box(
                                         modifier = Modifier
                                             .weight(1f)
                                             .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
-                                            .clickable {
+                                            .clickable(enabled = !isCancelling) {
                                                 scope.launch {
+                                                    isCancelling = true
                                                     runCatching { viewModel.cancelLimitOrder(order.orderId) }
-                                                    pop()
+                                                        .onSuccess {
+                                                            isCancelling = false
+                                                        }
+                                                        .onFailure {
+                                                            isCancelling = false
+                                                            ErrorHandler.handleError(it)
+                                                        }
                                                 }
                                             }
-                                            .padding(vertical = 10.dp)
-                                    )
+                                            .padding(vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (isCancelling) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(20.dp),
+                                                color = MixinAppTheme.colors.walletRed,
+                                                strokeWidth = 2.dp
+                                            )
+                                        } else {
+                                            Text(
+                                                text = stringResource(R.string.cancel_order),
+                                                color = MixinAppTheme.colors.walletRed,
+                                                fontWeight = FontWeight.W500,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
                                     Box(
                                         modifier = Modifier
                                             .width(2.dp)
@@ -382,7 +404,7 @@ fun DetailItem(
                         
                         val filledAmount = runCatching { BigDecimal(order.filledReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
                         val expectedAmount = runCatching { BigDecimal(order.expectedReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
-                        val hasPartialFill = filledAmount > BigDecimal.ZERO && order.state == OrderState.CANCELLED.value
+                        val hasPartialFill = filledAmount > BigDecimal.ZERO && order.state == CANCELLED.value || order.state == SUCCESS.value
                         
                         if (hasPartialFill) {
                             val pendingAmount = expectedAmount.subtract(filledAmount)

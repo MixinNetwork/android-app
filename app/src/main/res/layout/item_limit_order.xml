@@ -96,7 +96,7 @@
         app:layout_constraintEnd_toStartOf="@id/line3Right"
         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
         android:textColor="?attr/text_primary"
-        android:maxLines="1"
+        android:maxLines="2"
         android:ellipsize="end"
         android:text="--"/>
 
@@ -105,7 +105,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBaseline_toBaselineOf="@id/line3Left"
+        app:layout_constraintTop_toTopOf="@id/line3Left"
         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
         android:textColor="?attr/text_assist"
         android:text="--"/>

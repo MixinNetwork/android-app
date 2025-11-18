@@ -68,6 +68,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
+import one.mixin.android.Constants.AssetId.usdcAssets
+import one.mixin.android.Constants.AssetId.usdtAssets
 import one.mixin.android.R
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
@@ -160,7 +162,18 @@ fun LimitOrderContent(
     var limitOrders by remember { mutableStateOf<List<Order>>(emptyList()) }
 
     var expiryOption by remember { mutableStateOf(ExpiryOption.NEVER) }
+    
     var isPriceInverted by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(fromToken, toToken) {
+        val isFromUsd = fromToken?.assetId?.let { id ->
+            usdtAssets.containsKey(id) || usdcAssets.containsKey(id)
+        } == true
+        val isToUsd = toToken?.assetId?.let { id ->
+            usdtAssets.containsKey(id) || usdcAssets.containsKey(id)
+        } == true
+        isPriceInverted = isFromUsd && !isToUsd
+    }
 
     var isPriceLoading by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -184,7 +197,6 @@ fun LimitOrderContent(
     }
 
     LaunchedEffect(fromToken, toToken, lastOrderTime) {
-        isPriceLoading = true
         marketPrice = null
         limitPriceText = ""
         val fromT = fromToken
@@ -198,30 +210,42 @@ fun LimitOrderContent(
             if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
                 val localPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
                 marketPrice = localPrice
-                limitPriceText = localPrice.stripTrailingZeros().toPlainString()
-                isPriceLoading = false
+                val displayPrice = if (isPriceInverted && localPrice > BigDecimal.ZERO) {
+                    BigDecimal.ONE.divide(localPrice, 8, RoundingMode.HALF_UP)
+                } else {
+                    localPrice
+                }
+                limitPriceText = displayPrice.stripTrailingZeros().toPlainString()
                 fromMarket = viewModel.checkMarketById(fromT.assetId, true)
                 toMarket = viewModel.checkMarketById(toT.assetId, true)
                 fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
                 toP = toMarket?.currentPrice?.toBigDecimalOrNull()
                 if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
                     val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                    marketPrice = localPrice
-                    limitPriceText = localPrice.stripTrailingZeros().toPlainString()
-                    if (marketPrice == localPrice) {
+                    if (marketPrice != price) {
                         marketPrice = price
-                        limitPriceText = price.stripTrailingZeros().toPlainString()
+                        val displayPrice2 = if (isPriceInverted && price > BigDecimal.ZERO) {
+                            BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
+                        } else {
+                            price
+                        }
+                        limitPriceText = displayPrice2.stripTrailingZeros().toPlainString()
                     }
                 }
             } else {
-                // Fallback to quote API (use amount = 1 fromToken in smallest unit)
+                isPriceLoading = true
                 val amount = runCatching { fromT.toLongAmount("1").toString() }.getOrElse { "1" }
                 viewModel.quote(context, fromT.symbol, fromT.assetId, toT.assetId, amount, "")
                     .onSuccess { q ->
                         val rate = runCatching { parseRateFromQuote(q) }.getOrNull() ?: BigDecimal.ZERO
                         if (rate > BigDecimal.ZERO) {
                             marketPrice = rate.setScale(8, RoundingMode.HALF_UP)
-                            limitPriceText = marketPrice!!.stripTrailingZeros().toPlainString()
+                            val displayPrice = if (isPriceInverted && marketPrice!! > BigDecimal.ZERO) {
+                                BigDecimal.ONE.divide(marketPrice!!, 8, RoundingMode.HALF_UP)
+                            } else {
+                                marketPrice!!
+                            }
+                            limitPriceText = displayPrice.stripTrailingZeros().toPlainString()
                         } else {
                             limitPriceText = "0"
                         }
@@ -242,7 +266,6 @@ fun LimitOrderContent(
             val fromT = fromToken
             val toT = toToken
             if (fromT != null && toT != null) {
-                isPriceLoading = true
                 // Prefer MarketDao prices
                 var fromMarket = viewModel.checkMarketById(fromT.assetId, false)
                 var toMarket = viewModel.checkMarketById(toT.assetId, false)
@@ -251,7 +274,6 @@ fun LimitOrderContent(
                 if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
                     val localPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
                     marketPrice = localPrice
-                    isPriceLoading = false
                     fromMarket = viewModel.checkMarketById(fromT.assetId, true)
                     toMarket = viewModel.checkMarketById(toT.assetId, true)
                     fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
@@ -264,6 +286,7 @@ fun LimitOrderContent(
                     }
                 } else {
                     // Fallback to quote API
+                    isPriceLoading = true
                     val amount = runCatching { fromT.toLongAmount("1").toString() }.getOrElse { "1" }
                     viewModel.quote(context, fromT.symbol, fromT.assetId, toT.assetId, amount, "")
                         .onSuccess { q ->
@@ -652,7 +675,11 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
-                marketPrice = marketPrice,
+                marketPrice = if (isPriceInverted && marketPrice != null && marketPrice!! > BigDecimal.ZERO) {
+                    BigDecimal.ONE.divide(marketPrice!!, 8, RoundingMode.HALF_UP)
+                } else {
+                    marketPrice
+                },
                 onSetInput = { inputText = it },
                 onSetLimitPrice = { limitPriceText = it },
                 onDone = {

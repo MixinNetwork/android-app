@@ -79,7 +79,9 @@ class SwapViewModel
     }
 
     suspend fun getLimitOrder(id: String, walletId: String? = null): MixinResponse<Order> = assetRepository.getLimitOrder(id, walletId)
-    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = assetRepository.cancelLimitOrder(id)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = withContext(Dispatchers.IO) {
+        assetRepository.cancelLimitOrder(id)
+    }
 
     suspend fun getPendingOrdersFromDb(walletId: String): List<Order> {
         return web3Repository.getPendingOrdersByWallet(walletId)
