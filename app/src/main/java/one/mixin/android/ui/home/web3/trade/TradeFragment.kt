@@ -30,6 +30,7 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
@@ -39,6 +40,7 @@ import one.mixin.android.api.response.web3.Swappable
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -48,6 +50,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
 import one.mixin.android.extension.toast
@@ -233,9 +236,14 @@ class TradeFragment : BaseFragment() {
                                         }
                                     }
                                 },
-                                onOrderList = { currentWalletId ->
+                                onOrderList = { currentWalletId, filterPending ->
                                     this@apply.hideKeyboard()
-                                    val target = AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(currentWalletId), true)
+                                    val target = AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(currentWalletId), filterPending)
+                                    if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
+                                        defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
+                                        orderBadge = false
+                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP_TRANSACTION))
+                                    }
                                     navTo(target, AllOrdersFragment.TAG)
                                 },
                                 onLimitOrderClick = { orderId ->

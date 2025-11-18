@@ -76,7 +76,7 @@ fun TradePage(
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
-    onOrderList: (String) -> Unit,
+    onOrderList: (String, Boolean) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
 ) {
@@ -174,7 +174,7 @@ fun TradePage(
         actions = {
             Box {
                 IconButton(onClick = {
-                    onOrderList(currentWalletId)
+                    onOrderList(currentWalletId, pendingCount > 0)
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_order),

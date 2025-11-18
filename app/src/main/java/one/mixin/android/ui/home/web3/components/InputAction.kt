@@ -65,6 +65,7 @@ fun InputAction(
             text = text,
             style = TextStyle(
                 fontSize = 14.sp,
+                lineHeight = 16.sp,
                 fontWeight = FontWeight.W500,
                 color = if (isPressed) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.textPrimary,
             ),
