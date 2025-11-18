@@ -233,9 +233,9 @@ class TradeFragment : BaseFragment() {
                                         }
                                     }
                                 },
-                                onOrderList = {
+                                onOrderList = { currentWalletId ->
                                     this@apply.hideKeyboard()
-                                    val target = AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(walletId?: Session.getAccountId()!!))
+                                    val target = AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(currentWalletId), true)
                                     navTo(target, AllOrdersFragment.TAG)
                                 },
                                 onLimitOrderClick = { orderId ->

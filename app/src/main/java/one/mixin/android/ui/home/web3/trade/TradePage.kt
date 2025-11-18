@@ -19,18 +19,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -39,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -48,6 +52,7 @@ import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.session.Session
 import one.mixin.android.ui.components.TabItem
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.vo.WalletCategory
@@ -71,7 +76,7 @@ fun TradePage(
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
-    onOrderList: () -> Unit,
+    onOrderList: (String) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
 ) {
@@ -79,6 +84,14 @@ fun TradePage(
 
     val viewModel = hiltViewModel<SwapViewModel>()
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
+    var pendingOrderCount by remember { mutableIntStateOf(0) }
+
+    val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+    val pendingCount by viewModel.getPendingOrderCountByWallet(currentWalletId).collectAsStateWithLifecycle(initialValue = 0)
+
+    LaunchedEffect(pendingCount) {
+        pendingOrderCount = pendingCount
+    }
 
     LaunchedEffect(walletId) {
         if (walletId != null) {
@@ -161,7 +174,7 @@ fun TradePage(
         actions = {
             Box {
                 IconButton(onClick = {
-                    onOrderList()
+                    onOrderList(currentWalletId)
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_order),
@@ -169,7 +182,23 @@ fun TradePage(
                         tint = MixinAppTheme.colors.icon,
                     )
                 }
-                if (orderBadge) {
+                if (pendingOrderCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .offset(x = (-8).dp, y = (8).dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(color = Color(0xFF3D75E3))
+                            .padding(vertical = 2.dp, horizontal = 6.dp)
+                            .align(Alignment.TopEnd)
+                    ) {
+                        Text(
+                            text = "${if (pendingOrderCount > 99) "99+" else pendingOrderCount}",
+                            fontSize = 10.sp,
+                            lineHeight = 11.sp,
+                            color = Color.White,
+                        )
+                    }
+                } else if (orderBadge) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)

@@ -46,11 +46,13 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     companion object {
         const val TAG: String = "AllOrdersFragment"
         private const val ARGS_WALLET_IDS: String = "args_wallet_ids"
+        private const val ARGS_FILTER_PENDING: String = "args_filter_pending"
 
-        fun newInstanceWithWalletIds(walletIds: ArrayList<String>): AllOrdersFragment {
+        fun newInstanceWithWalletIds(walletIds: ArrayList<String>, filterPending: Boolean = false): AllOrdersFragment {
             val f = AllOrdersFragment()
             val args = Bundle()
             args.putStringArrayList(ARGS_WALLET_IDS, walletIds)
+            args.putBoolean(ARGS_FILTER_PENDING, filterPending)
             f.arguments = args
             return f
         }
@@ -100,6 +102,10 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             if (ids.isNotEmpty()) {
                 filterParams.walletIds = ids
             }
+        }
+        val filterPending = arguments?.getBoolean(ARGS_FILTER_PENDING, false) ?: false
+        if (filterPending) {
+            filterParams.statuses = listOf("created", "pricing", "quoting", "pending")
         }
         jobManager.addJobInBackground(RefreshOrdersJob())
         binding.apply {

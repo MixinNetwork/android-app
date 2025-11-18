@@ -22,6 +22,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -43,6 +44,7 @@ class SwapViewModel
         private val tokenRepository: TokenRepository,
         private val userRepository: UserRepository,
         private val web3Repository: Web3Repository,
+        private val walletDatabase: WalletDatabase,
     ) : ViewModel() {
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
@@ -194,4 +196,8 @@ class SwapViewModel
     suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3Repository.getAddressesByChainId(walletId, chainId)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
+
+    fun getPendingOrderCountByWallet(walletId: String): Flow<Int> {
+        return walletDatabase.orderDao().getPendingOrderCountByWallet(walletId)
+    }
 }
