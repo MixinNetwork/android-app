@@ -175,6 +175,10 @@ fun LimitOrderContent(
         isPriceInverted = isFromUsd && !isToUsd
     }
 
+    LaunchedEffect(lastOrderTime) {
+        expiryOption = ExpiryOption.NEVER
+    }
+
     var isPriceLoading by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -501,10 +505,10 @@ fun LimitOrderContent(
 
                 if (availableHeight != null || inputText.isNotBlank()) {
                     Column(modifier = Modifier
-                        .padding(horizontal = 20.dp)
                         .wrapContentHeight()
+                        .padding(horizontal = 20.dp)
                         .padding(bottom = 20.dp)) {
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         ExpirySelector(
                             expiryOption = expiryOption,
                             onExpiryChange = { option -> expiryOption = option }

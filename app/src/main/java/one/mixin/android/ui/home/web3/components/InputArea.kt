@@ -97,7 +97,7 @@ fun InputArea(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = if (token.isWeb3) {
-                            balance?.numberFormat() ?: "0"
+                            balance?.numberFormat8() ?: "0"
                         } else {
                             balance?.numberFormat8() ?: "0"
                         },

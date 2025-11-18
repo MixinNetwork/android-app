@@ -419,8 +419,8 @@ fun DetailItem(
                             )
                         } else {
                             DetailItem(
-                                if (order.state == OrderState.SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
-                                "+${if (order.state == OrderState.SUCCESS.value) (order.receiveAmount ?: "0") else (order.expectedReceiveAmount ?: "0")} ${order.receiveAssetSymbol}",
+                                if (order.state == SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
+                                "+${if (order.state == SUCCESS.value) (order.filledReceiveAmount ?: "0") else (order.expectedReceiveAmount ?: order.receiveAmount ?: "0")} ${order.receiveAssetSymbol}",
                                 MixinAppTheme.colors.walletGreen,
                                 order.receiveAssetIconUrl,
                                 order.receiveChainName ?: ""
@@ -437,6 +437,7 @@ fun DetailItem(
                             val percentStr = if (expected > BigDecimal.ZERO) {
                                 filled
                                     .divide(expected, 6, RoundingMode.HALF_UP)
+                                    .min(BigDecimal.ONE) // cap at 100%
                                     .multiply(BigDecimal(100))
                                     .setScale(2, RoundingMode.HALF_UP)
                                     .stripTrailingZeros()
@@ -478,7 +479,7 @@ fun DetailItem(
                             // Wallet row
                             val isPrivacyWallet = currentWalletId != null && currentWalletId == Session.getAccountId()
                             DetailItem(
-                                label = stringResource(R.string.Common_Wallet).uppercase(),
+                                label = stringResource(R.string.Wallet).uppercase(),
                                 value = if (isPrivacyWallet) stringResource(id = R.string.Privacy_Wallet) else (walletDisplayName ?: stringResource(id = R.string.Common_Wallet)),
                             )
                             DetailItem(
@@ -530,7 +531,7 @@ fun DetailPriceItemLimit(orderItem: OrderItem) {
 
         val price = orderItem.price?.takeIf { it.isNotBlank() }?.let { runCatching { BigDecimal(it) }.getOrNull() }
         val pay = runCatching { BigDecimal(orderItem.payAmount) }.getOrNull()
-        val recv = runCatching { BigDecimal(orderItem.expectedReceiveAmount ?: orderItem.receiveAmount ?: "") }.getOrNull()
+        val recv = runCatching { BigDecimal(orderItem.expectedReceiveAmount ?: orderItem.filledReceiveAmount ?: "") }.getOrNull()
 
         val forward = when {
             price != null && price.compareTo(BigDecimal.ZERO) > 0 ->
@@ -605,7 +606,7 @@ private fun DetailPriceItem(
         Text(
             text = run {
                 val pay = runCatching { BigDecimal(orderItem.payAmount) }.getOrNull()
-                val recv = runCatching { BigDecimal(orderItem.receiveAmount ?: "") }.getOrNull()
+                val recv = runCatching { BigDecimal(orderItem.filledReceiveAmount) }.getOrNull() ?: runCatching { BigDecimal(orderItem.receiveAmount ?: "") }.getOrNull()
                 if (pay != null && recv != null && recv.compareTo(BigDecimal.ZERO) != 0) {
                     "1 ${orderItem.receiveAssetSymbol} ≈ ${pay.divide(recv, 8, RoundingMode.HALF_UP)} ${orderItem.assetSymbol}"
                 } else {
