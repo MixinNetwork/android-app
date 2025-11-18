@@ -21,10 +21,19 @@ class RefreshOrdersJob(
             refreshOrders(lastCreate)
         }
 
-    private suspend fun refreshOrders(offset: String?) {
+    private suspend fun refreshOrders(offset: String?, previousLastCreatedAt: String? = null) {
         val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null)
         if (response.isSuccess && response.data != null) {
             val orders = response.data!!
+            if (orders.isEmpty()) return
+            
+            // Check if we're stuck in a loop (same last timestamp)
+            val currentLastCreatedAt = orders.lastOrNull()?.createdAt
+            if (currentLastCreatedAt != null && currentLastCreatedAt == previousLastCreatedAt) {
+                Timber.w("RefreshOrdersJob: Detected duplicate offset, stopping pagination")
+                return
+            }
+            
             orderDao.insertListSuspend(orders)
             val walletId = Session.getAccountId()!!
             val assetIds = orders.flatMap { listOfNotNull<String>(it.payAssetId, it.receiveAssetId) }
@@ -48,7 +57,7 @@ class RefreshOrdersJob(
             val fetchedSize = orders.size
             if (fetchedSize >= LIMIT) {
                 val lastCreate = orders.lastOrNull()?.createdAt ?: return
-                refreshOrders(lastCreate)
+                refreshOrders(lastCreate, currentLastCreatedAt)
             }
         }
     }
