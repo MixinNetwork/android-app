@@ -126,6 +126,8 @@ fun TradePage(
                 from = from,
                 to = to,
                 inMixin = inMixin,
+                initialAmount = initialAmount,
+                lastOrderTime = lastOrderTime,
                 onSelectToken = onSelectToken,
                 onLimitReview = onLimitReview,
                 onDeposit = onDeposit,

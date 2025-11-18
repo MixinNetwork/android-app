@@ -96,6 +96,9 @@ fun SwapContent(
 
     val viewModel = hiltViewModel<SwapViewModel>()
 
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
     var quoteResult by remember { mutableStateOf<QuoteResult?>(null) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var quoteMin by remember { mutableStateOf<String?>(null) }
@@ -308,8 +311,6 @@ fun SwapContent(
                             }
                         }
                         Spacer(modifier = Modifier.height(14.dp))
-                        val keyboardController = LocalSoftwareKeyboardController.current
-                        val focusManager = LocalFocusManager.current
                         val checkBalance = checkBalance(inputText, fromBalance)
                         Button(
                             modifier = Modifier
@@ -362,8 +363,6 @@ fun SwapContent(
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    val keyboardController = LocalSoftwareKeyboardController.current
-                    val focusManager = LocalFocusManager.current
                     val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
                     InputAction("25%", showBorder = true) {

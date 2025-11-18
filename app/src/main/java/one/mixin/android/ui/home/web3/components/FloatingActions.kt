@@ -30,6 +30,7 @@ fun FloatingActions(
     onSetInput: (String) -> Unit,
     onSetLimitPrice: (String) -> Unit,
     onDone: () -> Unit,
+    onMarketPriceClick: (() -> Unit)? = null,
 ) {
     val effectiveField = if (focusedField == FocusedField.NONE) FocusedField.AMOUNT else focusedField
     when (effectiveField) {
@@ -77,6 +78,7 @@ fun FloatingActions(
                 val mp = remember(marketPrice) { marketPrice }
                 InputAction(stringResource(R.string.market_price), showBorder = true) {
                     mp?.let { onSetLimitPrice(it.stripTrailingZeros().toPlainString()) }
+                    onMarketPriceClick?.invoke()
                 }
 
                 val isToUsd = toToken?.assetId?.let { id ->

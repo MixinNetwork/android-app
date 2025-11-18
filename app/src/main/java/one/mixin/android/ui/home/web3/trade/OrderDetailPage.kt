@@ -63,6 +63,17 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.route.OrderState
+import one.mixin.android.vo.route.OrderState.CANCELLED
+import one.mixin.android.vo.route.OrderState.CANCELLING
+import one.mixin.android.vo.route.OrderState.CREATED
+import one.mixin.android.vo.route.OrderState.EXPIRED
+import one.mixin.android.vo.route.OrderState.FAILED
+import one.mixin.android.vo.route.OrderState.PENDING
+import one.mixin.android.vo.route.OrderState.PRICING
+import one.mixin.android.vo.route.OrderState.QUOTING
+import one.mixin.android.vo.route.OrderState.REFUNDED
+import one.mixin.android.vo.route.OrderState.SETTLED
+import one.mixin.android.vo.route.OrderState.SUCCESS
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -251,7 +262,7 @@ fun DetailItem(
                                 .align(Alignment.CenterHorizontally)
                         ) {
                             Text(
-                                formatOrderState(context, order.state), color = when (uiState) {
+                                OrderState.from(order.state).format(context), color = when (uiState) {
                                     OrderState.SETTLED -> MixinAppTheme.colors.walletGreen
                                     OrderState.FAILED, OrderState.CANCELLED, OrderState.EXPIRED -> MixinAppTheme.colors.walletRed
                                     else -> MixinAppTheme.colors.textPrimary
@@ -746,18 +757,5 @@ private fun DetailItemMultipleReceive(
                 )
             }
         }
-    }
-}
-
-fun formatOrderState(context: Context, state: String): String {
-    return when (state) {
-        OrderState.CREATED.value -> context.getString(R.string.State_Created)
-        OrderState.PENDING.value -> context.getString(R.string.State_Pending)
-        OrderState.SUCCESS.value -> context.getString(R.string.State_Success)
-        OrderState.FAILED.value -> context.getString(R.string.State_Failed)
-        OrderState.REFUNDED.value -> context.getString(R.string.State_Refunded)
-        OrderState.CANCELLING.value -> context.getString(R.string.order_state_cancelling)
-        OrderState.CANCELLED.value -> context.getString(R.string.Canceled)
-        else -> state
     }
 }

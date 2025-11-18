@@ -110,13 +110,6 @@ fun InputContent(
             }
         }
 
-        LaunchedEffect(Unit) {
-            if (text.isBlank()) {
-                delay(100)
-                focusRequester.requestFocus()
-            }
-        }
-
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

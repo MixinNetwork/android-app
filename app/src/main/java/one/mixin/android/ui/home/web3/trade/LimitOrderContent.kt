@@ -121,6 +121,8 @@ fun LimitOrderContent(
     from: SwapToken?,
     to: SwapToken?,
     inMixin: Boolean,
+    initialAmount: String?,
+    lastOrderTime: Long?,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -131,9 +133,14 @@ fun LimitOrderContent(
 
     val viewModel = hiltViewModel<SwapViewModel>()
 
-    var inputText by remember { mutableStateOf("") }
+    var inputText by remember { mutableStateOf(initialAmount ?: "") }
+    LaunchedEffect(lastOrderTime) {
+        inputText = initialAmount ?: ""
+    }
+
     var limitPriceText by remember { mutableStateOf("") }
     var outputText by remember { mutableStateOf("") }
+    var marketPriceClickTime by remember { mutableStateOf<Long?>(null) }
 
     var isReverse by remember { mutableStateOf(false) }
     val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
@@ -176,7 +183,7 @@ fun LimitOrderContent(
         }
     }
 
-    LaunchedEffect(fromToken, toToken) {
+    LaunchedEffect(fromToken, toToken, lastOrderTime) {
         isPriceLoading = true
         marketPrice = null
         limitPriceText = ""
@@ -227,6 +234,50 @@ fun LimitOrderContent(
             }
         } else {
             isPriceLoading = false
+        }
+    }
+
+    LaunchedEffect(marketPriceClickTime) {
+        if (marketPriceClickTime != null) {
+            val fromT = fromToken
+            val toT = toToken
+            if (fromT != null && toT != null) {
+                isPriceLoading = true
+                // Prefer MarketDao prices
+                var fromMarket = viewModel.checkMarketById(fromT.assetId, false)
+                var toMarket = viewModel.checkMarketById(toT.assetId, false)
+                var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
+                var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
+                if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
+                    val localPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                    marketPrice = localPrice
+                    isPriceLoading = false
+                    fromMarket = viewModel.checkMarketById(fromT.assetId, true)
+                    toMarket = viewModel.checkMarketById(toT.assetId, true)
+                    fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
+                    toP = toMarket?.currentPrice?.toBigDecimalOrNull()
+                    if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
+                        val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                        if (marketPrice != price) {
+                            marketPrice = price
+                        }
+                    }
+                } else {
+                    // Fallback to quote API
+                    val amount = runCatching { fromT.toLongAmount("1").toString() }.getOrElse { "1" }
+                    viewModel.quote(context, fromT.symbol, fromT.assetId, toT.assetId, amount, "")
+                        .onSuccess { q ->
+                            val rate = runCatching { parseRateFromQuote(q) }.getOrNull() ?: BigDecimal.ZERO
+                            if (rate > BigDecimal.ZERO) {
+                                marketPrice = rate.setScale(8, RoundingMode.HALF_UP)
+                            }
+                            isPriceLoading = false
+                        }
+                        .onFailure {
+                            isPriceLoading = false
+                        }
+                }
+            }
         }
     }
 
@@ -426,7 +477,10 @@ fun LimitOrderContent(
                 }
 
                 if (availableHeight != null || inputText.isNotBlank()) {
-                    Column(modifier = Modifier.padding(horizontal = 20.dp).wrapContentHeight().padding(bottom = 20.dp)) {
+                    Column(modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .wrapContentHeight()
+                        .padding(bottom = 20.dp)) {
                         Spacer(modifier = Modifier.height(14.dp))
                         ExpirySelector(
                             expiryOption = expiryOption,
@@ -437,8 +491,6 @@ fun LimitOrderContent(
                         if (availableHeight == null) {
                             Spacer(modifier = Modifier.weight(1f))
                         }
-                        val keyboardController = LocalSoftwareKeyboardController.current
-                        val focusManager = LocalFocusManager.current
                         val checkBalance = checkBalance(inputText, fromBalance)
                         val isInputValid = inputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isPriceValid = limitPriceText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
@@ -606,6 +658,9 @@ fun LimitOrderContent(
                 onDone = {
                     keyboardController?.hide()
                     focusManager.clearFocus()
+                },
+                onMarketPriceClick = {
+                    marketPriceClickTime = System.currentTimeMillis()
                 }
             )
         })

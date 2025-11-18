@@ -31,7 +31,7 @@ fun KeyboardAwareBox(
     content: @Composable BoxScope.(Dp?) -> Unit,
     floating: @Composable BoxScope.() -> Unit,
 ) {
-    var isKeyboardVisible by remember { mutableStateOf(true) }
+    var isKeyboardVisible by remember { mutableStateOf(false) }
     val view = LocalView.current
     val density = LocalDensity.current
 
