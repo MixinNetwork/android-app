@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.graphics.Paint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
@@ -194,6 +195,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         jobManager.addJobInBackground(SyncOutputJob())
         lifecycleScope.launch {
             binding.apply {
+                if (requireActivity() !is WalletActivity){
+                    root.fitsSystemWindows = false
+                }
+                binding.feeTv.setOnClickListener {
+                    CrossWalletFeeFreeBottomSheetDialogFragment
+                        .newInstance()
+                        .show(parentFragmentManager, CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
+                }
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
@@ -467,6 +476,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val toWallet = web3ViewModel.anyAddressExists(listOf(address.destination))
+                                val (_, index) = web3ViewModel.checkAddressAndGetDisplayName(address.destination, null, chainId = chainId) ?: Pair(null, 0)
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
                                     networkFee,
@@ -477,7 +487,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     null,
                                     PaymentStatus.pending.name,
                                     null,
-                                    toWallet
+                                    toWallet,
+                                    isFeeWaived = index == 3
                                 )
 
                                 prepareCheck(withdrawBiometricItem)
@@ -509,6 +520,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     toAddress = toAddress,
                                     toUser = user,
                                     chainToken = chainToken,
+                                    isFeeWaived = isFeeWaived,
                                     onTxhash = { _, serializedTx ->
                                     },
                                     onDismiss = { isDone->
@@ -604,6 +616,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 
+    private fun applyFeeUi() {
+        val hasFeeText: Boolean = binding.contentTextView.text.toString().isNotEmpty()
+        val showFee: Boolean = isFeeWaived && hasFeeText
+        binding.contentTextView.paintFlags =
+            if (showFee) {
+                binding.contentTextView.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                binding.contentTextView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            }
+        binding.feeTv.isVisible = showFee
+    }
+
     private var addressLabel:String? = null
 
     private fun initTitle() {
@@ -617,6 +641,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
                 TransferType.WEB3 -> {
                     if (user != null) {
+                        isFeeWaived = true
                         titleView.setSubTitle(getString(R.string.Send_To_Title), user)
                     } else {
                         renderTitle(requireNotNull(toAddress))
@@ -626,6 +651,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     assetBiometricItem?.let { item ->
                         when {
                             item is WithdrawBiometricItem -> {
+                                // isFeeWaived todo check is my wallet
                                 titleView.setLabel(getString(R.string.Send_To_Title), addressLabel, "")
                             }
                             item is AddressTransferBiometricItem -> {
@@ -652,9 +678,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 
+    private var isFeeWaived = false
+
     private fun renderTitle(toAddress: String, tag: String? = null) {
         lifecycleScope.launch {
             val (label, index) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, 0)
+            isFeeWaived = index == 1 || index == 3
             binding.titleView.setLabel(
                 getString(R.string.Send_To_Title),
                 label,
@@ -813,6 +842,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
 
         updatePrimarySize()
+        applyFeeUi()
     }
 
     private fun updateAddText() {
@@ -1049,8 +1079,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
             fees.firstOrNull()?.let {
                 currentFee = it
-                updateUI()
                 binding.contentTextView.text = "${it.fee.numberFormat8()} ${it.token.symbol}"
+                updateUI()
             }
         }
         binding.contentTextView.isVisible = true
@@ -1104,13 +1134,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
             }
 
-            val memo = currentNote?.toString() ?: ""
+            val memo = currentNote ?: ""
             if (memo.toByteArray().size > 140) {
                 toast("$currentNote ${getString(R.string.Content_too_long)}")
                 return@launch
             }
 
-            val traceId = t.traceId
             val pair =
                 if (t is TransferBiometricItem && t.users.size == 1) {
                     web3ViewModel.findLatestTrace(t.users.first().userId, null, null, amount, asset.assetId)
@@ -1181,7 +1210,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             try {
                 t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
             } catch (e: Exception) {
-                Timber.Forest.w(e)
+                Timber.w(e)
                 if (dialog.isShowing) {
                     dialog.dismiss()
                 }
@@ -1238,6 +1267,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         binding.iconImageView.isVisible = false
         binding.contentTextView.isVisible = true
         binding.loadingProgressBar.isVisible = false
+        applyFeeUi()
     }
 
     private val dialog by lazy {

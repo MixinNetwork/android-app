@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -82,6 +83,7 @@ fun TransferDestinationInputPage(
     web3Token: Web3TokenItem?,
     name: String?,
     addressShown: Boolean,
+    isLoading: Boolean = false,
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
@@ -336,7 +338,7 @@ fun TransferDestinationInputPage(
                                     R.string.send_to_mixin_contact_description,
                                     onClick = {
                                         toContact.invoke()
-                                    }, false
+                                    }, true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
@@ -345,7 +347,7 @@ fun TransferDestinationInputPage(
                                     R.drawable.ic_destination_wallet,
                                     R.string.My_Wallet,
                                     stringResource(R.string.send_to_my_wallet_description),
-                                    free = false,
+                                    free = true,
                                     onClick = {
                                         toWallet.invoke(web3Token.walletId)
                                     },
@@ -362,6 +364,7 @@ fun TransferDestinationInputPage(
                                     onClick = {
                                         toWallet.invoke(null)
                                     },
+                                    free = true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
@@ -382,11 +385,9 @@ fun TransferDestinationInputPage(
                             onClick = {
                                 onSend.invoke(text)
                             },
-                            enabled = text.isBlank().not(),
+                            enabled = text.isBlank().not() && !isLoading,
                             colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (text.isBlank()
-                                        .not()
-                                ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                                backgroundColor = if (text.isBlank().not()) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                             ),
                             shape = RoundedCornerShape(32.dp),
                             elevation = ButtonDefaults.elevation(
@@ -396,10 +397,18 @@ fun TransferDestinationInputPage(
                                 focusedElevation = 0.dp,
                             ),
                         ) {
-                            Text(
-                                text = stringResource(R.string.Send),
-                                color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
-                            )
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.Send),
+                                    color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                                )
+                            }
                         }
                     }
                 }

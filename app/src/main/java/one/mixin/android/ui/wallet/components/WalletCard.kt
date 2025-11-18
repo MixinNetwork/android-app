@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Colors
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +54,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -65,6 +65,7 @@ fun WalletCard(
     hasLocalPrivateKey: Boolean = true,
     destination: WalletDestination?,
     onClick: () -> Unit,
+    enableFreeLabel: Boolean = false,
     isSelectable: Boolean = false,
     isSelected: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
@@ -220,6 +221,26 @@ fun WalletCard(
                             modifier = Modifier
                                 .background(
                                     color = MixinAppTheme.colors.backgroundGrayLight,
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 4.dp)
+                        )
+                    }
+
+                    val isFeeFree = enableFreeLabel && when (destination) {
+                        is WalletDestination.Classic -> true
+                        is WalletDestination.Import -> hasLocalPrivateKey
+                        else -> false
+                    }
+                    if (isFeeFree) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.FREE),
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(
+                                    color = MixinAppTheme.colors.accent,
                                     shape = RoundedCornerShape(4.dp)
                                 )
                                 .padding(horizontal = 4.dp)

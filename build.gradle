@@ -31,7 +31,7 @@ buildscript {
         ext.cameraxVersion = '1.5.1'
         ext.glideVersion = '5.0.5'
         ext.timberVersion = '5.0.1'
-        ext.okhttpVersion = '5.3.0'
+        ext.okhttpVersion = '5.3.1'
         ext.rxJavaVersion = '2.2.21'
         ext.rxAndroidVersion = '2.1.1'
         ext.rxbindingVersion = '3.1.0'
@@ -109,7 +109,7 @@ buildscript {
         ext.composeVersion = '1.9.4'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
-        ext.sol4kVersion = '0.5.18'
+        ext.sol4kVersion = '0.6.0'
 
         ext.sumsubVersion = '1.39.1'
         ext.checkoutFramesVersion = '4.2.3'
@@ -129,11 +129,11 @@ buildscript {
         ext.activityComposeVersion = '1.11.0'
         ext.web3jCoreVersion = '4.11.0'
         ext.web3jCryptoVersion = '4.11.0'
-        ext.reownBomVersion = '1.4.11'
+        ext.reownBomVersion = '1.4.12'
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '19.2.0'
         ext.playServicesLocationVersion = '21.3.0'
-        firebaseBomVersion = "34.5.0"
+        firebaseBomVersion = "34.6.0"
         billingKtxVersion = "8.1.0"
         webpdecoderVersion = "2.7.4.16.0"
 
