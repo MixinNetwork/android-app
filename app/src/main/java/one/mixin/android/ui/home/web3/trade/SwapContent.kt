@@ -172,7 +172,7 @@ fun SwapContent(
 
         KeyboardAwareBox(
             modifier = Modifier.fillMaxHeight(),
-            content = {
+            content = { _ ->
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())

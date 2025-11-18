@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import timber.log.Timber
@@ -27,11 +28,12 @@ import timber.log.Timber
 @Composable
 fun KeyboardAwareBox(
     modifier: Modifier = Modifier,
-    content: @Composable BoxScope.() -> Unit,
+    content: @Composable BoxScope.(Dp?) -> Unit,
     floating: @Composable BoxScope.() -> Unit,
 ) {
-    var isKeyboardVisible by remember { mutableStateOf(false) }
+    var isKeyboardVisible by remember { mutableStateOf(true) }
     val view = LocalView.current
+    val density = LocalDensity.current
 
     DisposableEffect(view) {
         val listener = ViewTreeObserver.OnGlobalLayoutListener {
@@ -46,19 +48,21 @@ fun KeyboardAwareBox(
         }
     }
 
+    val screenHeight = with(density) { view.height.toDp() }
+    val systemBarsTop = with(density) { WindowInsets.systemBars.getTop(density).toDp() }
+    val systemBarsBottom = with(density) { WindowInsets.systemBars.getBottom(density).toDp() }
+    val imeBottom = with(density) { WindowInsets.ime.getBottom(density).toDp() }
+
+    val availableHeight = if (isKeyboardVisible) {
+        screenHeight - systemBarsTop - imeBottom
+    } else {
+        null
+    }
 
     Box(modifier = modifier) {
-        content()
+        content(availableHeight)
 
         if (isKeyboardVisible) {
-            val density = LocalDensity.current
-            val imeBottom = with(density) {
-                WindowInsets.ime.getBottom(density).toDp()
-            }
-            val systemBarsBottom = with(density) {
-                WindowInsets.systemBars.getBottom(density).toDp()
-
-            }
             Timber.e("imeBottom: $imeBottom, systemBarsBottom: $systemBarsBottom")
 
             Surface(

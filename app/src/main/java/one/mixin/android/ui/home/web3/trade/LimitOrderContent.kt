@@ -4,6 +4,7 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,16 +17,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
@@ -52,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -229,221 +233,183 @@ fun LimitOrderContent(
 
     fromToken?.let {
         val fromBalance = viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value
-        KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = {
+        KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
             Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-                    .imePadding(),
+                modifier = if (availableHeight != null) {
+                    Modifier
+                        .fillMaxWidth()
+                        .height(availableHeight)
+                } else {
+                    Modifier.fillMaxSize()
+                }
             ) {
-                TradeLayout(
-                    centerCompose = {
-                        Box(
-                            modifier = Modifier
-                                .width(32.dp)
-                                .height(32.dp)
-                                .clip(CircleShape)
-                                .background(MixinAppTheme.colors.accent)
-                                .clickable {
-                                    isReverse = !isReverse
-                                    inputText = outputText
 
-                                    val oldPrice = limitPriceText.toBigDecimalOrNull()
-                                    if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
-                                        limitPriceText = BigDecimal.ONE.divide(
-                                            oldPrice, 8, RoundingMode.HALF_UP
-                                        ).stripTrailingZeros().toPlainString()
-                                    }
-
-                                    fromToken?.let { f ->
-                                        toToken?.let { t ->
-                                            val tokenPair = if (isReverse) listOf(t, f) else listOf(
-                                                f, t
-                                            )
-                                            val serializedPair = GsonHelper.customGson.toJson(tokenPair)
-                                            context.defaultSharedPreferences.putString(
-                                                if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR, serializedPair
-                                            )
-                                        }
-                                    }
-                                    context.clickVibrate()
-                                }
-                                .rotate(rotation),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_switch),
-                                contentDescription = null,
-                                tint = Color.White,
-                            )
-                        }
-                    },
-                    headerCompose = {
-                        InputArea(modifier = Modifier.onFocusChanged {
-                            if (it.isFocused) focusedField = FocusedField.AMOUNT
-                        }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                            onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From)
-                        }, onInputChanged = { inputText = it }, onDeposit = onDeposit, onMax = {
-                            val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                            if (balance > BigDecimal.ZERO) {
-                                inputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                            } else {
-                                inputText = ""
-                            }
-                        })
-                    },
-                    bottomCompose = {
-                        InputArea(
-                            modifier = Modifier,
-                            token = toToken,
-                            text = outputText,
-                            title = stringResource(id = R.string.swap_receive),
-                            readOnly = true,
-                            selectClick = {
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                                onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To)
-                            },
-                            onDeposit = null,
-                        )
-                    },
-                    tailCompose = {
-                        InputArea(
-                            modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) focusedField = FocusedField.PRICE
-                            },
-                            token = if (isPriceInverted) fromToken else toToken,
-                            text = limitPriceText,
-                            title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
-                            readOnly = false,
-                            selectClick = null,
-                            onInputChanged = { limitPriceText = it },
-                            inlineEndCompose = if (isPriceLoading) {
-                                {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier
-                                            .size(26.dp),
-                                        color = MixinAppTheme.colors.textPrimary,
-                                        strokeWidth = 4.dp,
-                                    )
-                                }
-                            } else null,
-                            bottomCompose = {
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                                    val price = limitPriceText.toBigDecimalOrNull()
-                                    val priceText = if (price != null && price > BigDecimal.ZERO) {
-                                        if (!isPriceInverted) {
-                                            "1 ${toToken?.symbol} = ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
-                                        } else {
-                                            val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
-                                            "1 ${fromToken?.symbol} = ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
-                                        }
-                                    } else {
-                                        null
-                                    }
-                                    if (priceText != null) {
-                                        Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterVertically))
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_price_switch),
-                                            contentDescription = null,
-                                            tint = MixinAppTheme.colors.textAssist,
-                                            modifier = Modifier
-                                                .size(16.dp)
-                                                .clickable {
-                                                    val current = limitPriceText.toBigDecimalOrNull()
-                                                    if (current != null && current > BigDecimal.ZERO) {
-                                                        val inverted = BigDecimal.ONE.divide(current, 8, RoundingMode.HALF_UP)
-                                                        limitPriceText = inverted.stripTrailingZeros().toPlainString()
-                                                    }
-                                                    isPriceInverted = !isPriceInverted
-                                                }
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Text(
-                                        text = if (!isPriceInverted) {
-                                            fromToken?.name
-                                        } else {
-                                            toToken?.name
-                                        } ?: "",
-                                        maxLines = 1,
-                                        overflow = TextOverflow.MiddleEllipsis,
-                                        style = TextStyle(
-                                            fontSize = 12.sp,
-                                            color = MixinAppTheme.colors.textAssist,
-                                            textAlign = TextAlign.Start,
-                                        ),
-                                    )
-                                }
-                            },
-                        )
-                    },
-                    margin = 6.dp,
-                )
-
-
-                if (inputText.isBlank()) {
-                    if (limitOrders.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 20.dp)
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .clip(RoundedCornerShape(8.dp))
-                                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                                .padding(16.dp),
-                        ) {
-                            Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            limitOrders.forEach { order ->
-                                OpenOrderItem(order = order, onClick = {
-                                    keyboardController?.hide()
-                                    focusManager.clearFocus()
-                                    onLimitOrderClick(order.orderId)
-                                })
-                            }
-                        }
+                val scrollState = rememberScrollState()
+                Box(
+                    modifier = if (availableHeight != null) {
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .verticalScroll(scrollState)
+                            .verticalScrollbar(scrollState)
                     } else {
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 20.dp)
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .clip(RoundedCornerShape(8.dp))
-                                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                                .padding(16.dp),
-                        ) {
-                            Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    }
+                ) {
+                    TradeLayout(
+                        centerCompose = {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .heightIn(min = 120.dp),
-                                contentAlignment = Alignment.Center
+                                    .width(32.dp)
+                                    .height(32.dp)
+                                    .clip(CircleShape)
+                                    .background(MixinAppTheme.colors.accent)
+                                    .clickable {
+                                        isReverse = !isReverse
+                                        inputText = outputText
+
+                                        val oldPrice = limitPriceText.toBigDecimalOrNull()
+                                        if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
+                                            limitPriceText = BigDecimal.ONE.divide(
+                                                oldPrice, 8, RoundingMode.HALF_UP
+                                            ).stripTrailingZeros().toPlainString()
+                                        }
+
+                                        fromToken?.let { f ->
+                                            toToken?.let { t ->
+                                                val tokenPair = if (isReverse) listOf(t, f) else listOf(
+                                                    f, t
+                                                )
+                                                val serializedPair = GsonHelper.customGson.toJson(tokenPair)
+                                                context.defaultSharedPreferences.putString(
+                                                    if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR, serializedPair
+                                                )
+                                            }
+                                        }
+                                        context.clickVibrate()
+                                    }
+                                    .rotate(rotation),
+                                contentAlignment = Alignment.Center,
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_empty_file),
-                                        contentDescription = null,
-                                        tint = MixinAppTheme.colors.iconGray,
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = stringResource(id = R.string.no_order),
-                                        color = MixinAppTheme.colors.textAssist,
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                }
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_switch),
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                )
                             }
-                        }
-                    }
-                } else {
-                    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                        },
+                        headerCompose = {
+                            InputArea(modifier = Modifier.onFocusChanged {
+                                if (it.isFocused) focusedField = FocusedField.AMOUNT
+                            }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From)
+                            }, onInputChanged = { inputText = it }, onDeposit = onDeposit, onMax = {
+                                val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                if (balance > BigDecimal.ZERO) {
+                                    inputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+                                } else {
+                                    inputText = ""
+                                }
+                            })
+                        },
+                        bottomCompose = {
+                            InputArea(
+                                modifier = Modifier,
+                                token = toToken,
+                                text = outputText,
+                                title = stringResource(id = R.string.swap_receive),
+                                readOnly = true,
+                                selectClick = {
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                    onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To)
+                                },
+                                onDeposit = null,
+                            )
+                        },
+                        tailCompose = {
+                            InputArea(
+                                modifier = Modifier.onFocusChanged {
+                                    if (it.isFocused) focusedField = FocusedField.PRICE
+                                },
+                                token = if (isPriceInverted) fromToken else toToken,
+                                text = limitPriceText,
+                                title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
+                                readOnly = false,
+                                selectClick = null,
+                                onInputChanged = { limitPriceText = it },
+                                inlineEndCompose = if (isPriceLoading) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier
+                                                .size(26.dp),
+                                            color = MixinAppTheme.colors.textPrimary,
+                                            strokeWidth = 4.dp,
+                                        )
+                                    }
+                                } else null,
+                                bottomCompose = {
+                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                                        val price = limitPriceText.toBigDecimalOrNull()
+                                        val priceText = if (price != null && price > BigDecimal.ZERO) {
+                                            if (!isPriceInverted) {
+                                                "1 ${toToken?.symbol} = ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
+                                            } else {
+                                                val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
+                                                "1 ${fromToken?.symbol} = ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
+                                            }
+                                        } else {
+                                            null
+                                        }
+                                        if (priceText != null) {
+                                            Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterVertically))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_price_switch),
+                                                contentDescription = null,
+                                                tint = MixinAppTheme.colors.textAssist,
+                                                modifier = Modifier
+                                                    .size(16.dp)
+                                                    .clickable {
+                                                        val current = limitPriceText.toBigDecimalOrNull()
+                                                        if (current != null && current > BigDecimal.ZERO) {
+                                                            val inverted = BigDecimal.ONE.divide(current, 8, RoundingMode.HALF_UP)
+                                                            limitPriceText = inverted.stripTrailingZeros().toPlainString()
+                                                        }
+                                                        isPriceInverted = !isPriceInverted
+                                                    }
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Text(
+                                            text = if (!isPriceInverted) {
+                                                fromToken?.name
+                                            } else {
+                                                toToken?.name
+                                            } ?: "",
+                                            maxLines = 1,
+                                            overflow = TextOverflow.MiddleEllipsis,
+                                            style = TextStyle(
+                                                fontSize = 12.sp,
+                                                color = MixinAppTheme.colors.textAssist,
+                                                textAlign = TextAlign.Start,
+                                            ),
+                                        )
+                                    }
+                                },
+                            )
+                        },
+                        margin = 6.dp,
+                    )
+                }
+
+                if (availableHeight != null || inputText.isNotBlank()) {
+                    Column(modifier = Modifier.padding(horizontal = 20.dp).wrapContentHeight().padding(bottom = 20.dp)) {
                         Spacer(modifier = Modifier.height(14.dp))
                         ExpirySelector(
                             expiryOption = expiryOption,
@@ -451,6 +417,9 @@ fun LimitOrderContent(
                         )
 
                         Spacer(modifier = Modifier.height(14.dp))
+                        if (availableHeight == null) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                         val keyboardController = LocalSoftwareKeyboardController.current
                         val focusManager = LocalFocusManager.current
                         val checkBalance = checkBalance(inputText, fromBalance)
@@ -477,7 +446,7 @@ fun LimitOrderContent(
                                             val fromAddress = if (!inMixin) {
                                                 viewModel.getAddressesByChainId(Web3Signer.currentWalletId, fromTokenValue.chain.chainId)?.destination
                                             } else null
-                                            
+
                                             val toAddress = if (!inMixin) {
                                                 viewModel.getAddressesByChainId(Web3Signer.currentWalletId, toTokenValue.chain.chainId)?.destination
                                             } else null
@@ -544,6 +513,66 @@ fun LimitOrderContent(
                             }
                         }
                     }
+                    if (availableHeight != null) {
+                        Spacer(modifier = Modifier.height(108.dp))
+                    }
+                } else {
+                    if (limitOrders.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 20.dp)
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .clip(RoundedCornerShape(8.dp))
+                                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                                .padding(16.dp),
+                        ) {
+                            Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            limitOrders.forEach { order ->
+                                OpenOrderItem(order = order, onClick = {
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                    onLimitOrderClick(order.orderId)
+                                })
+                            }
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 20.dp)
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .clip(RoundedCornerShape(8.dp))
+                                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                                .padding(16.dp),
+                        ) {
+                            Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .heightIn(min = 120.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_empty_file),
+                                        contentDescription = null,
+                                        tint = MixinAppTheme.colors.iconGray,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = stringResource(id = R.string.no_order),
+                                        color = MixinAppTheme.colors.textAssist,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }, floating = {
@@ -575,6 +604,39 @@ private fun parseRateFromQuote(q: QuoteResult?): BigDecimal? {
         return null
     } else {
         return outputAmount.divide(inputAmount)
+    }
+}
+
+@Composable
+fun Modifier.verticalScrollbar(
+    state: ScrollState,
+    width: Dp = 4.dp,
+    color: Color = MixinAppTheme.colors.accent.copy(alpha = 0.3f),
+): Modifier {
+    return drawWithContent {
+        drawContent()
+
+        val canScroll = state.maxValue > 0
+        if (canScroll) {
+            val viewportHeight = this.size.height
+            val contentHeight = state.maxValue + viewportHeight
+            
+            val scrollRatio = viewportHeight / contentHeight
+            
+            val scrollbarHeight = (scrollRatio * viewportHeight)
+                .coerceAtLeast(20.dp.toPx())
+                .coerceAtMost(viewportHeight * 0.5f)
+            
+            val scrollProgress = state.value.toFloat() / state.maxValue
+            val scrollbarOffsetY = scrollProgress * (viewportHeight - scrollbarHeight)
+
+            drawRoundRect(
+                color = color,
+                cornerRadius = CornerRadius(width.toPx() / 2, width.toPx() / 2),
+                topLeft = Offset(this.size.width - width.toPx() - 4.dp.toPx(), scrollbarOffsetY),
+                size = Size(width.toPx(), scrollbarHeight),
+            )
+        }
     }
 }
 

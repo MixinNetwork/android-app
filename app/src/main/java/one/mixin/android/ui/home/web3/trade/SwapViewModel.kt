@@ -19,10 +19,10 @@ import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
-import one.mixin.android.db.WalletDatabase
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository

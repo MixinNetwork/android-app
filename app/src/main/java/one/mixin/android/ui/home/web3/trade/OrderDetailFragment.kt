@@ -28,7 +28,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
@@ -38,7 +37,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 import javax.inject.Inject
 
