@@ -45,10 +45,9 @@ object SystemUIManager {
         imePadding: Boolean = false
     ) {
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
-
-            val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
-            val navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars())
-            val imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
             view.setPadding(
                 0,
                 if (onlyNav) 0 else statusBarInsets.top,
