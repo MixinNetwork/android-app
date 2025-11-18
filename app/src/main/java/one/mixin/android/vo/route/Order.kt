@@ -70,9 +70,6 @@ data class Order(
     @ColumnInfo(name = "expected_receive_amount")
     @SerializedName("expected_receive_amount")
     val expectedReceiveAmount: String? = null,
-    @ColumnInfo(name = "updated_at")
-    @SerializedName("updated_at")
-    val updatedAt: String? = null,
     @ColumnInfo(name = "expired_at")
     @SerializedName("expired_at")
     val expiredAt: String? = null,

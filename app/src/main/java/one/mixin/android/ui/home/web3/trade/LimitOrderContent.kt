@@ -184,15 +184,28 @@ fun LimitOrderContent(
         val toT = toToken
         if (fromT != null && toT != null) {
             // Prefer MarketDao prices
-            val fromMarket = viewModel.checkMarketById(fromT.assetId, false)
-            val toMarket = viewModel.checkMarketById(toT.assetId, false)
-            val fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
-            val toP = toMarket?.currentPrice?.toBigDecimalOrNull()
+            var fromMarket = viewModel.checkMarketById(fromT.assetId, false)
+            var toMarket = viewModel.checkMarketById(toT.assetId, false)
+            var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
+            var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
             if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                marketPrice = price
-                limitPriceText = price.stripTrailingZeros().toPlainString()
+                val localPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                marketPrice = localPrice
+                limitPriceText = localPrice.stripTrailingZeros().toPlainString()
                 isPriceLoading = false
+                fromMarket = viewModel.checkMarketById(fromT.assetId, true)
+                toMarket = viewModel.checkMarketById(toT.assetId, true)
+                fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
+                toP = toMarket?.currentPrice?.toBigDecimalOrNull()
+                if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
+                    val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                    marketPrice = localPrice
+                    limitPriceText = localPrice.stripTrailingZeros().toPlainString()
+                    if (marketPrice == localPrice) {
+                        marketPrice = price
+                        limitPriceText = price.stripTrailingZeros().toPlainString()
+                    }
+                }
             } else {
                 // Fallback to quote API (use amount = 1 fromToken in smallest unit)
                 val amount = runCatching { fromT.toLongAmount("1").toString() }.getOrElse { "1" }
