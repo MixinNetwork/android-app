@@ -476,12 +476,20 @@ fun DetailItem(
                                 value = context.getString(R.string.order_type_limit),
                             )
                         } else {
-                            // Wallet row
                             val isPrivacyWallet = currentWalletId != null && currentWalletId == Session.getAccountId()
-                            DetailItem(
-                                label = stringResource(R.string.Wallet).uppercase(),
-                                value = if (isPrivacyWallet) stringResource(id = R.string.Privacy_Wallet) else (walletDisplayName ?: stringResource(id = R.string.Common_Wallet)),
-                            )
+                            if (isPrivacyWallet) {
+                                ItemWalletContent(title = stringResource(id = R.string.Wallet).uppercase(), fontSize = 16.sp, padding = 0.dp)
+                                Spacer(modifier = Modifier.height(20.dp))
+                            } else {
+                                ItemContent(
+                                    title = stringResource(id = R.string.Receivers).uppercase(),
+                                    subTitle = toAddress ?: "",
+                                    label = walletDisplayName,
+                                    isAddress = !toAddress.isNullOrBlank(),
+                                    padding = 0.dp
+                                )
+                                Spacer(modifier = Modifier.height(20.dp))
+                            }
                             DetailItem(
                                 label = stringResource(R.string.Type).uppercase(),
                                 value = context.getString(R.string.order_type_swap),
