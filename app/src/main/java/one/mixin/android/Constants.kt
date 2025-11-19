@@ -90,7 +90,9 @@ object Constants {
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_SWAP_LAST_PAIR = "pref_swap_last_pair"
+        const val PREF_LIMIT_SWAP_LAST_PAIR = "pref_limit_swap_last_pair"
         const val PREF_WEB3_SWAP_LAST_PAIR = "pref_web3_swap_last_pair"
+        const val PREF_WEB3_LIMIT_SWAP_LAST_PAIR = "pref_web3_limit_swap_last_pair"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
         const val PREF_MARKET_TYPE = "pref_market_type"
         const val PREF_MARKET_ORDER = "pref_market_order"
@@ -113,8 +115,12 @@ object Constants {
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
+        const val PREF_TO_LIMIT_SWAP = "pref_to_limit_swap"
+        const val PREF_FROM_LIMIT_SWAP = "pref_from_limit_swap"
         const val PREF_TO_WEB3_SWAP = "pref_to_web3_swap"
         const val PREF_FROM_WEB3_SWAP = "pref_from_web3_swap"
+        const val PREF_TO_WEB3_LIMIT_SWAP = "pref_to_web3_limit_swap"
+        const val PREF_FROM_WEB3_LIMIT_SWAP = "pref_from_web3_limit_swap"
         const val PREF_WALLET_SEND = "pref_wallet_send"
         const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
 

@@ -63,8 +63,10 @@ import java.math.BigDecimal
 @Composable
 fun TradePage(
     walletId: String?,
-    from: SwapToken?,
-    to: SwapToken?,
+    swapFrom: SwapToken?,
+    swapTo: SwapToken?,
+    limitFrom: SwapToken?,
+    limitTo: SwapToken?,
     inMixin: Boolean,
     orderBadge: Boolean,
     initialAmount: String?,
@@ -72,7 +74,7 @@ fun TradePage(
     reviewing: Boolean,
     openLimit: Boolean,
     source: String,
-    onSelectToken: (Boolean, SelectTokenType) -> Unit,
+    onSelectToken: (Boolean, SelectTokenType, Boolean) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -109,26 +111,26 @@ fun TradePage(
     val tabs = listOf(
         TabItem(stringResource(id = R.string.Trade_Simple)) {
             SwapContent(
-                from = from,
-                to = to,
+                from = swapFrom,
+                to = swapTo,
                 inMixin = inMixin,
                 initialAmount = initialAmount,
                 lastOrderTime = lastOrderTime,
                 reviewing = reviewing,
                 source = source,
-                onSelectToken = onSelectToken,
+                onSelectToken = { isReverse, type -> onSelectToken(isReverse, type, false) },
                 onReview = onReview,
                 onDeposit = onDeposit,
             )
         },
         TabItem(stringResource(id = R.string.Trade_Advanced)) {
             LimitOrderContent(
-                from = from,
-                to = to,
+                from = limitFrom,
+                to = limitTo,
                 inMixin = inMixin,
                 initialAmount = initialAmount,
                 lastOrderTime = lastOrderTime,
-                onSelectToken = onSelectToken,
+                onSelectToken = { isReverse, type -> onSelectToken(isReverse, type, true) },
                 onLimitReview = onLimitReview,
                 onDeposit = onDeposit,
                 onLimitOrderClick = onLimitOrderClick,

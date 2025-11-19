@@ -24,7 +24,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
+import one.mixin.android.Constants.Account.PREF_LIMIT_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
+import one.mixin.android.Constants.Account.PREF_WEB3_LIMIT_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
@@ -130,6 +132,8 @@ class TradeFragment : BaseFragment() {
     private var web3tokens: List<Web3TokenItem>? = null
     private var fromToken: SwapToken? by mutableStateOf(null)
     private var toToken: SwapToken? by mutableStateOf(null)
+    private var limitFromToken: SwapToken? by mutableStateOf(null)
+    private var limitToToken: SwapToken? by mutableStateOf(null)
 
     private var initialAmount: String? = null
     private var lastOrderTime: Long by mutableLongStateOf(0)
@@ -198,8 +202,10 @@ class TradeFragment : BaseFragment() {
                             jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
                             TradePage(
                                 walletId = walletId,
-                                from = fromToken,
-                                to = toToken,
+                                swapFrom = fromToken,
+                                swapTo = toToken,
+                                limitFrom = limitFromToken,
+                                limitTo = limitToToken,
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
                                 initialAmount = initialAmount,
@@ -207,11 +213,11 @@ class TradeFragment : BaseFragment() {
                                 reviewing = reviewing,
                                 openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true,
                                 source = getSource(),
-                                onSelectToken = { isReverse, type ->
+                                onSelectToken = { isReverse, type, isLimit ->
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
-                                        selectCallback(swapTokens, isReverse, type)
+                                        selectCallback(swapTokens, isReverse, type, isLimit)
                                     } else {
-                                        selectCallback(remoteSwapTokens, isReverse, type)
+                                        selectCallback(remoteSwapTokens, isReverse, type, isLimit)
                                     }
                                 },
                                 onReview = { quote, from, to, amount ->
@@ -266,12 +272,18 @@ class TradeFragment : BaseFragment() {
         list: List<SwapToken>,
         isReverse: Boolean,
         type: SelectTokenType,
+        isLimit: Boolean,
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
+            val targetPref = if (isLimit) {
+                if (inMixin()) Account.PREF_FROM_LIMIT_SWAP else Account.PREF_FROM_WEB3_LIMIT_SWAP
+            } else {
+                if (inMixin()) Account.PREF_FROM_SWAP else Account.PREF_FROM_WEB3_SWAP
+            }
             if (inMixin()) {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
-                    Account.PREF_FROM_SWAP,
-                    ArrayList(list), if (isReverse) toToken?.assetId else fromToken?.assetId,
+                    targetPref,
+                    ArrayList(list), if (isReverse) (if (isLimit) limitToToken?.assetId else toToken?.assetId) else (if (isLimit) limitFromToken?.assetId else fromToken?.assetId),
                     isFrom = true
                 ).apply {
                     if (list.isEmpty()) {
@@ -282,14 +294,14 @@ class TradeFragment : BaseFragment() {
                         dismissNow()
                     }
                     setOnClickListener { t, _ ->
-                        saveQuoteToken(t, isReverse, type)
-                        requireContext().defaultSharedPreferences.addToList(Account.PREF_FROM_SWAP, t, SwapToken::class.java)
+                        saveQuoteToken(t, isReverse, type, isLimit)
+                        requireContext().defaultSharedPreferences.addToList(targetPref, t, SwapToken::class.java)
                         dismissNow()
                     }
                 }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
             } else {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
-                    Constants.Account.PREF_FROM_WEB3_SWAP,
+                    targetPref,
                     ArrayList(
                         list,
                     ),
@@ -313,15 +325,20 @@ class TradeFragment : BaseFragment() {
                             SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                             return@setOnClickListener
                         }
-                        requireContext().defaultSharedPreferences.addToList(Constants.Account.PREF_FROM_WEB3_SWAP, token, SwapToken::class.java)
-                        saveQuoteToken(token, isReverse, type)
+                        requireContext().defaultSharedPreferences.addToList(targetPref, token, SwapToken::class.java)
+                        saveQuoteToken(token, isReverse, type, isLimit)
                         dismissNow()
                     }
                 }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
             }
         } else {
+            val targetPref = if (isLimit) {
+                if (inMixin()) Account.PREF_TO_LIMIT_SWAP else Account.PREF_TO_WEB3_LIMIT_SWAP
+            } else {
+                if (inMixin()) Account.PREF_TO_SWAP else Account.PREF_TO_WEB3_SWAP
+            }
             SwapTokenListBottomSheetDialogFragment.newInstance(
-                if (inMixin()) Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP,
+                targetPref,
                 tokens =
                     ArrayList(
                         list.run {
@@ -329,7 +346,7 @@ class TradeFragment : BaseFragment() {
                         },
                     ),
                 if (inMixin()) {
-                    if (isReverse) fromToken?.assetId else toToken?.assetId
+                    if (isReverse) (if (isLimit) limitFromToken?.assetId else fromToken?.assetId) else (if (isLimit) limitToToken?.assetId else toToken?.assetId)
                 } else null,
                 isFrom = false,
             ).apply {
@@ -341,8 +358,8 @@ class TradeFragment : BaseFragment() {
                         SwapTokenBottomSheetDialogFragment.newInstance(token).showNow(parentFragmentManager, SwapTokenBottomSheetDialogFragment.TAG)
                         return@setOnClickListener
                     }
-                    requireContext().defaultSharedPreferences.addToList(if (inMixin()) Account.PREF_TO_SWAP else Constants.Account.PREF_TO_WEB3_SWAP, token, SwapToken::class.java)
-                    saveQuoteToken(token, isReverse, type)
+                    requireContext().defaultSharedPreferences.addToList(targetPref, token, SwapToken::class.java)
+                    saveQuoteToken(token, isReverse, type, isLimit)
                     dismissNow()
                 }
             }.show(parentFragmentManager, SwapTokenListBottomSheetDialogFragment.TAG)
@@ -389,24 +406,47 @@ class TradeFragment : BaseFragment() {
         token: SwapToken,
         isReverse: Boolean,
         type: SelectTokenType,
+        isLimit: Boolean,
     ) {
-        if (type == SelectTokenType.From) {
-            if (token == toToken) {
-                toToken = fromToken
+        if (isLimit) {
+            if (type == SelectTokenType.From) {
+                if (token == limitToToken) {
+                    limitToToken = limitFromToken
+                }
+                limitFromToken = token
+            } else {
+                if (token == limitFromToken) {
+                    limitFromToken = limitToToken
+                }
+                limitToToken = token
             }
-            fromToken = token
-        } else {
-            if (token == fromToken) {
-                fromToken = toToken
-            }
-            toToken = token
-        }
 
-        fromToken?.let { from ->
-            toToken?.let { to ->
-                val tokenPair = if (isReverse) listOf(to, from) else listOf(from, to)
-                val serializedPair = GsonHelper.customGson.toJson(tokenPair)
-                defaultSharedPreferences.putString(preferenceKey, serializedPair)
+            limitFromToken?.let { from ->
+                limitToToken?.let { to ->
+                    val tokenPair = if (isReverse) listOf(to, from) else listOf(from, to)
+                    val serializedPair = GsonHelper.customGson.toJson(tokenPair)
+                    defaultSharedPreferences.putString(getPreferenceKey(true), serializedPair)
+                }
+            }
+        } else {
+            if (type == SelectTokenType.From) {
+                if (token == toToken) {
+                    toToken = fromToken
+                }
+                fromToken = token
+            } else {
+                if (token == fromToken) {
+                    fromToken = toToken
+                }
+                toToken = token
+            }
+
+            fromToken?.let { from ->
+                toToken?.let { to ->
+                    val tokenPair = if (isReverse) listOf(to, from) else listOf(from, to)
+                    val serializedPair = GsonHelper.customGson.toJson(tokenPair)
+                    defaultSharedPreferences.putString(getPreferenceKey(false), serializedPair)
+                }
             }
         }
     }
@@ -518,41 +558,52 @@ class TradeFragment : BaseFragment() {
         swappable.map { it.toSwapToken() }.toList().let {
             swapTokens = it.sortByKeywordAndBalance()
         }
-        swappable.let { tokens ->
-            val input = requireArguments().getString(ARGS_INPUT)
-            val output = requireArguments().getString(ARGS_OUTPUT)
-            val lastSelectedPairJson = defaultSharedPreferences.getString(preferenceKey, null)
-            val lastSelectedPair: List<SwapToken>? = lastSelectedPairJson?.let {
-                val type = object : TypeToken<List<SwapToken>>() {}.type
-                GsonHelper.customGson.fromJson(it, type)
-            }
-            val lastFrom = lastSelectedPair?.getOrNull(0)
-            val lastTo = lastSelectedPair?.getOrNull(1)
+        initTokenPair(swapTokens, false)
+        initTokenPair(swapTokens, true)
+    }
 
-            fromToken = if (input != null) {
-                if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
-            } else if (lastFrom != null) {
-                if (inMixin()) swapViewModel.findToken(lastFrom.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastFrom.assetId)?.toSwapToken()
+    private suspend fun initTokenPair(tokens: List<SwapToken>, isLimit: Boolean) {
+        val input = requireArguments().getString(ARGS_INPUT)
+        val output = requireArguments().getString(ARGS_OUTPUT)
+        val lastSelectedPairJson = defaultSharedPreferences.getString(getPreferenceKey(isLimit), null)
+        val lastSelectedPair: List<SwapToken>? = lastSelectedPairJson?.let {
+            val type = object : TypeToken<List<SwapToken>>() {}.type
+            GsonHelper.customGson.fromJson(it, type)
+        }
+        val lastFrom = lastSelectedPair?.getOrNull(0)
+        val lastTo = lastSelectedPair?.getOrNull(1)
+
+        val tempFromToken = if (input != null) {
+            if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
+        } else if (lastFrom != null) {
+            if (inMixin()) swapViewModel.findToken(lastFrom.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastFrom.assetId)?.toSwapToken()
+        } else {
+            tokens.firstOrNull { t -> t.getUnique() in Constants.usdIds }
+        }
+        var tempToToken = if (output != null) {
+            if (inMixin()) swapViewModel.findToken(output)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, output)?.toSwapToken()
+        } else if (input != null) {
+            val o = if (input in Constants.usdIds) {
+                XIN_ASSET_ID
             } else {
-                (tokens.firstOrNull { t -> t.getUnique() in Constants.usdIds })?.toSwapToken()
+                USDT_ASSET_ETH_ID
             }
-            toToken = if (output != null) {
-                if (inMixin()) swapViewModel.findToken(output)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, output)?.toSwapToken()
-            } else if (input != null) {
-                val o = if (input in Constants.usdIds) {
-                    XIN_ASSET_ID
-                } else {
-                    USDT_ASSET_ETH_ID
-                }
-                if (inMixin()) swapViewModel.findToken(o)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, o)?.toSwapToken()
-            } else if (lastTo != null) {
-                if (inMixin()) swapViewModel.findToken(lastTo.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastTo.assetId)?.toSwapToken()
-            } else {
-                (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds })?.toSwapToken()
-            }
-            if (toToken?.getUnique() == fromToken?.getUnique()) {
-                toToken = (tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != fromToken?.getUnique() })?.toSwapToken()
-            }
+            if (inMixin()) swapViewModel.findToken(o)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, o)?.toSwapToken()
+        } else if (lastTo != null) {
+            if (inMixin()) swapViewModel.findToken(lastTo.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastTo.assetId)?.toSwapToken()
+        } else {
+            tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds }
+        }
+        if (tempToToken?.getUnique() == tempFromToken?.getUnique()) {
+            tempToToken = tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() }
+        }
+
+        if (isLimit) {
+            limitFromToken = tempFromToken
+            limitToToken = tempToToken
+        } else {
+            fromToken = tempFromToken
+            toToken = tempToToken
         }
     }
 
@@ -600,6 +651,12 @@ class TradeFragment : BaseFragment() {
                 if (toToken == null || toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
                 }
+                if (limitFromToken == null) {
+                    limitFromToken = swapTokens.firstOrNull { t -> limitFromToken == t } ?: swapTokens[0]
+                }
+                if (limitToToken == null || limitToToken?.getUnique() == limitFromToken?.getUnique()) {
+                    limitToToken = swapTokens.firstOrNull { s -> s.assetId != limitFromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
+                }
                 if (swapTokens.isNotEmpty()) {
                     (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
                 }
@@ -619,12 +676,18 @@ class TradeFragment : BaseFragment() {
                 if (toToken == null || toToken?.getUnique() == fromToken?.getUnique()) {
                     toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId }
                 }
+                if (limitFromToken == null) {
+                    limitFromToken = swapTokens.firstOrNull { t -> limitFromToken == t } ?: swapTokens[0]
+                }
+                if (limitToToken == null || limitToToken?.getUnique() == limitFromToken?.getUnique()) {
+                    limitToToken = swapTokens.firstOrNull { s -> s.assetId != limitFromToken?.assetId }
+                }
             }
             if (swapTokens.isNotEmpty()) {
                 (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
             }
             if (fromToken != null && toToken != null) {
-                refreshTokensPrice(listOf(fromToken!!, toToken!!))
+                refreshTokensPrice(listOfNotNull(fromToken, toToken, limitFromToken, limitToToken).distinct())
             }
         }
     }
@@ -651,7 +714,14 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
-    private val preferenceKey by lazy { if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"}
+
+    private fun getPreferenceKey(isLimit: Boolean): String {
+        return if (isLimit) {
+            if (inMixin()) PREF_LIMIT_SWAP_LAST_PAIR else "${PREF_WEB3_LIMIT_SWAP_LAST_PAIR} ${Web3Signer.currentWalletId}"
+        } else {
+            if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"
+        }
+    }
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
     private fun getReferral(): String? = arguments?.getString(ARGS_REFERRAL)
