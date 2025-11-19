@@ -406,10 +406,12 @@ fun DetailItem(
                         }
                         if (order.type == "limit") {
                             val filled = runCatching { BigDecimal(order.filledReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
-                            val expected = runCatching { BigDecimal(order.expectedReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
-                            val percentStr = if (expected > BigDecimal.ZERO) {
-                                filled
-                                    .divide(expected, 6, RoundingMode.HALF_UP)
+                            val payAmount = runCatching { BigDecimal(order.payAmount) }.getOrDefault(BigDecimal.ZERO)
+                            val pendingAmount = runCatching { BigDecimal(order.pendingAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
+
+                            val percentStr = if (payAmount > BigDecimal.ZERO) {
+                                payAmount.subtract(pendingAmount)
+                                    .divide(payAmount, 6, RoundingMode.HALF_UP)
                                     .min(BigDecimal.ONE) // cap at 100%
                                     .multiply(BigDecimal(100))
                                     .setScale(2, RoundingMode.HALF_UP)

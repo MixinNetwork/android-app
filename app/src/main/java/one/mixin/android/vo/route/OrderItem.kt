@@ -73,4 +73,7 @@ data class OrderItem(
     @ColumnInfo(name = "expired_at")
     @SerializedName("expired_at")
     val expiredAt: String?,
+    @ColumnInfo(name = "pending_amount")
+    @SerializedName("pending_amount")
+    val pendingAmount: String?
 ) : Parcelable

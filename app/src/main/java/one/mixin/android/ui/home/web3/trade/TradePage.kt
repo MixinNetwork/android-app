@@ -144,7 +144,7 @@ fun TradePage(
     val coroutineScope = rememberCoroutineScope()
 
     PageScaffold(
-        title = stringResource(id = R.string.Swap),
+        title = stringResource(id = R.string.Trade),
         subtitle = {
             val text = if (walletId == null) {
                 stringResource(id = R.string.Privacy_Wallet)

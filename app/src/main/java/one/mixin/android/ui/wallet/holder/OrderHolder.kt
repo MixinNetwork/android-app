@@ -38,7 +38,11 @@ class OrderHolder(private val binding: ItemLimitOrderBinding) : RecyclerView.Vie
         val receiveAmountText = (if (orderState.isPending()) {
             order.expectedReceiveAmount
         } else {
-            order.filledReceiveAmount ?: order.receiveAmount ?: order.expectedReceiveAmount
+            if(order.filledReceiveAmount.isNullOrBlank() || BigDecimal(order.filledReceiveAmount) == BigDecimal.ZERO) {
+                order.receiveAmount ?: order.expectedReceiveAmount
+            } else {
+                order.filledReceiveAmount
+            }
         } ?: "0").ifEmpty { "0" }.numberFormat()
         binding.line3Left.text = "+${receiveAmountText} ${right}"
 
