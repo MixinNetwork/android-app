@@ -50,6 +50,11 @@ enum class OrderState(val value: String) {
         else -> false
     }
 
+    fun isCancel() : Boolean = when (this) {
+        CANCELLED, CANCELLING -> true
+        else -> false
+    }
+
     fun isDone(): Boolean = when (this) {
         SUCCESS, SETTLED -> true
         else -> false

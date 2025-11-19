@@ -65,17 +65,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.route.OrderState
-import one.mixin.android.vo.route.OrderState.CANCELLED
-import one.mixin.android.vo.route.OrderState.CANCELLING
-import one.mixin.android.vo.route.OrderState.CREATED
-import one.mixin.android.vo.route.OrderState.EXPIRED
-import one.mixin.android.vo.route.OrderState.FAILED
-import one.mixin.android.vo.route.OrderState.PENDING
-import one.mixin.android.vo.route.OrderState.PRICING
-import one.mixin.android.vo.route.OrderState.QUOTING
-import one.mixin.android.vo.route.OrderState.REFUNDED
-import one.mixin.android.vo.route.OrderState.SETTLED
-import one.mixin.android.vo.route.OrderState.SUCCESS
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -194,6 +183,7 @@ fun DetailItem(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
                 orderItem.value?.let { order ->
+                    val uiState = OrderState.from(order.state)
                     LaunchedEffect(currentWalletId, order.receiveChainId) {
                         val wId = currentWalletId
                         val chainId = order.receiveChainId
@@ -250,7 +240,6 @@ fun DetailItem(
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                         Spacer(modifier = Modifier.height(10.dp))
-                        val uiState = OrderState.from(order.state)
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
@@ -401,31 +390,15 @@ fun DetailItem(
                             order.assetIconUrl,
                             order.payChainName ?: ""
                         )
-                        
-                        val filledAmount = runCatching { BigDecimal(order.filledReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
-                        val expectedAmount = runCatching { BigDecimal(order.expectedReceiveAmount ?: "0") }.getOrDefault(BigDecimal.ZERO)
-                        val hasPartialFill = filledAmount > BigDecimal.ZERO && order.state == CANCELLED.value || order.state == SUCCESS.value
-                        
-                        if (hasPartialFill) {
-                            val pendingAmount = expectedAmount.subtract(filledAmount)
-                            DetailItemMultipleReceive(
-                                label = context.getString(R.string.swap_order_received).uppercase(),
-                                filledAmount = "+${filledAmount.stripTrailingZeros().toPlainString()} ${order.receiveAssetSymbol}",
-                                pendingAmount = if (pendingAmount > BigDecimal.ZERO) "+${pendingAmount.stripTrailingZeros().toPlainString()} ${order.assetSymbol}" else null,
-                                icon = order.receiveAssetIconUrl,
-                                chain = order.receiveChainName ?: "",
-                                pendingChain = order.payChainName,
-                                pendingIcon = order.assetIconUrl
-                            )
-                        } else {
-                            DetailItem(
-                                if (order.state == SUCCESS.value) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
-                                "+${if (order.state == SUCCESS.value) (order.filledReceiveAmount ?: "0") else (order.expectedReceiveAmount ?: order.receiveAmount ?: "0")} ${order.receiveAssetSymbol}",
-                                MixinAppTheme.colors.walletGreen,
-                                order.receiveAssetIconUrl,
-                                order.receiveChainName ?: ""
-                            )
-                        }
+
+                        DetailItem(
+                            if (uiState.isDone()) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
+                            "+${if (uiState.isDone()) (order.filledReceiveAmount ?: "0") else (order.expectedReceiveAmount ?: order.receiveAmount ?: "0")} ${order.receiveAssetSymbol}",
+                            if (uiState.isCancel() || uiState.isPending()) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.walletGreen,
+                            order.receiveAssetIconUrl,
+                            order.receiveChainName ?: ""
+                        )
+
                         if (order.type == "limit") {
                             DetailPriceItemLimit(order)
                         } else {
