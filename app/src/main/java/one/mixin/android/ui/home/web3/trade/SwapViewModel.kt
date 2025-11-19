@@ -78,7 +78,6 @@ class SwapViewModel
         return response
     }
 
-    suspend fun getLimitOrder(id: String, walletId: String? = null): MixinResponse<Order> = assetRepository.getLimitOrder(id, walletId)
     suspend fun cancelLimitOrder(id: String): MixinResponse<Order> = withContext(Dispatchers.IO) {
         assetRepository.cancelLimitOrder(id)
     }

@@ -398,7 +398,7 @@ class AssetRepository
 
     suspend fun getLimitOrders(ids: List<String>): MixinResponse<List<Order>> = routeService.getLimitOrders(ids)
 
-    suspend fun getLimitOrder(id: String, walletId: String? = null): MixinResponse<Order> = routeService.getLimitOrder(id, walletId)
+    suspend fun getLimitOrder(id: String): MixinResponse<Order> = routeService.getLimitOrder(id)
     suspend fun cancelLimitOrder(id: String): MixinResponse<Order> {
         val o = routeService.cancelLimitOrder(id)
         if (o.isSuccess) {

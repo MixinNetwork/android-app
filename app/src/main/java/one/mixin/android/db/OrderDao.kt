@@ -11,7 +11,11 @@ interface OrderDao : BaseDao<Order> {
 
     @Query(
         """
-        SELECT o.*, t.icon_url as asset_icon_url, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, t.symbol as asset_symbol,  pc.name AS pay_chain_name, rc.name AS receive_chain_name FROM orders o
+        SELECT o.order_id, o.wallet_id, o.user_id, o.pay_asset_id, t.chain_id as pay_chain_id, t.icon_url as asset_icon_url, t.symbol as asset_symbol, 
+        o.receive_asset_id, rt.chain_id as receive_chain_id, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, 
+        o.pay_amount, o.receive_amount, o.state, o.order_type, pc.name AS pay_chain_name, rc.name AS receive_chain_name, o.created_at, 
+        o.expected_receive_amount, o.filled_receive_amount, o.price, o.expired_at, o.pending_amount
+        FROM orders o
         LEFT JOIN tokens t ON o.pay_asset_id = t.asset_id
         LEFT JOIN tokens rt ON o.receive_asset_id = rt.asset_id
         LEFT JOIN chains pc ON t.chain_id = pc.chain_id
@@ -23,7 +27,10 @@ interface OrderDao : BaseDao<Order> {
 
     @Query(
         """
-        SELECT o.*, t.icon_url as asset_icon_url, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, t.symbol as asset_symbol, rt.chain_id as receive_chain_id, t.chain_id as pay_chain_id,  pc.name AS pay_chain_name, rc.name AS receive_chain_name
+        SELECT o.order_id, o.wallet_id, o.user_id, o.pay_asset_id, t.chain_id as pay_chain_id, t.icon_url as asset_icon_url, t.symbol as asset_symbol, 
+        o.receive_asset_id, rt.chain_id as receive_chain_id, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, 
+        o.pay_amount, o.receive_amount, o.state, o.order_type, pc.name AS pay_chain_name, rc.name AS receive_chain_name, o.created_at, 
+        o.expected_receive_amount, o.filled_receive_amount, o.price, o.expired_at, o.pending_amount
         FROM orders o
         LEFT JOIN tokens t ON o.pay_asset_id = t.asset_id
         LEFT JOIN tokens rt ON o.receive_asset_id = rt.asset_id
@@ -56,5 +63,6 @@ interface OrderDao : BaseDao<Order> {
     @Query("DELETE FROM orders WHERE wallet_id = :walletId")
     suspend fun deleteOrders(walletId: String)
 
+    @Query("DELETE FROM orders")
     suspend fun deleteAllOrders()
 }

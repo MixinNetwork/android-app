@@ -210,8 +210,11 @@ interface RouteService {
     @POST("web3/swap/orders")
     suspend fun getLimitOrders(@Body ids: List<String>): MixinResponse<List<Order>>
 
+    @GET("web3/swap/orders/{id}")
+    suspend fun getSwapOrder(@Path("id") id: String): MixinResponse<Order>
+
     @GET("web3/limit_orders/{id}")
-    suspend fun getLimitOrder(@Path("id") id: String, @Query("walletId") walletId: String?): MixinResponse<Order>
+    suspend fun getLimitOrder(@Path("id") id: String): MixinResponse<Order>
 
     @POST("web3/limit_orders/{id}/cancel")
     suspend fun cancelLimitOrder(@Path("id") id: String): MixinResponse<Order>

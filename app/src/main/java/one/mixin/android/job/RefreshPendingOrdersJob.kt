@@ -25,7 +25,7 @@ class RefreshPendingOrdersJob(
         }
 
     private suspend fun refreshPendingOrder(orderId: String) {
-        val response = routeService.getLimitOrder(orderId, walletId)
+        val response = routeService.getLimitOrder(orderId)
         if (response.isSuccess && response.data != null) {
             orderDao.insertSuspend(response.data!!)
         }

@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.session.Session
@@ -17,12 +18,19 @@ class RefreshOrdersJob(
 
     override fun onRun(): Unit =
         runBlocking {
-            val lastCreate = orderDao.lastOrderCreatedAt()
-            refreshOrders(lastCreate)
+            val wallets = web3WalletDao.getAllWallets().map { it.id }.toMutableSet()
+            Session.getAccountId()?.let { wallets.add(it) }
+
+            wallets.forEach { walletId ->
+                val offsetKey = "order_offset_$walletId"
+                val offset = Web3PropertyHelper.findValueByKey(offsetKey, "")
+                refreshOrders(walletId, offset.ifEmpty { null }, offsetKey)
+            }
         }
 
-    private suspend fun refreshOrders(offset: String?, previousLastCreatedAt: String? = null) {
-        val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null)
+    private suspend fun refreshOrders(walletId: String, offset: String?, offsetKey: String, previousLastCreatedAt: String? = null) {
+        val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null, walletId = walletId)
+
         if (response.isSuccess && response.data != null) {
             val orders = response.data!!
             if (orders.isEmpty()) return
@@ -30,34 +38,39 @@ class RefreshOrdersJob(
             // Check if we're stuck in a loop (same last timestamp)
             val currentLastCreatedAt = orders.lastOrNull()?.createdAt
             if (currentLastCreatedAt != null && currentLastCreatedAt == previousLastCreatedAt) {
-                Timber.w("RefreshOrdersJob: Detected duplicate offset, stopping pagination")
+                Timber.w("RefreshOrdersJob: Detected duplicate offset for wallet $walletId, stopping pagination")
                 return
             }
             
             orderDao.insertListSuspend(orders)
-            val walletId = Session.getAccountId()!!
+            val sessionWalletId = Session.getAccountId() ?: return
             val assetIds = orders.flatMap { listOfNotNull<String>(it.payAssetId, it.receiveAssetId) }
                 .filter { it.isNotEmpty() }
                 .toSet()
                 .toList()
             if (assetIds.isNotEmpty()) {
-                val tokensNow = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds)
+                val tokensNow = web3TokenDao.findWeb3TokenItemsByIdsSync(sessionWalletId, assetIds)
                 val existingIds = tokensNow.map { it.assetId }.toSet()
                 val missingIds = assetIds.filter { it !in existingIds }
                 if (missingIds.isNotEmpty()) {
                     refreshAsset(missingIds)
                 }
                 // refresh tokens again after potential insert to make sure we have chainIds
-                val tokensReady = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds)
+                val tokensReady = web3TokenDao.findWeb3TokenItemsByIdsSync(sessionWalletId, assetIds)
                 val chainIds = tokensReady.map { it.chainId }.distinct()
                 if (chainIds.isNotEmpty()) {
                     fetchChain(chainIds)
                 }
             }
+
+            if (currentLastCreatedAt != null) {
+                Web3PropertyHelper.updateKeyValue(offsetKey, currentLastCreatedAt)
+            }
+
             val fetchedSize = orders.size
             if (fetchedSize >= LIMIT) {
                 val lastCreate = orders.lastOrNull()?.createdAt ?: return
-                refreshOrders(lastCreate, currentLastCreatedAt)
+                refreshOrders(walletId, lastCreate, offsetKey, currentLastCreatedAt)
             }
         }
     }
