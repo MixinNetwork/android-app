@@ -146,6 +146,8 @@ constructor(
 
     suspend fun deleteWallet(walletId: String) = web3WalletDao.deleteWallet(walletId)
 
+    suspend fun deleteOrders(walletId: String) = orderDao.deleteOrders(walletId)
+
     suspend fun deleteAddressesByWalletId(walletId: String) {
         web3AddressDao.getAddressesByWalletId(walletId).forEach { address ->
             Web3PropertyHelper.deleteKeyValue(address.destination)
