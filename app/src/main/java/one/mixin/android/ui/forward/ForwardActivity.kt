@@ -9,12 +9,14 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.content.IntentCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.util.ShareHelper
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
@@ -128,6 +130,7 @@ class ForwardActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SystemUIManager.setSafePadding(window = window, color = colorFromAttribute(R.attr.bg_white), imePadding = true)
         setContentView(R.layout.activity_contact)
         val list = IntentCompat.getParcelableArrayListExtra(intent, ARGS_MESSAGES, ForwardMessage::class.java)
         val action = intent.getParcelableExtra<ForwardAction>(ARGS_ACTION)
