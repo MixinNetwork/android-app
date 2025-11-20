@@ -28,6 +28,7 @@ import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import timber.log.Timber
 import javax.inject.Inject
@@ -241,12 +242,12 @@ constructor(
     }
 
     // Orders
-    suspend fun inserOrders(orders: List<one.mixin.android.vo.route.Order>) {
+    suspend fun inserOrders(orders: List<Order>) {
         if (orders.isEmpty()) return
         orderDao.insertListSuspend(orders)
     }
 
-    suspend fun getPendingOrdersByWallet(walletId: String): List<one.mixin.android.vo.route.Order> {
+    suspend fun getPendingOrdersByWallet(walletId: String): List<Order> {
         return orderDao.getPendingOrdersByWallet(walletId)
     }
 }

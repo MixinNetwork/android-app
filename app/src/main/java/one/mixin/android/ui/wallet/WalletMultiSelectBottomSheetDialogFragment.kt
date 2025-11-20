@@ -93,7 +93,7 @@ class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialog
             }
 
             WalletMultiSelectScreen(
-                wallets = wallets,
+                wallets = wallets.filter { it.isWatch().not() },
                 initialSelectedIds = initialSelectedIds,
                 initialPrivacySelected = initialPrivacySelected,
                 onQueryChanged = { q -> scope.launch { searchQuery.emit(q) } },

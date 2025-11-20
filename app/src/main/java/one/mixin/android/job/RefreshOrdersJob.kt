@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.session.Session
 import timber.log.Timber
 
@@ -18,7 +19,7 @@ class RefreshOrdersJob(
 
     override fun onRun(): Unit =
         runBlocking {
-            val wallets = web3WalletDao.getAllWallets().map { it.id }.toMutableSet()
+            val wallets = web3WalletDao.getAllWallets().filter { it.isWatch().not() }.map { it.id }.toMutableSet()
             Session.getAccountId()?.let { wallets.add(it) }
 
             wallets.forEach { walletId ->
