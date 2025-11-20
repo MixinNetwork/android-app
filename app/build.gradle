@@ -92,6 +92,7 @@ android {
         String sharedTestDir = 'src/sharedTest/java'
         test {
             java.srcDirs += sharedTestDir
+            manifest.srcFile 'src/test/AndroidManifest.xml'
         }
         androidTest {
             java.srcDirs += sharedTestDir
@@ -186,8 +187,7 @@ android {
 
     testOptions {
         unitTests {
-            includeAndroidResources = false
-            returnDefaultValues = true
+            includeAndroidResources = true
         }
     }
 
