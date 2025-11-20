@@ -372,11 +372,11 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     val expiryLabel = remember(expiredAt) { mapExpiryToLabel(expiredAt) }
                     ItemContent(title = stringResource(id = R.string.expiry).uppercase(), subTitle = stringResource(id = expiryLabel))
                     Box(modifier = Modifier.height(20.dp))
-                    ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), user = receiver, address = null)
+                    ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), user = receiver, address = null)
                     Box(modifier = Modifier.height(20.dp))
                     val isPrivacyWallet = senderWalletId == Session.getAccountId()
                     ItemWalletContent(
-                        title = stringResource(id = R.string.Senders).uppercase(),
+                        title = stringResource(id = R.string.Sender).uppercase(),
                         fontSize = 16.sp,
                         walletId = if (isPrivacyWallet) null else senderWalletId,
                         walletName = if (isPrivacyWallet) null else walletName

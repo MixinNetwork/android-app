@@ -187,38 +187,38 @@ class OrderDetailFragment : BaseFragment() {
     private fun buildForwardMessage(token: TokenItem, payId: String, receiveId: String, type: String): ForwardMessage {
         val description: String = buildString {
             append("🔥 ${token.name} (${token.symbol})\n\n")
-            append("🏷️ ${getString(one.mixin.android.R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).priceFormat()}\n")
-            append("💰 ${getString(one.mixin.android.R.string.price_change_24h)}: ${runCatching { "${(BigDecimal(token.changeUsd) * BigDecimal(100)).numberFormat2()}%" }.getOrDefault("N/A")}"
+            append("🏷️ ${getString(R.string.Price)}: ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).priceFormat()}\n")
+            append("💰 ${getString(R.string.price_change_24h)}: ${runCatching { "${(BigDecimal(token.changeUsd) * BigDecimal(100)).numberFormat2()}%" }.getOrDefault("N/A")}"
             )
         }
         val isLimit = type.equals("limit", true)
         val buildTradeUrl = { inId: String, outId: String ->
-            if (isLimit) "${Constants.Scheme.MIXIN_TRADE}?type=limit&input=$inId&output=$outId&referral=${one.mixin.android.session.Session.getAccount()?.identityNumber}"
-            else "${Constants.Scheme.MIXIN_SWAP}?input=$inId&output=$outId&referral=${one.mixin.android.session.Session.getAccount()?.identityNumber}"
+            if (isLimit) "${Constants.Scheme.HTTPS_TRADE}?type=limit&input=$inId&output=$outId&referral=${Session.getAccount()?.identityNumber}"
+            else "${Constants.Scheme.HTTPS_SWAP}?input=$inId&output=$outId&referral=${Session.getAccount()?.identityNumber}"
         }
         val actions: List<ActionButtonData> = listOf(
             ActionButtonData(
-                label = getString(one.mixin.android.R.string.buy_token, token.symbol),
+                label = getString(R.string.buy_token, token.symbol),
                 color = "#50BD5C",
                 action = buildTradeUrl(payId, receiveId)
             ),
             ActionButtonData(
-                label = getString(one.mixin.android.R.string.sell_token, token.symbol),
+                label = getString(R.string.sell_token, token.symbol),
                 color = "#DB454F",
                 action = buildTradeUrl(receiveId, payId)
             ),
             ActionButtonData(
-                label = "${token.symbol} ${getString(one.mixin.android.R.string.Market)}",
+                label = "${token.symbol} ${getString(R.string.Market)}",
                 color = "#3D75E3",
                 action = "${Constants.Scheme.HTTPS_MARKET}/${token.assetId}"
             )
         )
-        val appCard: AppCardData = AppCardData(
-            appId = one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID,
+        val appCard = AppCardData(
+            appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
             iconUrl = null,
             coverUrl = null,
             cover = null,
-            title = "${getString(one.mixin.android.R.string.Swap)} ${token.symbol}",
+            title = "${if(isLimit) getString(R.string.Trade) else getString(R.string.Swap)} ${token.symbol}",
             description = description,
             action = null,
             updatedAt = null,

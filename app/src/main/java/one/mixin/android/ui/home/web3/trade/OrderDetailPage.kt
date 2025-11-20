@@ -339,7 +339,7 @@ fun DetailItem(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.Swap_Again),
+                                        text = stringResource(R.string.Trade_Again),
                                         color = MixinAppTheme.colors.textPrimary,
                                         fontWeight = FontWeight.W500,
                                         textAlign = TextAlign.Center,

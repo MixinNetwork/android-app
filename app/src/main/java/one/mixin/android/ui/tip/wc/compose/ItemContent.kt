@@ -70,14 +70,14 @@ fun ItemWalletContent(
                 fontSize = fontSize,
             )
             Spacer(modifier = Modifier.width(4.dp))
-
-            Icon(
-                painter = painterResource(id = if (walletId != null) R.drawable.ic_web3_wallet else R.drawable.ic_wallet_privacy),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(20.dp)
-            )
-
+            if (walletId == null) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }

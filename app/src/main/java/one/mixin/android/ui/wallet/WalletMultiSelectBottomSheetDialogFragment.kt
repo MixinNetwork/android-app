@@ -105,11 +105,6 @@ class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialog
                     onConfirmListener?.invoke(emptyList())
                     dismiss()
                 },
-                onShowNoKeyWarning = { wallet, onProceed ->
-                    NoKeyWarningBottomSheetDialogFragment.newInstance(wallet).apply {
-                        onConfirm = onProceed
-                    }.show(parentFragmentManager, NoKeyWarningBottomSheetDialogFragment.TAG)
-                },
                 onCancel = { dismiss() }
             )
         }
@@ -158,7 +153,6 @@ private fun WalletMultiSelectScreen(
     onQueryChanged: (String) -> Unit,
     onConfirm: (List<Web3Wallet?>) -> Unit,
     onReset: () -> Unit,
-    onShowNoKeyWarning: (Web3Wallet, () -> Unit) -> Unit,
     onCancel: () -> Unit,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -231,9 +225,7 @@ private fun WalletMultiSelectScreen(
                             hasLocalPrivateKey = wallet.hasLocalPrivateKey,
                             onClick = {
                                 if (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey)) {
-                                    onShowNoKeyWarning(wallet) {
-                                        toggleSelection(selectedWalletIds, wallet.id)
-                                    }
+                                    toggleSelection(selectedWalletIds, wallet.id)
                                 } else {
                                     toggleSelection(selectedWalletIds, wallet.id)
                                 }
@@ -248,9 +240,7 @@ private fun WalletMultiSelectScreen(
                             destination = destination,
                             onClick = {
                                 if (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey)) {
-                                    onShowNoKeyWarning(wallet) {
-                                        toggleSelection(selectedWalletIds, wallet.id)
-                                    }
+                                    toggleSelection(selectedWalletIds, wallet.id)
                                 } else {
                                     toggleSelection(selectedWalletIds, wallet.id)
                                 }
@@ -265,9 +255,7 @@ private fun WalletMultiSelectScreen(
                             destination = destination,
                             onClick = {
                                 if (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey)) {
-                                    onShowNoKeyWarning(wallet) {
-                                        toggleSelection(selectedWalletIds, wallet.id)
-                                    }
+                                    toggleSelection(selectedWalletIds, wallet.id)
                                 } else {
                                     toggleSelection(selectedWalletIds, wallet.id)
                                 }

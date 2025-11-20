@@ -1906,7 +1906,7 @@
     <string name="Swap_Order_Detail">Order detail</string>
     <string name="order_type_swap">Swap</string>
     <string name="order_type_limit">Limit</string>
-    <string name="Swap_Again">Swap Again</string>
+    <string name="Trade_Again">Trade Again</string>
     <string name="Share_Pair">Share Pair</string>
     <string name="Completed">Completed</string>
     <string name="Refunded">Refunded</string>

@@ -1864,7 +1864,7 @@
     <string name="Change_Permissions">更改权限</string>
     <string name="order_type_swap">闪兑</string>
     <string name="order_type_limit">限价</string>
-    <string name="Swap_Again">再来一笔</string>
+    <string name="Trade_Again">再来一笔</string>
     <string name="Share_Pair">分享交易对</string>
     <string name="Completed">已完成</string>
     <string name="Refunded">已退款</string>
