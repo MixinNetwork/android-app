@@ -433,7 +433,11 @@ fun LimitOrderContent(
                                 },
                                 token = if (isPriceInverted) fromToken else toToken,
                                 text = limitPriceText,
-                                title = stringResource(id = R.string.limit_price, toToken?.symbol ?: "", fromToken?.symbol ?: ""),
+                                title = stringResource(id = R.string.limit_price, if (!isPriceInverted) {
+                                    fromToken?.chain?.name
+                                } else {
+                                    toToken?.chain?.name
+                                } ?: ""),
                                 readOnly = false,
                                 selectClick = null,
                                 onInputChanged = { limitPriceText = it },
