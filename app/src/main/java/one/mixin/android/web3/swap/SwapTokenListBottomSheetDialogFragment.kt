@@ -41,11 +41,12 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapViewModel
+import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -119,9 +120,8 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private fun initRadio() {
         binding.apply {
-            if (!inMixin()) {
-                radioTron.isVisible = false
-            }
+            radioTron.isVisible = inMixin()
+            radioToncoin.isVisible = inMixin()
             radioAll.isChecked = true
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
@@ -345,5 +345,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private var onDepositListener: (() -> Unit)? = null
 
-    private fun inMixin(): Boolean = key == Constants.Account.PREF_TO_SWAP || key == Constants.Account.PREF_FROM_SWAP
+    private fun inMixin(): Boolean = 
+        key == Constants.Account.PREF_TO_SWAP || 
+        key == Constants.Account.PREF_FROM_SWAP || 
+        key == Constants.Account.PREF_FROM_LIMIT_SWAP || 
+        key == Constants.Account.PREF_TO_LIMIT_SWAP
 }

@@ -46,12 +46,15 @@ import one.mixin.android.vo.User
 fun ItemWalletContent(
     title: String,
     fontSize: TextUnit = 16.sp,
+    padding: Dp = 20.dp,
+    walletId: String? = null,
+    walletName: String? = null,
 ) {
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = padding),
     ) {
         Text(
             text = title,
@@ -62,19 +65,19 @@ fun ItemWalletContent(
         Box(modifier = Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.Privacy_Wallet),
+                text = if (walletId != null && walletName != null) walletName else stringResource(R.string.Privacy_Wallet),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = fontSize,
             )
             Spacer(modifier = Modifier.width(4.dp))
-
-            Icon(
-                painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(20.dp)
-            )
-
+            if (walletId == null) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }
@@ -86,13 +89,14 @@ fun ItemContent(
     label: String? = null,
     footer: String? = null,
     isAddress: Boolean = false,
+    padding: Dp = 20.dp,
     subTitleFontWeight: FontWeight = FontWeight.Normal,
 ) {
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = padding),
     ) {
         Text(
             text = title,

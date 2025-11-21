@@ -24,6 +24,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SelectableWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedWeb3TokenAdapter
@@ -150,8 +151,8 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                     )
         }
 
-        // Use walletId parameter instead of hardcoded value
-        val targetWalletId = walletId ?: "0195adf7-1d55-7163-9186-111845025a6c" // fallback to default if null
+        // Use current account walletId by default
+        val targetWalletId = walletId ?: Session.getAccountId()!!
 
         bottomViewModel.web3TokenItems(targetWalletId)
             .observe(this) { tokens ->

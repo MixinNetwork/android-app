@@ -458,15 +458,15 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         }
                         walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
                             val (displayName, _) = walletDisplayInfo
-                            ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account, displayName)
+                            ItemContent(title = stringResource(id = R.string.Sender).uppercase(), subTitle = account, displayName)
                         }, {
-                            ItemContent(title = stringResource(id = R.string.Senders).uppercase(), subTitle = account)
+                            ItemContent(title = stringResource(id = R.string.Sender).uppercase(), subTitle = account)
                         })
                     } else {
-                        ItemWalletContent(title = stringResource(id = R.string.Senders).uppercase(), fontSize = 16.sp)
+                        ItemWalletContent(title = stringResource(id = R.string.Sender).uppercase(), fontSize = 16.sp)
                     }
                     Box(modifier = Modifier.height(20.dp))
-                    ItemUserContent(title = stringResource(id = R.string.Receivers).uppercase(), receiver, null)
+                    ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), receiver, null)
                     Box(modifier = Modifier.height(16.dp))
                 }
 
@@ -535,7 +535,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
 
@@ -614,7 +614,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 context?.updatePinCheck()
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
-                                    System.currentTimeMillis(),
+                                       System.currentTimeMillis(),
                                 )
                                 step = Step.Done
                                 AnalyticsTracker.trackSwapSend()

@@ -58,12 +58,12 @@ import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
-import one.mixin.android.db.SwapOrderDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM_NOT_HIDDEN
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
@@ -124,7 +124,7 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.route.SwapOrderItem
+import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -178,7 +178,7 @@ class TokenRepository
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
-        private val swapOrderDao: SwapOrderDao,
+        private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
         private val web3TransactionDao: Web3TransactionDao,
         private val web3RawTransactionDao: Web3RawTransactionDao,
@@ -536,6 +536,8 @@ class TokenRepository
 
         fun assetItem(id: String) = tokenDao.assetItem(id)
 
+        fun assetItemFlow(id: String): Flow<TokenItem?> = tokenDao.assetItemFlow(id)
+
         suspend fun simpleAssetItem(id: String) = tokenDao.simpleAssetItem(id)
 
         fun assetItemsWithBalance() = tokenDao.assetItemsWithBalance()
@@ -569,9 +571,15 @@ class TokenRepository
             web3WalletDao.deleteAllWallets()
         }
 
+        suspend fun deleteAllOrders() {
+            orderDao.deleteAllOrders()
+        }
+
         suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(Web3Signer.currentWalletId, hash, chainId)
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
+
+        fun observeOrder(orderId: String) = orderDao.observeOrder(orderId)
 
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
 
@@ -800,7 +808,7 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        fun swapOrders(): Flow<List<SwapOrderItem>> = swapOrderDao.orders()
+        fun walletOrders(): Flow<List<OrderItem>> = orderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
@@ -1423,7 +1431,7 @@ class TokenRepository
 
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 
-    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = swapOrderDao.getOrderById(orderId)
+    fun getOrderById(orderId: String): Flow<OrderItem?> = orderDao.getOrderById(orderId)
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 

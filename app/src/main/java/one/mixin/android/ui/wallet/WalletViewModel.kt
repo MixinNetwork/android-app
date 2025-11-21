@@ -442,6 +442,7 @@ internal constructor(
                 web3Repository.deleteAssetsByWalletId(walletId)
                 web3Repository.deleteHiddenTokens(walletId)
                 web3Repository.deleteWallet(walletId)
+                web3Repository.deleteOrders(walletId)
                 CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
                 RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.DELETE))
             }

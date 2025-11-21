@@ -230,10 +230,6 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideSwapOrderDao(db: MixinDatabase) = db.swapOrderDao()
-
-    @Singleton
-    @Provides
     fun provideMemberOrderDao(db: MixinDatabase) = db.memberOrderDao()
 
     @Singleton
@@ -267,5 +263,9 @@ internal object BaseDbModule {
     @Singleton
     @Provides
     fun provideWeb3RawTransactionDao(db: WalletDatabase) = db.web3RawTransactionDao()
+
+    @Singleton
+    @Provides
+    fun provideOrderDao(db: WalletDatabase) = db.orderDao()
 
 }

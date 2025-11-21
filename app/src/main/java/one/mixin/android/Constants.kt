@@ -90,7 +90,9 @@ object Constants {
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_SWAP_LAST_PAIR = "pref_swap_last_pair"
+        const val PREF_LIMIT_SWAP_LAST_PAIR = "pref_limit_swap_last_pair"
         const val PREF_WEB3_SWAP_LAST_PAIR = "pref_web3_swap_last_pair"
+        const val PREF_WEB3_LIMIT_SWAP_LAST_PAIR = "pref_web3_limit_swap_last_pair"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
         const val PREF_MARKET_TYPE = "pref_market_type"
         const val PREF_MARKET_ORDER = "pref_market_order"
@@ -113,8 +115,12 @@ object Constants {
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
+        const val PREF_TO_LIMIT_SWAP = "pref_to_limit_swap"
+        const val PREF_FROM_LIMIT_SWAP = "pref_from_limit_swap"
         const val PREF_TO_WEB3_SWAP = "pref_to_web3_swap"
         const val PREF_FROM_WEB3_SWAP = "pref_from_web3_swap"
+        const val PREF_TO_WEB3_LIMIT_SWAP = "pref_to_web3_limit_swap"
+        const val PREF_FROM_WEB3_LIMIT_SWAP = "pref_from_web3_limit_swap"
         const val PREF_WALLET_SEND = "pref_wallet_send"
         const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
 
@@ -157,6 +163,7 @@ object Constants {
         const val MIXIN_SCHEME = "mixin://mixin.one/scheme"
         const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
         const val MIXIN_SWAP = "mixin://mixin.one/swap"
+        const val MIXIN_TRADE = "mixin://mixin.one/trade"
         const val MIXIN_MARKET = "mixin://mixin.one/markets"
         const val MIXIN_REFERRALS = "mixin://mixin.one/referrals"
         const val HTTPS_USERS = "https://mixin.one/users"
@@ -172,6 +179,7 @@ object Constants {
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
         const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
         const val HTTPS_SWAP = "https://mixin.one/swap"
+        const val HTTPS_TRADE = "https://mixin.one/trade"
         const val HTTPS_MEMBERSHIP = "https://mixin.one/membership"
 
         // web3
@@ -189,7 +197,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 68
+        const val CURRENT_VERSION = 69
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
