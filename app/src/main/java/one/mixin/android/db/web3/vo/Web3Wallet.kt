@@ -49,6 +49,10 @@ data class Web3Wallet(
     }
 }
 
+fun Web3Wallet.isTransferFeeFree() : Boolean {
+    return category == WalletCategory.CLASSIC.value || (isImported() && hasLocalPrivateKey)
+}
+
 fun Web3Wallet.notClassic(): Boolean {
     return category == WalletCategory.IMPORTED_MNEMONIC.value || category == WalletCategory.IMPORTED_PRIVATE_KEY.value || category == WalletCategory.WATCH_ADDRESS.value
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
 import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
@@ -208,7 +209,7 @@ constructor(
         }
     }
 
-    suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
+    suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)?.updateWithLocalKeyInfo(MixinApplication.appContext)
 
     // Only deposit display
     suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? {
@@ -226,12 +227,10 @@ constructor(
         }
     }
 
-<<<<<<< HEAD
     suspend fun fuzzySearchAsset(walletId: String, query: String, chainId: String?) =
         web3TokenDao.fuzzySearchAsset(walletId, query, chainId)
-=======
+
     suspend fun findChainById(chainId: String): Web3Chain? {
         return web3ChainDao.findChainById(chainId)
     }
->>>>>>> origin/master
 }

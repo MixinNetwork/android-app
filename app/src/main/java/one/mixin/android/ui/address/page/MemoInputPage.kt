@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -62,6 +64,7 @@ fun MemoInputPage(
     address: String,
     contentText: String = "",
     errorInfo: String? = null,
+    isLoading: Boolean = false,
     onNext: (String?) -> Unit,
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
@@ -97,7 +100,7 @@ fun MemoInputPage(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
             Column(modifier = Modifier.imePadding()) {
                 TokenInfoHeader(token = token, web3Token = web3Token)
@@ -206,7 +209,7 @@ fun MemoInputPage(
                         .align(Alignment.CenterHorizontally)
                         .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
                 )
-
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -214,7 +217,7 @@ fun MemoInputPage(
                     onClick = {
                         onNext.invoke(memo)
                     },
-                    enabled = isValidMemo,
+                    enabled = isValidMemo && !isLoading,
                     colors = ButtonDefaults.outlinedButtonColors(
                         backgroundColor = if (isValidMemo) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
@@ -226,10 +229,18 @@ fun MemoInputPage(
                         focusedElevation = 0.dp,
                     ),
                 ) {
-                    Text(
-                        text = stringResource(R.string.Next),
-                        color = if (isValidMemo) Color.White else MixinAppTheme.colors.textAssist,
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.Next),
+                            color = if (isValidMemo) Color.White else MixinAppTheme.colors.textAssist,
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
             }

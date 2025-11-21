@@ -230,11 +230,11 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 val receiver = it.withdrawal!!.receiver
                                 val index: Int = receiver.indexOf(":")
                                 if (index == -1) {
-                                    it.label = walletViewModel.findAddressByReceiver(receiver, "")
+                                    it.label = walletViewModel.findAddressByReceiver(receiver, "", asset.chainId)
                                 } else {
                                     val destination: String = receiver.substring(0, index)
                                     val tag: String = receiver.substring(index + 1)
-                                    it.label = walletViewModel.findAddressByReceiver(destination, tag)
+                                    it.label = walletViewModel.findAddressByReceiver(destination, tag, asset.chainId)
                                 }
                             }
                             it
