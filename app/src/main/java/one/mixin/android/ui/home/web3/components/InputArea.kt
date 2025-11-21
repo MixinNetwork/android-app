@@ -31,7 +31,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.SwapViewModel

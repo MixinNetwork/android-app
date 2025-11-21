@@ -7,10 +7,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,17 +16,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
@@ -44,20 +37,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -85,6 +78,7 @@ import one.mixin.android.ui.home.web3.components.ExpirySelector
 import one.mixin.android.ui.home.web3.components.FloatingActions
 import one.mixin.android.ui.home.web3.components.InputArea
 import one.mixin.android.ui.home.web3.components.OpenOrderItem
+import one.mixin.android.ui.home.web3.components.PriceInputArea
 import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -94,7 +88,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderState
 import one.mixin.android.web3.js.Web3Signer
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
@@ -162,18 +155,6 @@ fun LimitOrderContent(
     var limitOrders by remember { mutableStateOf<List<Order>>(emptyList()) }
 
     var expiryOption by remember { mutableStateOf(ExpiryOption.NEVER) }
-    
-    var isPriceInverted by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(fromToken, toToken) {
-        val isFromUsd = fromToken?.assetId?.let { id ->
-            usdtAssets.containsKey(id) || usdcAssets.containsKey(id)
-        } == true
-        val isToUsd = toToken?.assetId?.let { id ->
-            usdtAssets.containsKey(id) || usdcAssets.containsKey(id)
-        } == true
-        isPriceInverted = isFromUsd && !isToUsd
-    }
 
     LaunchedEffect(lastOrderTime) {
         expiryOption = ExpiryOption.NEVER
@@ -212,14 +193,9 @@ fun LimitOrderContent(
             var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
             var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
             if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                val localPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                marketPrice = localPrice
-                val displayPrice = if (isPriceInverted && localPrice > BigDecimal.ZERO) {
-                    BigDecimal.ONE.divide(localPrice, 8, RoundingMode.HALF_UP)
-                } else {
-                    localPrice
-                }
-                limitPriceText = displayPrice.stripTrailingZeros().toPlainString()
+                val standardPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                marketPrice = standardPrice
+                limitPriceText = standardPrice.stripTrailingZeros().toPlainString()
                 fromMarket = viewModel.checkMarketById(fromT.assetId, true)
                 toMarket = viewModel.checkMarketById(toT.assetId, true)
                 fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
@@ -228,12 +204,7 @@ fun LimitOrderContent(
                     val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
                     if (marketPrice != price) {
                         marketPrice = price
-                        val displayPrice2 = if (isPriceInverted && price > BigDecimal.ZERO) {
-                            BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
-                        } else {
-                            price
-                        }
-                        limitPriceText = displayPrice2.stripTrailingZeros().toPlainString()
+                        limitPriceText = price.stripTrailingZeros().toPlainString()
                     }
                 }
             } else {
@@ -243,13 +214,9 @@ fun LimitOrderContent(
                     .onSuccess { q ->
                         val rate = runCatching { parseRateFromQuote(q) }.getOrNull() ?: BigDecimal.ZERO
                         if (rate > BigDecimal.ZERO) {
-                            marketPrice = rate.setScale(8, RoundingMode.HALF_UP)
-                            val displayPrice = if (isPriceInverted && marketPrice!! > BigDecimal.ZERO) {
-                                BigDecimal.ONE.divide(marketPrice!!, 8, RoundingMode.HALF_UP)
-                            } else {
-                                marketPrice!!
-                            }
-                            limitPriceText = displayPrice.stripTrailingZeros().toPlainString()
+                            val standardPrice = rate.setScale(8, RoundingMode.HALF_UP)
+                            marketPrice = standardPrice
+                            limitPriceText = standardPrice.stripTrailingZeros().toPlainString()
                         } else {
                             limitPriceText = "0"
                         }
@@ -276,8 +243,8 @@ fun LimitOrderContent(
                 var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
                 var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
                 if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                    val localPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                    marketPrice = localPrice
+                    val standardPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                    marketPrice = standardPrice
                     fromMarket = viewModel.checkMarketById(fromT.assetId, true)
                     toMarket = viewModel.checkMarketById(toT.assetId, true)
                     fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
@@ -308,16 +275,12 @@ fun LimitOrderContent(
         }
     }
 
-    LaunchedEffect(inputText, limitPriceText, fromToken, toToken, isPriceInverted) {
+    LaunchedEffect(inputText, limitPriceText) {
         val fromAmount = inputText.toBigDecimalOrNull()
-        val limitPrice = limitPriceText.toBigDecimalOrNull()
+        val standardPrice = limitPriceText.toBigDecimalOrNull()
 
-        if (fromAmount != null && limitPrice != null && fromAmount > BigDecimal.ZERO && limitPrice > BigDecimal.ZERO) {
-            val toAmount = if (!isPriceInverted) {
-                fromAmount.multiply(limitPrice)
-            } else {
-                fromAmount.divide(limitPrice, 8, RoundingMode.DOWN)
-            }.setScale(8, RoundingMode.DOWN)
+        if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
+            val toAmount = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
             outputText = toAmount.stripTrailingZeros().toPlainString()
         } else {
             outputText = ""
@@ -427,80 +390,15 @@ fun LimitOrderContent(
                             )
                         },
                         tailCompose = {
-                            InputArea(
+                            PriceInputArea(
                                 modifier = Modifier.onFocusChanged {
                                     if (it.isFocused) focusedField = FocusedField.PRICE
                                 },
-                                token = if (isPriceInverted) fromToken else toToken,
-                                text = limitPriceText,
-                                title = stringResource(id = R.string.limit_price, if (!isPriceInverted) {
-                                    fromToken?.chain?.name
-                                } else {
-                                    toToken?.chain?.name
-                                } ?: ""),
-                                readOnly = false,
-                                selectClick = null,
-                                onInputChanged = { limitPriceText = it },
-                                inlineEndCompose = if (isPriceLoading) {
-                                    {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier
-                                                .size(26.dp),
-                                            color = MixinAppTheme.colors.textPrimary,
-                                            strokeWidth = 4.dp,
-                                        )
-                                    }
-                                } else null,
-                                bottomCompose = {
-                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                                        val price = limitPriceText.toBigDecimalOrNull()
-                                        val priceText = if (price != null && price > BigDecimal.ZERO) {
-                                            if (!isPriceInverted) {
-                                                "1 ${toToken?.symbol} = ${price.stripTrailingZeros().toPlainString()} ${fromToken?.symbol}"
-                                            } else {
-                                                val invertedPrice = BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP)
-                                                "1 ${fromToken?.symbol} = ${invertedPrice.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
-                                            }
-                                        } else {
-                                            null
-                                        }
-                                        if (priceText != null) {
-                                            Text(text = priceText, color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterVertically))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_price_switch),
-                                                contentDescription = null,
-                                                tint = MixinAppTheme.colors.textAssist,
-                                                modifier = Modifier
-                                                    .size(16.dp)
-                                                    .clickable {
-                                                        val current = limitPriceText.toBigDecimalOrNull()
-                                                        if (current != null && current > BigDecimal.ZERO) {
-                                                            val inverted = BigDecimal.ONE.divide(current, 8, RoundingMode.HALF_UP)
-                                                            limitPriceText = inverted.stripTrailingZeros().toPlainString()
-                                                        }
-                                                        isPriceInverted = !isPriceInverted
-                                                    }
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.width(16.dp))
-                                        Spacer(modifier = Modifier.weight(1f))
-                                        Text(
-                                            text = if (!isPriceInverted) {
-                                                fromToken?.name
-                                            } else {
-                                                toToken?.name
-                                            } ?: "",
-                                            maxLines = 1,
-                                            overflow = TextOverflow.MiddleEllipsis,
-                                            style = TextStyle(
-                                                fontSize = 12.sp,
-                                                color = MixinAppTheme.colors.textAssist,
-                                                textAlign = TextAlign.Start,
-                                            ),
-                                        )
-                                    }
-                                },
+                                fromToken = fromToken,
+                                toToken = toToken,
+                                standardPrice = limitPriceText,
+                                isPriceLoading = isPriceLoading,
+                                onStandardPriceChanged = { limitPriceText = it },
                             )
                         },
                         margin = 6.dp,
@@ -683,11 +581,7 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
-                marketPrice = if (isPriceInverted && marketPrice != null && marketPrice!! > BigDecimal.ZERO) {
-                    BigDecimal.ONE.divide(marketPrice!!, 8, RoundingMode.HALF_UP)
-                } else {
-                    marketPrice
-                },
+                marketPrice = marketPrice,
                 onSetInput = { inputText = it },
                 onSetLimitPrice = { limitPriceText = it },
                 onDone = {

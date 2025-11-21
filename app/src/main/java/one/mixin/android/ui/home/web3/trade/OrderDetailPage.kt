@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
 import PageScaffold
-import android.content.Context
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

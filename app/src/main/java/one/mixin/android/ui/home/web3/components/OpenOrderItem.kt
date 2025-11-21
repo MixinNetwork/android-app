@@ -16,10 +16,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,8 +32,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
-import one.mixin.android.vo.route.OrderState
 import one.mixin.android.vo.route.Order
+import one.mixin.android.vo.route.OrderState
 
 @Composable
 fun OpenOrderItem(order: Order, onClick: () -> Unit) {
