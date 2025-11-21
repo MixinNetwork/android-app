@@ -10,14 +10,17 @@ data class PriceDisplayState(
     val isPriceInverted: Boolean,
     val isPriceLoading: Boolean,
 ) {
+    // Display the token on the right side of price ratio (after '=')
+    // When inverted: "1 toToken = X fromToken" -> show fromToken (right side)
+    // When not inverted: "1 fromToken = X toToken" -> show toToken (right side)
     val displayToken: SwapToken?
-        get() = if (isPriceInverted) toToken else fromToken
+        get() = if (isPriceInverted) fromToken else toToken
 
     val displayChainName: String
-        get() = if (isPriceInverted) toToken?.chain?.name ?: "" else fromToken?.chain?.name ?: ""
+        get() = if (isPriceInverted) fromToken?.chain?.name ?: "" else toToken?.chain?.name ?: ""
 
     val displayTokenName: String
-        get() = if (isPriceInverted) toToken?.name ?: "" else fromToken?.name ?: ""
+        get() = if (isPriceInverted) fromToken?.name ?: "" else toToken?.name ?: ""
 
     fun formatPriceRatio(displayPrice: String): String? {
         val price = displayPrice.toBigDecimalOrNull()
