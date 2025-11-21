@@ -44,8 +44,10 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.swap.SwapViewModel
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -288,10 +290,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }
                 return@launch
             }
-            val assetList =
-                tokens.filter {
-                    (currentChain != null && it.chain.chainId == currentChain) || currentChain == null
-                }.toMutableList()
+            val assetList = if (inMixin()) {
+                swapViewModel.fuzzySearchAsset(s, currentChain).map { it.toSwapToken() }.toMutableList()
+            } else {
+                swapViewModel.fuzzySearchWeb3Asset(Web3Signer.currentWalletId, s, currentChain)
+                    .map { it.toSwapToken() }.toMutableList()
+            }
 
             val total = search(s, assetList, currentChain, inMixin())
             adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
@@ -322,8 +326,17 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
                 return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
-                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                    var localToken =
+                        localTokens.find { swapToken -> swapToken.assetId == ra.assetId }
+                    if (localToken == null) {
+                        if (inMixin.not()) {
+                            localToken = swapViewModel.web3TokenItemById(Web3Signer.currentWalletId, ra.assetId)?.toSwapToken()
+                        } else {
+                            localToken = swapViewModel.findToken(ra.assetId)?.toSwapToken()
+                        }
+                    }
+                    if (localToken != null) {
+                        return@map ra.copy(price = localToken.price, balance = localToken.balance, collectionHash = localToken.collectionHash, walletId = Web3Signer.currentWalletId)
                     }
                     return@map ra
                 }
@@ -332,7 +345,13 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )
-        return remoteList ?: emptyList()
+        val total = remoteList?.toMutableList() ?: mutableListOf()
+        localTokens.forEach { local ->
+            if (total.none { it.assetId == local.assetId && it.chain.chainId == local.chain.chainId }) {
+                total.add(local)
+            }
+        }
+        return total
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {

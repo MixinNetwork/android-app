@@ -211,42 +211,32 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     dismiss()
                 }
             }
-            if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
-                searchEt.listener =
-                    object : SearchView.OnSearchViewListener {
-                        override fun afterTextChanged(s: Editable?) {
-                            filter(s.toString())
-                        }
 
-                        override fun onSearch() {}
-                    }
-            } else {
-                @SuppressLint("AutoDispose")
-                disposable =
-                    searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDispose(destroyScope)
-                        .subscribe(
-                            {
-                                if (it.isNullOrBlank()) {
-                                    binding.rvVa.displayedChild = POS_RV
-                                    adapter.submitList(defaultAssets)
-                                } else {
-                                    if (it.toString() != currentQuery) {
-                                        currentQuery = it.toString()
-                                        search(it.toString())
-                                    }
+            @SuppressLint("AutoDispose")
+            disposable =
+                searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(destroyScope)
+                    .subscribe(
+                        {
+                            if (it.isNullOrBlank()) {
+                                binding.rvVa.displayedChild = POS_RV
+                                adapter.submitList(defaultAssets)
+                            } else {
+                                if (it.toString() != currentQuery) {
+                                    currentQuery = it.toString()
+                                    search(it.toString())
                                 }
-                            },
-                            {},
-                        )
-            }
+                            }
+                        },
+                        {},
+                    )
         }
 
         if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
             bottomViewModel.assetItemsWithBalance()
         } else {
-            bottomViewModel.assetItems()
+            bottomViewModel.assetItemsNotHidden()
         }.observe(this) {
             defaultAssets =
                 it.let { list ->
@@ -346,9 +336,15 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                     }
                 adapter.submitList(localAssets)
-
                 val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).filter { item ->
                     ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+                }.map {
+                    val local = bottomViewModel.findAssetItemById(it.assetId)
+                    if (local != null) {
+                        it.copy(balance = local.balance)
+                    } else {
+                        it
+                    }
                 }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
