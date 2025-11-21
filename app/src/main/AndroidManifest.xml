@@ -57,8 +57,8 @@
         android:localeConfig="@xml/locales_config"
         android:largeHeap="true"
         android:allowBackup="false"
-        android:dataExtractionRules="@xml/backup_config"
-        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/mixin_data_extraction_rules"
+        android:fullBackupContent="@xml/mixin_backup_rules"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         tools:replace="android:dataExtractionRules,android:fullBackupContent,android:allowBackup">
         <activity

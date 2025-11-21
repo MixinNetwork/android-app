@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="one.mixin.android">
 
     <application
         android:allowBackup="false"
-        android:dataExtractionRules="@xml/backup_config"
-        android:fullBackupContent="false"
-        tools:replace="android:allowBackup,android:dataExtractionRules,android:fullBackupContent" />
+        android:fullBackupContent="@xml/mixin_backup_rules"
+        android:dataExtractionRules="@xml/mixin_data_extraction_rules"
+        tools:replace="android:allowBackup,android:fullBackupContent,android:dataExtractionRules">
+        
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode"
+            tools:replace="android:value" />
+    </application>
 
 </manifest>
