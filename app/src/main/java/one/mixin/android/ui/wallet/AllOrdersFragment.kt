@@ -431,9 +431,9 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
     private fun startPendingOrdersPolling() {
         refreshJob?.cancel()
         refreshJob = viewLifecycleOwner.lifecycleScope.launch {
-            while (true) {
+            while (isAdded) {
                 val hadPending: Boolean = ordersViewModel.refreshPendingOrders()
-                delay(if (hadPending) 5_000 else 10_000)
+                if (hadPending) delay(3000) else break
             }
         }
     }

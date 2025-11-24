@@ -144,7 +144,7 @@ class OrderDetailFragment : BaseFragment() {
                         walletDatabase.orderDao().insertListSuspend(listOf(resp.data!!))
                     }
                 }
-                delay(5_000)
+                delay(3_000)
             }
         }
     }
