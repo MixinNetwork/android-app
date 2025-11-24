@@ -59,6 +59,30 @@ object SystemUIManager {
         }
     }
 
+    fun setSafePaddingOnce(
+        window: Window,
+        color: Int,
+        onlyStatus: Boolean = false,
+        onlyNav: Boolean = false,
+        imePadding: Boolean = false
+    ) {
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            view.setPadding(
+                0,
+                if (onlyNav) 0 else statusBarInsets.top,
+                0,
+                if (onlyStatus) 0 else navBarInsets.bottom + if (imePadding) imeBottom else 0
+            )
+            view.setBackgroundColor(color)
+            ViewCompat.setOnApplyWindowInsetsListener(view, null)
+            insets
+        }
+        ViewCompat.requestApplyInsets(window.decorView)
+    }
+
     fun fullScreen(window: Window) {
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
             view.setPadding(0, 0, 0, 0)
