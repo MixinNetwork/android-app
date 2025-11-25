@@ -409,11 +409,12 @@ object Session {
 
     fun getBotSignature(
         botPublicKey: String?,
-        method: String, path: String, body: String
+        method: String?, path: String?, body: String?
     ): Pair<Long, String> {
         val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
         val accountId = getAccountId() ?: return Pair(0L, "")
-        return signBotSignature(accountId, botPublicKey!!, edKeyPair, method, path, body)
+        if (botPublicKey == null) return Pair(0L, "")
+        return signBotSignature(accountId, botPublicKey, edKeyPair, method, path, body)
     }
 
 
