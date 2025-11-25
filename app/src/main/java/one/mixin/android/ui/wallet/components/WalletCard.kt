@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Colors
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -65,6 +64,7 @@ fun WalletCard(
     hasLocalPrivateKey: Boolean = true,
     destination: WalletDestination?,
     onClick: () -> Unit,
+    onSafeClick: (() -> Unit)? = null,
     enableFreeLabel: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
 ) {
@@ -90,6 +90,7 @@ fun WalletCard(
                     is WalletDestination.Classic -> destination.walletId
                     is WalletDestination.Import -> destination.walletId
                     is WalletDestination.Watch -> destination.walletId
+                    is WalletDestination.Safe -> destination.walletId
                     else -> null
                 }
                 if (walletId == null) {
@@ -127,6 +128,11 @@ fun WalletCard(
                 assets = viewModel.getWeb3TokenDistribution(destination.walletId)
             }
 
+            is WalletDestination.Safe -> {
+                web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
+                assets = viewModel.getWeb3TokenDistribution(destination.walletId)
+            }
+
             else -> {
                 tokenTotalBalance = viewModel.getTokenTotalBalance()
                 assets = viewModel.getTokenDistribution()
@@ -147,7 +153,13 @@ fun WalletCard(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = LocalIndication.current
-                ) { onClick() }
+                ) { 
+                    if (destination is WalletDestination.Safe && onSafeClick != null) {
+                        onSafeClick()
+                    } else {
+                        onClick()
+                    }
+                }
         ) {
             Column(
                 modifier = Modifier
@@ -223,11 +235,20 @@ fun WalletCard(
                                 )
                                 .padding(horizontal = 4.dp)
                         )
+                    } else if (destination is WalletDestination.Safe) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(id = R.drawable.ic_wallet_safe),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
                     }
 
                     val isFeeFree = enableFreeLabel && when (destination) {
                         is WalletDestination.Classic -> true
                         is WalletDestination.Import -> hasLocalPrivateKey
+                        is WalletDestination.Safe -> true
                         else -> false
                     }
                     if (isFeeFree) {
@@ -247,7 +268,7 @@ fun WalletCard(
 
                     Spacer(modifier = Modifier.weight(1f))
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_right),
+                        painter = painterResource(id = if (destination is WalletDestination.Safe) R.drawable.ic_arrow_top_right else R.drawable.ic_arrow_right),
                         tint = Color.Unspecified,
                         contentDescription = null,
                     )

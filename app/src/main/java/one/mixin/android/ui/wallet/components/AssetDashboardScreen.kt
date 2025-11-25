@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +22,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -57,6 +60,7 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.WalletCategory
 
 const val PREF_NAME = "wallet_info_card"
 const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
@@ -75,6 +79,7 @@ fun AssetDashboardScreen(
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
 
     var refreshTrigger by remember { mutableIntStateOf(0) }
 
@@ -154,15 +159,48 @@ fun AssetDashboardScreen(
                 TotalAssetsCard()
                 Spacer(modifier = Modifier.height(20.dp))
 
-                WalletCard(
-                    destination = WalletDestination.Privacy,
-                    onClick = { onWalletCardClick.invoke(WalletDestination.Privacy) }
-                )
+                // Category filter tabs
+                val hasSafe = wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }
+                val hasImported = wallets.any { it.isImported() }
+                val hasWatch = wallets.any { it.isWatch() }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                WalletCategoryFilter(
+                    selectedCategory = selectedCategory,
+                    hasSafe = hasSafe,
+                    hasImported = hasImported,
+                    hasWatch = hasWatch,
+                    onCategorySelected = { selectedCategory = it }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Privacy wallet - always show if no filter or "all" selected
+                if (selectedCategory == null) {
+                    WalletCard(
+                        destination = WalletDestination.Privacy,
+                        onClick = { onWalletCardClick.invoke(WalletDestination.Privacy) }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
 
                 wallets.forEach { wallet ->
-                    if (wallet.isWatch()) {
+                    val shouldShow = when (selectedCategory) {
+                        null -> true // Show all
+                        WalletCategory.MIXIN_SAFE.value -> wallet.category == WalletCategory.MIXIN_SAFE.value
+                        WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
+                        "import" -> wallet.isImported()
+                        "watch" -> wallet.isWatch()
+                        else -> true
+                    }
+                    
+                    if (!shouldShow) return@forEach
+                    
+                    if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
+                        WalletCard(
+                            name = wallet.name,
+                            destination = WalletDestination.Safe(wallet.id),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id)) }
+                        )
+                    } else if (wallet.isWatch()) {
                         WalletCard(
                             name = wallet.name,
                             destination = WalletDestination.Watch(wallet.id, wallet.category),

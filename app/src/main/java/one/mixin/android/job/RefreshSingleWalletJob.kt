@@ -11,6 +11,7 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 class RefreshSingleWalletJob(
@@ -27,6 +28,9 @@ class RefreshSingleWalletJob(
         try {
             val wallet = web3WalletDao.getWalletById(walletId)
             if (wallet == null) {
+                return@runBlocking
+            } else if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
+                Timber.e("Skipping refresh for Mixin Safe wallet: $walletId")
                 return@runBlocking
             }
             fetchWalletAddresses(wallet)

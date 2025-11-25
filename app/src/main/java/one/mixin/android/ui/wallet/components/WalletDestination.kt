@@ -11,6 +11,7 @@ sealed class WalletDestination {
     data class Classic(val walletId: String) : WalletDestination()
     data class Import(val walletId: String, val category: String) : WalletDestination()
     data class Watch(val walletId: String, val category: String) : WalletDestination()
+    data class Safe(val walletId: String) : WalletDestination()
 }
 
 
@@ -41,6 +42,10 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
                 out.name("type").value("Watch")
                 out.name("walletId").value(value.walletId)
                 out.name("category").value(value.category)
+            }
+            is WalletDestination.Safe -> {
+                out.name("type").value("Safe")
+                out.name("walletId").value(value.walletId)
             }
         }
         out.endObject()
@@ -73,6 +78,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
             "Classic" -> WalletDestination.Classic(walletId ?: "")
             "Import" -> WalletDestination.Import(walletId ?: "", category ?: "")
             "Watch" -> WalletDestination.Watch(walletId ?: "", category ?: "")
+            "Safe" -> WalletDestination.Safe(walletId ?: "")
             else -> throw JsonParseException("Unknown type: $type")
         }
     }
