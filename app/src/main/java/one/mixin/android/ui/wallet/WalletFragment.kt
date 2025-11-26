@@ -53,6 +53,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
+import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
@@ -243,7 +245,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 AssetDashboardScreen(
                     onWalletCardClick = ::handleWalletCardClick,
                     onAddWalletClick = ::handleAddWalletClick
-                )
+                ) {
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+                }
             }
 
             titleRl.setOnClickListener {

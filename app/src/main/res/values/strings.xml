@@ -1965,6 +1965,10 @@
     <string name="Common_Wallet_Description">A common multi-chain wallet that accesses decentralized applications and DeFi protocols.</string>
     <string name="Whats_Safe_Wallet">What\'s the Mixin Safe?</string>
     <string name="Safe_Wallet_Description">A multi-signature cold wallet based on Bitcoin, Ethereum, and other networks.</string>
+    <string name="Upgrade_Safe_Description">Upgrade to Mixin One to unlock Mixin Safe and securely manage assets with your family, friends, or colleagues.</string>
+    <string name="Create_Safe">Create Safe</string>
+    <string name="Create_Safe_Description">You don\'t have a Safe yet. Create one now and securely manage assets with your family, friends, or colleagues.</string>
+    <string name="Guideline">Guideline</string>
     <string name="Approval">Approval</string>
     <string name="Approved">Approved</string>
     <string name="unlimited">unlimited</string>

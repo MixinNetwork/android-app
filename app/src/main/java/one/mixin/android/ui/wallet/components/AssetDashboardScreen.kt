@@ -59,8 +59,10 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
+import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.WalletCategory
+import org.bouncycastle.math.raw.Mod
 
 const val PREF_NAME = "wallet_info_card"
 const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
@@ -72,6 +74,7 @@ const val KEY_HIDE_SAFE_WALLET_INFO = "hide_safe_wallet_info"
 fun AssetDashboardScreen(
     onWalletCardClick: (destination: WalletDestination) -> Unit,
     onAddWalletClick: () -> Unit,
+    onUpgradePlan: () -> Unit,
 ) {
     val viewModel: AssetDistributionViewModel = hiltViewModel()
     val context = LocalContext.current
@@ -184,6 +187,27 @@ fun AssetDashboardScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
+                if (selectedCategory == WalletCategory.MIXIN_SAFE.value && wallets.isEmpty()) {
+                    if (Session.getAccount()?.membership?.isMembership() == true) {
+                        CreateSafeCard(
+                            onCreateClick = {
+                                // TODO: Navigate to create safe
+                            },
+                        )
+                    } else {
+                        UpgradeSafeCard(
+                            onUpgradeClick = {
+                                onUpgradePlan.invoke()
+                            },
+                            onLearnMoreClick = {
+                                // TODO: Open safe learn more url
+                                context.openUrl("")
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
                 wallets.forEach { wallet ->
                     val shouldShow = when (selectedCategory) {
                         null -> true // Show all
@@ -193,9 +217,9 @@ fun AssetDashboardScreen(
                         "watch" -> wallet.isWatch()
                         else -> true
                     }
-                    
+
                     if (!shouldShow) return@forEach
-                    
+
                     if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
                         WalletCard(
                             name = wallet.name,
@@ -261,17 +285,17 @@ fun WalletInfoCard(
     onSafeClose: () -> Unit,
 ) {
     val context = LocalContext.current
-    
+
     // Build list of visible pages
     val pages = buildList {
         if (!hidePrivacyWalletInfo) add("privacy")
         if (!hideCommonWalletInfo) add("common")
         if (!hideSafeWalletInfo) add("safe")
     }
-    
+
     val pageCount = pages.size
     if (pageCount == 0) return
-    
+
     val pagerState = rememberPagerState(initialPage = 0) { pageCount }
 
     Box(
@@ -292,12 +316,14 @@ fun WalletInfoCard(
                         },
                         onClose = onPrivacyClose
                     )
+
                     "common" -> CommonWalletInfo(
                         onLearnMoreClick = {
                             context.openUrl(context.getString(R.string.url_classic_wallet))
                         },
                         onClose = onCommonClose
                     )
+
                     "safe" -> SafeWalletInfo(
                         onLearnMoreClick = {
                             context.openUrl("https://mixin.one/safe")
@@ -357,7 +383,7 @@ fun PrivacyWalletInfo(
                 painter = painterResource(id = R.drawable.ic_close_grey),
                 contentDescription = stringResource(R.string.Close),
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(16.dp)
                     .clickable { onClose() }
             )
         }
@@ -425,7 +451,7 @@ fun SafeWalletInfo(
                 painter = painterResource(id = R.drawable.ic_close_grey),
                 contentDescription = stringResource(R.string.Close),
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(16.dp)
                     .clickable { onClose() }
             )
         }
@@ -445,7 +471,7 @@ fun SafeWalletInfo(
             Spacer(modifier = Modifier.width(8.dp))
 
             Image(
-                painter = painterResource(id = R.drawable.ic_wallet_safe),
+                painter = painterResource(id = R.drawable.ic_privacy),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
@@ -493,7 +519,7 @@ fun CommonWalletInfo(
                 painter = painterResource(id = R.drawable.ic_close_grey),
                 contentDescription = stringResource(R.string.Close),
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(16.dp)
                     .clickable { onClose() }
             )
         }
@@ -530,6 +556,179 @@ fun CommonWalletInfo(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MixinAppTheme.colors.accent
+            )
+        }
+    }
+}
+
+@Composable
+fun UpgradeSafeCard(
+    onUpgradeClick: () -> Unit,
+    onLearnMoreClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Upgrade_Plan),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = stringResource(R.string.Upgrade_Safe_Description),
+                fontSize = 14.sp,
+                lineHeight = 17.5.sp,
+                color = MixinAppTheme.colors.textMinor,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Image(
+                painter = painterResource(id = R.drawable.ic_safe),
+                contentDescription = null,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MixinAppTheme.colors.backgroundWindow,
+                    shape = RoundedCornerShape(16.dp)
+                ),
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onUpgradeClick() },
+                contentAlignment = Alignment.Center
+            ) {
+
+                Text(
+                    text = stringResource(R.string.Upgrade),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MixinAppTheme.colors.accent,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(bottomStart = 16.dp, topStart = 16.dp))
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+
+            }
+            Spacer(
+                modifier = Modifier
+                    .width(2.dp)
+                    .height(24.dp)
+                    .background(Color.Black.copy(alpha = 0.05f))
+                    .align(Alignment.CenterVertically)
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onLearnMoreClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.Learn_More),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MixinAppTheme.colors.textPrimary,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_top_right),
+                    contentDescription = null,
+                    tint = MixinAppTheme.colors.backgroundDark,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .align(Alignment.TopEnd)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CreateSafeCard(
+    onCreateClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+
+        Text(
+            text = stringResource(R.string.Create_Safe),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = stringResource(R.string.Create_Safe_Description),
+                fontSize = 14.sp,
+                lineHeight = 17.5.sp,
+                color = MixinAppTheme.colors.textMinor
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.ic_safe),
+                contentDescription = null,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MixinAppTheme.colors.accent,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .clickable { onCreateClick() }
+                .padding(6.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.Guideline),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(6.dp),
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_top_right_small),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier
+                    .size(8.dp)
+                    .align(Alignment.TopEnd)
             )
         }
     }
