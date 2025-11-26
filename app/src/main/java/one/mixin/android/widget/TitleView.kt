@@ -167,6 +167,8 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleTv.isVisible = true
             if (index == 1) {
                 setSubTitle(title, label ?: "", R.drawable.ic_wallet_privacy)
+            } else if (index == 4) {
+                setSubTitle(title, label ?: "", R.drawable.ic_wallet_safe)
             } else {
                 setSubTitle(title, label ?: "")
             }

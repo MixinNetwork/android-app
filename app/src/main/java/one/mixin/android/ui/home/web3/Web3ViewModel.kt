@@ -475,13 +475,18 @@ internal constructor(
         }
     }
 
-    // index 0 is address,index 1 is privacy wallet, 2 is common wallet, 3 is fee free wallet
+    // index 0 is address,index 1 is privacy wallet, 2 is common wallet, 3 is fee free wallet, 4 is safe wallet
     suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Int>? {
         return withContext(Dispatchers.IO) {
 
             if (tag.isNullOrBlank()) {
                 val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
                 if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), 1)
+            }
+
+            val safeWallet = web3Repository.getWalletByAddress(destination, chainId)
+            if (safeWallet != null) {
+                return@withContext Pair(safeWallet.name, 4)
             }
 
             val wallet = web3Repository.getWalletByDestination(destination)
