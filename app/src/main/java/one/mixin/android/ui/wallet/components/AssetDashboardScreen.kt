@@ -65,6 +65,7 @@ import one.mixin.android.vo.WalletCategory
 const val PREF_NAME = "wallet_info_card"
 const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
 const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
+const val KEY_HIDE_SAFE_WALLET_INFO = "hide_safe_wallet_info"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -77,6 +78,7 @@ fun AssetDashboardScreen(
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
+    val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
     var selectedCategory by remember { mutableStateOf<String?>(null) }
@@ -222,11 +224,12 @@ fun AssetDashboardScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
+                if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value || !hideSafeWalletInfo.value) {
                     Spacer(modifier = Modifier.weight(1f))
                     WalletInfoCard(
                         hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
                         hideCommonWalletInfo = hideCommonWalletInfo.value,
+                        hideSafeWalletInfo = hideSafeWalletInfo.value,
                         onPrivacyClose = {
                             hidePrivacyWalletInfo.value = true
                             prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
@@ -234,6 +237,10 @@ fun AssetDashboardScreen(
                         onCommonClose = {
                             hideCommonWalletInfo.value = true
                             prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
+                        },
+                        onSafeClose = {
+                            hideSafeWalletInfo.value = true
+                            prefs.edit { putBoolean(KEY_HIDE_SAFE_WALLET_INFO, true) }
                         }
                     )
                     Spacer(modifier = Modifier.height(20.dp))
@@ -248,14 +255,24 @@ fun AssetDashboardScreen(
 fun WalletInfoCard(
     hidePrivacyWalletInfo: Boolean,
     hideCommonWalletInfo: Boolean,
+    hideSafeWalletInfo: Boolean,
     onPrivacyClose: () -> Unit,
     onCommonClose: () -> Unit,
+    onSafeClose: () -> Unit,
 ) {
-    val initialPage = if (hidePrivacyWalletInfo && !hideCommonWalletInfo) 0 else 0
-    val pageCount = if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) 2 else 1
-
-    val pagerState = rememberPagerState(initialPage = initialPage) { pageCount }
     val context = LocalContext.current
+    
+    // Build list of visible pages
+    val pages = buildList {
+        if (!hidePrivacyWalletInfo) add("privacy")
+        if (!hideCommonWalletInfo) add("common")
+        if (!hideSafeWalletInfo) add("safe")
+    }
+    
+    val pageCount = pages.size
+    if (pageCount == 0) return
+    
+    val pagerState = rememberPagerState(initialPage = 0) { pageCount }
 
     Box(
         modifier = Modifier.fillMaxWidth()
@@ -268,46 +285,35 @@ fun WalletInfoCard(
                 state = pagerState,
                 modifier = Modifier.fillMaxWidth()
             ) { page ->
-                if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) {
-                    when (page) {
-                        0 -> PrivacyWalletInfo(
-                            onLearnMoreClick = {
-                                context.openUrl(context.getString(R.string.url_privacy_wallet))
-                            },
-                            onClose = onPrivacyClose
-                        )
-
-                        1 -> CommonWalletInfo(
-                            onLearnMoreClick = {
-                                context.openUrl(context.getString(R.string.url_classic_wallet))
-                            },
-                            onClose = onCommonClose
-                        )
-                    }
-                } else if (!hidePrivacyWalletInfo) {
-                    PrivacyWalletInfo(
+                when (pages[page]) {
+                    "privacy" -> PrivacyWalletInfo(
                         onLearnMoreClick = {
-                            context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv6zqq56eb6zkx5yyf77yf-1s7o0e2/")
+                            context.openUrl(context.getString(R.string.url_privacy_wallet))
                         },
                         onClose = onPrivacyClose
                     )
-                } else if (!hideCommonWalletInfo) {
-                    CommonWalletInfo(
+                    "common" -> CommonWalletInfo(
                         onLearnMoreClick = {
-                            context.openUrl("https://support.mixin.one/zh/article/5lua5lmi5piv5pmu6yca6zkx5yyf77yf-8308b1/")
+                            context.openUrl(context.getString(R.string.url_classic_wallet))
                         },
                         onClose = onCommonClose
+                    )
+                    "safe" -> SafeWalletInfo(
+                        onLearnMoreClick = {
+                            context.openUrl("https://mixin.one/safe")
+                        },
+                        onClose = onSafeClose
                     )
                 }
             }
 
-            if (!hidePrivacyWalletInfo && !hideCommonWalletInfo) {
+            if (pageCount > 1) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    repeat(2) { index ->
+                    repeat(pageCount) { index ->
                         val isSelected = pagerState.currentPage == index
                         Box(
                             modifier = Modifier
@@ -372,6 +378,74 @@ fun PrivacyWalletInfo(
 
             Image(
                 painter = painterResource(id = R.drawable.ic_privacy),
+                contentDescription = null,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { onLearnMoreClick() }
+        ) {
+            Text(
+                text = stringResource(R.string.Learn_More),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MixinAppTheme.colors.accent
+            )
+        }
+    }
+}
+
+@Composable
+fun SafeWalletInfo(
+    onLearnMoreClick: () -> Unit,
+    onClose: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.Whats_Safe_Wallet),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MixinAppTheme.colors.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.ic_close_grey),
+                contentDescription = stringResource(R.string.Close),
+                modifier = Modifier
+                    .size(12.dp)
+                    .clickable { onClose() }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.Safe_Wallet_Description),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textMinor,
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Image(
+                painter = painterResource(id = R.drawable.ic_wallet_safe),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )

@@ -59,6 +59,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
+import one.mixin.android.ui.wallet.components.KEY_HIDE_SAFE_WALLET_INFO
 import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
@@ -176,6 +177,7 @@ fun WalletListScreen(
     var query by remember { mutableStateOf("") }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
+    val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
     val walletItems = remember(wallets, excludeWalletId, query) {
         buildList {
@@ -253,11 +255,12 @@ fun WalletListScreen(
             }
             Spacer(modifier = Modifier.height(10.dp))
 
-            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
+            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value || !hideSafeWalletInfo.value) {
                 Spacer(modifier = Modifier.weight(1f))
                 WalletInfoCard(
                     hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
                     hideCommonWalletInfo = hideCommonWalletInfo.value,
+                    hideSafeWalletInfo = hideSafeWalletInfo.value,
                     onPrivacyClose = {
                         hidePrivacyWalletInfo.value = true
                         prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
@@ -265,6 +268,10 @@ fun WalletListScreen(
                     onCommonClose = {
                         hideCommonWalletInfo.value = true
                         prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
+                    },
+                    onSafeClose = {
+                        hideSafeWalletInfo.value = true
+                        prefs.edit { putBoolean(KEY_HIDE_SAFE_WALLET_INFO, true) }
                     }
                 )
                 Spacer(modifier = Modifier.height(30.dp))
