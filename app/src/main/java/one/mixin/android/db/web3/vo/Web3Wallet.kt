@@ -8,14 +8,15 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.vo.WalletCategory
 
-enum class SafeChain(val value: String, val displayName: String) {
-    BITCOIN("1", "Bitcoin"),
-    ETHEREUM("2", "Ethereum"),
-    LITECOIN("5", "Litecoin"),
-    POLYGON("6", "Polygon");
+enum class SafeChain(val value: String, val chainId: String) {
+    BITCOIN("1", Constants.ChainId.BITCOIN_CHAIN_ID),
+    ETHEREUM("2", Constants.ChainId.ETHEREUM_CHAIN_ID),
+    LITECOIN("5", Constants.ChainId.Litecoin),
+    POLYGON("6", Constants.ChainId.Polygon);
 
     companion object {
         fun fromValue(value: String?): SafeChain? {

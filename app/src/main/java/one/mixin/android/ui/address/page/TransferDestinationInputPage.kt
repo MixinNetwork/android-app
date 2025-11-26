@@ -65,6 +65,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
@@ -104,6 +105,8 @@ fun TransferDestinationInputPage(
         .collectAsState(initial = emptyList())
 
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
+    var hasSafeWallet by remember { mutableStateOf(false) }
+    var safeWalletChainId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(web3Token?.walletId) {
         if (web3Token?.walletId != null) {
@@ -113,6 +116,22 @@ fun TransferDestinationInputPage(
                     it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value ||
                     it.category == WalletCategory.WATCH_ADDRESS.value) {
                     walletDisplayName = it.name
+                }
+            }
+        }
+    }
+
+    // Check for Safe wallet based on current chain
+    LaunchedEffect(web3Token?.chainId) {
+        web3Token?.chainId?.let { chainId ->
+            // Check if current chain is supported by Safe
+            val safeChain = SafeChain.fromValue(chainId)
+            if (safeChain != null) {
+                // Check if there's a Safe wallet for this chain
+                val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
+                if (safeWallets.isNotEmpty()) {
+                    hasSafeWallet = true
+                    safeWalletChainId = chainId
                 }
             }
         }
@@ -350,6 +369,19 @@ fun TransferDestinationInputPage(
                                     free = true,
                                     onClick = {
                                         toWallet.invoke(web3Token.walletId)
+                                    },
+                                    isPrivacy = false
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            } else if (hasSafeWallet && safeWalletChainId != null) {
+                                // Show Safe wallet option
+                                DestinationMenu(
+                                    R.drawable.ic_destination_wallet,
+                                    R.string.My_Wallet,
+                                    stringResource(R.string.send_to_my_wallet_description),
+                                    free = true,
+                                    onClick = {
+                                        toWallet.invoke(safeWalletChainId)
                                     },
                                     isPrivacy = false
                                 )

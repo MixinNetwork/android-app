@@ -75,8 +75,8 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         requireArguments().getString(ARGS_EXCLUDE_WALLET_ID)
     }
 
-    private val chainId: String by lazy {
-        requireNotNull(requireArguments().getString(ARGS_CHAIN_ID))
+    private val chainId: String? by lazy {
+        requireArguments().getString(ARGS_CHAIN_ID)
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
@@ -91,7 +91,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 launch {
                     searchQuery.collect { query ->
                         if (query.isEmpty()) {
-                            viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                            viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
                         }
                     }
                 }
@@ -100,7 +100,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         .debounce(150)
                         .collect { query ->
                             if (query.isNotEmpty()) {
-                                viewModel.searchWallets(excludeWalletId ?: "", chainId, query)
+                                viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
                             }
                         }
                 }
@@ -299,8 +299,7 @@ fun SearchBar(
                 .weight(1f)
                 .height(44.dp)
                 .background(
-                    color = MixinAppTheme.colors.backgroundWindow,
-                    shape = RoundedCornerShape(24.dp)
+                    color = MixinAppTheme.colors.backgroundWindow, shape = RoundedCornerShape(24.dp)
                 )
                 .padding(horizontal = 12.dp),
             textStyle = TextStyle(

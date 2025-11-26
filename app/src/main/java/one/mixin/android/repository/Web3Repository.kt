@@ -166,6 +166,9 @@ constructor(
     suspend fun findWalletById(walletId: String) =
         web3WalletDao.getWalletById(walletId)?.updateWithLocalKeyInfo(context)
 
+    suspend fun getSafeWalletsByChainId(chainId: String) =
+        web3WalletDao.getSafeWalletsByChainId(chainId).updateWithLocalKeyInfo(context)
+
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) =
         web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
             .updateWithLocalKeyInfo(context)

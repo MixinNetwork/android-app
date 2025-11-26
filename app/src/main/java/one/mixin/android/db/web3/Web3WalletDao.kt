@@ -36,6 +36,10 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("SELECT * FROM wallets WHERE wallet_id = :walletId")
     suspend fun getWalletById(walletId: String): Web3Wallet?
 
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("SELECT * FROM wallets WHERE category = 'mixin_safe' AND safe_chain_id = :chainId ORDER BY created_at ASC")
+    suspend fun getSafeWalletsByChainId(chainId: String): List<Web3Wallet>
+
     @Query("SELECT name FROM wallets WHERE category IN (:categories)")
     suspend fun getAllWalletNames(categories: List<String>): List<String>
 

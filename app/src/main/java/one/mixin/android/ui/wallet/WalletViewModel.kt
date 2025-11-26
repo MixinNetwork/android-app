@@ -33,6 +33,7 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -60,6 +61,7 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber
@@ -83,7 +85,16 @@ internal constructor(
 
     fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
         viewModelScope.launch {
-            _walletsFlow.value = getWalletsExcluding(excludeWalletId, chainId, query)
+            val wallets = getWalletsExcluding(excludeWalletId, chainId, query)
+            _walletsFlow.value = if (chainId.isNotEmpty()) {
+                wallets.filter { wallet ->
+                    wallet.category != WalletCategory.MIXIN_SAFE.value || SafeChain.fromValue(wallet.safeChainId)?.chainId == chainId
+                }
+            } else {
+                wallets.filter { wallet ->
+                    wallet.category != WalletCategory.MIXIN_SAFE.value
+                }
+            }
         }
     }
 
