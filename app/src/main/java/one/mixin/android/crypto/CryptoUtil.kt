@@ -360,13 +360,10 @@ fun signBotSignature(
     accountId: String,
     botPublicKey: String,
     edKeyPair: EdKeyPair,
-    method: String?,
-    path: String?,
+    method: String,
+    path: String,
     body: String?,
 ): Pair<Long, String> {
-    if (method == null || path == null) {
-        return Pair(0L, "")
-    }
     val botPk = botPublicKey.base64RawURLDecode()
     val private = privateKeyToCurve25519(edKeyPair.privateKey)
     val sharedKey = calculateAgreement(botPk, private)
