@@ -97,3 +97,7 @@ fun Web3Wallet.isImported(): Boolean {
 fun Web3Wallet.isWatch(): Boolean {
     return category == WalletCategory.WATCH_ADDRESS.value
 }
+
+fun Web3Wallet.isMixinSafe(): Boolean {
+    return category == WalletCategory.MIXIN_SAFE.value
+}

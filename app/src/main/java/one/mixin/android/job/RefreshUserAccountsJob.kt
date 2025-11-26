@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.api.response.SafeAsset
 import one.mixin.android.api.response.UserSafe
+import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.nowInUtc
@@ -69,7 +70,7 @@ class RefreshUserAccountsJob : BaseJob(
             createdAt = account.createdAt,
             updatedAt = currentTime,
             owners = account.owners,
-            safeChainId = account.chainId,
+            safeChainId = SafeChain.fromValue(account.chainId)?.chainId,
             safeAddress = account.address,
         )
         

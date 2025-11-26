@@ -85,16 +85,7 @@ internal constructor(
 
     fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
         viewModelScope.launch {
-            val wallets = getWalletsExcluding(excludeWalletId, chainId, query)
-            _walletsFlow.value = if (chainId.isNotEmpty()) {
-                wallets.filter { wallet ->
-                    wallet.category != WalletCategory.MIXIN_SAFE.value || SafeChain.fromValue(wallet.safeChainId)?.chainId == chainId
-                }
-            } else {
-                wallets.filter { wallet ->
-                    wallet.category != WalletCategory.MIXIN_SAFE.value
-                }
-            }
+            _walletsFlow.value = getWalletsExcluding(excludeWalletId, chainId, query)
         }
     }
 

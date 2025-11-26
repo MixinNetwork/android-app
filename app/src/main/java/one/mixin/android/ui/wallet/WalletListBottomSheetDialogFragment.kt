@@ -51,6 +51,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
@@ -234,6 +235,14 @@ fun WalletListScreen(
                             )
                         } else if (wallet.isWatch()) {
                             val destination = WalletDestination.Watch(wallet.id, wallet.category)
+                            WalletCard(
+                                name = wallet.name,
+                                destination = destination,
+                                onClick = { onWalletClick(wallet) },
+                            )
+                        } else if (wallet.isMixinSafe()) {
+                            val isSingleOwner = wallet.owners?.size == 1
+                            val destination = WalletDestination.Safe(wallet.id, isSingleOwner)
                             WalletCard(
                                 name = wallet.name,
                                 destination = destination,
