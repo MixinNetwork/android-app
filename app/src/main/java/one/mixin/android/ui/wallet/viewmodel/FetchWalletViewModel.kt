@@ -246,6 +246,9 @@ class FetchWalletViewModel @Inject constructor(
                                 category = wallet.category,
                                 createdAt = wallet.createdAt,
                                 updatedAt = wallet.updatedAt,
+                                owners = null,
+                                safeChainId = null,
+                                safeAddress = null,
                             )
                         )
                         saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
@@ -417,6 +420,9 @@ class FetchWalletViewModel @Inject constructor(
                             category = wallet.category,
                             createdAt = wallet.createdAt,
                             updatedAt = wallet.updatedAt,
+                            owners = null,
+                            safeChainId = null,
+                            safeAddress = null,
                         )
                     )
                     if (privateKey.isNullOrEmpty().not()) {

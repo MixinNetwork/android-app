@@ -10,7 +10,7 @@ data class UserSafe(
     @SerializedName("account_id")
     val accountId: String,
     @SerializedName("chain_id")
-    val chainId: Int,
+    val chainId: String,
     @SerializedName("user_id")
     val userId: String,
     @SerializedName("name")

@@ -523,7 +523,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     isFeeWaived = isFeeWaived,
                                     onTxhash = { _, serializedTx ->
                                     },
-                                    onDismiss = { isDone->
+                                    onDismiss = { isDone ->
                                         if (isDone) {
                                             val navController = findNavController()
                                             val backStackEntryCount = parentFragmentManager.backStackEntryCount

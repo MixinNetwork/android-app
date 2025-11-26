@@ -2115,4 +2115,6 @@
     <string name="Address_not_found">该联系人还没有注册普通钱包</string>
     <string name="Invitee_Commission">被邀请人返现</string>
     <string name="Inviter">邀请人</string>
+    <string name="Wallet_Owner">所有者</string>
+    <string name="Wallet_Member">共管人</string>
 </resources>

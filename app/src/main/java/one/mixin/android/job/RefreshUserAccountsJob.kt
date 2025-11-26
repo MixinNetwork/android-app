@@ -67,11 +67,14 @@ class RefreshUserAccountsJob : BaseJob(
             category = WalletCategory.MIXIN_SAFE.value,
             name = account.name,
             createdAt = account.createdAt,
-            updatedAt = currentTime
+            updatedAt = currentTime,
+            owners = account.owners,
+            safeChainId = account.chainId,
+            safeAddress = account.address,
         )
         
         web3WalletDao.insert(wallet)
-        Timber.d("Saved wallet: walletId=$walletId, name=${account.name}")
+        Timber.d("Saved wallet: walletId=$walletId, name=${account.name}, address=${account.address}")
         
         if (account.assets.isNotEmpty()) {
             val tokens = account.assets.mapNotNull { asset ->

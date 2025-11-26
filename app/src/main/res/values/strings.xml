@@ -2170,4 +2170,6 @@
     <string name="Address_not_found">This user has not registered a common wallet</string>
     <string name="Invitee_Commission">Invitee Commission</string>
     <string name="Inviter">Inviter</string>
+    <string name="Wallet_Owner">Owner</string>
+    <string name="Wallet_Member">Member</string>
 </resources>

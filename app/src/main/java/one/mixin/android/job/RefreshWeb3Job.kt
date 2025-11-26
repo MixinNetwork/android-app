@@ -85,7 +85,7 @@ class RefreshWeb3Job : BaseJob(
             successBlock = { response ->
                 val wallet = response.data
                 if (wallet != null) {
-                    val w = Web3Wallet(wallet.id, wallet.category, wallet.name, wallet.createdAt, wallet.updatedAt)
+                    val w = Web3Wallet(wallet.id, wallet.category, wallet.name, wallet.createdAt, wallet.updatedAt, null, null, null)
                     web3WalletDao.insert(w)
                     Timber.d("Created ${wallet.category} wallet with ID: ${wallet.id}")
                     wallet.addresses?.let {

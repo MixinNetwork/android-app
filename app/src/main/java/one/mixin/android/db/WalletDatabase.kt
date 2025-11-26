@@ -43,7 +43,7 @@ import kotlin.math.min
         Web3RawTransaction::class,
         Property::class
     ],
-    version = 4,
+    version = 5,
 )
 @TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
@@ -84,6 +84,14 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE wallets ADD COLUMN owners TEXT")
+                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_chain_id TEXT")
+                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_address TEXT")
+            }
+        }
+
         fun getDatabase(context: Context): WalletDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -101,7 +109,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
                                 Executors.newFixedThreadPool(

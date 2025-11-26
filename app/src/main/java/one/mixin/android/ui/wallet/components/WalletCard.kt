@@ -243,6 +243,18 @@ fun WalletCard(
                             tint = Color.Unspecified,
                             contentDescription = null,
                         )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(if(destination.isSingleOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
+                            color = MixinAppTheme.colors.textRemarks,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(
+                                    color = MixinAppTheme.colors.backgroundGrayLight,
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 4.dp)
+                        )
                     }
 
                     val isFeeFree = enableFreeLabel && when (destination) {

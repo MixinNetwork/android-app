@@ -11,7 +11,7 @@ sealed class WalletDestination {
     data class Classic(val walletId: String) : WalletDestination()
     data class Import(val walletId: String, val category: String) : WalletDestination()
     data class Watch(val walletId: String, val category: String) : WalletDestination()
-    data class Safe(val walletId: String) : WalletDestination()
+    data class Safe(val walletId: String, val isSingleOwner: Boolean) : WalletDestination()
 }
 
 
@@ -46,6 +46,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
             is WalletDestination.Safe -> {
                 out.name("type").value("Safe")
                 out.name("walletId").value(value.walletId)
+                out.name("isSingleOwner").value(value.isSingleOwner)
             }
         }
         out.endObject()
@@ -62,12 +63,14 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
         var type: String? = null
         var walletId: String? = null
         var category: String? = null
+        var isSingleOwner: Boolean = false
 
         while (input.hasNext()) {
             when (input.nextName()) {
                 "type" -> type = input.nextString()
                 "walletId" -> walletId = input.nextString()
                 "category" -> category = input.nextString()
+                "isSingleOwner" -> isSingleOwner = input.nextBoolean()
                 else -> input.skipValue()
             }
         }
@@ -78,7 +81,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
             "Classic" -> WalletDestination.Classic(walletId ?: "")
             "Import" -> WalletDestination.Import(walletId ?: "", category ?: "")
             "Watch" -> WalletDestination.Watch(walletId ?: "", category ?: "")
-            "Safe" -> WalletDestination.Safe(walletId ?: "")
+            "Safe" -> WalletDestination.Safe(walletId ?: "", isSingleOwner)
             else -> throw JsonParseException("Unknown type: $type")
         }
     }

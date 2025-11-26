@@ -221,10 +221,11 @@ fun AssetDashboardScreen(
                     if (!shouldShow) return@forEach
 
                     if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
+                        val isSingleOwner = wallet.owners?.size == 1
                         WalletCard(
                             name = wallet.name,
-                            destination = WalletDestination.Safe(wallet.id),
-                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id)) }
+                            destination = WalletDestination.Safe(wallet.id, isSingleOwner),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id, isSingleOwner)) }
                         )
                     } else if (wallet.isWatch()) {
                         WalletCard(

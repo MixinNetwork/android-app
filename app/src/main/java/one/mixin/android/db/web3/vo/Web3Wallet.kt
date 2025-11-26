@@ -5,10 +5,27 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.vo.WalletCategory
 
+enum class SafeChain(val value: String, val displayName: String) {
+    BITCOIN("1", "Bitcoin"),
+    ETHEREUM("2", "Ethereum"),
+    LITECOIN("5", "Litecoin"),
+    POLYGON("6", "Polygon");
+
+    companion object {
+        fun fromValue(value: String?): SafeChain? {
+            if (value.isNullOrEmpty()) return null
+            return entries.firstOrNull { it.value == value }
+        }
+    }
+}
+
+@TypeConverters(ListConverter::class)
 @Entity(tableName = "wallets")
 @Parcelize
 data class Web3Wallet(
@@ -32,9 +49,24 @@ data class Web3Wallet(
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
     val updatedAt: String,
+
+    @ColumnInfo(name = "owners")
+    @SerializedName("owners")
+    val owners: List<String>?,
+
+    @ColumnInfo(name = "safe_chain_id")
+    @SerializedName("safe_chain_id")
+    val safeChainId: String?,
+
+    @ColumnInfo("safe_address")
+    @SerializedName("safe_address")
+    val safeAddress: String?,
 ) : Parcelable {
     @Ignore
     var hasLocalPrivateKey: Boolean = false
+
+    val safeChain: SafeChain?
+        get() = SafeChain.fromValue(safeChainId)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
