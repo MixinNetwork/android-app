@@ -101,6 +101,7 @@ abstract class WalletDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE wallets ADD COLUMN owners TEXT")
                 database.execSQL("ALTER TABLE wallets ADD COLUMN safe_chain_id TEXT")
                 database.execSQL("ALTER TABLE wallets ADD COLUMN safe_address TEXT")
+                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_url TEXT")
 
             }
         }

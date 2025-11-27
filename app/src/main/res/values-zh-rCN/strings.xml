@@ -1928,6 +1928,8 @@
     <string name="Create_Safe">创建 Safe</string>
     <string name="Create_Safe_Description">您尚未拥有 Safe。现在创建即可与家人、朋友或同事安全管理资产。</string>
     <string name="Guideline">使用指南</string>
+    <string name="safe_learn_more_url" translatable="false">https://support.mixin.one/zh/article/mixin-safe-1bl8w6l/</string>
+    <string name="safe_create_guideline_url" translatable="false">https://support.mixin.one/zh/article/safe-1ljf7ld/</string>
     <string name="Approval">授权</string>
     <string name="unlimited">无限量</string>
     <string name="Transaction_Pending_Confirmation">有 1 笔交易处理中</string>

@@ -1971,6 +1971,8 @@
     <string name="Create_Safe">Create Safe</string>
     <string name="Create_Safe_Description">You don\'t have a Safe yet. Create one now and securely manage assets with your family, friends, or colleagues.</string>
     <string name="Guideline">Guideline</string>
+    <string name="safe_learn_more_url" translatable="false">https://support.mixin.one/en/article/what-is-mixin-safe-g20z2m/</string>
+    <string name="safe_create_guideline_url" translatable="false">https://support.mixin.one/en/article/how-to-create-a-safe-on-mixin-1ehi2mf/</string>
     <string name="Approval">Approval</string>
     <string name="Approved">Approved</string>
     <string name="unlimited">unlimited</string>

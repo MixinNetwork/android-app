@@ -72,6 +72,7 @@ class RefreshUserAccountsJob : BaseJob(
             owners = account.owners,
             safeChainId = SafeChain.fromValue(account.chainId)?.chainId,
             safeAddress = account.address,
+            safeUrl = account.uri
         )
         
         web3WalletDao.insert(wallet)

@@ -253,7 +253,7 @@ fun WalletListScreen(
                             )
                         } else if (wallet.isMixinSafe()) {
                             val isSingleOwner = wallet.owners?.size == 1
-                            val destination = WalletDestination.Safe(wallet.id, isSingleOwner)
+                            val destination = WalletDestination.Safe(wallet.id, isSingleOwner, wallet.safeUrl)
                             WalletCard(
                                 name = wallet.name,
                                 destination = destination,

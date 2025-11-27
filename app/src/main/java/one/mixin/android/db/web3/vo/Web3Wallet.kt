@@ -62,6 +62,10 @@ data class Web3Wallet(
     @ColumnInfo("safe_address")
     @SerializedName("safe_address")
     val safeAddress: String?,
+
+    @ColumnInfo("safe_url")
+    @SerializedName("safe_url")
+    val safeUrl: String?,
 ) : Parcelable {
     @Ignore
     var hasLocalPrivateKey: Boolean = false

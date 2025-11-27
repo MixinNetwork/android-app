@@ -191,7 +191,7 @@ fun AssetDashboardScreen(
                     if (Session.getAccount()?.membership?.isMembership() == true) {
                         CreateSafeCard(
                             onCreateClick = {
-                                // TODO: Navigate to create safe
+                                context.openUrl(context.getString(R.string.safe_create_guideline_url))
                             },
                         )
                     } else {
@@ -200,8 +200,7 @@ fun AssetDashboardScreen(
                                 onUpgradePlan.invoke()
                             },
                             onLearnMoreClick = {
-                                // TODO: Open safe learn more url
-                                context.openUrl("")
+                                context.openUrl(context.getString(R.string.safe_learn_more_url))
                             }
                         )
                     }
@@ -224,8 +223,8 @@ fun AssetDashboardScreen(
                         val isSingleOwner = wallet.owners?.size == 1
                         WalletCard(
                             name = wallet.name,
-                            destination = WalletDestination.Safe(wallet.id, isSingleOwner),
-                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id, isSingleOwner)) }
+                            destination = WalletDestination.Safe(wallet.id, isSingleOwner, wallet.safeUrl),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id, isSingleOwner, wallet.safeUrl)) }
                         )
                     } else if (wallet.isWatch()) {
                         WalletCard(
@@ -327,7 +326,7 @@ fun WalletInfoCard(
 
                     "safe" -> SafeWalletInfo(
                         onLearnMoreClick = {
-                            context.openUrl("https://mixin.one/safe")
+                            context.openUrl(context.getString(R.string.url_classic_wallet))
                         },
                         onClose = onSafeClose
                     )

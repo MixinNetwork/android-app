@@ -11,7 +11,7 @@ sealed class WalletDestination {
     data class Classic(val walletId: String) : WalletDestination()
     data class Import(val walletId: String, val category: String) : WalletDestination()
     data class Watch(val walletId: String, val category: String) : WalletDestination()
-    data class Safe(val walletId: String, val isSingleOwner: Boolean) : WalletDestination()
+    data class Safe(val walletId: String, val isSingleOwner: Boolean, val url: String?) : WalletDestination()
 }
 
 
@@ -47,6 +47,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
                 out.name("type").value("Safe")
                 out.name("walletId").value(value.walletId)
                 out.name("isSingleOwner").value(value.isSingleOwner)
+                value.url?.let { out.name("url").value(it) }
             }
         }
         out.endObject()
@@ -64,6 +65,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
         var walletId: String? = null
         var category: String? = null
         var isSingleOwner: Boolean = false
+        var url: String? = null
 
         while (input.hasNext()) {
             when (input.nextName()) {
@@ -71,6 +73,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
                 "walletId" -> walletId = input.nextString()
                 "category" -> category = input.nextString()
                 "isSingleOwner" -> isSingleOwner = input.nextBoolean()
+                "url" -> url = input.nextString()
                 else -> input.skipValue()
             }
         }
@@ -81,7 +84,7 @@ class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
             "Classic" -> WalletDestination.Classic(walletId ?: "")
             "Import" -> WalletDestination.Import(walletId ?: "", category ?: "")
             "Watch" -> WalletDestination.Watch(walletId ?: "", category ?: "")
-            "Safe" -> WalletDestination.Safe(walletId ?: "", isSingleOwner)
+            "Safe" -> WalletDestination.Safe(walletId ?: "", isSingleOwner, url)
             else -> throw JsonParseException("Unknown type: $type")
         }
     }
