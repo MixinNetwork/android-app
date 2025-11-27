@@ -205,7 +205,7 @@ interface RouteService {
     @GET("web3/swap/orders")
     suspend fun getLimitOrders(
         @Query("category") category: String = "all",
-        @Query("limit") limit: Int = 50,
+        @Query("limit") limit: Int? = 50,
         @Query("offset") offset: String?,
         @Query("state") state: String?,
         @Query("walletId") walletId: String? = null,

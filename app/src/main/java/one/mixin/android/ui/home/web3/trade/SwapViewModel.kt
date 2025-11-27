@@ -70,7 +70,7 @@ class SwapViewModel
         addRouteBot()
         return assetRepository.createLimitOrder(request)
     }
-    suspend fun getLimitOrders(category: String = "all", limit: Int = 50, offset: String?, state: String?, walletId: String?): MixinResponse<List<Order>>  {
+    suspend fun getLimitOrders(category: String = "all", limit: Int? = 50, offset: String?, state: String?, walletId: String?): MixinResponse<List<Order>>  {
         val response = assetRepository.getLimitOrders(category, limit, offset, state, walletId)
         response.data?.let {
             web3Repository.inserOrders(it)
