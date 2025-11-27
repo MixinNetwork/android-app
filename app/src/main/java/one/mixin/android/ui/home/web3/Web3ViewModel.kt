@@ -475,7 +475,7 @@ internal constructor(
         }
     }
 
-    // index 0 is address,index 1 is privacy wallet, 2 is common wallet, 3 is fee free wallet, 4 is safe wallet
+    // index 0 is address, index 1 is privacy wallet, 2 is safe wallet, 3 is common wallet, 4 is fee free wallet
     suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Int>? {
         return withContext(Dispatchers.IO) {
 
@@ -486,12 +486,12 @@ internal constructor(
 
             val safeWallet = web3Repository.getWalletByAddress(destination, chainId)
             if (safeWallet != null) {
-                return@withContext Pair(safeWallet.name, 4)
+                return@withContext Pair(safeWallet.name, 2)
             }
 
             val wallet = web3Repository.getWalletByDestination(destination)
             if (wallet != null) {
-                return@withContext Pair(wallet.name, if (wallet.isTransferFeeFree()) 3 else 2)
+                return@withContext Pair(wallet.name, if (wallet.isTransferFeeFree()) 4 else 3)
             }
 
             tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->

@@ -7,6 +7,7 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.web3.vo.isTransferFeeFree
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
@@ -107,21 +108,29 @@ class SessionRequestViewModel
             web3Repository.web3TokenItemById(walletId, assetId)
         }
 
-        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String?, Boolean>? {
+        // index 0 is address, index 1 is privacy wallet, 2 is safe wallet, 3 is common wallet, 4 is fee free wallet
+        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String?, Int>? {
             return withContext(Dispatchers.IO) {
                 if (chainId != null) {
                     val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
-                    if (existsInAddresses) return@withContext Pair(null, false) // If the address exists in the deposit addresses, we don't need to show the name
+                    if (existsInAddresses) return@withContext Pair(null, 1) // Privacy Wallet
+                }
+
+                if (chainId != null) {
+                    val wallet = web3Repository.getWalletByAddress(destination, chainId)
+                    if (wallet != null) {
+                        return@withContext Pair(wallet.name, 2) // Safe Wallet
+                    }
                 }
 
                 val wallet = web3Repository.getWalletByDestination(destination)
                 if (wallet != null) {
-                    return@withContext Pair(wallet.name, false)
+                    return@withContext Pair(wallet.name, if (wallet.isTransferFeeFree()) 4 else 3)
                 }
                 if (chainId != null) {
                     val address = tokenRepository.matchAddress(destination, chainId)
                     if (address != null) {
-                        return@withContext Pair(address.label, true)
+                        return@withContext Pair(address.label, 0) // Address label
                     }
                 }
                 return@withContext null

@@ -115,8 +115,8 @@ fun BrowserPage(
     val context = LocalContext.current
     var showWarning by remember { mutableStateOf(false) }
     var walletName by remember { mutableStateOf<String?>(null) }
-    var addressDisplayInfo by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
-    var walletDisplayInfo by remember { mutableStateOf<Pair<String?, Boolean>?>(null) }
+    var addressDisplayInfo by remember { mutableStateOf<Pair<String?, Int>?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Pair<String?, Int>?>(null) }
 
     LaunchedEffect(parsedTx) {
         showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
@@ -358,18 +358,40 @@ fun BrowserPage(
                             toUser = toUser,
                         )
                     } else if (displayInfo != null) {
-                        val (displayName, isAddress) = displayInfo
-                        if (displayName == null) {
-                            ItemWalletContent(
-                                title = stringResource(id = R.string.Receivers).uppercase(),
-                            )
-                        } else {
-                            ItemContent(
-                                title = stringResource(id = R.string.Receivers).uppercase(),
-                                subTitle = toAddress,
-                                label = displayName,
-                                isAddress = isAddress,
-                            )
+                        val (displayName, index) = displayInfo
+                        when (index) {
+                            1 -> {
+                                // Privacy Wallet
+                                ItemWalletContent(
+                                    title = stringResource(id = R.string.Receivers).uppercase(),
+                                )
+                            }
+                            2 -> {
+                                // Safe Wallet - show name with icon
+                                ItemWalletContent(
+                                    title = stringResource(id = R.string.Receivers).uppercase(),
+                                    walletName = displayName,
+                                    iconRes = R.drawable.ic_wallet_safe,
+                                )
+                            }
+                            0 -> {
+                                // Address label
+                                ItemContent(
+                                    title = stringResource(id = R.string.Receivers).uppercase(),
+                                    subTitle = toAddress,
+                                    label = displayName,
+                                    isAddress = true,
+                                )
+                            }
+                            else -> {
+                                // Common wallet (3) or fee free wallet (4)
+                                ItemContent(
+                                    title = stringResource(id = R.string.Receivers).uppercase(),
+                                    subTitle = toAddress,
+                                    label = displayName,
+                                    isAddress = false,
+                                )
+                            }
                         }
                     } else {
                         ItemContent(

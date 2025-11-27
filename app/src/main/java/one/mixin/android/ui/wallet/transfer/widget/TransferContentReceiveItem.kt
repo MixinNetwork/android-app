@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.annotation.DrawableRes
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
@@ -63,6 +64,26 @@ class TransferContentReceiveItem : LinearLayout {
             privacyTv.setCompoundDrawablesRelative(null, null, drawable, null)
         }
     }
+
+    @SuppressLint("SetTextI18n")
+    fun setContent(
+        @StringRes titleRes: Int,
+        label: String,
+        @DrawableRes iconRes: Int,
+    ) {
+        _binding.apply {
+            title.text = context.getString(titleRes).uppercase()
+            userContainer.isVisible = false
+            privacyTv.isVisible = true
+            privacyTv.text = label
+            val drawable = ContextCompat.getDrawable(context, iconRes)
+            drawable?.setBounds(0, 0, 22.dp, 22.dp)
+            privacyTv.compoundDrawablePadding = 4.dp
+            privacyTv.setCompoundDrawablesRelative(null, null, drawable, null)
+        }
+    }
+
+
 
     @SuppressLint("SetTextI18n")
     fun setContent(

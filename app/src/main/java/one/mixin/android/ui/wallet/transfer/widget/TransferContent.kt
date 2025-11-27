@@ -410,10 +410,15 @@ class TransferContent : LinearLayout {
             address.isVisible = true
             sender.isVisible = true
             total.isVisible = true
-
             val label = withdrawBiometricItem.label
             if (label != null) {
-                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
+                if (withdrawBiometricItem.isSafeWallet) {
+                    address.isVisible = false
+                    safeWallet.isVisible = true
+                    safeWallet.setContent(R.string.Receiver, label, R.drawable.ic_wallet_safe)
+                } else {
+                    address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
+                }
             } else {
                 address.setContent(R.string.Receiver, withdrawBiometricItem.displayAddress())
             }

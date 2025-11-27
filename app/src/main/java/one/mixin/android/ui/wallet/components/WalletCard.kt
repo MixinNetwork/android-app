@@ -163,7 +163,7 @@ fun WalletCard(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(start = 16.dp, end = 10.dp, top = 16.dp, bottom = 16.dp)
                     .fillMaxWidth()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -280,7 +280,7 @@ fun WalletCard(
 
                     Spacer(modifier = Modifier.weight(1f))
                     Icon(
-                        painter = painterResource(id = if (destination is WalletDestination.Safe) R.drawable.ic_arrow_top_right else R.drawable.ic_arrow_right),
+                        painter = painterResource(id = if (destination is WalletDestination.Safe) R.drawable.ic_arrow_top_right else R.drawable.ic_wallet_arrow_right),
                         tint = Color.Unspecified,
                         contentDescription = null,
                     )

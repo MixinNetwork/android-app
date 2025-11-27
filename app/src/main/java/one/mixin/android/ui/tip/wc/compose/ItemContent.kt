@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.DrawableRes
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -45,6 +46,8 @@ import one.mixin.android.vo.User
 @Composable
 fun ItemWalletContent(
     title: String,
+    walletName: String? = null,
+    @DrawableRes iconRes: Int = R.drawable.ic_wallet_privacy,
     fontSize: TextUnit = 16.sp,
 ) {
     Column(
@@ -62,14 +65,14 @@ fun ItemWalletContent(
         Box(modifier = Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.Privacy_Wallet),
+                text = walletName ?: stringResource(R.string.Privacy_Wallet),
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = fontSize,
             )
             Spacer(modifier = Modifier.width(4.dp))
 
             Icon(
-                painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                painter = painterResource(id = iconRes),
                 contentDescription = null,
                 tint = Color.Unspecified,
                 modifier = Modifier.size(20.dp)
