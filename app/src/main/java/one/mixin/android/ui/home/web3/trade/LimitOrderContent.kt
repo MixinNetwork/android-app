@@ -174,7 +174,7 @@ fun LimitOrderContent(
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (true) {
-                viewModel.getLimitOrders(state = OrderState.PENDING.value, offset = null, walletId = walletId).data?.let {
+                viewModel.getLimitOrders(state = OrderState.PENDING.value, offset = null, walletId = walletId, limit = null).data?.let {
                     limitOrders = it
                 }
                 delay(10000)
