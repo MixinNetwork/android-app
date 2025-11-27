@@ -71,6 +71,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     private val viewModel by viewModels<WalletViewModel>()
     private var onWalletClickListener: ((Web3Wallet?) -> Unit)? = null
+    private var onDismissListener: (() -> Unit)? = null
 
     private val excludeWalletId: String? by lazy {
         requireArguments().getString(ARGS_EXCLUDE_WALLET_ID)
@@ -143,7 +144,17 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         onWalletClickListener = listener
     }
 
+    fun setOnDismissListener(listener: () -> Unit): WalletListBottomSheetDialogFragment {
+        onDismissListener = listener
+        return this
+    }
+
     override fun showError(error: String) {
+    }
+
+    override fun onDismiss(dialog: android.content.DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissListener?.invoke()
     }
 
     companion object {
@@ -151,7 +162,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         private const val ARGS_EXCLUDE_WALLET_ID = "args_exclude_wallet_id"
         private const val ARGS_CHAIN_ID = "args_chain_id"
 
-        fun newInstance(excludeWalletId: String?, chainId: String): WalletListBottomSheetDialogFragment {
+        fun newInstance(excludeWalletId: String?, chainId: String? = null): WalletListBottomSheetDialogFragment {
             return WalletListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_EXCLUDE_WALLET_ID, excludeWalletId)
                 putString(ARGS_CHAIN_ID, chainId)

@@ -53,7 +53,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.home.web3.swap.checkBalance
+import one.mixin.android.ui.home.web3.trade.checkBalance
 
 @Composable
 fun StakePage(

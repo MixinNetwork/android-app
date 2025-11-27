@@ -2,7 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
+<<<<<<< HEAD
     "identityHash": "56770150f9fee8f729301c3b64302dbe",
+=======
+    "identityHash": "662b6a08f46965a96f42bb75c7a3567a",
+>>>>>>> feature/trade
     "entities": [
       {
         "tableName": "tokens",
@@ -227,7 +231,11 @@
       },
       {
         "tableName": "wallets",
+<<<<<<< HEAD
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `owners` TEXT, `safe_chain_id` TEXT, `safe_address` TEXT, PRIMARY KEY(`wallet_id`))",
+=======
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
+>>>>>>> feature/trade
         "fields": [
           {
             "fieldPath": "id",
@@ -258,6 +266,7 @@
             "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": true
+<<<<<<< HEAD
           },
           {
             "fieldPath": "owners",
@@ -273,6 +282,8 @@
             "fieldPath": "safeAddress",
             "columnName": "safe_address",
             "affinity": "TEXT"
+=======
+>>>>>>> feature/trade
           }
         ],
         "primaryKey": {
@@ -501,11 +512,151 @@
             "key"
           ]
         }
+<<<<<<< HEAD
+=======
+      },
+      {
+        "tableName": "orders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))",
+        "fields": [
+          {
+            "fieldPath": "orderId",
+            "columnName": "order_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payAssetId",
+            "columnName": "pay_asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiveAssetId",
+            "columnName": "receive_asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payAmount",
+            "columnName": "pay_amount",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiveAmount",
+            "columnName": "receive_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "payTraceId",
+            "columnName": "pay_trace_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiveTraceId",
+            "columnName": "receive_trace_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderType",
+            "columnName": "order_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fundStatus",
+            "columnName": "fund_status",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pendingAmount",
+            "columnName": "pending_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "filledReceiveAmount",
+            "columnName": "filled_receive_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "expectedReceiveAmount",
+            "columnName": "expected_receive_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "expiredAt",
+            "columnName": "expired_at",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "order_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_orders_state_created_at",
+            "unique": false,
+            "columnNames": [
+              "state",
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `${TABLE_NAME}` (`state`, `created_at`)"
+          },
+          {
+            "name": "index_orders_order_type_created_at",
+            "unique": false,
+            "columnNames": [
+              "order_type",
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `${TABLE_NAME}` (`order_type`, `created_at`)"
+          }
+        ]
+>>>>>>> feature/trade
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+<<<<<<< HEAD
       "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '56770150f9fee8f729301c3b64302dbe')"
+=======
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '662b6a08f46965a96f42bb75c7a3567a')"
+>>>>>>> feature/trade
     ]
   }
 }

@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -66,6 +66,8 @@ fun WalletCard(
     onClick: () -> Unit,
     onSafeClick: (() -> Unit)? = null,
     enableFreeLabel: Boolean = false,
+    isSelectable: Boolean = false,
+    isSelected: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
 ) {
     var web3TokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
@@ -279,11 +281,20 @@ fun WalletCard(
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        painter = painterResource(id = if (destination is WalletDestination.Safe) R.drawable.ic_arrow_top_right else R.drawable.ic_wallet_arrow_right),
-                        tint = Color.Unspecified,
-                        contentDescription = null,
-                    )
+                    if (isSelectable) {
+                        val iconRes = if (isSelected) R.drawable.ic_wallet_select else R.drawable.ic_wallet_unselect
+                        Icon(
+                            painter = painterResource(id = iconRes),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = if (destination is WalletDestination.Safe) R.drawable.ic_arrow_top_right else R.drawable.ic_wallet_arrow_right),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
