@@ -39,6 +39,7 @@ import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
@@ -316,6 +317,40 @@ internal constructor(
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
                 tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
+            }
+        }
+    }
+
+    suspend fun calcFeeWithTipGas(
+        token: Web3TokenItem,
+        transaction: JsSignMessage,
+        fromAddress: String,
+    ): Pair<BigDecimal?, TipGas?> {
+        val chain = token.getChainFromName()
+        if (chain == Chain.Solana) {
+            val tx = VersionedTransactionCompat.from(transaction.data ?: "")
+            val fee = tx.calcFee(fromAddress)
+            return Pair(fee, null)
+        } else {
+            val r = withContext(Dispatchers.IO) {
+                runCatching {
+                    web3Repository.estimateFee(
+                        EstimateFeeRequest(
+                            token.chainId,
+                            null,
+                            transaction.data ?: transaction.wcEthereumTransaction?.data,
+                            fromAddress,
+                            transaction.wcEthereumTransaction?.to,
+                            transaction.wcEthereumTransaction?.value,
+                        )
+                    )
+                }.getOrNull()
+            }
+            if (r?.isSuccess != true) return Pair(BigDecimal.ZERO, null)
+            return withContext(Dispatchers.IO) {
+                val tipGas = buildTipGas(chain.chainId, r.data!!)
+                val fee = tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                Pair(fee, tipGas)
             }
         }
     }
