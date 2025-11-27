@@ -31,7 +31,7 @@ data class PriceDisplayState(
                 "1 ${fromToken?.symbol} = ${price.stripTrailingZeros().toPlainString()} ${toToken?.symbol}"
             }
         } else {
-            null
+            "-"
         }
     }
 }

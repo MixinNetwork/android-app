@@ -161,6 +161,7 @@ fun LimitOrderContent(
     }
 
     var isPriceLoading by remember { mutableStateOf(false) }
+    var quoteError by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
@@ -184,6 +185,7 @@ fun LimitOrderContent(
     LaunchedEffect(fromToken, toToken, lastOrderTime) {
         marketPrice = null
         limitPriceText = ""
+        quoteError = ""
         val fromT = fromToken
         val toT = toToken
         if (fromT != null && toT != null) {
@@ -217,14 +219,17 @@ fun LimitOrderContent(
                             val standardPrice = rate.setScale(8, RoundingMode.HALF_UP)
                             marketPrice = standardPrice
                             limitPriceText = standardPrice.stripTrailingZeros().toPlainString()
+                            quoteError = ""
                         } else {
-                            limitPriceText = "0"
+                            limitPriceText = ""
+                            quoteError = context.getString(R.string.no_available_quotes_found)
                         }
                         isPriceLoading = false
                     }
                     .onFailure {
-                        limitPriceText = "0"
+                        limitPriceText = ""
                         isPriceLoading = false
+                        quoteError = context.getString(R.string.no_available_quotes_found)
                     }
             }
         } else {
@@ -405,7 +410,7 @@ fun LimitOrderContent(
                     )
                 }
 
-                if (availableHeight != null || inputText.isNotBlank()) {
+                if (availableHeight != null || inputText.isNotBlank() || (quoteError.isNotBlank() && inputText.isEmpty().not() && limitPriceText.isEmpty())) {
                     Column(modifier = Modifier
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp)
@@ -416,7 +421,15 @@ fun LimitOrderContent(
                             onExpiryChange = { option -> expiryOption = option }
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        if (quoteError.isNotBlank() && inputText.isEmpty().not() && limitPriceText.isEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = quoteError,
+                                color = MixinAppTheme.colors.red,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                         if (availableHeight == null) {
                             Spacer(modifier = Modifier.weight(1f))
                         }

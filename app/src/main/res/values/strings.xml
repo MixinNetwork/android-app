@@ -2193,4 +2193,5 @@
     <string name="Wallets_Selected_Count">%1$d Wallets</string>
     <string name="Invitee_Commission">Invitee Commission</string>
     <string name="Inviter">Inviter</string>
+    <string name="no_available_quotes_found">No available quotes found. Please try a different token or amount.</string>
 </resources>

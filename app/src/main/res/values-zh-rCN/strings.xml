@@ -2138,4 +2138,5 @@
     <string name="Wallets_Selected_Count">%1$d 钱包</string>
     <string name="Invitee_Commission">被邀请人返现</string>
     <string name="Inviter">邀请人</string>
+    <string name="no_available_quotes_found">未找到可用报价。请尝试其他代币或金额。</string>
 </resources>

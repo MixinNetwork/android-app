@@ -109,15 +109,17 @@ fun PriceInputArea(
                         fontSize = 12.sp,
                         modifier = Modifier.align(Alignment.CenterVertically)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_price_switch),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier
-                            .size(16.dp)
-                            .clickable { isPriceInverted = !isPriceInverted }
-                    )
+                    if (priceRatioText != "-") {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_price_switch),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.textAssist,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clickable { isPriceInverted = !isPriceInverted }
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Spacer(modifier = Modifier.weight(1f))
