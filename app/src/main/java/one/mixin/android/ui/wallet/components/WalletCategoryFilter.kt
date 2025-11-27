@@ -27,13 +27,13 @@ import one.mixin.android.vo.WalletCategory
 @Composable
 fun WalletCategoryFilter(
     selectedCategory: String?,
-    hasSafe: Boolean,
     hasImported: Boolean,
     hasWatch: Boolean,
     onCategorySelected: (String?) -> Unit
 ) {
     Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState())
+        modifier = Modifier
+            .horizontalScroll(rememberScrollState())
             .fillMaxWidth()
             .padding(vertical = 4.dp)
         ,
@@ -47,17 +47,15 @@ fun WalletCategoryFilter(
         )
         
         // Safe
-        if (hasSafe) {
-            CategoryChip(
-                text = "Safe",
-                isSelected = selectedCategory == WalletCategory.MIXIN_SAFE.value,
-                onClick = { onCategorySelected(WalletCategory.MIXIN_SAFE.value) }
-            )
-        }
-        
+        CategoryChip(
+            text = "Safe",
+            isSelected = selectedCategory == WalletCategory.MIXIN_SAFE.value,
+            onClick = { onCategorySelected(WalletCategory.MIXIN_SAFE.value) }
+        )
+
         // Created (Classic)
         CategoryChip(
-            text = stringResource(R.string.Order_Created),
+            text = stringResource(R.string.Wallet_Created),
             isSelected = selectedCategory == WalletCategory.CLASSIC.value,
             onClick = { onCategorySelected(WalletCategory.CLASSIC.value) }
         )

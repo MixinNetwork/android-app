@@ -171,7 +171,6 @@ fun AssetDashboardScreen(
 
                 WalletCategoryFilter(
                     selectedCategory = selectedCategory,
-                    hasSafe = hasSafe,
                     hasImported = hasImported,
                     hasWatch = hasWatch,
                     onCategorySelected = { selectedCategory = it }
