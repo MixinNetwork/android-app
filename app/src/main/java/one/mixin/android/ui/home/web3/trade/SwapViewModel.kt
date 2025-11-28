@@ -205,4 +205,16 @@ class SwapViewModel
     fun getPendingOrderCountByWallet(walletId: String): Flow<Int> {
         return walletDatabase.orderDao().getPendingOrderCountByWallet(walletId)
     }
+
+    suspend fun refreshPendingOrders(): Boolean = withContext(Dispatchers.IO) {
+        val orderDao = walletDatabase.orderDao()
+        val pending = orderDao.getPendingOrders()
+        if (pending.isEmpty()) return@withContext false
+        val ids = pending.map { it.orderId }
+        val resp = assetRepository.getLimitOrders(ids)
+        if (resp.isSuccess && resp.data != null) {
+            orderDao.insertListSuspend(resp.data!!)
+        }
+        return@withContext true
+    }
 }
