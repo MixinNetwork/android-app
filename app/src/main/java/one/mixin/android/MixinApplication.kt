@@ -43,9 +43,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import leakcanary.AppWatcher
-import leakcanary.LeakCanaryProcess
-import leakcanary.ReachabilityWatcher
 import okhttp3.OkHttpClient
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.MixinSignalProtocolLogger
@@ -235,18 +232,6 @@ open class MixinApplication :
         CursorWindowFixer.fix(this)
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree(), FileLogTree())
-            // ignore known leaks
-            val delegate =
-                ReachabilityWatcher { watchedObject, description ->
-                    if (watchedObject !is JobInfoSchedulerService) {
-                        AppWatcher.objectWatcher.expectWeaklyReachable(watchedObject, description)
-                    }
-                }
-            val watchersToInstall = AppWatcher.appDefaultWatchers(this, delegate)
-            AppWatcher.manualInstall(application = this, watchersToInstall = watchersToInstall)
-            if (LeakCanaryProcess.isInAnalyzerProcess(this)) {
-                return
-            }
         } else {
             Timber.plant(FileLogTree())
         }
