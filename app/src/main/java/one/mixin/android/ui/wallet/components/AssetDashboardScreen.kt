@@ -186,7 +186,7 @@ fun AssetDashboardScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                if (selectedCategory == WalletCategory.MIXIN_SAFE.value && wallets.isEmpty()) {
+                if (selectedCategory == WalletCategory.MIXIN_SAFE.value && wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }.not()) {
                     if (Session.getAccount()?.membership?.isMembership() == true) {
                         CreateSafeCard(
                             onCreateClick = {
