@@ -21,6 +21,8 @@ import androidx.navigation.compose.rememberNavController
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account
@@ -139,6 +141,7 @@ class TradeFragment : BaseFragment() {
     private var lastOrderTime: Long by mutableLongStateOf(0)
     private var reviewing: Boolean by mutableStateOf(false)
     private val walletId: String? by lazy { arguments?.getString(ARGS_WALLET_ID) }
+    private var refreshJob: Job? = null
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -198,8 +201,7 @@ class TradeFragment : BaseFragment() {
                         },
                     ) {
                         composable(TradeDestination.Swap.name) {
-                            jobManager.addJobInBackground(RefreshOrdersJob())
-                            jobManager.addJobInBackground(RefreshPendingOrdersJob(walletId))
+                            startOrdersPolling()
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
@@ -730,5 +732,26 @@ class TradeFragment : BaseFragment() {
         if (!navController.safeNavigateUp()) {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
+    }
+
+    private fun startOrdersPolling() {
+        refreshJob?.cancel()
+        refreshJob = lifecycleScope.launch {
+            while (isAdded) {
+                jobManager.addJobInBackground(RefreshOrdersJob())
+                swapViewModel.refreshPendingOrders()
+                delay(3000)
+            }
+        }
+    }
+
+    private fun stopOrdersPolling() {
+        refreshJob?.cancel()
+        refreshJob = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        stopOrdersPolling()
     }
 }
