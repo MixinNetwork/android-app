@@ -751,15 +751,19 @@ class ConversationListFragment : LinkFragment() {
         }
         lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            if (isAdded) {
+            if (isAdded && !parentFragmentManager.isStateSaved) {
                 ReminderBottomSheetDialogFragment.getType(requireContext(), totalUsd)
                     .let { type ->
                         val existingDialog = parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) as? ReminderBottomSheetDialogFragment
-                        existingDialog?.dismiss() // Use dismiss() instead of dismissNow()
+                        existingDialog?.dismiss()
 
-                        if (type != null && !parentFragmentManager.isStateSaved) {
+                        if (type != null) {
                             if (parentFragmentManager.findFragmentByTag(ReminderBottomSheetDialogFragment.TAG) == null) {
-                                ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                                try {
+                                    ReminderBottomSheetDialogFragment.newInstance(type).show(parentFragmentManager, ReminderBottomSheetDialogFragment.TAG)
+                                } catch (e: IllegalStateException) {
+                                    // Fragment state already saved, skip showing dialog
+                                }
                             }
                         }
                     }
