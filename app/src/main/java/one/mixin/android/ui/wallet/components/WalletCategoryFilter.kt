@@ -48,7 +48,7 @@ fun WalletCategoryFilter(
         
         // Safe
         CategoryChip(
-            text = "Safe",
+            text = stringResource(R.string.Wallet_Safe),
             isSelected = selectedCategory == WalletCategory.MIXIN_SAFE.value,
             onClick = { onCategorySelected(WalletCategory.MIXIN_SAFE.value) }
         )
@@ -63,7 +63,7 @@ fun WalletCategoryFilter(
         // Import
         if (hasImported) {
             CategoryChip(
-                text = stringResource(R.string.Imported),
+                text = stringResource(R.string.Wallet_Imported),
                 isSelected = selectedCategory == "import",
                 onClick = { onCategorySelected("import") }
             )
@@ -72,7 +72,7 @@ fun WalletCategoryFilter(
         // Watching
         if (hasWatch) {
             CategoryChip(
-                text = stringResource(R.string.Watching),
+                text = stringResource(R.string.Wallet_Watching),
                 isSelected = selectedCategory == "watch",
                 onClick = { onCategorySelected("watch") }
             )

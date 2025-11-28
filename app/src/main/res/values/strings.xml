@@ -303,7 +303,10 @@
     <string name="Create">Create</string>
     <string name="Created">Created %1$s</string>
     <string name="Create_PIN">Create PIN</string>
+    <string name="Wallet_Safe">Safe</string>
     <string name="Wallet_Created">Created</string>
+    <string name="Wallet_Imported">Imported</string>
+    <string name="Wallet_Watching">Watching</string>
     <string name="created_this_group">%1$s created this group</string>
     <string name="Creating">Creating…</string>
     <string name="Creating_wallet_terminated_unexpectedly">Creating wallet terminated unexpectedly, click \"Continue\" to complete the creation</string>

@@ -293,7 +293,10 @@
     <string name="Copy_link">复制链接</string>
     <string name="Create">创建</string>
     <string name="Created">创建于 %1$s</string>
-    <string name="Wallet_Created">创建</string>
+    <string name="Wallet_Safe">Safe 金库</string>
+    <string name="Wallet_Created">创建的钱包</string>
+    <string name="Wallet_Imported">导入的钱包</string>
+    <string name="Wallet_Watching">观察钱包</string>
     <string name="Create_PIN">创建钱包</string>
     <string name="created_this_group">%1$s创建了这个群组</string>
     <string name="Creating">正在创建…</string>
