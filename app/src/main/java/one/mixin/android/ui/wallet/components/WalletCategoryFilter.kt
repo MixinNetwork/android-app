@@ -97,8 +97,9 @@ fun CategoryChip(
                 color = if (isSelected) MixinAppTheme.colors.backgroundGrayLight else Color.Transparent,
                 shape = RoundedCornerShape(20.dp)
             )
+            .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 9.dp)
+            .padding(horizontal = 14.dp, vertical = 6.dp)
     ) {
         Text(
             text = text,
