@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="one.mixin.android">
+
+    <application
+        android:allowBackup="false"
+        android:fullBackupContent="@xml/mixin_backup_rules"
+        android:dataExtractionRules="@xml/mixin_data_extraction_rules"
+        tools:replace="android:allowBackup,android:fullBackupContent,android:dataExtractionRules">
+    </application>
+
+</manifest>

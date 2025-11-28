@@ -33,8 +33,13 @@ jobs:
         DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
       run: echo $DATA > /home/runner/work/android-app/android-app/app/src/debug/google-services.json
 
+    - name: Clean Gradle cache
+      run: |
+        rm -rf ~/.gradle/caches/
+        rm -rf .gradle/
+        
     - name: Build
-      run: ./gradlew clean assembleDebug --stacktrace
+      run: ./gradlew clean assembleDebug --no-configuration-cache --refresh-dependencies --stacktrace
 
     - name: Run tests
-      run: ./gradlew testGooglePlayDebugUnitTest
+      run: ./gradlew testGooglePlayDebugUnitTest --no-configuration-cache
