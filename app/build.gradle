@@ -94,6 +94,9 @@ android {
             java.srcDirs += sharedTestDir
             manifest.srcFile 'src/test/AndroidManifest.xml'
         }
+        testGooglePlayDebug {
+            manifest.srcFile 'src/testGooglePlayDebug/AndroidManifest.xml'
+        }
         androidTest {
             java.srcDirs += sharedTestDir
             assets.srcDirs += files("$projectDir/schemas".toString())
