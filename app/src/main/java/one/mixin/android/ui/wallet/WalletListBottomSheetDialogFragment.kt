@@ -63,8 +63,10 @@ import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_SAFE_WALLET_INFO
 import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
+import one.mixin.android.ui.wallet.components.WalletCategoryFilter
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletInfoCard
+import one.mixin.android.vo.WalletCategory
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -187,17 +189,27 @@ fun WalletListScreen(
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var query by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
-    val walletItems = remember(wallets, excludeWalletId, query) {
+    val hasSafe = remember(wallets) { wallets.any { it.isMixinSafe() } }
+
+    val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {
         buildList {
-            if (excludeWalletId != null && query.isEmpty()) {
+            if (excludeWalletId != null && query.isEmpty() && selectedCategory == null) {
                 add(WalletListItem.PrivacyWallet)
             }
             wallets.forEach { wallet ->
-                add(WalletListItem.RegularWallet(wallet))
+                val shouldShow = when (selectedCategory) {
+                    null -> true
+                    WalletCategory.MIXIN_SAFE.value -> wallet.isMixinSafe()
+                    else -> true
+                }
+                if (shouldShow) {
+                    add(WalletListItem.RegularWallet(wallet))
+                }
             }
         }
     }
@@ -221,6 +233,15 @@ fun WalletListScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // Category filter - only show if there are Safe wallets and no search query
+            if (hasSafe && query.isEmpty()) {
+                WalletCategoryFilter(
+                    selectedCategory = selectedCategory,
+                    hasSafe = hasSafe,
+                    onCategorySelected = { selectedCategory = it }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
                 when (item) {

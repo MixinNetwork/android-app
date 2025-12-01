@@ -27,8 +27,9 @@ import one.mixin.android.vo.WalletCategory
 @Composable
 fun WalletCategoryFilter(
     selectedCategory: String?,
-    hasImported: Boolean,
-    hasWatch: Boolean,
+    hasImported: Boolean = false,
+    hasWatch: Boolean = false,
+    hasSafe: Boolean = false,
     onCategorySelected: (String?) -> Unit
 ) {
     Row(
@@ -46,19 +47,23 @@ fun WalletCategoryFilter(
             onClick = { onCategorySelected(null) }
         )
         
-        // Safe
-        CategoryChip(
-            text = stringResource(R.string.Wallet_Safe),
-            isSelected = selectedCategory == WalletCategory.MIXIN_SAFE.value,
-            onClick = { onCategorySelected(WalletCategory.MIXIN_SAFE.value) }
-        )
+        // Safe - show if hasSafe is true OR if hasImported/hasWatch are provided (full mode)
+        if (hasSafe || hasImported || hasWatch) {
+            CategoryChip(
+                text = stringResource(R.string.Wallet_Safe),
+                isSelected = selectedCategory == WalletCategory.MIXIN_SAFE.value,
+                onClick = { onCategorySelected(WalletCategory.MIXIN_SAFE.value) }
+            )
+        }
 
-        // Created (Classic)
-        CategoryChip(
-            text = stringResource(R.string.Wallet_Created),
-            isSelected = selectedCategory == WalletCategory.CLASSIC.value,
-            onClick = { onCategorySelected(WalletCategory.CLASSIC.value) }
-        )
+        // Created (Classic) - only show in full mode
+        if (hasImported || hasWatch) {
+            CategoryChip(
+                text = stringResource(R.string.Wallet_Created),
+                isSelected = selectedCategory == WalletCategory.CLASSIC.value,
+                onClick = { onCategorySelected(WalletCategory.CLASSIC.value) }
+            )
+        }
         
         // Import
         if (hasImported) {
