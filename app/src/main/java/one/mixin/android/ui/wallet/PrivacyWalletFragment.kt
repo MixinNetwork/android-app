@@ -42,7 +42,7 @@ import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
