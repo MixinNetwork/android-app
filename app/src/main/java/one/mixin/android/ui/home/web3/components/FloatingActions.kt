@@ -31,9 +31,9 @@ fun FloatingActions(
     onDone: () -> Unit,
     onMarketPriceClick: (() -> Unit)? = null,
 ) {
-    val effectiveField = if (focusedField == FocusedField.NONE) FocusedField.AMOUNT else focusedField
+    val effectiveField = if (focusedField == FocusedField.NONE) FocusedField.IN_AMOUNT else focusedField
     when (effectiveField) {
-        FocusedField.AMOUNT -> {
+        FocusedField.IN_AMOUNT, FocusedField.OUT_AMOUNT -> {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

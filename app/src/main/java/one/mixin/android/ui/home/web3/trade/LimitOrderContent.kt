@@ -93,7 +93,7 @@ import java.math.RoundingMode
 import java.time.Duration
 import java.time.Instant
 
-enum class FocusedField { NONE, AMOUNT, PRICE }
+enum class FocusedField { NONE, IN_AMOUNT, OUT_AMOUNT, PRICE }
 
 enum class ExpiryOption(@get:StringRes val labelRes: Int) {
     NEVER(R.string.expiry_never), MIN_10(R.string.expiry_10_min), HOUR_1(R.string.expiry_1_hour), DAY_1(R.string.expiry_1_day), DAY_3(R.string.expiry_3_days), WEEK_1(R.string.expiry_1_week), MONTH_1(R.string.expiry_1_month);
@@ -129,12 +129,14 @@ fun LimitOrderContent(
     val viewModel = hiltViewModel<SwapViewModel>()
 
     var inputText by remember { mutableStateOf(initialAmount ?: "") }
+    var outputText by remember { mutableStateOf("") }
+
     LaunchedEffect(lastOrderTime) {
         inputText = initialAmount ?: ""
+        outputText = ""
     }
 
     var limitPriceText by remember { mutableStateOf("") }
-    var outputText by remember { mutableStateOf("") }
     var marketPriceClickTime by remember { mutableStateOf(lastOrderTime) }
     var priceMultiplier by remember { mutableStateOf<Float?>(null) }
 
@@ -181,7 +183,7 @@ fun LimitOrderContent(
         }
     }
 
-    LaunchedEffect(inputText, limitPriceText) {
+    LaunchedEffect(limitPriceText) {
         val fromAmount = inputText.toBigDecimalOrNull()
         val standardPrice = limitPriceText.toBigDecimalOrNull()
 
@@ -266,12 +268,27 @@ fun LimitOrderContent(
                         },
                         headerCompose = {
                             InputArea(modifier = Modifier.onFocusChanged {
-                                if (it.isFocused) focusedField = FocusedField.AMOUNT
+                                if (it.isFocused) {
+                                    focusedField = FocusedField.IN_AMOUNT
+                                }
                             }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
                                 onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From)
-                            }, onInputChanged = { inputText = it }, onDeposit = onDeposit, onMax = {
+                            }, onInputChanged = { 
+                                inputText = it
+                                // When IN_AMOUNT is focused and user inputs, calculate output
+                                if (focusedField == FocusedField.IN_AMOUNT) {
+                                    val fromAmount = it.toBigDecimalOrNull()
+                                    val standardPrice = limitPriceText.toBigDecimalOrNull()
+                                    if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
+                                        val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
+                                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                                    } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
+                                        outputText = ""
+                                    }
+                                }
+                            }, onDeposit = onDeposit, onMax = {
                                 val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                 if (balance > BigDecimal.ZERO) {
                                     inputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
@@ -282,15 +299,33 @@ fun LimitOrderContent(
                         },
                         bottomCompose = {
                             InputArea(
-                                modifier = Modifier,
+                                modifier = Modifier.onFocusChanged {
+                                    if (it.isFocused) {
+                                        focusedField = FocusedField.OUT_AMOUNT
+                                    }
+                                },
                                 token = toToken,
                                 text = outputText,
                                 title = stringResource(id = R.string.swap_receive),
-                                readOnly = true,
+                                readOnly = false,
                                 selectClick = {
                                     keyboardController?.hide()
                                     focusManager.clearFocus()
                                     onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To)
+                                },
+                                onInputChanged = { 
+                                    outputText = it
+                                    // When OUT_AMOUNT is focused and user inputs, calculate input
+                                    if (focusedField == FocusedField.OUT_AMOUNT) {
+                                        val toAmount = it.toBigDecimalOrNull()
+                                        val standardPrice = limitPriceText.toBigDecimalOrNull()
+                                        if (toAmount != null && standardPrice != null && toAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
+                                            val calculatedInput = toAmount.divide(standardPrice, 8, RoundingMode.DOWN)
+                                            inputText = calculatedInput.stripTrailingZeros().toPlainString()
+                                        } else if (toAmount == null || toAmount == BigDecimal.ZERO) {
+                                            inputText = ""
+                                        }
+                                    }
                                 },
                                 onDeposit = null,
                             )
@@ -496,8 +531,18 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
-                onSetInput = { inputText = it },
                 onSetPriceMultiplier = { priceMultiplier = it },
+                onSetInput = {
+                    inputText = it
+                    val fromAmount = it.toBigDecimalOrNull()
+                    val standardPrice = limitPriceText.toBigDecimalOrNull()
+                    if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
+                        val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
+                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                    } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
+                        outputText = ""
+                    }
+                },
                 onDone = {
                     keyboardController?.hide()
                     focusManager.clearFocus()
