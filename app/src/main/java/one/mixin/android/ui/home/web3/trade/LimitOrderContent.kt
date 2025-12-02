@@ -135,7 +135,8 @@ fun LimitOrderContent(
 
     var limitPriceText by remember { mutableStateOf("") }
     var outputText by remember { mutableStateOf("") }
-    var marketPriceClickTime by remember { mutableStateOf<Long?>(null) }
+    var marketPriceClickTime by remember { mutableStateOf(lastOrderTime) }
+    var priceMultiplier by remember { mutableStateOf<Float?>(null) }
 
     var isReverse by remember { mutableStateOf(false) }
     val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
@@ -160,11 +161,9 @@ fun LimitOrderContent(
         expiryOption = ExpiryOption.NEVER
     }
 
-    var isPriceLoading by remember { mutableStateOf(false) }
     var quoteError by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(walletId) {
@@ -178,104 +177,6 @@ fun LimitOrderContent(
                     limitOrders = it
                 }
                 delay(10000)
-            }
-        }
-    }
-
-    LaunchedEffect(fromToken, toToken, lastOrderTime) {
-        marketPrice = null
-        limitPriceText = ""
-        quoteError = ""
-        val fromT = fromToken
-        val toT = toToken
-        if (fromT != null && toT != null) {
-            // Prefer MarketDao prices
-            var fromMarket = viewModel.checkMarketById(fromT.assetId, false)
-            var toMarket = viewModel.checkMarketById(toT.assetId, false)
-            var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
-            var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
-            if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                val standardPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                marketPrice = standardPrice
-                limitPriceText = standardPrice.stripTrailingZeros().toPlainString()
-                fromMarket = viewModel.checkMarketById(fromT.assetId, true)
-                toMarket = viewModel.checkMarketById(toT.assetId, true)
-                fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
-                toP = toMarket?.currentPrice?.toBigDecimalOrNull()
-                if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                    val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                    if (marketPrice != price) {
-                        marketPrice = price
-                        limitPriceText = price.stripTrailingZeros().toPlainString()
-                    }
-                }
-            } else {
-                isPriceLoading = true
-                val amount = runCatching { fromT.toLongAmount("1").toString() }.getOrElse { "1" }
-                viewModel.quote(context, fromT.symbol, fromT.assetId, toT.assetId, amount, "")
-                    .onSuccess { q ->
-                        val rate = runCatching { parseRateFromQuote(q) }.getOrNull() ?: BigDecimal.ZERO
-                        if (rate > BigDecimal.ZERO) {
-                            val standardPrice = rate.setScale(8, RoundingMode.HALF_UP)
-                            marketPrice = standardPrice
-                            limitPriceText = standardPrice.stripTrailingZeros().toPlainString()
-                            quoteError = ""
-                        } else {
-                            limitPriceText = ""
-                            quoteError = context.getString(R.string.no_available_quotes_found)
-                        }
-                        isPriceLoading = false
-                    }
-                    .onFailure {
-                        limitPriceText = ""
-                        isPriceLoading = false
-                        quoteError = context.getString(R.string.no_available_quotes_found)
-                    }
-            }
-        } else {
-            isPriceLoading = false
-        }
-    }
-
-    LaunchedEffect(marketPriceClickTime) {
-        if (marketPriceClickTime != null) {
-            val fromT = fromToken
-            val toT = toToken
-            if (fromT != null && toT != null) {
-                // Prefer MarketDao prices
-                var fromMarket = viewModel.checkMarketById(fromT.assetId, false)
-                var toMarket = viewModel.checkMarketById(toT.assetId, false)
-                var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
-                var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
-                if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                    val standardPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                    marketPrice = standardPrice
-                    fromMarket = viewModel.checkMarketById(fromT.assetId, true)
-                    toMarket = viewModel.checkMarketById(toT.assetId, true)
-                    fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
-                    toP = toMarket?.currentPrice?.toBigDecimalOrNull()
-                    if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
-                        val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
-                        if (marketPrice != price) {
-                            marketPrice = price
-                        }
-                    }
-                } else {
-                    // Fallback to quote API
-                    isPriceLoading = true
-                    val amount = runCatching { fromT.toLongAmount("1").toString() }.getOrElse { "1" }
-                    viewModel.quote(context, fromT.symbol, fromT.assetId, toT.assetId, amount, "")
-                        .onSuccess { q ->
-                            val rate = runCatching { parseRateFromQuote(q) }.getOrNull() ?: BigDecimal.ZERO
-                            if (rate > BigDecimal.ZERO) {
-                                marketPrice = rate.setScale(8, RoundingMode.HALF_UP)
-                            }
-                            isPriceLoading = false
-                        }
-                        .onFailure {
-                            isPriceLoading = false
-                        }
-                }
             }
         }
     }
@@ -401,8 +302,9 @@ fun LimitOrderContent(
                                 },
                                 fromToken = fromToken,
                                 toToken = toToken,
-                                standardPrice = limitPriceText,
-                                isPriceLoading = isPriceLoading,
+                                lastOrderTime = marketPriceClickTime,
+                                priceMultiplier = priceMultiplier,
+                                onQuoteError = { quoteError = it },
                                 onStandardPriceChanged = { limitPriceText = it },
                             )
                         },
@@ -594,9 +496,8 @@ fun LimitOrderContent(
                 fromBalance = fromBalance,
                 fromToken = fromToken,
                 toToken = toToken,
-                marketPrice = marketPrice,
                 onSetInput = { inputText = it },
-                onSetLimitPrice = { limitPriceText = it },
+                onSetPriceMultiplier = { priceMultiplier = it },
                 onDone = {
                     keyboardController?.hide()
                     focusManager.clearFocus()
@@ -608,18 +509,6 @@ fun LimitOrderContent(
         })
     } ?: run {
         Loading()
-    }
-}
-
-private fun parseRateFromQuote(q: QuoteResult?): BigDecimal? {
-    q ?: return null
-    val outputAmount = q.outAmount.toBigDecimalOrNull()
-    val inputAmount = q.inAmount.toBigDecimalOrNull()
-
-    if (outputAmount == null || inputAmount == null || inputAmount == BigDecimal.ZERO || outputAmount == BigDecimal.ZERO) {
-        return null
-    } else {
-        return outputAmount.divide(inputAmount)
     }
 }
 

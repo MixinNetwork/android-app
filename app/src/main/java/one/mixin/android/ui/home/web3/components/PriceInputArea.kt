@@ -24,11 +24,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -37,11 +41,18 @@ fun PriceInputArea(
     modifier: Modifier = Modifier,
     fromToken: SwapToken?,
     toToken: SwapToken?,
-    standardPrice: String,
-    isPriceLoading: Boolean,
+    lastOrderTime: Long?,
+    priceMultiplier: Float?,
+    onQuoteError: (String) -> Unit,
     onStandardPriceChanged: (String) -> Unit,
 ) {
+    val viewModel = hiltViewModel<SwapViewModel>()
+
+    val context = LocalContext.current
     var isPriceInverted by remember { mutableStateOf(false) }
+    var standardPrice by remember { mutableStateOf("") }
+    var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
+    var isPriceLoading by remember { mutableStateOf(false) }
     
     LaunchedEffect(fromToken, toToken) {
         val isFromUsd = fromToken?.assetId?.let { id ->
@@ -51,6 +62,82 @@ fun PriceInputArea(
             Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
         } == true
         isPriceInverted = isFromUsd && !isToUsd
+    }
+    
+    LaunchedEffect(priceMultiplier) {
+        if (priceMultiplier != null && marketPrice != null && marketPrice!! > BigDecimal.ZERO) {
+            val newPrice = marketPrice!!.multiply(BigDecimal(priceMultiplier.toString()))
+                .setScale(8, RoundingMode.HALF_UP)
+            val priceString = newPrice.stripTrailingZeros().toPlainString()
+            standardPrice = priceString
+            onStandardPriceChanged(priceString)
+        }
+    }
+    
+    LaunchedEffect(fromToken, toToken, lastOrderTime) {
+        marketPrice = null
+        standardPrice = ""
+        onStandardPriceChanged("")
+        onQuoteError("")
+        
+        val fromT = fromToken
+        val toT = toToken
+        if (fromT != null && toT != null) {
+            // Prefer MarketDao prices
+            var fromMarket = viewModel.checkMarketById(fromT.assetId, false)
+            var toMarket = viewModel.checkMarketById(toT.assetId, false)
+            var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
+            var toP = toMarket?.currentPrice?.toBigDecimalOrNull()
+            if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
+                val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                marketPrice = price
+                val priceString = price.stripTrailingZeros().toPlainString()
+                standardPrice = priceString
+                onStandardPriceChanged(priceString)
+                
+                fromMarket = viewModel.checkMarketById(fromT.assetId, true)
+                toMarket = viewModel.checkMarketById(toT.assetId, true)
+                fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
+                toP = toMarket?.currentPrice?.toBigDecimalOrNull()
+                if (fromP != null && toP != null && toP > BigDecimal.ZERO) {
+                    val updatedPrice = fromP.divide(toP, 8, RoundingMode.HALF_UP)
+                    if (price != updatedPrice) {
+                        marketPrice = updatedPrice
+                        val updatedPriceString = updatedPrice.stripTrailingZeros().toPlainString()
+                        standardPrice = updatedPriceString
+                        onStandardPriceChanged(updatedPriceString)
+                    }
+                }
+            } else {
+                isPriceLoading = true
+                val amount = runCatching { fromT.toLongAmount("1").toString() }.getOrElse { "1" }
+                viewModel.quote(context, fromT.symbol, fromT.assetId, toT.assetId, amount, "")
+                    .onSuccess { q ->
+                        val rate = runCatching { parseRateFromQuote(q) }.getOrNull() ?: BigDecimal.ZERO
+                        if (rate > BigDecimal.ZERO) {
+                            val price = rate.setScale(8, RoundingMode.HALF_UP)
+                            marketPrice = price
+                            val priceString = price.stripTrailingZeros().toPlainString()
+                            standardPrice = priceString
+                            onStandardPriceChanged(priceString)
+                            onQuoteError("")
+                        } else {
+                            standardPrice = ""
+                            onStandardPriceChanged("")
+                            onQuoteError(context.getString(R.string.no_available_quotes_found))
+                        }
+                        isPriceLoading = false
+                    }
+                    .onFailure {
+                        standardPrice = ""
+                        onStandardPriceChanged("")
+                        isPriceLoading = false
+                        onQuoteError(context.getString(R.string.no_available_quotes_found))
+                    }
+            }
+        } else {
+            isPriceLoading = false
+        }
     }
     
     val displayPrice = remember(standardPrice, isPriceInverted) {
@@ -136,4 +223,16 @@ fun PriceInputArea(
             }
         },
     )
+}
+
+private fun parseRateFromQuote(q: QuoteResult?): BigDecimal? {
+    q ?: return null
+    val outputAmount = q.outAmount.toBigDecimalOrNull()
+    val inputAmount = q.inAmount.toBigDecimalOrNull()
+
+    if (outputAmount == null || inputAmount == null || inputAmount == BigDecimal.ZERO || outputAmount == BigDecimal.ZERO) {
+        return null
+    } else {
+        return outputAmount.divide(inputAmount)
+    }
 }
