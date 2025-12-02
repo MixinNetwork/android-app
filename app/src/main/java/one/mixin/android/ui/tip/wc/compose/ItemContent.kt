@@ -46,11 +46,11 @@ import one.mixin.android.vo.User
 @Composable
 fun ItemWalletContent(
     title: String,
-    walletName: String? = null,
     @DrawableRes iconRes: Int = R.drawable.ic_wallet_privacy,
     fontSize: TextUnit = 16.sp,
     padding: Dp = 20.dp,
     walletId: String? = null,
+    walletName: String? = null,
 ) {
     Column(
         modifier =
@@ -72,7 +72,6 @@ fun ItemWalletContent(
                 fontSize = fontSize,
             )
             Spacer(modifier = Modifier.width(4.dp))
-
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,

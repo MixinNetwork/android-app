@@ -63,7 +63,7 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
     }
 
     private val selectedTokenItems = mutableListOf<Web3TokenItem>()
-    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems) }
+    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems, walletId == Session.getAccountId()) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null

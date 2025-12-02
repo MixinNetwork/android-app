@@ -33,7 +33,6 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
-import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -61,7 +60,6 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
-import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber

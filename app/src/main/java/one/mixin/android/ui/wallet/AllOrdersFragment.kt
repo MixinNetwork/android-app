@@ -4,25 +4,25 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.View.VISIBLE
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.TextView
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagedList
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointBackward
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.paging.PagedList
-import androidx.recyclerview.widget.LinearLayoutManager
-import android.widget.ArrayAdapter
-import android.widget.TextView
-import android.view.ViewGroup
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.DateValidatorPointBackward
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllOrdersBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -37,8 +37,8 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.OrderDetailFragment
 import one.mixin.android.ui.wallet.adapter.OrderPagedAdapter
 import one.mixin.android.util.viewBinding
-import one.mixin.android.widget.SpacesItemDecoration
 import one.mixin.android.vo.route.OrderItem
+import one.mixin.android.widget.SpacesItemDecoration
 
 @AndroidEntryPoint
 class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layout.fragment_all_orders) {
