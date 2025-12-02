@@ -57,9 +57,11 @@ import java.math.BigDecimal
 class DepositFragment : BaseFragment() {
     companion object {
         const val TAG = "DepositFragment"
+        private const val ARGS_HIDE_NETWORK_SWITCH = "args_hide_network_switch"
 
-        fun newInstance(token: TokenItem) = DepositFragment().withArgs {
+        fun newInstance(token: TokenItem, hideNetworkSwitch: Boolean = false) = DepositFragment().withArgs {
             putParcelable(ARGS_ASSET, token)
+            putBoolean(ARGS_HIDE_NETWORK_SWITCH, hideNetworkSwitch)
         }
     }
 
@@ -88,7 +90,8 @@ class DepositFragment : BaseFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
-        initView(asset)
+        val hideNetworkSwitch = requireArguments().getBoolean(ARGS_HIDE_NETWORK_SWITCH, false)
+        initView(asset, hideNetworkSwitch)
     }
 
     override fun onDestroyView() {
@@ -96,7 +99,7 @@ class DepositFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun initView(asset: TokenItem) {
+    private fun initView(asset: TokenItem, hideNetworkSwitch: Boolean = false) {
         val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
@@ -113,14 +116,16 @@ class DepositFragment : BaseFragment() {
                 val url = getString(R.string.not_supported_deposit_url)
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
-                if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.usdtAssets)
-                } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.usdcAssets)
-                } else if (Constants.AssetId.ethAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.ethAssets)
-                } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.btcAssets)
+                if (!hideNetworkSwitch) {
+                    if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.usdtAssets)
+                    } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.usdcAssets)
+                    } else if (Constants.AssetId.ethAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.ethAssets)
+                    } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.btcAssets)
+                    }
                 }
 
                 notSupportLl.isVisible = false

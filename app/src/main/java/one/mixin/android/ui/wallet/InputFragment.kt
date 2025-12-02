@@ -309,6 +309,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 Bundle().apply {
                                                     putString("address", address)
                                                     putParcelable("web3_token", t)
+                                                    putBoolean("args_hide_network_switch", true)
                                                 }
                                             )
                                         }
@@ -334,6 +335,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 R.id.action_input_fragment_to_deposit_fragment,
                                                 Bundle().apply {
                                                     putParcelable("args_asset", token!!)
+                                                    putBoolean("args_hide_network_switch", true)
                                                 }
                                             )
                                         }
@@ -363,6 +365,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             Bundle().apply {
                                                 putString("address", address)
                                                 putParcelable("web3_token", t)
+                                                putBoolean("args_hide_network_switch", true)
                                             }
                                         )
                                     }
@@ -388,6 +391,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             R.id.action_input_fragment_to_deposit_fragment,
                                             Bundle().apply {
                                                 putParcelable("args_asset", currentFee!!.token)
+                                                putBoolean("args_hide_network_switch", true)
                                             }
                                         )
                                     }
@@ -872,6 +876,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         R.id.action_input_fragment_to_deposit_fragment,
                         Bundle().apply {
                             putParcelable("args_asset", token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }
@@ -881,6 +886,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         R.id.action_input_fragment_to_deposit_fragment,
                         Bundle().apply {
                             putParcelable("args_asset", token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }
@@ -892,6 +898,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         Bundle().apply {
                             putString("address", address)
                             putParcelable("web3_token", web3Token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }
@@ -901,6 +908,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         R.id.action_input_fragment_to_deposit_fragment,
                         Bundle().apply {
                             putParcelable("args_asset", token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }
