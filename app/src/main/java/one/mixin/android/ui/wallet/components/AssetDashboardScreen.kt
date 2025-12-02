@@ -164,8 +164,6 @@ fun AssetDashboardScreen(
                 TotalAssetsCard()
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Category filter tabs
-                val hasSafe = wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }
                 val hasImported = wallets.any { it.isImported() }
                 val hasWatch = wallets.any { it.isWatch() }
 
@@ -173,6 +171,7 @@ fun AssetDashboardScreen(
                     selectedCategory = selectedCategory,
                     hasImported = hasImported,
                     hasWatch = hasWatch,
+                    hasSafe = true,
                     onCategorySelected = { selectedCategory = it }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
