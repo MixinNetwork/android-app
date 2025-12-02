@@ -26,9 +26,8 @@ fun FloatingActions(
     fromBalance: String?,
     fromToken: SwapToken?,
     toToken: SwapToken?,
-    marketPrice: BigDecimal?,
     onSetInput: (String) -> Unit,
-    onSetLimitPrice: (String) -> Unit,
+    onSetPriceMultiplier: (Float?) -> Unit,
     onDone: () -> Unit,
     onMarketPriceClick: (() -> Unit)? = null,
 ) {
@@ -75,28 +74,22 @@ fun FloatingActions(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                val mp = remember(marketPrice) { marketPrice }
                 InputAction(stringResource(R.string.market_price), showBorder = true) {
-                    mp?.let { onSetLimitPrice(it.stripTrailingZeros().toPlainString()) }
+                    onSetPriceMultiplier(1.0f)
                     onMarketPriceClick?.invoke()
                 }
 
                 val isToUsd = toToken?.assetId?.let { id ->
                     Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
                 } == true
-                val isFromUsd = fromToken?.assetId?.let { id ->
-                    Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
-                } == true
-
-                val base: BigDecimal? = marketPrice ?: BigDecimal.ZERO
 
                 if (isToUsd) {
-                    InputAction("+10%", showBorder = true) { base?.let { onSetLimitPrice(it.multiply(BigDecimal("1.1")).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) } }
-                    InputAction("+20%", showBorder = true) { base?.let { onSetLimitPrice(it.multiply(BigDecimal("1.2")).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) } }
+                    InputAction("+10%", showBorder = true) { onSetPriceMultiplier(1.1f) }
+                    InputAction("+20%", showBorder = true) { onSetPriceMultiplier(1.2f) }
                 } else {
                     // from is USD or other cases -> -10% / -20%
-                    InputAction("-10%", showBorder = true) { base?.let { onSetLimitPrice(it.multiply(BigDecimal("0.9")).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) } }
-                    InputAction("-20%", showBorder = true) { base?.let { onSetLimitPrice(it.multiply(BigDecimal("0.8")).setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) } }
+                    InputAction("-10%", showBorder = true) { onSetPriceMultiplier(0.9f) }
+                    InputAction("-20%", showBorder = true) { onSetPriceMultiplier(0.8f) }
                 }
                 InputAction(stringResource(R.string.Done), showBorder = false) { onDone() }
             }
