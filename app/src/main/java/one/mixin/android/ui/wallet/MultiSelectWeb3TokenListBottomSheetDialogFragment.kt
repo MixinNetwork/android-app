@@ -43,12 +43,22 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         const val POS_EMPTY_TOKEN = 2
         const val LIMIT = 10
 
+        private const val ARGS_WALLET_IDS = "args_wallet_ids"
         private const val ARGS_WALLET_ID = "args_wallet_id"
 
         fun newInstance(walletId: String? = null): MultiSelectWeb3TokenListBottomSheetDialogFragment {
             return MultiSelectWeb3TokenListBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     walletId?.let { putString(ARGS_WALLET_ID, it) }
+                }
+            }
+        }
+        fun newInstance(walletIds: List<String>? = emptyList()): MultiSelectWeb3TokenListBottomSheetDialogFragment {
+            return MultiSelectWeb3TokenListBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    if (walletIds == null) {
+                        putStringArrayList(ARGS_WALLET_IDS, ArrayList(walletIds ?: emptyList()))
+                    }
                 }
             }
         }
@@ -62,8 +72,12 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         arguments?.getString(ARGS_WALLET_ID)
     }
 
+    private val walletIds: List<String>? by lazy {
+        arguments?.getStringArrayList(ARGS_WALLET_IDS)?.toList()
+    }
+
     private val selectedTokenItems = mutableListOf<Web3TokenItem>()
-    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems, walletId == Session.getAccountId()) }
+    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems, walletIds != null) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
@@ -151,19 +165,60 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                     )
         }
 
-        // Use current account walletId by default
-        val targetWalletId = walletId ?: Session.getAccountId()!!
-
-        bottomViewModel.web3TokenItems(targetWalletId)
-            .observe(this) { tokens ->
-                defaultAssets = tokens
-                if (binding.searchEt.et.text.isNullOrBlank()) {
-                    adapter.submitList(defaultAssets)
-                }
-                if (defaultAssets.isEmpty()) {
-                    binding.rvVa.displayedChild = POS_EMPTY
-                }
+        // Query tokens based on walletIds
+        if (walletIds != null) {
+            if (walletId.isNullOrEmpty()) {
+                // all order assets
+                bottomViewModel.web3TokenItemsFromAllOrders()
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
+            }else{
+                // order assets
+                bottomViewModel.web3TokenItemsFromOrdersByWalletIds(walletIds?:emptyList())
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
             }
+        } else {
+            if (walletId != null) {
+                // asset in wallet
+                bottomViewModel.web3TokenItems(walletId ?: "")
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
+            }else{
+                // all assets
+                bottomViewModel.web3TokenItemsAll()
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
+            }
+        }
     }
 
     private fun search(query: String) {
