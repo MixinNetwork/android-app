@@ -610,7 +610,8 @@ fun UpgradeSafeCard(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { onUpgradeClick() },
+                    .clickable { onUpgradeClick() }
+                    .padding(6.dp),
                 contentAlignment = Alignment.Center
             ) {
 
@@ -620,7 +621,7 @@ fun UpgradeSafeCard(
                     fontWeight = FontWeight.SemiBold,
                     color = MixinAppTheme.colors.accent,
                     modifier = Modifier
-                        .padding(12.dp)
+                        .padding(6.dp)
                         .clip(RoundedCornerShape(bottomStart = 16.dp, topStart = 16.dp))
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -637,7 +638,8 @@ fun UpgradeSafeCard(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { onLearnMoreClick() },
+                    .clickable { onLearnMoreClick() }
+                    .padding(6.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -646,16 +648,16 @@ fun UpgradeSafeCard(
                     fontWeight = FontWeight.SemiBold,
                     color = MixinAppTheme.colors.textPrimary,
                     modifier = Modifier
-                        .padding(12.dp)
+                        .padding(6.dp)
                         .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
                 )
 
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_top_right),
+                    painter = painterResource(id = R.drawable.ic_arrow_top_right_small),
                     contentDescription = null,
                     tint = MixinAppTheme.colors.backgroundDark,
                     modifier = Modifier
-                        .size(16.dp)
+                        .size(8.dp)
                         .align(Alignment.TopEnd)
                 )
             }
