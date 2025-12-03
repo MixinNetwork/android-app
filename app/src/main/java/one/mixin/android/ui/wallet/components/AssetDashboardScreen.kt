@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
@@ -321,7 +322,7 @@ fun WalletInfoCard(
 
                     "safe" -> SafeWalletInfo(
                         onLearnMoreClick = {
-                            context.openUrl(context.getString(R.string.url_classic_wallet))
+                            context.openUrl(context.getString(R.string.safe_learn_more_url))
                         },
                         onClose = onSafeClose
                     )
@@ -549,7 +550,7 @@ fun CommonWalletInfo(
             Text(
                 text = stringResource(R.string.Learn_More),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
                 color = MixinAppTheme.colors.accent
             )
         }
@@ -567,26 +568,27 @@ fun UpgradeSafeCard(
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .padding(16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.Upgrade_Plan),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = MixinAppTheme.colors.textPrimary,
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.Upgrade_Plan),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
 
-            Text(
-                text = stringResource(R.string.Upgrade_Safe_Description),
-                fontSize = 14.sp,
-                lineHeight = 17.5.sp,
-                color = MixinAppTheme.colors.textMinor,
-                modifier = Modifier.weight(1f),
-            )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = stringResource(R.string.Upgrade_Safe_Description),
+                    fontSize = 14.sp,
+                    lineHeight = 17.5.sp,
+                    color = MixinAppTheme.colors.textMinor,
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
 
             Image(
@@ -615,7 +617,7 @@ fun UpgradeSafeCard(
                 Text(
                     text = stringResource(R.string.Upgrade),
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     color = MixinAppTheme.colors.accent,
                     modifier = Modifier
                         .padding(12.dp)
@@ -641,7 +643,7 @@ fun UpgradeSafeCard(
                 Text(
                     text = stringResource(R.string.Learn_More),
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     color = MixinAppTheme.colors.textPrimary,
                     modifier = Modifier
                         .padding(12.dp)
@@ -672,23 +674,24 @@ fun CreateSafeCard(
             .padding(16.dp)
     ) {
 
-        Text(
-            text = stringResource(R.string.Create_Safe),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = MixinAppTheme.colors.textPrimary,
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = stringResource(R.string.Create_Safe_Description),
-                fontSize = 14.sp,
-                lineHeight = 17.5.sp,
-                color = MixinAppTheme.colors.textMinor
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.Create_Safe),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MixinAppTheme.colors.textPrimary,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(R.string.Create_Safe_Description),
+                    fontSize = 14.sp,
+                    lineHeight = 17.5.sp,
+                    color = MixinAppTheme.colors.textMinor
+                )
+            }
 
             Image(
                 painter = painterResource(id = R.drawable.ic_safe),
@@ -711,7 +714,7 @@ fun CreateSafeCard(
             Text(
                 text = stringResource(R.string.Guideline),
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
                 color = Color.White,
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -726,5 +729,15 @@ fun CreateSafeCard(
                     .align(Alignment.TopEnd)
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun CardPreview() {
+    Column {
+        CreateSafeCard {}
+        Spacer(modifier = Modifier.height(8.dp))
+        UpgradeSafeCard({}, {})
     }
 }

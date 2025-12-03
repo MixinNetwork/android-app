@@ -244,16 +244,14 @@ fun WalletListScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            if (hasSafe || hasImported || hasWatch) {
-                WalletCategoryFilter(
-                    selectedCategory = selectedCategory,
-                    hasImported = hasImported,
-                    hasWatch = hasWatch,
-                    hasSafe = hasSafe,
-                    onCategorySelected = { selectedCategory = it }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            WalletCategoryFilter(
+                selectedCategory = selectedCategory,
+                hasImported = hasImported,
+                hasWatch = hasWatch,
+                hasSafe = hasSafe,
+                onCategorySelected = { selectedCategory = it }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
                 when (item) {

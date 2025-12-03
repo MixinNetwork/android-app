@@ -1926,7 +1926,7 @@
     <string name="Privacy_Wallet_Description">一个多链钱包，提供私密、免费和即时交易，满足您大部分需求。</string>
     <string name="Whats_Common_Wallet">什么是普通钱包？</string>
     <string name="Common_Wallet_Description">一个普通的多链钱包，可以访问去中心化应用和 DeFi 协议。</string>
-    <string name="Whats_Safe_Wallet">什么是 Mixin Safe？</string>
+    <string name="Whats_Safe_Wallet">什么是 Safe 金库？</string>
     <string name="Safe_Wallet_Description">基于比特币、以太坊等网络的多重签名冷钱包。</string>
     <string name="Upgrade_Safe_Description">升级到 Mixin One 即可解锁 Mixin Safe，与你的家人、朋友或同事一起安全管理资产。</string>
     <string name="Create_Safe">创建 Safe</string>
