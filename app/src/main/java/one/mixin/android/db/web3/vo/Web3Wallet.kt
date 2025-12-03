@@ -7,9 +7,11 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.db.converter.ListConverter
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.vo.WalletCategory
 
 enum class SafeChain(val value: String, val chainId: String) {
@@ -51,9 +53,9 @@ data class Web3Wallet(
     @SerializedName("updated_at")
     val updatedAt: String,
 
-    @ColumnInfo(name = "owners")
-    @SerializedName("owners")
-    val owners: List<String>?,
+    @ColumnInfo(name = "safe_role")
+    @SerializedName("safe_role")
+    val safeRole: String?,
 
     @ColumnInfo(name = "safe_chain_id")
     @SerializedName("safe_chain_id")
@@ -68,6 +70,7 @@ data class Web3Wallet(
     val safeUrl: String?,
 ) : Parcelable {
     @Ignore
+    @IgnoredOnParcel
     var hasLocalPrivateKey: Boolean = false
 
     val safeChain: SafeChain?
@@ -104,4 +107,8 @@ fun Web3Wallet.isWatch(): Boolean {
 
 fun Web3Wallet.isMixinSafe(): Boolean {
     return category == WalletCategory.MIXIN_SAFE.value
+}
+
+fun Web3Wallet.isOwner(): Boolean {
+    return safeRole.equalsIgnoreCase("owner")
 }

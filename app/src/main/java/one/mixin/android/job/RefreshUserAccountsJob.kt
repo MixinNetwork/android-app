@@ -69,7 +69,7 @@ class RefreshUserAccountsJob : BaseJob(
             name = account.name,
             createdAt = account.createdAt,
             updatedAt = currentTime,
-            owners = account.owners,
+            safeRole = account.role,
             safeChainId = SafeChain.fromValue(account.chainId)?.chainId,
             safeAddress = account.address,
             safeUrl = account.uri

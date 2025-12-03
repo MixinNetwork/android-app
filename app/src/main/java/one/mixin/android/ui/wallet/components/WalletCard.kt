@@ -51,6 +51,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -155,7 +156,7 @@ fun WalletCard(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = LocalIndication.current
-                ) { 
+                ) {
                     if (destination is WalletDestination.Safe && onSafeClick != null) {
                         onSafeClick()
                     } else {
@@ -247,7 +248,7 @@ fun WalletCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = stringResource(if(destination.isSingleOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
+                            text = stringResource(if (destination.isOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 12.sp,
                             modifier = Modifier
@@ -318,6 +319,14 @@ fun WalletCard(
                     LaunchedEffect(refreshTrigger) {
                         chains = if (destination is WalletDestination.Privacy || destination == null) {
                             privacyChain
+                        } else if (destination is WalletDestination.Safe) {
+                            when (destination.chainId) {
+                                Constants.ChainId.BITCOIN_CHAIN_ID -> listOf(R.drawable.ic_chain_btc)
+                                Constants.ChainId.ETHEREUM_CHAIN_ID -> listOf(R.drawable.ic_chain_eth)
+                                Constants.ChainId.Polygon -> listOf(R.drawable.ic_chain_polygon)
+                                Constants.ChainId.Litecoin -> listOf(R.drawable.ic_chain_lite)
+                                else -> listOf(R.drawable.ic_avatar_place_holder)
+                            }
                         } else if ((destination is WalletDestination.Watch && (destination.category == WalletCategory.WATCH_ADDRESS.value || destination.category == WalletCategory.IMPORTED_PRIVATE_KEY.value)) ||
                             (destination is WalletDestination.Import && (destination.category == WalletCategory.WATCH_ADDRESS.value || destination.category == WalletCategory.IMPORTED_PRIVATE_KEY.value))
                         ) {

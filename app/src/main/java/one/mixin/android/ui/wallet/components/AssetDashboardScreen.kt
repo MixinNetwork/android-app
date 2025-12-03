@@ -54,6 +54,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
@@ -215,11 +216,10 @@ fun AssetDashboardScreen(
                     if (!shouldShow) return@forEach
 
                     if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
-                        val isSingleOwner = wallet.owners?.size == 1
                         WalletCard(
                             name = wallet.name,
-                            destination = WalletDestination.Safe(wallet.id, isSingleOwner, wallet.safeUrl),
-                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id, isSingleOwner, wallet.safeUrl)) }
+                            destination = WalletDestination.Safe(wallet.id, wallet.isOwner(), wallet.safeChainId,wallet.safeUrl),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id, wallet.isOwner(), wallet.safeChainId,wallet.safeUrl)) }
                         )
                     } else if (wallet.isWatch()) {
                         WalletCard(
