@@ -129,6 +129,7 @@ interface RouteService {
     suspend fun web3Tokens(
         @Query("source") source: String = "web3",
         @Query("version") version: String = BuildConfig.VERSION_NAME,
+        @Query("category") category: String? = null
     ): MixinResponse<List<SwapToken>>
 
     @GET("web3/quote")
