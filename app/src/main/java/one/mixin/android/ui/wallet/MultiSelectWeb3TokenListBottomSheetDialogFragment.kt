@@ -31,6 +31,7 @@ import one.mixin.android.ui.wallet.adapter.SelectedWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchWeb3TokenItemCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("NotifyDataSetChanged")
@@ -53,12 +54,10 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                 }
             }
         }
-        fun newInstance(walletIds: List<String>? = emptyList()): MultiSelectWeb3TokenListBottomSheetDialogFragment {
+        fun newInstance(walletIds: List<String>): MultiSelectWeb3TokenListBottomSheetDialogFragment {
             return MultiSelectWeb3TokenListBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
-                    if (walletIds == null) {
-                        putStringArrayList(ARGS_WALLET_IDS, ArrayList(walletIds ?: emptyList()))
-                    }
+                    putStringArrayList(ARGS_WALLET_IDS, ArrayList(walletIds))
                 }
             }
         }
@@ -181,7 +180,7 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                     }
             }else{
                 // order assets
-                bottomViewModel.web3TokenItemsFromOrdersByWalletIds(walletIds?:emptyList())
+                bottomViewModel.web3TokenItemsFromOrdersByWalletIds(walletIds ?: emptyList())
                     .observe(this) { tokens ->
                         defaultAssets = tokens
                         if (binding.searchEt.et.text.isNullOrBlank()) {

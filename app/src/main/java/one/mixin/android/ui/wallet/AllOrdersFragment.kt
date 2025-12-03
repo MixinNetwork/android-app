@@ -330,7 +330,22 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private fun selectAsset() {
         binding.filterAsset.open()
-        multiSelectWeb3TokenListBottomSheetDialogFragment
+        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(filterParams.walletIds ?: emptyList())
+            .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+                override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
+                    filterParams.tokenItems = tokenItems
+                    loadFilter()
+                }
+
+                override fun onDismiss() {
+                    binding.filterAsset.close()
+                }
+            })
+            .setDateProvider(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.DataProvider {
+                override fun getCurrentTokens(): List<Web3TokenItem> {
+                    return filterParams.tokenItems ?: emptyList()
+                }
+            })
             .showNow(parentFragmentManager, MultiSelectWeb3TokenListBottomSheetDialogFragment.TAG)
     }
 
@@ -359,25 +374,6 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                 binding.filterUser.close()
             }
             .showNow(parentFragmentManager, WalletMultiSelectBottomSheetDialogFragment.TAG)
-    }
-
-    private val multiSelectWeb3TokenListBottomSheetDialogFragment by lazy {
-        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(filterParams.walletIds)
-            .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
-                override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
-                    filterParams.tokenItems = tokenItems
-                    loadFilter()
-                }
-
-                override fun onDismiss() {
-                    binding.filterAsset.close()
-                }
-            })
-            .setDateProvider(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.DataProvider {
-                override fun getCurrentTokens(): List<Web3TokenItem> {
-                    return filterParams.tokenItems ?: emptyList()
-                }
-            })
     }
 
     private fun dateRangePicker(): MaterialDatePicker<Pair<Long, Long>> {
