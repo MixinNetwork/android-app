@@ -240,7 +240,7 @@ class TradeFragment : BaseFragment() {
                                         this@TradeFragment.lifecycleScope.launch {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
                                             val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
-                                            navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
+                                            navTo(Web3AddressFragment.newInstance(t, address, true), Web3AddressFragment.TAG)
                                         }
                                     }
                                 },
@@ -385,7 +385,7 @@ class TradeFragment : BaseFragment() {
                     swapViewModel.checkAndSyncTokens(listOf(tokenId))
                     val t = swapViewModel.findToken(tokenId)
                     if (t != null)
-                        navTo(DepositFragment.newInstance(t), DepositFragment.TAG)
+                        navTo(DepositFragment.newInstance(t, hideNetworkSwitch = true), DepositFragment.TAG)
                     else
                         toast(R.string.Not_found)
                 }.onFailure {
@@ -395,7 +395,7 @@ class TradeFragment : BaseFragment() {
                 dialog.dismiss()
             } else {
                 runCatching {
-                    navTo(DepositFragment.newInstance(token), DepositFragment.TAG)
+                    navTo(DepositFragment.newInstance(token, hideNetworkSwitch = true), DepositFragment.TAG)
                 }.onFailure {
                     Timber.e(it)
                 }
