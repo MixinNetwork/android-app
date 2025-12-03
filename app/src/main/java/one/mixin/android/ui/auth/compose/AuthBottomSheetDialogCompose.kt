@@ -66,6 +66,7 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.getScopeGroupIcon
@@ -276,6 +277,12 @@ fun ScopesContent(
                     .align(CenterHorizontally),
             shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.buttonColors(backgroundColor = MixinAppTheme.colors.accent),
+            elevation = ButtonDefaults.elevation(
+                pressedElevation = 0.dp,
+                defaultElevation = 0.dp,
+                hoveredElevation = 0.dp,
+                focusedElevation = 0.dp,
+            ),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 28.dp),
             onClick = {
                 if (pagerState.currentPage < scopeGroup.keys.size - 1) {

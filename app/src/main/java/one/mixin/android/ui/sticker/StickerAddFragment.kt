@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +27,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.databinding.FragmentAddStickerBinding
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
@@ -139,7 +139,7 @@ class StickerAddFragment : BaseFragment() {
                         } else {
                             0
                         }
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         0
                     }
                 }
@@ -168,7 +168,7 @@ class StickerAddFragment : BaseFragment() {
                         return@launch
                     }
                     getStickerAddRequest(mimeType, uri)
-                } catch (e: Exception) {
+                } catch (_ : Exception) {
                     handleBack(R.string.Add_sticker_failed)
                     null
                 }
@@ -231,7 +231,7 @@ class StickerAddFragment : BaseFragment() {
                     handleBack(R.string.sticker_add_invalid_size)
                     return@withContext null
                 }
-                val byteArray =
+                val ba =
                     if (mimeType == MimeType.GIF.toString()) {
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
                         val resultImage = loader.execute(request).image ?: return@withContext null
@@ -247,7 +247,7 @@ class StickerAddFragment : BaseFragment() {
                     } else {
                         f.toByteArray()
                     }
-                StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
+                StickerAddRequest(ba?.base64RawURLEncode())
             } else {
                 val request = ImageRequest.Builder(requireContext()).data(url).build()
                 var bitmap = loader.execute(request).image?.toBitmap() ?: return@withContext null
@@ -259,11 +259,9 @@ class StickerAddFragment : BaseFragment() {
                     } else if (max(bitmap.width, bitmap.height) > MAX_SIZE) {
                         bitmap = bitmap.scaleDown(MAX_SIZE)
                     }
+                    val ba = if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes()
                     StickerAddRequest(
-                        Base64.encodeToString(
-                            if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(),
-                            Base64.NO_WRAP,
-                        ),
+                        ba.base64RawURLEncode(),
                     )
                 } else {
                     handleBack(R.string.sticker_add_invalid_size)

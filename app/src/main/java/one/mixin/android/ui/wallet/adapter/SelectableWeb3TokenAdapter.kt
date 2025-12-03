@@ -13,7 +13,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.MultiSelectWeb3TokenListBottomSheetDialogFragment
 import one.mixin.android.vo.Web3TokenDiffCallback
 
-class SelectableWeb3TokenAdapter(private val selectedTokenItems: MutableList<Web3TokenItem>) : ListAdapter<Web3TokenItem, SelectableWeb3TokenAdapter.SearchTokenItemViewHolder>(Web3TokenDiffCallback) {
+class SelectableWeb3TokenAdapter(private val selectedTokenItems: MutableList<Web3TokenItem>, val hide: Boolean = false) : ListAdapter<Web3TokenItem, SelectableWeb3TokenAdapter.SearchTokenItemViewHolder>(Web3TokenDiffCallback) {
     var callback: WalletSearchWeb3TokenItemCallback? = null
 
     override fun onCreateViewHolder(
@@ -37,8 +37,13 @@ class SelectableWeb3TokenAdapter(private val selectedTokenItems: MutableList<Web
             selectedTokenItems: MutableList<Web3TokenItem>,
             tokenItemClickListener: WalletSearchWeb3TokenItemCallback? = null,
         ) {
-            binding.name.text = tokenItem.name
-            binding.balance.text = "${tokenItem.balance} ${tokenItem.symbol}"
+            if (hide) {
+                binding.name.text = tokenItem.symbol
+                binding.balance.text = tokenItem.name
+            } else {
+                binding.name.text = tokenItem.name
+                binding.balance.text = "${tokenItem.balance} ${tokenItem.symbol}"
+            }
             binding.avatar.loadToken(tokenItem)
             binding.cb.isChecked = selectedTokenItems.contains(tokenItem)
             binding.cb.isClickable = false

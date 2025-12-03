@@ -24,6 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme.HTTPS_MARKET
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityDepositShareBinding
@@ -46,6 +47,7 @@ import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
+import one.mixin.android.widget.BadgeCircleImageView
 import java.io.File
 import java.io.FileOutputStream
 
@@ -188,7 +190,11 @@ class DepositShareActivity : BaseActivity() {
                 val qrCode = addr.generateQRCode(200.dp, innerPadding = 20.dp, padding = 0).first
                 binding.qrCode.setImageBitmap(qrCode)
                 binding.icon.bg.loadImage(u?.avatarUrl, R.drawable.ic_avatar_place_holder)
-                binding.icon.badge.isVisible = false
+                binding.icon.bg.borderWidth = 2.dp
+                binding.icon.badge.borderWidth = 0
+                binding.icon.badge.borderColor = Color.WHITE
+                binding.icon.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
+                binding.icon.pos = BadgeCircleImageView.END_BOTTOM
             }
             binding.bottomTv.isVisible = true
             if (hasToken) {
@@ -206,7 +212,7 @@ class DepositShareActivity : BaseActivity() {
                 binding.icon.badge.loadImage(tokenChainUrl, R.drawable.ic_avatar_place_holder)
             }
 
-            val addr = address ?: ""
+            val addr = if (token?.chainId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) amountUrl ?: "" else address ?: ""
             if (addr.length > 14) {
                 val spannable = android.text.SpannableStringBuilder(addr)
                 val black = colorFromAttribute(R.attr.text_primary)
@@ -225,7 +231,7 @@ class DepositShareActivity : BaseActivity() {
             } else {
                 binding.addressText.text = addr
             }
-            binding.addressTitle.setText(R.string.Address)
+            binding.addressTitle.setText(if (token?.chainId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) R.string.Invoice else R.string.Address)
             binding.networkText.text = tokenChainName
 
             if (amount != null) {

@@ -21,6 +21,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentJoinGroupBottomSheetBinding
 import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
@@ -145,7 +146,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
             binding.joinTv.isVisible = true
 
             contentView.doOnPreDraw {
-                behavior?.peekHeight = binding.title.height + binding.scrollContent.height
+                behavior?.peekHeight = requireContext().navigationBarHeight() + binding.title.height + binding.scrollContent.height
             }
         }
 

@@ -37,7 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
@@ -63,7 +63,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
         viewModel.getRecentTokenItems(context.defaultSharedPreferences, key)
     }
     if (recentToken.isEmpty()) return
-    MixinAppTheme(skip = true) {
+    MixinAppTheme {
         Column(
             modifier = Modifier
                 .background(MixinAppTheme.colors.background)

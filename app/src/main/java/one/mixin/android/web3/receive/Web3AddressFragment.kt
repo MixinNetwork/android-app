@@ -44,8 +44,9 @@ import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
-import one.mixin.android.util.getChainName
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.web3.js.Web3Signer
+import timber.log.Timber
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {
@@ -181,7 +182,12 @@ class Web3AddressFragment : BaseFragment() {
                 initChips(Constants.AssetId.ethAssets)
             }
         }
-        showDepositChooseNetworkBottomSheetDialog(web3Token)
+        lifecycleScope.launch {
+            val name = walletViewModel.findChainById(web3Token.chainId)?.name
+                ?: getChainNetwork(web3Token.assetId, web3Token.chainId, web3Token.assetKey)
+            showDepositChooseNetworkBottomSheetDialog(web3Token, name)
+        }
+
         return binding.root
     }
 
@@ -229,9 +235,14 @@ class Web3AddressFragment : BaseFragment() {
             ""
         )
         binding.assetName.text = "${web3Token.name} (${web3Token.symbol})"
-        binding.addressDesc.text = getTipsByAsset(web3Token)
+
         binding.addressDesc.isVisible = true
-        binding.networkName.text = getChainName(web3Token.chainId, web3Token.chainName, web3Token.assetKey)
+        lifecycleScope.launch {
+            val chain = walletViewModel.findChainById(web3Token.chainId)
+            binding.addressDesc.text = getTipsByAsset(web3Token, chain)
+            binding.networkName.text = walletViewModel.findChainById(web3Token.chainId)?.name
+                ?: getChainNetwork(web3Token.assetId, web3Token.chainId, web3Token.assetKey)
+        }
     }
 
     private fun updateChips() {
@@ -256,12 +267,13 @@ class Web3AddressFragment : BaseFragment() {
     private var showed = false
     private fun showDepositChooseNetworkBottomSheetDialog(
         asset: Web3TokenItem,
+        name: String?,
     ) {
         if (showed) return
         showed = true // run only once
         lifecycleScope.launch {
-            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset.toTokenItem())
-                .showNow(childFragmentManager, DepositFragment.Companion.TAG)
+            DepositChooseNetworkBottomSheetDialogFragment.newInstance(asset = asset.toTokenItem(), name)
+                .showNow(childFragmentManager, DepositFragment.TAG)
         }
     }
 

@@ -9,6 +9,9 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewTransferContentBinding
+import one.mixin.android.extension.base64RawURLEncode
+import one.mixin.android.extension.hexString
+import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.session.Session
@@ -20,7 +23,7 @@ import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.util.getChainName
+import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.User
@@ -61,6 +64,21 @@ class TransferContent : LinearLayout {
 
             is AddressManageBiometricItem -> {
                 renderAddressManage(transferItem)
+            }
+        }
+    }
+
+    fun renderWithdrawFeeFree(withdrawBiometricItem: WithdrawBiometricItem, onFreeClick: (() -> Unit)? = null) {
+        _binding.apply {
+            val fee = withdrawBiometricItem.fee ?: return
+            networkFee.isVisible = true
+            networkFee.setContentWithFree(
+                R.string.Fee,
+                "${fee.fee} ${fee.token.symbol}",
+                amountAs(fee.fee, fee.token),
+                true
+            ) {
+                onFreeClick?.invoke()
             }
         }
     }
@@ -139,10 +157,10 @@ class TransferContent : LinearLayout {
         if (asset.assetId == feeAsset.assetId) {
             val totalAmount = value.plus(feeValue)
             val total = asset.priceFiat() * totalAmount
-            return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+            return Pair("${totalAmount.numberFormat8()} ${asset.symbol}", "${Fiats.getSymbol()}${total.numberFormat2()}")
         } else {
             val total = asset.priceFiat() * value + feeAsset.priceFiat() * feeValue
-            return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${total.numberFormat2()} ${Fiats.getAccountCurrencyAppearance()}")
+            return Pair("${withdrawBiometricItem.amount} ${asset.symbol} + $feeAmount ${feeAsset.symbol}", "${Fiats.getSymbol()}${total.numberFormat2()}")
         }
     }
 
@@ -169,7 +187,7 @@ class TransferContent : LinearLayout {
             }
 
             val tokenItem = transferBiometricItem.asset!!
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
@@ -226,8 +244,14 @@ class TransferContent : LinearLayout {
             } else {
                 networkFee.setContent(R.string.Fee, "0", "")
             }
+            val invoiceMemo = invoice.entries.firstOrNull { it.memo != null }?.memo
+            if (invoiceMemo != null) {
+                memo.isVisible = true
+                memo.setContent(R.string.Memo, invoiceMemo)
+            }
             assetContainer.isVisible = true
             assetContainer.setContent(R.string.ASSET_CHANGES, amounts, tokens.filterIndexed { index, _ -> invoice.entries[index].isStorage().not() })
+            network.isVisible = false
         }
     }
 
@@ -295,7 +319,7 @@ class TransferContent : LinearLayout {
                 )
             }
 
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
@@ -323,7 +347,7 @@ class TransferContent : LinearLayout {
             }
 
             val tokenItem = safeMultisigsBiometricItem.asset!!
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
@@ -375,11 +399,11 @@ class TransferContent : LinearLayout {
                 memo.isVisible = true
                 memo.setContent(R.string.Memo, addressTransferBiometricItem.memo ?: "")
             }
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 
-    private fun renderWithdrawTransfer(withdrawBiometricItem: WithdrawBiometricItem) {
+    private fun renderWithdrawTransfer(withdrawBiometricItem: WithdrawBiometricItem, isFree: Boolean = false, onFreeClick: (() -> Unit)? = null) {
         _binding.apply {
             amount.setContent(R.string.Amount, "${withdrawBiometricItem.amount} ${withdrawBiometricItem.asset?.symbol}", amountAs(withdrawBiometricItem.amount, withdrawBiometricItem.asset!!))
             receive.isVisible = false
@@ -401,10 +425,16 @@ class TransferContent : LinearLayout {
 
             val fee = withdrawBiometricItem.fee!!
             networkFee.isVisible = true
-            networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
+            if (isFree) {
+                networkFee.setContentWithFree(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token), true) {
+                    onFreeClick?.invoke()
+                }
+            } else {
+                networkFee.setContent(R.string.Fee, "${fee.fee} ${fee.token.symbol}", amountAs(fee.fee, fee.token))
+            }
 
             val tokenItem = withdrawBiometricItem.asset!!
-            network.setContent(R.string.network, getChainName(tokenItem.chainId, tokenItem.chainName, tokenItem.assetKey) ?: "")
+            network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")
         }
     }
 }

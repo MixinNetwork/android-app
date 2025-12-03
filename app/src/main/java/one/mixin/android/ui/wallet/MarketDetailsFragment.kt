@@ -19,6 +19,7 @@ import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -36,9 +37,8 @@ import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
 import one.mixin.android.util.viewBinding
@@ -98,7 +98,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
             }
             swapAlert.swap.setOnClickListener {
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
                     val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
                     if (ids.size > tokens.size) {
@@ -132,7 +132,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             Bundle().apply {
                                 putString(ARGS_INPUT, input)
                                 putString(ARGS_OUTPUT, nowTokens.first().assetId)
-                                putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }) })
                             })
                     } else {
                         ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
@@ -147,7 +146,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     Bundle().apply {
                                         putString(ARGS_INPUT, token.assetId)
                                         putString(ARGS_OUTPUT, output)
-                                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets.filter { (it.balance.toBigDecimalOrNull()?: BigDecimal.ZERO) > BigDecimal.ZERO }) })
                                     })
                             }
                         }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
@@ -162,7 +160,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 swapAlert.setAlertTitle(if (exist) R.string.Alert else R.string.Add_Alert)
                 swapAlert.alertVa.setOnClickListener {
                     if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
                             var coinItem = if (marketItem.coinId.isBlank()) {
                                 walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
                             } else {
@@ -335,10 +333,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                     highValue.text = priceFormat(info.ath)
                     highTime.isVisible = true
-                    highTime.text = info.athDate
+                    highTime.text = info.athDate.dayTime()
                     lowValue.text = priceFormat(info.atl)
                     lowTime.isVisible = true
-                    lowTime.text = info.atlDate
+                    lowTime.text = info.atlDate.dayTime()
 
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
@@ -394,7 +392,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         val changeUsd = BigDecimal(marketItem.priceChange24h)
         val isPositive = changeUsd >= BigDecimal.ZERO
         binding.apply {
-            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                 Timber.e(error)
                 balanceRl.isVisible = false
             }) {

@@ -61,7 +61,7 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun getPriorityFee(tx: String): EstimateFeeResponse? {
             return handleMixinResponse(
-                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx)) },
+                invokeNetwork = { web3Repository.estimateFee(EstimateFeeRequest(Constants.ChainId.SOLANA_CHAIN_ID, tx, null)) },
                 successBlock = {
                     it.data
                 },
@@ -93,8 +93,8 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String?, assetId: String? = null) {
-            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to), assetId)
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String?, assetId: String? = null, feeType: String? = null) = withContext(Dispatchers.IO) {
+            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to, feeType), assetId)
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException

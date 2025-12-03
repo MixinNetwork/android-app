@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.MembershipOrder
@@ -44,7 +44,7 @@ fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MembershipO
     val orderState = viewModel.getOrdersFlow(orderId).collectAsState(null)
     MixinAppTheme {
         PageScaffold(
-            title = stringResource(R.string.Invoice),
+            title = stringResource(R.string.Invoices),
             verticalScrollable = false,
             pop = onPop,
             actions = {

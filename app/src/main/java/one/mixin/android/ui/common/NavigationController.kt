@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -9,15 +10,12 @@ import one.mixin.android.R
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ExploreFragment
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.wallet.WalletFragment
 import timber.log.Timber
 
-class NavigationController(mainActivity: MainActivity) {
-    private val fragmentManager: FragmentManager = mainActivity.supportFragmentManager
-    private val context = mainActivity
+class NavigationController() {
 
     sealed class Destination(val tag: String)
 
@@ -29,9 +27,10 @@ class NavigationController(mainActivity: MainActivity) {
 
     data object Market : Destination(MarketFragment.TAG)
 
-    private val destinations = listOf(ConversationList, Wallet, Market, Explore)
+    private val destinations = listOf(ConversationList.tag, Wallet.tag, Market.tag, Explore.tag)
 
     fun navigate(
+        fragmentManager: FragmentManager,
         destination: Destination,
         destinationFragment: Fragment,
     ) {
@@ -41,24 +40,29 @@ class NavigationController(mainActivity: MainActivity) {
             val tx = fragmentManager.beginTransaction()
             val tag = destination.tag
             val f = fragmentManager.findFragmentByTag(tag)
-            if (f == null || !f.isAdded) {
+            if (destinationFragment.isAdded) {
+                if (fragmentManager != destinationFragment.parentFragmentManager) {
+                    destinationFragment.parentFragmentManager.beginTransaction().remove(destinationFragment).commitNowAllowingStateLoss()
+                    tx.add(R.id.root_view, destinationFragment, tag)
+                } else {
+                    tx.show(destinationFragment)
+                }
+            } else if (f == null || !f.isAdded) {
                 tx.add(R.id.root_view, destinationFragment, tag)
             } else {
                 tx.show(f)
             }
-            destinations.forEach { d ->
-                if (d != destination) {
-                    fragmentManager.findFragmentByTag(d.tag)?.let { tx.hide(it) }
-                }
+            fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag }.forEach { fragment ->
+                tx.hide(fragment)
             }
             tx.commitNowAllowingStateLoss()
         } catch (e: Exception) {
-            Timber.w(e)
+            Timber.e(e)
         }
     }
 
-    fun pushContacts() {
-        ContactsActivity.show(context)
+    fun pushContacts(activity: Activity) {
+        ContactsActivity.show(activity)
     }
 
     fun showSearch(fm: FragmentManager) {
@@ -75,7 +79,7 @@ class NavigationController(mainActivity: MainActivity) {
         }
     }
 
-    fun hideSearch() {
+    fun hideSearch(fragmentManager: FragmentManager) {
         val f = fragmentManager.findFragmentByTag(SearchFragment.TAG)
         f?.view?.animate()?.apply {
             setListener(
@@ -89,7 +93,7 @@ class NavigationController(mainActivity: MainActivity) {
         }?.alpha(0f)?.start()
     }
 
-    fun removeSearch() {
+    fun removeSearch(fragmentManager: FragmentManager) {
         val f = fragmentManager.findFragmentByTag(SearchFragment.TAG) ?: return
         fragmentManager.beginTransaction().remove(f).commit()
     }

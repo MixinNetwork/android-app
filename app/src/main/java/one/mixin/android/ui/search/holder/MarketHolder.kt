@@ -8,7 +8,6 @@ import one.mixin.android.databinding.ItemSearchMarketBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
@@ -38,7 +37,7 @@ class MarketHolder(val binding: ItemSearchMarketBinding) : NormalHolder(binding.
             binding.changeTv.visibility = View.GONE
         } else {
             binding.changeTv.visibility = View.VISIBLE
-            binding.priceTv.text = "${Fiats.getSymbol()}${BigDecimal(market.currentPrice).priceFormat()}"
+            binding.priceTv.text = "${Fiats.getSymbol()}${ BigDecimal(market.currentPrice).multiply(BigDecimal(Fiats.getRate())).numberFormat2()}"
             if (market.marketCapChangePercentage24h.isNotEmpty()) {
                 val changeUsd = BigDecimal(market.marketCapChangePercentage24h)
                 val isPositive = changeUsd >= BigDecimal.ZERO

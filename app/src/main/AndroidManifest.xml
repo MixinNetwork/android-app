@@ -60,7 +60,7 @@
         android:dataExtractionRules="@xml/backup_config"
         android:fullBackupContent="false"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
-        tools:replace="android:fullBackupContent,android:allowBackup,android:dataExtractionRules">
+        tools:replace="android:dataExtractionRules,android:fullBackupContent,android:allowBackup">
         <activity
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
@@ -105,6 +105,7 @@
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
+                <data android:host="referrals" />
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -125,6 +126,7 @@
                 <data android:pathPrefix="/scheme" />
                 <data android:pathPrefix="/tip" />
                 <data android:pathPrefix="/swap" />
+                <data android:pathPrefix="/referrals" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />
@@ -381,7 +383,7 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
-            android:name=".ui.home.web3.swap.SwapActivity"
+            android:name=".ui.home.web3.trade.SwapActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
@@ -431,7 +433,7 @@
             android:foregroundServiceType="microphone" />
         <service
             android:name=".job.BlazeMessageService"
-            android:foregroundServiceType="remoteMessaging"
+            android:foregroundServiceType="dataSync"
             android:enabled="true" />
         <service
             android:name=".ui.player.MusicService"

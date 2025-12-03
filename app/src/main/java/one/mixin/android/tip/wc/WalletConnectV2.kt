@@ -30,6 +30,7 @@ import one.mixin.android.tip.wc.internal.supportChainList
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.util.reportException
 import org.sol4k.Keypair
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Credentials
@@ -201,8 +202,13 @@ object WalletConnectV2 : WalletConnect() {
                 }
             }
 
-        CoreClient.setDelegate(coreDelegate)
-        WalletKit.setWalletDelegate(walletDelegate)
+        try {
+            CoreClient.setDelegate(coreDelegate)
+            WalletKit.setWalletDelegate(walletDelegate)
+        } catch (e: Exception) {
+            reportException(e)
+            Timber.e(e)
+        }
     }
 
     fun pair(uri: String) {

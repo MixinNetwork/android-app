@@ -72,6 +72,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.parser.BalanceError
@@ -81,7 +82,7 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -114,8 +115,8 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -696,6 +697,22 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     else -> showError()
                 }
             }
+        } else if (url.startsWith(Scheme.MIXIN_REFERRALS, true) || url.startsWith(Scheme.HTTPS_REFERRALS, true)) {
+            val uri = url.toUri()
+            val referralCode = uri.lastPathSegment
+            if (uri.pathSegments.size == 1) {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance("")
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            } else if (referralCode.isNullOrBlank()) {
+                showError()
+            } else {
+                InputReferralBottomSheetDialogFragment
+                    .newInstance(referralCode)
+                    .show(parentFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                dismiss()
+            }
         } else if (url.startsWith(Scheme.MIXIN_MARKET, true) || url.startsWith(Scheme.HTTPS_MARKET, true)) {
             val uri = Uri.parse(url)
             val id = uri.lastPathSegment
@@ -907,6 +924,10 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             lifecycleScope.launch(errorHandler) {
                 handleSwapScheme(url.toUri())
             }
+        } else if (url.startsWith(Scheme.HTTPS_TRADE) || url.startsWith(Scheme.MIXIN_TRADE)) {
+            lifecycleScope.launch(errorHandler) {
+                handleTradeScheme(url.toUri())
+            }
         } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
             url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
@@ -1045,6 +1066,24 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         val referral = uri.getQueryParameter("referral")
         AnalyticsTracker.trackSwapStart("mixin", "url")
         SwapActivity.show(requireContext(), input, output, amount, referral)
+        dismiss()
+    }
+
+    private suspend fun handleTradeScheme(uri: Uri) {
+        val input = uri.getQueryParameter("input")
+        val output = uri.getQueryParameter("output")
+        val amount = uri.getQueryParameter("amount")
+        val type = uri.getQueryParameter("type")
+        if (output != null && output.isUUID()) {
+            checkToken(output)
+        }
+        if (input != null && input.isUUID()) {
+            checkToken(input)
+        }
+        val referral = uri.getQueryParameter("referral")
+        AnalyticsTracker.trackSwapStart("mixin", "trade_url")
+        val openLimit = type.equals("limit", true)
+        SwapActivity.show(requireContext(), input, output, amount, referral, openLimit = openLimit)
         dismiss()
     }
 
@@ -1224,7 +1263,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
     @SuppressLint("SetTextI18n")
     override fun showError(
-        @StringRes errorRes: Int
+        @StringRes errorRes: Int,
     ) {
         if (!isAdded) return
 

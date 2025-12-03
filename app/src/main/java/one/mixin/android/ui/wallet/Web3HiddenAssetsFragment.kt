@@ -61,6 +61,17 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
         super.onViewCreated(view, savedInstanceState)
         assetsAdapter.onItemListener = this
         binding.apply {
+            lifecycleScope.launch {
+                val wallet = web3ViewModel.findWalletById(walletId)
+                if (wallet != null) {
+                    titleView.setSubTitle(
+                        getString(R.string.Hidden_Assets),
+                        wallet.name.takeIf { it.isNotEmpty() } ?: getString(R.string.Common_Wallet)
+                    )
+                } else {
+                    titleView.setSubTitle(getString(R.string.Buy), getString(R.string.Common_Wallet))
+                }
+            }
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             ItemTouchHelper(
                 AssetItemCallback(

@@ -53,6 +53,7 @@ class FileLogTree : Timber.Tree() {
                                 it.write("Version Code: ${Build.VERSION.RELEASE}\n".toByteArray(Charsets.UTF_8))
 
                                 if (account != null) {
+                                    it.write("Account userId: ${account.userId}\n".toByteArray(Charsets.UTF_8))
                                     it.write("Account hasSafe: ${account.hasSafe}\n".toByteArray(Charsets.UTF_8))
                                     it.write("Account tipCounter: ${account.tipCounter}\n".toByteArray(Charsets.UTF_8))
                                 }

@@ -4,30 +4,31 @@ import android.content.Context
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
-import androidx.room.RawQuery
 import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.RouteService
-import one.mixin.android.api.service.TokenService
 import one.mixin.android.crypto.CryptoWalletHelper
-import one.mixin.android.db.TokenDao
 import one.mixin.android.db.property.Web3PropertyHelper
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
-import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import timber.log.Timber
 import javax.inject.Inject
@@ -45,7 +46,9 @@ constructor(
     val web3AddressDao: Web3AddressDao,
     val web3WalletDao: Web3WalletDao,
     val tokenRepository: TokenRepository,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val web3ChainDao: Web3ChainDao,
+    val orderDao: OrderDao,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
 
@@ -144,6 +147,8 @@ constructor(
 
     suspend fun deleteWallet(walletId: String) = web3WalletDao.deleteWallet(walletId)
 
+    suspend fun deleteOrders(walletId: String) = orderDao.deleteOrders(walletId)
+
     suspend fun deleteAddressesByWalletId(walletId: String) {
         web3AddressDao.getAddressesByWalletId(walletId).forEach { address ->
             Web3PropertyHelper.deleteKeyValue(address.destination)
@@ -166,9 +171,14 @@ constructor(
     suspend fun findWalletById(walletId: String) =
         web3WalletDao.getWalletById(walletId)?.updateWithLocalKeyInfo(context)
 
-    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) =
-        web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
-            .updateWithLocalKeyInfo(context)
+    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String): List<Web3Wallet> {
+        val wallets = if (chainId.isBlank()) {
+            web3WalletDao.getWalletsExcludingByNameAllChains(excludeWalletId, query)
+        } else {
+            web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
+        }
+        return wallets.updateWithLocalKeyInfo(context)
+    }
 
     suspend fun getAllWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }
     suspend fun anyAddressExists(destinations: List<String>) = web3AddressDao.anyAddressExists(destinations)
@@ -209,7 +219,7 @@ constructor(
         }
     }
 
-    suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)
+    suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)?.updateWithLocalKeyInfo(MixinApplication.appContext)
 
     // Only deposit display
     suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? {
@@ -229,4 +239,18 @@ constructor(
 
     suspend fun fuzzySearchAsset(walletId: String, query: String, chainId: String?) =
         web3TokenDao.fuzzySearchAsset(walletId, query, chainId)
+
+    suspend fun findChainById(chainId: String): Web3Chain? {
+        return web3ChainDao.findChainById(chainId)
+    }
+
+    // Orders
+    suspend fun inserOrders(orders: List<Order>) {
+        if (orders.isEmpty()) return
+        orderDao.insertListSuspend(orders)
+    }
+
+    suspend fun getPendingOrdersByWallet(walletId: String): List<Order> {
+        return orderDao.getPendingOrdersByWallet(walletId)
+    }
 }

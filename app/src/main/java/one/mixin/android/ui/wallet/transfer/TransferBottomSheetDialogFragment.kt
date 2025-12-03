@@ -72,6 +72,7 @@ import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
+import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
@@ -177,7 +178,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     lifecycleScope.launch {
                         withContext(Dispatchers.IO) {
                             item.safe.operation.transaction.recipients.forEach { item ->
-                                item.label = bottomViewModel.findAddressByDestination(item.address, "")
+                                item.label = bottomViewModel.findAddressByDestination(item.address, "", t.asset?.chainId)
                             }
                         }
                         binding.content.render(item, emptyList(), emptyList()) {}
@@ -212,11 +213,21 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }
+        (t as? WithdrawBiometricItem)?.let { withdraw ->
+            val isFeeWaived = withdraw.isFeeWaived
+            if (isFeeWaived) {
+                binding.content.renderWithdrawFeeFree(withdraw) {
+                    CrossWalletFeeFreeBottomSheetDialogFragment
+                        .newInstance()
+                        .show(parentFragmentManager, CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
+                }
+            }
+        }
         binding.root.roundTopOrBottom(12.dp.toFloat(), true, false)
         val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
         drawable?.setBounds(0, 0, 22.dp, 22.dp)
         binding.walletTv.compoundDrawablePadding = 4.dp
-        binding.walletTv.setCompoundDrawablesRelative(drawable, null, null, null)
+        binding.walletTv.setCompoundDrawablesRelative(null, null, drawable, null)
 
         binding.bottom.setOnClickListener({
             callback?.onDismiss(isSuccess)
@@ -699,7 +710,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             is WithdrawBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                                 val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
+                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin, t.toWallet, t.isFeeWaived)
                             }
 
                             else -> {

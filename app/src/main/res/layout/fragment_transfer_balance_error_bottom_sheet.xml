@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_upper_round"
-    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
     <LinearLayout
@@ -31,7 +30,7 @@
                 android:drawablePadding="4dp"
                 android:text="@string/Privacy_Wallet"
                 android:textColor="@android:color/white"
-                android:drawableStart="@drawable/ic_wallet_privacy_white"
+                android:drawableEnd="@drawable/ic_wallet_privacy_white"
                 android:textSize="14sp"
                 android:gravity="center_vertical"
                 android:translationY="10dp"

@@ -125,6 +125,7 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                                     try {
                                         viewModel.deleteWallets()
                                         viewModel.deleteAllWeb3Transactions()
+                                        viewModel.deleteAllOrders()
                                         withContext(Dispatchers.Main) {
                                             progressDialog.dismiss()
                                             toast(R.string.Web3_Transactions_Deleted)

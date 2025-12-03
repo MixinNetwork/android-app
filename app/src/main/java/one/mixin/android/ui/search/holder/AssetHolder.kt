@@ -3,7 +3,6 @@ package one.mixin.android.ui.search.holder
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
-import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.numberFormat2

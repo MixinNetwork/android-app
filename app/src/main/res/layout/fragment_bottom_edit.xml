@@ -5,8 +5,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:fitsSystemWindows="true">
+    android:padding="24dp">
 
     <TextView
         android:id="@+id/edit_title"

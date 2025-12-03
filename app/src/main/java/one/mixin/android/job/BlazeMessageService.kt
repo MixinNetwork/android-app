@@ -5,7 +5,7 @@ import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -337,7 +337,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
 
         try {
-            ServiceCompat.startForeground(this, FOREGROUND_ID, builder.build(), FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING)
+            ServiceCompat.startForeground(this, FOREGROUND_ID, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         } catch (e: Exception) {
             reportException(e)
             Timber.e(e)

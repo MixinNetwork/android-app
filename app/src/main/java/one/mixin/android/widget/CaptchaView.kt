@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.net.http.SslError
 import android.webkit.JavascriptInterface
 import android.webkit.SslErrorHandler
@@ -21,14 +22,19 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
 import one.mixin.android.util.reportException
+import timber.log.Timber
 import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
 class CaptchaView(private val context: Context, private val callback: Callback) {
     companion object {
-        private const val WEB_VIEW_TIME_OUT = 15000L
+        private const val WEB_VIEW_TIME_OUT = 35000L
 
         private const val TAG = "CaptchaView"
+
+        const val reCAPTCHA = "reCAPTCHA"
+        const val hCAPTCHA = "hCaptcha"
+        const val gtCAPTCHA = "GeeTest"
     }
 
     val webView: WebView by lazy {
@@ -39,6 +45,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             addJavascriptInterface(this@CaptchaView, "MixinContext")
+            setBackgroundColor(Color.WHITE)
             translationY = context.screenHeight().toFloat()
         }
     }
@@ -46,8 +53,17 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     private val stopWebViewRunnable =
         Runnable {
             if (captchaType.isG()) {
+                Timber.e("load GCaptcha timeout")
                 reportException(CaptchaException("$TAG load $captchaType timeout"))
                 loadCaptcha(CaptchaType.HCaptcha)
+            } else if (captchaType.isGT()) {
+                Timber.e("load GTCaptcha timeout")
+                reportException(CaptchaException("$TAG load $captchaType timeout"))
+                loadCaptcha(CaptchaType.GCaptcha)
+            } else if (captchaType.isH()) {
+                Timber.e("load HCaptcha timeout")
+                reportException(CaptchaException("$TAG load $captchaType timeout"))
+                loadCaptcha(CaptchaType.GTCaptcha)
             } else {
                 webView.loadUrl("about:blank")
                 hide()
@@ -63,58 +79,100 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     fun loadCaptcha(captchaType: CaptchaType) {
         this.captchaType = captchaType
         val isG = captchaType.isG()
-        webView.webViewClient =
-            object : WebViewClient() {
-                override fun onPageFinished(
-                    view: WebView?,
-                    url: String?,
-                ) {
-                    super.onPageFinished(view, url)
-                    cancelRunOnUiThread(stopWebViewRunnable)
-                    view?.translationY(0f)
-                }
+        val isH = captchaType.isH()
+        val isGT = captchaType.isGT()
+        Timber.e("load $captchaType")
+        if (isG || isH || isGT) {
+            webView.webViewClient =
+                object : WebViewClient() {
+                    override fun onPageFinished(
+                        view: WebView?,
+                        url: String?,
+                    ) {
+                        super.onPageFinished(view, url)
+                        if (isGT) view?.evaluateJavascript("initGTCaptcha()") {}
+                        cancelRunOnUiThread(stopWebViewRunnable)
+                        view?.translationY(0f)
+                    }
 
-                override fun onReceivedHttpError(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                    errorResponse: WebResourceResponse?,
-                ) {
-                    super.onReceivedHttpError(view, request, errorResponse)
-                    reportException(CaptchaException("$TAG load $captchaType onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
-                }
+                    override fun onReceivedHttpError(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                        errorResponse: WebResourceResponse?,
+                    ) {
+                        super.onReceivedHttpError(view, request, errorResponse)
+                        reportException(CaptchaException("$TAG load $captchaType onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"))
+                    }
 
-                override fun onReceivedSslError(
-                    view: WebView?,
-                    handler: SslErrorHandler?,
-                    error: SslError?,
-                ) {
-                    super.onReceivedSslError(view, handler, error)
-                    reportException(CaptchaException("$TAG load $captchaType onReceivedSslError ${error?.toString()}"))
-                }
+                    override fun onReceivedSslError(
+                        view: WebView?,
+                        handler: SslErrorHandler?,
+                        error: SslError?,
+                    ) {
+                        super.onReceivedSslError(view, handler, error)
+                        reportException(CaptchaException("$TAG load $captchaType onReceivedSslError ${error?.toString()}"))
+                    }
 
-                override fun onReceivedError(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                    error: WebResourceError?,
-                ) {
-                    super.onReceivedError(view, request, error)
-                    reportException(CaptchaException("$TAG load $captchaType onReceivedError ${error?.errorCode} ${error?.description}"))
+                    override fun onReceivedError(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                        error: WebResourceError?,
+                    ) {
+                        super.onReceivedError(view, request, error)
+                        reportException(CaptchaException("$TAG load $captchaType onReceivedError ${error?.errorCode} ${error?.description}"))
+                    }
+
+                    override fun shouldInterceptRequest(
+                        view: WebView?,
+                        request: WebResourceRequest?
+                    ): WebResourceResponse? {
+                        if (isGT && request?.url?.toString()?.endsWith("gt4.js") == true) {
+                            try {
+                                val inputStream = context.assets.open("gt4.js")
+                                return WebResourceResponse("application/javascript", "UTF-8", inputStream)
+                            } catch (e: Exception) {
+                                reportException(e)
+                            }
+                        }
+                        return super.shouldInterceptRequest(view, request)
+                    }
                 }
+            val input = context.assets.open("captcha.html")
+            var html = input.source().buffer().readByteString().string(Charset.forName("utf-8"))
+            val apiKey = when {
+                isG -> BuildConfig.RECAPTCHA_KEY
+                isH -> BuildConfig.HCAPTCHA_KEY
+                isGT -> BuildConfig.GEETEST_KEY
+                else -> ""
             }
-        val input = context.assets.open("captcha.html")
-        var html = input.source().buffer().readByteString().string(Charset.forName("utf-8"))
-        val apiKey = if (isG) BuildConfig.RECAPTCHA_KEY else BuildConfig.HCAPTCHA_KEY
-        val src =
-            if (isG) {
-                "https://www.recaptcha.net/recaptcha/api.js?onload=onGCaptchaLoad&render=explicit"
+
+            html = html.replace("#apiKey", apiKey)
+            when {
+                isG -> html = html.replace("#src", "https://www.recaptcha.net/recaptcha/api.js?onload=onGCaptchaLoad&render=explicit")
+                isH -> html = html.replace("#src", "https://js.hcaptcha.com/1/api.js?onload=onHCaptchaLoad&render=explicit")
+                else -> html = html.replace("#src", "")
+            }
+
+
+            if (isGT) {
+                val gt4Input = context.assets.open("gt4.js")
+                val gt4Content = gt4Input.source().buffer().readByteString().string(Charset.forName("utf-8"))
+                gt4Input.close()
+                html = html.replace(
+                    "#gt", """
+                    <script type="text/javascript">
+                    ${gt4Content}
+                    </script>
+                """
+                )
             } else {
-                "https://hcaptcha.com/1/api.js?onload=onHCaptchaLoad&render=explicit"
+                html = html.replace("#gt", "")
             }
-        html = html.replace("#src", src)
-        html = html.replace("#apiKey", apiKey)
-        webView.clearCache(true)
-        webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
-        runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
+
+            webView.clearCache(true)
+            webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
+            runOnUiThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
+        }
     }
 
     fun isVisible() = webView.translationY == 0f
@@ -128,6 +186,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     fun postMessage(
         @Suppress("UNUSED_PARAMETER") value: String,
     ) {
+        if (value.isBlank()) return
         cancelRunOnUiThread(stopWebViewRunnable)
         runOnUiThread(stopWebViewRunnable)
     }
@@ -147,9 +206,12 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     enum class CaptchaType {
         GCaptcha,
         HCaptcha,
-        ;
+        GTCaptcha;
+
 
         fun isG() = this == GCaptcha
+        fun isH() = this == HCaptcha
+        fun isGT() = this == GTCaptcha
     }
 
     interface Callback {

@@ -33,8 +33,8 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent("sign_up_fullname", null)
     }
 
-    fun trackSignUpSignalInit() {
-        firebaseAnalytics.logEvent("sign_up_signal_init", null)
+    fun trackSignalInit() {
+        firebaseAnalytics.logEvent("signal_init", null)
     }
 
     fun trackSignUpPinSet() {
@@ -69,10 +69,6 @@ object AnalyticsTracker {
             putString("type", type)
         }
         firebaseAnalytics.logEvent("login_restore", params)
-    }
-
-    fun trackLoginSignalInit() {
-        firebaseAnalytics.logEvent("login_signal_init", null)
     }
 
     fun trackLoginPinVerify(type: String) {

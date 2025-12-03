@@ -7,6 +7,7 @@ import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hexString
+import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.util.UUIDUtils
 import timber.log.Timber
 import java.math.BigInteger
@@ -353,6 +354,18 @@ data class InvoiceEntry(
             extra.size > EXTRA_SIZE_GENERAL_LIMIT &&
             amount.compareTo(estimateStorageCost(extra)) == 0
     }
+
+    val memo: String?
+        get() {
+            if (extra.isEmpty()) return null
+            return runCatching {
+                if (extra.isByteArrayValidUtf8()) {
+                    String(extra)
+                } else {
+                    extra.hexString()
+                }
+            }.getOrNull() ?: ""
+        }
 
     override fun hashCode(): Int {
         var result = traceId.hashCode()

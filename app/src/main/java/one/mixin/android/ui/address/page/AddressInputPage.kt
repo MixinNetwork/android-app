@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -27,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -48,7 +52,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 
 @Composable
@@ -59,6 +62,8 @@ fun AddressInputPage(
     onNext: (String) -> Unit,
     pop: () -> Unit,
     onScan: (() -> Unit)? = null,
+    errorInfo: String? = null,
+    isLoading: Boolean = false
 ) {
     var address by remember(contentText) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
@@ -90,7 +95,7 @@ fun AddressInputPage(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
-            Column {
+            Column(modifier = Modifier.imePadding()) {
                 TokenInfoHeader(token = token, web3Token = web3Token)
                 Box(
                     modifier = Modifier
@@ -129,7 +134,8 @@ fun AddressInputPage(
                             textAlign = TextAlign.Start
                         ),
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
                         ),
                         minLines = 3,
                         maxLines = 3
@@ -180,6 +186,15 @@ fun AddressInputPage(
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                Text(
+                    text = errorInfo ?: "",
+                    color = MixinAppTheme.colors.red,
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,11 +202,9 @@ fun AddressInputPage(
                     onClick = {
                         onNext.invoke(address)
                     },
-                    enabled = address.isBlank().not(),
+                    enabled = address.isBlank().not() && !isLoading,
                     colors = ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = if (address.isNullOrBlank()
-                                .not()
-                        ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                        backgroundColor = if (address.isBlank().not()) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                     ),
                     shape = RoundedCornerShape(32.dp),
                     elevation = ButtonDefaults.elevation(
@@ -201,11 +214,19 @@ fun AddressInputPage(
                         focusedElevation = 0.dp,
                     ),
                 ) {
-                    Text(
-                        text = stringResource(R.string.Next),
-                        color = if (address.isBlank()
-                        ) MixinAppTheme.colors.textAssist else Color.White,
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.Next),
+                            color = if (address.isBlank()
+                            ) MixinAppTheme.colors.textAssist else Color.White,
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
             }

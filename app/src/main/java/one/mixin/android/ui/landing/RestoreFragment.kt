@@ -63,7 +63,6 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
-                            AnalyticsTracker.trackLoginRestore("another_phone")
                             TransferActivity.showRestoreFromPhone(requireContext())
                         } else {
                             requireActivity().openPermissionSetting()
@@ -78,7 +77,6 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     val count = localData?.first
                     val lastCreatedAt = localData?.second
                     if (count != null && lastCreatedAt != null) {
-                        AnalyticsTracker.trackLoginRestore("local")
                         requireContext().showConfirmDialog(
                             getString(R.string.restore_local_exists, "$count".numberFormat(), lastCreatedAt),
                             cancelable = false,

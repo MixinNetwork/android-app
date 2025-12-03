@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -28,9 +29,11 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.getList
 import one.mixin.android.extension.getStringList
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.pmap
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -398,5 +401,36 @@ internal constructor(
     fun removeRecentTokenItems(sp: SharedPreferences, key: String) {
         sp.remove(key)
         _recentTokenItems.value = emptyList()
+    }
+
+    fun updateRecentUsedBots(
+        defaultSharedPreferences: SharedPreferences,
+        userId: String,
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        val botsString =
+            defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_USED_BOTS, null)
+        if (botsString != null) {
+            var botsList = botsString.split("=")
+            if (botsList.isEmpty()) {
+                defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
+                return@launch
+            }
+
+            val arr =
+                botsList.filter { it != userId }
+                    .toMutableList()
+                    .also {
+                        if (it.size >= Constants.RECENT_USED_BOTS_MAX_COUNT) {
+                            it.dropLast(1)
+                        }
+                        it.add(0, userId)
+                    }
+            defaultSharedPreferences.putString(
+                Constants.Account.PREF_RECENT_USED_BOTS,
+                arr.joinToString("="),
+            )
+        } else {
+            defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
+        }
     }
 }

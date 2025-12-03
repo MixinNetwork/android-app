@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -21,8 +22,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SelectableWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedWeb3TokenAdapter
@@ -61,7 +63,7 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
     }
 
     private val selectedTokenItems = mutableListOf<Web3TokenItem>()
-    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems) }
+    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems, walletId == Session.getAccountId()) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
@@ -87,9 +89,9 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
             selectedTokenItems.addAll(provider.getCurrentTokens())
         }
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
-        }
+        binding.ph.doOnPreDraw { binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+        }}
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
@@ -149,8 +151,8 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                     )
         }
 
-        // Use walletId parameter instead of hardcoded value
-        val targetWalletId = walletId ?: "0195adf7-1d55-7163-9186-111845025a6c" // fallback to default if null
+        // Use current account walletId by default
+        val targetWalletId = walletId ?: Session.getAccountId()!!
 
         bottomViewModel.web3TokenItems(targetWalletId)
             .observe(this) { tokens ->

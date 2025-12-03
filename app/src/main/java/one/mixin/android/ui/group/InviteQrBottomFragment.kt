@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -106,8 +107,7 @@ class InviteQrBottomFragment : MixinBottomSheetDialogFragment() {
                         },
                     )
             }
-
-            qr.post {
+            qr.doOnPreDraw {
                 Observable.create<Pair<Bitmap, Int>?> { e ->
                     url?.generateQRCode(qr.width)?.let {
                         e.onNext(it)

@@ -21,6 +21,10 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     suspend fun getWalletsExcludingByName(excludeWalletId: String, chainId: String, query: String): List<Web3Wallet>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("SELECT * FROM wallets w WHERE w.wallet_id != :excludeWalletId AND w.name LIKE '%' || :query || '%' ORDER BY w.created_at ASC")
+    suspend fun getWalletsExcludingByNameAllChains(excludeWalletId: String, query: String): List<Web3Wallet>
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM wallets ORDER BY created_at ASC")
     fun getWallets(): Flow<List<Web3Wallet>>
 
@@ -36,7 +40,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     suspend fun getWalletById(walletId: String): Web3Wallet?
 
     @Query("SELECT name FROM wallets WHERE category IN (:categories)")
-    suspend fun getAllWalletNames(categories: List<String>): List<String?>
+    suspend fun getAllWalletNames(categories: List<String>): List<String>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM wallets WHERE category = 'classic' ORDER BY created_at ASC")

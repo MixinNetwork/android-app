@@ -60,7 +60,11 @@ class RefreshWeb3Job : BaseJob(
                 if (web3AddressDao.getAddressesByWalletId(wallet.id).any {
                         it.path == null || it.path.isBlank()
                     }) {
-                    routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    try {
+                        routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to rename wallet ${wallet.id}")
+                    }
                     fetchWallets(wallet.id)
                 }
             }

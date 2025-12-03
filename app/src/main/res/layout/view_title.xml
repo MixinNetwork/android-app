@@ -99,7 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:textColor="?attr/text_primary"
-            app:maxWidth="240dp"
+            app:maxWidth="300dp"
             app:lines="1"
             app:textSize="18sp"
             app:ellipsize="end"/>
@@ -123,9 +123,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:ellipsize="end"
+                android:ellipsize="middle"
                 android:gravity="center_vertical"
-                android:maxWidth="240dp"
+                android:maxWidth="300dp"
                 android:singleLine="true"
                 android:textColor="?attr/text_assist"
                 android:textSize="12sp"
@@ -133,6 +133,21 @@
                 tools:ignore="SmallSp"
                 app:badgePadding="6dp"
                 app:badgeSize="16sp"/>
+
+            <TextView
+                android:id="@+id/label_title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:ellipsize="middle"
+                android:gravity="center_vertical"
+                android:maxWidth="300dp"
+                android:singleLine="true"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:visibility="gone"
+                android:background="@drawable/bg_label"
+                tools:ignore="SmallSp" />
 
             <one.mixin.android.widget.AvatarsView
                 android:id="@+id/receivers_view"

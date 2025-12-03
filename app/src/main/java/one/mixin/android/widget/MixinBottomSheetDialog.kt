@@ -10,9 +10,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updateMargins
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.extension.backgroundDrawable
 import one.mixin.android.extension.displayMetrics
 import one.mixin.android.extension.isTablet
@@ -48,6 +52,26 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                 }
         }
         behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        window?.let {
+            WindowCompat.setDecorFitsSystemWindows(it, false)
+        }
+
+        findViewById<View>(com.google.android.material.R.id.container)?.apply {
+            fitsSystemWindows = false
+            doOnApplyWindowInsets(this) { insetView, windowInsets, initialMargins ->
+                insetView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    updateMargins(top = initialMargins.top + windowInsets.getInsets(systemBars()).top)
+                }
+                windowInsets
+            }
+        }
+
+        findViewById<View>(com.google.android.material.R.id.coordinator)?.fitsSystemWindows = false
     }
 
     override fun show() {

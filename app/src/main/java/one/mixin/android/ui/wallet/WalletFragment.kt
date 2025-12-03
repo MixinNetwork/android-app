@@ -404,25 +404,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     private fun handleWalletCardClick(destination: WalletDestination) {
         selectedWalletDestination = destination
-        when (destination) {
-            is WalletDestination.Classic -> {
-                destination.walletId
-            }
-
-            is WalletDestination.Import -> {
-                destination.walletId
-            }
-
-            is WalletDestination.Watch -> {
-                destination.walletId
-            }
-
-            else -> {
-                null
-            }
-        }?.let { wallet ->
-            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
-        }
+        update()
         if (destination is WalletDestination.Classic || destination is WalletDestination.Import) {
             val walletId = if (destination is WalletDestination.Classic) {
                 destination.walletId
@@ -442,6 +424,29 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
         }
         closeMenu()
+    }
+
+    fun update() {
+        val destination = selectedWalletDestination
+        when (destination) {
+            is WalletDestination.Classic -> {
+                destination.walletId
+            }
+
+            is WalletDestination.Import -> {
+                destination.walletId
+            }
+
+            is WalletDestination.Watch -> {
+                destination.walletId
+            }
+
+            else -> {
+                null
+            }
+        }?.let { wallet ->
+            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
+        }
     }
 
     override fun onResume() {

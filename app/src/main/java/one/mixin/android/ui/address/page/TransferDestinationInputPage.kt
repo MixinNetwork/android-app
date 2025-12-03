@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address.page
 
 import PageScaffold
-import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,10 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -58,7 +59,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
@@ -72,12 +73,9 @@ import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.web3.js.Web3Signer
 
 @Composable
 fun TransferDestinationInputPage(
@@ -85,6 +83,7 @@ fun TransferDestinationInputPage(
     web3Token: Web3TokenItem?,
     name: String?,
     addressShown: Boolean,
+    isLoading: Boolean = false,
     pop: (() -> Unit)?,
     onScan: (() -> Unit)? = null,
     contentText: String = "",
@@ -104,7 +103,6 @@ fun TransferDestinationInputPage(
     val addresses by viewModel.addressesFlow(token?.chainId ?: web3Token?.chainId ?: "")
         .collectAsState(initial = emptyList())
 
-    var account by remember { mutableStateOf("") }
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(web3Token?.walletId) {
@@ -117,14 +115,6 @@ fun TransferDestinationInputPage(
                     walletDisplayName = it.name
                 }
             }
-        }
-    }
-
-    LaunchedEffect(token?.chainId) {
-        account = when {
-            token?.chainId == ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-            token?.chainId in Constants.Web3ChainIds -> Web3Signer.evmAddress
-            else -> ""
         }
     }
 
@@ -158,15 +148,6 @@ fun TransferDestinationInputPage(
                         else -> stringResource(R.string.Privacy_Wallet)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (name == null && web3Token == null) { // Privacy Wallet
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
                         Text(
                             text = subtitleText,
                             fontSize = 12.sp,
@@ -175,6 +156,15 @@ fun TransferDestinationInputPage(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                        if (name == null && web3Token == null) { // Privacy Wallet
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
                     }
                 },
                 verticalScrollable = false,
@@ -196,6 +186,7 @@ fun TransferDestinationInputPage(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp)
+                        .imePadding(),
                 ) {
                     TokenInfoHeader(token = token, web3Token = web3Token)
                     Box(
@@ -340,12 +331,23 @@ fun TransferDestinationInputPage(
                                     }, true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
+                            } else  {
+                                DestinationMenu(
+                                    R.drawable.ic_destination_contact,
+                                    R.string.Mixin_Contact,
+                                    R.string.send_to_mixin_contact_description,
+                                    onClick = {
+                                        toContact.invoke()
+                                    }, true
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (web3Token != null) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,
                                     R.string.My_Wallet,
                                     stringResource(R.string.send_to_my_wallet_description),
+                                    free = true,
                                     onClick = {
                                         toWallet.invoke(web3Token.walletId)
                                     },
@@ -362,6 +364,7 @@ fun TransferDestinationInputPage(
                                     onClick = {
                                         toWallet.invoke(null)
                                     },
+                                    free = true
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
@@ -382,11 +385,9 @@ fun TransferDestinationInputPage(
                             onClick = {
                                 onSend.invoke(text)
                             },
-                            enabled = text.isBlank().not(),
+                            enabled = text.isBlank().not() && !isLoading,
                             colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (text.isBlank()
-                                        .not()
-                                ) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
+                                backgroundColor = if (text.isBlank().not()) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
                             ),
                             shape = RoundedCornerShape(32.dp),
                             elevation = ButtonDefaults.elevation(
@@ -396,10 +397,18 @@ fun TransferDestinationInputPage(
                                 focusedElevation = 0.dp,
                             ),
                         ) {
-                            Text(
-                                text = stringResource(R.string.Send),
-                                color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
-                            )
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.Send),
+                                    color = if (text.isBlank()) MixinAppTheme.colors.textAssist else Color.White,
+                                )
+                            }
                         }
                     }
                 }

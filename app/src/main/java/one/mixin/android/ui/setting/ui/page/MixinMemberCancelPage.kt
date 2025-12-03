@@ -29,11 +29,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.MembershipOrder
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.setting.ui.components.MembershipIcon
 import one.mixin.android.ui.viewmodel.MemberViewModel
@@ -109,6 +110,12 @@ fun MixinMemberCancelPage(
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = if (isLoading) Color.Gray else Color(0xFFDB454F),
                     disabledBackgroundColor = Color.Gray
+                ),
+                elevation = ButtonDefaults.elevation(
+                    pressedElevation = 0.dp,
+                    defaultElevation = 0.dp,
+                    hoveredElevation = 0.dp,
+                    focusedElevation = 0.dp,
                 )
             ) {
                 if (isLoading) {
