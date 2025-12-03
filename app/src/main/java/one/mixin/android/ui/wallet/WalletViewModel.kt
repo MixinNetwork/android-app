@@ -81,9 +81,17 @@ internal constructor(
     private val _walletsFlow = MutableStateFlow<List<Web3Wallet>>(emptyList())
     val walletsFlow: StateFlow<List<Web3Wallet>> = _walletsFlow
 
+    private val _allWalletsFlow = MutableStateFlow<List<Web3Wallet>>(emptyList())
+    val allWalletsFlow: StateFlow<List<Web3Wallet>> = _allWalletsFlow
+
     fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
         viewModelScope.launch {
-            _walletsFlow.value = getWalletsExcluding(excludeWalletId, chainId, query)
+            val wallets = getWalletsExcluding(excludeWalletId, chainId, query)
+            _walletsFlow.value = wallets
+            // Update allWallets only when query is empty (no search)
+            if (query.isEmpty()) {
+                _allWalletsFlow.value = wallets
+            }
         }
     }
 

@@ -92,6 +92,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         MixinAppTheme {
             val searchQuery = remember { MutableStateFlow("") }
             val wallets by viewModel.walletsFlow.collectAsState()
+            val allWallets by viewModel.allWalletsFlow.collectAsState()
             LaunchedEffect(Unit) {
                 launch {
                     searchQuery.collect { query ->
@@ -112,7 +113,9 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             }
 
             WalletListScreen(
+                chainId = chainId,
                 wallets = wallets,
+                allWallets = allWallets,
                 excludeWalletId = excludeWalletId,
                 onQueryChanged = { query ->
                     lifecycleScope.launch {
@@ -181,7 +184,9 @@ sealed class WalletListItem {
 
 @Composable
 fun WalletListScreen(
+    chainId:String?,
     wallets: List<Web3Wallet>,
+    allWallets: List<Web3Wallet>,
     excludeWalletId: String?,
     onQueryChanged: (String) -> Unit,
     onWalletClick: (Web3Wallet?) -> Unit,
@@ -195,7 +200,9 @@ fun WalletListScreen(
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
-    val hasSafe = remember(wallets) { wallets.any { it.isMixinSafe() } }
+    val hasSafe = remember(allWallets) { allWallets.any { it.isMixinSafe() && it.safeChainId == chainId } }
+    val hasImported = remember(wallets) { allWallets.any { it.isImported() } }
+    val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
 
     val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {
         buildList {
@@ -206,6 +213,9 @@ fun WalletListScreen(
                 val shouldShow = when (selectedCategory) {
                     null -> true
                     WalletCategory.MIXIN_SAFE.value -> wallet.isMixinSafe()
+                    WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
+                    "import" -> wallet.isImported()
+                    "watch" -> wallet.isWatch()
                     else -> true
                 }
                 if (shouldShow) {
@@ -234,10 +244,11 @@ fun WalletListScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Category filter - only show if there are Safe wallets and no search query
-            if (hasSafe && query.isEmpty()) {
+            if (hasSafe || hasImported || hasWatch) {
                 WalletCategoryFilter(
                     selectedCategory = selectedCategory,
+                    hasImported = hasImported,
+                    hasWatch = hasWatch,
                     hasSafe = hasSafe,
                     onCategorySelected = { selectedCategory = it }
                 )
