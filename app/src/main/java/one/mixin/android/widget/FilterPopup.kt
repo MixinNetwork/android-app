@@ -43,10 +43,12 @@ class FilterPopup @JvmOverloads constructor(
 
     fun setTitle(@StringRes resid: Int) {
         binding.title.setText(resid)
+        binding.rightIcon.isVisible = false
     }
 
     fun setTitle(text: CharSequence?) {
         binding.title.text = text
+        binding.rightIcon.isVisible = false
     }
 
     fun updateLevel(text: CharSequence?, level: Int) {
@@ -172,6 +174,13 @@ class FilterPopup @JvmOverloads constructor(
     fun updateWeb3TokenFilterType(filterType: Web3TokenFilterType) {
         binding.iconGroup.isVisible = false
         setTitle(context.getString(filterType.titleRes))
+    }
+
+    fun setPrivacyWalletIcon(text: CharSequence?) {
+        binding.title.text = text
+        binding.iconGroup.isVisible = false
+        binding.rightIcon.isVisible = true
+        binding.rightIcon.setImageResource(R.drawable.ic_wallet_privacy)
     }
 
     fun open() {

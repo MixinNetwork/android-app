@@ -46,7 +46,7 @@ import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.route.SwapOrder
+import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.sumsub.ProfileResponse
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import retrofit2.Call
@@ -55,6 +55,9 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import one.mixin.android.api.request.LimitOrderRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
+ 
 import retrofit2.http.Query
 
 interface RouteService {
@@ -192,18 +195,29 @@ interface RouteService {
         @Path("query") query: String,
     ): MixinResponse<List<Validator>>
 
+    @POST("web3/limit_orders")
+    suspend fun createLimitOrder(@Body request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse>
+
     @GET("web3/swap/orders")
-    suspend fun orders(
+    suspend fun getLimitOrders(
+        @Query("category") category: String = "all",
+        @Query("limit") limit: Int? = 50,
         @Query("offset") offset: String?,
-        @Query("limit") limit: Int,
-        @Query("walletId") walletId: String?,
-    ) : MixinResponse<List<SwapOrder>>
+        @Query("state") state: String?,
+        @Query("walletId") walletId: String? = null,
+    ): MixinResponse<List<Order>>
+
+    @POST("web3/swap/orders")
+    suspend fun getLimitOrders(@Body ids: List<String>): MixinResponse<List<Order>>
 
     @GET("web3/swap/orders/{id}")
-    suspend fun orderById(
-        @Path("id") id: String,
-        @Query("walletId") walletId: String?,
-    ) : MixinResponse<SwapOrder>
+    suspend fun getSwapOrder(@Path("id") id: String): MixinResponse<Order>
+
+    @GET("web3/limit_orders/{id}")
+    suspend fun getLimitOrder(@Path("id") id: String): MixinResponse<Order>
+
+    @POST("web3/limit_orders/{id}/cancel")
+    suspend fun cancelLimitOrder(@Path("id") id: String): MixinResponse<Order>
 
     @GET("markets/{id}/price-history")
     suspend fun priceHistory(

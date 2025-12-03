@@ -19,7 +19,7 @@ import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.Web3Signer

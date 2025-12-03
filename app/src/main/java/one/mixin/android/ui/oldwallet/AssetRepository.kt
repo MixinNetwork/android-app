@@ -39,6 +39,12 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
+import one.mixin.android.api.request.LimitOrderRequest
+import one.mixin.android.api.response.CreateLimitOrderResponse
+import one.mixin.android.db.OrderDao
+import one.mixin.android.vo.route.Order
+import retrofit2.http.Body
+
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -54,350 +60,365 @@ class AssetRepository
         private val addressService: AddressService,
         private val traceDao: TraceDao,
         private val chainDao: ChainDao,
-        private val web3WalletDao: Web3WalletDao,
+        private val orderDao: OrderDao
     ) {
-        fun assets() = assetService.assets()
+    fun assets() = assetService.assets()
 
-        fun hasAssetsWithValue() = assetDao.hasAssetsWithValue()
+    fun hasAssetsWithValue() = assetDao.hasAssetsWithValue()
 
-        fun insert(asset: Asset) {
-            assetDao.insert(asset)
+    fun insert(asset: Asset) {
+        assetDao.insert(asset)
+    }
+
+    fun insertList(asset: List<Asset>) {
+        assetDao.insertList(asset)
+    }
+
+    suspend fun snapshotLocal(
+        assetId: String,
+        snapshotId: String,
+    ) = snapshotDao.snapshotLocal(assetId, snapshotId)
+
+    suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
+
+    suspend fun getAssetPrecisionById(id: String) = assetService.getAssetPrecisionById(id)
+
+    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+        var assetItem = assetDao.findAssetItemById(assetId)
+        if (assetItem != null && assetItem.getDestination().isNotBlank()) return assetItem
+
+        assetItem = syncAsset(assetId)
+        if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
+            val chain = syncAsset(assetItem.chainId)
+            assetItem.chainIconUrl = chain?.chainIconUrl
+            assetItem.chainSymbol = chain?.chainSymbol
+            assetItem.chainName = chain?.chainName
+            assetItem.chainPriceUsd = chain?.chainPriceUsd
+        }
+        return assetItem
+    }
+
+    suspend fun syncAsset(assetId: String): AssetItem? {
+        val asset: Asset =
+            handleMixinResponse(
+                invokeNetwork = {
+                    assetService.getAssetByIdSuspend(assetId)
+                },
+                successBlock = { resp ->
+                    resp.data?.let { a ->
+                        insert(a)
+                        a
+                    }
+                },
+            ) ?: return null
+
+        val exists = chainDao.checkExistsById(asset.chainId)
+        if (exists == null) {
+            handleMixinResponse(
+                invokeNetwork = {
+                    assetService.getChainById(asset.chainId)
+                },
+                successBlock = { resp ->
+                    resp.data?.let { c ->
+                        chainDao.upsertSuspend(c)
+                    }
+                },
+            )
         }
 
-        fun insertList(asset: List<Asset>) {
-            assetDao.insertList(asset)
-        }
+        return assetDao.findAssetItemById(assetId)
+    }
 
-        suspend fun snapshotLocal(
-            assetId: String,
-            snapshotId: String,
-        ) = snapshotDao.snapshotLocal(assetId, snapshotId)
+    private suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
 
-        suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
+    fun insertSnapshot(snapshot: Snapshot) = snapshotDao.insert(snapshot)
 
-        suspend fun getAssetPrecisionById(id: String) = assetService.getAssetPrecisionById(id)
+    suspend fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
 
-        suspend fun findOrSyncAsset(assetId: String): AssetItem? {
-            var assetItem = assetDao.findAssetItemById(assetId)
-            if (assetItem != null && assetItem.getDestination().isNotBlank()) return assetItem
+    suspend fun paySuspend(request: TransferRequest) = assetService.paySuspend(request)
 
-            assetItem = syncAsset(assetId)
-            if (assetItem != null && assetItem.chainId != assetItem.assetId && simpleAsset(assetItem.chainId) == null) {
-                val chain = syncAsset(assetItem.chainId)
-                assetItem.chainIconUrl = chain?.chainIconUrl
-                assetItem.chainSymbol = chain?.chainSymbol
-                assetItem.chainName = chain?.chainName
-                assetItem.chainPriceUsd = chain?.chainPriceUsd
+    fun addresses(id: String) = addressDao.addresses(id)
+
+    suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
+
+    fun saveAddr(addr: Address) = addressDao.insert(addr)
+
+    suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
+
+    suspend fun deleteAddr(
+        id: String,
+        pin: String,
+    ) = addressService.delete(id, Pin(pin))
+
+    suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
+
+    fun assetItems() = assetDao.assetItems()
+
+    fun assetItems(assetIds: List<String>) = assetDao.assetItems(assetIds)
+
+    suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
+
+    fun assetItem(id: String) = assetDao.assetItem(id)
+
+    suspend fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
+
+    fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
+
+    suspend fun queryAsset(query: String): List<AssetItem> {
+        val response =
+            try {
+                queryAssets(query)
+            } catch (t: Throwable) {
+                ErrorHandler.handleError(t)
+                return emptyList()
             }
-            return assetItem
-        }
-
-        suspend fun syncAsset(assetId: String): AssetItem? {
-            val asset: Asset =
-                handleMixinResponse(
-                    invokeNetwork = {
-                        assetService.getAssetByIdSuspend(assetId)
-                    },
-                    successBlock = { resp ->
-                        resp.data?.let { a ->
-                            insert(a)
-                            a
-                        }
-                    },
-                ) ?: return null
-
-            val exists = chainDao.checkExistsById(asset.chainId)
-            if (exists == null) {
-                handleMixinResponse(
-                    invokeNetwork = {
-                        assetService.getChainById(asset.chainId)
-                    },
-                    successBlock = { resp ->
-                        resp.data?.let { c ->
-                            chainDao.upsertSuspend(c)
-                        }
-                    },
-                )
+        if (response.isSuccess) {
+            val assetList = response.data as List<Asset>
+            if (assetList.isEmpty()) {
+                return emptyList()
             }
-
-            return assetDao.findAssetItemById(assetId)
+            val assetItemList = arrayListOf<AssetItem>()
+            assetList.mapTo(assetItemList) { asset ->
+                var chainIconUrl = getIconUrl(asset.chainId)
+                if (chainIconUrl == null) {
+                    chainIconUrl = fetchAsset(asset.chainId)
+                }
+                asset.toAssetItem(chainIconUrl)
+            }
+            val localExistsIds = arrayListOf<String>()
+            val onlyRemoteItems = arrayListOf<AssetItem>()
+            val needUpdatePrice = arrayListOf<PriceAndChange>()
+            assetItemList.forEach {
+                val exists = findAssetItemById(it.assetId)
+                if (exists != null) {
+                    needUpdatePrice.add(it.toPriceAndChange())
+                    localExistsIds.add(exists.assetId)
+                } else {
+                    onlyRemoteItems.add(it)
+                }
+            }
+            return if (needUpdatePrice.isNotEmpty()) {
+                suspendUpdatePrices(needUpdatePrice)
+                onlyRemoteItems + findAssetsByIds(localExistsIds)
+            } else {
+                assetItemList
+            }
         }
+        return emptyList()
+    }
 
-        private suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
-
-        fun insertSnapshot(snapshot: Snapshot) = snapshotDao.insert(snapshot)
-
-        suspend fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
-
-        suspend fun paySuspend(request: TransferRequest) = assetService.paySuspend(request)
-
-        fun addresses(id: String) = addressDao.addresses(id)
-
-        suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
-
-        fun saveAddr(addr: Address) = addressDao.insert(addr)
-
-        suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
-
-        suspend fun deleteAddr(
-            id: String,
-            pin: String,
-        ) = addressService.delete(id, Pin(pin))
-
-        suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
-
-        fun assetItems() = assetDao.assetItems()
-
-        fun assetItems(assetIds: List<String>) = assetDao.assetItems(assetIds)
-
-        suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
-
-        fun assetItem(id: String) = assetDao.assetItem(id)
-
-        suspend fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
-
-        fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
-
-        suspend fun queryAsset(query: String): List<AssetItem> {
-            val response =
+    private suspend fun fetchAsset(assetId: String) =
+        withContext(Dispatchers.IO) {
+            val r =
                 try {
-                    queryAssets(query)
+                    asset(assetId)
                 } catch (t: Throwable) {
                     ErrorHandler.handleError(t)
-                    return emptyList()
+                    return@withContext null
                 }
-            if (response.isSuccess) {
-                val assetList = response.data as List<Asset>
-                if (assetList.isEmpty()) {
-                    return emptyList()
-                }
-                val assetItemList = arrayListOf<AssetItem>()
-                assetList.mapTo(assetItemList) { asset ->
-                    var chainIconUrl = getIconUrl(asset.chainId)
-                    if (chainIconUrl == null) {
-                        chainIconUrl = fetchAsset(asset.chainId)
-                    }
-                    asset.toAssetItem(chainIconUrl)
-                }
-                val localExistsIds = arrayListOf<String>()
-                val onlyRemoteItems = arrayListOf<AssetItem>()
-                val needUpdatePrice = arrayListOf<PriceAndChange>()
-                assetItemList.forEach {
-                    val exists = findAssetItemById(it.assetId)
-                    if (exists != null) {
-                        needUpdatePrice.add(it.toPriceAndChange())
-                        localExistsIds.add(exists.assetId)
-                    } else {
-                        onlyRemoteItems.add(it)
-                    }
-                }
-                return if (needUpdatePrice.isNotEmpty()) {
-                    suspendUpdatePrices(needUpdatePrice)
-                    onlyRemoteItems + findAssetsByIds(localExistsIds)
-                } else {
-                    assetItemList
-                }
-            }
-            return emptyList()
-        }
-
-        private suspend fun fetchAsset(assetId: String) =
-            withContext(Dispatchers.IO) {
-                val r =
-                    try {
-                        asset(assetId)
-                    } catch (t: Throwable) {
-                        ErrorHandler.handleError(t)
-                        return@withContext null
-                    }
-                if (r.isSuccess) {
-                    r.data?.let {
-                        insert(it)
-                        return@withContext it.iconUrl
-                    }
-                } else {
-                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                }
-                return@withContext null
-            }
-
-        private suspend fun queryAssets(query: String) = assetService.queryAssets(query)
-
-        private suspend fun getIconUrl(id: String) = assetDao.getIconUrl(id)
-
-        suspend fun findAddressById(
-            addressId: String,
-            chainId: String,
-        ) = addressDao.findAddressById(addressId, chainId)
-
-        suspend fun refreshAndGetAddress(
-            addressId: String,
-            chainId: String,
-        ): Pair<Address?, Boolean> {
-            var result: Address? = null
-            var notExists = false
-            handleMixinResponse(
-                invokeNetwork = {
-                    addressService.address(addressId)
-                },
-                successBlock = { response ->
-                    response.data?.let {
-                        addressDao.insert(it)
-                        result = addressDao.findAddressById(addressId, chainId)
-                    }
-                },
-                failureBlock = {
-                    if (it.errorCode == NOT_FOUND) {
-                        notExists = true
-                    }
-                    return@handleMixinResponse false
-                },
-            )
-            return Pair(result, notExists)
-        }
-
-        suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
-
-        suspend fun findAssetsByIds(assetIds: List<String>) = assetDao.suspendFindAssetsByIds(assetIds)
-
-        suspend fun findSnapshotById(snapshotId: String) = snapshotDao.findSnapshotById(snapshotId)
-
-        suspend fun findSnapshotByTraceId(traceId: String) = snapshotDao.findSnapshotByTraceId(traceId)
-
-        suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
-            var result: SnapshotItem? = null
-            handleMixinResponse(
-                invokeNetwork = {
-                    assetService.getSnapshotById(snapshotId)
-                },
-                successBlock = { response ->
-                    response.data?.let {
-                        snapshotDao.insert(it)
-                        result = snapshotDao.findSnapshotById(snapshotId)
-                    }
-                },
-            )
-            return result
-        }
-
-        suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
-
-        suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
-
-        suspend fun getTrace(traceId: String) = assetService.getTrace(traceId)
-
-        suspend fun findLatestTrace(
-            opponentId: String?,
-            destination: String?,
-            tag: String?,
-            amount: String,
-            assetId: String,
-        ): Pair<Trace?, Boolean> {
-            val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
-
-            val with6hours = trace.createdAt.within6Hours()
-            if (!with6hours) {
-                return Pair(null, false)
-            }
-
-            if (trace.snapshotId.isNullOrBlank()) {
-                val response =
-                    try {
-                        withContext(Dispatchers.IO) {
-                            assetService.getTrace(trace.traceId)
-                        }
-                    } catch (t: Throwable) {
-                        ErrorHandler.handleError(t)
-                        return Pair(null, true)
-                    }
-                return if (response.isSuccess) {
-                    trace.snapshotId = response.data?.snapshotId
-                    traceDao.insertSuspend(trace)
-                    Pair(trace, false)
-                } else {
-                    if (response.errorCode == NOT_FOUND) {
-                        Pair(null, false)
-                    } else {
-                        if (response.errorCode == FORBIDDEN) {
-                            traceDao.suspendDeleteById(trace.traceId)
-                        }
-                        ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
-                        Pair(null, true)
-                    }
+            if (r.isSuccess) {
+                r.data?.let {
+                    insert(it)
+                    return@withContext it.iconUrl
                 }
             } else {
-                return Pair(trace, false)
+                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
             }
+            return@withContext null
         }
 
-        suspend fun deletePreviousTraces() = traceDao.deletePreviousTraces()
+    private suspend fun queryAssets(query: String) = assetService.queryAssets(query)
 
-        suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
+    private suspend fun getIconUrl(id: String) = assetDao.getIconUrl(id)
 
-        suspend fun ticker(
-            assetId: String,
-            offset: String?,
-        ) = assetService.ticker(assetId, offset)
+    suspend fun findAddressById(
+        addressId: String,
+        chainId: String,
+    ) = addressDao.findAddressById(addressId, chainId)
 
-        suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> = routeService.ticker(tickerRequest)
-
-        suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
-            assetDao.suspendUpdatePrices(priceAndChange)
-
-        suspend fun findTotalUSDBalance(): Int = assetDao.findTotalUSDBalance() ?: 0
-
-        suspend fun findAllAssetIdSuspend() = assetDao.findAllAssetIdSuspend()
-
-        suspend fun findAssetIdByAssetKey(assetKey: String): String? =
-            assetDao.findAssetIdByAssetKey(assetKey)
-
-        suspend fun refreshAsset(assetId: String): Asset? =
-            handleMixinResponse(
-                invokeNetwork = { assetService.getAssetByIdSuspend(assetId) },
-                switchContext = Dispatchers.IO,
-                successBlock = {
-                    it.data?.let { a ->
-                        assetDao.upsertSuspend(a)
-                        return@handleMixinResponse a
-                    }
-                },
-            )
-
-        suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
-
-        // suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
-
-        suspend fun order(paymentId: String): MixinResponse<RouteOrderResponse> = routeService.order(paymentId)
-
-        suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
-
-        fun observeAddress(addressId: String) = addressDao.observeById(addressId)
-
-        suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = routeService.web3Tokens(source)
-
-        suspend fun web3Quote(
-            inputMint: String,
-            outputMint: String,
-            amount: String,
-            source: String,
-        ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, source)
-
-        suspend fun web3Swap(
-            swapRequest: SwapRequest,
-        ): MixinResponse<SwapResponse> = routeService.web3Swap(swapRequest)
-
-        suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
-
-        suspend fun searchTokens(query: String, inMixin: Boolean) = routeService.searchTokens(query, if (inMixin) "mixin" else "web3")
-
-        suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
-
-        suspend fun getStakeAccounts(account: String) = routeService.getStakeAccounts(account)
-
-        suspend fun getStakeAccountActivations(accounts: String) = routeService.getStakeAccountActivations(accounts)
-
-        suspend fun getStakeValidators(votePubkeys: String?) = routeService.getStakeValidators(votePubkeys)
-
-        suspend fun searchStakeValidators(query: String) = routeService.searchStakeValidators(query)
-
+    suspend fun refreshAndGetAddress(
+        addressId: String,
+        chainId: String,
+    ): Pair<Address?, Boolean> {
+        var result: Address? = null
+        var notExists = false
+        handleMixinResponse(
+            invokeNetwork = {
+                addressService.address(addressId)
+            },
+            successBlock = { response ->
+                response.data?.let {
+                    addressDao.insert(it)
+                    result = addressDao.findAddressById(addressId, chainId)
+                }
+            },
+            failureBlock = {
+                if (it.errorCode == NOT_FOUND) {
+                    notExists = true
+                }
+                return@handleMixinResponse false
+            },
+        )
+        return Pair(result, notExists)
     }
+
+    suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
+
+    suspend fun findAssetsByIds(assetIds: List<String>) = assetDao.suspendFindAssetsByIds(assetIds)
+
+    suspend fun findSnapshotById(snapshotId: String) = snapshotDao.findSnapshotById(snapshotId)
+
+    suspend fun findSnapshotByTraceId(traceId: String) = snapshotDao.findSnapshotByTraceId(traceId)
+
+    suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
+        var result: SnapshotItem? = null
+        handleMixinResponse(
+            invokeNetwork = {
+                assetService.getSnapshotById(snapshotId)
+            },
+            successBlock = { response ->
+                response.data?.let {
+                    snapshotDao.insert(it)
+                    result = snapshotDao.findSnapshotById(snapshotId)
+                }
+            },
+        )
+        return result
+    }
+
+    suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
+
+    suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
+
+    suspend fun getTrace(traceId: String) = assetService.getTrace(traceId)
+
+    suspend fun findLatestTrace(
+        opponentId: String?,
+        destination: String?,
+        tag: String?,
+        amount: String,
+        assetId: String,
+    ): Pair<Trace?, Boolean> {
+        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
+
+        val with6hours = trace.createdAt.within6Hours()
+        if (!with6hours) {
+            return Pair(null, false)
+        }
+
+        if (trace.snapshotId.isNullOrBlank()) {
+            val response =
+                try {
+                    withContext(Dispatchers.IO) {
+                        assetService.getTrace(trace.traceId)
+                    }
+                } catch (t: Throwable) {
+                    ErrorHandler.handleError(t)
+                    return Pair(null, true)
+                }
+            return if (response.isSuccess) {
+                trace.snapshotId = response.data?.snapshotId
+                traceDao.insertSuspend(trace)
+                Pair(trace, false)
+            } else {
+                if (response.errorCode == NOT_FOUND) {
+                    Pair(null, false)
+                } else {
+                    if (response.errorCode == FORBIDDEN) {
+                        traceDao.suspendDeleteById(trace.traceId)
+                    }
+                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                    Pair(null, true)
+                }
+            }
+        } else {
+            return Pair(trace, false)
+        }
+    }
+
+    suspend fun deletePreviousTraces() = traceDao.deletePreviousTraces()
+
+    suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
+
+    suspend fun ticker(
+        assetId: String,
+        offset: String?,
+    ) = assetService.ticker(assetId, offset)
+
+    suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> = routeService.ticker(tickerRequest)
+
+    suspend fun suspendUpdatePrices(priceAndChange: List<PriceAndChange>) =
+        assetDao.suspendUpdatePrices(priceAndChange)
+
+    suspend fun findTotalUSDBalance(): Int = assetDao.findTotalUSDBalance() ?: 0
+
+    suspend fun findAllAssetIdSuspend() = assetDao.findAllAssetIdSuspend()
+
+    suspend fun findAssetIdByAssetKey(assetKey: String): String? =
+        assetDao.findAssetIdByAssetKey(assetKey)
+
+    suspend fun refreshAsset(assetId: String): Asset? =
+        handleMixinResponse(
+            invokeNetwork = { assetService.getAssetByIdSuspend(assetId) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.let { a ->
+                    assetDao.upsertSuspend(a)
+                    return@handleMixinResponse a
+                }
+            },
+        )
+
+    suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
+
+    // suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
+
+    suspend fun order(paymentId: String): MixinResponse<RouteOrderResponse> = routeService.order(paymentId)
+
+    suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
+
+    fun observeAddress(addressId: String) = addressDao.observeById(addressId)
+
+    suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = routeService.web3Tokens(source)
+
+    suspend fun web3Quote(
+        inputMint: String,
+        outputMint: String,
+        amount: String,
+        source: String,
+    ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, source)
+
+    suspend fun web3Swap(
+        swapRequest: SwapRequest,
+    ): MixinResponse<SwapResponse> = routeService.web3Swap(swapRequest)
+
+    suspend fun createLimitOrder(request: LimitOrderRequest): MixinResponse<CreateLimitOrderResponse> = routeService.createLimitOrder(request)
+    suspend fun getLimitOrders(category: String = "all", limit: Int? = 50, offset: String?, state: String?, walletId: String?): MixinResponse<List<Order>> =
+        routeService.getLimitOrders(category, limit, offset, state, walletId)
+
+    suspend fun getLimitOrders(ids: List<String>): MixinResponse<List<Order>> = routeService.getLimitOrders(ids)
+
+    suspend fun getLimitOrder(id: String): MixinResponse<Order> = routeService.getLimitOrder(id)
+    suspend fun cancelLimitOrder(id: String): MixinResponse<Order> {
+        val o = routeService.cancelLimitOrder(id)
+        if (o.isSuccess) {
+            orderDao.insert(o.data!!)
+        }
+        return o
+    }
+
+    suspend fun getWeb3Tx(txhash: String) = routeService.getWeb3Tx(txhash)
+
+    suspend fun searchTokens(query: String, inMixin: Boolean) = routeService.searchTokens(query, if (inMixin) "mixin" else "web3")
+
+    suspend fun stakeSol(stakeRequest: StakeRequest) = routeService.stakeSol(stakeRequest)
+
+    suspend fun getStakeAccounts(account: String) = routeService.getStakeAccounts(account)
+
+    suspend fun getStakeAccountActivations(accounts: String) = routeService.getStakeAccountActivations(accounts)
+
+    suspend fun getStakeValidators(votePubkeys: String?) = routeService.getStakeValidators(votePubkeys)
+
+    suspend fun searchStakeValidators(query: String) = routeService.searchStakeValidators(query)
+
+}
