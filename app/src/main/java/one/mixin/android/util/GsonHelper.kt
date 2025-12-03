@@ -96,4 +96,6 @@ object GsonHelper {
             return JsonPrimitive(src.base64Encode())
         }
     }
+
+    // Removed LimitOrderStatus adapter; limit order state is handled as string mapping now.
 }
