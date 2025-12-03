@@ -200,7 +200,7 @@ fun WalletListScreen(
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
-    val hasSafe = remember(allWallets) { allWallets.any { it.isMixinSafe() && it.safeChainId == chainId } }
+    val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
     val hasImported = remember(wallets) { allWallets.any { it.isImported() } }
     val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
 
@@ -290,6 +290,7 @@ fun WalletListScreen(
                                 name = wallet.name,
                                 destination = destination,
                                 onClick = { onWalletClick(wallet) },
+                                topArrow = false
                             )
                         } else {
                             val destination = WalletDestination.Classic(wallet.id)

@@ -70,6 +70,7 @@ fun WalletCard(
     isSelectable: Boolean = false,
     isSelected: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
+    topArrow: Boolean = true
 ) {
     var web3TokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
     var tokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
@@ -291,7 +292,7 @@ fun WalletCard(
                         )
                     } else {
                         Icon(
-                            painter = painterResource(id = if (destination is WalletDestination.Safe) R.drawable.ic_arrow_top_right else R.drawable.ic_wallet_arrow_right),
+                            painter = painterResource(id = if (destination is WalletDestination.Safe && topArrow) R.drawable.ic_arrow_top_right else R.drawable.ic_wallet_arrow_right),
                             tint = Color.Unspecified,
                             contentDescription = null,
                         )

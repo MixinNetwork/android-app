@@ -121,20 +121,11 @@ fun TransferDestinationInputPage(
         }
     }
 
-    // Check for Safe wallet based on current chain
-    LaunchedEffect(web3Token?.chainId) {
-        web3Token?.chainId?.let { chainId ->
-            // Check if current chain is supported by Safe
-            val safeChain = SafeChain.fromValue(chainId)
-            if (safeChain != null) {
-                // Check if there's a Safe wallet for this chain
-                val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
-                if (safeWallets.isNotEmpty()) {
-                    hasSafeWallet = true
-                    safeWalletChainId = chainId
-                }
-            }
-        }
+    LaunchedEffect(token, web3Token) {
+        val chainId =  token?.chainId ?:web3Token?.chainId ?: return@LaunchedEffect
+        val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
+        hasSafeWallet = safeWallets.isNotEmpty()
+        safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
     }
 
     val modalSheetState = rememberModalBottomSheetState(

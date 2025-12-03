@@ -47,8 +47,7 @@ fun WalletCategoryFilter(
             onClick = { onCategorySelected(null) }
         )
         
-        // Safe - show if hasSafe is true OR if hasImported/hasWatch are provided (full mode)
-        if (hasSafe || hasImported || hasWatch) {
+        if (hasSafe) {
             CategoryChip(
                 text = stringResource(R.string.Wallet_Safe),
                 isSelected = selectedCategory == WalletCategory.MIXIN_SAFE.value,
@@ -56,15 +55,13 @@ fun WalletCategoryFilter(
             )
         }
 
-        // Created (Classic) - only show in full mode
-        if (hasImported || hasWatch) {
-            CategoryChip(
-                text = stringResource(R.string.Wallet_Created),
-                isSelected = selectedCategory == WalletCategory.CLASSIC.value,
-                onClick = { onCategorySelected(WalletCategory.CLASSIC.value) }
-            )
-        }
-        
+
+        CategoryChip(
+            text = stringResource(R.string.Wallet_Created),
+            isSelected = selectedCategory == WalletCategory.CLASSIC.value,
+            onClick = { onCategorySelected(WalletCategory.CLASSIC.value) }
+        )
+
         // Import
         if (hasImported) {
             CategoryChip(
