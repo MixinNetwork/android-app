@@ -31,6 +31,9 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Fiats
@@ -100,6 +103,7 @@ class OrderDetailFragment : BaseFragment() {
                             val inMixin = walletId == null || walletId == Session.getAccountId()
                             val isLimit = type.equals("limit", true)
                             activity?.finish()
+                            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.TRADE_DETAIL)
                             if (inMixin) {
                                 SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = true, walletId = null, openLimit = isLimit)
                             } else {

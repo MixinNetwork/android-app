@@ -107,6 +107,8 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
@@ -1064,6 +1066,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             checkToken(input)
         }
         val referral = uri.getQueryParameter("referral")
+        if (activity is ConversationActivity) {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
+        } else {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
+        }
         SwapActivity.show(requireContext(), input, output, amount, referral)
         dismiss()
     }
@@ -1081,6 +1088,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         }
         val referral = uri.getQueryParameter("referral")
         val openLimit = type.equals("limit", true)
+        if (activity is ConversationActivity) {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
+        } else {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
+        }
         SwapActivity.show(requireContext(), input, output, amount, referral, openLimit = openLimit)
         dismiss()
     }

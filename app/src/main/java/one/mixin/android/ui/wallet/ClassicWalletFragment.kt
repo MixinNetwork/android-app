@@ -51,6 +51,8 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
@@ -240,7 +242,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
-                            SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
+                            AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
                         }
                     }
                 }

@@ -51,6 +51,8 @@ import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -125,8 +127,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
         binding.apply {
             sendReceiveView.swap.setOnClickListener {
+                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
                 lifecycleScope.launch {
-
                     val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {

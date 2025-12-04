@@ -151,6 +151,31 @@ object AnalyticsTracker {
         const val OTHER = "other"
     }
 
+    fun trackTradeStart(wallet: String, source: String) {
+        val params = Bundle().apply {
+            putString("wallet", wallet)
+            putString("source", source)
+        }
+        firebaseAnalytics.logEvent("trade_start", params)
+    }
+
+    object TradeWallet {
+        const val MAIN = "main"
+        const val WEB3 = "web3"
+    }
+
+    object TradeSource {
+        const val WALLET_HOME = "wallet_home"
+        const val MARKET_DETAIL = "market_detail"
+        const val APP_CARD = "app_card"
+        const val TRADE_DETAIL = "trade_detail"
+        const val SCHEMA = "schema"
+        const val ASSET_DETAIL = "asset_detail"
+        const val EXPLORE = "explore"
+        const val FEE = "fee"
+        const val BALANCE = "balance"
+    }
+
     fun trackTradePreview() {
         firebaseAnalytics.logEvent("trade_preview", null)
     }
