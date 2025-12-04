@@ -2,11 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-<<<<<<< HEAD
-    "identityHash": "56770150f9fee8f729301c3b64302dbe",
-=======
     "identityHash": "662b6a08f46965a96f42bb75c7a3567a",
->>>>>>> feature/trade
     "entities": [
       {
         "tableName": "tokens",
@@ -231,11 +227,7 @@
       },
       {
         "tableName": "wallets",
-<<<<<<< HEAD
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `owners` TEXT, `safe_chain_id` TEXT, `safe_address` TEXT, PRIMARY KEY(`wallet_id`))",
-=======
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
->>>>>>> feature/trade
         "fields": [
           {
             "fieldPath": "id",
@@ -266,24 +258,6 @@
             "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": true
-<<<<<<< HEAD
-          },
-          {
-            "fieldPath": "owners",
-            "columnName": "owners",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "safeChainId",
-            "columnName": "safe_chain_id",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "safeAddress",
-            "columnName": "safe_address",
-            "affinity": "TEXT"
-=======
->>>>>>> feature/trade
           }
         ],
         "primaryKey": {
@@ -512,8 +486,6 @@
             "key"
           ]
         }
-<<<<<<< HEAD
-=======
       },
       {
         "tableName": "orders",
@@ -647,16 +619,11 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `${TABLE_NAME}` (`order_type`, `created_at`)"
           }
         ]
->>>>>>> feature/trade
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-<<<<<<< HEAD
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '56770150f9fee8f729301c3b64302dbe')"
-=======
       "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '662b6a08f46965a96f42bb75c7a3567a')"
->>>>>>> feature/trade
     ]
   }
 }

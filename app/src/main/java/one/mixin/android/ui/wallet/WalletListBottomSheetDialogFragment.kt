@@ -46,10 +46,12 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.isClassic
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isOwner
@@ -201,7 +203,8 @@ fun WalletListScreen(
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
     val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
-    val hasImported = remember(wallets) { allWallets.any { it.isImported() } }
+    val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
+    val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
     val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
 
     val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {

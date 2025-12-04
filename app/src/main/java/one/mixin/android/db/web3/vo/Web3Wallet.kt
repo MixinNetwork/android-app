@@ -97,6 +97,10 @@ fun Web3Wallet.notClassic(): Boolean {
     return category == WalletCategory.IMPORTED_MNEMONIC.value || category == WalletCategory.IMPORTED_PRIVATE_KEY.value || category == WalletCategory.WATCH_ADDRESS.value || category == WalletCategory.MIXIN_SAFE.value
 }
 
+fun Web3Wallet.isClassic(): Boolean {
+    return category == WalletCategory.CLASSIC.value
+}
+
 fun Web3Wallet.isImported(): Boolean {
     return category == WalletCategory.IMPORTED_MNEMONIC.value || category == WalletCategory.IMPORTED_PRIVATE_KEY.value
 }
