@@ -3,18 +3,20 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.SafeAsset
 import one.mixin.android.api.response.UserSafe
 import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.event.WalletOperationType
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.vo.assetIdToAsset
 import timber.log.Timber
 
-class RefreshUserAccountsJob : BaseJob(
+class RefreshSafeAccountsJob : BaseJob(
     Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork(),
 ) {
     companion object {
@@ -77,7 +79,7 @@ class RefreshUserAccountsJob : BaseJob(
         
         web3WalletDao.insert(wallet)
         Timber.d("Saved wallet: walletId=$walletId, name=${account.name}, address=${account.address}")
-        
+
         if (account.assets.isNotEmpty()) {
             val tokens = account.assets.mapNotNull { asset ->
                 convertSafeAssetToWeb3Token(walletId, asset)
@@ -85,6 +87,8 @@ class RefreshUserAccountsJob : BaseJob(
             web3TokenDao.insertList(tokens)
             Timber.d("Saved ${tokens.size} tokens for wallet $walletId")
         }
+
+        RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.OTHER))
     }
 
     private suspend fun convertSafeAssetToWeb3Token(walletId: String, asset: SafeAsset): Web3Token? {

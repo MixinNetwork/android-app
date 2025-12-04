@@ -97,7 +97,7 @@ abstract class WalletDatabase : RoomDatabase() {
 
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE wallets ADD COLUMN role TEXT")
+                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_role TEXT")
                 database.execSQL("ALTER TABLE wallets ADD COLUMN safe_chain_id TEXT")
                 database.execSQL("ALTER TABLE wallets ADD COLUMN safe_address TEXT")
                 database.execSQL("ALTER TABLE wallets ADD COLUMN safe_url TEXT")
