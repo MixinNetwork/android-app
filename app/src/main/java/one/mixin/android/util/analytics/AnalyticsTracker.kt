@@ -152,4 +152,75 @@ object AnalyticsTracker {
         }
         firebaseAnalytics.setUserProperty("asset_level", level)
     }
+
+    fun trackTradeTokenSelect(method: String) {
+        val params = Bundle().apply {
+            putString("method", method)
+        }
+        firebaseAnalytics.logEvent("trade_token_select", params)
+    }
+
+    object TradeTokenSelectMethod {
+        const val RECENT_CLICK = "recent_click"
+        const val SEARCH_ITEM_CLICK = "search_item_click"
+        const val ALL_ITEM_CLICK = "all_item_click"
+        const val CHAIN_ITEM_CLICK = "chain_item_click"
+    }
+
+    fun trackTradeQuote(result: String, type: String, reason: String? = null) {
+        val params = Bundle().apply {
+            putString("result", result)
+            putString("type", type)
+            reason?.let { putString("reason", it) }
+        }
+        firebaseAnalytics.logEvent("trade_quote", params)
+    }
+
+    object TradeQuoteResult {
+        const val SUCCESS = "success"
+        const val FAILURE = "failure"
+    }
+
+    object TradeQuoteType {
+        const val SWAP = "swap"
+        const val LIMIT = "limit"
+        const val RECURRING = "recurring"
+    }
+
+    object TradeQuoteReason {
+        const val INVALID_AMOUNT = "invalid_amount"
+        const val NO_AVAILABLE_QUOTE = "no_available_quote"
+        const val OTHER = "other"
+    }
+
+    fun trackTradePreview() {
+        firebaseAnalytics.logEvent("trade_preview", null)
+    }
+
+    fun trackTradeEnd(wallet: String, tradeAssetLevel: String) {
+        val params = Bundle().apply {
+            putString("wallet", wallet)
+            putString("trade_asset_level", tradeAssetLevel)
+        }
+        firebaseAnalytics.logEvent("trade_end", params)
+    }
+
+    fun getTradeAssetLevel(amountUsd: Double): String {
+        return when {
+            amountUsd >= 1000000 -> "v1,000,000"
+            amountUsd >= 100000 -> "v100,000"
+            amountUsd >= 10000 -> "v10,000"
+            amountUsd >= 1000 -> "v1,000"
+            amountUsd >= 100 -> "v100"
+            else -> "v1"
+        }
+    }
+
+    fun trackTradeTransactions() {
+        firebaseAnalytics.logEvent("trade_transactions", null)
+    }
+
+    fun trackTradeDetail() {
+        firebaseAnalytics.logEvent("trade_detail", null)
+    }
 }
