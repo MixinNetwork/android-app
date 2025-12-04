@@ -62,6 +62,9 @@ import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
@@ -292,6 +295,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 .apply {
                                     onWeb3Action = { type, t ->
                                         if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                            AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.FEE)
                                             SwapActivity.show(
                                                 requireActivity(),
                                                 input = Constants.AssetId.USDT_ASSET_ETH_ID,
@@ -309,6 +313,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 Bundle().apply {
                                                     putString("address", address)
                                                     putParcelable("web3_token", t)
+                                                    putBoolean("args_hide_network_switch", true)
                                                 }
                                             )
                                         }
@@ -322,6 +327,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 .apply {
                                     onAction = { type, t ->
                                         if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.FEE)
                                             SwapActivity.show(
                                                 requireActivity(),
                                                 input = Constants.AssetId.USDT_ASSET_ETH_ID,
@@ -334,6 +340,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 R.id.action_input_fragment_to_deposit_fragment,
                                                 Bundle().apply {
                                                     putParcelable("args_asset", token!!)
+                                                    putBoolean("args_hide_network_switch", true)
                                                 }
                                             )
                                         }
@@ -348,6 +355,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             .apply {
                                 onWeb3Action = { type, t ->
                                     if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.FEE)
                                         SwapActivity.show(
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
@@ -363,6 +371,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             Bundle().apply {
                                                 putString("address", address)
                                                 putParcelable("web3_token", t)
+                                                putBoolean("args_hide_network_switch", true)
                                             }
                                         )
                                     }
@@ -376,6 +385,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             .apply {
                                 onAction = { type, t ->
                                     if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.FEE)
                                         SwapActivity.show(
                                             requireActivity(),
                                             input = Constants.AssetId.USDT_ASSET_ETH_ID,
@@ -388,6 +398,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             R.id.action_input_fragment_to_deposit_fragment,
                                             Bundle().apply {
                                                 putParcelable("args_asset", currentFee!!.token)
+                                                putBoolean("args_hide_network_switch", true)
                                             }
                                         )
                                     }
@@ -873,6 +884,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         R.id.action_input_fragment_to_deposit_fragment,
                         Bundle().apply {
                             putParcelable("args_asset", token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }
@@ -882,6 +894,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         R.id.action_input_fragment_to_deposit_fragment,
                         Bundle().apply {
                             putParcelable("args_asset", token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }
@@ -893,6 +906,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         Bundle().apply {
                             putString("address", address)
                             putParcelable("web3_token", web3Token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }
@@ -902,6 +916,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         R.id.action_input_fragment_to_deposit_fragment,
                         Bundle().apply {
                             putParcelable("args_asset", token)
+                            putBoolean("args_hide_network_switch", true)
                         }
                     )
                 }

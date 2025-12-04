@@ -61,7 +61,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOrdersJob
-import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
@@ -223,12 +222,14 @@ class TradeFragment : BaseFragment() {
                                     }
                                 },
                                 onReview = { quote, from, to, amount ->
+                                    AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
                                     lifecycleScope.launch {
                                         handleReview(quote, from, to, amount, navController)
                                     }
                                 },
                                 onLimitReview = { from, to, order ->
+                                    AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
                                     openLimitTransfer(from, to, order)
                                 },
@@ -240,7 +241,7 @@ class TradeFragment : BaseFragment() {
                                         this@TradeFragment.lifecycleScope.launch {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
                                             val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
-                                            navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
+                                            navTo(Web3AddressFragment.newInstance(t, address, true), Web3AddressFragment.TAG)
                                         }
                                     }
                                 },
@@ -385,7 +386,7 @@ class TradeFragment : BaseFragment() {
                     swapViewModel.checkAndSyncTokens(listOf(tokenId))
                     val t = swapViewModel.findToken(tokenId)
                     if (t != null)
-                        navTo(DepositFragment.newInstance(t), DepositFragment.TAG)
+                        navTo(DepositFragment.newInstance(t, hideNetworkSwitch = true), DepositFragment.TAG)
                     else
                         toast(R.string.Not_found)
                 }.onFailure {
@@ -395,7 +396,7 @@ class TradeFragment : BaseFragment() {
                 dialog.dismiss()
             } else {
                 runCatching {
-                    navTo(DepositFragment.newInstance(token), DepositFragment.TAG)
+                    navTo(DepositFragment.newInstance(token, hideNetworkSwitch = true), DepositFragment.TAG)
                 }.onFailure {
                     Timber.e(it)
                 }
@@ -488,16 +489,15 @@ class TradeFragment : BaseFragment() {
         )
         if (resp == null) return
         if (inMixin()) {
-            AnalyticsTracker.trackSwapPreview()
             openSwapTransfer(resp, from, to)
         } else {
-            AnalyticsTracker.trackSwapPreview()
             openSwapTransfer(resp, from, to)
         }
     }
 
     private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
         if (from.chain.chainId == Constants.ChainId.Solana || inMixin()) {
+            AnalyticsTracker.trackTradePreview()
             SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
                 setOnDone {
                     initialAmount = null
@@ -525,6 +525,7 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
+        AnalyticsTracker.trackTradePreview()
         val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
         LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
             setOnDone {

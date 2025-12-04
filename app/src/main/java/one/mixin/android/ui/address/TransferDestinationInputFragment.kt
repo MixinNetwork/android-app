@@ -685,6 +685,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             try {
                 if (assetId.isNotEmpty() && destination.isNotEmpty()) {
                     val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
+                    val des = response.data?.destination
+                    val tag = if(response.data?.tag.isNullOrEmpty().not()) response.data?.tag else null
                     if (response.isSuccess) {
                         errorInfo = null
                         when {
@@ -695,7 +697,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             asset != null && destination.isNotEmpty() && tag != null -> {
                                 navigateToInputFragmentWithBundle(Bundle().apply {
                                     putParcelable(InputFragment.ARGS_TOKEN, asset)
-                                    putString(InputFragment.ARGS_TO_ADDRESS, destination)
+                                    putString(InputFragment.ARGS_TO_ADDRESS, des)
                                     putString(InputFragment.ARGS_TO_ADDRESS_TAG, tag)
                                 })
                             }
@@ -703,14 +705,14 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             asset != null && destination.isNotEmpty() -> {
                                 navigateToInputFragmentWithBundle(Bundle().apply {
                                     putParcelable(InputFragment.ARGS_TOKEN, asset)
-                                    putString(InputFragment.ARGS_TO_ADDRESS, destination)
+                                    putString(InputFragment.ARGS_TO_ADDRESS, des)
                                 })
                             }
 
                             fromAddress != null && destination.isNotEmpty() && web3Token != null && chainToken != null -> {
                                 navigateToInputFragmentWithBundle(Bundle().apply {
                                     putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
-                                    putString(InputFragment.ARGS_TO_ADDRESS, destination)
+                                    putString(InputFragment.ARGS_TO_ADDRESS, des)
                                     putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token)
                                     putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
                                 })

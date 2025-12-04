@@ -461,7 +461,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
-                            AnalyticsTracker.trackSwapSend()
+                            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+                            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
                         }
 
                         JsSignMessage.TYPE_TRANSACTION -> {
@@ -475,7 +476,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
-                            AnalyticsTracker.trackSwapSend()
+                            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+                            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
                         }
 
                         else -> {
@@ -511,7 +513,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         if (response.isSuccess) {
             context?.updatePinCheck()
             step = Step.Done
-            AnalyticsTracker.trackSwapSend()
+            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
         } else {
             errorInfo = handleError(response.error) ?: response.errorDescription
             step = Step.Error

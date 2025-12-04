@@ -43,7 +43,7 @@ fun PriceInputArea(
     toToken: SwapToken?,
     lastOrderTime: Long?,
     priceMultiplier: Float?,
-    onQuoteError: (String) -> Unit,
+
     onStandardPriceChanged: (String) -> Unit,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
@@ -78,8 +78,7 @@ fun PriceInputArea(
         marketPrice = null
         standardPrice = ""
         onStandardPriceChanged("")
-        onQuoteError("")
-        
+
         val fromT = fromToken
         val toT = toToken
         if (fromT != null && toT != null) {
@@ -120,11 +119,9 @@ fun PriceInputArea(
                             val priceString = price.stripTrailingZeros().toPlainString()
                             standardPrice = priceString
                             onStandardPriceChanged(priceString)
-                            onQuoteError("")
                         } else {
                             standardPrice = ""
                             onStandardPriceChanged("")
-                            onQuoteError(context.getString(R.string.no_available_quotes_found))
                         }
                         isPriceLoading = false
                     }
@@ -132,7 +129,6 @@ fun PriceInputArea(
                         standardPrice = ""
                         onStandardPriceChanged("")
                         isPriceLoading = false
-                        onQuoteError(context.getString(R.string.no_available_quotes_found))
                     }
             }
         } else {

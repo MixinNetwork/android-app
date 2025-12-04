@@ -1782,6 +1782,12 @@ class BottomSheetViewModel
 
         fun web3TokenItems(walletId: String, level:Int) = tokenRepository.web3TokenItems(walletId, level)
 
+        fun web3TokenItemsAll() = tokenRepository.web3TokenItemsAll()
+
+        fun web3TokenItemsFromAllOrders() = tokenRepository.web3TokenItemsFromAllOrders()
+
+        fun web3TokenItemsFromOrdersByWalletIds(walletIds: List<String>) = tokenRepository.web3TokenItemsFromOrdersByWalletIds(walletIds)
+
         suspend fun getWeb3Priv(
             context: Context,
             pin: String,

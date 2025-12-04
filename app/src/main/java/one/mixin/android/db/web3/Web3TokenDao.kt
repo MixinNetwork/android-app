@@ -116,4 +116,54 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @Query("DELETE FROM tokens WHERE wallet_id = :walletId")
     suspend fun deleteByWalletId(walletId: String)
+
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
+        WHERE t.wallet_id IN (:walletIds) 
+        GROUP BY t.asset_id
+        ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
+    """
+    )
+    fun web3TokenItemsByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>>
+
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
+        GROUP BY t.asset_id
+        ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
+    """
+    )
+    fun web3TokenItemsAll(): LiveData<List<Web3TokenItem>>
+
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
+        WHERE t.asset_id IN (
+            SELECT DISTINCT pay_asset_id FROM orders
+            UNION
+            SELECT DISTINCT receive_asset_id FROM orders
+        )
+        GROUP BY t.asset_id
+        ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
+    """
+    )
+    fun web3TokenItemsFromAllOrders(): LiveData<List<Web3TokenItem>>
+
+    @Query(
+        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id 
+        LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
+        WHERE t.asset_id IN (
+            SELECT DISTINCT pay_asset_id FROM orders WHERE wallet_id IN (:walletIds)
+            UNION
+            SELECT DISTINCT receive_asset_id FROM orders WHERE wallet_id IN (:walletIds)
+        )
+        GROUP BY t.asset_id
+        ORDER BY t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, t.rowid ASC
+    """
+    )
+    fun web3TokenItemsFromOrdersByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>>
 }
