@@ -79,7 +79,6 @@ import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.analytics.AnalyticsTracker
 import java.math.BigDecimal
 
 @Composable
@@ -145,12 +144,10 @@ fun SwapContent(
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
                             viewModel.quote(context, from.symbol, from.assetId, to.assetId, amount, source)
                                 .onSuccess { value ->
-                                    AnalyticsTracker.trackSwapQuote("success")
                                     quoteResult = value
                                     isLoading = false
                                 }
                                 .onFailure { exception ->
-                                    AnalyticsTracker.trackSwapQuote("failure")
                                     if (exception is CancellationException) return@onFailure
                                     if (exception is AmountException) {
                                         quoteMin = exception.min

@@ -28,6 +28,10 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
+import one.mixin.android.util.ErrorHandler.Companion.NO_AVAILABLE_QUOTE
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeQuoteReason
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeQuoteType
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.Order
@@ -94,6 +98,11 @@ class SwapViewModel
         amount: String,
         source: String,
     ) : Result<QuoteResult?> {
+        val type = if(source.isEmpty()){
+            TradeQuoteType.LIMIT
+        }else{
+            TradeQuoteType.SWAP
+        }
         return if (amount.isNotBlank() && inputMint != null && outputMint != null) {
             runCatching {
                 val response = web3Quote(
@@ -103,8 +112,17 @@ class SwapViewModel
                     source = source,
                 )
                 return if (response.isSuccess) {
+                    AnalyticsTracker.trackTradeQuote(
+                        AnalyticsTracker.TradeQuoteResult.SUCCESS,
+                        type
+                    )
                     Result.success(requireNotNull(response.data))
                 } else if (response.errorCode == INVALID_QUOTE_AMOUNT) {
+                    AnalyticsTracker.trackTradeQuote(
+                        AnalyticsTracker.TradeQuoteResult.FAILURE,
+                        type,
+                        TradeQuoteReason.INVALID_AMOUNT
+                    )
                     val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
                     return when {
                         extra != null -> {
@@ -121,6 +139,16 @@ class SwapViewModel
                         else -> Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
                     }
                 } else {
+                    val reason = if (response.errorCode == NO_AVAILABLE_QUOTE) {
+                        TradeQuoteReason.NO_AVAILABLE_QUOTE
+                    } else {
+                        TradeQuoteReason.OTHER
+                    }
+                    AnalyticsTracker.trackTradeQuote(
+                        AnalyticsTracker.TradeQuoteResult.FAILURE,
+                        type,
+                        reason
+                    )
                     Result.failure(Throwable(context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)))
                 }
             }

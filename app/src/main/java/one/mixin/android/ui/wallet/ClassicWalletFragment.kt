@@ -243,6 +243,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 return@launch
                             }
                             AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
+                            SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
                         }
                     }
                 }
