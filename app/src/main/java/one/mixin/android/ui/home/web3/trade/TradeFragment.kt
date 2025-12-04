@@ -61,7 +61,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOrdersJob
-import one.mixin.android.job.RefreshPendingOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment

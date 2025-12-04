@@ -61,12 +61,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
-import one.mixin.android.Constants.AssetId.usdcAssets
-import one.mixin.android.Constants.AssetId.usdtAssets
 import one.mixin.android.R
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
