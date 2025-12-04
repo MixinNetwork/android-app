@@ -30,6 +30,7 @@ fun WalletCategoryFilter(
     hasImported: Boolean = false,
     hasWatch: Boolean = false,
     hasSafe: Boolean = false,
+    hasCreated: Boolean = true,
     onCategorySelected: (String?) -> Unit
 ) {
     Row(
@@ -55,12 +56,13 @@ fun WalletCategoryFilter(
             )
         }
 
-
-        CategoryChip(
-            text = stringResource(R.string.Wallet_Created),
-            isSelected = selectedCategory == WalletCategory.CLASSIC.value,
-            onClick = { onCategorySelected(WalletCategory.CLASSIC.value) }
-        )
+        if (hasCreated) {
+            CategoryChip(
+                text = stringResource(R.string.Wallet_Created),
+                isSelected = selectedCategory == WalletCategory.CLASSIC.value,
+                onClick = { onCategorySelected(WalletCategory.CLASSIC.value) }
+            )
+        }
 
         // Import
         if (hasImported) {

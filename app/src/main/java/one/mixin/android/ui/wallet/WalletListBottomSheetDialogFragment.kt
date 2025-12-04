@@ -252,6 +252,7 @@ fun WalletListScreen(
                 hasImported = hasImported,
                 hasWatch = hasWatch,
                 hasSafe = hasSafe,
+                hasCreated = hasCreated,
                 onCategorySelected = { selectedCategory = it }
             )
             Spacer(modifier = Modifier.height(16.dp))
