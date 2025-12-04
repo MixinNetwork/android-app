@@ -160,7 +160,6 @@ fun LimitOrderContent(
         expiryOption = ExpiryOption.NEVER
     }
 
-    var quoteError by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
@@ -336,7 +335,6 @@ fun LimitOrderContent(
                                 toToken = toToken,
                                 lastOrderTime = marketPriceClickTime,
                                 priceMultiplier = priceMultiplier,
-                                onQuoteError = { quoteError = it },
                                 onStandardPriceChanged = { limitPriceText = it },
                             )
                         },
@@ -344,7 +342,7 @@ fun LimitOrderContent(
                     )
                 }
 
-                if (availableHeight != null || inputText.isNotBlank() || (quoteError.isNotBlank() && inputText.isEmpty().not() && limitPriceText.isEmpty())) {
+                if (availableHeight != null || inputText.isNotBlank()) {
                     Column(modifier = Modifier
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp)
@@ -355,14 +353,6 @@ fun LimitOrderContent(
                             onExpiryChange = { option -> expiryOption = option }
                         )
 
-                        if (quoteError.isNotBlank() && inputText.isEmpty().not() && limitPriceText.isEmpty()) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = quoteError,
-                                color = MixinAppTheme.colors.red,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
                         Spacer(modifier = Modifier.height(16.dp))
                         if (availableHeight == null) {
                             Spacer(modifier = Modifier.weight(1f))
