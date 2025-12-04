@@ -154,7 +154,6 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         }
                     }
                     sendReceiveView.swap.setOnClickListener {
-                        AnalyticsTracker.trackSwapStart("mixin", "wallet")
                         SwapActivity.show(requireActivity(), inMixin = true)
                         defaultSharedPreferences.putBoolean(PREF_HAS_USED_SWAP, false)
                         RxBus.publish(BadgeEvent(PREF_HAS_USED_SWAP))

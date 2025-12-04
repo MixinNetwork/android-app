@@ -132,7 +132,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     } else {
                         USDT_ASSET_ETH_ID
                     }
-                    AnalyticsTracker.trackSwapStart("mixin", "market")
                     SwapActivity.show(
                         requireActivity(),
                         inMixin = true,

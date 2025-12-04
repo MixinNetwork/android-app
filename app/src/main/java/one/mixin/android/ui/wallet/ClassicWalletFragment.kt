@@ -240,7 +240,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
-                            AnalyticsTracker.trackSwapStart("mixin", "wallet")
                             SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
                         }
                     }

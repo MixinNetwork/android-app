@@ -260,7 +260,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                             return@launch
                         }
-                        AnalyticsTracker.trackSwapStart("web3", "web3")
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {

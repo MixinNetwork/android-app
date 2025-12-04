@@ -82,48 +82,6 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent("login_end", null)
     }
 
-    fun trackSwapStart(source: String, entrance: String) {
-        val params = Bundle().apply {
-            putString("source", source)
-            putString("entrance", entrance)
-        }
-        firebaseAnalytics.logEvent("swap_start", params)
-    }
-
-    fun trackSwapCoinSwitch(method: String) {
-        val params = Bundle().apply {
-            putString("method", method)
-        }
-        firebaseAnalytics.logEvent("swap_coin_switch", params)
-    }
-
-    object SwapCoinSwitchMethod {
-        const val RECENT_CLICK = "recent_click"
-        const val SEARCH_ITEM_CLICK = "search_item_click"
-        const val ALL_ITEM_CLICK = "all_item_click"
-        const val CHAIN_ITEM_CLICK = "chain_item_click"
-    }
-
-    fun trackSwapQuote(result: String) {
-        val params = Bundle().apply {
-            putString("result", result)
-        }
-        firebaseAnalytics.logEvent("swap_quote", params)
-    }
-
-    object SwapQuoteResult {
-        const val SUCCESS = "success"
-        const val FAILURE = "failure"
-    }
-
-    fun trackSwapPreview() {
-        firebaseAnalytics.logEvent("swap_preview", null)
-    }
-
-    fun trackSwapSend() {
-        firebaseAnalytics.logEvent("swap_send", null)
-    }
-
     fun setHasEmergencyContact(account: Account) {
         firebaseAnalytics.setUserProperty("has_emergency_contact", account.hasEmergencyContact.toString())
     }

@@ -1064,7 +1064,6 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             checkToken(input)
         }
         val referral = uri.getQueryParameter("referral")
-        AnalyticsTracker.trackSwapStart("mixin", "url")
         SwapActivity.show(requireContext(), input, output, amount, referral)
         dismiss()
     }
@@ -1081,7 +1080,6 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             checkToken(input)
         }
         val referral = uri.getQueryParameter("referral")
-        AnalyticsTracker.trackSwapStart("mixin", "trade_url")
         val openLimit = type.equals("limit", true)
         SwapActivity.show(requireContext(), input, output, amount, referral, openLimit = openLimit)
         dismiss()
