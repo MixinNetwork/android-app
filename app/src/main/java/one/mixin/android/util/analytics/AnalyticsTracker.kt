@@ -7,6 +7,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import one.mixin.android.MixinApplication
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Plan
+import java.math.BigDecimal
 
 object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
@@ -180,7 +181,14 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent("trade_preview", null)
     }
 
-    fun trackTradeEnd(wallet: String, tradeAssetLevel: String) {
+    fun trackTradeEnd(wallet: String, amountValue: BigDecimal, price: String?) {
+        val amountUsd = runCatching {
+            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            amountValue.multiply(priceValue).toDouble()
+        }.getOrDefault(0.0)
+        
+        val tradeAssetLevel = getTradeAssetLevel(amountUsd)
+        
         val params = Bundle().apply {
             putString("wallet", wallet)
             putString("trade_asset_level", tradeAssetLevel)
@@ -188,7 +196,7 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent("trade_end", params)
     }
 
-    fun getTradeAssetLevel(amountUsd: Double): String {
+    private fun getTradeAssetLevel(amountUsd: Double): String {
         return when {
             amountUsd >= 1000000 -> "v1,000,000"
             amountUsd >= 100000 -> "v100,000"

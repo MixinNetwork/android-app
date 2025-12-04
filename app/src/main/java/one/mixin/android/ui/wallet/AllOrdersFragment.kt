@@ -36,6 +36,7 @@ import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.OrderDetailFragment
 import one.mixin.android.ui.wallet.adapter.OrderPagedAdapter
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.SpacesItemDecoration
 import one.mixin.android.vo.route.OrderItem
@@ -97,6 +98,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackTradeTransactions()
         val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
         walletIds?.let { ids ->
             if (ids.isNotEmpty()) {

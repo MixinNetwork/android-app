@@ -86,6 +86,7 @@ class OrderDetailFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        AnalyticsTracker.trackTradeDetail()
         val orderId: String = arguments?.getString(ARGS_ORDER_ID) ?: ""
         val walletId: String? = arguments?.getString(ARGS_WALLET_ID)
         return ComposeView(inflater.context).apply {
