@@ -241,7 +241,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         id = View.generateViewId()
                         setContent {
                             RecentSwapTokens(key) {
-                                AnalyticsTracker.trackSwapCoinSwitch(AnalyticsTracker.SwapCoinSwitchMethod.RECENT_CLICK)
+                                AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                 adapter.onClick(it)
                             }
                         }
