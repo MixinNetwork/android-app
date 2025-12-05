@@ -499,7 +499,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     PaymentStatus.pending.name,
                                     null,
                                     toWallet,
-                                    isFeeWaived = index == 3 || index == 2,
+                                    isFeeWaived = index == 1 || index == 2 || index == 4,  // Privacy(1), Safe(2), Fee-free(4)
                                     isSafeWallet = index == 2
                                 )
 
