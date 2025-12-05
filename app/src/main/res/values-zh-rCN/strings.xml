@@ -354,8 +354,8 @@
     <string name="desktop_login_no_pin">为了您的安全，登录桌面前请先设置 PIN 码！</string>
     <string name="limited_time_free">限时免费</string>
     <string name="cross_wallet_transaction_free_description">活动期间，钱包转账符合以下任意情况即可获得手续费全额返现：</string>
-    <string name="cross_wallet_transaction_free_condition_1">隐私钱包转账到普通钱包。</string>
-    <string name="cross_wallet_transaction_free_condition_2">普通钱包转账到其他普通钱包、隐私钱包或联系人。</string>
+    <string name="cross_wallet_transaction_free_condition_1">隐私钱包转账到普通钱包、Mixin Safe金库。</string>
+    <string name="cross_wallet_transaction_free_condition_2">普通钱包转账到其他普通钱包、隐私钱包、Mixin Safe 金库或联系人。</string>
     <string name="cross_wallet_transaction_free_refund">手续费按月、按实际消耗的手续费币种和金额汇总返还到您的隐私钱包，阅读文档了解更多。</string>
     <string name="more_information">了解更多</string>
     <string name="url_cross_wallet_transaction_free">https://support.mixin.one/zh/article/cross-wallet-transaction-fee-event-1k9b47q</string>

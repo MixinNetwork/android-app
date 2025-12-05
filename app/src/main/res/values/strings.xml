@@ -367,8 +367,8 @@
     <string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
     <string name="limited_time_free">Limited-time free</string>
     <string name="cross_wallet_transaction_free_description">During the event, wallet transfers that meet any of the following conditions will receive a full refund of the handling fee:</string>
-    <string name="cross_wallet_transaction_free_condition_1">Private wallet transfer to a regular wallet.</string>
-    <string name="cross_wallet_transaction_free_condition_2">Regular wallet transfer to other regular wallets, private wallets, or contacts.</string>
+    <string name="cross_wallet_transaction_free_condition_1">Private wallet transfer to a regular wallet or Mixin Safe.</string>
+    <string name="cross_wallet_transaction_free_condition_2">Regular wallet transfer to other regular wallets, private wallets, Mixin Safe, or contacts.</string>
     <string name="cross_wallet_transaction_free_refund">The handling fee will be refunded to your private wallet on a monthly basis, based on the actual currency and amount of the handling fee consumed. Read the documentation for more information.</string>
     <string name="more_information">more information</string>
     <string name="url_cross_wallet_transaction_free">https://support.mixin.one/en/article/cross-wallet-transaction-fee-event-1k9b47q</string>
