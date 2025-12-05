@@ -372,7 +372,7 @@ fun TransferDestinationInputPage(
                                     stringResource(R.string.send_to_my_wallet_description),
                                     free = true,
                                     onClick = {
-                                        toWallet.invoke(safeWalletChainId)
+                                        toWallet.invoke(null)
                                     },
                                     isPrivacy = false
                                 )
