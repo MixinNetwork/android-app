@@ -525,6 +525,14 @@ class TokenRepository
 
         fun web3TokenItems(walletId: String, level:Int): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId, level)
 
+        fun web3TokenItemsByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsByWalletIds(walletIds)
+
+        fun web3TokenItemsAll(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsAll()
+
+        fun web3TokenItemsFromAllOrders(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsFromAllOrders()
+
+        fun web3TokenItemsFromOrdersByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsFromOrdersByWalletIds(walletIds)
+
         suspend fun fuzzySearchToken(
             query: String,
             cancellationSignal: CancellationSignal,

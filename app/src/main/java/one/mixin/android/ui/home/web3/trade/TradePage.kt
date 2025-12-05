@@ -251,6 +251,7 @@ fun TradePage(
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = false,
         ) { page ->
             tabs[page].screen()
         }

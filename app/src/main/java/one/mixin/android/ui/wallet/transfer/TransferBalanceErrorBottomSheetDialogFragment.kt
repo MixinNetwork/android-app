@@ -23,6 +23,9 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 
@@ -80,6 +83,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     binding.bottom.isVisible = false
                     binding.contentTv.text = getString(R.string.swap_usdt_hint, u.symbol)
                     binding.positive.setOnClickListener {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.BALANCE)
                         SwapActivity.show(requireActivity(), input = u.assetId, output = asset.assetId, null, null)
                         dismiss()
                     }
@@ -99,6 +103,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                         .apply {
                             onAction = { type, fee ->
                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.BALANCE)
                                     SwapActivity.show(
                                         requireActivity(),
                                         input = Constants.AssetId.USDT_ASSET_ETH_ID,
@@ -126,6 +131,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                         .apply {
                             onAction = { type, asset ->
                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.BALANCE)
                                     SwapActivity.show(
                                         requireActivity(),
                                         input = Constants.AssetId.USDT_ASSET_ETH_ID,

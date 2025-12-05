@@ -36,6 +36,7 @@ import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.OrderDetailFragment
 import one.mixin.android.ui.wallet.adapter.OrderPagedAdapter
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.SpacesItemDecoration
 import one.mixin.android.vo.route.OrderItem
@@ -97,6 +98,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackTradeTransactions()
         val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
         walletIds?.let { ids ->
             if (ids.isNotEmpty()) {
@@ -330,7 +332,22 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
 
     private fun selectAsset() {
         binding.filterAsset.open()
-        multiSelectWeb3TokenListBottomSheetDialogFragment
+        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(filterParams.walletIds ?: emptyList())
+            .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
+                override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
+                    filterParams.tokenItems = tokenItems
+                    loadFilter()
+                }
+
+                override fun onDismiss() {
+                    binding.filterAsset.close()
+                }
+            })
+            .setDateProvider(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.DataProvider {
+                override fun getCurrentTokens(): List<Web3TokenItem> {
+                    return filterParams.tokenItems ?: emptyList()
+                }
+            })
             .showNow(parentFragmentManager, MultiSelectWeb3TokenListBottomSheetDialogFragment.TAG)
     }
 
@@ -359,25 +376,6 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                 binding.filterUser.close()
             }
             .showNow(parentFragmentManager, WalletMultiSelectBottomSheetDialogFragment.TAG)
-    }
-
-    private val multiSelectWeb3TokenListBottomSheetDialogFragment by lazy {
-        MultiSelectWeb3TokenListBottomSheetDialogFragment.newInstance(walletId = Session.getAccountId())
-            .setOnMultiSelectTokenListener(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
-                override fun onTokenSelect(tokenItems: List<Web3TokenItem>?) {
-                    filterParams.tokenItems = tokenItems
-                    loadFilter()
-                }
-
-                override fun onDismiss() {
-                    binding.filterAsset.close()
-                }
-            })
-            .setDateProvider(object : MultiSelectWeb3TokenListBottomSheetDialogFragment.DataProvider {
-                override fun getCurrentTokens(): List<Web3TokenItem> {
-                    return filterParams.tokenItems ?: emptyList()
-                }
-            })
     }
 
     private fun dateRangePicker(): MaterialDatePicker<Pair<Long, Long>> {

@@ -7,6 +7,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import one.mixin.android.MixinApplication
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Plan
+import java.math.BigDecimal
 
 object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
@@ -82,48 +83,6 @@ object AnalyticsTracker {
         firebaseAnalytics.logEvent("login_end", null)
     }
 
-    fun trackSwapStart(source: String, entrance: String) {
-        val params = Bundle().apply {
-            putString("source", source)
-            putString("entrance", entrance)
-        }
-        firebaseAnalytics.logEvent("swap_start", params)
-    }
-
-    fun trackSwapCoinSwitch(method: String) {
-        val params = Bundle().apply {
-            putString("method", method)
-        }
-        firebaseAnalytics.logEvent("swap_coin_switch", params)
-    }
-
-    object SwapCoinSwitchMethod {
-        const val RECENT_CLICK = "recent_click"
-        const val SEARCH_ITEM_CLICK = "search_item_click"
-        const val ALL_ITEM_CLICK = "all_item_click"
-        const val CHAIN_ITEM_CLICK = "chain_item_click"
-    }
-
-    fun trackSwapQuote(result: String) {
-        val params = Bundle().apply {
-            putString("result", result)
-        }
-        firebaseAnalytics.logEvent("swap_quote", params)
-    }
-
-    object SwapQuoteResult {
-        const val SUCCESS = "success"
-        const val FAILURE = "failure"
-    }
-
-    fun trackSwapPreview() {
-        firebaseAnalytics.logEvent("swap_preview", null)
-    }
-
-    fun trackSwapSend() {
-        firebaseAnalytics.logEvent("swap_send", null)
-    }
-
     fun setHasEmergencyContact(account: Account) {
         firebaseAnalytics.setUserProperty("has_emergency_contact", account.hasEmergencyContact.toString())
     }
@@ -151,5 +110,108 @@ object AnalyticsTracker {
             else -> "v0"
         }
         firebaseAnalytics.setUserProperty("asset_level", level)
+    }
+
+    fun trackTradeTokenSelect(method: String) {
+        val params = Bundle().apply {
+            putString("method", method)
+        }
+        firebaseAnalytics.logEvent("trade_token_select", params)
+    }
+
+    object TradeTokenSelectMethod {
+        const val RECENT_CLICK = "recent_click"
+        const val SEARCH_ITEM_CLICK = "search_item_click"
+        const val ALL_ITEM_CLICK = "all_item_click"
+        const val CHAIN_ITEM_CLICK = "chain_item_click"
+    }
+
+    fun trackTradeQuote(result: String, type: String, reason: String? = null) {
+        val params = Bundle().apply {
+            putString("result", result)
+            putString("type", type)
+            reason?.let { putString("reason", it) }
+        }
+        firebaseAnalytics.logEvent("trade_quote", params)
+    }
+
+    object TradeQuoteResult {
+        const val SUCCESS = "success"
+        const val FAILURE = "failure"
+    }
+
+    object TradeQuoteType {
+        const val SWAP = "swap"
+        const val LIMIT = "limit"
+        const val RECURRING = "recurring"
+    }
+
+    object TradeQuoteReason {
+        const val INVALID_AMOUNT = "invalid_amount"
+        const val NO_AVAILABLE_QUOTE = "no_available_quote"
+        const val OTHER = "other"
+    }
+
+    fun trackTradeStart(wallet: String, source: String) {
+        val params = Bundle().apply {
+            putString("wallet", wallet)
+            putString("source", source)
+        }
+        firebaseAnalytics.logEvent("trade_start", params)
+    }
+
+    object TradeWallet {
+        const val MAIN = "main"
+        const val WEB3 = "web3"
+    }
+
+    object TradeSource {
+        const val WALLET_HOME = "wallet_home"
+        const val MARKET_DETAIL = "market_detail"
+        const val APP_CARD = "app_card"
+        const val TRADE_DETAIL = "trade_detail"
+        const val SCHEMA = "schema"
+        const val ASSET_DETAIL = "asset_detail"
+        const val EXPLORE = "explore"
+        const val FEE = "fee"
+        const val BALANCE = "balance"
+    }
+
+    fun trackTradePreview() {
+        firebaseAnalytics.logEvent("trade_preview", null)
+    }
+
+    fun trackTradeEnd(wallet: String, amountValue: BigDecimal, price: String?) {
+        val amountUsd = runCatching {
+            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            amountValue.multiply(priceValue).toDouble()
+        }.getOrDefault(0.0)
+        
+        val tradeAssetLevel = getTradeAssetLevel(amountUsd)
+        
+        val params = Bundle().apply {
+            putString("wallet", wallet)
+            putString("trade_asset_level", tradeAssetLevel)
+        }
+        firebaseAnalytics.logEvent("trade_end", params)
+    }
+
+    private fun getTradeAssetLevel(amountUsd: Double): String {
+        return when {
+            amountUsd >= 1000000 -> "v1,000,000"
+            amountUsd >= 100000 -> "v100,000"
+            amountUsd >= 10000 -> "v10,000"
+            amountUsd >= 1000 -> "v1,000"
+            amountUsd >= 100 -> "v100"
+            else -> "v1"
+        }
+    }
+
+    fun trackTradeTransactions() {
+        firebaseAnalytics.logEvent("trade_transactions", null)
+    }
+
+    fun trackTradeDetail() {
+        firebaseAnalytics.logEvent("trade_detail", null)
     }
 }

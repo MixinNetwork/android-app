@@ -41,6 +41,9 @@ import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -128,6 +131,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                             USDT_ASSET_ETH_ID
                         }
 
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
                         view.navigate(R.id.action_market_details_to_swap,
                             Bundle().apply {
                                 putString(ARGS_INPUT, input)
@@ -142,6 +146,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     USDT_ASSET_ETH_ID
                                 }
 
+                                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
                                 view.navigate(R.id.action_market_details_to_swap,
                                     Bundle().apply {
                                         putString(ARGS_INPUT, token.assetId)

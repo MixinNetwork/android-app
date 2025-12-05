@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,18 +40,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -75,7 +79,6 @@ import one.mixin.android.ui.home.web3.components.TradeLayout
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.analytics.AnalyticsTracker
 import java.math.BigDecimal
 
 @Composable
@@ -123,7 +126,7 @@ fun SwapContent(
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
     var isButtonEnabled by remember { mutableStateOf(true) }
 
-    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken)  {
+    LaunchedEffect(inputText, invalidFlag, reviewing, fromToken, toToken) {
         shouldRefreshQuote.emit(inputText)
     }
 
@@ -141,12 +144,10 @@ fun SwapContent(
                             val amount = if (source == "") from.toLongAmount(text).toString() else text
                             viewModel.quote(context, from.symbol, from.assetId, to.assetId, amount, source)
                                 .onSuccess { value ->
-                                    AnalyticsTracker.trackSwapQuote("success")
                                     quoteResult = value
                                     isLoading = false
                                 }
                                 .onFailure { exception ->
-                                    AnalyticsTracker.trackSwapQuote("failure")
                                     if (exception is CancellationException) return@onFailure
                                     if (exception is AmountException) {
                                         quoteMin = exception.min
@@ -172,14 +173,30 @@ fun SwapContent(
 
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
+        KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
+            Column(
+                modifier = if (availableHeight != null) {
+                    Modifier
+                        .fillMaxWidth()
+                        .height(availableHeight/5*4)
+                } else {
+                    Modifier.fillMaxSize()
+                }
+            ) {
 
-        KeyboardAwareBox(
-            modifier = Modifier.fillMaxHeight(),
-            content = { _ ->
+                val scrollState = rememberScrollState()
                 Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .imePadding(),
+                    modifier = if (availableHeight != null) {
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .verticalScroll(scrollState)
+                            .verticalScrollbar(scrollState)
+                    } else {
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    }
                 ) {
                     TradeLayout(
                         centerCompose = {
@@ -195,16 +212,12 @@ fun SwapContent(
                                         invalidFlag = !invalidFlag
                                         fromToken?.let { f ->
                                             toToken?.let { t ->
-                                                val tokenPair =
-                                                    if (isReverse) listOf(t, f) else listOf(
-                                                        f,
-                                                        t
-                                                    )
-                                                val serializedPair =
-                                                    GsonHelper.customGson.toJson(tokenPair)
+                                                val tokenPair = if (isReverse) listOf(t, f) else listOf(
+                                                    f, t
+                                                )
+                                                val serializedPair = GsonHelper.customGson.toJson(tokenPair)
                                                 context.defaultSharedPreferences.putString(
-                                                    if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR,
-                                                    serializedPair
+                                                    if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR, serializedPair
                                                 )
                                             }
                                         }
@@ -257,144 +270,226 @@ fun SwapContent(
                         },
                         margin = 6.dp,
                     )
+                }
+                QuoteInfoBox(
+                    availableHeight = availableHeight,
+                    errorInfo = errorInfo,
+                    quoteResult = quoteResult,
+                    fromToken = fromToken,
+                    toToken = toToken,
+                    isLoading = isLoading,
+                    inputText = inputText,
+                    quoteMin = quoteMin,
+                    quoteMax = quoteMax,
+                    onInputTextChange = { inputText = it },
+                    onInvalidFlagChange = { invalidFlag = !invalidFlag }
+                )
+                Spacer(modifier = Modifier.height(if (availableHeight == null) 14.dp else 8.dp))
+                ReviewButton(
+                    inputText = inputText,
+                    fromBalance = fromBalance,
+                    fromToken = fromToken!!,
+                    quoteResult = quoteResult,
+                    errorInfo = errorInfo,
+                    isLoading = isLoading,
+                    isButtonEnabled = isButtonEnabled,
+                    onButtonEnabledChange = { isButtonEnabled = it },
+                    onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
+                    keyboardController = keyboardController,
+                    focusManager = focusManager,
+                    scope = scope
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+            }
+        }, floating = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MixinAppTheme.colors.backgroundWindow)
+                    .padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
-                    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                        Box(modifier = Modifier.heightIn(min = 68.dp)) {
-                            if (errorInfo.isNullOrBlank()) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .padding(horizontal = 20.dp)
-                                        .alpha(if (quoteResult == null) 0f else 1f),
-                                ) {
-                                    quoteResult?.let { quote ->
-                                        val rate = quote.rate(fromToken, toToken)
-                                        if (rate != BigDecimal.ZERO) {
-                                            PriceInfo(
-                                                fromToken = fromToken!!,
-                                                toToken = toToken,
-                                                isLoading = isLoading,
-                                                exchangeRate = rate,
-                                                onPriceExpired = {
-                                                    invalidFlag = !invalidFlag
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            } else {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .alpha(if (errorInfo.isNullOrBlank()) 0f else 1f)
-                                ) {
-                                    Text(
-                                        text = errorInfo ?: "",
-                                        modifier = Modifier
-                                            .clickable {
-                                                if (quoteMax != null || quoteMin != null) {
-                                                    if (quoteMax != null && runCatching { BigDecimal(inputText) }.getOrDefault(BigDecimal.ZERO) > runCatching { BigDecimal(quoteMax!!) }.getOrDefault(BigDecimal.ZERO)) {
-                                                        inputText = quoteMax!!
-                                                    } else if (quoteMin != null) {
-                                                        inputText = quoteMin!!
-                                                    }
-                                                }
-                                            },
-                                        style = TextStyle(
-                                            fontSize = 14.sp,
-                                            color = MixinAppTheme.colors.tipError,
-                                        ),
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(14.dp))
-                        val checkBalance = checkBalance(inputText, fromBalance)
-                        Button(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                            onClick = {
-                                if (isButtonEnabled) {
-                                    isButtonEnabled = false
-                                    quoteResult?.let { onReview(it, fromToken!!, toToken!!, inputText) }
-                                    keyboardController?.hide()
-                                    focusManager.clearFocus()
-                                    scope.launch {
-                                        delay(1000)
-                                        isButtonEnabled = true
-                                    }
-                                }
-                            },
-                            enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                            ),
-                            shape = RoundedCornerShape(32.dp),
-                            elevation = ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp,
-                            ),
-                        ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    color = if (quoteResult != null && errorInfo == null && checkBalance == true) Color.White else MixinAppTheme.colors.textAssist,
-                                )
-                            } else {
-                                Text(
-                                    text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                    color = if (checkBalance != true || errorInfo != null) MixinAppTheme.colors.textAssist else Color.White,
-                                )
-                            }
-                        }
+                InputAction("25%", showBorder = true) {
+                    if (balance > BigDecimal.ZERO) {
+                        inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
+                    } else {
+                        inputText = ""
                     }
                 }
-            },
-            floating = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MixinAppTheme.colors.backgroundWindow)
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-
-                    InputAction("25%", showBorder = true) {
-                        if (balance > BigDecimal.ZERO) {
-                            inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
-                        } else {
-                            inputText = ""
-                        }
+                InputAction("50%", showBorder = true) {
+                    if (balance > BigDecimal.ZERO) {
+                        inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
+                    } else {
+                        inputText = ""
                     }
-                    InputAction("50%", showBorder = true) {
-                        if (balance > BigDecimal.ZERO) {
-                            inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
-                        } else {
-                            inputText = ""
-                        }
+                }
+                InputAction(stringResource(R.string.Max), showBorder = true) {
+                    if (balance > BigDecimal.ZERO) {
+                        inputText = balance.stripTrailingZeros().toPlainString()
+                    } else {
+                        inputText = ""
                     }
-                    InputAction(stringResource(R.string.Max), showBorder = true) {
-                        if (balance > BigDecimal.ZERO) {
-                            inputText = balance.stripTrailingZeros().toPlainString()
-                        } else {
-                            inputText = ""
-                        }
-                    }
-                    InputAction(stringResource(R.string.Done), showBorder = false) {
-                        keyboardController?.hide()
-                        focusManager.clearFocus()
-                    }
+                }
+                InputAction(stringResource(R.string.Done), showBorder = false) {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
                 }
             }
-        )
+        })
     } ?: run {
         Loading()
     }
 }
 
+@Composable
+fun ReviewButton(
+    inputText: String,
+    fromBalance: String?,
+    fromToken: SwapToken,
+    quoteResult: QuoteResult?,
+    errorInfo: String?,
+    isLoading: Boolean,
+    isButtonEnabled: Boolean,
+    onButtonEnabledChange: (Boolean) -> Unit,
+    onReview: (QuoteResult) -> Unit,
+    keyboardController: SoftwareKeyboardController?,
+    focusManager: FocusManager,
+    scope: CoroutineScope
+) {
+    val checkBalance = checkBalance(inputText, fromBalance)
+    
+    Button(
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .fillMaxWidth()
+            .height(48.dp),
+        onClick = {
+            if (isButtonEnabled) {
+                onButtonEnabledChange(false)
+                quoteResult?.let { onReview(it) }
+                keyboardController?.hide()
+                focusManager.clearFocus()
+                scope.launch {
+                    delay(1000)
+                    onButtonEnabledChange(true)
+                }
+            }
+        },
+        enabled = quoteResult != null && errorInfo == null && !isLoading && checkBalance == true,
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = if (quoteResult != null && errorInfo == null && checkBalance == true) {
+                MixinAppTheme.colors.accent
+            } else {
+                MixinAppTheme.colors.backgroundGrayLight
+            },
+        ),
+        shape = RoundedCornerShape(32.dp),
+        elevation = ButtonDefaults.elevation(
+            pressedElevation = 0.dp,
+            defaultElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp,
+        ),
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                color = if (quoteResult != null && errorInfo == null && checkBalance == true) {
+                    Color.White
+                } else {
+                    MixinAppTheme.colors.textAssist
+                },
+            )
+        } else {
+            Text(
+                text = if (checkBalance == false) {
+                    "${fromToken.symbol} ${stringResource(R.string.insufficient_balance)}"
+                } else {
+                    stringResource(R.string.Review_Order)
+                },
+                color = if (checkBalance != true || errorInfo != null) {
+                    MixinAppTheme.colors.textAssist
+                } else {
+                    Color.White
+                },
+            )
+        }
+    }
+}
+
+@Composable
+fun QuoteInfoBox(
+    availableHeight: Dp?,
+    errorInfo: String?,
+    quoteResult: QuoteResult?,
+    fromToken: SwapToken?,
+    toToken: SwapToken?,
+    isLoading: Boolean,
+    inputText: String,
+    quoteMin: String?,
+    quoteMax: String?,
+    onInputTextChange: (String) -> Unit,
+    onInvalidFlagChange: () -> Unit
+) {
+    Box(
+        modifier = if (availableHeight == null) {
+            Modifier
+                .heightIn(min = 48.dp)
+                .padding(horizontal = 20.dp)
+        } else {
+            Modifier
+                .padding(vertical = 14.dp)
+                .padding(horizontal = 20.dp)
+        }
+    ) {
+        if (errorInfo.isNullOrBlank()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(horizontal = 20.dp)
+                    .alpha(if (quoteResult == null) 0f else 1f),
+            ) {
+                quoteResult?.let { quote ->
+                    val rate = quote.rate(fromToken, toToken)
+                    if (rate != BigDecimal.ZERO) {
+                        PriceInfo(
+                            fromToken = fromToken!!,
+                            toToken = toToken,
+                            isLoading = isLoading,
+                            exchangeRate = rate,
+                            onPriceExpired = {
+                                onInvalidFlagChange()
+                            }
+                        )
+                    }
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .alpha(if (errorInfo.isBlank()) 0f else 1f)
+            ) {
+                Text(
+                    text = errorInfo,
+                    modifier = Modifier.clickable {
+                        if (quoteMax != null || quoteMin != null) {
+                            if (quoteMax != null && runCatching { BigDecimal(inputText) }.getOrDefault(BigDecimal.ZERO) > runCatching { BigDecimal(quoteMax) }.getOrDefault(BigDecimal.ZERO)) {
+                                onInputTextChange(quoteMax)
+                            } else if (quoteMin != null) {
+                                onInputTextChange(quoteMin)
+                            }
+                        }
+                    },
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = MixinAppTheme.colors.tipError,
+                    ),
+                )
+            }
+        }
+    }
+}
