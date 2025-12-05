@@ -31,6 +31,7 @@ import okio.GzipSource
 import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
+import org.sol4k.Base58
 import org.threeten.bp.Instant
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -805,7 +806,6 @@ fun String?.isValidMao(): Boolean {
     return regex.matches(text)
 }
 
-fun String.isMao(): Boolean {
-    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
-    return regex.matches(this)
-}
+fun String.isValidBase58(): Boolean = runCatching {
+    Base58.decode(this)
+}.getOrNull() != null
