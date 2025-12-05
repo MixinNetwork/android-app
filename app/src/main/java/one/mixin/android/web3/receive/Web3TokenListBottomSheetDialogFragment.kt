@@ -341,28 +341,26 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     )
                 }.map { item ->
                     val local = defaultAssets.find { item.assetId == it.assetId } ?: bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId)
-                    local.let { local ->
-                        local
-                            ?: Web3TokenItem(
-                                walletId = walletId ?: "",
-                                assetId = item.assetId,
-                                chainId = item.chainId,
-                                name = item.name,
-                                assetKey = item.assetKey ?: "",
-                                symbol = item.symbol,
-                                iconUrl = item.iconUrl,
-                                precision = 9,
-                                kernelAssetId = "",
-                                balance = item.balance,
-                                priceUsd = item.priceUsd,
-                                changeUsd = item.changeUsd,
-                                chainIcon = item.chainIconUrl,
-                                chainName = item.chainName,
-                                chainSymbol = item.chainSymbol,
-                                hidden = item.hidden,
-                                level = Constants.AssetLevel.VERIFIED
-                            )
-                    }
+                    local
+                        ?: Web3TokenItem(
+                            walletId = walletId ?: "",
+                            assetId = item.assetId,
+                            chainId = item.chainId,
+                            name = item.name,
+                            assetKey = item.assetKey ?: "",
+                            symbol = item.symbol,
+                            iconUrl = item.iconUrl,
+                            precision = 9,
+                            kernelAssetId = "",
+                            balance = item.balance,
+                            priceUsd = item.priceUsd,
+                            changeUsd = item.changeUsd,
+                            chainIcon = item.chainIconUrl,
+                            chainName = item.chainName,
+                            chainSymbol = item.chainSymbol,
+                            hidden = item.hidden,
+                            level = Constants.AssetLevel.VERIFIED
+                        )
                 }
 
                 val result = defaultAssets.plus(

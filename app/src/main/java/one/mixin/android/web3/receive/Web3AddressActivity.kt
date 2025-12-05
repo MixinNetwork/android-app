@@ -17,12 +17,14 @@ class Web3AddressActivity : BaseActivity() {
     companion object {
         private const val EXTRA_WEB3_TOKEN = "extra_web3_token"
         private const val EXTRA_ADDRESS = "extra_address"
+        private const val EXTRA_HIDE_NETWORK_SWITCH = "extra_hide_network_switch"
 
-        fun show(context: Context, web3Token: Web3TokenItem, address: String) {
+        fun show(context: Context, web3Token: Web3TokenItem, address: String, hideNetworkSwitch: Boolean = false) {
             context.startActivity(
                 Intent(context, Web3AddressActivity::class.java).apply {
                     putExtra(EXTRA_WEB3_TOKEN, web3Token)
                     putExtra(EXTRA_ADDRESS, address)
+                    putExtra(EXTRA_HIDE_NETWORK_SWITCH, hideNetworkSwitch)
                     setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 }
             )
@@ -37,9 +39,10 @@ class Web3AddressActivity : BaseActivity() {
 
         val web3Token = intent.getParcelableExtraCompat(EXTRA_WEB3_TOKEN, Web3TokenItem::class.java)
         val address = intent.getStringExtra(EXTRA_ADDRESS) ?: ""
+        val hideNetworkSwitch = intent.getBooleanExtra(EXTRA_HIDE_NETWORK_SWITCH, false)
 
         if (web3Token != null) {
-            val fragment = Web3AddressFragment.newInstance(web3Token, address)
+            val fragment = Web3AddressFragment.newInstance(web3Token, address, hideNetworkSwitch)
             replaceFragment(fragment, R.id.container, Web3AddressFragment.TAG)
         } else {
             finish()
