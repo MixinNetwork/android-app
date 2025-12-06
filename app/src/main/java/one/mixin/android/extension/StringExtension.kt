@@ -31,7 +31,6 @@ import okio.GzipSource
 import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
-import org.sol4k.Base58
 import org.threeten.bp.Instant
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
