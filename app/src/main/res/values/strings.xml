@@ -1049,6 +1049,7 @@
     <string name="Start">Start</string>
     <string name="Start_Messaging">Start Messaging</string>
     <string name="Status">Status</string>
+    <string name="Order_Status">Status</string>
     <string name="Stay_in_Mixin">Stay in Mixin</string>
     <string name="Sticker">Sticker</string>
     <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 1MB, width and height between 128px and 1024px.</string>

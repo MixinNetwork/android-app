@@ -188,11 +188,11 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
             val otherSet = setOf("expired", "cancelled", "canceled", "failed", "refunded", "cancelling")
             val statusesSet = filterParams.statuses?.toSet()
             val statusTitle = when {
-                statusesSet == null || statusesSet.isEmpty() -> getString(R.string.Status)
+                statusesSet == null || statusesSet.isEmpty() -> getString(R.string.Order_Status)
                 statusesSet == pendingSet -> getString(R.string.State_Pending)
                 statusesSet == doneSet -> getString(R.string.Done)
                 statusesSet == otherSet -> getString(R.string.Other)
-                else -> getString(R.string.Status)
+                else -> getString(R.string.Order_Status)
             }
             filterReputation.setTitle(statusTitle)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
