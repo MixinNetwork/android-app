@@ -805,7 +805,6 @@ fun String?.isValidMao(): Boolean {
     return regex.matches(text)
 }
 
-fun String.isMao(): Boolean {
-    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
-    return regex.matches(this)
-}
+fun String.isValidBase58(): Boolean = runCatching {
+    Base58.decode(this)
+}.getOrNull() != null

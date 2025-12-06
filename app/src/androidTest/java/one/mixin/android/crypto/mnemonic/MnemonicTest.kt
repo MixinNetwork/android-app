@@ -101,7 +101,15 @@ class MnemonicTest {
     @Test
     fun testPrivateKeyToPublicKey() {
         val solanaPrivateKeyBase58 = "37NfN7eam3KCwdC6jAc7nFeuDNYCV1K2AgNWmT4Xo6ogQPMnJ1ZoWA7AKN6jzEoQi3FNTEkkXiwu7VjqXdu8FGUs"
+
+        val solanaPrivateKeyHex = "6987bdb06aa8a243a3019f41489ffa8e609c953a885a748d1849a8df760aa479999d46fb3d1256f7049c8ed09314d7268612e8a91b800e91934463848305c98c"
+
         val solanaPrivateKeyBytes = Base58.decode(solanaPrivateKeyBase58)
+
+        assertEquals(solanaPrivateKeyHex..(), solanaPrivateKeyBytes)
+        assertEquals(true, isSolanaPrivateKeyValid(solanaPrivateKeyBase58))
+        assertEquals(true, isSolanaPrivateKeyValid(solanaPrivateKeyHex))
+
         val solanaKeypair = Keypair.fromSecretKey(solanaPrivateKeyBytes)
         assertEquals(
             "BLeUXTx9thHGT7VJUtF9vHEmfMDgW1nnKZ9UVer2CoLX",
@@ -112,6 +120,19 @@ class MnemonicTest {
         val ethKeyPair = ECKeyPair.create(Numeric.hexStringToByteArray(ethPrivateKeyHex))
         val ethAddress = Keys.toChecksumAddress(Keys.getAddress(ethKeyPair.publicKey))
         assertEquals("0x58A57ed9d8d624cBD12e2C467D34787555bB1b25", ethAddress)
+    }
+
+    private fun isSolanaPrivateKeyValid(privateKey: String): Boolean {
+        return try {
+            val decoded = Base58.decode(privateKey)
+            decoded.size == 64
+        } catch (e: Exception) {
+            if (privateKey.isValidHex()) {
+                val d = privateKey.hexStringToByteArray()
+                return d.size == 64
+            }
+            false
+        }
     }
 
     @Test

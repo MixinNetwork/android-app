@@ -52,10 +52,14 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.isValidBase58
+import one.mixin.android.extension.isValidHex
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.encodeToBase58String
 import org.sol4k.Base58
 import org.web3j.crypto.Keys
 import org.web3j.crypto.WalletUtils
@@ -419,6 +423,8 @@ fun ImportWalletDetailPage(
                         onConfirmClick(
                             currentChainId, if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
                                 Keys.toChecksumAddress(text)
+                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isEvmNetwork.not() && text.isValidBase58().not() && text.isValidHex()) {
+                                text.hexStringToByteArray().encodeToBase58String()
                             } else {
                                 text
                             }
@@ -472,6 +478,10 @@ private fun isSolanaAddressValid(address: String): Boolean {
         val decoded = Base58.decode(address)
         decoded.size == 32
     } catch (e: Exception) {
+        if (address.isValidHex()) {
+            val d = address.hexStringToByteArray()
+            return d.size == 32
+        }
         false
     }
 }
@@ -481,6 +491,10 @@ private fun isSolanaPrivateKeyValid(privateKey: String): Boolean {
         val decoded = Base58.decode(privateKey)
         decoded.size == 64
     } catch (e: Exception) {
+        if (privateKey.isValidHex()) {
+            val d = privateKey.hexStringToByteArray()
+            return d.size == 64
+        }
         false
     }
 }
