@@ -198,8 +198,6 @@ internal constructor(
             tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
         }
 
-    suspend fun web3TokenItems(chainIds: List<String>) = tokenRepository.web3TokenItems(chainIds)
-
     suspend fun getFees(
         id: String,
         destination: String,

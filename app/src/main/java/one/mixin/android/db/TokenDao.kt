@@ -109,10 +109,6 @@ interface TokenDao : BaseDao<Token> {
     suspend fun findTokenItems(ids: List<String>): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.chain_id IN (:chainIds) AND balance > 0 $POSTFIX")
-    suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
@@ -124,6 +120,21 @@ interface TokenDao : BaseDao<Token> {
     suspend fun fuzzySearchAssetIgnoreAmount(
         name: String,
         symbol: String,
+    ): List<TokenItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """$PREFIX_ASSET_ITEM 
+        WHERE (a1.symbol LIKE '%' || :query || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :query || '%' $ESCAPE_SUFFIX)
+        AND (:chainId IS NULL OR a1.chain_id = :chainId)
+        ORDER BY 
+            a1.symbol = :query COLLATE NOCASE OR a1.name = :query COLLATE NOCASE DESC,
+            a1.price_usd*ae.balance DESC
+        """,
+    )
+    suspend fun fuzzySearchAsset(
+        query: String,
+        chainId: String?,
     ): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
@@ -143,7 +154,7 @@ interface TokenDao : BaseDao<Token> {
     fun assetItemsWithBalance(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND NOT ae.hidden $POSTFIX_ASSET_ITEM")
     suspend fun findAssetItemsWithBalance(): List<TokenItem>
 
     @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC")
