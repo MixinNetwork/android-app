@@ -326,16 +326,17 @@ fun SessionRequestPage(
                 }
                 Box(modifier = Modifier.height(20.dp))
 
+                val feeSymbol = asset?.symbol ?: chain.symbol
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
-                        amount = "$fee",
+                        amount = "$fee $feeSymbol",
                         fee = fee.multiply(asset.priceUSD()),
                         isFree = isFeeWaived,
                         onFreeClick = onFreeClick,
                     )
                 } else {
                     FeeInfo(
-                        amount = "$fee ${asset?.symbol}",
+                        amount = "$fee $feeSymbol",
                         fee = fee.multiply(asset.priceUSD()),
                         gasPrice = tipGas?.displayGas(
                             if (sessionRequestUI.data is WCEthereumTransaction) {
