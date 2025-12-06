@@ -45,4 +45,7 @@ interface Web3AddressDao : BaseDao<Web3Address> {
 
     @Query("SELECT w.* FROM wallets w INNER JOIN addresses a ON w.wallet_id = a.wallet_id WHERE a.destination = :destination LIMIT 1")
     suspend fun getWalletByDestination(destination: String): Web3Wallet?
+
+    @Query("SELECT w.* FROM wallets w WHERE w.safe_address = :destination AND w.safe_chain_id = :chainId LIMIT 1")
+    suspend fun getWalletByAddress(destination: String, chainId: String): Web3Wallet?
 }

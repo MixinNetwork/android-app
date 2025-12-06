@@ -852,6 +852,7 @@
     <string name="Sort_by">並びかえ項目</string>
     <string name="Start_Messaging">メッセージを開始</string>
     <string name="Status">ステータス</string>
+    <string name="Order_Status">ステータス</string>
     <string name="Sticker">スタンプ</string>
     <string name="sticker_add_invalid_size">スタンプのサイズは1KB以上1MB未満、 幅と高さは128ピクセルから1024ピクセルである必要があります</string>
     <string name="Sticker_Store">スタンプストア</string>

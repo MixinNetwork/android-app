@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Colors
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +51,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -65,10 +65,12 @@ fun WalletCard(
     hasLocalPrivateKey: Boolean = true,
     destination: WalletDestination?,
     onClick: () -> Unit,
+    onSafeClick: (() -> Unit)? = null,
     enableFreeLabel: Boolean = false,
     isSelectable: Boolean = false,
     isSelected: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
+    topArrow: Boolean = true
 ) {
     var web3TokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
     var tokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
@@ -92,6 +94,7 @@ fun WalletCard(
                     is WalletDestination.Classic -> destination.walletId
                     is WalletDestination.Import -> destination.walletId
                     is WalletDestination.Watch -> destination.walletId
+                    is WalletDestination.Safe -> destination.walletId
                     else -> null
                 }
                 if (walletId == null) {
@@ -129,6 +132,11 @@ fun WalletCard(
                 assets = viewModel.getWeb3TokenDistribution(destination.walletId)
             }
 
+            is WalletDestination.Safe -> {
+                web3TokenTotalBalance = viewModel.getWeb3TokenTotalBalance(destination.walletId)
+                assets = viewModel.getWeb3TokenDistribution(destination.walletId)
+            }
+
             else -> {
                 tokenTotalBalance = viewModel.getTokenTotalBalance()
                 assets = viewModel.getTokenDistribution()
@@ -149,11 +157,17 @@ fun WalletCard(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = LocalIndication.current
-                ) { onClick() }
+                ) {
+                    if (destination is WalletDestination.Safe && onSafeClick != null) {
+                        onSafeClick()
+                    } else {
+                        onClick()
+                    }
+                }
         ) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(start = 16.dp, end = 10.dp, top = 16.dp, bottom = 16.dp)
                     .fillMaxWidth()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -225,11 +239,32 @@ fun WalletCard(
                                 )
                                 .padding(horizontal = 4.dp)
                         )
+                    } else if (destination is WalletDestination.Safe) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(id = R.drawable.ic_wallet_safe),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(if (destination.isOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
+                            color = MixinAppTheme.colors.textRemarks,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(
+                                    color = MixinAppTheme.colors.backgroundGrayLight,
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 4.dp)
+                        )
                     }
 
                     val isFeeFree = enableFreeLabel && when (destination) {
                         is WalletDestination.Classic -> true
                         is WalletDestination.Import -> hasLocalPrivateKey
+                        is WalletDestination.Safe -> true
                         else -> false
                     }
                     if (isFeeFree) {
@@ -257,7 +292,7 @@ fun WalletCard(
                         )
                     } else {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_right),
+                            painter = painterResource(id = if (destination is WalletDestination.Safe && topArrow) R.drawable.ic_arrow_top_right else R.drawable.ic_wallet_arrow_right),
                             tint = Color.Unspecified,
                             contentDescription = null,
                         )
@@ -285,6 +320,14 @@ fun WalletCard(
                     LaunchedEffect(refreshTrigger) {
                         chains = if (destination is WalletDestination.Privacy || destination == null) {
                             privacyChain
+                        } else if (destination is WalletDestination.Safe) {
+                            when (destination.chainId) {
+                                Constants.ChainId.BITCOIN_CHAIN_ID -> listOf(R.drawable.ic_chain_btc)
+                                Constants.ChainId.ETHEREUM_CHAIN_ID -> listOf(R.drawable.ic_chain_eth)
+                                Constants.ChainId.Polygon -> listOf(R.drawable.ic_chain_polygon)
+                                Constants.ChainId.Litecoin -> listOf(R.drawable.ic_chain_lite)
+                                else -> listOf(R.drawable.ic_avatar_place_holder)
+                            }
                         } else if ((destination is WalletDestination.Watch && (destination.category == WalletCategory.WATCH_ADDRESS.value || destination.category == WalletCategory.IMPORTED_PRIVATE_KEY.value)) ||
                             (destination is WalletDestination.Import && (destination.category == WalletCategory.WATCH_ADDRESS.value || destination.category == WalletCategory.IMPORTED_PRIVATE_KEY.value))
                         ) {
