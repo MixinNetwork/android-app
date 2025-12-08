@@ -73,6 +73,7 @@ class AppColors(
     val badgeRed: Color,
     val warning: Color,
     val bgClip: Color,
+    val borderGray: Color,
 )
 
 class AppDrawables(
@@ -117,6 +118,7 @@ private val LightColorPalette =
         badgeRed = Color(0xFFDB454F),
         warning = Color(0xFFF6A417),
         bgClip = Color(0xFFF5F7FA),
+        borderGray = Color(0xFFD6D6D6),
     )
 
 private val DarkColorPalette =
@@ -148,6 +150,7 @@ private val DarkColorPalette =
         badgeRed = Color(0xFFF67070),
         warning = Color(0xFFF6A417),
         bgClip = Color(0xFF3B3F44),
+        borderGray = Color(0xFFD6D6D6),
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
