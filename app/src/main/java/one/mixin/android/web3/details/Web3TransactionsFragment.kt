@@ -3,8 +3,6 @@ package one.mixin.android.web3.details
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Bundle
-import android.text.Html
-import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.appcompat.view.ContextThemeWrapper
@@ -37,6 +35,7 @@ import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
@@ -539,13 +538,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 binding.importKeyBtn.text = getString(
                     if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
                 )
-                binding.missingKeyTv.apply {
-                    text = Html.fromHtml(
-                        getString(if (isMnemonic) R.string.missing_mnemonic_phrase_message else R.string.missing_private_key_message),
-                        Html.FROM_HTML_MODE_LEGACY
-                    )
-                    movementMethod = LinkMovementMethod.getInstance()
-                }
+                val learn = getString(R.string.Learn_More)
+                val info = getString(
+                    if (isMnemonic) R.string.Import_Mnemonic_Phrase_Desc else R.string.Import_Private_Key_Desc,
+                    learn
+                )
+                val learnUrl = getString(
+                    if (isMnemonic) R.string.import_mnemonic_phrase_url else R.string.import_private_key_url
+                )
+                binding.missingKeyTv.highlightStarTag(info, arrayOf(learnUrl))
             }
             
             if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {

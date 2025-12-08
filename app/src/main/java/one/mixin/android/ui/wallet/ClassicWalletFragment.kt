@@ -2,8 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.Html
-import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -37,6 +35,7 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
@@ -503,13 +502,15 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                 _headBinding?.importKeyBtn?.text = getString(
                     if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
                 )
-                _headBinding?.missingKeyTv?.apply {
-                    text = Html.fromHtml(
-                        getString(if (isMnemonic) R.string.missing_mnemonic_phrase_message else R.string.missing_private_key_message),
-                        Html.FROM_HTML_MODE_LEGACY
-                    )
-                    movementMethod = LinkMovementMethod.getInstance()
-                }
+                val learn = getString(R.string.Learn_More)
+                val info = getString(
+                    if (isMnemonic) R.string.Import_Mnemonic_Phrase_Desc else R.string.Import_Private_Key_Desc,
+                    learn
+                )
+                val learnUrl = getString(
+                    if (isMnemonic) R.string.import_mnemonic_phrase_url else R.string.import_private_key_url
+                )
+                _headBinding?.missingKeyTv?.highlightStarTag(info, arrayOf(learnUrl))
             }
 
             if (isWatch) {
