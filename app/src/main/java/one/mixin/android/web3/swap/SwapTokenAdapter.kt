@@ -61,15 +61,16 @@ class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.
         position: Int,
     ) {
         (holder as Web3Holder).bind(tokens[position], selectUnique) { token, isAlert ->
-            AnalyticsTracker.trackSwapCoinSwitch(
+            AnalyticsTracker.trackTradeTokenSelect(
                 if (isSearch) {
-                    AnalyticsTracker.SwapCoinSwitchMethod.SEARCH_ITEM_CLICK
+                    AnalyticsTracker.TradeTokenSelectMethod.SEARCH_ITEM_CLICK
                 } else if (all) {
-                    AnalyticsTracker.SwapCoinSwitchMethod.ALL_ITEM_CLICK
+                    AnalyticsTracker.TradeTokenSelectMethod.ALL_ITEM_CLICK
                 } else {
-                    AnalyticsTracker.SwapCoinSwitchMethod.CHAIN_ITEM_CLICK
+                    AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK
                 }
             )
+
             onClickListener?.invoke(token, isAlert)
         }
     }

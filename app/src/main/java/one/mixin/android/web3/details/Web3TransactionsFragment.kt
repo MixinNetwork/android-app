@@ -71,6 +71,8 @@ import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -260,7 +262,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                             return@launch
                         }
-                        AnalyticsTracker.trackSwapStart("web3", "web3")
+                        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {

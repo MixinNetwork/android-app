@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import androidx.core.os.bundleOf
-import androidx.core.view.WindowCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -109,7 +108,6 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         super.setupDialog(dialog, style)
         dialog.window?.apply {
             requestFeature(Window.FEATURE_NO_TITLE)
-            WindowCompat.setDecorFitsSystemWindows(this, false)
             SystemUIManager.fullScreen(this)
             setWindowAnimations(R.style.BottomSheet_Animation)
         }

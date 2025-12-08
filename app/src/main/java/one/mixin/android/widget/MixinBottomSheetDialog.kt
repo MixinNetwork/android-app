@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updateMargins
@@ -56,10 +55,6 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-
-        window?.let {
-            WindowCompat.setDecorFitsSystemWindows(it, false)
-        }
 
         findViewById<View>(com.google.android.material.R.id.container)?.apply {
             fitsSystemWindows = false

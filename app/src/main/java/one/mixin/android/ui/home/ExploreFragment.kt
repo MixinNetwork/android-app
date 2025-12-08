@@ -69,6 +69,8 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
@@ -330,6 +332,7 @@ class ExploreFragment : BaseFragment() {
                     WalletActivity.showBuy(requireActivity(), false, null, null)
                 }
                 INTERNAL_SWAP_ID -> {
+                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
                     SwapActivity.show(requireActivity(), null, null, null, null)
                 }
                 INTERNAL_MEMBER_ID -> {

@@ -21,6 +21,9 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3AddressActivity
@@ -75,6 +78,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                     binding.bottom.isVisible = false
                     binding.contentTv.text = getString(R.string.swap_usdt_hint, u.symbol)
                     binding.positive.setOnClickListener {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.BALANCE)
                         SwapActivity.show(
                             requireActivity(),
                             input = u.assetId,
@@ -101,6 +105,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                     .apply {
                         onWeb3Action = { type, fee ->
                             if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
+                                AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.BALANCE)
                                 SwapActivity.show(
                                     requireActivity(),
                                     input = Constants.AssetId.USDT_ASSET_ETH_ID,
