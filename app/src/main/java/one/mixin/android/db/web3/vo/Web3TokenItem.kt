@@ -85,6 +85,7 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.BinanceSmartChain -> "Polygon"
             chainId == Constants.ChainId.Polygon -> "BNB Chain"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
+            chainId == Constants.ChainId.Avalanche -> "Avalanche"
             else -> chainId
         }
     }
