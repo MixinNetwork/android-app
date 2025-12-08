@@ -392,7 +392,7 @@ fun DetailItem(
 
                         DetailItem(
                             if (uiState.isDone()) context.getString(R.string.swap_order_received).uppercase() else context.getString(R.string.Estimated_Receive).uppercase(),
-                            "+${if (uiState.isDone()) (order.filledReceiveAmount ?: "0") else (order.expectedReceiveAmount ?: order.receiveAmount ?: "0")} ${order.receiveAssetSymbol}",
+                            "+${if (uiState.isDone()) (order.filledReceiveAmount ?: order.receiveAmount ?: "0") else (order.expectedReceiveAmount ?: order.receiveAmount ?: "0")} ${order.receiveAssetSymbol}",
                             if (uiState.isCancel() || uiState.isPending()) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.walletGreen,
                             order.receiveAssetIconUrl,
                             order.receiveChainName ?: ""
