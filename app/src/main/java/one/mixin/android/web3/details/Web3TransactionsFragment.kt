@@ -111,8 +111,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     @Inject
     lateinit var tip: Tip
 
-    private val address: String by lazy {
-        requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+    private val address: String? by lazy {
+        requireArguments().getString(ARGS_ADDRESS)
     }
 
     private val token: Web3TokenItem by lazy {
@@ -132,7 +132,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             binding.empty.isVisible = wallet?.isWatch() == true
             if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
                 binding.stake.root.visibility = View.VISIBLE
-                getStakeAccounts(address)
+                address?.let { getStakeAccounts(it) }
             } else{
                 binding.stake.root.visibility = View.GONE
             }
@@ -183,7 +183,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 if (token.isNativeSolToken()) {
                     stake.root.visibility = View.VISIBLE
                     lifecycleScope.launch {
-                        getStakeAccounts(address)
+                        address?.let {
+                            getStakeAccounts(it)
+                        }
                     }
                 }
                 transactionsRv.listener = this@Web3TransactionsFragment

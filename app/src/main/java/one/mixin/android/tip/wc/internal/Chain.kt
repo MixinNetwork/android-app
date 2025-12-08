@@ -31,6 +31,8 @@ sealed class Chain(
 
     object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon", "MATIC", listOf("https://polygon-rpc.com"))
 
+    object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "43114", "0xa86a", "Avalanche C-Chain", "AVAX", listOf("https://api.avax.network/ext/bc/C/rpc"))
+
     object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
     val chainId: String
@@ -54,12 +56,13 @@ sealed class Chain(
             Base ->  Constants.ChainId.Base
             Optimism -> Constants.ChainId.Optimism
             Arbitrum -> Constants.ChainId.Arbitrum
+            Avalanche -> Constants.ChainId.Avalanche
             else ->  Constants.ChainId.Solana
         }
 }
 // Chain.Blast
-internal val supportChainList = listOf(Chain.Solana, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum)
+internal val supportChainList = listOf(Chain.Solana, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche)
 
 internal fun String.getChain(): Chain? {
     return when (this) {
@@ -68,6 +71,7 @@ internal fun String.getChain(): Chain? {
         Chain.Blast.chainReference -> Chain.Blast
         Chain.Arbitrum.chainReference -> Chain.Arbitrum
         Chain.Optimism.chainReference -> Chain.Optimism
+        Chain.Avalanche.chainReference -> Chain.Avalanche
         Chain.BinanceSmartChain.chainReference -> Chain.BinanceSmartChain
         Chain.Polygon.chainReference -> Chain.Polygon
         Chain.Solana.chainId -> Chain.Solana
@@ -84,6 +88,7 @@ internal fun String?.getChainName(): String? {
         Chain.Blast.chainId -> Chain.Blast.name
         Chain.Arbitrum.chainId -> Chain.Arbitrum.name
         Chain.Optimism.chainId -> Chain.Optimism.name
+        Chain.Avalanche.chainId -> Chain.Avalanche.name
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.name
         Chain.Polygon.chainId -> Chain.Polygon.name
         Chain.Solana.chainId -> Chain.Solana.name
@@ -100,6 +105,7 @@ internal fun String?.getChainSymbol(): String? {
         Chain.Blast.chainId -> Chain.Blast.symbol
         Chain.Arbitrum.chainId -> Chain.Arbitrum.symbol
         Chain.Optimism.chainId -> Chain.Optimism.symbol
+        Chain.Avalanche.chainId -> Chain.Avalanche.symbol
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain.symbol
         Chain.Polygon.chainId -> Chain.Polygon.symbol
         Chain.Solana.chainId -> Chain.Solana.symbol
@@ -116,6 +122,7 @@ internal fun getChainByChainId(chainId: String?): Chain? {
         Chain.Blast.chainId -> Chain.Blast
         Chain.Arbitrum.chainId -> Chain.Arbitrum
         Chain.Optimism.chainId -> Chain.Optimism
+        Chain.Avalanche.chainId -> Chain.Avalanche
         Chain.BinanceSmartChain.chainId -> Chain.BinanceSmartChain
         Chain.Polygon.chainId -> Chain.Polygon
         Chain.Solana.chainId -> Chain.Solana

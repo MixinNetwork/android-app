@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.R
@@ -128,6 +129,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_optimism -> {
                         Optimism
+                    }
+
+                    R.id.radio_avalanche -> {
+                        Avalanche
                     }
 
                     R.id.radio_toncoin -> {
@@ -335,6 +340,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             ChainId.Base,
                             ChainId.Optimism,
                             ChainId.Arbitrum,
+                            ChainId.Avalanche,
                             ChainId.BinanceSmartChain,
                             ChainId.Polygon)
                     }.map { item ->
