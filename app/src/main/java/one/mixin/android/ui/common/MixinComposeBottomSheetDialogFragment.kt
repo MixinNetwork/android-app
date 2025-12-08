@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
@@ -59,10 +58,6 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
         object : BottomSheetDialog(requireContext(), theme) {
             override fun onAttachedToWindow() {
                 super.onAttachedToWindow()
-
-                window?.let {
-                    WindowCompat.setDecorFitsSystemWindows(it, false)
-                }
 
                 findViewById<View>(com.google.android.material.R.id.container)?.apply {
                     fitsSystemWindows = false
