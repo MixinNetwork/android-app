@@ -143,33 +143,14 @@
                             android:layout_marginEnd="8dp"
                             android:layout_marginBottom="24dp" />
 
-                        <LinearLayout
+                        <one.mixin.android.widget.MissingKeyView
+                            android:id="@+id/missing_key_view"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="20dp"
                             android:layout_marginEnd="20dp"
                             android:layout_marginTop="30dp"
-                            android:layout_marginBottom="24dp"
-                            android:orientation="vertical">
-
-                            <Button
-                                android:id="@+id/import_key_btn"
-                                style="@style/AppTheme.MaterialButton"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/import_private_key" />
-
-                            <TextView
-                                android:id="@+id/missing_key_tv"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
-                                android:textColor="?attr/text_assist"
-                                android:textSize="14sp"
-                                android:lineSpacingExtra="2dp"
-                                android:gravity="center_horizontal"
-                                tools:text="The encrypted private key for this wallet is missing from this device. Please re-import to continue. Learn More" />
-                        </LinearLayout>
+                            android:layout_marginBottom="24dp" />
 
                     </ViewAnimator>
 

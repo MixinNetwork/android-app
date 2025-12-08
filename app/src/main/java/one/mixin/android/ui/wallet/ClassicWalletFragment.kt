@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -35,7 +36,6 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
@@ -203,21 +203,6 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                     sendReceiveView.swap.setOnClickListener {
                         AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
                         SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
-                    }
-
-                    importKeyBtn.setOnClickListener {
-                        lifecycleScope.launch {
-                            val wallet = web3ViewModel.findWalletById(walletId)
-                            val chainId = web3ViewModel.getAddresses(walletId).firstOrNull()?.chainId
-                            if (chainId != null) {
-                                val mode = if (wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value) {
-                                    WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
-                                } else {
-                                    WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
-                                }
-                                WalletSecurityActivity.show(requireActivity(), mode, walletId = walletId, chainId = chainId)
-                            }
-                        }
                     }
                 }
             _headBinding?.pendingView?.isVisible = false
@@ -498,19 +483,20 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             _headBinding?.watchLayout?.isVisible = isWatch
 
             if (isMissingKey) {
-                val isMnemonic = wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value
-                _headBinding?.importKeyBtn?.text = getString(
-                    if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
-                )
-                val learn = getString(R.string.Learn_More)
-                val info = getString(
-                    if (isMnemonic) R.string.Import_Mnemonic_Phrase_Desc else R.string.Import_Private_Key_Desc,
-                    learn
-                )
-                val learnUrl = getString(
-                    if (isMnemonic) R.string.import_mnemonic_phrase_url else R.string.import_private_key_url
-                )
-                _headBinding?.missingKeyTv?.highlightStarTag(info, arrayOf(learnUrl))
+                val isMnemonic = wallet.category == WalletCategory.IMPORTED_MNEMONIC.value
+                _headBinding?.missingKeyView?.setMissingKey(isMnemonic) {
+                    lifecycleScope.launch {
+                        val chainId = web3ViewModel.getAddresses(id).firstOrNull()?.chainId
+                        if (chainId != null) {
+                            val mode = if (isMnemonic) {
+                                WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
+                            } else {
+                                WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
+                            }
+                            WalletSecurityActivity.show(requireActivity(), mode, walletId = id, chainId = chainId)
+                        }
+                    }
+                }
             }
 
             if (isWatch) {

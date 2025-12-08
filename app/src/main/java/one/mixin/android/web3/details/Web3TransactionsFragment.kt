@@ -35,7 +35,6 @@ import one.mixin.android.db.web3.vo.solLamportToAmount
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
@@ -253,17 +252,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     )
                 }
                 
-                importKeyBtn.setOnClickListener {
-                    lifecycleScope.launch {
-                        val wallet = web3ViewModel.findWalletById(token.walletId)
-                        val mode = if (wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value) {
-                            WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
-                        } else {
-                            WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
-                        }
-                        WalletSecurityActivity.show(requireActivity(), mode, walletId = token.walletId, chainId = token.chainId)
-                    }
-                }
 
                 transactionsTitleLl.setOnClickListener {
                     view.navigate(
@@ -535,18 +523,14 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             
             if (isMissingKey) {
                 val isMnemonic = wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value
-                binding.importKeyBtn.text = getString(
-                    if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
-                )
-                val learn = getString(R.string.Learn_More)
-                val info = getString(
-                    if (isMnemonic) R.string.Import_Mnemonic_Phrase_Desc else R.string.Import_Private_Key_Desc,
-                    learn
-                )
-                val learnUrl = getString(
-                    if (isMnemonic) R.string.import_mnemonic_phrase_url else R.string.import_private_key_url
-                )
-                binding.missingKeyTv.highlightStarTag(info, arrayOf(learnUrl))
+                binding.missingKeyView.setMissingKey(isMnemonic) {
+                    val mode = if (isMnemonic) {
+                        WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC
+                    } else {
+                        WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY
+                    }
+                    WalletSecurityActivity.show(requireActivity(), mode, walletId = token.walletId, chainId = token.chainId)
+                }
             }
             
             if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
