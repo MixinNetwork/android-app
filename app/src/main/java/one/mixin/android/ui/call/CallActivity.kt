@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
@@ -24,8 +23,6 @@ class CallActivity : BaseActivity() {
         skipSystemUi = true
         showWhenLockedAndTurnScreenOn()
         super.onCreate(savedInstanceState)
-        // Disable edge-to-edge to keep activity transparent
-        WindowCompat.setDecorFitsSystemWindows(window, true)
         CallBottomSheetDialogFragment.newInstance(intent.getBooleanExtra(EXTRA_JOIN, false))
             .show(supportFragmentManager, CallBottomSheetDialogFragment.TAG)
     }
