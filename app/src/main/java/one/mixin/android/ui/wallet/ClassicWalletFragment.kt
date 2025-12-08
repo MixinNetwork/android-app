@@ -35,6 +35,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
@@ -255,46 +256,18 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         }
         _walletId.observe(viewLifecycleOwner) { id ->
             if (id.isNotEmpty()) {
-                lifecycleScope.launch {
-                    val wallet = web3ViewModel.findWalletById(id)
-                    val isWatch = wallet?.isWatch() == true
-                    val isMissingKey = wallet?.isImported() == true && !wallet.hasLocalPrivateKey
-                    
-                    _headBinding?.viewAnimator?.displayedChild = when {
-                        isMissingKey -> 1
-                        else -> 0
-                    }
-                    
-                    _headBinding?.watchLayout?.isVisible = isWatch
-
-                    if (isMissingKey) {
-                        val isMnemonic = wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value
-                        _headBinding?.importKeyBtn?.text = getString(
-                            if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
-                        )
-                        _headBinding?.missingKeyTv?.apply {
-                            text = Html.fromHtml(
-                                getString(if (isMnemonic) R.string.missing_mnemonic_phrase_message else R.string.missing_private_key_message),
-                                Html.FROM_HTML_MODE_LEGACY
-                            )
-                            movementMethod = LinkMovementMethod.getInstance()
-                        }
-                    }
-
-                    if (isWatch) {
-                        val addresses = web3ViewModel.getAddressesGroupedByDestination(id)
-                        if (addresses.isNotEmpty()) {
-                            if (addresses.size == 1) {
-                                val address = addresses.first().destination
-                                _headBinding?.watchTv?.text = getString(R.string.watching_address, "${address.take(6)}..${address.takeLast(4)}")
-                            } else {
-                                _headBinding?.watchTv?.text = getString(R.string.watching_addresses, addresses.size)
-                            }
-                        }
-                    }
-                }
+                updateWalletUI(id)
             }
         }
+        
+        RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (event.walletId == walletId) {
+                    updateWalletUI(walletId)
+                }
+            }
 
         _headBinding?.web3PendingView?.observePendingCount(viewLifecycleOwner, pendingTxCountLiveData)
         tokensLiveData.observe(viewLifecycleOwner, observer)
@@ -512,6 +485,47 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         _headBinding?.pieItemContainer?.addView(item)
     }
 
+    private fun updateWalletUI(id: String) {
+        lifecycleScope.launch {
+            val wallet = web3ViewModel.findWalletById(id)
+            val isWatch = wallet?.isWatch() == true
+            val isMissingKey = wallet?.isImported() == true && !wallet.hasLocalPrivateKey
+            
+            _headBinding?.viewAnimator?.displayedChild = when {
+                isMissingKey -> 1
+                else -> 0
+            }
+            
+            _headBinding?.watchLayout?.isVisible = isWatch
+
+            if (isMissingKey) {
+                val isMnemonic = wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value
+                _headBinding?.importKeyBtn?.text = getString(
+                    if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
+                )
+                _headBinding?.missingKeyTv?.apply {
+                    text = Html.fromHtml(
+                        getString(if (isMnemonic) R.string.missing_mnemonic_phrase_message else R.string.missing_private_key_message),
+                        Html.FROM_HTML_MODE_LEGACY
+                    )
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
+            }
+
+            if (isWatch) {
+                val addresses = web3ViewModel.getAddressesGroupedByDestination(id)
+                if (addresses.isNotEmpty()) {
+                    if (addresses.size == 1) {
+                        val address = addresses.first().destination
+                        _headBinding?.watchTv?.text = getString(R.string.watching_address, "${address.take(6)}..${address.takeLast(4)}")
+                    } else {
+                        _headBinding?.watchTv?.text = getString(R.string.watching_addresses, addresses.size)
+                    }
+                }
+            }
+        }
+    }
+    
     private fun showReceiveAssetList() {
         Web3TokenListBottomSheetDialogFragment.newInstance(walletId = walletId, TYPE_FROM_RECEIVE).apply {
             setOnClickListener { token ->

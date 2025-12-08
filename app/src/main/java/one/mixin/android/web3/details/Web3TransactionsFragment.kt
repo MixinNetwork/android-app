@@ -14,14 +14,18 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.web3.StakeAccount
+import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -128,39 +132,16 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        lifecycleScope.launch {
-            val wallet = web3ViewModel.findWalletById(token.walletId)
-            val isWatch = wallet?.isWatch() == true
-            val isMissingKey = wallet?.isImported() == true && !wallet.hasLocalPrivateKey
-            
-            binding.viewAnimator.displayedChild = when {
-                isMissingKey -> 1
-                else -> 0
-            }
-            
-            binding.empty.isVisible = isWatch
-            
-            if (isMissingKey) {
-                val isMnemonic = wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value
-                binding.importKeyBtn.text = getString(
-                    if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
-                )
-                binding.missingKeyTv.apply {
-                    text = Html.fromHtml(
-                        getString(if (isMnemonic) R.string.missing_mnemonic_phrase_message else R.string.missing_private_key_message),
-                        Html.FROM_HTML_MODE_LEGACY
-                    )
-                    movementMethod = LinkMovementMethod.getInstance()
+        updateWalletUI()
+        
+        RxBus.listen(WalletRefreshedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (event.walletId == token.walletId) {
+                    updateWalletUI()
                 }
             }
-            
-            if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
-                binding.stake.root.visibility = View.VISIBLE
-                getStakeAccounts(address)
-            } else{
-                binding.stake.root.visibility = View.GONE
-            }
-        }
 
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
         refreshToken(token.assetId)
@@ -538,5 +519,41 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     override fun onScrollChanged() {
         if (isAdded) web3ViewModel.scrollOffset = binding.scrollView.scrollY
+    }
+    
+    private fun updateWalletUI() {
+        lifecycleScope.launch {
+            val wallet = web3ViewModel.findWalletById(token.walletId)
+            val isWatch = wallet?.isWatch() == true
+            val isMissingKey = wallet?.isImported() == true && !wallet.hasLocalPrivateKey
+            
+            binding.viewAnimator.displayedChild = when {
+                isMissingKey -> 1
+                else -> 0
+            }
+            
+            binding.empty.isVisible = isWatch
+            
+            if (isMissingKey) {
+                val isMnemonic = wallet?.category == WalletCategory.IMPORTED_MNEMONIC.value
+                binding.importKeyBtn.text = getString(
+                    if (isMnemonic) R.string.Import_Mnemonic_Phrase else R.string.import_private_key
+                )
+                binding.missingKeyTv.apply {
+                    text = Html.fromHtml(
+                        getString(if (isMnemonic) R.string.missing_mnemonic_phrase_message else R.string.missing_private_key_message),
+                        Html.FROM_HTML_MODE_LEGACY
+                    )
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
+            }
+            
+            if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
+                binding.stake.root.visibility = View.VISIBLE
+                getStakeAccounts(address)
+            } else{
+                binding.stake.root.visibility = View.GONE
+            }
+        }
     }
 }
