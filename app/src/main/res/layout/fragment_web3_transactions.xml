@@ -129,14 +129,49 @@
 
                     </RelativeLayout>
 
-                    <one.mixin.android.widget.SendReceiveView
-                        android:id="@+id/send_receive_view"
+                    <ViewAnimator
+                        android:id="@+id/view_animator"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginTop="30dp"
-                        android:layout_marginEnd="8dp"
-                        android:layout_marginBottom="24dp" />
+                        android:layout_height="wrap_content">
+
+                        <one.mixin.android.widget.SendReceiveView
+                            android:id="@+id/send_receive_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginTop="30dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginBottom="24dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginEnd="20dp"
+                            android:layout_marginTop="30dp"
+                            android:layout_marginBottom="24dp"
+                            android:orientation="vertical">
+
+                            <Button
+                                android:id="@+id/import_key_btn"
+                                style="@style/AppTheme.MaterialButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/import_private_key" />
+
+                            <TextView
+                                android:id="@+id/missing_key_tv"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:textColor="?attr/text_assist"
+                                android:textSize="14sp"
+                                android:lineSpacingExtra="2dp"
+                                android:gravity="center_horizontal"
+                                tools:text="The encrypted private key for this wallet is missing from this device. Please re-import to continue. Learn More" />
+                        </LinearLayout>
+
+                    </ViewAnimator>
 
                     <View
                         android:id="@+id/empty"
