@@ -52,17 +52,18 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWalletHelper
-import one.mixin.android.extension.hexStringToByteArray
-import one.mixin.android.extension.isValidBase58
-import one.mixin.android.extension.isValidHex
+import one.mixin.android.crypto.isEvmAddressValid
+import one.mixin.android.crypto.isEvmPrivateKeyValid
+import one.mixin.android.crypto.isSolanaAddressValid
+import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
+import one.mixin.android.crypto.isSolanaPrivateKeyValid
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.encodeToBase58String
-import org.sol4k.Base58
 import org.web3j.crypto.Keys
-import org.web3j.crypto.WalletUtils
+import org.web3j.utils.Numeric
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -423,8 +424,10 @@ fun ImportWalletDetailPage(
                         onConfirmClick(
                             currentChainId, if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
                                 Keys.toChecksumAddress(text)
-                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isEvmNetwork.not() && text.isValidBase58().not() && text.isValidHex()) {
-                                text.hexStringToByteArray().encodeToBase58String()
+                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isEvmNetwork.not() // import solana key
+                                && isSolanaHexPrivateKeyValid(text)
+                            ) {
+                                Numeric.hexStringToByteArray(text).encodeToBase58String()
                             } else {
                                 text
                             }
@@ -456,45 +459,3 @@ fun ImportWalletDetailPage(
     }
 }
 
-
-private fun isEvmAddressValid(address: String): Boolean {
-    return try {
-        WalletUtils.isValidAddress(address)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-private fun isEvmPrivateKeyValid(privateKey: String): Boolean {
-    return try {
-        WalletUtils.isValidPrivateKey(privateKey)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-private fun isSolanaAddressValid(address: String): Boolean {
-    return try {
-        val decoded = Base58.decode(address)
-        decoded.size == 32
-    } catch (e: Exception) {
-        if (address.isValidHex()) {
-            val d = address.hexStringToByteArray()
-            return d.size == 32
-        }
-        false
-    }
-}
-
-private fun isSolanaPrivateKeyValid(privateKey: String): Boolean {
-    return try {
-        val decoded = Base58.decode(privateKey)
-        decoded.size == 64
-    } catch (e: Exception) {
-        if (privateKey.isValidHex()) {
-            val d = privateKey.hexStringToByteArray()
-            return d.size == 64
-        }
-        false
-    }
-}

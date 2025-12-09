@@ -46,6 +46,11 @@ import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.hmacSha256
+import one.mixin.android.extension.isValidBase58
+import one.mixin.android.extension.isValidHex
+import org.sol4k.Base58
+import org.web3j.crypto.WalletUtils
+import org.web3j.utils.Numeric
 import kotlin.text.toByteArray
 
 val secureRandom: SecureRandom = SecureRandom()
@@ -302,14 +307,14 @@ private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
     val lines = privatePem.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
     lines.filter { line ->
         !line.contains("BEGIN RSA PRIVATE KEY") &&
-            !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty()
+                !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty()
     }
         .forEach { line -> strippedKey.append(line.trim { it <= ' ' }) }
     return strippedKey.toString().trim { it <= ' ' }
 }
 
 fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: ByteArray) {
-    val encryptedPrefs = runCatching{
+    val encryptedPrefs = runCatching {
         EncryptedSharedPreferences.create(
             context,
             ENCRYPTED_MNEMONIC,
@@ -373,4 +378,52 @@ fun signBotSignature(
         content += body
     }
     return Pair(ts, (accountId.toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
+}
+
+
+fun isEvmAddressValid(address: String): Boolean {
+    return try {
+        WalletUtils.isValidAddress(address)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun isEvmPrivateKeyValid(privateKey: String): Boolean {
+    return try {
+        WalletUtils.isValidPrivateKey(privateKey)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun isSolanaAddressValid(address: String): Boolean {
+    return try {
+        val decoded = Base58.decode(address)
+        decoded.size == 32
+    } catch (e: Exception) {
+        false
+    }
+}
+
+fun isSolanaPrivateKeyValid(privateKey: String): Boolean {
+    return try {
+        val decoded = Base58.decode(privateKey)
+        decoded.size == 64
+    } catch (e: Exception) {
+        isSolanaHexPrivateKeyValid(privateKey)
+    }
+}
+
+fun isSolanaHexPrivateKeyValid(privateKey: String): Boolean {
+    return try {
+        if (privateKey.isValidBase58().not() && privateKey.isValidHex()) {
+            val d = Numeric.hexStringToByteArray(privateKey)
+            d.size == 64
+        } else {
+            false
+        }
+    } catch (e: Exception) {
+        false
+    }
 }

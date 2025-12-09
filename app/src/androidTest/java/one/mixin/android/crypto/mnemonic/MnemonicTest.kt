@@ -14,10 +14,15 @@ import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.isValidBase58
+import one.mixin.android.extension.isValidHex
 import junit.framework.TestCase.assertEquals
+import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
+import one.mixin.android.crypto.isSolanaPrivateKeyValid
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.eddsa.KeyPair
 import org.bitcoinj.crypto.MnemonicCode
+import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.sol4k.Base58
@@ -106,9 +111,9 @@ class MnemonicTest {
 
         val solanaPrivateKeyBytes = Base58.decode(solanaPrivateKeyBase58)
 
-        assertEquals(solanaPrivateKeyHex..(), solanaPrivateKeyBytes)
+        assertArrayEquals(Numeric.hexStringToByteArray(solanaPrivateKeyHex), solanaPrivateKeyBytes)
         assertEquals(true, isSolanaPrivateKeyValid(solanaPrivateKeyBase58))
-        assertEquals(true, isSolanaPrivateKeyValid(solanaPrivateKeyHex))
+        assertEquals(true, isSolanaHexPrivateKeyValid(solanaPrivateKeyHex))
 
         val solanaKeypair = Keypair.fromSecretKey(solanaPrivateKeyBytes)
         assertEquals(
@@ -120,19 +125,6 @@ class MnemonicTest {
         val ethKeyPair = ECKeyPair.create(Numeric.hexStringToByteArray(ethPrivateKeyHex))
         val ethAddress = Keys.toChecksumAddress(Keys.getAddress(ethKeyPair.publicKey))
         assertEquals("0x58A57ed9d8d624cBD12e2C467D34787555bB1b25", ethAddress)
-    }
-
-    private fun isSolanaPrivateKeyValid(privateKey: String): Boolean {
-        return try {
-            val decoded = Base58.decode(privateKey)
-            decoded.size == 64
-        } catch (e: Exception) {
-            if (privateKey.isValidHex()) {
-                val d = privateKey.hexStringToByteArray()
-                return d.size == 64
-            }
-            false
-        }
     }
 
     @Test
