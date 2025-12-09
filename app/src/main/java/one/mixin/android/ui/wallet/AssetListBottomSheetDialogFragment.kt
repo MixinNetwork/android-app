@@ -157,7 +157,7 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         null
                     }
                 }
-                filter(searchEt.et.text?.toString() ?: "")
+                loadData()
             }
         }
     }
@@ -315,15 +315,47 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun filter(s: String) {
-        val assetList =
-            defaultAssets.filter {
-                it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }.filter { item ->
-                ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+        if (s.isBlank() && currentChain == null) {
+            adapter.submitList(defaultAssets) {
+                binding.assetRv.scrollToPosition(0)
             }
-        adapter.submitList(assetList) {
-            binding.assetRv.scrollToPosition(0)
+            return
         }
+        
+        if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
+            // 对于 SEND/TRANSFER，只做本地过滤
+            val assetList =
+                defaultAssets.filter {
+                    it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+                }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }.filter { item ->
+                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+                }
+            adapter.submitList(assetList) {
+                binding.assetRv.scrollToPosition(0)
+            }
+        } else {
+            // 对于 RECEIVE，触发远程搜索
+            search(s)
+        }
+    }
+
+    private fun loadData() {
+        adapter.chain = currentChain
+        if (fromType == TYPE_FROM_SEND) {
+            if (defaultAssets.isEmpty()) {
+                binding.rvVa.displayedChild = POS_EMPTY_SEND
+            } else {
+                binding.rvVa.displayedChild = POS_RV
+            }
+        } else {
+            if (adapter.itemCount == 0) {
+                binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
+            } else {
+                binding.rvVa.displayedChild = POS_RV
+            }
+        }
+        binding.assetRv.scrollToPosition(0)
+        binding.pb.isVisible = false
     }
 
     private fun search(query: String) {
@@ -342,14 +374,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         } else {
                             list
                         }
-                    }?.filter { item ->
-                        ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                     }
                 adapter.submitList(localAssets)
 
-                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).filter { item ->
-                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
-                }
+                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query)
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 adapter.submitList(result) {
@@ -360,6 +388,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 }
+                
+                if (!isAdded) return@launch
+                loadData()
             }
     }
 

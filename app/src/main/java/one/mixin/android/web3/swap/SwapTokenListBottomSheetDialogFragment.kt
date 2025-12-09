@@ -48,7 +48,6 @@ import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
-
 @AndroidEntryPoint
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -165,7 +164,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         null
                     }
                 }
-                filter(searchEt.et.text?.toString() ?: "")
+                loadData()
             }
         }
     }
@@ -293,27 +292,32 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     (currentChain != null && it.chain.chainId == currentChain) || currentChain == null
                 }.toMutableList()
 
-            val total = search(s, assetList, currentChain, inMixin())
-            adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
             adapter.isSearch = true
+            val total = search(s, assetList, inMixin())
+            adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
             if (!isAdded) {
                 return@launch
             }
-            if (isLoading) {
-                binding.rvVa.displayedChild = 3
-            } else if (adapter.itemCount == 0) {
-                binding.rvVa.displayedChild = 1
-            } else {
-                binding.rvVa.displayedChild = 0
-            }
-            binding.assetRv.scrollToPosition(0)
-            binding.pb.isVisible = false
+            loadData()
         }
+
+    private fun loadData() {
+        adapter.chain = currentChain
+        adapter.isSearch = false
+        if (isLoading) {
+            binding.rvVa.displayedChild = 3
+        } else if (adapter.itemCount == 0) {
+            binding.rvVa.displayedChild = 1
+        } else {
+            binding.rvVa.displayedChild = 0
+        }
+        binding.assetRv.scrollToPosition(0)
+        binding.pb.isVisible = false
+    }
 
     private suspend fun search(
         s: String,
         localTokens: MutableList<SwapToken>,
-        currentChain: String?,
         inMixin: Boolean,
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
@@ -321,7 +325,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data?.filter { currentChain == null || (it.chain.chainId == currentChain) }?.map { ra ->
+                return@handleMixinResponse resp.data?.map { ra ->
                     localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
                         return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
                     }
