@@ -10,6 +10,7 @@ import one.mixin.android.session.Session
 import timber.log.Timber
 
 class RefreshOrdersJob(
+    private val walletId: String? = null
 ) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
     companion object {
         private const val serialVersionUID = 2L
@@ -19,13 +20,21 @@ class RefreshOrdersJob(
 
     override fun onRun(): Unit =
         runBlocking {
-            val wallets = web3WalletDao.getAllWallets().filter { it.isWatch().not() }.map { it.id }.toMutableSet()
-            Session.getAccountId()?.let { wallets.add(it) }
-
-            wallets.forEach { walletId ->
+            if (walletId != null) {
+                // Refresh specific wallet
                 val offsetKey = "order_offset_$walletId"
                 val offset = Web3PropertyHelper.findValueByKey(offsetKey, "")
                 refreshOrders(walletId, offset.ifEmpty { null }, offsetKey)
+            } else {
+                // Refresh all wallets
+                val wallets = web3WalletDao.getAllWallets().filter { it.isWatch().not() }.map { it.id }.toMutableSet()
+                Session.getAccountId()?.let { wallets.add(it) }
+
+                wallets.forEach { wId ->
+                    val offsetKey = "order_offset_$wId"
+                    val offset = Web3PropertyHelper.findValueByKey(offsetKey, "")
+                    refreshOrders(wId, offset.ifEmpty { null }, offsetKey)
+                }
             }
         }
 

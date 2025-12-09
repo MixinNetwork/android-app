@@ -32,7 +32,6 @@ import android.widget.TextView
 import androidx.activity.ComponentDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
@@ -97,10 +96,6 @@ class BottomSheet(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-
-        window?.let {
-            WindowCompat.setDecorFitsSystemWindows(it, false)
-        }
 
         findViewById<View>(com.google.android.material.R.id.container)?.apply {
             fitsSystemWindows = false
