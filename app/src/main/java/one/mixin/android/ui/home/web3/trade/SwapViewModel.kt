@@ -53,7 +53,7 @@ class SwapViewModel
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
 
-    suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source)
+    suspend fun web3Tokens(source: String, category: String? = null): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source, category)
 
     suspend fun web3Quote(
         inputMint: String,
@@ -201,8 +201,9 @@ class SwapViewModel
     }
 
     fun tokenExtraFlow(token: SwapToken): Flow<String?> {
-        return if (token.walletId.isNullOrBlank().not()) {
-            tokenRepository.web3TokenExtraFlow(token.walletId,token.assetId)
+        val walletId = token.walletId
+        return if (walletId.isNullOrBlank().not()) {
+            tokenRepository.web3TokenExtraFlow(walletId, token.assetId)
         } else {
             tokenRepository.tokenExtraFlow(token.assetId)
         }
@@ -222,6 +223,11 @@ class SwapViewModel
         web3Repository.getTokenByWalletAndAssetId(walletId, assetId)
     }
 
+    suspend fun fuzzySearchAsset(query: String, chainId: String?) =
+        tokenRepository.fuzzySearchAsset(query, chainId)
+
+    suspend fun fuzzySearchWeb3Asset(walletId: String, query: String, chainId: String?) =
+        web3Repository.fuzzySearchAsset(walletId, query, chainId)
     fun assetItemFlow(assetId: String): Flow<TokenItem?> {
         return tokenRepository.assetItemFlow(assetId)
     }
