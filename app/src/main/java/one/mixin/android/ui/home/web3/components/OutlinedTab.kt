@@ -24,7 +24,7 @@ fun OutlinedTab(
     onClick: () -> Unit,
 ) {
     val backgroundColor = if (selected) MixinAppTheme.colors.bgClip else Color.Transparent
-    val borderColor = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight
+    val borderColor = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderGray
     val textColor = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary
 
     Box(
