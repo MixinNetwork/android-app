@@ -19,9 +19,24 @@ import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    fun isEmpty() = tokens.isEmpty()
+    fun isEmpty() = getFilteredTokens().isEmpty()
 
     var tokens: ArrayList<Web3TokenItem> = ArrayList(0)
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    private fun getFilteredTokens() = if (chain.isNullOrBlank()) {
+        tokens
+    } else {
+        tokens.filter { it.chainId == chain }
+    }
+
+    var chain: String? = null
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (field != value) {
@@ -52,16 +67,17 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     override fun getItemCount(): Int {
-        return tokens.size
+        return getFilteredTokens().size
     }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        (holder as Web3Holder).bind(tokens[position])
+        val filteredTokens = getFilteredTokens()
+        (holder as Web3Holder).bind(filteredTokens[position])
         holder.itemView.setOnClickListener {
-            onClickListener?.invoke(tokens[position])
+            onClickListener?.invoke(filteredTokens[position])
         }
     }
 }

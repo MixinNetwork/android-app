@@ -379,7 +379,7 @@ class AssetRepository
 
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-    suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = routeService.web3Tokens(source)
+    suspend fun web3Tokens(source: String, category: String? = null): MixinResponse<List<SwapToken>> = routeService.web3Tokens(source, category = category)
 
     suspend fun web3Quote(
         inputMint: String,

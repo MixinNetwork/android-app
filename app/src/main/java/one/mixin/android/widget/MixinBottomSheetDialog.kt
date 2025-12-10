@@ -22,7 +22,7 @@ import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.isWideScreen
 import kotlin.math.abs
 
-class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
+class MixinBottomSheetDialog(context: Context, theme: Int, val transparentStatusBar: Boolean = false) : BottomSheetDialog(context, theme) {
     companion object {
         const val BACK_DRAWABLE_ALPHA = 51
     }
@@ -60,7 +60,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
             fitsSystemWindows = false
             doOnApplyWindowInsets(this) { insetView, windowInsets, initialMargins ->
                 insetView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    updateMargins(top = initialMargins.top + windowInsets.getInsets(systemBars()).top)
+                    updateMargins(top = initialMargins.top + if(transparentStatusBar) 0 else windowInsets.getInsets(systemBars()).top)
                 }
                 windowInsets
             }
