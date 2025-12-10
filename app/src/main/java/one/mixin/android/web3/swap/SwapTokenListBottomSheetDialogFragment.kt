@@ -59,8 +59,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         fun newInstance(
             key: String,
             tokens: ArrayList<SwapToken>,
+            stocks: List<SwapToken>? = null,
             selectUnique: String? = null,
-            isFrom: Boolean = true
+            isFrom: Boolean = true,
         ) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_KEY, key)
@@ -68,6 +69,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 putBoolean(ARGS_IS_FROM, isFrom)
             }.also { fragment ->
                 fragment.setTokens(tokens)
+                stocks?.let { fragment.setStocks(it) }
             }
     }
 
@@ -75,6 +77,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private val swapViewModel by viewModels<SwapViewModel>()
 
     private var tokens: List<SwapToken> = emptyList()
+    private var stocks: List<SwapToken> = emptyList()
 
     private val key by lazy {
         requireNotNull(requireArguments().getString(ARGS_KEY))
@@ -101,6 +104,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     @SuppressLint("NotifyDataSetChanged")
+    fun setStocks(newStocks: List<SwapToken>) {
+        stocks = newStocks
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     fun setLoading(loading: Boolean, list: List<SwapToken>? = null, remote: List<SwapToken>? = null) {
         if (isLoading == loading) return
         isLoading = loading
@@ -121,47 +129,57 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             radioTron.isVisible = inMixin()
             radioToncoin.isVisible = inMixin()
+            radioStock.isVisible = stocks.isNotEmpty()
             radioAll.isChecked = true
             radioGroup.setOnCheckedChangeListener { _, id ->
-                currentChain = when (id) {
-                    R.id.radio_eth -> {
-                        ETHEREUM_CHAIN_ID
+                when (id) {
+                    R.id.radio_stock -> {
+                        currentChain = null
+                        isStockMode = true
                     }
-
-                    R.id.radio_solana -> {
-                        SOLANA_CHAIN_ID
-                    }
-
-                    R.id.radio_base -> {
-                        Base
-                    }
-
-                    R.id.radio_tron -> {
-                        TRON_CHAIN_ID
-                    }
-
-                    R.id.radio_bsc -> {
-                        BinanceSmartChain
-                    }
-
-                    R.id.radio_polygon -> {
-                        Polygon
-                    }
-
-                    R.id.radio_arbritrum -> {
-                        Arbitrum
-                    }
-
-                    R.id.radio_optimism -> {
-                        Optimism
-                    }
-
-                    R.id.radio_toncoin -> {
-                        TON_CHAIN_ID
-                    }
-
                     else -> {
-                        null
+                        isStockMode = false
+                        currentChain = when (id) {
+                            R.id.radio_eth -> {
+                                ETHEREUM_CHAIN_ID
+                            }
+
+                            R.id.radio_solana -> {
+                                SOLANA_CHAIN_ID
+                            }
+
+                            R.id.radio_base -> {
+                                Base
+                            }
+
+                            R.id.radio_tron -> {
+                                TRON_CHAIN_ID
+                            }
+
+                            R.id.radio_bsc -> {
+                                BinanceSmartChain
+                            }
+
+                            R.id.radio_polygon -> {
+                                Polygon
+                            }
+
+                            R.id.radio_arbritrum -> {
+                                Arbitrum
+                            }
+
+                            R.id.radio_optimism -> {
+                                Optimism
+                            }
+
+                            R.id.radio_toncoin -> {
+                                TON_CHAIN_ID
+                            }
+
+                            else -> {
+                                null
+                            }
+                        }
                     }
                 }
                 loadData()
@@ -267,15 +285,16 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private var searchJob: Job? = null
 
+    private var isStockMode: Boolean = false
     private var currentChain: String? = null
         set(value) {
             field = value
-            adapter.all = currentChain == null
+            adapter.all = currentChain == null && !isStockMode
         }
 
     private fun filter(s: String) =
         lifecycleScope.launch {
-            if (s.isBlank() && currentChain == null) {
+            if (s.isBlank() && currentChain == null && !isStockMode) {
                 adapter.tokens = tokens.sortByKeywordAndBalance()
                 adapter.isSearch = false
                 if (isLoading) {
@@ -287,10 +306,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }
                 return@launch
             }
-            val assetList =
-                tokens.filter {
-                    (currentChain != null && it.chain.chainId == currentChain) || currentChain == null
-                }.toMutableList()
+
+            val assetList = if (isStockMode) {
+                stocks.toMutableList()
+            } else {
+                tokens.toMutableList()
+            }
 
             adapter.isSearch = true
             val total = search(s, assetList, inMixin())

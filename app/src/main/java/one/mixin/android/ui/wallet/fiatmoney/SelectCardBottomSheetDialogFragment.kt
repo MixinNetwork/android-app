@@ -70,7 +70,7 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun getTheme() = R.style.MixinBottomSheet
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return MixinBottomSheetDialog(requireContext(), theme).apply {
+        return MixinBottomSheetDialog(requireContext(), theme, true).apply {
             dismissWithAnimation = true
         }
     }

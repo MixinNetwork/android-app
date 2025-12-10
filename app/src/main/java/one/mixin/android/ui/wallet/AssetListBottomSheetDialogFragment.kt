@@ -323,7 +323,6 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         
         if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
-            // 对于 SEND/TRANSFER，只做本地过滤
             val assetList =
                 defaultAssets.filter {
                     it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
@@ -334,7 +333,6 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.assetRv.scrollToPosition(0)
             }
         } else {
-            // 对于 RECEIVE，触发远程搜索
             search(s)
         }
     }
