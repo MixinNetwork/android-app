@@ -167,7 +167,6 @@ fun PriceInputArea(
             } else {
                 userInput
             }
-            standardPrice = standardPriceValue
             onStandardPriceChanged(standardPriceValue)
         },
         inlineEndCompose = if (priceDisplayState.isPriceLoading) {
