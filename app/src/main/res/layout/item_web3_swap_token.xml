@@ -10,6 +10,8 @@
     android:paddingBottom="8dp"
     android:paddingStart="20dp"
     android:paddingEnd="20dp"
+    android:clipToPadding="false"
+    android:clipChildren="false"
     android:foreground="?selectableItemBackground">
 
     <one.mixin.android.widget.BadgeCircleImageView
@@ -36,8 +38,7 @@
         android:textColor="?attr/text_primary"
         android:textSize="12sp"
         android:singleLine="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginStart="16dp" />
 
     <TextView
         android:id="@+id/network_tv"
