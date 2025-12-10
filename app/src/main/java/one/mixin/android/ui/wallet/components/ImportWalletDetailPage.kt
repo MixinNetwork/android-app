@@ -101,7 +101,10 @@ fun ImportWalletDetailPage(
         mutableStateOf(initialNetworkName ?: networks.keys.first())
     }
 
-    val isEvmNetwork = selectedNetworkName != "Solana"
+
+    val isEvmNetwork = selectedNetworkName == "Ethereum" || selectedNetworkName == "Base" || selectedNetworkName == "BSC" || selectedNetworkName == "Polygon" || selectedNetworkName == "Arbitrum" || selectedNetworkName == "Optimism"
+    val isSolana = selectedNetworkName != "Solana"
+
     val currentChainId = networks[selectedNetworkName] ?: ""
 
     var addressExists by remember { mutableStateOf(false) }
@@ -121,7 +124,7 @@ fun ImportWalletDetailPage(
                 WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY, WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork && isEvmPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
-                    } else if (!isEvmNetwork && isSolanaPrivateKeyValid(text)) {
+                    } else if (isSolana && isSolanaPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
                     } else {
                         null
@@ -129,7 +132,7 @@ fun ImportWalletDetailPage(
                 }
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if ((isEvmNetwork && isEvmAddressValid(text)) ||
-                        (!isEvmNetwork && isSolanaAddressValid(text))) {
+                        (isSolana && isSolanaAddressValid(text))) {
                         text
                     } else {
                         null
@@ -164,15 +167,19 @@ fun ImportWalletDetailPage(
                 WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork) {
                         isEvmPrivateKeyValid(text)
-                    } else {
+                    } else if (isSolana) {
                         isSolanaPrivateKeyValid(text)
+                    } else {
+                        false
                     }
                 }
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if (isEvmNetwork) {
                         isEvmAddressValid(text)
-                    } else {
+                    } else if(isSolana) {
                         isSolanaAddressValid(text)
+                    } else {
+                        false
                     }
                 }
                 else -> false
@@ -424,7 +431,7 @@ fun ImportWalletDetailPage(
                         onConfirmClick(
                             currentChainId, if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
                                 Keys.toChecksumAddress(text)
-                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isEvmNetwork.not() // import solana key
+                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isSolana // import solana key
                                 && isSolanaHexPrivateKeyValid(text)
                             ) {
                                 Numeric.hexStringToByteArray(text).encodeToBase58String()
