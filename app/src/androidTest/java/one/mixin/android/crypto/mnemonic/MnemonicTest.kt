@@ -14,10 +14,15 @@ import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toSeed
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.isValidBase58
+import one.mixin.android.extension.isValidHex
 import junit.framework.TestCase.assertEquals
+import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
+import one.mixin.android.crypto.isSolanaPrivateKeyValid
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.eddsa.KeyPair
 import org.bitcoinj.crypto.MnemonicCode
+import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.sol4k.Base58
@@ -101,7 +106,15 @@ class MnemonicTest {
     @Test
     fun testPrivateKeyToPublicKey() {
         val solanaPrivateKeyBase58 = "37NfN7eam3KCwdC6jAc7nFeuDNYCV1K2AgNWmT4Xo6ogQPMnJ1ZoWA7AKN6jzEoQi3FNTEkkXiwu7VjqXdu8FGUs"
+
+        val solanaPrivateKeyHex = "6987bdb06aa8a243a3019f41489ffa8e609c953a885a748d1849a8df760aa479999d46fb3d1256f7049c8ed09314d7268612e8a91b800e91934463848305c98c"
+
         val solanaPrivateKeyBytes = Base58.decode(solanaPrivateKeyBase58)
+
+        assertArrayEquals(Numeric.hexStringToByteArray(solanaPrivateKeyHex), solanaPrivateKeyBytes)
+        assertEquals(true, isSolanaPrivateKeyValid(solanaPrivateKeyBase58))
+        assertEquals(true, isSolanaHexPrivateKeyValid(solanaPrivateKeyHex))
+
         val solanaKeypair = Keypair.fromSecretKey(solanaPrivateKeyBytes)
         assertEquals(
             "BLeUXTx9thHGT7VJUtF9vHEmfMDgW1nnKZ9UVer2CoLX",
