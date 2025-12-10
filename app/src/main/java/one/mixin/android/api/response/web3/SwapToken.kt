@@ -18,6 +18,7 @@ data class SwapToken(
     @SerializedName("symbol") val symbol: String,
     @SerializedName("icon") val icon: String,
     @SerializedName("chain") val chain: SwapChain,
+    val category: String? = null,
     var price: String? = null,
     var balance: String? = null,
     var collectionHash: String? = null,
