@@ -134,7 +134,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioGroup.setOnCheckedChangeListener { _, id ->
                 when (id) {
                     R.id.radio_stock -> {
-                        currentChain = null
+                        currentChain = ""
                         isStockMode = true
                     }
                     else -> {
@@ -214,6 +214,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             assetRv.adapter = adapter
             adapter.tokens = tokens.sortByKeywordAndBalance()
+            adapter.stocks = stocks.sortByKeywordAndBalance()
             radio.isVisible = !isLoading
             initRadio()
             searchEt.et.setHint(if (inMixin()) R.string.search_placeholder_asset else R.string.search_swap_token)
@@ -307,7 +308,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 return@launch
             }
 
-            val assetList = if (isStockMode) {
+            val assetList = if (isStockMode && s.isBlank()) {
                 stocks.toMutableList()
             } else {
                 tokens.toMutableList()
@@ -324,6 +325,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private fun loadData() {
         adapter.chain = currentChain
+        adapter.keyword = binding.searchEt.et.text.toString()
         adapter.isSearch = false
         if (isLoading) {
             binding.rvVa.displayedChild = 3
