@@ -129,6 +129,7 @@ class TradeFragment : BaseFragment() {
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
+    private var stocks: List<SwapToken> by mutableStateOf(emptyList())
     private var tokenItems: List<TokenItem>? = null
     private var web3tokens: List<Web3TokenItem>? = null
     private var fromToken: SwapToken? by mutableStateOf(null)
@@ -164,6 +165,7 @@ class TradeFragment : BaseFragment() {
         lifecycleScope.launch {
             initFromTo()
             refreshTokens()
+            refreshStocks()
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -218,7 +220,7 @@ class TradeFragment : BaseFragment() {
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
                                         selectCallback(swapTokens, isReverse, type, isLimit)
                                     } else {
-                                        selectCallback(remoteSwapTokens, isReverse, type, isLimit)
+                                        selectCallback(swapTokens, isReverse, type, isLimit)
                                     }
                                 },
                                 onReview = { quote, from, to, amount ->
@@ -286,7 +288,7 @@ class TradeFragment : BaseFragment() {
             if (inMixin()) {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     targetPref,
-                    ArrayList(list), if (isReverse) (if (isLimit) limitToToken?.assetId else toToken?.assetId) else (if (isLimit) limitFromToken?.assetId else fromToken?.assetId),
+                    ArrayList(list), stocks, if (isReverse) (if (isLimit) limitToToken?.assetId else toToken?.assetId) else (if (isLimit) limitFromToken?.assetId else fromToken?.assetId),
                     isFrom = true
                 ).apply {
                     if (list.isEmpty()) {
@@ -308,6 +310,7 @@ class TradeFragment : BaseFragment() {
                     ArrayList(
                         list,
                     ),
+                    stocks,
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
@@ -347,7 +350,9 @@ class TradeFragment : BaseFragment() {
                         list.run {
                             this
                         },
-                    ),
+                    )
+                ,
+                stocks,
                 if (inMixin()) {
                     if (isReverse) (if (isLimit) limitFromToken?.assetId else fromToken?.assetId) else (if (isLimit) limitToToken?.assetId else toToken?.assetId)
                 } else null,
@@ -609,7 +614,43 @@ class TradeFragment : BaseFragment() {
             toToken = tempToToken
         }
     }
-
+    private suspend fun refreshStocks() {
+        requestRouteAPI(
+            invokeNetwork = { swapViewModel.web3Tokens(getSource(), category = "stock") },
+            successBlock = { resp ->
+                resp.data
+            },
+            requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+            failureBlock = { r ->
+                if (r.errorCode == 401) {
+                    swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
+                    refreshStocks()
+                } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
+                    alertDialogBuilder()
+                        .setTitle(R.string.Update_Mixin)
+                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                        .setNegativeButton(R.string.Later) { dialog, _ ->
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setPositiveButton(R.string.Update) { dialog, _ ->
+                            requireContext().openMarket()
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setCancelable(false)
+                        .create().show()
+                }
+                return@requestRouteAPI true
+            },
+        )?.let { remote ->
+            stocks = remote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
+                val t = web3tokens?.firstOrNull { web3Token ->
+                    (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
+                } ?: return@map token
+                token.balance = t.balance
+                token
+            }.sortByKeywordAndBalance()
+        }
+    }
     private suspend fun refreshTokens() {
         requestRouteAPI(
             invokeNetwork = { swapViewModel.web3Tokens(getSource()) },
