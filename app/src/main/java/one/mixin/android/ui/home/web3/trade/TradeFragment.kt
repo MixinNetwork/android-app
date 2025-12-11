@@ -642,7 +642,7 @@ class TradeFragment : BaseFragment() {
                 return@requestRouteAPI true
             },
         )?.let { remote ->
-            stocks = remote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
+            stocks = remote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
                 val t = web3tokens?.firstOrNull { web3Token ->
                     (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
                 } ?: return@map token
