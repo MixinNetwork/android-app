@@ -44,6 +44,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
@@ -351,7 +352,13 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
-                return@handleMixinResponse resp.data?.map { ra ->
+                return@handleMixinResponse resp.data?.map {
+                    if (!inMixin) {
+                        it.copy(walletId = Web3Signer.currentWalletId)
+                    } else {
+                        it
+                    }
+                }?.map { ra ->
                     localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
                         return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
                     }

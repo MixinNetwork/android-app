@@ -53,7 +53,8 @@ fun PriceInputArea(
     var standardPrice by remember { mutableStateOf("") }
     var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
     var isPriceLoading by remember { mutableStateOf(false) }
-    
+    var userInputPrice by remember { mutableStateOf("") }
+
     LaunchedEffect(fromToken, toToken) {
         val isFromUsd = fromToken?.assetId?.let { id ->
             Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
@@ -62,6 +63,10 @@ fun PriceInputArea(
             Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
         } == true
         isPriceInverted = isFromUsd && !isToUsd
+    }
+    
+    LaunchedEffect(isPriceInverted) {
+        userInputPrice = ""
     }
     
     LaunchedEffect(priceMultiplier) {
@@ -77,6 +82,7 @@ fun PriceInputArea(
     LaunchedEffect(fromToken, toToken, lastOrderTime) {
         marketPrice = null
         standardPrice = ""
+        userInputPrice = ""
         onStandardPriceChanged("")
 
         val fromT = fromToken
@@ -135,13 +141,14 @@ fun PriceInputArea(
             isPriceLoading = false
         }
     }
-    
-    val displayPrice = remember(standardPrice, isPriceInverted) {
-        val price = standardPrice.toBigDecimalOrNull()
+
+    val displayPrice = remember(standardPrice, userInputPrice, isPriceInverted) {
+        val priceToUse = userInputPrice.ifEmpty { standardPrice }
+        val price = priceToUse.toBigDecimalOrNull()
         if (isPriceInverted && price != null && price > BigDecimal.ZERO) {
             BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
         } else {
-            standardPrice
+            priceToUse
         }
     }
     
@@ -161,6 +168,7 @@ fun PriceInputArea(
         readOnly = false,
         selectClick = null,
         onInputChanged = { userInput ->
+            userInputPrice = userInput
             val inputPrice = userInput.toBigDecimalOrNull()
             val standardPriceValue = if (isPriceInverted && inputPrice != null && inputPrice > BigDecimal.ZERO) {
                 BigDecimal.ONE.divide(inputPrice, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()

@@ -783,7 +783,7 @@ class TradeFragment : BaseFragment() {
         refreshJob?.cancel()
         refreshJob = lifecycleScope.launch {
             while (isAdded) {
-                jobManager.addJobInBackground(RefreshOrdersJob(walletId ?: Session.getAccountId()))
+                swapViewModel.refreshOrders(walletId ?: Session.getAccountId()!!)
                 swapViewModel.refreshPendingOrders()
                 delay(3000)
             }
