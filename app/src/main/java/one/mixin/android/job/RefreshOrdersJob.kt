@@ -38,7 +38,7 @@ class RefreshOrdersJob(
             }
         }
 
-    private suspend fun refreshOrders(walletId: String, offset: String?, offsetKey: String, previousLastCreatedAt: String? = null) {
+    private suspend fun refreshOrders(walletId: String, offset: String?, offsetKey: String) {
         val response = routeService.getLimitOrders(category = "all", limit = LIMIT, offset = offset, state = null, walletId = walletId)
 
         if (response.isSuccess && response.data != null) {
@@ -46,8 +46,8 @@ class RefreshOrdersJob(
             if (orders.isEmpty()) return
             
             // Check if we're stuck in a loop (same last timestamp)
-            val currentLastCreatedAt = orders.lastOrNull()?.createdAt
-            if (currentLastCreatedAt != null && currentLastCreatedAt == previousLastCreatedAt) {
+            val lastCreate = orders.maxByOrNull { it.createdAt }?.createdAt ?: return
+            if (offset != null && lastCreate == offset) {
                 Timber.w("RefreshOrdersJob: Detected duplicate offset for wallet $walletId, stopping pagination")
                 return
             }
@@ -73,14 +73,10 @@ class RefreshOrdersJob(
                 }
             }
 
-            if (currentLastCreatedAt != null) {
-                Web3PropertyHelper.updateKeyValue(offsetKey, currentLastCreatedAt)
-            }
-
             val fetchedSize = orders.size
+            Web3PropertyHelper.updateKeyValue(offsetKey, lastCreate)
             if (fetchedSize >= LIMIT) {
-                val lastCreate = orders.lastOrNull()?.createdAt ?: return
-                refreshOrders(walletId, lastCreate, offsetKey, currentLastCreatedAt)
+                refreshOrders(walletId, lastCreate, offsetKey)
             }
         }
     }
