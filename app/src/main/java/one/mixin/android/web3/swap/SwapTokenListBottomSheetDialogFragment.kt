@@ -106,6 +106,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     @SuppressLint("NotifyDataSetChanged")
     fun setStocks(newStocks: List<SwapToken>) {
         stocks = newStocks
+        if (isAdded) {
+            initRadio()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

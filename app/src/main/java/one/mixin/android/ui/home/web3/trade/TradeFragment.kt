@@ -649,6 +649,9 @@ class TradeFragment : BaseFragment() {
                 token.balance = t.balance
                 token
             }.sortByKeywordAndBalance()
+            if (stocks.isNotEmpty()) {
+                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setStocks(stocks)
+            }
         }
     }
     private suspend fun refreshTokens() {
