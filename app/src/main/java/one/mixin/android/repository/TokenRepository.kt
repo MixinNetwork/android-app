@@ -108,6 +108,7 @@ import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.Chain
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
@@ -148,6 +149,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.String
 
 @Singleton
 class TokenRepository
@@ -1484,4 +1486,7 @@ class TokenRepository
     suspend fun getChainItemByWalletId(walletId: String) = web3AddressDao.getChainItemByWalletId(walletId)
 
     suspend fun matchAddress(destination: String, chainId: String): Address? = addressDao.matchAddress(destination, chainId)
+    suspend fun fetchTokenSuspend(id: List<String>): MixinResponse<List<Token>> = tokenService.fetchTokenSuspend(id)
+
+    suspend fun getChainById(id: String): MixinResponse<Chain> = tokenService.getChainById(id)
 }
