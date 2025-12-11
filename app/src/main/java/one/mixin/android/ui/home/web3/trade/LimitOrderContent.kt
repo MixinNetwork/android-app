@@ -195,6 +195,7 @@ fun LimitOrderContent(
 
     fromToken?.let {
         val fromBalance = viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value
+        val toBalance = toToken?.let { viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value }
         KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
             Column(
                 modifier = if (availableHeight != null) {
@@ -291,6 +292,16 @@ fun LimitOrderContent(
                                 } else {
                                     inputText = ""
                                 }
+                                if (inputText.isNotBlank()) {
+                                    val fromAmount = inputText.toBigDecimalOrNull()
+                                    val standardPrice = limitPriceText.toBigDecimalOrNull()
+                                    if (fromAmount != null && standardPrice != null && fromAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
+                                        val calculatedOutput = fromAmount.multiply(standardPrice).setScale(8, RoundingMode.DOWN)
+                                        outputText = calculatedOutput.stripTrailingZeros().toPlainString()
+                                    } else if (fromAmount == null || fromAmount == BigDecimal.ZERO) {
+                                        outputText = ""
+                                    }
+                                }
                             })
                         },
                         bottomCompose = {
@@ -324,6 +335,24 @@ fun LimitOrderContent(
                                     }
                                 },
                                 onDeposit = null,
+                                onMax = {
+                                    val balance = toBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    if (balance > BigDecimal.ZERO) {
+                                        outputText = balance.setScale(8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
+                                    } else {
+                                        outputText = ""
+                                    }
+                                    if (outputText.isNotBlank()) {
+                                        val toAmount = outputText.toBigDecimalOrNull()
+                                        val standardPrice = limitPriceText.toBigDecimalOrNull()
+                                        if (toAmount != null && standardPrice != null && toAmount > BigDecimal.ZERO && standardPrice > BigDecimal.ZERO) {
+                                            val calculatedInput = toAmount.divide(standardPrice, 8, RoundingMode.DOWN)
+                                            inputText = calculatedInput.stripTrailingZeros().toPlainString()
+                                        } else if (toAmount == null || toAmount == BigDecimal.ZERO) {
+                                            inputText = ""
+                                        }
+                                    }
+                                }
                             )
                         },
                         tailCompose = {

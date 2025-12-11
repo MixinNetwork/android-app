@@ -33,7 +33,6 @@ import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -202,7 +201,6 @@ fun PriceInputArea(
                 horizontalArrangement = Arrangement.Center
             ) {
                 val priceRatioText = priceDisplayState.formatPriceRatio(displayPrice)
-                Timber.e("displayPrice: $displayPrice $priceRatioText")
                 if (priceRatioText != null) {
                     Text(
                         text = priceRatioText,
