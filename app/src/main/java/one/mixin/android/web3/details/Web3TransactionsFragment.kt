@@ -183,7 +183,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 if (token.isNativeSolToken()) {
                     stake.root.visibility = View.VISIBLE
                     lifecycleScope.launch {
-                        address?.let { address->
+                        address?.let { address ->
                             getStakeAccounts(address)
                         }
                     }
