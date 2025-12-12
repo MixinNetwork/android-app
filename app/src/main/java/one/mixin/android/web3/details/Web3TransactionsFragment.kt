@@ -268,10 +268,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                             return@launch
                         }
-                        if (address.isNullOrEmpty()) {
-                            toast(R.string.Alert_Not_Support)
-                            return@launch
-                        }
                         AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
