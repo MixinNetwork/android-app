@@ -356,16 +356,23 @@ fun LimitOrderContent(
                             )
                         },
                         tailCompose = {
-                            PriceInputArea(
-                                modifier = Modifier.onFocusChanged {
-                                    if (it.isFocused) focusedField = FocusedField.PRICE
-                                },
-                                fromToken = fromToken,
-                                toToken = toToken,
-                                lastOrderTime = marketPriceClickTime,
-                                priceMultiplier = priceMultiplier,
-                                onStandardPriceChanged = { limitPriceText = it },
-                            )
+                            Column {
+                                PriceInputArea(
+                                    modifier = Modifier.onFocusChanged {
+                                        if (it.isFocused) focusedField = FocusedField.PRICE
+                                    },
+                                    fromToken = fromToken,
+                                    toToken = toToken,
+                                    lastOrderTime = marketPriceClickTime,
+                                    priceMultiplier = priceMultiplier,
+                                    onStandardPriceChanged = { limitPriceText = it },
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                ExpirySelector(
+                                    expiryOption = expiryOption,
+                                    onExpiryChange = { option -> expiryOption = option }
+                                )
+                            }
                         },
                         margin = 6.dp,
                     )
@@ -376,12 +383,6 @@ fun LimitOrderContent(
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp)
                         .padding(bottom = 20.dp)) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ExpirySelector(
-                            expiryOption = expiryOption,
-                            onExpiryChange = { option -> expiryOption = option }
-                        )
-
                         Spacer(modifier = Modifier.height(16.dp))
                         if (availableHeight == null) {
                             Spacer(modifier = Modifier.weight(1f))
