@@ -54,7 +54,7 @@ class Web3AddressFragment : BaseFragment() {
         const val TAG = "Web3ReceiveFragment"
         private const val ARGS_HIDE_NETWORK_SWITCH = "args_hide_network_switch"
 
-        fun newInstance(web3Token: Web3TokenItem, address: String, hideNetworkSwitch: Boolean = false): Web3AddressFragment {
+        fun newInstance(web3Token: Web3TokenItem, address: String?, hideNetworkSwitch: Boolean = false): Web3AddressFragment {
             val fragment = Web3AddressFragment()
             val args = Bundle().apply {
                 putParcelable("web3_token", web3Token)
@@ -69,14 +69,14 @@ class Web3AddressFragment : BaseFragment() {
     private val walletViewModel by viewModels<WalletViewModel>()
     private var _binding: FragmentWeb3AddressBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private lateinit var address: String
+    private var address: String? = null
     private lateinit var web3Token: Web3TokenItem
     private var hideNetworkSwitch: Boolean = false
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        address = arguments?.getString("address") ?: ""
+        address = arguments?.getString("address")
         web3Token = arguments?.getParcelableCompat("web3_token", Web3TokenItem::class.java) ?: throw IllegalArgumentException("web3Token is required")
         hideNetworkSwitch = arguments?.getBoolean(ARGS_HIDE_NETWORK_SWITCH, false) ?: false
     }
@@ -94,6 +94,11 @@ class Web3AddressFragment : BaseFragment() {
             requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
         }
         lifecycleScope.launch {
+            val address = this@Web3AddressFragment.address
+            if (address == null) {
+                binding.va.displayedChild = 1
+                return@launch
+            }
             val wallet = walletViewModel.getWalletByDestination(address)
             if (wallet != null) {
                 binding.title.setSubTitle(getString(R.string.Receive), wallet.name)
@@ -234,6 +239,7 @@ class Web3AddressFragment : BaseFragment() {
     }
 
     private fun updateUI() {
+        val address = this@Web3AddressFragment.address ?: return
         binding.addressView.loadAddress(
             scopeProvider,
             address,
