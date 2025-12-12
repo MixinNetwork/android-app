@@ -329,6 +329,14 @@
         <item name="android:background">@drawable/bg_round_blue_btn</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">600</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
+    </style>
+
+    <style name="AppTheme.MaterialReactButton">
+        <item name="android:background">@drawable/bg_rnd_rect_blue_btn</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:elevation">0dp</item>
         <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
