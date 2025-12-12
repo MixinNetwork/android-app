@@ -43,17 +43,22 @@ fun PriceInputArea(
     toToken: SwapToken?,
     lastOrderTime: Long?,
     priceMultiplier: Float?,
-
     onStandardPriceChanged: (String) -> Unit,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
 
     val context = LocalContext.current
-    var isPriceInverted by remember { mutableStateOf(false) }
-    var standardPrice by remember { mutableStateOf("") }
-    var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
-    var isPriceLoading by remember { mutableStateOf(false) }
     
+    var isPriceInverted by remember { mutableStateOf(false) }
+
+    // Display price shown in the input field, initialized from market price
+    var displayPrice by remember { mutableStateOf("") }
+    
+    var marketPrice by remember { mutableStateOf<BigDecimal?>(null) }
+    
+    // Loading state when fetching price from API
+    var isPriceLoading by remember { mutableStateOf(false) }
+
     LaunchedEffect(fromToken, toToken) {
         val isFromUsd = fromToken?.assetId?.let { id ->
             Constants.AssetId.usdtAssets.containsKey(id) || Constants.AssetId.usdcAssets.containsKey(id)
@@ -69,20 +74,24 @@ fun PriceInputArea(
             val newPrice = marketPrice!!.multiply(BigDecimal(priceMultiplier.toString()))
                 .setScale(8, RoundingMode.HALF_UP)
             val priceString = newPrice.stripTrailingZeros().toPlainString()
-            standardPrice = priceString
             onStandardPriceChanged(priceString)
+            
+            displayPrice = if (isPriceInverted && newPrice > BigDecimal.ZERO) {
+                BigDecimal.ONE.divide(newPrice, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+            } else {
+                priceString
+            }
         }
     }
     
-    LaunchedEffect(fromToken, toToken, lastOrderTime) {
+    LaunchedEffect(fromToken, toToken, lastOrderTime, isPriceInverted) {
         marketPrice = null
-        standardPrice = ""
+        displayPrice = ""
         onStandardPriceChanged("")
 
         val fromT = fromToken
         val toT = toToken
         if (fromT != null && toT != null) {
-            // Prefer MarketDao prices
             var fromMarket = viewModel.checkMarketById(fromT.assetId, false)
             var toMarket = viewModel.checkMarketById(toT.assetId, false)
             var fromP = fromMarket?.currentPrice?.toBigDecimalOrNull()
@@ -91,8 +100,13 @@ fun PriceInputArea(
                 val price = fromP.divide(toP, 8, RoundingMode.HALF_UP)
                 marketPrice = price
                 val priceString = price.stripTrailingZeros().toPlainString()
-                standardPrice = priceString
                 onStandardPriceChanged(priceString)
+                
+                displayPrice = if (isPriceInverted && price > BigDecimal.ZERO) {
+                    BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+                } else {
+                    priceString
+                }
                 
                 fromMarket = viewModel.checkMarketById(fromT.assetId, true)
                 toMarket = viewModel.checkMarketById(toT.assetId, true)
@@ -103,8 +117,13 @@ fun PriceInputArea(
                     if (price != updatedPrice) {
                         marketPrice = updatedPrice
                         val updatedPriceString = updatedPrice.stripTrailingZeros().toPlainString()
-                        standardPrice = updatedPriceString
                         onStandardPriceChanged(updatedPriceString)
+                        
+                        displayPrice = if (isPriceInverted && updatedPrice > BigDecimal.ZERO) {
+                            BigDecimal.ONE.divide(updatedPrice, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+                        } else {
+                            updatedPriceString
+                        }
                     }
                 }
             } else {
@@ -117,16 +136,21 @@ fun PriceInputArea(
                             val price = rate.setScale(8, RoundingMode.HALF_UP)
                             marketPrice = price
                             val priceString = price.stripTrailingZeros().toPlainString()
-                            standardPrice = priceString
                             onStandardPriceChanged(priceString)
+                            
+                            displayPrice = if (isPriceInverted && price > BigDecimal.ZERO) {
+                                BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+                            } else {
+                                priceString
+                            }
                         } else {
-                            standardPrice = ""
+                            displayPrice = ""
                             onStandardPriceChanged("")
                         }
                         isPriceLoading = false
                     }
                     .onFailure {
-                        standardPrice = ""
+                        displayPrice = ""
                         onStandardPriceChanged("")
                         isPriceLoading = false
                     }
@@ -135,16 +159,7 @@ fun PriceInputArea(
             isPriceLoading = false
         }
     }
-    
-    val displayPrice = remember(standardPrice, isPriceInverted) {
-        val price = standardPrice.toBigDecimalOrNull()
-        if (isPriceInverted && price != null && price > BigDecimal.ZERO) {
-            BigDecimal.ONE.divide(price, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-        } else {
-            standardPrice
-        }
-    }
-    
+
     val priceDisplayState = remember(fromToken, toToken, isPriceInverted, isPriceLoading) {
         PriceDisplayState(
             fromToken = fromToken,
@@ -161,13 +176,14 @@ fun PriceInputArea(
         readOnly = false,
         selectClick = null,
         onInputChanged = { userInput ->
+            displayPrice = userInput
             val inputPrice = userInput.toBigDecimalOrNull()
-            val standardPriceValue = if (isPriceInverted && inputPrice != null && inputPrice > BigDecimal.ZERO) {
+            val newStandardPrice = if (isPriceInverted && inputPrice != null && inputPrice > BigDecimal.ZERO) {
                 BigDecimal.ONE.divide(inputPrice, 8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
             } else {
                 userInput
             }
-            onStandardPriceChanged(standardPriceValue)
+            onStandardPriceChanged(newStandardPrice)
         },
         inlineEndCompose = if (priceDisplayState.isPriceLoading) {
             {

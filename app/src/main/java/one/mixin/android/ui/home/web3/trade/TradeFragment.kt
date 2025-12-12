@@ -129,6 +129,7 @@ class TradeFragment : BaseFragment() {
 
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
+    private var stocks: List<SwapToken> by mutableStateOf(emptyList())
     private var tokenItems: List<TokenItem>? = null
     private var web3tokens: List<Web3TokenItem>? = null
     private var fromToken: SwapToken? by mutableStateOf(null)
@@ -164,6 +165,7 @@ class TradeFragment : BaseFragment() {
         lifecycleScope.launch {
             initFromTo()
             refreshTokens()
+            refreshStocks()
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -218,7 +220,7 @@ class TradeFragment : BaseFragment() {
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
                                         selectCallback(swapTokens, isReverse, type, isLimit)
                                     } else {
-                                        selectCallback(remoteSwapTokens, isReverse, type, isLimit)
+                                        selectCallback(swapTokens, isReverse, type, isLimit)
                                     }
                                 },
                                 onReview = { quote, from, to, amount ->
@@ -231,7 +233,9 @@ class TradeFragment : BaseFragment() {
                                 onLimitReview = { from, to, order ->
                                     AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
-                                    openLimitTransfer(from, to, order)
+                                    lifecycleScope.launch {
+                                        openLimitTransfer(from, to, order)
+                                    }
                                 },
                                 onDeposit = { token ->
                                     hideKeyboard()
@@ -240,8 +244,12 @@ class TradeFragment : BaseFragment() {
                                     } else {
                                         this@TradeFragment.lifecycleScope.launch {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
-                                            val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
-                                            navTo(Web3AddressFragment.newInstance(t, address, true), Web3AddressFragment.TAG)
+                                            val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chain.chainId)
+                                            if (address == null) {
+                                                toast(R.string.Alert_Not_Support)
+                                                return@launch
+                                            }
+                                            navTo(Web3AddressFragment.newInstance(t, address?.destination, true), Web3AddressFragment.TAG)
                                         }
                                     }
                                 },
@@ -286,7 +294,7 @@ class TradeFragment : BaseFragment() {
             if (inMixin()) {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     targetPref,
-                    ArrayList(list), if (isReverse) (if (isLimit) limitToToken?.assetId else toToken?.assetId) else (if (isLimit) limitFromToken?.assetId else fromToken?.assetId),
+                    ArrayList(list), stocks, if (isReverse) (if (isLimit) limitToToken?.assetId else toToken?.assetId) else (if (isLimit) limitFromToken?.assetId else fromToken?.assetId),
                     isFrom = true
                 ).apply {
                     if (list.isEmpty()) {
@@ -308,6 +316,7 @@ class TradeFragment : BaseFragment() {
                     ArrayList(
                         list,
                     ),
+                    stocks,
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
@@ -347,7 +356,9 @@ class TradeFragment : BaseFragment() {
                         list.run {
                             this
                         },
-                    ),
+                    )
+                ,
+                stocks,
                 if (inMixin()) {
                     if (isReverse) (if (isLimit) limitFromToken?.assetId else fromToken?.assetId) else (if (isLimit) limitToToken?.assetId else toToken?.assetId)
                 } else null,
@@ -457,7 +468,18 @@ class TradeFragment : BaseFragment() {
     private suspend fun handleReview(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
         val inputMint = from.assetId
         val outputMint = to.assetId
-
+        if (!inMixin()) {
+            val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
+            if (address == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+            val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
+            if (fromAddress == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+        }
         val resp = requestRouteAPI(
             invokeNetwork = {
                 swapViewModel.web3Swap(
@@ -524,9 +546,21 @@ class TradeFragment : BaseFragment() {
         }
     }
 
-    private fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
+    private suspend fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
         AnalyticsTracker.trackTradePreview()
         val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
+        if (!inMixin()) {
+            val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
+            if (address == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+            val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
+            if (fromAddress == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+        }
         LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
             setOnDone {
                 initialAmount = null
@@ -609,7 +643,46 @@ class TradeFragment : BaseFragment() {
             toToken = tempToToken
         }
     }
-
+    private suspend fun refreshStocks() {
+        requestRouteAPI(
+            invokeNetwork = { swapViewModel.web3Tokens(getSource(), category = "stock") },
+            successBlock = { resp ->
+                resp.data
+            },
+            requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+            failureBlock = { r ->
+                if (r.errorCode == 401) {
+                    swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
+                    refreshStocks()
+                } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
+                    alertDialogBuilder()
+                        .setTitle(R.string.Update_Mixin)
+                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
+                        .setNegativeButton(R.string.Later) { dialog, _ ->
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setPositiveButton(R.string.Update) { dialog, _ ->
+                            requireContext().openMarket()
+                            dialog.dismiss()
+                            activity?.onBackPressedDispatcher?.onBackPressed()
+                        }.setCancelable(false)
+                        .create().show()
+                }
+                return@requestRouteAPI true
+            },
+        )?.let { remote ->
+            stocks = remote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
+                val t = web3tokens?.firstOrNull { web3Token ->
+                    (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
+                } ?: return@map token
+                token.balance = t.balance
+                token
+            }.sortByKeywordAndBalance()
+            if (stocks.isNotEmpty()) {
+                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setStocks(stocks)
+            }
+        }
+    }
     private suspend fun refreshTokens() {
         requestRouteAPI(
             invokeNetwork = { swapViewModel.web3Tokens(getSource()) },
@@ -739,7 +812,7 @@ class TradeFragment : BaseFragment() {
         refreshJob?.cancel()
         refreshJob = lifecycleScope.launch {
             while (isAdded) {
-                jobManager.addJobInBackground(RefreshOrdersJob(walletId ?: Session.getAccountId()))
+                swapViewModel.refreshOrders(walletId ?: Session.getAccountId()!!)
                 swapViewModel.refreshPendingOrders()
                 delay(3000)
             }
