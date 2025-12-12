@@ -233,7 +233,9 @@ class TradeFragment : BaseFragment() {
                                 onLimitReview = { from, to, order ->
                                     AnalyticsTracker.trackTradePreview()
                                     this@apply.hideKeyboard()
-                                    openLimitTransfer(from, to, order)
+                                    lifecycleScope.launch {
+                                        openLimitTransfer(from, to, order)
+                                    }
                                 },
                                 onDeposit = { token ->
                                     hideKeyboard()
@@ -242,8 +244,12 @@ class TradeFragment : BaseFragment() {
                                     } else {
                                         this@TradeFragment.lifecycleScope.launch {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
-                                            val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
-                                            navTo(Web3AddressFragment.newInstance(t, address, true), Web3AddressFragment.TAG)
+                                            val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chain.chainId)
+                                            if (address == null) {
+                                                toast(R.string.Alert_Not_Support)
+                                                return@launch
+                                            }
+                                            navTo(Web3AddressFragment.newInstance(t, address?.destination, true), Web3AddressFragment.TAG)
                                         }
                                     }
                                 },
@@ -462,7 +468,18 @@ class TradeFragment : BaseFragment() {
     private suspend fun handleReview(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
         val inputMint = from.assetId
         val outputMint = to.assetId
-
+        if (!inMixin()) {
+            val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
+            if (address == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+            val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
+            if (fromAddress == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+        }
         val resp = requestRouteAPI(
             invokeNetwork = {
                 swapViewModel.web3Swap(
@@ -529,9 +546,21 @@ class TradeFragment : BaseFragment() {
         }
     }
 
-    private fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
+    private suspend fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
         AnalyticsTracker.trackTradePreview()
         val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
+        if (!inMixin()) {
+            val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
+            if (address == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+            val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
+            if (fromAddress == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+        }
         LimitTransferBottomSheetDialogFragment.newInstance(order, from, to, senderWalletId).apply {
             setOnDone {
                 initialAmount = null

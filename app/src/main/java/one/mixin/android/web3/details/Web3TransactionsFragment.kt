@@ -111,8 +111,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     @Inject
     lateinit var tip: Tip
 
-    private val address: String by lazy {
-        requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+    private val address: String? by lazy {
+        requireArguments().getString(ARGS_ADDRESS)
     }
 
     private val token: Web3TokenItem by lazy {
@@ -132,7 +132,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             binding.empty.isVisible = wallet?.isWatch() == true
             if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
                 binding.stake.root.visibility = View.VISIBLE
-                getStakeAccounts(address)
+                address?.let { address -> getStakeAccounts(address)}
             } else{
                 binding.stake.root.visibility = View.GONE
             }
@@ -183,7 +183,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 if (token.isNativeSolToken()) {
                     stake.root.visibility = View.VISIBLE
                     lifecycleScope.launch {
-                        getStakeAccounts(address)
+                        address?.let { address ->
+                            getStakeAccounts(address)
+                        }
                     }
                 }
                 transactionsRv.listener = this@Web3TransactionsFragment
@@ -224,7 +226,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             requireView().navigate(
                                 R.id.action_web3_transactions_to_transfer_destination,
                                 Bundle().apply {
-                                    putString(TransferDestinationInputFragment.ARGS_ADDRESS, address)
+                                    address?.let {
+                                        putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
+                                    }
                                     putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet)
                                     putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                                     putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
@@ -246,7 +250,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         requireView().navigate(
                             R.id.action_web3_transactions_to_web3_address,
                             Bundle().apply {
-                                putString("address", address)
+                                address?.let {
+                                    putString("address", it)
+                                }
                                 putParcelable("web3_token", token)
                             }
                         )
