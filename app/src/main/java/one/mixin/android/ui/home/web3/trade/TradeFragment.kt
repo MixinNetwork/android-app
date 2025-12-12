@@ -244,8 +244,12 @@ class TradeFragment : BaseFragment() {
                                     } else {
                                         this@TradeFragment.lifecycleScope.launch {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
-                                            val address = if (t.isSolanaChain()) Web3Signer.solanaAddress else Web3Signer.evmAddress
-                                            navTo(Web3AddressFragment.newInstance(t, address, true), Web3AddressFragment.TAG)
+                                            val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chain.chainId)
+                                            if (address == null) {
+                                                toast(R.string.Alert_Not_Support)
+                                                return@launch
+                                            }
+                                            navTo(Web3AddressFragment.newInstance(t, address?.destination, true), Web3AddressFragment.TAG)
                                         }
                                     }
                                 },
@@ -470,6 +474,11 @@ class TradeFragment : BaseFragment() {
                 toast(R.string.Alert_Not_Support)
                 return
             }
+            val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
+            if (fromAddress == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
         }
         val resp = requestRouteAPI(
             invokeNetwork = {
@@ -543,6 +552,11 @@ class TradeFragment : BaseFragment() {
         if (!inMixin()) {
             val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
             if (address == null){
+                toast(R.string.Alert_Not_Support)
+                return
+            }
+            val fromAddress = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, from.chain.chainId)
+            if (fromAddress == null){
                 toast(R.string.Alert_Not_Support)
                 return
             }
