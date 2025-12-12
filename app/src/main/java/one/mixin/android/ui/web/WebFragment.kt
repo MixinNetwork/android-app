@@ -1675,6 +1675,7 @@ class WebFragment : BaseFragment() {
 
     private fun setStatusBarColor(content: String) {
         try {
+            Timber.e("setStatusBarColor $content")
             val color = content.replace("\"", "")
             val c = color.toColorInt()
             val dark = isDarkColor(c)

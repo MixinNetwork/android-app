@@ -33,6 +33,7 @@ import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.AppDao
@@ -458,4 +459,6 @@ class AccountRepository
         }
 
         suspend fun updateSession(request: SessionRequest) = accountService.updateSession(request)
+
+        suspend fun getUserAccounts() = accountService.getUserAccounts()
     }

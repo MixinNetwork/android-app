@@ -77,6 +77,7 @@ object GsonHelper {
         }
     }
 
+
     private class ByteArrayToBase64TypeAdapter :
         JsonSerializer<ByteArray>,
         JsonDeserializer<ByteArray> {

@@ -3,9 +3,7 @@ package one.mixin.android.ui.wallet
 import android.content.Context
 import android.view.View
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,17 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,12 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
@@ -51,19 +37,16 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
-import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
-import one.mixin.android.ui.wallet.components.WalletInfoCard
-import one.mixin.android.ui.home.web3.components.ActionBottom
 
 @AndroidEntryPoint
 class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -93,7 +76,7 @@ class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialog
             }
 
             WalletMultiSelectScreen(
-                wallets = wallets.filter { it.isWatch().not() },
+                wallets = wallets.filter { it.isWatch().not() && it.isMixinSafe().not() },
                 initialSelectedIds = initialSelectedIds,
                 initialPrivacySelected = initialPrivacySelected,
                 onQueryChanged = { q -> scope.launch { searchQuery.emit(q) } },
@@ -158,8 +141,6 @@ private fun WalletMultiSelectScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var query by remember { mutableStateOf("") }
-    val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
-    val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
 
     val selectedWalletIds = remember { mutableStateListOf<String>().apply { addAll(initialSelectedIds) } }
     var privacySelected by remember { mutableStateOf(initialPrivacySelected) }
@@ -271,21 +252,6 @@ private fun WalletMultiSelectScreen(
                 }
             }
 
-            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
-                Spacer(modifier = Modifier.height(10.dp))
-                WalletInfoCard(
-                    hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
-                    hideCommonWalletInfo = hideCommonWalletInfo.value,
-                    onPrivacyClose = {
-                        hidePrivacyWalletInfo.value = true
-                        prefs.edit().putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true).apply()
-                    },
-                    onCommonClose = {
-                        hideCommonWalletInfo.value = true
-                        prefs.edit().putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true).apply()
-                    }
-                )
-            }
         }
 
         // Action buttons

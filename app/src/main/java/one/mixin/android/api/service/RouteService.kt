@@ -21,7 +21,11 @@ import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.SafeAsset
+import one.mixin.android.api.response.SchemeResponse
+import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.UserAddressView
+import one.mixin.android.api.response.UserSafe
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount

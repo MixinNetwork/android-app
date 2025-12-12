@@ -38,8 +38,4 @@ data class Web3Address(
     @SerializedName("created_at")
     val createdAt: String,
 
-) : Parcelable {
-    fun isEvmAddress(): Boolean {
-        return chainId != Constants.ChainId.SOLANA_CHAIN_ID
-    }
-}
+) : Parcelable
