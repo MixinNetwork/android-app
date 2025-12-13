@@ -717,16 +717,30 @@ inline fun SpannableStringBuilder.backgroundColor(color: Int): BackgroundColorSp
     BackgroundColorSpan(color)
 
 fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean {
-    fun toSchemeHostOrNull(url: String) =
-        try {
-            url.toUri().run { "$scheme://$host" }
+    val url: Uri = try {
+        this.toUri()
+    } catch (ignored: Exception) {
+        Uri.EMPTY
+    }
+    if (url == Uri.EMPTY) return false
+    val urlScheme: String = url.scheme?.lowercase(Locale.getDefault()) ?: return false
+    val urlHost: String = url.host?.lowercase(Locale.getDefault()) ?: return false
+    val urlPath: String = url.path ?: ""
+    return resourcePatterns?.any { pattern: String ->
+        val rule: Uri = try {
+            pattern.toUri()
         } catch (ignored: Exception) {
-            null
+            Uri.EMPTY
         }
-
-    val uri = toSchemeHostOrNull(this)
-    return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
-        ?.find { pattern -> uri.equals(pattern, true) } != null
+        if (rule == Uri.EMPTY) return@any false
+        val ruleScheme: String = rule.scheme?.lowercase(Locale.getDefault()) ?: return@any false
+        val ruleHost: String = rule.host?.lowercase(Locale.getDefault()) ?: return@any false
+        val rulePath: String = rule.path ?: ""
+        val isSchemeMatches: Boolean = ruleScheme == urlScheme
+        val isHostMatches: Boolean = ruleHost == urlHost
+        val isPathMatches: Boolean = urlPath.startsWith(rulePath)
+        isSchemeMatches && isHostMatches && isPathMatches
+    } == true
 }
 
 // Copy from hidden API android.os.FileUtils.buildValidExtFilename

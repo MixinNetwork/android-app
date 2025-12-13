@@ -111,7 +111,7 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
-                android:text="@string/Stock"
+                android:text="@string/Stocks"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
 
