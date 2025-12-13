@@ -43,6 +43,7 @@ import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BaseFragment
@@ -532,6 +533,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     toUser = user,
                                     chainToken = chainToken,
                                     isFeeWaived = isFeeWaived,
+                                    tipGas = tipGas,
                                     onTxhash = { _, serializedTx ->
                                     },
                                     onDismiss = { isDone->
@@ -1049,6 +1051,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private var gas: BigDecimal? = null
+    private var tipGas: TipGas? = null
 
     private suspend fun refreshFee(t: TokenItem) {
         val toAddress = toAddress?: return
@@ -1235,7 +1238,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
           delay(3000)
           refreshGas(t)
         } else if (isAdded) {
-            gas = web3ViewModel.calcFee(t, transaction, fromAddress)
+            val feeResult = web3ViewModel.calcFeeWithTipGas(t, transaction, fromAddress)
+            gas = feeResult.first
+            tipGas = feeResult.second
             if (chainToken?.assetId == t.assetId) {
                 val balance = runCatching {
                     tokenBalance.toBigDecimalOrNull()?.subtract(gas ?: BigDecimal.ZERO)
