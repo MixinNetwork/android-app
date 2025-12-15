@@ -74,6 +74,8 @@ class FetchWalletViewModel @Inject constructor(
     private val _partialSuccess = MutableStateFlow<Boolean?>(null)
     val partialSuccess: StateFlow<Boolean?> = _partialSuccess.asStateFlow()
 
+    suspend fun getAllNoKeyWallets() = web3Repository.getAllNoKeyWallets()
+
     private var mnemonic: String = ""
     private var currentIndex = 0
     private var spendKey: ByteArray? = null

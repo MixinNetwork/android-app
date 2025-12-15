@@ -27,6 +27,7 @@ import one.mixin.android.ui.landing.components.MnemonicState
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
@@ -78,10 +79,13 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 state = MnemonicState.Import,
                 mnemonicList = scannedMnemonicList,
                 onComplete = { words ->
-                    viewModel.saveWeb3PrivateKey(requireContext(), viewModel.getSpendKey()!!, walletId!!, words)
-                    toast(R.string.Success)
-                    RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.CREATE))
-                    activity?.finish()
+                    lifecycleScope.launch {
+                        viewModel.saveWeb3PrivateKey(requireContext(), viewModel.getSpendKey()!!, walletId!!, words)
+                        validateMnemonicForOtherWallets(words)
+                        toast(R.string.Success)
+                        RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.CREATE))
+                        activity?.finish()
+                    }
                 },
                 onScan = { getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true)) },
                 validate = ::validateMnemonic
@@ -107,6 +111,27 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
             }
         }
         return null
+    }
+
+    private suspend fun validateMnemonicForOtherWallets(mnemonic: List<String>) {
+        val mnemonicPhrase = mnemonic.joinToString(" ")
+        viewModel.getAllNoKeyWallets().forEach { wallet ->
+            var chainId = Constants.ChainId.ETHEREUM_CHAIN_ID
+            val address: Web3Address = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.ETHEREUM_CHAIN_ID)
+                ?: run {
+                    chainId = Constants.ChainId.SOLANA_CHAIN_ID
+                    viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.SOLANA_CHAIN_ID)
+                }
+                ?: return@forEach
+            val index = CryptoWalletHelper.extractIndexFromPath(address.path!!)
+            val derivedAddress = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, chainId, "", index!!)
+            if (derivedAddress.equals(address.destination, ignoreCase = true)) {
+                val pri = CryptoWalletHelper.mnemonicToPrivate(mnemonicPhrase, chainId, mnemonicPhrase, index)
+                viewModel.savePrivateKey(requireNotNull(wallet.id), pri)
+                RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.CREATE))
+                Timber.e("Save wallet key: ${wallet.id}")
+            }
+        }
     }
 
     companion object {

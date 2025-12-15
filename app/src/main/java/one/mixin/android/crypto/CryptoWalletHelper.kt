@@ -136,6 +136,23 @@ object CryptoWalletHelper {
         }
     }
 
+    fun mnemonicToPrivate(
+        mnemonic: String,
+        chainId: String,
+        passphrase: String = "",
+        index: Int = 0
+    ): String {
+        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+            val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+            newKeyPairFromSeed(keyPair).privateKey.encodeToBase58String()
+        } else {
+            val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                ?: throw IllegalArgumentException("Private key generation failed")
+            Numeric.toHexString(privateKey)
+        }
+    }
+
+
     fun encryptPrivateKeyWithSpendKey(spendKey: ByteArray, privateKey: String): String {
         val sha256Digest = MessageDigest.getInstance("SHA-256")
         val aesKeyBytes = sha256Digest.digest(spendKey)

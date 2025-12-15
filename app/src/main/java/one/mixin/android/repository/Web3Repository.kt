@@ -28,6 +28,7 @@ import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import timber.log.Timber
@@ -181,6 +182,11 @@ constructor(
     }
 
     suspend fun getAllWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }
+
+    suspend fun getAllNoKeyWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }.filter {
+        !it.hasLocalPrivateKey && it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value
+    }
+
     suspend fun anyAddressExists(destinations: List<String>) = web3AddressDao.anyAddressExists(destinations)
 
     suspend fun allWeb3Tokens(walletIds: List<String>) = web3TokenDao.allWeb3Tokens(walletIds)
