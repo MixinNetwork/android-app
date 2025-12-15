@@ -20,12 +20,17 @@ import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.db.WalletDatabase
+import one.mixin.android.db.property.Web3PropertyHelper
+import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.session.Session
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_QUOTE_AMOUNT
 import one.mixin.android.util.ErrorHandler.Companion.NO_AVAILABLE_QUOTE
@@ -36,6 +41,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,7 +59,7 @@ class SwapViewModel
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
 
-    suspend fun web3Tokens(source: String): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source)
+    suspend fun web3Tokens(source: String, category: String? = null): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source, category)
 
     suspend fun web3Quote(
         inputMint: String,
@@ -244,5 +250,114 @@ class SwapViewModel
             orderDao.insertListSuspend(resp.data!!)
         }
         return@withContext true
+    }
+
+    suspend fun refreshOrders(walletId: String) = withContext(Dispatchers.IO) {
+        val offsetKey = "order_offset_$walletId"
+        val offset = Web3PropertyHelper.findValueByKey(offsetKey, "")
+        refreshOrdersInternal(walletId, offset.ifEmpty { null }, offsetKey)
+    }
+
+    private suspend fun refreshOrdersInternal(walletId: String, offset: String?, offsetKey: String, previousLastCreatedAt: String? = null) {
+        val response = assetRepository.getLimitOrders(category = "all", limit = 20, offset = offset, state = null, walletId = walletId)
+
+        if (response.isSuccess && response.data != null) {
+            val orders = response.data!!
+            if (orders.isEmpty()) return
+            
+            val currentLastCreatedAt = orders.lastOrNull()?.createdAt
+            if (currentLastCreatedAt != null && currentLastCreatedAt == previousLastCreatedAt) {
+                Timber.w("refreshOrders: Detected duplicate offset for wallet $walletId, stopping pagination")
+                return
+            }
+            
+            walletDatabase.orderDao().insertListSuspend(orders)
+            val sessionWalletId = Session.getAccountId() ?: return
+            val assetIds = orders.flatMap { listOfNotNull<String>(it.payAssetId, it.receiveAssetId) }
+                .filter { it.isNotEmpty() }
+                .toSet()
+                .toList()
+            if (assetIds.isNotEmpty()) {
+                val tokensNow = walletDatabase.web3TokenDao().findWeb3TokenItemsByIdsSync(sessionWalletId, assetIds)
+                val existingIds = tokensNow.map { it.assetId }.toSet()
+                val missingIds = assetIds.filter { it !in existingIds }
+                if (missingIds.isNotEmpty()) {
+                    refreshAsset(missingIds)
+                }
+                val tokensReady = walletDatabase.web3TokenDao().findWeb3TokenItemsByIdsSync(sessionWalletId, assetIds)
+                val chainIds = tokensReady.map { it.chainId }.distinct()
+                if (chainIds.isNotEmpty()) {
+                    fetchChain(chainIds)
+                }
+            }
+
+            if (currentLastCreatedAt != null) {
+                Web3PropertyHelper.updateKeyValue(offsetKey, currentLastCreatedAt)
+            }
+
+            val fetchedSize = orders.size
+            if (fetchedSize >= 20) {
+                val lastCreate = orders.lastOrNull()?.createdAt ?: return
+                refreshOrdersInternal(walletId, lastCreate, offsetKey, currentLastCreatedAt)
+            }
+        }
+    }
+
+    private suspend fun refreshAsset(ids: List<String>) {
+        val walletId = Session.getAccountId()!!
+        val resp = tokenRepository.fetchTokenSuspend(ids)
+        val tokens = resp.data ?: return
+        val web3Tokens = tokens.map { t ->
+            Web3Token(
+                walletId = walletId,
+                assetId = t.assetId,
+                chainId = t.chainId,
+                name = t.name,
+                assetKey = t.assetKey,
+                symbol = t.symbol,
+                iconUrl = t.iconUrl,
+                precision = t.precision,
+                kernelAssetId = "",
+                balance = "0",
+                priceUsd = t.priceUsd,
+                changeUsd = t.changeUsd,
+            )
+        }
+        if (web3Tokens.isNotEmpty()) {
+            walletDatabase.web3TokenDao().insertList(web3Tokens)
+        }
+    }
+
+    private suspend fun fetchChain(chainIds: List<String>) {
+        chainIds.forEach { chainId ->
+            try {
+                if (walletDatabase.web3ChainDao().chainExists(chainId) == null) {
+                    val response = tokenRepository.getChainById(chainId)
+                    if (response.isSuccess) {
+                        val chain = response.data
+                        if (chain != null) {
+                            walletDatabase.web3ChainDao().insert(
+                                Web3Chain(
+                                    chainId = chain.chainId,
+                                    name = chain.name,
+                                    symbol = chain.symbol,
+                                    iconUrl = chain.iconUrl,
+                                    threshold = chain.threshold,
+                                )
+                            )
+                            Timber.d("Successfully inserted ${chain.name} chain into database")
+                        } else {
+                            Timber.d("No chain found for chainId: $chainId")
+                        }
+                    } else {
+                        Timber.e("Failed to fetch chain $chainId: ${response.errorCode} - ${response.errorDescription}")
+                    }
+                } else {
+                    Timber.d("Chain $chainId already exists in local database, skipping fetch")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception occurred while fetching chain $chainId")
+            }
+        }
     }
 }

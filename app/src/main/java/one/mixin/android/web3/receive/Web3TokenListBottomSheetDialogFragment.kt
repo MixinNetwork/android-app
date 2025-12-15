@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.Constants.ChainId.Arbitrum
-import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.R
@@ -131,10 +130,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         Optimism
                     }
 
-                    R.id.radio_avalanche -> {
-                        Avalanche
-                    }
-
                     R.id.radio_toncoin -> {
                         TON_CHAIN_ID
                     }
@@ -143,7 +138,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         null
                     }
                 }
-                filter(searchEt.et.text?.toString() ?: "")
+                loadData()
             }
         }
     }
@@ -199,7 +194,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             } else {
                                 if (it.toString() != currentQuery) {
                                     currentQuery = it.toString()
-                                    search(it.toString())
+                                    currentSearch?.cancel()
+                                    currentSearch = filter(it.toString())
                                 }
                             }
                         },
@@ -301,102 +297,106 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
     }
 
-    private fun filter(s: String) {
-        val assetList =
-            defaultAssets.filter {
+    private fun filter(s: String) =
+        lifecycleScope.launch {
+            if (s.isBlank() && currentChain == null) {
+                adapter.tokens = ArrayList(defaultAssets)
+                if (defaultAssets.isEmpty()) {
+                    binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
+                } else {
+                    binding.rvVa.displayedChild = POS_RV
+                }
+                return@launch
+            }
+            val assetList =
+                defaultAssets.filter {
+                    (currentChain != null && it.chainId == currentChain) || currentChain == null
+                }.toMutableList()
+
+            val total = search(s, assetList)
+            adapter.tokens = ArrayList(total.filter {
                 it.name.containsIgnoreCase(s) || 
                 it.symbol.containsIgnoreCase(s) || 
                 (it.chainName?.containsIgnoreCase(s) ?: false) ||
                 it.getChainDisplayName().containsIgnoreCase(s)
             }.sortedByDescending { 
                 it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) 
-            }.filter { item ->
-                ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+            })
+            if (!isAdded) {
+                return@launch
             }
-        adapter.tokens = ArrayList(assetList)
+            loadData()
+        }
+
+    private fun loadData() {
+        adapter.chain = currentChain
         if (adapter.itemCount == 0) {
             binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
         } else {
             binding.rvVa.displayedChild = POS_RV
         }
         binding.assetRv.scrollToPosition(0)
+        binding.pb.isVisible = false
     }
 
-    private fun search(query: String) {
-        currentSearch?.cancel()
-        currentSearch =
-            lifecycleScope.launch {
-                if (!isAdded) return@launch
+    private suspend fun search(
+        query: String,
+        localTokens: MutableList<Web3TokenItem>
+    ): List<Web3TokenItem> {
+        if (query.isBlank()) return localTokens
+        binding.pb.isVisible = true
 
-                binding.rvVa.displayedChild = POS_RV
-                binding.pb.isVisible = true
-
-                val remoteAssets = if (type == TYPE_FROM_RECEIVE) {
-                    val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
-                    fuzzyResults.filter {
-                        it.chainId in listOf(
-                            ChainId.SOLANA_CHAIN_ID,
-                            ChainId.ETHEREUM_CHAIN_ID,
-                            ChainId.Base,
-                            ChainId.Optimism,
-                            ChainId.Arbitrum,
-                            ChainId.Avalanche,
-                            ChainId.BinanceSmartChain,
-                            ChainId.Polygon)
-                    }.map { item ->
-                        defaultAssets.find { item.assetId == it.assetId }.let { local ->
-                            local
-                                ?: Web3TokenItem(
-                                    walletId = walletId ?: "",
-                                    assetId = item.assetId,
-                                    chainId = item.chainId,
-                                    name = item.name,
-                                    assetKey = item.assetKey ?: "",
-                                    symbol = item.symbol,
-                                    iconUrl = item.iconUrl,
-                                    precision = 9,
-                                    kernelAssetId = "",
-                                    balance = item.balance,
-                                    priceUsd = item.priceUsd,
-                                    changeUsd = item.changeUsd,
-                                    chainIcon = item.chainIconUrl,
-                                    chainName = item.chainName,
-                                    chainSymbol = item.chainSymbol,
-                                    hidden = item.hidden,
-                                    level = Constants.AssetLevel.VERIFIED
-                                )
-                        }
-                    }
-                } else {
-                    emptyList()
-                }
-
-                val result = defaultAssets.plus(
-                    remoteAssets.filterNot { r ->
-                        defaultAssets.any { l ->
-                            l.assetId == r.assetId
-                        }
-                    }).filter {
-                    it.name.containsIgnoreCase(query) ||
-                        it.symbol.containsIgnoreCase(query) ||
-                        (it.chainName?.containsIgnoreCase(query) == true) ||
-                        it.getChainDisplayName().containsIgnoreCase(query)
-                }.filter { item ->
-                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
-                }.sortedByDescending {
-                    (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO)
-                }
-
-                adapter.tokens = ArrayList(result)
-                binding.pb.isVisible = false
-
-                if (result.isEmpty()) {
-                    binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
-                } else {
-                    binding.rvVa.displayedChild = POS_RV
-                    binding.assetRv.scrollToPosition(0)
+        val remoteAssets = if (type == TYPE_FROM_RECEIVE) {
+            val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
+            fuzzyResults.filter {
+                it.chainId in listOf(
+                    ChainId.SOLANA_CHAIN_ID,
+                    ChainId.ETHEREUM_CHAIN_ID,
+                    ChainId.Base,
+                    ChainId.Optimism,
+                    ChainId.Arbitrum,
+                    ChainId.Avalanche,
+                    ChainId.BinanceSmartChain,
+                    ChainId.Polygon,
+                )
+            }.map { item ->
+                localTokens.find { item.assetId == it.assetId }.let { local ->
+                    local
+                        ?: Web3TokenItem(
+                            walletId = walletId ?: "",
+                            assetId = item.assetId,
+                            chainId = item.chainId,
+                            name = item.name,
+                            assetKey = item.assetKey ?: "",
+                            symbol = item.symbol,
+                            iconUrl = item.iconUrl,
+                            precision = 9,
+                            kernelAssetId = "",
+                            balance = item.balance,
+                            priceUsd = item.priceUsd,
+                            changeUsd = item.changeUsd,
+                            chainIcon = item.chainIconUrl,
+                            chainName = item.chainName,
+                            chainSymbol = item.chainSymbol,
+                            hidden = item.hidden,
+                            level = Constants.AssetLevel.VERIFIED
+                        )
                 }
             }
+        } else {
+            emptyList()
+        }
+
+        binding.pb.isVisible = false
+
+        return localTokens.plus(
+            remoteAssets.filterNot { r ->
+                localTokens.any { l ->
+                    l.assetId == r.assetId
+                }
+            }).sortedByDescending {
+            (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        }
     }
 
     fun setOnAssetClick(callback: (Web3TokenItem) -> Unit): Web3TokenListBottomSheetDialogFragment {

@@ -105,6 +105,17 @@
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_stock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Stock"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_eth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -213,8 +224,6 @@
                 android:text="@string/Toncoin"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
-
-
         </RadioGroup>
     </HorizontalScrollView>
 

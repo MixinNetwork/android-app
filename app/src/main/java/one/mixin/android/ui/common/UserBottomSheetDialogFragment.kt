@@ -1057,7 +1057,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         lifecycleScope.launch {
             val loader = requireContext().imageLoader
             val request = ImageRequest.Builder(requireContext()).data(user.avatarUrl).build()
-            val bitmap = (loader.execute(request).request as? SuccessResult)?.image?.toBitmap()  ?: return@launch
+            val result = loader.execute(request)
+
+            val bitmap = (result as? SuccessResult)?.image?.toBitmap()
+            if (bitmap == null) {
+                toast(R.string.Data_error)
+                return@launch
+            }
             user.fullName?.let {
                 val conversationId = conversationId
                 addPinShortcut(

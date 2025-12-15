@@ -137,10 +137,12 @@ class WalletActivity : BlazeBaseActivity() {
             }
             is Destination.Address -> {
                 navGraph.setStartDestination(R.id.web3_address_fragment)
-                val address = requireNotNull(intent.getStringExtra(ADDRESS)) { "required address can not be null" }
+                val address = intent.getStringExtra(ADDRESS)
                 val token = requireNotNull(intent.getParcelableExtraCompat(WEB3_TOKEN, Web3TokenItem::class.java)) { "required web3 token can not be null" }
                 navController.setGraph(navGraph, Bundle().apply {
-                    putString(ADDRESS, address)
+                    address?.let {
+                        putString(ADDRESS, it)
+                    }
                     putParcelable(WEB3_TOKEN, token)
                 })
             }
@@ -150,7 +152,9 @@ class WalletActivity : BlazeBaseActivity() {
                 val address = intent.getStringExtra(ADDRESS)
                 navController.setGraph(navGraph, Bundle().apply {
                     putParcelable("args_token", web3Token)
-                    putString("args_address", address)
+                    address?.let {
+                        putString("args_address", it)
+                    }
                 })
             }
             is Destination.Web3TransferDestinationInput -> {
@@ -216,7 +220,7 @@ class WalletActivity : BlazeBaseActivity() {
         const val PENDING_TYPE = "pending_type"
         const val ARGS_WALLET_ID = "args_wallet_id"
 
-        fun navigateToWalletActivity(activity: Activity, address: String, token: Web3TokenItem, chain: Web3TokenItem, wallet: Web3Wallet) {
+        fun navigateToWalletActivity(activity: Activity, address: String?, token: Web3TokenItem, chain: Web3TokenItem, wallet: Web3Wallet) {
             val intent = Intent(activity, WalletActivity::class.java).apply {
                 putExtra(TransferDestinationInputFragment.ARGS_ADDRESS, address)
                 putExtra(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
@@ -303,9 +307,9 @@ class WalletActivity : BlazeBaseActivity() {
 
         fun showWithAddress(
             activity: Activity,
-            address: String,
+            address: String?,
             web3TokenItem: Web3TokenItem,
-            destination: Destination,
+            destination: Destination?,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {

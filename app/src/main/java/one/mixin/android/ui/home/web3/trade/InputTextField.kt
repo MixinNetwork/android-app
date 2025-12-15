@@ -160,7 +160,7 @@ fun InputContent(
                         interactionSource = interactionSource,
                     )
 
-                    if (text.isEmpty() && inlineEndCompose == null) {
+                    if (textFieldValue.text.isEmpty() && text.isEmpty() && inlineEndCompose == null) {
                         AutoSizeText(
                             text = "0",
                             color = MixinAppTheme.colors.textRemarks,

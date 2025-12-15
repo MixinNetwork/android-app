@@ -8,15 +8,51 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.loadImage
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainNetwork
 
 class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    fun isEmpty() = tokens.isEmpty()
+    fun isEmpty() = getFilteredTokens().isEmpty()
 
     var tokens: List<SwapToken> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    var stocks: List<SwapToken> = ArrayList(0)
+        @SuppressLint("NotifyDataSetChanged")
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    private fun getFilteredTokens() = if (chain == null) {
+        tokens
+    } else if (keyword.isNullOrBlank() && chain == "") {
+        stocks
+    } else if (chain == "") {
+        tokens.filter { it.category.equalsIgnoreCase("stock") }
+    } else {
+        tokens.filter { it.chain.chainId == chain }
+    }
+
+    var keyword:String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
+
+    var chain: String? = null
         set(value) {
             if (field != value) {
                 field = value
@@ -53,14 +89,14 @@ class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.
     }
 
     override fun getItemCount(): Int {
-        return tokens.size
+        return getFilteredTokens().size
     }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        (holder as Web3Holder).bind(tokens[position], selectUnique) { token, isAlert ->
+        (holder as Web3Holder).bind(getFilteredTokens()[position], selectUnique) { token, isAlert ->
             AnalyticsTracker.trackTradeTokenSelect(
                 if (isSearch) {
                     AnalyticsTracker.TradeTokenSelectMethod.SEARCH_ITEM_CLICK

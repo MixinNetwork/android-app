@@ -111,7 +111,7 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val orderState = OrderState.from(order.state)
                 val receiveAmountText = (if (orderState.isPending()) {
-                    order.expectedReceiveAmount
+                    order.expectedReceiveAmount ?: order.receiveAmount
                 } else {
                     order.receiveAmount
                 } ?: "0").ifEmpty { "0" }.numberFormat()

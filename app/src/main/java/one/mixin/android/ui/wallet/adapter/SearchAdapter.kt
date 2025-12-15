@@ -8,6 +8,34 @@ import one.mixin.android.vo.safe.TokenItem
 
 class SearchAdapter(private val currentAssetId: String? = null) : ListAdapter<TokenItem, AssetHolder>(TokenItem.DIFF_CALLBACK) {
     var callback: WalletSearchCallback? = null
+    
+    private var allTokens: List<TokenItem> = emptyList()
+    
+    var chain: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                super.submitList(getFilteredTokens())
+            }
+        }
+    
+    private fun getFilteredTokens(): List<TokenItem> {
+        return if (chain.isNullOrBlank()) {
+            allTokens
+        } else {
+            allTokens.filter { it.chainId == chain }
+        }
+    }
+    
+    override fun submitList(list: List<TokenItem>?) {
+        allTokens = list ?: emptyList()
+        super.submitList(getFilteredTokens())
+    }
+    
+    override fun submitList(list: List<TokenItem>?, commitCallback: Runnable?) {
+        allTokens = list ?: emptyList()
+        super.submitList(getFilteredTokens(), commitCallback)
+    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
