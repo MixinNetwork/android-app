@@ -27,6 +27,7 @@ import one.mixin.android.ui.landing.components.MnemonicState
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -115,22 +116,39 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private suspend fun validateMnemonicForOtherWallets(mnemonic: List<String>) {
-        val mnemonicPhrase = mnemonic.joinToString(" ")
-        viewModel.getAllNoKeyWallets().forEach { wallet ->
-            var chainId = Constants.ChainId.ETHEREUM_CHAIN_ID
-            val address: Web3Address = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.ETHEREUM_CHAIN_ID)
-                ?: run {
-                    chainId = Constants.ChainId.SOLANA_CHAIN_ID
-                    viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.SOLANA_CHAIN_ID)
+        val mnemonicPhrase: String = mnemonic.joinToString(" ")
+        val currentSpendKey: ByteArray? = viewModel.getSpendKey()
+        val context: Context = requireContext()
+        val wallets = viewModel.getAllNoKeyWallets()
+        wallets.forEach { wallet ->
+            if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
+                val evmAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.ETHEREUM_CHAIN_ID)
+                val solAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.SOLANA_CHAIN_ID)
+                val isEvmMatch: Boolean = evmAddress?.let { address: Web3Address ->
+                    val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
+                    val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.ETHEREUM_CHAIN_ID, "", index)
+                    derivedAddress.equals(address.destination, ignoreCase = true)
+                } ?: false
+                val isSolanaMatch: Boolean = solAddress?.let { address: Web3Address ->
+                    val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
+                    val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.SOLANA_CHAIN_ID, "", index)
+                    derivedAddress.equals(address.destination, ignoreCase = true)
+                } ?: false
+                val isWalletMatch: Boolean = (evmAddress == null || isEvmMatch) && (solAddress == null || isSolanaMatch) && (isEvmMatch || isSolanaMatch)
+                if (!isWalletMatch) {
+                    return@forEach
                 }
-                ?: return@forEach
-            val index = CryptoWalletHelper.extractIndexFromPath(address.path!!)
-            val derivedAddress = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, chainId, "", index!!)
-            if (derivedAddress.equals(address.destination, ignoreCase = true)) {
-                val pri = CryptoWalletHelper.mnemonicToPrivate(mnemonicPhrase, chainId, mnemonicPhrase, index)
-                viewModel.savePrivateKey(requireNotNull(wallet.id), pri)
+                if (currentSpendKey == null) {
+                    Timber.e("Spend key is null, cannot save wallets.")
+                    return@forEach
+                }
+                val isSaved: Boolean = viewModel.saveWeb3PrivateKey(context, currentSpendKey, wallet.id, mnemonic)
+                if (!isSaved) {
+                    return@forEach
+                }
                 RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.CREATE))
                 Timber.e("Save wallet key: ${wallet.id}")
+                return@forEach
             }
         }
     }

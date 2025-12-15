@@ -184,7 +184,7 @@ constructor(
     suspend fun getAllWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }
 
     suspend fun getAllNoKeyWallets() = web3WalletDao.getAllWallets().map { it.updateWithLocalKeyInfo(context) }.filter {
-        !it.hasLocalPrivateKey && it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value
+        !it.hasLocalPrivateKey && (it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value || it.category == WalletCategory.IMPORTED_MNEMONIC.value)
     }
 
     suspend fun anyAddressExists(destinations: List<String>) = web3AddressDao.anyAddressExists(destinations)
