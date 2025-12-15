@@ -318,11 +318,17 @@ class FetchWalletViewModel @Inject constructor(
             return null
         }
         return CryptoWalletHelper.getWeb3PrivateKey(context, currentSpendKey, chainId)?.let {
-            if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                val kp = Keypair.fromSecretKey(it)
-                kp.secret.encodeToBase58String()
-            } else {
-                Numeric.toHexString(it)
+            when (chainId) {
+                Constants.ChainId.SOLANA_CHAIN_ID -> {
+                    val kp = Keypair.fromSecretKey(it)
+                    kp.secret.encodeToBase58String()
+                }
+                in Constants.Web3EvmChainIds -> {
+                    Numeric.toHexString(it)
+                }
+                else -> {
+                    null
+                }
             }
         }
     }
@@ -374,6 +380,7 @@ class FetchWalletViewModel @Inject constructor(
                     path = null,
                     privateKey = key.let {
                         if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                            // Solana private keys are provided as Base58; EVM private keys are provided as hex.
                             Base58.decode(key)
                         } else {
                             Numeric.hexStringToByteArray(key)
@@ -523,10 +530,16 @@ class FetchWalletViewModel @Inject constructor(
         category: String
     ): Web3AddressRequest {
         val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
-        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-            createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
-        } else {
-            createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
+        return when {
+            chainId == Constants.ChainId.SOLANA_CHAIN_ID -> {
+                createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
+            }
+            chainId in Constants.Web3EvmChainIds -> {
+                createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
+            }
+            else -> {
+                throw IllegalArgumentException("Unsupported chainId: $chainId")
+            }
         }
     }
 
@@ -550,8 +563,10 @@ class FetchWalletViewModel @Inject constructor(
             val message = "$destination\n$selfId\n${now.epochSecond}"
             if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                 Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
-            } else {
+            } else if(chainId in Constants.Web3EvmChainIds){
                 Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+            } else {
+                null
             }
         } else null
 

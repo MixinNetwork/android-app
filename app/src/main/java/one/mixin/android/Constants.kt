@@ -9,9 +9,11 @@ import okhttp3.Dns
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Base
+import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Optimism
+import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
 
@@ -244,7 +246,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base, ChainId.Arbitrum, ChainId.Optimism)
+    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"

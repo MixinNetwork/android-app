@@ -119,15 +119,15 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     }
 
                     R.id.radio_arbritrum -> {
-                        Arbitrum
+                        ChainId.Arbitrum
                     }
 
                     R.id.radio_optimism -> {
-                        Optimism
+                        ChainId.Optimism
                     }
 
                     R.id.radio_toncoin -> {
-                        TON_CHAIN_ID
+                        ChainId.TON_CHAIN_ID
                     }
 
                     else -> {

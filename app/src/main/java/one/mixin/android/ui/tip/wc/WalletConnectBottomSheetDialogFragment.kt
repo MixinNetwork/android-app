@@ -174,7 +174,6 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     asset,
                     tipGas,
                     errorInfo,
-                    isFeeWaived = one.mixin.android.Constants.Web3ChainIds.contains(chain.assetId),
                     onFreeClick = {
                         one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
                             .newInstance()

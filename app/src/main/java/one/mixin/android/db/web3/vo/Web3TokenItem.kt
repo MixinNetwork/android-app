@@ -286,7 +286,7 @@ suspend fun Web3TokenItem.buildTransaction(
         transaction.addPlaceholderSignature()
         val tx = transaction.serialize().base64Encode()
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
-    } else {
+    } else if (chainId in Constants.Web3EvmChainIds) {
         Web3Signer.useEvm()
         // (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
@@ -313,5 +313,7 @@ suspend fun Web3TokenItem.buildTransaction(
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
+    } else {
+        throw IllegalStateException("Not support: $chainId")
     }
 }

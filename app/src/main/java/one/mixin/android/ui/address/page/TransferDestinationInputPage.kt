@@ -355,7 +355,7 @@ fun TransferDestinationInputPage(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             } else if (token?.chainId == ChainId.SOLANA_CHAIN_ID ||
-                                token?.chainId in Constants.Web3ChainIds
+                                token?.chainId in Constants.Web3EvmChainIds
                             ) {
                                 DestinationMenu(
                                     R.drawable.ic_destination_wallet,

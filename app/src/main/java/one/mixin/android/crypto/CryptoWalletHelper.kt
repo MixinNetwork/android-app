@@ -110,13 +110,19 @@ object CryptoWalletHelper {
     }
 
     fun privateKeyToAddress(privateKey: String, chainId: String): String {
-        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-            val privateKeyBytes = Base58.decode(privateKey)
-            val keyPair = fromSecretKey(privateKeyBytes)
-            keyPair.publicKey.toBase58()
-        } else {
-            val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
-            EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
+        return when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                val privateKeyBytes = Base58.decode(privateKey)
+                val keyPair = fromSecretKey(privateKeyBytes)
+                keyPair.publicKey.toBase58()
+            }
+            in Constants.Web3EvmChainIds -> {
+                val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
+                EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
+            }
+            else -> {
+                throw IllegalArgumentException("Unsupported chainId: $chainId")
+            }
         }
     }
 
@@ -126,13 +132,19 @@ object CryptoWalletHelper {
         passphrase: String = "",
         index: Int = 0
     ): String {
-        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-            val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-            newKeyPairFromSeed(keyPair).publicKey.encodeToBase58String()
-        } else {
-            val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                ?: throw IllegalArgumentException("Private key generation failed")
-            EthKeyGenerator.privateKeyToAddress(privateKey)
+        return when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                newKeyPairFromSeed(keyPair).publicKey.encodeToBase58String()
+            }
+            in Constants.Web3EvmChainIds -> {
+                val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                    ?: throw IllegalArgumentException("Private key generation failed")
+                EthKeyGenerator.privateKeyToAddress(privateKey)
+            }
+            else -> {
+                throw IllegalArgumentException("Unsupported chainId: $chainId")
+            }
         }
     }
 
@@ -142,13 +154,19 @@ object CryptoWalletHelper {
         passphrase: String = "",
         index: Int = 0
     ): String {
-        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-            val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-            newKeyPairFromSeed(keyPair).privateKey.encodeToBase58String()
-        } else {
-            val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                ?: throw IllegalArgumentException("Private key generation failed")
-            Numeric.toHexString(privateKey)
+        return when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                newKeyPairFromSeed(keyPair).privateKey.encodeToBase58String()
+            }
+            in Constants.Web3EvmChainIds -> {
+                val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                    ?: throw IllegalArgumentException("Private key generation failed")
+                Numeric.toHexString(privateKey)
+            }
+            else -> {
+                throw IllegalArgumentException("Unsupported chainId: $chainId")
+            }
         }
     }
 

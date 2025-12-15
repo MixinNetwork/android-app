@@ -63,6 +63,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
         lifecycleScope.launch {
             walletId?.let {
                 evmAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.ETHEREUM_CHAIN_ID)
+                // Solana addresses are derived differently (Ed25519 / Base58), so we validate against a dedicated Solana address entry.
                 solAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.SOLANA_CHAIN_ID)
             }
         }
