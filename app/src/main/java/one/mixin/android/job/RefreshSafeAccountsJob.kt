@@ -46,6 +46,11 @@ class RefreshSafeAccountsJob : BaseJob(
                         Timber.d("Account: accountId=${account.accountId}, name=${account.name}, chainId=${account.chainId}, address=${account.address}")
                         saveUserAccount(account)
                     }
+                    userAccounts.map { it.accountId }.let { ids ->
+                        web3WalletDao.deleteSafeWalletNotIn(ids)
+                        web3TokenDao.deleteNotInByWalletIds(ids)
+                    }
+
                 } else {
                     Timber.d("No user accounts found")
                 }
@@ -85,7 +90,10 @@ class RefreshSafeAccountsJob : BaseJob(
                 convertSafeAssetToWeb3Token(walletId, asset)
             }
             web3TokenDao.insertList(tokens)
+            web3TokenDao.deleteNotIn(account.accountId, tokens.map { it.assetId })
             Timber.d("Saved ${tokens.size} tokens for wallet $walletId")
+        } else {
+            web3TokenDao.deleteByWalletId(account.accountId)
         }
 
         RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.OTHER))

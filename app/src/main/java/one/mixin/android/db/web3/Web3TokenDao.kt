@@ -117,6 +117,12 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("DELETE FROM tokens WHERE wallet_id = :walletId")
     suspend fun deleteByWalletId(walletId: String)
 
+    @Query("DELETE FROM tokens WHERE wallet_id NOT IN (:walletIds)")
+    suspend fun deleteNotInByWalletIds(walletIds: List<String>)
+
+    @Query("DELETE FROM tokens WHERE wallet_id = :walletId AND asset_id NOT IN (:assetIds)")
+    suspend fun deleteNotIn(walletId: String, assetIds: List<String>)
+
     @Query(
         """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
