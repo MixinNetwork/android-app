@@ -630,7 +630,7 @@
     <string name="Learn_More">Learn More</string>
     <string name="Line_busy">Line busy</string>
     <string name="Line_busy_remote">Line busy</string>
-    <string name="Link_desktop">Link desktop</string>
+    <string name="Link_desktop">Link Desktop</string>
     <string name="Link_desktop_failed">Link desktop failed</string>
     <string name="Link_desktop_success">Link desktop success</string>
     <string name="Links">Links</string>
@@ -1047,7 +1047,7 @@
     <string name="Sort">Sort</string>
     <string name="Sort_by">Sort by</string>
     <string name="Start">Start</string>
-    <string name="Stock">Stock</string>
+    <string name="Stock">Stocks</string>
     <string name="Start_Messaging">Start Messaging</string>
     <string name="Status">Status</string>
     <string name="Order_Status">Status</string>

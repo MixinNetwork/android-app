@@ -367,6 +367,7 @@ fun BrowserPage(
                             2 -> {
                                 // Safe Wallet - show name with icon
                                 ItemWalletContent(
+                                    walletId = "",
                                     title = stringResource(id = R.string.Receivers).uppercase(),
                                     walletName = displayName,
                                     iconRes = R.drawable.ic_wallet_safe,
