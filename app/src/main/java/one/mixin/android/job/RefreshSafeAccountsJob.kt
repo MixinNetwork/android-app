@@ -47,8 +47,13 @@ class RefreshSafeAccountsJob : BaseJob(
                         saveUserAccount(account)
                     }
                     userAccounts.map { it.accountId }.let { ids ->
+                        val localIds = web3WalletDao.getAllSafeWallets().map { it.id }
                         web3WalletDao.deleteSafeWalletNotIn(ids)
-                        web3TokenDao.deleteNotInByWalletIds(ids)
+                        (localIds - ids.toSet()).let {
+                            if (it.isNotEmpty()) {
+                                web3TokenDao.deleteInByWalletIds(it)
+                            }
+                        }
                     }
 
                 } else {

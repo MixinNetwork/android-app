@@ -113,8 +113,8 @@ fun BrowserPage(
     val context = LocalContext.current
     var showWarning by remember { mutableStateOf(false) }
     var walletName by remember { mutableStateOf<String?>(null) }
-    var addressDisplayInfo by remember { mutableStateOf<Pair<String?, Int>?>(null) }
-    var walletDisplayInfo by remember { mutableStateOf<Pair<String?, Int>?>(null) }
+    var addressDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
 
     LaunchedEffect(parsedTx) {
         showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
@@ -356,7 +356,7 @@ fun BrowserPage(
                             toUser = toUser,
                         )
                     } else if (displayInfo != null) {
-                        val (displayName, index) = displayInfo
+                        val (displayName, index, isOwner) = displayInfo
                         when (index) {
                             1 -> {
                                 // Privacy Wallet
@@ -371,6 +371,7 @@ fun BrowserPage(
                                     title = stringResource(id = R.string.Receivers).uppercase(),
                                     walletName = displayName,
                                     iconRes = R.drawable.ic_wallet_safe,
+                                    isWalletOwner = isOwner,
                                 )
                             }
                             0 -> {
@@ -401,7 +402,7 @@ fun BrowserPage(
                 }
                 Box(modifier = Modifier.height(20.dp))
                 walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
-                    val (displayName, _) = walletDisplayInfo
+                    val (displayName, _, _) = walletDisplayInfo
                     ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
                 }, {
                     ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)

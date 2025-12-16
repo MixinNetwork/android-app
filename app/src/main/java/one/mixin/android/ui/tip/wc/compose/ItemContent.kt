@@ -51,6 +51,7 @@ fun ItemWalletContent(
     padding: Dp = 20.dp,
     walletId: String? = null,
     walletName: String? = null,
+    isWalletOwner: Boolean? = null,
 ) {
     Column(
         modifier =
@@ -78,6 +79,20 @@ fun ItemWalletContent(
                 tint = Color.Unspecified,
                 modifier = Modifier.size(20.dp)
             )
+            if (isWalletOwner != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(if (isWalletOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
+                    color = MixinAppTheme.colors.textRemarks,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .background(
+                            color = MixinAppTheme.colors.backgroundGrayLight,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 4.dp)
+                )
+            }
         }
     }
 }

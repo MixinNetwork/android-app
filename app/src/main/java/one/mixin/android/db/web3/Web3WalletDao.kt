@@ -50,6 +50,8 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
 
     @Query("DELETE FROM wallets WHERE category = 'mixin_safe' AND wallet_id NOT IN (:walletIds)")
     suspend fun deleteSafeWalletNotIn(walletIds: List<String>)
+    @Query("SELECT * FROM wallets WHERE category = 'mixin_safe'")
+    suspend fun getAllSafeWallets(): List<Web3Wallet>
 
     @Query("SELECT name FROM wallets WHERE category IN (:categories)")
     suspend fun getAllWalletNames(categories: List<String>): List<String>

@@ -117,8 +117,8 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("DELETE FROM tokens WHERE wallet_id = :walletId")
     suspend fun deleteByWalletId(walletId: String)
 
-    @Query("DELETE FROM tokens WHERE wallet_id NOT IN (:walletIds)")
-    suspend fun deleteNotInByWalletIds(walletIds: List<String>)
+    @Query("DELETE FROM tokens WHERE wallet_id IN (:walletIds)")
+    suspend fun deleteInByWalletIds(walletIds: List<String>)
 
     @Query("DELETE FROM tokens WHERE wallet_id = :walletId AND asset_id NOT IN (:assetIds)")
     suspend fun deleteNotIn(walletId: String, assetIds: List<String>)
