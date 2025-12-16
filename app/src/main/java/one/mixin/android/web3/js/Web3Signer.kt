@@ -123,6 +123,7 @@ object Web3Signer {
             Chain.Blast.hexReference -> Chain.Blast
             Chain.Arbitrum.hexReference -> Chain.Arbitrum
             Chain.Optimism.hexReference -> Chain.Optimism
+            Chain.Avalanche.hexReference -> Chain.Avalanche
             Chain.Polygon.hexReference -> Chain.Polygon
             Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
             Chain.Solana.hexReference -> Chain.Solana
@@ -235,6 +236,11 @@ object Web3Signer {
                 currentChain = Chain.Optimism
                 persist()
                 Result.success(Chain.Optimism.name)
+            }
+            Chain.Avalanche.hexReference -> {
+                currentChain = Chain.Avalanche
+                persist()
+                Result.success(Chain.Avalanche.name)
             }
             Chain.Polygon.hexReference -> {
                 currentChain = Chain.Polygon
