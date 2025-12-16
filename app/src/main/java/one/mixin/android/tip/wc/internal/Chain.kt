@@ -54,8 +54,6 @@ sealed class Chain(
             Arbitrum ->  Constants.ChainId.Arbitrum
             Polygon ->  Constants.ChainId.Polygon
             Base ->  Constants.ChainId.Base
-            Optimism -> Constants.ChainId.Optimism
-            Arbitrum -> Constants.ChainId.Arbitrum
             Avalanche -> Constants.ChainId.Avalanche
             else ->  Constants.ChainId.Solana
         }
@@ -68,7 +66,6 @@ internal fun String.getChain(): Chain? {
     return when (this) {
         Chain.Ethereum.chainReference -> Chain.Ethereum
         Chain.Base.chainReference -> Chain.Base
-        Chain.Blast.chainReference -> Chain.Blast
         Chain.Arbitrum.chainReference -> Chain.Arbitrum
         Chain.Optimism.chainReference -> Chain.Optimism
         Chain.Avalanche.chainReference -> Chain.Avalanche
@@ -85,7 +82,6 @@ internal fun String?.getChainName(): String? {
     return when (this) {
         Chain.Ethereum.chainId -> Chain.Ethereum.name
         Chain.Base.chainId -> Chain.Base.name
-        Chain.Blast.chainId -> Chain.Blast.name
         Chain.Arbitrum.chainId -> Chain.Arbitrum.name
         Chain.Optimism.chainId -> Chain.Optimism.name
         Chain.Avalanche.chainId -> Chain.Avalanche.name
@@ -102,7 +98,6 @@ internal fun String?.getChainSymbol(): String? {
     return when (this) {
         Chain.Ethereum.chainId -> Chain.Ethereum.symbol
         Chain.Base.chainId -> Chain.Base.symbol
-        Chain.Blast.chainId -> Chain.Blast.symbol
         Chain.Arbitrum.chainId -> Chain.Arbitrum.symbol
         Chain.Optimism.chainId -> Chain.Optimism.symbol
         Chain.Avalanche.chainId -> Chain.Avalanche.symbol
@@ -119,7 +114,6 @@ internal fun getChainByChainId(chainId: String?): Chain? {
     return when (chainId) {
         Chain.Ethereum.chainId -> Chain.Ethereum
         Chain.Base.chainId -> Chain.Base
-        Chain.Blast.chainId -> Chain.Blast
         Chain.Arbitrum.chainId -> Chain.Arbitrum
         Chain.Optimism.chainId -> Chain.Optimism
         Chain.Avalanche.chainId -> Chain.Avalanche
