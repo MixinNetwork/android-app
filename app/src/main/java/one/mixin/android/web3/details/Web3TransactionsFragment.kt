@@ -28,6 +28,7 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isNativeSolToken
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.solLamportToAmount
+import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
@@ -511,7 +512,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             val bundle = Bundle().apply {
                 putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
                 putParcelable(ARGS_TOKEN, token)
-                putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet)
+                putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
             }
             findNavController().navigate(
                 R.id.action_web3_transactions_to_web3_transaction,

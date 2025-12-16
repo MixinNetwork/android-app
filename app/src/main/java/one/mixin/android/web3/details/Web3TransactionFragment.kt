@@ -18,6 +18,7 @@ import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -59,7 +60,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             transaction: Web3TransactionItem,
             chain: String,
             web3Token: Web3TokenItem,
-            wallet: Web3Wallet,
+            wallet: WalletItem,
         ) = Web3TransactionFragment().withArgs {
             putParcelable(ARGS_TRANSACTION, transaction)
             putString(ARGS_CHAIN, chain)
