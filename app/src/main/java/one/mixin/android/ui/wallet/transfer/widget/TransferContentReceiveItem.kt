@@ -37,6 +37,9 @@ class TransferContentReceiveItem : LinearLayout {
     ) {
         _binding.apply {
             title.text = context.getString(titleRes).uppercase()
+            userContainer.removeAllViews()
+            userContainer.isVisible = true
+            privacyContainer.isVisible = false
             val item = TransferReceiverItem(context)
             item.setContent(user)
             item.setOnClickListener {
@@ -57,7 +60,9 @@ class TransferContentReceiveItem : LinearLayout {
         _binding.apply {
             title.text = context.getString(titleRes).uppercase()
             userContainer.isVisible = false
-            privacyTv.isVisible = true
+            privacyContainer.isVisible = true
+            roleTv.isVisible = false
+            privacyTv.setText(R.string.Privacy_Wallet)
             val drawable = ContextCompat.getDrawable(context, R.drawable.ic_wallet_privacy)
             drawable?.setBounds(0, 0, 22.dp, 22.dp)
             privacyTv.compoundDrawablePadding = 4.dp
@@ -70,16 +75,23 @@ class TransferContentReceiveItem : LinearLayout {
         @StringRes titleRes: Int,
         label: String,
         @DrawableRes iconRes: Int,
+        isWalletOwner: Boolean? = null,
     ) {
         _binding.apply {
             title.text = context.getString(titleRes).uppercase()
             userContainer.isVisible = false
-            privacyTv.isVisible = true
+            privacyContainer.isVisible = true
             privacyTv.text = label
             val drawable = ContextCompat.getDrawable(context, iconRes)
             drawable?.setBounds(0, 0, 22.dp, 22.dp)
             privacyTv.compoundDrawablePadding = 4.dp
             privacyTv.setCompoundDrawablesRelative(null, null, drawable, null)
+            if (isWalletOwner != null) {
+                roleTv.isVisible = true
+                roleTv.setText(if (isWalletOwner) R.string.Wallet_Owner else R.string.Wallet_Member)
+            } else {
+                roleTv.isVisible = false
+            }
         }
     }
 
@@ -104,6 +116,8 @@ class TransferContentReceiveItem : LinearLayout {
                 title.text = context.resources.getQuantityString(titleRes, users.size).uppercase()
             }
             userContainer.removeAllViews()
+            userContainer.isVisible = true
+            privacyContainer.isVisible = false
             users.forEach { user ->
                 val item = TransferReceiverItem(context)
                 item.setContent(user, signers)

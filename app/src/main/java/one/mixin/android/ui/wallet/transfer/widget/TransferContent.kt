@@ -412,7 +412,7 @@ class TransferContent : LinearLayout {
                 if (withdrawBiometricItem.isSafeWallet) {
                     address.isVisible = false
                     safeWallet.isVisible = true
-                    safeWallet.setContent(R.string.Receiver, label, R.drawable.ic_wallet_safe)
+                    safeWallet.setContent(R.string.Receiver, label, R.drawable.ic_wallet_safe, withdrawBiometricItem.isSafeWalletOwner)
                 } else {
                     address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
                 }

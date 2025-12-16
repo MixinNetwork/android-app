@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "b01b5b6b933960098abac91d03d82a3c",
+    "identityHash": "8c24c0da25df8efc884656688c14115d",
     "entities": [
       {
         "tableName": "tokens",
@@ -227,7 +227,7 @@
       },
       {
         "tableName": "wallets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `safe_role` TEXT, `safe_chain_id` TEXT, `safe_address` TEXT, `safe_url` TEXT, PRIMARY KEY(`wallet_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -258,26 +258,6 @@
             "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "safeRole",
-            "columnName": "safe_role",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "safeChainId",
-            "columnName": "safe_chain_id",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "safeAddress",
-            "columnName": "safe_address",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "safeUrl",
-            "columnName": "safe_url",
-            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -639,11 +619,71 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `${TABLE_NAME}` (`order_type`, `created_at`)"
           }
         ]
+      },
+      {
+        "tableName": "safe_wallets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "safeRole",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "safeChainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "safeAddress",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "safeUrl",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "wallet_id"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b01b5b6b933960098abac91d03d82a3c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8c24c0da25df8efc884656688c14115d')"
     ]
   }
 }

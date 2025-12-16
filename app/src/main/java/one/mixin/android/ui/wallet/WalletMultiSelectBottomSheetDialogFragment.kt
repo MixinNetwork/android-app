@@ -35,7 +35,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isWatch
@@ -52,7 +52,7 @@ import one.mixin.android.ui.wallet.components.WalletDestination
 class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletViewModel>()
-    private var onConfirmListener: ((List<Web3Wallet?>) -> Unit)? = null
+    private var onConfirmListener: ((List<WalletItem?>) -> Unit)? = null
     private var onDismissListener: (() -> Unit)? = null
 
     private var initialSelectedIds: List<String> = emptyList()
@@ -97,7 +97,7 @@ class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialog
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
-    fun setOnConfirmListener(listener: (List<Web3Wallet?>) -> Unit): WalletMultiSelectBottomSheetDialogFragment {
+    fun setOnConfirmListener(listener: (List<WalletItem?>) -> Unit): WalletMultiSelectBottomSheetDialogFragment {
         onConfirmListener = listener
         return this
     }
@@ -130,11 +130,11 @@ class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialog
 
 @Composable
 private fun WalletMultiSelectScreen(
-    wallets: List<Web3Wallet>,
+    wallets: List<WalletItem>,
     initialSelectedIds: List<String>,
     initialPrivacySelected: Boolean,
     onQueryChanged: (String) -> Unit,
-    onConfirm: (List<Web3Wallet?>) -> Unit,
+    onConfirm: (List<WalletItem?>) -> Unit,
     onReset: () -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -264,10 +264,12 @@ private fun WalletMultiSelectScreen(
             confirmTitle = stringResource(id = R.string.Apply),
             cancelAction = onReset,
             confirmAction = {
-                val selected = buildList<Web3Wallet?> {
+                val selected: List<WalletItem?> = buildList {
                     if (privacySelected) add(null)
                     selectedWalletIds.forEach { id ->
-                        wallets.find { it.id == id }?.let { add(it) }
+                        wallets.find { it.id == id }?.let { wallet ->
+                            add(wallet)
+                        }
                     }
                 }
                 onConfirm(selected)

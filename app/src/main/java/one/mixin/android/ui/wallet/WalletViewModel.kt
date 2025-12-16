@@ -33,6 +33,7 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -78,11 +79,11 @@ internal constructor(
     private val pinCipher: PinCipher,
 ) : ViewModel() {
 
-    private val _walletsFlow = MutableStateFlow<List<Web3Wallet>>(emptyList())
-    val walletsFlow: StateFlow<List<Web3Wallet>> = _walletsFlow
+    private val _walletsFlow = MutableStateFlow<List<WalletItem>>(emptyList())
+    val walletsFlow: StateFlow<List<WalletItem>> = _walletsFlow
 
-    private val _allWalletsFlow = MutableStateFlow<List<Web3Wallet>>(emptyList())
-    val allWalletsFlow: StateFlow<List<Web3Wallet>> = _allWalletsFlow
+    private val _allWalletsFlow = MutableStateFlow<List<WalletItem>>(emptyList())
+    val allWalletsFlow: StateFlow<List<WalletItem>> = _allWalletsFlow
 
     fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
         viewModelScope.launch {

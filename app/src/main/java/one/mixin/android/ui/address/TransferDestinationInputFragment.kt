@@ -279,7 +279,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                             }) {
                                                 when {
                                                     destinationWallet?.isMixinSafe()  == true-> {
-                                                        val toAddress = destinationWallet.safeAddress
+                                                        val toAddress = destinationWallet.safeAddress.orEmpty()
                                                         when {
                                                             token != null -> {
                                                                 navigateToInputFragmentWithBundle(

@@ -8,12 +8,11 @@ import one.mixin.android.api.response.SafeAsset
 import one.mixin.android.api.response.UserSafe
 import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3Token
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.SafeWallets
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
-import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 class RefreshSafeAccountsJob : BaseJob(
@@ -47,8 +46,8 @@ class RefreshSafeAccountsJob : BaseJob(
                         saveUserAccount(account)
                     }
                     userAccounts.map { it.accountId }.let { ids ->
-                        val localIds = web3WalletDao.getAllSafeWallets().map { it.id }
-                        web3WalletDao.deleteSafeWalletNotIn(ids)
+                        val localIds = safeWalletsDao.getAllSafeWallets().map { it.id }
+                        safeWalletsDao.deleteSafeWalletNotIn(ids)
                         (localIds - ids.toSet()).let {
                             if (it.isNotEmpty()) {
                                 web3TokenDao.deleteInByWalletIds(it)
@@ -74,20 +73,18 @@ class RefreshSafeAccountsJob : BaseJob(
     private suspend fun saveUserAccount(account: UserSafe) {
         val walletId = account.accountId
         val currentTime = nowInUtc()
-        
-        val wallet = Web3Wallet(
+
+        val safeWallet = SafeWallets(
             id = walletId,
-            category = WalletCategory.MIXIN_SAFE.value,
             name = account.name,
             createdAt = account.createdAt,
             updatedAt = currentTime,
             safeRole = account.role,
-            safeChainId = SafeChain.fromValue(account.chainId)?.chainId,
+            safeChainId = SafeChain.fromValue(account.chainId)?.chainId ?: "",
             safeAddress = account.address,
-            safeUrl = account.uri
+            safeUrl = account.uri,
         )
-        
-        web3WalletDao.insert(wallet)
+        safeWalletsDao.insert(safeWallet)
         Timber.d("Saved wallet: walletId=$walletId, name=${account.name}, address=${account.address}")
 
         if (account.assets.isNotEmpty()) {

@@ -17,6 +17,8 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.vo.SafeWallets
 import one.mixin.android.vo.route.Order
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Chain
@@ -44,6 +46,7 @@ import kotlin.math.min
         Web3RawTransaction::class,
         Property::class,
         Order::class,
+        SafeWallets::class,
     ],
     version = 6,
 )
@@ -94,14 +97,9 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
-
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_role TEXT")
-                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_chain_id TEXT")
-                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_address TEXT")
-                database.execSQL("ALTER TABLE wallets ADD COLUMN safe_url TEXT")
-
+                database.execSQL(" CREATE TABLE IF NOT EXISTS `safe_wallets` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))")
             }
         }
 
@@ -149,6 +147,7 @@ abstract class WalletDatabase : RoomDatabase() {
     abstract fun web3PropertyDao(): Web3PropertyDao
     abstract fun web3RawTransactionDao(): Web3RawTransactionDao
     abstract fun orderDao(): OrderDao
+    abstract fun safeWalletsDao(): SafeWalletsDao
 
     override fun close() {
         super.close()

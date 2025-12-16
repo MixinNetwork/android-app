@@ -50,12 +50,13 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isClassic
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
@@ -75,7 +76,7 @@ import one.mixin.android.vo.WalletCategory
 class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletViewModel>()
-    private var onWalletClickListener: ((Web3Wallet?) -> Unit)? = null
+    private var onWalletClickListener: ((WalletItem?) -> Unit)? = null
     private var onDismissListener: (() -> Unit)? = null
 
     private val excludeWalletId: String? by lazy {
@@ -126,7 +127,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 },
                 onWalletClick = { wallet ->
                     if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
-                        NoKeyWarningBottomSheetDialogFragment.newInstance(wallet).apply {
+                        NoKeyWarningBottomSheetDialogFragment.newInstance(wallet.toWeb3Wallet()).apply {
                             onConfirm = {
                                 this@WalletListBottomSheetDialogFragment.onWalletClickListener?.invoke(wallet)
                                 this@WalletListBottomSheetDialogFragment.dismiss()
@@ -148,7 +149,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
-    fun setOnWalletClickListener(listener: (Web3Wallet?) -> Unit) {
+    fun setOnWalletClickListener(listener: (WalletItem?) -> Unit) {
         onWalletClickListener = listener
     }
 
@@ -181,17 +182,17 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
 sealed class WalletListItem {
     object PrivacyWallet : WalletListItem()
-    data class RegularWallet(val wallet: Web3Wallet) : WalletListItem() // common wallet or imported wallet
+    data class RegularWallet(val wallet: WalletItem) : WalletListItem() // common wallet or imported wallet
 }
 
 @Composable
 fun WalletListScreen(
     chainId:String?,
-    wallets: List<Web3Wallet>,
-    allWallets: List<Web3Wallet>,
+    wallets: List<WalletItem>,
+    allWallets: List<WalletItem>,
     excludeWalletId: String?,
     onQueryChanged: (String) -> Unit,
-    onWalletClick: (Web3Wallet?) -> Unit,
+    onWalletClick: (WalletItem?) -> Unit,
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current

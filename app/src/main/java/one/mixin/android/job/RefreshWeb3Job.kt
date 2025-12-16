@@ -85,7 +85,7 @@ class RefreshWeb3Job : BaseJob(
             successBlock = { response ->
                 val wallet = response.data
                 if (wallet != null) {
-                    val w = Web3Wallet(wallet.id, wallet.category, wallet.name, wallet.createdAt, wallet.updatedAt, null, null, null, null)
+                    val w = Web3Wallet(wallet.id, wallet.category, wallet.name, wallet.createdAt, wallet.updatedAt)
                     web3WalletDao.insert(w)
                     Timber.d("Created ${wallet.category} wallet with ID: ${wallet.id}")
                     wallet.addresses?.let {
@@ -93,13 +93,13 @@ class RefreshWeb3Job : BaseJob(
                         Timber.d("Inserted wallet with ID: ${wallet.id}, ${addresses.size} addresses")
                     }
                     fetchChain()
-                    fetchWalletAssets(w)
+                    fetchWalletAssets(w.id)
                     Web3Signer.init(
                         { w.id },
                         { walletId ->
                             runBlocking(Dispatchers.IO) { web3AddressDao.getAddressesByWalletId(walletId) }
                         }, { walletId ->
-                            w
+                            runBlocking(Dispatchers.IO) { web3WalletDao.getWalletById(walletId) }
                         }
                     )
                 } else {
@@ -117,24 +117,24 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
-    private suspend fun fetchWalletAddresses(wallet: Web3Wallet) {
+    private suspend fun fetchWalletAddresses(walletId: String) {
         requestRouteAPI(
             invokeNetwork = {
-                routeService.getWalletAddresses(wallet.id)
+                routeService.getWalletAddresses(walletId)
             },
             successBlock = { response ->
                 val addressesResponse = response
                 if (addressesResponse.data.isNullOrEmpty().not()) {
-                    Timber.d("Fetched ${addressesResponse.data?.size} addresses for wallet ${wallet.id}")
+                    Timber.d("Fetched ${addressesResponse.data?.size} addresses for wallet $walletId")
                     val web3Addresses = addressesResponse.data!!
                     web3AddressDao.insertList(web3Addresses)
                     Timber.d("Inserted ${web3Addresses.size} addresses into database")
                 } else {
-                    Timber.d("No addresses found for wallet ${wallet.id}")
+                    Timber.d("No addresses found for wallet $walletId")
                 }
             },
             failureBlock = { response ->
-                Timber.e("Failed to fetch addresses for wallet ${wallet.id}: ${response.errorCode} - ${response.errorDescription}")
+                Timber.e("Failed to fetch addresses for wallet $walletId: ${response.errorCode} - ${response.errorDescription}")
                 false
             },
             requestSession = {
@@ -157,7 +157,7 @@ class RefreshWeb3Job : BaseJob(
                         if (wallet.id == renameWalletId) {
                             RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
                         }
-                        fetchWalletAddresses(wallet)
+                        fetchWalletAddresses(wallet.id)
                     }
                 }
             },
@@ -172,25 +172,25 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
-    private suspend fun fetchWalletAssets(wallet: Web3Wallet) {
+    private suspend fun fetchWalletAssets(walletId: String) {
         requestRouteAPI(
             invokeNetwork = {
-                routeService.getWalletAssets(wallet.id)
+                routeService.getWalletAssets(walletId)
             },
             successBlock = { response ->
                 val assets = response.data
                 if (assets != null && assets.isNotEmpty()) {
-                    Timber.d("Fetched ${assets.size} assets for wallet ${wallet.id}")
+                    Timber.d("Fetched ${assets.size} assets for wallet $walletId")
                     val assetIds = assets.map { it.assetId }
-                    web3TokenDao.updateBalanceToZeroForMissingAssets(wallet.id, assetIds)
-                    Timber.d("Updated missing assets to zero balance for wallet ${wallet.id}")
+                    web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
+                    Timber.d("Updated missing assets to zero balance for wallet $walletId")
                     val extrasToInsert = assets.filter { it.level < Constants.AssetLevel.UNKNOWN }
                         .mapNotNull { asset ->
-                            val extra = web3TokensExtraDao.findByAssetId(asset.assetId, wallet.id)
+                            val extra = web3TokensExtraDao.findByAssetId(asset.assetId, walletId)
                             if (extra == null) {
                                 Web3TokensExtra(
                                     assetId = asset.assetId,
-                                    walletId = wallet.id,
+                                    walletId = walletId,
                                     hidden = true
                                 )
                             } else {
@@ -204,13 +204,13 @@ class RefreshWeb3Job : BaseJob(
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
-                    Timber.d("No assets found for wallet ${wallet.id}")
-                    web3TokenDao.updateAllBalancesToZero(wallet.id)
-                    Timber.d("Updated all assets to zero balance for wallet ${wallet.id}")
+                    Timber.d("No assets found for wallet $walletId")
+                    web3TokenDao.updateAllBalancesToZero(walletId)
+                    Timber.d("Updated all assets to zero balance for wallet $walletId")
                 }
             },
             failureBlock = { response ->
-                Timber.e("Failed to fetch assets for wallet ${wallet.id}: ${response.errorCode} - ${response.errorDescription}")
+                Timber.e("Failed to fetch assets for wallet $walletId: ${response.errorCode} - ${response.errorDescription}")
                 false
             },
             requestSession = {

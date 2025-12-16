@@ -204,7 +204,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         Error,
     }
 
-    var walletDisplayInfo by mutableStateOf<Pair<String, Int>?>(null)
+    var walletDisplayInfo by mutableStateOf<Triple<String?, Int, Boolean?>?>(null)
     private val source by lazy {
         requireNotNull(requireArguments().getString(ARGS_SOURCE))
     }
@@ -455,7 +455,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
                         }
                         walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
-                            val (displayName, _) = walletDisplayInfo
+                            val (displayName, _, _) = walletDisplayInfo
                             ItemContent(title = stringResource(id = R.string.Sender).uppercase(), subTitle = account, displayName)
                         }, {
                             ItemContent(title = stringResource(id = R.string.Sender).uppercase(), subTitle = account)
