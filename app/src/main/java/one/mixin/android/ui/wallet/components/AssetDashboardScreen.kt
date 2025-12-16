@@ -67,6 +67,7 @@ const val PREF_NAME = "wallet_info_card"
 const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
 const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 const val KEY_HIDE_SAFE_WALLET_INFO = "hide_safe_wallet_info"
+const val KEY_SAFE_CATEGORY_BADGE_SEEN = "safe_category_badge_seen"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -81,6 +82,7 @@ fun AssetDashboardScreen(
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
+    val hasSeenSafeCategoryBadge = remember { mutableStateOf(prefs.getBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, false)) }
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
     var selectedCategory by remember { mutableStateOf<String?>(null) }
@@ -165,13 +167,21 @@ fun AssetDashboardScreen(
 
                 val hasImported = wallets.any { it.isImported() }
                 val hasWatch = wallets.any { it.isWatch() }
+                val hasSafe = wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }
 
                 WalletCategoryFilter(
                     selectedCategory = selectedCategory,
                     hasImported = hasImported,
                     hasWatch = hasWatch,
-                    hasSafe = true,
-                    onCategorySelected = { selectedCategory = it }
+                    hasSafe = hasSafe,
+                    showSafeBadge = hasSafe && !hasSeenSafeCategoryBadge.value,
+                    onCategorySelected = {
+                        if (it == WalletCategory.MIXIN_SAFE.value) {
+                            prefs.edit { putBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, true) }
+                            hasSeenSafeCategoryBadge.value = true
+                        }
+                        selectedCategory = it
+                    }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
