@@ -29,11 +29,11 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("""
         SELECT * FROM ($WALLET_ITEM_QUERY) w WHERE w.id != :excludeWalletId AND w.name LIKE '%' || :query || '%' AND 
         (EXISTS (SELECT 1 FROM addresses a WHERE a.wallet_id = w.id AND a.chain_id = :chainId) OR w.safeChainId = :chainId) 
-        ORDER BY w.createdAt ASC
+        ORDER BY createdAt ASC
         """)
     suspend fun getWalletsExcludingByName(excludeWalletId: String, chainId: String, query: String): List<WalletItem>
 
-    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) w WHERE w.id != :excludeWalletId AND w.name LIKE '%' || :query || '%' ORDER BY w.createdAt ASC")
+    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) w WHERE w.id != :excludeWalletId AND w.name LIKE '%' || :query || '%' ORDER BY createdAt ASC")
     suspend fun getWalletsExcludingByNameAllChains(excludeWalletId: String, query: String): List<WalletItem>
 
     @Query("SELECT * FROM ($WALLET_ITEM_QUERY) ORDER BY createdAt ASC")
