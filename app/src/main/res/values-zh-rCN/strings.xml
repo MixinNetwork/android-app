@@ -1931,8 +1931,8 @@
     <string name="Whats_Safe_Wallet">什么是 Safe 金库？</string>
     <string name="Safe_Wallet_Description">基于比特币、以太坊等网络的多重签名冷钱包。</string>
     <string name="Upgrade_Safe_Description">升级到 Mixin One 即可解锁 Mixin Safe，与你的家人、朋友或同事一起安全管理资产。</string>
-    <string name="Create_Safe">创建 Safe</string>
-    <string name="Create_Safe_Description">您尚未拥有 Safe。现在创建即可与家人、朋友或同事安全管理资产。</string>
+    <string name="Create_Safe">创建 Safe 金库</string>
+    <string name="Create_Safe_Description">您尚未拥有 Safe 金库。现在创建即可与家人、朋友或同事安全管理资产。</string>
     <string name="Guideline">使用指南</string>
     <string name="safe_learn_more_url" translatable="false">https://support.mixin.one/zh/article/mixin-safe-1bl8w6l/</string>
     <string name="safe_create_guideline_url" translatable="false">https://support.mixin.one/zh/article/safe-1ljf7ld/</string>
