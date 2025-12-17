@@ -139,6 +139,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private var translationOffset by Delegates.notNull<Float>()
     private var safeAreaTopInset: Int = 0
     private var safeAreaBottomInset: Int = 0
+    private var rootPaddingTop: Int = 0
+    private var rootPaddingBottom: Int = 0
+    private var bottomLayoutPaddingTop: Int = 0
+    private var bottomLayoutPaddingBottom: Int = 0
 
     private var groupName: String? = null
 
@@ -155,13 +159,26 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val behavior = params.behavior as BottomSheetBehavior<*>
         behavior.peekHeight = peekHeight
         binding.root.doOnPreDraw { root ->
+            val defaultPadding: Int = 16.dp
             translationOffset =
                 (peekHeight - root.measuredHeight).toFloat()
             binding.participants.translationY = translationOffset
             binding.bottomLayout.translationY = translationOffset
             safeAreaTopInset = root.getSafeAreaInsetsTop()
             safeAreaBottomInset = root.getSafeAreaInsetsBottom()
-            binding.root.setPadding(0, 0, 0, safeAreaBottomInset)
+            rootPaddingTop = root.paddingTop
+            rootPaddingBottom = root.paddingBottom
+            bottomLayoutPaddingTop = binding.bottomLayout.paddingTop
+            bottomLayoutPaddingBottom = binding.bottomLayout.paddingBottom
+            if (bottomLayoutPaddingTop == 0) bottomLayoutPaddingTop = defaultPadding
+            if (bottomLayoutPaddingBottom == 0) bottomLayoutPaddingBottom = defaultPadding
+            binding.root.setPadding(0, rootPaddingTop, 0, rootPaddingBottom)
+            binding.bottomLayout.setPadding(
+                0,
+                bottomLayoutPaddingTop,
+                0,
+                bottomLayoutPaddingBottom + safeAreaBottomInset,
+            )
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
         behavior.addBottomSheetCallback(
@@ -181,8 +198,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 ) {
                     val normalizedSlideOffset = slideOffset.coerceIn(0f, 1f)
                     val topPadding = (safeAreaTopInset * normalizedSlideOffset).roundToInt()
-                    if (binding.root.paddingTop != topPadding || binding.root.paddingBottom != safeAreaBottomInset) {
-                        binding.root.setPadding(0, topPadding, 0, safeAreaBottomInset)
+                    val expectedRootTop = rootPaddingTop + topPadding
+                    if (binding.root.paddingTop != expectedRootTop) {
+                        binding.root.setPadding(0, expectedRootTop, 0, rootPaddingBottom)
                     }
                     userAdapter?.let {
                         if (it.itemCount > 8) {
