@@ -46,6 +46,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getSafeAreaInsetsBottom
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
@@ -76,6 +77,7 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlin.properties.Delegates
 
 @AndroidEntryPoint
@@ -135,6 +137,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private var translationOffset by Delegates.notNull<Float>()
+    private var safeAreaTopInset: Int = 0
+    private var safeAreaBottomInset: Int = 0
 
     private var groupName: String? = null
 
@@ -151,10 +155,13 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val behavior = params.behavior as BottomSheetBehavior<*>
         behavior.peekHeight = peekHeight
         binding.root.doOnPreDraw { root ->
-            translationOffset = (peekHeight - root.measuredHeight).toFloat()
+            translationOffset =
+                (peekHeight - root.measuredHeight).toFloat()
             binding.participants.translationY = translationOffset
             binding.bottomLayout.translationY = translationOffset
-            binding.root.setPadding(0,0,0, root.getSafeAreaInsetsBottom())
+            safeAreaTopInset = root.getSafeAreaInsetsTop()
+            safeAreaBottomInset = root.getSafeAreaInsetsBottom()
+            binding.root.setPadding(0, 0, 0, safeAreaBottomInset)
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
         behavior.addBottomSheetCallback(
@@ -172,6 +179,11 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     bottomSheet: View,
                     slideOffset: Float,
                 ) {
+                    val normalizedSlideOffset = slideOffset.coerceIn(0f, 1f)
+                    val topPadding = (safeAreaTopInset * normalizedSlideOffset).roundToInt()
+                    if (binding.root.paddingTop != topPadding || binding.root.paddingBottom != safeAreaBottomInset) {
+                        binding.root.setPadding(0, topPadding, 0, safeAreaBottomInset)
+                    }
                     userAdapter?.let {
                         if (it.itemCount > 8) {
                             binding.participants.translationY = 0f
