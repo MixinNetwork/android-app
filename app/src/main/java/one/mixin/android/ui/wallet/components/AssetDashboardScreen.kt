@@ -27,6 +27,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +79,8 @@ fun AssetDashboardScreen(
 ) {
     val viewModel: AssetDistributionViewModel = hiltViewModel()
     val context = LocalContext.current
+    val safeCreateGuidelineUrl: String = stringResource(R.string.safe_create_guideline_url)
+    val safeLearnMoreUrl: String = stringResource(R.string.safe_learn_more_url)
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
@@ -86,6 +89,7 @@ fun AssetDashboardScreen(
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
     var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var isWalletInfoCardVisible by remember { mutableStateOf(true) }
 
     var refreshTrigger by remember { mutableIntStateOf(0) }
 
@@ -113,6 +117,12 @@ fun AssetDashboardScreen(
 
     LaunchedEffect(refreshTrigger) {
         viewModel.loadWallets()
+    }
+
+    LaunchedEffect(selectedCategory, wallets.size) {
+        isWalletInfoCardVisible = false
+        withFrameNanos { }
+        isWalletInfoCardVisible = true
     }
 
     MixinAppTheme {
@@ -176,6 +186,7 @@ fun AssetDashboardScreen(
                     hasSafe = hasSafe,
                     showSafeBadge = hasSafe && !hasSeenSafeCategoryBadge.value,
                     onCategorySelected = {
+                        isWalletInfoCardVisible = false
                         if (it == WalletCategory.MIXIN_SAFE.value) {
                             prefs.edit { putBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, true) }
                             hasSeenSafeCategoryBadge.value = true
@@ -198,7 +209,7 @@ fun AssetDashboardScreen(
                     if (Session.getAccount()?.membership?.isMembership() == true) {
                         CreateSafeCard(
                             onCreateClick = {
-                                context.openUrl(context.getString(R.string.safe_create_guideline_url))
+                                context.openUrl(safeCreateGuidelineUrl)
                             },
                         )
                     } else {
@@ -207,7 +218,7 @@ fun AssetDashboardScreen(
                                 onUpgradePlan.invoke()
                             },
                             onLearnMoreClick = {
-                                context.openUrl(context.getString(R.string.safe_learn_more_url))
+                                context.openUrl(safeLearnMoreUrl)
                             }
                         )
                     }
@@ -229,14 +240,15 @@ fun AssetDashboardScreen(
                     if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
                         WalletCard(
                             name = wallet.name,
-                            destination = WalletDestination.Safe(wallet.id, wallet.isOwner(), wallet.safeChainId,wallet.safeUrl),
-                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id, wallet.isOwner(), wallet.safeChainId,wallet.safeUrl)) }
+                            destination = WalletDestination.Safe(wallet.id, wallet.isOwner(), wallet.safeChainId, wallet.safeUrl),
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Safe(wallet.id, wallet.isOwner(), wallet.safeChainId, wallet.safeUrl)) }
                         )
                     } else if (wallet.isWatch()) {
                         WalletCard(
                             name = wallet.name,
                             destination = WalletDestination.Watch(wallet.id, wallet.category),
-                            onClick = { onWalletCardClick.invoke(WalletDestination.Watch(wallet.id, wallet.category)) })
+                            onClick = { onWalletCardClick.invoke(WalletDestination.Watch(wallet.id, wallet.category)) }
+                        )
                     } else if (wallet.isImported()) {
                         WalletCard(
                             name = wallet.name,
@@ -254,7 +266,7 @@ fun AssetDashboardScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value || !hideSafeWalletInfo.value) {
+                if (isWalletInfoCardVisible && (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value || !hideSafeWalletInfo.value)) {
                     Spacer(modifier = Modifier.weight(1f))
                     WalletInfoCard(
                         hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
@@ -291,6 +303,9 @@ fun WalletInfoCard(
     onSafeClose: () -> Unit,
 ) {
     val context = LocalContext.current
+    val privacyWalletUrl: String = stringResource(R.string.url_privacy_wallet)
+    val classicWalletUrl: String = stringResource(R.string.url_classic_wallet)
+    val safeLearnMoreUrl: String = stringResource(R.string.safe_learn_more_url)
 
     // Build list of visible pages
     val pages = buildList {
@@ -318,21 +333,21 @@ fun WalletInfoCard(
                 when (pages[page]) {
                     "privacy" -> PrivacyWalletInfo(
                         onLearnMoreClick = {
-                            context.openUrl(context.getString(R.string.url_privacy_wallet))
+                            context.openUrl(privacyWalletUrl)
                         },
                         onClose = onPrivacyClose
                     )
 
                     "common" -> CommonWalletInfo(
                         onLearnMoreClick = {
-                            context.openUrl(context.getString(R.string.url_classic_wallet))
+                            context.openUrl(classicWalletUrl)
                         },
                         onClose = onCommonClose
                     )
 
                     "safe" -> SafeWalletInfo(
                         onLearnMoreClick = {
-                            context.openUrl(context.getString(R.string.safe_learn_more_url))
+                            context.openUrl(safeLearnMoreUrl)
                         },
                         onClose = onSafeClose
                     )
