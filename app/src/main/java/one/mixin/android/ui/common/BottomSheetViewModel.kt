@@ -192,11 +192,10 @@ class BottomSheetViewModel
 
         fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>> = tokenRepository.assetItems(assetIds)
 
-        suspend fun findTokenItems(ids: List<String>): List<TokenItem> = tokenRepository.findTokenItems(ids)
-
-        suspend fun findAssetItemsWithBalance(): List<TokenItem> = tokenRepository.findAssetItemsWithBalance()
 
         fun assetItemsWithBalance(): LiveData<List<TokenItem>> = tokenRepository.assetItemsWithBalance()
+
+        fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
         suspend fun kernelWithdrawalTransaction(
             receiverId: String,
@@ -1780,7 +1779,7 @@ class BottomSheetViewModel
 
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
 
-        fun web3TokenItems(walletId: String, level:Int) = tokenRepository.web3TokenItems(walletId, level)
+        fun web3TokenItemsExcludeHidden(walletId: String) = tokenRepository.web3TokenItemsExcludeHidden(walletId)
 
         fun web3TokenItemsAll() = tokenRepository.web3TokenItemsAll()
 

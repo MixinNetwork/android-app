@@ -201,9 +201,9 @@ import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
@@ -2612,13 +2612,13 @@ class ConversationFragment() :
                             binding.chatControl.reset()
                             if (Session.getAccount()?.hasPin == true) {
                                 recipient?.let { recipient ->
-                                    AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                                    TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                                         .setOnAssetClick { asset ->
                                             activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, asset.assetId)
                                             activity?.let {
                                                 WalletActivity.showInputForUser(it,asset, recipient)
                                             }
-                                        }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                                        }.showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                                 }
                             } else {
                                 TipActivity.show(requireActivity(), TipType.Create, true)

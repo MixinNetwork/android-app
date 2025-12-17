@@ -4,13 +4,14 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
 
 @Suppress("EqualsOrHashCode")
 @Parcelize
 data class SwapToken(
-    @SerializedName("wallet_id") val walletId: String?,
+    @SerializedName("wallet_id") var walletId: String?,
     @SerializedName("address") val address: String,
     @SerializedName("assetId") val assetId: String,
     @SerializedName("decimals") val decimals: Int,
@@ -138,8 +139,8 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 return@Comparator -1
             }
 
-            val hasIcon1 = o1.icon != defaultIcon
-            val hasIcon2 = o2.icon != defaultIcon
+            val hasIcon1 = o1.icon != Constants.DEFAULT_ICON_URL
+            val hasIcon2 = o2.icon != Constants.DEFAULT_ICON_URL
             if (hasIcon1 && !hasIcon2) {
                 return@Comparator -1
             } else if (!hasIcon1 && hasIcon2) {
@@ -150,5 +151,3 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
         }
     )
 }
-
-private const val defaultIcon = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"

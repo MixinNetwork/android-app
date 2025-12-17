@@ -315,7 +315,6 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }
                 return@launch
             }
-
             val assetList = if (isStockMode && s.isBlank()) {
                 stocks.toMutableList()
             } else {
@@ -363,9 +362,22 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         it
                     }
                 }?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
-                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
-                    }
+                    (localTokens.find { swapToken -> swapToken.assetId == ra.assetId } ?: (
+                            if (inMixin) {
+                                swapViewModel.findToken(ra.assetId)?.run {
+                                    if (hidden == false) null
+                                    else this
+                                }?.toSwapToken()
+                            } else {
+                                swapViewModel.web3TokenItemById(ra.walletId ?: "", ra.assetId)?.run {
+                                    if (hidden == false) null
+                                    else this
+                                }?.toSwapToken()
+                            }
+                            )
+                            )?.let {
+                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                        }
                     return@map ra
                 }
             },

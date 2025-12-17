@@ -164,9 +164,9 @@ import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
 import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
@@ -820,14 +820,14 @@ class MainActivity : BlazeBaseActivity() {
             if (Session.getAccount()?.hasPin == true) {
                 lifecycleScope.launch {
                     val user = userRepo.refreshUser(userId) ?: return@launch
-                    val bottom = AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                    val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                         .apply {
                             asyncOnAsset = { selectedAsset ->
                                 this@MainActivity.defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
                                 WalletActivity.navigateToWalletActivity(this@MainActivity, buildTransferBiometricItem(user, selectedAsset, "", null, null,null))
                             }
                         }
-                    bottom.show(supportFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    bottom.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 }
             } else {
                 toast(R.string.transfer_without_pin)
