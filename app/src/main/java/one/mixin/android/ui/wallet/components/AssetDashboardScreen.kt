@@ -409,7 +409,7 @@ fun PrivacyWalletInfo(
             Spacer(modifier = Modifier.width(8.dp))
 
             Image(
-                painter = painterResource(id = R.drawable.ic_privacy),
+                painter = painterResource(id = R.drawable.ic_safe),
                 contentDescription = null,
                 modifier = Modifier.size(48.dp)
             )
