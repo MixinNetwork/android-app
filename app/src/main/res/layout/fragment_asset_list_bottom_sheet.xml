@@ -113,7 +113,8 @@
                 android:button="@null"
                 android:text="@string/Stock"
                 android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
+                android:textColor="@drawable/radio_button_text_selector"
+                android:visibility="gone"/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_eth"

@@ -107,7 +107,7 @@ fun ImportWalletDetailPage(
         "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche" -> true
         else -> false
     }
-    val isSolana = selectedNetworkName != "Solana"
+    val isSolana = selectedNetworkName == "Solana"
 
     val currentChainId = networks[selectedNetworkName] ?: ""
 
