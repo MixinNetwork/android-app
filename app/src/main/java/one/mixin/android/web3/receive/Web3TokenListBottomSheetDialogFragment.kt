@@ -355,8 +355,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     ChainId.Base,
                     ChainId.Optimism,
                     ChainId.Arbitrum,
+                    ChainId.Avalanche,
                     ChainId.BinanceSmartChain,
-                    ChainId.Polygon)
+                    ChainId.Polygon,
+                )
             }.map { item ->
                 localTokens.find { item.assetId == it.assetId }.let { local ->
                     local
