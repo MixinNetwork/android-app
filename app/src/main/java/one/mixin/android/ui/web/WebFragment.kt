@@ -382,7 +382,7 @@ class WebFragment : BaseFragment() {
         view: View,
         savedInstanceState: Bundle?,
     ) {
-        contentView = binding.container
+        contentView = binding.containerView
         webView =
             if (index >= 0 && index < clips.size) {
                 clips[index].let { clip ->
@@ -468,8 +468,8 @@ class WebFragment : BaseFragment() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
         activity?.window?.let { window->
-            SystemUIManager.setSafePaddingOnce(requireActivity().window, requireContext().colorFromAttribute(R.color.bgWhite))
             SystemUIManager.lightUI(window , requireContext().isNightMode().not())
+            SystemUIManager.setSafePaddingOnce(window = window, color = requireContext().colorFromAttribute(R.attr.bg_white), R.id.container)
         }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
@@ -1694,7 +1694,7 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         requireActivity().window?.let {
-            it.decorView.setBackgroundColor(color)
+            it.decorView.findViewById<ViewGroup>(R.id.container).setBackgroundColor(color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color

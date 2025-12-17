@@ -89,6 +89,7 @@ fun ImportWalletDetailPage(
         "Polygon" to Constants.ChainId.Polygon,
         "Arbitrum" to Constants.ChainId.Arbitrum,
         "Optimism" to Constants.ChainId.Optimism,
+        "Avalanche" to Constants.ChainId.Avalanche,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
     var expanded by remember { mutableStateOf(false) }
@@ -103,10 +104,10 @@ fun ImportWalletDetailPage(
 
 
     val isEvmNetwork = when (selectedNetworkName) {
-        "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism" -> true
+        "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche" -> true
         else -> false
     }
-    val isSolana = selectedNetworkName != "Solana"
+    val isSolana = selectedNetworkName == "Solana"
 
     val currentChainId = networks[selectedNetworkName] ?: ""
 

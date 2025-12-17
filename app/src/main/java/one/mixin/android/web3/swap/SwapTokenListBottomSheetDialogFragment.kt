@@ -22,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -176,10 +177,13 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                 Optimism
                             }
 
+                            R.id.radio_avalanche -> {
+                                Avalanche
+                            }
+
                             R.id.radio_toncoin -> {
                                 TON_CHAIN_ID
                             }
-
                             else -> {
                                 null
                             }
