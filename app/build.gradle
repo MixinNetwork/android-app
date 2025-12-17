@@ -17,8 +17,8 @@ plugins {
 
 def versionMajor = 3
 def versionMinor = 7
-def versionPatch = 0
-def versionBuild = 2
+def versionPatch = 1
+def versionBuild = 1
 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
