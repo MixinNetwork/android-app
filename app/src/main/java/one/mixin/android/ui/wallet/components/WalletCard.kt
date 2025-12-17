@@ -336,14 +336,7 @@ fun WalletCard(
                             if (address.any { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }) {
                                 listOf(R.drawable.ic_chain_sol)
                             } else {
-                                listOf(
-                                    R.drawable.ic_chain_eth,
-                                    R.drawable.ic_chain_polygon,
-                                    R.drawable.ic_chain_bsc,
-                                    R.drawable.ic_chain_base,
-                                    R.drawable.ic_chain_arbitrum_eth,
-                                    R.drawable.ic_chain_optimism,
-                                )
+                                evmChain
                             }
                         } else {
                             classicChain
@@ -389,6 +382,7 @@ val privacyChain = listOf(
     R.drawable.ic_chain_base,
     R.drawable.ic_chain_arbitrum_eth,
     R.drawable.ic_chain_optimism,
+    R.drawable.ic_chain_avax,
 )
 
 val classicChain = listOf(
@@ -398,6 +392,18 @@ val classicChain = listOf(
     R.drawable.ic_chain_base,
     R.drawable.ic_chain_arbitrum_eth,
     R.drawable.ic_chain_optimism,
+    R.drawable.ic_chain_avax,
     // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
+
+    )
+
+val evmChain = listOf(
+    R.drawable.ic_chain_eth,
+    R.drawable.ic_chain_polygon,
+    R.drawable.ic_chain_bsc,
+    R.drawable.ic_chain_base,
+    R.drawable.ic_chain_arbitrum_eth,
+    R.drawable.ic_chain_optimism,
+    R.drawable.ic_chain_avax,
 )

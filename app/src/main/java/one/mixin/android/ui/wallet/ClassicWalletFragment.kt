@@ -8,6 +8,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -199,8 +200,11 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                             toast(R.string.Data_error)
                                             return@launch
                                         }
-
-                                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId) ?: return@launch
+                                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                                        if (chain == null) {
+                                            toast(R.string.Data_error)
+                                            return@launch
+                                        }
                                         Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
                                         WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address?.destination, token, chain, wallet)
                                     }

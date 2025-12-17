@@ -347,24 +347,6 @@ class WalletActivity : BlazeBaseActivity() {
             )
         }
 
-        fun showInputForWeb3(
-            activity: Activity,
-            fromAddress: String,
-            toAddress: String,
-            web3Token: Web3TokenItem,
-            chainToken: Web3TokenItem,
-        ) {
-            activity.startActivity(
-                Intent(activity, WalletActivity::class.java).apply {
-                    putExtra(DESTINATION, Destination.Input)
-                    putExtra(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
-                    putExtra(InputFragment.ARGS_TO_ADDRESS, toAddress)
-                    putExtra(InputFragment.ARGS_WEB3_TOKEN, web3Token)
-                    putExtra(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chainToken)
-                }
-            )
-        }
-
         fun showInputForAddress(
             activity: Activity,
             tokenItem: TokenItem,

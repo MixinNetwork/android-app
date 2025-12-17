@@ -36,6 +36,7 @@ object Web3ChainId {
             PolygonChainId -> Chain.Polygon
             BaseChainId -> Chain.Base
             ArbitrumChainId -> Chain.Arbitrum
+            AvalancheChainId -> Chain.Avalanche
             BlastChainId -> Chain.Blast
             else -> Chain.Solana
         }
