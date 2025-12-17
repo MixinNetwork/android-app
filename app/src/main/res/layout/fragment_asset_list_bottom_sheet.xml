@@ -113,6 +113,7 @@
                 android:button="@null"
                 android:text="@string/Stock"
                 android:textSize="14sp"
+                android:visibility="gone"
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton

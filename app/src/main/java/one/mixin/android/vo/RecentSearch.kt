@@ -17,6 +17,7 @@ data class RecentSearch(
 
 enum class RecentSearchType(val value: String) {
     DAPP("dapp"),
+    ASSET("asset"),
     MARKET("market"),
     BOT("bot"),
     LINK("link")
