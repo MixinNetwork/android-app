@@ -63,6 +63,7 @@ import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
@@ -174,11 +175,10 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     asset,
                     tipGas,
                     errorInfo,
-                    isFeeWaived = one.mixin.android.Constants.Web3ChainIds.contains(chain.assetId),
                     onFreeClick = {
-                        one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
+                        CrossWalletFeeFreeBottomSheetDialogFragment
                             .newInstance()
-                            .show(parentFragmentManager, one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
+                            .show(parentFragmentManager, CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
                     },
                     onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                     onDismissRequest = { dismiss() },
