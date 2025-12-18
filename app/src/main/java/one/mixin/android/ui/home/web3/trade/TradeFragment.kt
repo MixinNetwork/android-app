@@ -163,9 +163,14 @@ class TradeFragment : BaseFragment() {
     ): View {
         initAmount()
         lifecycleScope.launch {
+            val chainIds = walletId?.let {
+                swapViewModel.getAddresses(it).map {
+                    it.chainId
+                }
+            }
             initFromTo()
-            refreshTokens()
-            refreshStocks()
+            refreshTokens(chainIds)
+            refreshStocks(chainIds)
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -643,7 +648,8 @@ class TradeFragment : BaseFragment() {
             toToken = tempToToken
         }
     }
-    private suspend fun refreshStocks() {
+    private suspend fun refreshStocks(chainIds: List<String>?) {
+        val chainIdSet: Set<String>? = chainIds?.toSet()?.takeIf { it.isNotEmpty() }
         requestRouteAPI(
             invokeNetwork = { swapViewModel.web3Tokens(getSource(), category = "stock") },
             successBlock = { resp ->
@@ -653,7 +659,7 @@ class TradeFragment : BaseFragment() {
             failureBlock = { r ->
                 if (r.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                    refreshStocks()
+                    refreshStocks(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
                     alertDialogBuilder()
                         .setTitle(R.string.Update_Mixin)
@@ -670,8 +676,15 @@ class TradeFragment : BaseFragment() {
                 }
                 return@requestRouteAPI true
             },
-        )?.let { remote ->
-            stocks = remote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
+        )?.let { remote: List<SwapToken> ->
+            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+                remote
+            } else {
+                remote.filter { token: SwapToken ->
+                    chainIdSet.contains(token.chain.chainId)
+                }
+            }
+            stocks = filteredRemote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
                 val t = web3tokens?.firstOrNull { web3Token ->
                     (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
                 } ?: return@map token
@@ -683,7 +696,8 @@ class TradeFragment : BaseFragment() {
             }
         }
     }
-    private suspend fun refreshTokens() {
+    private suspend fun refreshTokens(chainIds: List<String>?) {
+        val chainIdSet: Set<String>? = chainIds?.toSet()?.takeIf { it.isNotEmpty() }
         requestRouteAPI(
             invokeNetwork = { swapViewModel.web3Tokens(getSource()) },
             successBlock = { resp ->
@@ -693,7 +707,7 @@ class TradeFragment : BaseFragment() {
             failureBlock = { r ->
                 if (r.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                    refreshTokens()
+                    refreshTokens(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
                     alertDialogBuilder()
                         .setTitle(R.string.Update_Mixin)
@@ -710,9 +724,16 @@ class TradeFragment : BaseFragment() {
                 }
                 return@requestRouteAPI true
             },
-        )?.let { remote ->
+        )?.let { remote: List<SwapToken> ->
+            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+                remote
+            } else {
+                remote.filter { token: SwapToken ->
+                    chainIdSet.contains(token.chain.chainId)
+                }
+            }
             if (!inMixin()) {
-                remoteSwapTokens = remote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
+                remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
                     val local = swapViewModel.web3TokenItemById(walletId ?: "", token.assetId)
                     if (local != null) {
                         token.copy(balance = local.balance, price = local.priceUsd)
@@ -738,7 +759,7 @@ class TradeFragment : BaseFragment() {
                     (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
                 }
             } else {
-                remoteSwapTokens = remote.map { token ->
+                remoteSwapTokens = filteredRemote.map { token ->
                     val local = swapViewModel.findToken(token.assetId)
                     if (local != null) {
                         token.copy(balance = local.balance, price = local.priceUsd)
@@ -794,7 +815,7 @@ class TradeFragment : BaseFragment() {
 
     private fun getPreferenceKey(isLimit: Boolean): String {
         return if (isLimit) {
-            if (inMixin()) PREF_LIMIT_SWAP_LAST_PAIR else "${PREF_WEB3_LIMIT_SWAP_LAST_PAIR} ${Web3Signer.currentWalletId}"
+            if (inMixin()) PREF_LIMIT_SWAP_LAST_PAIR else "$PREF_WEB3_LIMIT_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"
         } else {
             if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"
         }

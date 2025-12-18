@@ -79,6 +79,14 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         binding.bg.borderColor = color
     }
 
+    fun setBadgeBorder(
+        width: Float = 1f,
+        color: Int = Color.WHITE,
+    ) {
+        binding.badge.borderWidth = context.dpToPx(width)
+        binding.badge.borderColor = color
+    }
+
     fun loadToken(tokenItem: TokenItem) {
         loadToken(tokenItem.iconUrl, tokenItem.chainIconUrl, tokenItem.collectionHash)
     }

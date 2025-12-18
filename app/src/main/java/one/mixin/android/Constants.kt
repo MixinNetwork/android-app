@@ -320,8 +320,7 @@ object Constants {
             ETHEREUM_CHAIN_ID to "Ethereum",
             Base to "Base",
             Optimism to "Optimism",
-            Arbitrum to "Arbitrum",
-            Avalanche to "Avalanche"
+            Arbitrum to "Arbitrum"
         )
 
         val btcAssets = mapOf(
