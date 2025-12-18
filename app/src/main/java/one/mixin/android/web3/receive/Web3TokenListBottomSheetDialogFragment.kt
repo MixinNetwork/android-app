@@ -135,7 +135,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         TON_CHAIN_ID
                     }
 
-                    R.id.radio_avalanche->{
+                    R.id.radio_avalanche -> {
                         Avalanche
                     }
 
