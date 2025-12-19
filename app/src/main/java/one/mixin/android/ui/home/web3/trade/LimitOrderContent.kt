@@ -203,10 +203,10 @@ fun LimitOrderContent(
                         .fillMaxWidth()
                         .height(availableHeight)
                 } else {
-                    Modifier.fillMaxSize()
+                    Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+
                 }
             ) {
-
                 val scrollState = rememberScrollState()
                 Box(
                     modifier = if (availableHeight != null) {
