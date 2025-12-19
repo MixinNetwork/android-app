@@ -102,6 +102,14 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
             if (o1 == null) return@Comparator 1
             if (o2 == null) return@Comparator -1
 
+            val hasIcon1 = o1.icon != Constants.DEFAULT_ICON_URL
+            val hasIcon2 = o2.icon != Constants.DEFAULT_ICON_URL
+            if (hasIcon1 && !hasIcon2) {
+                return@Comparator -1
+            } else if (!hasIcon1 && hasIcon2) {
+                return@Comparator 1
+            }
+
             if (query.isNullOrBlank().not()) {
                 val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
                 val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
@@ -137,14 +145,6 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 return@Comparator 1
             } else if (priceFiat1 != BigDecimal.ZERO && priceFiat2 == BigDecimal.ZERO) {
                 return@Comparator -1
-            }
-
-            val hasIcon1 = o1.icon != Constants.DEFAULT_ICON_URL
-            val hasIcon2 = o2.icon != Constants.DEFAULT_ICON_URL
-            if (hasIcon1 && !hasIcon2) {
-                return@Comparator -1
-            } else if (!hasIcon1 && hasIcon2) {
-                return@Comparator 1
             }
 
             return@Comparator o1.name.compareTo(o2.name)
