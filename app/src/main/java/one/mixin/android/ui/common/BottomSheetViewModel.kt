@@ -14,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_FREE_FEE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
@@ -132,7 +134,6 @@ import java.io.File
 import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.String
 
 @HiltViewModel
 class BottomSheetViewModel
@@ -208,6 +209,8 @@ class BottomSheetViewModel
             tag: String?,
             memo: String?,
             pin: String,
+            toWallet: Boolean,
+            isFeeWaived: Boolean
         ): MixinResponse<*> {
             val isDifferentFee = feeAssetId != assetId
             val asset = assetIdToAsset(assetId)
@@ -264,14 +267,14 @@ class BottomSheetViewModel
             val changeKeys = data[1].keys.joinToString(",")
             val changeMask = data[1].mask
 
-            val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (isDifferentFee) "" else feeAmount, if (isDifferentFee) "" else feeOutputKeys, if (isDifferentFee) "" else feeOutputMask, withdrawalUtxos.input, changeKeys, changeMask, memo)
+            val withdrawalTx = Kernel.buildWithdrawalTx(asset, amount, destination, tag ?: "", if (isDifferentFee) "" else feeAmount, if (isDifferentFee) "" else feeOutputKeys, if (isDifferentFee) "" else feeOutputMask, withdrawalUtxos.input, changeKeys, changeMask, if (isFeeWaived && !isDifferentFee) MIXIN_FREE_FEE else memo)
             val withdrawalRequests = mutableListOf(TransactionRequest(withdrawalTx.raw, traceId))
 
             val feeTx =
                 if (isDifferentFee) {
                     val feeChangeKeys = data[2].keys.joinToString(",")
                     val feeChangeMask = data[2].mask
-                    val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold.toInt(), feeOutputKeys, feeOutputMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, memo, withdrawalTx.hash)
+                    val feeTx = Kernel.buildTx(feeAsset, feeAmount, threshold.toInt(), feeOutputKeys, feeOutputMask, feeUtxos!!.input, feeChangeKeys, feeChangeMask, if (isFeeWaived) MIXIN_FREE_FEE else memo, withdrawalTx.hash)
                     withdrawalRequests.add(TransactionRequest(feeTx.raw, feeTraceId))
                     feeTx
                 } else {
@@ -1753,7 +1756,7 @@ class BottomSheetViewModel
             return@withContext tokenRepository.refreshInscription(inscriptionHash)
         }
 
-        fun findAddressByDestination(receiver: String, tag: String) = tokenRepository.findAddressByDestination(receiver, tag)
+        fun findAddressByDestination(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
 
         suspend fun checkMarketById(id: String): MarketItem? = withContext(Dispatchers.IO) {
             tokenRepository.checkMarketById(id)
@@ -1778,6 +1781,12 @@ class BottomSheetViewModel
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
 
         fun web3TokenItems(walletId: String, level:Int) = tokenRepository.web3TokenItems(walletId, level)
+
+        fun web3TokenItemsAll() = tokenRepository.web3TokenItemsAll()
+
+        fun web3TokenItemsFromAllOrders() = tokenRepository.web3TokenItemsFromAllOrders()
+
+        fun web3TokenItemsFromOrdersByWalletIds(walletIds: List<String>) = tokenRepository.web3TokenItemsFromOrdersByWalletIds(walletIds)
 
         suspend fun getWeb3Priv(
             context: Context,
@@ -1828,4 +1837,6 @@ class BottomSheetViewModel
         suspend fun bindReferral(code: String) = userRepository.bindReferral(code)
 
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
+
+        suspend fun getReferralCodeInfo(code: String) = userRepository.getReferralCodeInfo(code)
 }

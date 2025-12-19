@@ -136,7 +136,6 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
-        SystemUIManager.fitsSystem(window)
         binding.root.doOnPreDraw {
             SystemUIManager.lightUI(window, false)
         }

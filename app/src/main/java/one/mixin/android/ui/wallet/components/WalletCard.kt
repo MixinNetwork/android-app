@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Colors
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -64,6 +65,9 @@ fun WalletCard(
     hasLocalPrivateKey: Boolean = true,
     destination: WalletDestination?,
     onClick: () -> Unit,
+    enableFreeLabel: Boolean = false,
+    isSelectable: Boolean = false,
+    isSelected: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
 ) {
     var web3TokenTotalBalance by remember { mutableStateOf<BigDecimal?>(null) }
@@ -223,12 +227,41 @@ fun WalletCard(
                         )
                     }
 
+                    val isFeeFree = enableFreeLabel && when (destination) {
+                        is WalletDestination.Classic -> true
+                        is WalletDestination.Import -> hasLocalPrivateKey
+                        else -> false
+                    }
+                    if (isFeeFree) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.FREE),
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(
+                                    color = MixinAppTheme.colors.accent,
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 4.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_arrow_right),
-                        tint = Color.Unspecified,
-                        contentDescription = null,
-                    )
+                    if (isSelectable) {
+                        val iconRes = if (isSelected) R.drawable.ic_wallet_select else R.drawable.ic_wallet_unselect
+                        Icon(
+                            painter = painterResource(id = iconRes),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_arrow_right),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
@@ -260,14 +293,7 @@ fun WalletCard(
                             if (address.any { it.chainId == Constants.ChainId.SOLANA_CHAIN_ID }) {
                                 listOf(R.drawable.ic_chain_sol)
                             } else {
-                                listOf(
-                                    R.drawable.ic_chain_eth,
-                                    R.drawable.ic_chain_polygon,
-                                    R.drawable.ic_chain_bsc,
-                                    R.drawable.ic_chain_base,
-                                    R.drawable.ic_chain_arbitrum_eth,
-                                    R.drawable.ic_chain_optimism,
-                                )
+                                evmChain
                             }
                         } else {
                             classicChain
@@ -313,6 +339,7 @@ val privacyChain = listOf(
     R.drawable.ic_chain_base,
     R.drawable.ic_chain_arbitrum_eth,
     R.drawable.ic_chain_optimism,
+    R.drawable.ic_chain_avax,
 )
 
 val classicChain = listOf(
@@ -322,6 +349,18 @@ val classicChain = listOf(
     R.drawable.ic_chain_base,
     R.drawable.ic_chain_arbitrum_eth,
     R.drawable.ic_chain_optimism,
+    R.drawable.ic_chain_avax,
     // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
+
+    )
+
+val evmChain = listOf(
+    R.drawable.ic_chain_eth,
+    R.drawable.ic_chain_polygon,
+    R.drawable.ic_chain_bsc,
+    R.drawable.ic_chain_base,
+    R.drawable.ic_chain_arbitrum_eth,
+    R.drawable.ic_chain_optimism,
+    R.drawable.ic_chain_avax,
 )

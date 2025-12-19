@@ -31,6 +31,7 @@ import okio.GzipSource
 import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
+import org.sol4k.Base58
 import org.threeten.bp.Instant
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -56,11 +57,6 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 private const val QUIET_ZONE_SIZE = 4
 private val radii = FloatArray(8)
-
-fun String.generateQRCode(
-    qrSize: Int,
-    padding: Int = 32.dp,
-): Pair<Bitmap, Int>  = generateQRCode(qrSize, padding, padding)
 
 fun String.generateQRCode(
     qrSize: Int,
@@ -721,16 +717,30 @@ inline fun SpannableStringBuilder.backgroundColor(color: Int): BackgroundColorSp
     BackgroundColorSpan(color)
 
 fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean {
-    fun toSchemeHostOrNull(url: String) =
-        try {
-            url.toUri().run { "$scheme://$host" }
+    val url: Uri = try {
+        this.toUri()
+    } catch (ignored: Exception) {
+        Uri.EMPTY
+    }
+    if (url == Uri.EMPTY) return false
+    val urlScheme: String = url.scheme?.lowercase(Locale.getDefault()) ?: return false
+    val urlHost: String = url.host?.lowercase(Locale.getDefault()) ?: return false
+    val urlPath: String = url.path ?: ""
+    return resourcePatterns?.any { pattern: String ->
+        val rule: Uri = try {
+            pattern.toUri()
         } catch (ignored: Exception) {
-            null
+            Uri.EMPTY
         }
-
-    val uri = toSchemeHostOrNull(this)
-    return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
-        ?.find { pattern -> uri.equals(pattern, true) } != null
+        if (rule == Uri.EMPTY) return@any false
+        val ruleScheme: String = rule.scheme?.lowercase(Locale.getDefault()) ?: return@any false
+        val ruleHost: String = rule.host?.lowercase(Locale.getDefault()) ?: return@any false
+        val rulePath: String = rule.path ?: ""
+        val isSchemeMatches: Boolean = ruleScheme == urlScheme
+        val isHostMatches: Boolean = ruleHost == urlHost
+        val isPathMatches: Boolean = urlPath.startsWith(rulePath)
+        isSchemeMatches && isHostMatches && isPathMatches
+    } == true
 }
 
 // Copy from hidden API android.os.FileUtils.buildValidExtFilename
@@ -814,3 +824,7 @@ fun String.isMao(): Boolean {
     val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
     return regex.matches(this)
 }
+
+fun String.isValidBase58(): Boolean = runCatching {
+    Base58.decode(this)
+}.getOrNull() != null

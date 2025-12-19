@@ -45,12 +45,14 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -59,7 +61,6 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
@@ -126,14 +127,13 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
         binding.apply {
             sendReceiveView.swap.setOnClickListener {
+                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
                 lifecycleScope.launch {
-
                     val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {
                         USDT_ASSET_ETH_ID
                     }
-                    AnalyticsTracker.trackSwapStart("mixin", "market")
                     SwapActivity.show(
                         requireActivity(),
                         inMixin = true,
@@ -231,11 +231,11 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 val receiver = it.withdrawal!!.receiver
                                 val index: Int = receiver.indexOf(":")
                                 if (index == -1) {
-                                    it.label = walletViewModel.findAddressByReceiver(receiver, "")
+                                    it.label = walletViewModel.findAddressByReceiver(receiver, "", asset.chainId)
                                 } else {
                                     val destination: String = receiver.substring(0, index)
                                     val tag: String = receiver.substring(index + 1)
-                                    it.label = walletViewModel.findAddressByReceiver(destination, tag)
+                                    it.label = walletViewModel.findAddressByReceiver(destination, tag, asset.chainId)
                                 }
                             }
                             it

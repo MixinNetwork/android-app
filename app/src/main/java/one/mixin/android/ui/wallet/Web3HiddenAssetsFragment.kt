@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentHiddenAssetsBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
-import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.config
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navigate
@@ -148,18 +147,14 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                 toast(R.string.Data_error)
                 return@launch
             }
-            val address = web3ViewModel.getAddressesByChainId(walletId!!, token.chainId)
-            if (address != null) {
-                view?.navigate(
-                    R.id.action_web3_hidden_assets_to_web3_transactions,
-                    Bundle().apply {
-                        putString(Web3TransactionsFragment.ARGS_ADDRESS, address.destination)
-                        putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
-                    }
-                )
-            } else {
-                toast(R.string.Data_error)
-            }
+            val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
+            view?.navigate(
+                R.id.action_web3_hidden_assets_to_web3_transactions,
+                Bundle().apply {
+                    putString(Web3TransactionsFragment.ARGS_ADDRESS, address?.destination)
+                    putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
+                }
+            )
         }
     }
 }

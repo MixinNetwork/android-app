@@ -14,13 +14,13 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("DROP TABLE IF EXISTS assets")
                     db.execSQL(
                         "CREATE TABLE IF NOT EXISTS assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
-                            "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
-                            "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ",
+                                "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                                "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ",
                     )
                     db.execSQL("DROP TABLE IF EXISTS addresses")
                     db.execSQL(
                         "CREATE TABLE IF NOT EXISTS addresses(address_id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, " +
-                            "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)",
+                                "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)",
                     )
                 }
             }
@@ -30,12 +30,12 @@ class MixinDatabaseMigrations private constructor() {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL(
                         "CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
-                            "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
-                            "(job_id))",
+                                "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                                "(job_id))",
                     )
                     db.execSQL(
                         "CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
-                            "status, created_at)",
+                                "status, created_at)",
                     )
                 }
             }
@@ -61,8 +61,8 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("DROP TABLE IF EXISTS top_assets")
                     db.execSQL(
                         "CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
-                            "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
-                            "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT, capitalization REAL) ",
+                                "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                                "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT, capitalization REAL) ",
                     )
                 }
             }
@@ -492,7 +492,7 @@ class MixinDatabaseMigrations private constructor() {
             }
 
         val MIGRATION_58_59: Migration =
-            object : Migration(58,59) {
+            object : Migration(58, 59) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("DROP TABLE IF EXISTS `history_prices`")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `history_prices` (`coin_id` TEXT NOT NULL, `type` TEXT NOT NULL, `data` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`, `type`))")
@@ -502,12 +502,13 @@ class MixinDatabaseMigrations private constructor() {
                     db.execSQL("CREATE TABLE IF NOT EXISTS `market_favored` (`coin_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`coin_id`))")
                 }
             }
-        
+
         val MIGRATION_59_60: Migration =
             object : Migration(59, 60) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL(
-                        "CREATE TABLE IF NOT EXISTS new_addresses (address_id TEXT NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, destination TEXT NOT NULL, label TEXT NOT NULL, updated_at TEXT NOT NULL, tag TEXT, dust TEXT, PRIMARY KEY(address_id))")
+                        "CREATE TABLE IF NOT EXISTS new_addresses (address_id TEXT NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, destination TEXT NOT NULL, label TEXT NOT NULL, updated_at TEXT NOT NULL, tag TEXT, dust TEXT, PRIMARY KEY(address_id))"
+                    )
 
                     db.execSQL(
                         """
@@ -576,6 +577,23 @@ class MixinDatabaseMigrations private constructor() {
             object : Migration(66, 67) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("ALTER TABLE `tokens` ADD COLUMN `precision` INTEGER NOT NULL DEFAULT -1")
+                }
+            }
+
+        val MIGRATION_67_68: Migration =
+            object : Migration(67, 68) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DELETE FROM deposit_entries")
+                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `minimum` TEXT NOT NULL DEFAULT ''")
+                    db.execSQL("ALTER TABLE `deposit_entries` ADD COLUMN `maximum` TEXT NOT NULL DEFAULT ''")
+                }
+            }
+
+
+        val MIGRATION_68_69: Migration =
+            object : Migration(68, 69) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DROP TABLE IF EXISTS `swap_orders`")
                 }
             }
 

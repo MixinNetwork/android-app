@@ -9,13 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentConversationCircleBinding
@@ -28,6 +31,7 @@ import one.mixin.android.extension.shakeAnimator
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.editDialog
+import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
@@ -309,13 +313,21 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             if (response.isSuccess) {
                 response.data?.let { circle ->
                     conversationViewModel.insertCircle(circle)
-                    (requireActivity() as MainActivity).setCircleName(circle.name)
+                    findFragmentByTagTyped<ConversationListFragment>(ConversationListFragment.TAG)?.let {
+                        if (it.circleId == circle.circleId) {
+                            it.setCircleName(circle.name)
+                        }
+                    }
+
                 }
             } else {
                 ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
             }
         }
     }
+
+    private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
+        parentFragmentManager.findFragmentByTag(tag) as? T
 
     fun edit(conversationCircleItem: ConversationCircleItem) {
         requireActivity().addFragment(
@@ -336,7 +348,9 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                 lifecycleScope.launch(errorHandler) {
                     val response = conversationViewModel.deleteCircle(conversationCircleItem.circleId)
                     if (response.isSuccess) {
-                        conversationViewModel.deleteCircleById(conversationCircleItem.circleId)
+                        withContext(Dispatchers.IO){
+                            conversationViewModel.deleteCircleById(conversationCircleItem.circleId)
+                        }
                         if (conversationAdapter.currentCircleId == conversationCircleItem.circleId) {
                             (requireActivity() as MainActivity).selectCircle(null, null)
                         }

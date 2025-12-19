@@ -51,14 +51,17 @@ import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
     companion object {
         const val TAG = "DepositFragment"
+        private const val ARGS_HIDE_NETWORK_SWITCH = "args_hide_network_switch"
 
-        fun newInstance(token: TokenItem) = DepositFragment().withArgs {
+        fun newInstance(token: TokenItem, hideNetworkSwitch: Boolean = false) = DepositFragment().withArgs {
             putParcelable(ARGS_ASSET, token)
+            putBoolean(ARGS_HIDE_NETWORK_SWITCH, hideNetworkSwitch)
         }
     }
 
@@ -87,7 +90,8 @@ class DepositFragment : BaseFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
-        initView(asset)
+        val hideNetworkSwitch = requireArguments().getBoolean(ARGS_HIDE_NETWORK_SWITCH, false)
+        initView(asset, hideNetworkSwitch)
     }
 
     override fun onDestroyView() {
@@ -95,7 +99,7 @@ class DepositFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun initView(asset: TokenItem) {
+    private fun initView(asset: TokenItem, hideNetworkSwitch: Boolean = false) {
         val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
@@ -112,14 +116,16 @@ class DepositFragment : BaseFragment() {
                 val url = getString(R.string.not_supported_deposit_url)
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
-                if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.usdtAssets)
-                } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.usdcAssets)
-                } else if (Constants.AssetId.ethAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.ethAssets)
-                } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
-                    initChips(asset, Constants.AssetId.btcAssets)
+                if (!hideNetworkSwitch) {
+                    if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.usdtAssets)
+                    } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.usdcAssets)
+                    } else if (Constants.AssetId.ethAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.ethAssets)
+                    } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.btcAssets)
+                    }
                 }
 
                 notSupportLl.isVisible = false
@@ -334,6 +340,7 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Dash,
                 Constants.ChainId.Monero,
                 Constants.ChainId.Solana,
+                Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID,
                 Constants.ChainId.TON_CHAIN_ID -> true
 
                 else -> false
@@ -388,6 +395,19 @@ class DepositFragment : BaseFragment() {
                     hideCopy = noTag
                 )
 
+                // Set minimum and maximum using server-provided values
+                minimumDepositValue.text = "${depositEntry.minimum} ${asset.symbol}"
+
+                // Set maximum and maximum using server-provided values
+                if ((depositEntry.maximum.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
+                    maximumDepositValue.isVisible = false
+                    maximumDepositTitle.isVisible = false
+                } else {
+                    maximumDepositValue.text = "${depositEntry.maximum} ${asset.symbol}"
+                    maximumDepositTitle.isVisible = true
+                    maximumDepositValue.isVisible = true
+                }
+
                 binding.copy.setOnClickListener {
                     context?.heavyClickVibrate()
                     context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositEntry.destination))
@@ -401,7 +421,9 @@ class DepositFragment : BaseFragment() {
                     binding.amount.setOnClickListener {
                         InputAmountBottomSheetDialogFragment.newInstance(
                             asset,
-                            depositEntry.destination
+                            if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) null else depositEntry.destination,
+                            minimum = depositEntry.minimum,
+                            maximum = depositEntry.maximum,
                         ).apply {
                             this.onCopyClick = { address ->
                                 this@DepositFragment.lifecycleScope.launch {

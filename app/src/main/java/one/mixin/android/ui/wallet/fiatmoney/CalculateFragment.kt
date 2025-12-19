@@ -22,7 +22,6 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
-import one.mixin.android.db.web3.vo.notClassic
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -373,7 +372,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
                                 val destination = if (isWeb3) {
                                     val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
-                                    web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination ?: throw IllegalStateException("Destination address is null for web3")
+                                    val address = web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination
+                                    if (address.isNullOrEmpty()) {
+                                        toast(R.string.Alert_Not_Support)
+                                        return@inner
+                                    }
+                                    address
                                 } else {
                                     fiatMoneyViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)?.destination ?: throw IllegalStateException("Destination address is null")
                                 }

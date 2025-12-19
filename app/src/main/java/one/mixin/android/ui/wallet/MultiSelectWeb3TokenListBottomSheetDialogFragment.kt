@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -21,14 +22,16 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SelectableWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.SelectedWeb3TokenAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchWeb3TokenItemCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("NotifyDataSetChanged")
@@ -41,12 +44,20 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         const val POS_EMPTY_TOKEN = 2
         const val LIMIT = 10
 
+        private const val ARGS_WALLET_IDS = "args_wallet_ids"
         private const val ARGS_WALLET_ID = "args_wallet_id"
 
         fun newInstance(walletId: String? = null): MultiSelectWeb3TokenListBottomSheetDialogFragment {
             return MultiSelectWeb3TokenListBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     walletId?.let { putString(ARGS_WALLET_ID, it) }
+                }
+            }
+        }
+        fun newInstance(walletIds: List<String>): MultiSelectWeb3TokenListBottomSheetDialogFragment {
+            return MultiSelectWeb3TokenListBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putStringArrayList(ARGS_WALLET_IDS, ArrayList(walletIds))
                 }
             }
         }
@@ -60,8 +71,12 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         arguments?.getString(ARGS_WALLET_ID)
     }
 
+    private val walletIds: List<String>? by lazy {
+        arguments?.getStringArrayList(ARGS_WALLET_IDS)?.toList()
+    }
+
     private val selectedTokenItems = mutableListOf<Web3TokenItem>()
-    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems) }
+    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems, walletIds != null) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
@@ -87,9 +102,9 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
             selectedTokenItems.addAll(provider.getCurrentTokens())
         }
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
-        }
+        binding.ph.doOnPreDraw { binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+        }}
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
@@ -149,19 +164,60 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                     )
         }
 
-        // Use walletId parameter instead of hardcoded value
-        val targetWalletId = walletId ?: "0195adf7-1d55-7163-9186-111845025a6c" // fallback to default if null
-
-        bottomViewModel.web3TokenItems(targetWalletId)
-            .observe(this) { tokens ->
-                defaultAssets = tokens
-                if (binding.searchEt.et.text.isNullOrBlank()) {
-                    adapter.submitList(defaultAssets)
-                }
-                if (defaultAssets.isEmpty()) {
-                    binding.rvVa.displayedChild = POS_EMPTY
-                }
+        // Query tokens based on walletIds
+        if (walletIds != null) {
+            if (walletId.isNullOrEmpty()) {
+                // all order assets
+                bottomViewModel.web3TokenItemsFromAllOrders()
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
+            }else{
+                // order assets
+                bottomViewModel.web3TokenItemsFromOrdersByWalletIds(walletIds ?: emptyList())
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
             }
+        } else {
+            if (walletId != null) {
+                // asset in wallet
+                bottomViewModel.web3TokenItems(walletId ?: "")
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
+            }else{
+                // all assets
+                bottomViewModel.web3TokenItemsAll()
+                    .observe(this) { tokens ->
+                        defaultAssets = tokens
+                        if (binding.searchEt.et.text.isNullOrBlank()) {
+                            adapter.submitList(defaultAssets)
+                        }
+                        if (defaultAssets.isEmpty()) {
+                            binding.rvVa.displayedChild = POS_EMPTY
+                        }
+                    }
+            }
+        }
     }
 
     private fun search(query: String) {

@@ -9,6 +9,7 @@ import android.view.ViewGroup.MarginLayoutParams
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +26,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentQrBottomSheetBinding
 import one.mixin.android.databinding.ViewQrBottomBinding
 import one.mixin.android.extension.capture
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.shareMedia
@@ -126,8 +128,8 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         if (type == TYPE_MNEMONIC_QR) {
-            binding.qr.post {
-                val r = content.generateQRCode(binding.qr.width)
+            binding.qr.doOnPreDraw {
+                val r = content.generateQRCode(binding.qr.measuredWidth, innerPadding = 48.dp)
                 binding.badgeView.layoutParams =
                     binding.badgeView.layoutParams.apply {
                         width = r.second
@@ -148,7 +150,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         binding.badgeView.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
                         binding.badgeView.pos = END_BOTTOM
                     }
-                    binding.qr.post {
+                    binding.qr.doOnPreDraw {
                         Observable.create<Pair<Bitmap, Int>> { e ->
                             val account = Session.getAccount() ?: return@create
                             val code =
@@ -158,7 +160,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     else -> ""
                                 }
 
-                            val r = code.generateQRCode(binding.qr.width)
+                            val r = code.generateQRCode(binding.qr.measuredWidth, innerPadding = 48.dp)
                             e.onNext(r)
                         }.subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())

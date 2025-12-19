@@ -58,12 +58,12 @@ import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
 import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
-import one.mixin.android.db.SwapOrderDao
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.TokenDao.Companion.POSTFIX_ASSET_ITEM_NOT_HIDDEN
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
@@ -108,6 +108,7 @@ import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Card
+import one.mixin.android.vo.Chain
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
@@ -124,7 +125,7 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.RoutePaymentRequest
-import one.mixin.android.vo.route.SwapOrderItem
+import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.RawTransaction
@@ -148,6 +149,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.String
 
 @Singleton
 class TokenRepository
@@ -178,7 +180,7 @@ class TokenRepository
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
         private val alertDao: AlertDao,
-        private val swapOrderDao: SwapOrderDao,
+        private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
         private val web3TransactionDao: Web3TransactionDao,
         private val web3RawTransactionDao: Web3RawTransactionDao,
@@ -247,7 +249,7 @@ class TokenRepository
                 handleMixinResponse(
                     invokeNetwork = {
                         utxoService.createDeposit(
-                            DepositEntryRequest(chainId, assetId),
+                            DepositEntryRequest(chainId, assetId, null),
                         )
                     },
                     failureBlock = {
@@ -272,6 +274,22 @@ class TokenRepository
                     },
                 )
             return Pair(depositEntry, code)
+        }
+
+        suspend fun createDepositWithAmount(chainId: String, assetId: String, amount: String): DepositEntry? {
+            val resp = utxoService.createDeposit(DepositEntryRequest(chainId, assetId, amount))
+            val pubs = SAFE_PUBLIC_KEY.map { it.hexStringToByteArray() }
+            val list = resp.data?.filter {
+                val message =
+                    if (it.tag.isNullOrBlank()) {
+                        it.destination
+                    } else {
+                        "${it.destination}:${it.tag}"
+                    }.toByteArray().sha3Sum256()
+                val signature = it.signature.hexStringToByteArray()
+                pubs.any { pub -> verifyCurve25519Signature(message, signature, pub) }
+            }
+            return list?.find { it.isPrimary }
         }
 
         suspend fun findDepositEntry(chainId: String) = depositDao.findDepositEntry(chainId)
@@ -439,9 +457,8 @@ class TokenRepository
         ) =
             safeSnapshotDao.snapshotLocal(assetId, snapshotId)
 
-        fun findAddressByDestination(receiver: String, tag: String, chainId: String) = addressDao.findAddressByDestination(receiver, tag, chainId)
-
-        fun findAddressByDestination(receiver: String, tag: String) = addressDao.findAddressByDestination(receiver, tag)
+        fun findAddressByDestination(receiver: String, tag: String, chainId: String?) = if (chainId == null) addressDao.findAddressByDestination(receiver, tag)
+            else addressDao.findAddressByDestination(receiver, tag, chainId)
 
         fun insertSnapshot(snapshot: SafeSnapshot) = safeSnapshotDao.insert(snapshot)
 
@@ -510,6 +527,14 @@ class TokenRepository
 
         fun web3TokenItems(walletId: String, level:Int): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId, level)
 
+        fun web3TokenItemsByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsByWalletIds(walletIds)
+
+        fun web3TokenItemsAll(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsAll()
+
+        fun web3TokenItemsFromAllOrders(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsFromAllOrders()
+
+        fun web3TokenItemsFromOrdersByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsFromOrdersByWalletIds(walletIds)
+
         suspend fun fuzzySearchToken(
             query: String,
             cancellationSignal: CancellationSignal,
@@ -521,6 +546,8 @@ class TokenRepository
 
         fun assetItem(id: String) = tokenDao.assetItem(id)
 
+        fun assetItemFlow(id: String): Flow<TokenItem?> = tokenDao.assetItemFlow(id)
+
         suspend fun simpleAssetItem(id: String) = tokenDao.simpleAssetItem(id)
 
         fun assetItemsWithBalance() = tokenDao.assetItemsWithBalance()
@@ -528,7 +555,7 @@ class TokenRepository
         fun allSnapshots(filterParams: FilterParams): DataSource.Factory<Int, SnapshotItem> {
             return safeSnapshotDao.getSnapshots(filterParams.buildQuery()).map {
                 if (!it.withdrawal?.receiver.isNullOrBlank()) {
-                    val receiver = it.withdrawal!!.receiver
+                    val receiver = it.withdrawal.receiver
                     val index: Int = receiver.indexOf(":")
                     if (index == -1) {
                         it.label = addressDao.findAddressByDestination(receiver, "")
@@ -554,9 +581,15 @@ class TokenRepository
             web3WalletDao.deleteAllWallets()
         }
 
+        suspend fun deleteAllOrders() {
+            orderDao.deleteAllOrders()
+        }
+
         suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(Web3Signer.currentWalletId, hash, chainId)
 
         fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
+
+        fun observeOrder(orderId: String) = orderDao.observeOrder(orderId)
 
         suspend fun allPendingDeposit() = tokenService.allPendingDeposits()
 
@@ -785,7 +818,7 @@ class TokenRepository
 
         suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
 
-        fun swapOrders(): Flow<List<SwapOrderItem>> = swapOrderDao.orders()
+        fun walletOrders(): Flow<List<OrderItem>> = orderDao.orders()
 
         suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
             routeService.createOrder(createSession)
@@ -1408,7 +1441,7 @@ class TokenRepository
 
     suspend fun findChangeUsdByAssetId(assetId: String) = tokenDao.findChangeUsdByAssetId(assetId)
 
-    fun getOrderById(orderId: String): Flow<SwapOrderItem?> = swapOrderDao.getOrderById(orderId)
+    fun getOrderById(orderId: String): Flow<OrderItem?> = orderDao.getOrderById(orderId)
 
     fun tokenExtraFlow(asseId: String) = tokensExtraDao.tokenExtraFlow(asseId)
 
@@ -1453,4 +1486,7 @@ class TokenRepository
     suspend fun getChainItemByWalletId(walletId: String) = web3AddressDao.getChainItemByWalletId(walletId)
 
     suspend fun matchAddress(destination: String, chainId: String): Address? = addressDao.matchAddress(destination, chainId)
+    suspend fun fetchTokenSuspend(id: List<String>): MixinResponse<List<Token>> = tokenService.fetchTokenSuspend(id)
+
+    suspend fun getChainById(id: String): MixinResponse<Chain> = tokenService.getChainById(id)
 }

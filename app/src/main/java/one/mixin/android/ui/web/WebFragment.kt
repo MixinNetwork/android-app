@@ -51,7 +51,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
 import androidx.core.view.drawToBitmap
+import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -168,9 +171,9 @@ import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.DAppMethod
 import one.mixin.android.web3.js.JsInjectorClient
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.SwitchChain
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -183,9 +186,6 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.util.Locale
 import javax.inject.Inject
-import androidx.core.view.get
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.toColorInt
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -382,7 +382,7 @@ class WebFragment : BaseFragment() {
         view: View,
         savedInstanceState: Bundle?,
     ) {
-        contentView = binding.container
+        contentView = binding.containerView
         webView =
             if (index >= 0 && index < clips.size) {
                 clips[index].let { clip ->
@@ -468,8 +468,8 @@ class WebFragment : BaseFragment() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
         activity?.window?.let { window->
-            SystemUIManager.setSystemUiColor(requireActivity().window, requireContext().colorFromAttribute(R.color.bgWhite))
             SystemUIManager.lightUI(window , requireContext().isNightMode().not())
+            SystemUIManager.setSafePaddingOnce(window = window, color = requireContext().colorFromAttribute(R.attr.bg_white), R.id.container)
         }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
@@ -1680,6 +1680,7 @@ class WebFragment : BaseFragment() {
             val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
+            Timber.e("setStatusBarColor error: ${e.stackTraceToString()}")
             context?.let {
                 refreshByLuminance(it.isNightMode(), it.colorFromAttribute(R.attr.icon_white))
             }
@@ -1693,7 +1694,7 @@ class WebFragment : BaseFragment() {
         if (viewDestroyed()) return
 
         requireActivity().window?.let {
-            SystemUIManager.setSystemUiColor(it, color)
+            it.decorView.findViewById<ViewGroup>(R.id.container).setBackgroundColor(color)
             SystemUIManager.setAppearanceLightStatusBars(it, !dark)
         }
         titleColor = color

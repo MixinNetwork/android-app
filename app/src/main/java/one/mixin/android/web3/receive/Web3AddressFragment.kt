@@ -52,12 +52,14 @@ import timber.log.Timber
 class Web3AddressFragment : BaseFragment() {
     companion object {
         const val TAG = "Web3ReceiveFragment"
+        private const val ARGS_HIDE_NETWORK_SWITCH = "args_hide_network_switch"
 
-        fun newInstance(web3Token: Web3TokenItem, address: String): Web3AddressFragment {
+        fun newInstance(web3Token: Web3TokenItem, address: String?, hideNetworkSwitch: Boolean = false): Web3AddressFragment {
             val fragment = Web3AddressFragment()
             val args = Bundle().apply {
                 putParcelable("web3_token", web3Token)
                 putString("address", address)
+                putBoolean(ARGS_HIDE_NETWORK_SWITCH, hideNetworkSwitch)
             }
             fragment.arguments = args
             return fragment
@@ -67,14 +69,16 @@ class Web3AddressFragment : BaseFragment() {
     private val walletViewModel by viewModels<WalletViewModel>()
     private var _binding: FragmentWeb3AddressBinding? = null
     private val binding get() = requireNotNull(_binding)
-    private lateinit var address: String
+    private var address: String? = null
     private lateinit var web3Token: Web3TokenItem
+    private var hideNetworkSwitch: Boolean = false
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        address = arguments?.getString("address") ?: ""
+        address = arguments?.getString("address")
         web3Token = arguments?.getParcelableCompat("web3_token", Web3TokenItem::class.java) ?: throw IllegalArgumentException("web3Token is required")
+        hideNetworkSwitch = arguments?.getBoolean(ARGS_HIDE_NETWORK_SWITCH, false) ?: false
     }
 
     override fun onCreateView(
@@ -90,6 +94,11 @@ class Web3AddressFragment : BaseFragment() {
             requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
         }
         lifecycleScope.launch {
+            val address = this@Web3AddressFragment.address
+            if (address == null) {
+                binding.va.displayedChild = 1
+                return@launch
+            }
             val wallet = walletViewModel.getWalletByDestination(address)
             if (wallet != null) {
                 binding.title.setSubTitle(getString(R.string.Receive), wallet.name)
@@ -138,48 +147,50 @@ class Web3AddressFragment : BaseFragment() {
             binding.addressTitle.setText(R.string.Address)
 
             updateUI()
-            if (Constants.AssetId.usdtAssets.containsKey(web3Token.assetId)) {
-                binding.networkChipGroup.isVisible = true
-                initChips(
-                    if (Web3Signer.evmAddress.isBlank()) {
-                        mapOf(
-                            USDT_ASSET_SOL_ID to "Solana",
+            if (!hideNetworkSwitch) {
+                if (Constants.AssetId.usdtAssets.containsKey(web3Token.assetId)) {
+                    binding.networkChipGroup.isVisible = true
+                    initChips(
+                        if (Web3Signer.evmAddress.isBlank()) {
+                            mapOf(
+                                USDT_ASSET_SOL_ID to "Solana",
+                                )
+                        } else if (Web3Signer.solanaAddress.isBlank()) {
+                            mapOf(
+                                USDT_ASSET_ETH_ID to "Ethereum",
+                                USDT_ASSET_POL_ID to "Polygon",
+                                USDT_ASSET_BEP_ID to "BSC",
                             )
-                    } else if (Web3Signer.solanaAddress.isBlank()) {
-                        mapOf(
-                            USDT_ASSET_ETH_ID to "Ethereum",
-                            USDT_ASSET_POL_ID to "Polygon",
-                            USDT_ASSET_BEP_ID to "BSC",
-                        )
 
-                    } else {
-                        mapOf(
-                            USDT_ASSET_ETH_ID to "Ethereum",
-                            USDT_ASSET_SOL_ID to "Solana",
-                            USDT_ASSET_POL_ID to "Polygon",
-                            USDT_ASSET_BEP_ID to "BSC",
-                        )
-                    }
-                )
-            } else if (Constants.AssetId.usdcAssets.containsKey(web3Token.assetId)) {
-                initChips(
-                    if (Web3Signer.evmAddress.isBlank()) {
-                        mapOf(
-                            USDC_ASSET_SOL_ID to "Solana",
-                        )
-                    } else if (Web3Signer.solanaAddress.isBlank()) {
-                        mapOf(
-                            USDC_ASSET_ETH_ID to "Ethereum",
-                            USDC_ASSET_BASE_ID to "Base",
-                            USDC_ASSET_POL_ID to "Polygon",
-                            USDC_ASSET_BEP_ID to "BSC"
-                        )
-                    } else {
-                        Constants.AssetId.usdcAssets
-                    }
-                )
-            } else if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
-                initChips(Constants.AssetId.ethAssets)
+                        } else {
+                            mapOf(
+                                USDT_ASSET_ETH_ID to "Ethereum",
+                                USDT_ASSET_SOL_ID to "Solana",
+                                USDT_ASSET_POL_ID to "Polygon",
+                                USDT_ASSET_BEP_ID to "BSC",
+                            )
+                        }
+                    )
+                } else if (Constants.AssetId.usdcAssets.containsKey(web3Token.assetId)) {
+                    initChips(
+                        if (Web3Signer.evmAddress.isBlank()) {
+                            mapOf(
+                                USDC_ASSET_SOL_ID to "Solana",
+                            )
+                        } else if (Web3Signer.solanaAddress.isBlank()) {
+                            mapOf(
+                                USDC_ASSET_ETH_ID to "Ethereum",
+                                USDC_ASSET_BASE_ID to "Base",
+                                USDC_ASSET_POL_ID to "Polygon",
+                                USDC_ASSET_BEP_ID to "BSC"
+                            )
+                        } else {
+                            Constants.AssetId.usdcAssets
+                        }
+                    )
+                } else if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
+                    initChips(Constants.AssetId.ethAssets)
+                }
             }
         }
         lifecycleScope.launch {
@@ -228,6 +239,7 @@ class Web3AddressFragment : BaseFragment() {
     }
 
     private fun updateUI() {
+        val address = this@Web3AddressFragment.address ?: return
         binding.addressView.loadAddress(
             scopeProvider,
             address,

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.Display
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -39,7 +38,6 @@ class BubbleActivity : BlazeBaseActivity() {
                 displayId != Display.DEFAULT_DISPLAY
             }
         setContentView(R.layout.activity_chat)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         showConversation(intent)
     }
 

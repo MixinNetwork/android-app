@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
@@ -32,6 +33,7 @@ class ContentQRView : ViewAnimator {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         binding = ViewContentQrBinding.inflate(LayoutInflater.from(context), this)
+        binding.qrAvatar.setBadgeBorder()
     }
 
     private val binding: ViewContentQrBinding
@@ -88,7 +90,7 @@ class ContentQRView : ViewAnimator {
                 DepositQrBottomFragment.newInstance(asset, depositEntry, if (isTag) DepositQrBottomFragment.TYPE_TAG else DepositQrBottomFragment.TYPE_ADDRESS, selectedDestination)
                     .show(parentFragmentManager, DepositQrBottomFragment.TAG)
             }
-            qr.post {
+            qr.doOnPreDraw {
                 Observable.create<Pair<Bitmap, Int>> { e ->
                     val r =
                         if (isTag) {
@@ -99,7 +101,7 @@ class ContentQRView : ViewAnimator {
                             } else {
                                 destination
                             }
-                        }.generateQRCode(200.dp, innerPadding = 40.dp, padding = 0)
+                        }.generateQRCode(220.dp, innerPadding = 40.dp, padding = 16.dp)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -142,9 +144,9 @@ class ContentQRView : ViewAnimator {
                 warningTv.isVisible = true
             }
 
-            qr.post {
+            qr.doOnPreDraw {
                 Observable.create<Pair<Bitmap, Int>> { e ->
-                    val r = destination.generateQRCode(200.dp, innerPadding = 40.dp, padding = 0)
+                    val r = destination.generateQRCode(220.dp, innerPadding = 40.dp, padding = 16.dp)
                     e.onNext(r)
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())

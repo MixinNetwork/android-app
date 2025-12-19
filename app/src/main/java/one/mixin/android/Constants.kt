@@ -7,6 +7,7 @@ import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -90,7 +91,9 @@ object Constants {
         const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_SWAP_LAST_PAIR = "pref_swap_last_pair"
+        const val PREF_LIMIT_SWAP_LAST_PAIR = "pref_limit_swap_last_pair"
         const val PREF_WEB3_SWAP_LAST_PAIR = "pref_web3_swap_last_pair"
+        const val PREF_WEB3_LIMIT_SWAP_LAST_PAIR = "pref_web3_limit_swap_last_pair"
         const val PREF_INSCRIPTION_TYPE = "pref_inscription_type"
         const val PREF_MARKET_TYPE = "pref_market_type"
         const val PREF_MARKET_ORDER = "pref_market_order"
@@ -113,8 +116,12 @@ object Constants {
 
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
+        const val PREF_TO_LIMIT_SWAP = "pref_to_limit_swap"
+        const val PREF_FROM_LIMIT_SWAP = "pref_from_limit_swap"
         const val PREF_TO_WEB3_SWAP = "pref_to_web3_swap"
         const val PREF_FROM_WEB3_SWAP = "pref_from_web3_swap"
+        const val PREF_TO_WEB3_LIMIT_SWAP = "pref_to_web3_limit_swap"
+        const val PREF_FROM_WEB3_LIMIT_SWAP = "pref_from_web3_limit_swap"
         const val PREF_WALLET_SEND = "pref_wallet_send"
         const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
 
@@ -157,6 +164,7 @@ object Constants {
         const val MIXIN_SCHEME = "mixin://mixin.one/scheme"
         const val MIXIN_TIP_SIGN = "mixin://mixin.one/tip/sign"
         const val MIXIN_SWAP = "mixin://mixin.one/swap"
+        const val MIXIN_TRADE = "mixin://mixin.one/trade"
         const val MIXIN_MARKET = "mixin://mixin.one/markets"
         const val MIXIN_REFERRALS = "mixin://mixin.one/referrals"
         const val HTTPS_USERS = "https://mixin.one/users"
@@ -172,6 +180,7 @@ object Constants {
         const val HTTPS_SCHEME = "https://mixin.one/scheme"
         const val HTTPS_TIP_SIGN = "https://mixin.one/tip/sign"
         const val HTTPS_SWAP = "https://mixin.one/swap"
+        const val HTTPS_TRADE = "https://mixin.one/trade"
         const val HTTPS_MEMBERSHIP = "https://mixin.one/membership"
 
         // web3
@@ -189,7 +198,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 67
+        const val CURRENT_VERSION = 69
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -236,7 +245,7 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base, ChainId.Arbitrum, ChainId.Optimism)
+    val Web3ChainIds = listOf(ChainId.ETHEREUM_CHAIN_ID, ChainId.Polygon, ChainId.BinanceSmartChain, ChainId.Base, ChainId.Arbitrum, ChainId.Optimism, ChainId.Avalanche)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
@@ -245,6 +254,7 @@ object Constants {
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
         const val SOLANA_CHAIN_ID = "64692c23-8971-4cf4-84a7-4dd1271dd887"
+
         const val LIGHTNING_NETWORK_CHAIN_ID = "59c09123-95cc-3ffd-a659-0f9169074cee"
         const val MixinVirtualMachine = "a0ffd769-5850-4b48-9651-d2ae44a3e64d"
         const val Base = "3fb612c5-6844-3979-ae4a-5a84e79da870"
@@ -260,6 +270,9 @@ object Constants {
         const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
         const val MobileCoin = "eea900a8-b327-488c-8d8d-1428702fe240"
+
+        const val Avalanche = "1f67ac58-87ba-3571-9781-e9413c046f34"
+
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }
 
@@ -442,6 +455,8 @@ object Constants {
 
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
     const val MIXIN_BOND_USER_NAME = "Bond Bot"
+
+    const val MIXIN_FREE_FEE = "mixin free fee"
 
     const val DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS: String = "432000" // NFTs typically require more gas
 

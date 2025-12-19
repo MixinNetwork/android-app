@@ -27,6 +27,7 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isTransferFeeFree
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
@@ -303,7 +304,7 @@ internal constructor(
                         EstimateFeeRequest(
                             token.chainId,
                             null,
-                            transaction.data,
+                            transaction.data ?: transaction.wcEthereumTransaction?.data,
                             fromAddress,
                             transaction.wcEthereumTransaction?.to,
                             transaction.wcEthereumTransaction?.value,
@@ -474,7 +475,7 @@ internal constructor(
         }
     }
 
-    // index 0 is address,index 1 is privacy wallet, 2 is common wallet
+    // index 0 is address,index 1 is privacy wallet, 2 is common wallet, 3 is fee free wallet
     suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Int>? {
         return withContext(Dispatchers.IO) {
 
@@ -485,7 +486,7 @@ internal constructor(
 
             val wallet = web3Repository.getWalletByDestination(destination)
             if (wallet != null) {
-                return@withContext Pair(wallet.name, 2)
+                return@withContext Pair(wallet.name, if (wallet.isTransferFeeFree()) 3 else 2)
             }
 
             tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->

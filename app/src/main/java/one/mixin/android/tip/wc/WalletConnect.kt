@@ -1,6 +1,5 @@
 package one.mixin.android.tip.wc
 
-import android.util.LruCache
 import com.reown.walletkit.client.Wallet
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -10,7 +9,6 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
-import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WalletConnectException

@@ -61,7 +61,7 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.stake.StakeFragment
 import one.mixin.android.ui.home.web3.stake.StakingFragment
 import one.mixin.android.ui.home.web3.stake.ValidatorsFragment
-import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.wallet.AllWeb3TransactionsFragment
 import one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
@@ -71,6 +71,8 @@ import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_SPAM
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
@@ -109,8 +111,8 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     @Inject
     lateinit var tip: Tip
 
-    private val address: String by lazy {
-        requireNotNull(requireArguments().getString(ARGS_ADDRESS))
+    private val address: String? by lazy {
+        requireArguments().getString(ARGS_ADDRESS)
     }
 
     private val token: Web3TokenItem by lazy {
@@ -124,17 +126,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        if (requireActivity() !is WalletActivity) {
-            binding.root.fitsSystemWindows = false
-        }
-
         lifecycleScope.launch {
             val wallet = web3ViewModel.findWalletById(token.walletId)
             binding.sendReceiveView.isVisible = wallet?.isWatch() != true
             binding.empty.isVisible = wallet?.isWatch() == true
             if (token.isNativeSolToken() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
                 binding.stake.root.visibility = View.VISIBLE
-                getStakeAccounts(address)
+                address?.let { address -> getStakeAccounts(address)}
             } else{
                 binding.stake.root.visibility = View.GONE
             }
@@ -185,7 +183,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 if (token.isNativeSolToken()) {
                     stake.root.visibility = View.VISIBLE
                     lifecycleScope.launch {
-                        getStakeAccounts(address)
+                        address?.let { address ->
+                            getStakeAccounts(address)
+                        }
                     }
                 }
                 transactionsRv.listener = this@Web3TransactionsFragment
@@ -226,7 +226,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             requireView().navigate(
                                 R.id.action_web3_transactions_to_transfer_destination,
                                 Bundle().apply {
-                                    putString(TransferDestinationInputFragment.ARGS_ADDRESS, address)
+                                    address?.let {
+                                        putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
+                                    }
                                     putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet)
                                     putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                                     putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
@@ -248,7 +250,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         requireView().navigate(
                             R.id.action_web3_transactions_to_web3_address,
                             Bundle().apply {
-                                putString("address", address)
+                                address?.let {
+                                    putString("address", it)
+                                }
                                 putParcelable("web3_token", token)
                             }
                         )
@@ -264,13 +268,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                             ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                             return@launch
                         }
-                        AnalyticsTracker.trackSwapStart("web3", "web3")
+                        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
                         requireView().navigate(
                             R.id.action_web3_transactions_to_swap,
                             Bundle().apply {
-                                putString(SwapFragment.ARGS_INPUT, token.assetId)
-                                putBoolean(SwapFragment.ARGS_IN_MIXIN, false)
-                                putString(SwapFragment.ARGS_WALLET_ID, token.walletId)
+                                putString(TradeFragment.ARGS_INPUT, token.assetId)
+                                putBoolean(TradeFragment.ARGS_IN_MIXIN, false)
+                                putString(TradeFragment.ARGS_WALLET_ID, token.walletId)
                             }
                         )
                     }

@@ -2,11 +2,11 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.edit
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -59,7 +59,7 @@ import one.mixin.android.ui.home.bot.InternalLinkDesktop
 import one.mixin.android.ui.home.bot.InternalLinkDesktopLogged
 import one.mixin.android.ui.home.bot.InternalReferral
 import one.mixin.android.ui.home.inscription.CollectiblesFragment
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.search.SearchInscriptionFragment
 import one.mixin.android.ui.setting.SettingActivity
@@ -69,6 +69,8 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
@@ -76,7 +78,6 @@ import one.mixin.android.vo.Plan
 import one.mixin.android.widget.SegmentationItemDecoration
 import one.mixin.android.widget.lottie.RLottieDrawable
 import javax.inject.Inject
-import androidx.core.content.edit
 
 @AndroidEntryPoint
 class ExploreFragment : BaseFragment() {
@@ -331,6 +332,7 @@ class ExploreFragment : BaseFragment() {
                     WalletActivity.showBuy(requireActivity(), false, null, null)
                 }
                 INTERNAL_SWAP_ID -> {
+                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, AnalyticsTracker.TradeSource.EXPLORE)
                     SwapActivity.show(requireActivity(), null, null, null, null)
                 }
                 INTERNAL_MEMBER_ID -> {
@@ -513,11 +515,7 @@ class ExploreFragment : BaseFragment() {
                     if (app == InternalReferral) {
                         lottie.setImageDrawable(
                             RLottieDrawable(
-                                if (root.context.isNightMode()) {
-                                    R.raw.referral_night
-                                } else {
-                                    R.raw.referral
-                                },
+                                R.raw.referral,
                                 "referral",
                                 35.dp,
                                 35.dp,

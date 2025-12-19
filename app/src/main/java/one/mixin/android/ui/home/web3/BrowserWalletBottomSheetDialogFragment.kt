@@ -6,21 +6,15 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -36,17 +30,18 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navigationBarHeight
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.putLong
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
@@ -57,6 +52,7 @@ import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment.Step
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
@@ -80,10 +76,9 @@ import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
-class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "BrowserWalletBottomSheetDialogFragment"
 
@@ -95,6 +90,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_TO_ADDRESS = "args_to_address"
         const val ARGS_TO_USER = "args_to_user"
+        const val ARGS_IS_FEE_FREE = "args_is_fee_free"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -104,7 +100,8 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             token: Web3TokenItem? = null,
             chainToken: Web3TokenItem? = null,
             toAddress: String? = null,
-            toUser: User? = null
+            toUser: User? = null,
+            isFeeWaived: Boolean = false,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(
@@ -119,10 +116,9 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
             chainToken?.let { putParcelable(ARGS_CHAIN_TOKEN, it) }
             toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
             toUser?.let { putParcelable(ARGS_TO_USER, it) }
+            putBoolean(ARGS_IS_FEE_FREE, isFeeWaived)
         }
     }
-
-    private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -141,6 +137,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val toUser by lazy {
         requireArguments().getParcelableCompat(ARGS_TO_USER, User::class.java)
     }
+    private val isFeeWaived by lazy { requireArguments().getBoolean(ARGS_IS_FEE_FREE, false) }
     private val currentChain by lazy {
         token?.getChainFromName() ?: Web3Signer.currentChain
     }
@@ -160,68 +157,67 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
     @Inject
     lateinit var rpc: Rpc
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            roundTopOrBottom(11.dip.toFloat(), top = true, bottom = false)
-            token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
-            amount = requireArguments().getString(ARGS_AMOUNT)
-            setContent {
-                if (signMessage.isSolMessage() && Web3Signer.solanaAddress.isBlank()) {
-                    toast(getString(R.string.not_support_network, currentChain.symbol))
-                    dismiss()
-                } else if (signMessage.isEvmMessage() && Web3Signer.evmAddress.isBlank()) {
-                    toast(getString(R.string.not_support_network, currentChain.symbol))
-                    dismiss()
-                } else {
-                    BrowserPage(
-                        Web3Signer.address,
-                        currentChain,
-                        amount,
-                        token,
-                        toAddress,
-                        toUser,
-                        signMessage.type,
-                        step,
-                        signMessage.isCancelTx,
-                        signMessage.isSpeedUp,
-                        tipGas,
-                        solanaTx?.calcFee(Web3Signer.address),
-                        parsedTx,
-                        signMessage.solanaTxSource,
-                        asset,
-                        signMessage.wcEthereumTransaction,
-                        solanaSignInInput?.toMessage() ?: signMessage.reviewData,
-                        url,
-                        title,
-                        errorInfo,
-                        insufficientGas,
-                        onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
-                        showPin = { showPin() },
-                        onDismissRequest = { dismiss() },
-                        onRejectAction = {
-                            onRejectAction?.invoke()
-                            dismiss()
-                        },
-                    )
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
+        amount = requireArguments().getString(ARGS_AMOUNT)
+        refreshEstimatedGasAndAsset(currentChain)
+    }
 
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                val ctx = requireContext()
-                behavior?.peekHeight = ctx.realSize().y - ctx.statusBarHeight() - ctx.navigationBarHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-
-            refreshEstimatedGasAndAsset(currentChain)
+    @Composable
+    override fun ComposeContent() {
+        if (signMessage.isSolMessage() && Web3Signer.solanaAddress.isBlank()) {
+            toast(getString(R.string.not_support_network, currentChain.symbol))
+            dismiss()
+        } else if (signMessage.isEvmMessage() && Web3Signer.evmAddress.isBlank()) {
+            toast(getString(R.string.not_support_network, currentChain.symbol))
+            dismiss()
+        } else {
+            BrowserPage(
+                Web3Signer.address,
+                currentChain,
+                amount,
+                token,
+                toAddress,
+                toUser,
+                signMessage.type,
+                step,
+                signMessage.isCancelTx,
+                signMessage.isSpeedUp,
+                tipGas,
+                solanaTx?.calcFee(Web3Signer.address),
+                parsedTx,
+                signMessage.solanaTxSource,
+                asset,
+                signMessage.wcEthereumTransaction,
+                solanaSignInInput?.toMessage() ?: signMessage.reviewData,
+                url,
+                title,
+                errorInfo,
+                insufficientGas,
+                isFeeWaived = isFeeWaived,
+                onFreeClick = {
+                    CrossWalletFeeFreeBottomSheetDialogFragment
+                        .newInstance()
+                        .show(parentFragmentManager, CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
+                },
+                onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
+                showPin = { showPin() },
+                onDismissRequest = { dismiss() },
+                onRejectAction = {
+                    onRejectAction?.invoke()
+                    dismiss()
+                },
+            )
         }
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -363,7 +359,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     step = Step.Sending
                     val hex = pair.first
                     val hash = Hash.sha3(hex)
-                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, toAddress, token?.assetId)
+                    viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
                     onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
@@ -375,7 +371,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     val sig = tx.signatures.first { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
                     val rawTx = tx.serialize().base64Encode()
                     if (tx.allSignerSigned()) {
-                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress,  toAddress,token?.assetId)
+                        viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
                         onTxhash?.invoke(sig, rawTx)
                     }
                     onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
@@ -391,6 +387,10 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     throw IllegalArgumentException("invalid signMessage type ${signMessage.type}")
                 }
                 step = Step.Done
+                defaultSharedPreferences.putLong(
+                    Constants.BIOMETRIC_PIN_CHECK,
+                    System.currentTimeMillis(),
+                )
             } catch (e: Exception) {
                 onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, null);")
                 handleException(e)
@@ -401,6 +401,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
         onDismissAction?.invoke(step == Step.Done)
     }
+
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
         if (solanaTxSource.isConnectDapp() && tx.calcPriorityFee() != BigDecimal.ZERO) {
             return tx
@@ -417,7 +418,7 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         chainToken: Web3TokenItem?,
         tipGas: TipGas?,
         value: String?,
-        maxFeePerGas: String?
+        maxFeePerGas: String?,
     ): Boolean {
         return if (web3Token != null) {
             if (chainToken == null) {
@@ -454,24 +455,6 @@ class BrowserWalletBottomSheetDialogFragment : BottomSheetDialogFragment() {
         step = Step.Error
     }
 
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-                    else -> {}
-                }
-            }
-
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
 
     fun setOnDone(callback: (String?) -> Unit): BrowserWalletBottomSheetDialogFragment {
         onDone = callback
@@ -568,9 +551,10 @@ fun showBrowserBottomSheetDialogFragment(
     onDone: ((String?) -> Unit)? = null,
     onDismiss: ((Boolean) -> Unit)? = null,
     onTxhash: ((String, String) -> Unit)? = null,
-    toUser: User? = null
+    toUser: User? = null,
+    isFeeWaived: Boolean = false,
 ) {
-    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser)
+    val wcBottomSheet = BrowserWalletBottomSheetDialogFragment.newInstance(signMessage, currentUrl, currentTitle, amount, token, chainToken, toAddress, toUser, isFeeWaived)
     onDismiss?.let {
         wcBottomSheet.setOnDismiss(onDismiss)
     }

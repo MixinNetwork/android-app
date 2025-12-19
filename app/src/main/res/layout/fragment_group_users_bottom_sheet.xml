@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_round_top_white"
-    android:animateLayoutChanges="true"
-    android:fitsSystemWindows="true">
+    android:animateLayoutChanges="true">
 
     <RelativeLayout
         android:id="@+id/search_rl"

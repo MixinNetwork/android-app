@@ -48,6 +48,7 @@ import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.TypedValue
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -56,11 +57,15 @@ import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.ui.platform.LocalDensity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.core.database.getStringOrNull
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -84,7 +89,6 @@ import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
-import one.mixin.android.vo.Chain
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -100,6 +104,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import kotlin.compareTo
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -209,21 +214,30 @@ fun async(
 ): Future<out Any?> =
     executor.submit(runnable)
 
-fun Context.statusBarHeight(): Int {
-    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun Context.getSystemBarHeight(resourceName: String, defaultDp: Float = 24f): Int {
+    val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
+    return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else dpToPx(defaultDp)
 }
 
-fun Context.navigationBarHeight(): Int {
-    val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun View.getSafeAreaInsetsTop(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+
+    return maxOf(systemBars.top, displayCutout.top)
 }
+
+fun View.getSafeAreaInsetsBottom(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+    return maxOf(systemBars.bottom, displayCutout.bottom)
+}
+
+fun Context.statusBarHeight(): Int = getSystemBarHeight("status_bar_height")
+fun Context.navigationBarHeight(): Int = getSystemBarHeight("navigation_bar_height")
 
 @SuppressLint("PrivateApi")
 fun Context.hasNavigationBar(): Boolean {
@@ -1065,11 +1079,19 @@ fun Context.isFirebaseDecodeAvailable() =
 fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
-        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
         Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
-        Constants.ChainId.Litecoin, Constants.ChainId.RIPPLE_CHAIN_ID, Constants.ChainId.Dogecoin, Constants.ChainId.Monero, Constants.ChainId.MobileCoin, -> getString(R.string.deposit_tip_common, asset.symbol)
-        else -> getString(R.string.deposit_tip_chain, asset.symbol, getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
+        Constants.ChainId.EOS_CHAIN_ID,
+        Constants.ChainId.SOLANA_CHAIN_ID,
+        Constants.ChainId.TRON_CHAIN_ID,
+        Constants.ChainId.Base,
+        Constants.ChainId.BinanceSmartChain,
+        Constants.ChainId.Arbitrum,
+        Constants.ChainId.Optimism,
+        Constants.ChainId.Polygon,
+        Constants.ChainId.BitShares,
+            -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
+        else -> getString(R.string.deposit_tip_common, asset.symbol)
     }
 
 fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =

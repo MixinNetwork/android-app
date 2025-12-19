@@ -58,7 +58,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
@@ -114,7 +113,8 @@ internal constructor(
             .cachedIn(viewModelScope)
 
     fun snapshotsLimit(id: String) = tokenRepository.snapshotsLimit(id)
-    fun findAddressByReceiver(receiver: String, tag: String) = tokenRepository.findAddressByDestination(receiver, tag)
+
+    fun findAddressByReceiver(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
 
     suspend fun snapshotLocal(
         assetId: String,
@@ -229,6 +229,11 @@ internal constructor(
     suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) =
         withContext(Dispatchers.IO) {
             tokenRepository.findAndSyncDepositEntry(chainId, assetId)
+        }
+
+    suspend fun createDepositWithAmount(chainId: String, assetId: String, amount: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.createDepositWithAmount(chainId, assetId, amount)
         }
 
     suspend fun syncNoExistAsset(assetIds: List<String>) =
@@ -437,6 +442,7 @@ internal constructor(
                 web3Repository.deleteAssetsByWalletId(walletId)
                 web3Repository.deleteHiddenTokens(walletId)
                 web3Repository.deleteWallet(walletId)
+                web3Repository.deleteOrders(walletId)
                 CryptoWalletHelper.removePrivate(MixinApplication.appContext, walletId)
                 RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.DELETE))
             }

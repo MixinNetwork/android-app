@@ -10,16 +10,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updateMargins
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.extension.backgroundDrawable
 import one.mixin.android.extension.displayMetrics
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.isWideScreen
 import kotlin.math.abs
 
-class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
+class MixinBottomSheetDialog(context: Context, theme: Int, val transparentStatusBar: Boolean = false) : BottomSheetDialog(context, theme) {
     companion object {
         const val BACK_DRAWABLE_ALPHA = 51
     }
@@ -48,6 +51,22 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
                 }
         }
         behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        findViewById<View>(com.google.android.material.R.id.container)?.apply {
+            fitsSystemWindows = false
+            doOnApplyWindowInsets(this) { insetView, windowInsets, initialMargins ->
+                insetView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    updateMargins(top = initialMargins.top + if(transparentStatusBar) 0 else windowInsets.getInsets(systemBars()).top)
+                }
+                windowInsets
+            }
+        }
+
+        findViewById<View>(com.google.android.material.R.id.coordinator)?.fitsSystemWindows = false
     }
 
     override fun show() {

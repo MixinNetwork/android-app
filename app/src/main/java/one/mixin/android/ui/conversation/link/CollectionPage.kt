@@ -38,11 +38,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
+
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.inscription.compose.TextInscription
 import one.mixin.android.ui.common.compose.SearchTextField
@@ -72,7 +73,6 @@ fun CollectionPage(collectionHash: String, click: (InscriptionItem) -> Unit, onD
                 .fillMaxSize()
                 .clip(RoundedCornerShape(topEnd = 8.dp, topStart = 8.dp))
                 .background(MixinAppTheme.colors.background)
-
         ) {
             Row(
                 modifier = Modifier

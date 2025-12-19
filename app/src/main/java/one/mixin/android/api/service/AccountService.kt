@@ -24,6 +24,7 @@ import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.SchemeResponse
 import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.api.response.referral.ReferralCodeInfo
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Fiat
 import one.mixin.android.vo.LogResponse
@@ -239,9 +240,15 @@ interface AccountService {
         @Query("asset") assetId: String,
         @Query("chain") chain: String,
         @Query("destination") destination: String,
+        @Query("insecureSkipTagCheck") insecureSkipTagCheck: Boolean? = null,
         @Query("tag") tag: String?,
     ): MixinResponse<AddressResponse>
 
     @POST("referral/bind")
     suspend fun bindReferral(@Body request: BindInviteRequest): MixinResponse<Unit>
+
+    @GET("referral/codes/{code}/info")
+    suspend fun getReferralCodeInfo(
+        @Path("code") code: String,
+    ): MixinResponse<ReferralCodeInfo>
 }

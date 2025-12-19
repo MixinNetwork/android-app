@@ -20,9 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
@@ -84,7 +82,7 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -109,6 +107,8 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
@@ -117,8 +117,8 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 import java.io.IOException
 import java.io.UnsupportedEncodingException
@@ -926,6 +926,10 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             lifecycleScope.launch(errorHandler) {
                 handleSwapScheme(url.toUri())
             }
+        } else if (url.startsWith(Scheme.HTTPS_TRADE) || url.startsWith(Scheme.MIXIN_TRADE)) {
+            lifecycleScope.launch(errorHandler) {
+                handleTradeScheme(url.toUri())
+            }
         } else if (url.startsWith(Scheme.HTTPS_MIXIN_WC) || url.startsWith(Scheme.MIXIN_WC) ||
             url.startsWith(Scheme.WALLET_CONNECT_PREFIX)
         ) {
@@ -1062,8 +1066,34 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             checkToken(input)
         }
         val referral = uri.getQueryParameter("referral")
-        AnalyticsTracker.trackSwapStart("mixin", "url")
+        if (activity is ConversationActivity) {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
+        } else {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
+        }
         SwapActivity.show(requireContext(), input, output, amount, referral)
+        dismiss()
+    }
+
+    private suspend fun handleTradeScheme(uri: Uri) {
+        val input = uri.getQueryParameter("input")
+        val output = uri.getQueryParameter("output")
+        val amount = uri.getQueryParameter("amount")
+        val type = uri.getQueryParameter("type")
+        if (output != null && output.isUUID()) {
+            checkToken(output)
+        }
+        if (input != null && input.isUUID()) {
+            checkToken(input)
+        }
+        val referral = uri.getQueryParameter("referral")
+        val openLimit = type.equals("limit", true)
+        if (activity is ConversationActivity) {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.APP_CARD)
+        } else {
+            AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
+        }
+        SwapActivity.show(requireContext(), input, output, amount, referral, openLimit = openLimit)
         dismiss()
     }
 

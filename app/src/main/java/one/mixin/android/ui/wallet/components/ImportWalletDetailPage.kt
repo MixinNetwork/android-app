@@ -47,18 +47,23 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.isEvmAddressValid
+import one.mixin.android.crypto.isEvmPrivateKeyValid
+import one.mixin.android.crypto.isSolanaAddressValid
+import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
+import one.mixin.android.crypto.isSolanaPrivateKeyValid
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import org.sol4k.Base58
+import one.mixin.android.util.encodeToBase58String
 import org.web3j.crypto.Keys
-import org.web3j.crypto.WalletUtils
+import org.web3j.utils.Numeric
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -84,6 +89,7 @@ fun ImportWalletDetailPage(
         "Polygon" to Constants.ChainId.Polygon,
         "Arbitrum" to Constants.ChainId.Arbitrum,
         "Optimism" to Constants.ChainId.Optimism,
+        "Avalanche" to Constants.ChainId.Avalanche,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
     var expanded by remember { mutableStateOf(false) }
@@ -96,7 +102,13 @@ fun ImportWalletDetailPage(
         mutableStateOf(initialNetworkName ?: networks.keys.first())
     }
 
-    val isEvmNetwork = selectedNetworkName != "Solana"
+
+    val isEvmNetwork = when (selectedNetworkName) {
+        "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche" -> true
+        else -> false
+    }
+    val isSolana = selectedNetworkName == "Solana"
+
     val currentChainId = networks[selectedNetworkName] ?: ""
 
     var addressExists by remember { mutableStateOf(false) }
@@ -116,7 +128,7 @@ fun ImportWalletDetailPage(
                 WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY, WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork && isEvmPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
-                    } else if (!isEvmNetwork && isSolanaPrivateKeyValid(text)) {
+                    } else if (isSolana && isSolanaPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
                     } else {
                         null
@@ -124,7 +136,7 @@ fun ImportWalletDetailPage(
                 }
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if ((isEvmNetwork && isEvmAddressValid(text)) ||
-                        (!isEvmNetwork && isSolanaAddressValid(text))) {
+                        (isSolana && isSolanaAddressValid(text))) {
                         text
                     } else {
                         null
@@ -159,15 +171,19 @@ fun ImportWalletDetailPage(
                 WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork) {
                         isEvmPrivateKeyValid(text)
-                    } else {
+                    } else if (isSolana) {
                         isSolanaPrivateKeyValid(text)
+                    } else {
+                        false
                     }
                 }
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if (isEvmNetwork) {
                         isEvmAddressValid(text)
-                    } else {
+                    } else if(isSolana) {
                         isSolanaAddressValid(text)
+                    } else {
+                        false
                     }
                 }
                 else -> false
@@ -419,6 +435,10 @@ fun ImportWalletDetailPage(
                         onConfirmClick(
                             currentChainId, if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
                                 Keys.toChecksumAddress(text)
+                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isSolana // import solana key
+                                && isSolanaHexPrivateKeyValid(text)
+                            ) {
+                                Numeric.hexStringToByteArray(text).encodeToBase58String()
                             } else {
                                 text
                             }
@@ -450,37 +470,3 @@ fun ImportWalletDetailPage(
     }
 }
 
-
-private fun isEvmAddressValid(address: String): Boolean {
-    return try {
-        WalletUtils.isValidAddress(address)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-private fun isEvmPrivateKeyValid(privateKey: String): Boolean {
-    return try {
-        WalletUtils.isValidPrivateKey(privateKey)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-private fun isSolanaAddressValid(address: String): Boolean {
-    return try {
-        val decoded = Base58.decode(address)
-        decoded.size == 32
-    } catch (e: Exception) {
-        false
-    }
-}
-
-private fun isSolanaPrivateKeyValid(privateKey: String): Boolean {
-    return try {
-        val decoded = Base58.decode(privateKey)
-        decoded.size == 64
-    } catch (e: Exception) {
-        false
-    }
-}

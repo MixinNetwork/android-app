@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
@@ -34,9 +36,9 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
@@ -152,11 +154,15 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         TON_CHAIN_ID
                     }
 
+                    R.id.radio_avalanche -> {
+                        Avalanche
+                    }
+
                     else -> {
                         null
                     }
                 }
-                filter(searchEt.et.text?.toString() ?: "")
+                loadData()
             }
         }
     }
@@ -168,8 +174,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight() + requireContext().appCompatActionBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
@@ -312,15 +320,45 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun filter(s: String) {
-        val assetList =
-            defaultAssets.filter {
-                it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-            }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }.filter { item ->
-                ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+        if (s.isBlank() && currentChain == null) {
+            adapter.submitList(defaultAssets) {
+                binding.assetRv.scrollToPosition(0)
             }
-        adapter.submitList(assetList) {
-            binding.assetRv.scrollToPosition(0)
+            return
         }
+        
+        if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
+            val assetList =
+                defaultAssets.filter {
+                    it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
+                }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }.filter { item ->
+                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
+                }
+            adapter.submitList(assetList) {
+                binding.assetRv.scrollToPosition(0)
+            }
+        } else {
+            search(s)
+        }
+    }
+
+    private fun loadData() {
+        adapter.chain = currentChain
+        if (fromType == TYPE_FROM_SEND) {
+            if (defaultAssets.isEmpty()) {
+                binding.rvVa.displayedChild = POS_EMPTY_SEND
+            } else {
+                binding.rvVa.displayedChild = POS_RV
+            }
+        } else {
+            if (adapter.itemCount == 0) {
+                binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
+            } else {
+                binding.rvVa.displayedChild = POS_RV
+            }
+        }
+        binding.assetRv.scrollToPosition(0)
+        binding.pb.isVisible = false
     }
 
     private fun search(query: String) {
@@ -339,14 +377,10 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         } else {
                             list
                         }
-                    }?.filter { item ->
-                        ((currentChain != null && item.chainId == currentChain) || currentChain == null)
                     }
                 adapter.submitList(localAssets)
 
-                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).filter { item ->
-                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
-                }
+                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query)
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 adapter.submitList(result) {
@@ -357,6 +391,9 @@ class AssetListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 }
+                
+                if (!isAdded) return@launch
+                loadData()
             }
     }
 

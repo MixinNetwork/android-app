@@ -8,6 +8,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -48,9 +49,11 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.web3.swap.SwapActivity
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.TokenItem
@@ -192,13 +195,17 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                         }
                                         val wallet = web3ViewModel.findWalletById(walletId)
                                         val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
-                                        if (address == null || wallet == null) {
+                                        if (wallet == null) {
                                             toast(R.string.Data_error)
                                             return@launch
                                         }
-                                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId) ?: return@launch
+                                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                                        if (chain == null) {
+                                            toast(R.string.Data_error)
+                                            return@launch
+                                        }
                                         Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
-                                        WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address.destination, token, chain, wallet)
+                                        WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address?.destination, token, chain, wallet)
                                     }
                                     dismissNow()
                                 }
@@ -240,7 +247,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                 ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
                                 return@launch
                             }
-                            AnalyticsTracker.trackSwapStart("mixin", "wallet")
+                            AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.WALLET_HOME)
                             SwapActivity.show(requireActivity(), inMixin = false, walletId = walletId)
                         }
                     }
@@ -521,11 +528,7 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
             setOnClickListener { token ->
                 this@ClassicWalletFragment.lifecycleScope.launch {
                     val address = web3ViewModel.getAddressesByChainId(this@ClassicWalletFragment.walletId, token.chainId)
-                    if (address == null) {
-                        toast(R.string.Data_error)
-                        return@launch
-                    }
-                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address.destination, token, WalletActivity.Destination.Address)
+                    WalletActivity.showWithAddress(this@ClassicWalletFragment.requireActivity(), address?.destination, token, WalletActivity.Destination.Address)
                 }
                 dismissNow()
             }
@@ -536,16 +539,12 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
         val token = item as Web3TokenItem
         lifecycleScope.launch {
             val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
-            if (address != null) {
-                WalletActivity.showWithWeb3Token(
-                    requireActivity(),
-                    token,
-                    address.destination,
-                    WalletActivity.Destination.Web3Transactions
-                )
-            } else{
-                toast(R.string.Data_error)
-            }
+            WalletActivity.showWithWeb3Token(
+                requireActivity(),
+                token,
+                address?.destination,
+                WalletActivity.Destination.Web3Transactions
+            )
         }
     }
 

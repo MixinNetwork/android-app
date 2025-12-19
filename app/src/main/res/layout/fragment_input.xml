@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white"
-    android:fillViewport="true"
-    android:fitsSystemWindows="true">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -177,6 +176,24 @@
                             android:includeFontPadding="false"
                             android:textColor="@color/selector_blue_tv"
                             tools:text="Add ETH" />
+
+                        <TextView
+                            android:id="@+id/fee_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:gravity="center_vertical"
+                            android:includeFontPadding="false"
+                            android:textColor="@color/white"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:paddingBottom="1dp"
+                            android:paddingTop="1dp"
+                            android:textSize="12sp"
+                            android:background="@drawable/bg_round_accent_tv"
+                            android:visibility="gone"
+                            android:text="@string/FREE"
+                            tools:text="Free" />
 
                         <TextView
                             android:id="@+id/content_text_view"

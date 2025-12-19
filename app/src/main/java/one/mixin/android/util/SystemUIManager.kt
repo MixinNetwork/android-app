@@ -1,41 +1,20 @@
 package one.mixin.android.util
 
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.os.Build
+import android.view.ViewGroup
 import android.view.Window
-import android.view.WindowInsets
-import androidx.annotation.ColorInt
+import androidx.annotation.IdRes
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.supportsPie
-import one.mixin.android.extension.supportsVanillaIceCream
+import timber.log.Timber
 
 @SuppressLint("InlinedApi")
 object SystemUIManager {
-    fun fitsSystem(
-        window: Window,
-        @ColorInt color: Int = 0x33000000,
-    ) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        setSystemUiColor(window, color)
-    }
-
-    fun clearStyle(window: Window) {
-        WindowCompat.setDecorFitsSystemWindows(window, true)
-    }
-
-    fun fullScreen(window: Window) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            hide(WindowInsetsCompat.Type.systemBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-    }
 
     fun lightUI(
         window: Window,
@@ -63,27 +42,56 @@ object SystemUIManager {
         }
     }
 
-    fun setSystemUiColor(
+    fun setSafePadding(
         window: Window,
         color: Int,
+        onlyStatus: Boolean = false,
+        onlyNav: Boolean = false,
+        imePadding: Boolean = false
     ) {
-        supportsVanillaIceCream({
-            window.decorView.setOnApplyWindowInsetsListener { view, insets ->
-                val statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars())
-                val navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars())
-                view.setPadding(
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            view.setPadding(
+                0,
+                if (onlyNav) 0 else statusBarInsets.top,
+                0,
+                if (onlyStatus) 0 else navBarInsets.bottom + if (imePadding) imeBottom else 0,
+            )
+            view.setBackgroundColor(color)
+            insets
+        }
+    }
+
+    fun setSafePaddingOnce(
+        window: Window,
+        color: Int,
+        @IdRes id : Int
+    ) {
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            Timber.e("setSafePaddingOnce: $statusBarInsets ${navBarInsets.top} ${navBarInsets.bottom}")
+            view.findViewById<ViewGroup>(id)?.let {
+                it.setPadding(
                     0,
                     statusBarInsets.top,
                     0,
-                    navBarInsets.bottom
-                )
-                view.setBackgroundColor(color)
-                insets
+                    navBarInsets.bottom)
+                it.setBackgroundColor(color)
+
             }
-        }, {
-            window.statusBarColor = color
-            window.navigationBarColor = color
-        })
+            ViewCompat.setOnApplyWindowInsetsListener(view, null)
+            insets
+        }
+    }
+
+    fun fullScreen(window: Window) {
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            view.setPadding(0, 0, 0, 0)
+            insets
+        }
     }
 
     fun hasCutOut(window: Window): Boolean {
