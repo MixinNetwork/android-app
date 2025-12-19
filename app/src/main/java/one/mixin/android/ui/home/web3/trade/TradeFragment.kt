@@ -733,10 +733,14 @@ class TradeFragment : BaseFragment() {
                 }
             }
             if (!inMixin()) {
-                remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
+                remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.mapNotNull { token ->
                     val local = swapViewModel.web3TokenItemById(walletId ?: "", token.assetId)
                     if (local != null) {
-                        token.copy(balance = local.balance, price = local.priceUsd)
+                        if (local.hidden == true) {
+                            null
+                        } else {
+                            token.copy(balance = local.balance, price = local.priceUsd)
+                        }
                     } else {
                         token
                     }
@@ -759,10 +763,14 @@ class TradeFragment : BaseFragment() {
                     (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
                 }
             } else {
-                remoteSwapTokens = filteredRemote.map { token ->
+                remoteSwapTokens = filteredRemote.mapNotNull { token ->
                     val local = swapViewModel.findToken(token.assetId)
                     if (local != null) {
-                        token.copy(balance = local.balance, price = local.priceUsd)
+                        if (local.hidden == true) {
+                            null
+                        } else {
+                            token.copy(balance = local.balance, price = local.priceUsd)
+                        }
                     } else {
                         token
                     }
