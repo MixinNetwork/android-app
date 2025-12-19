@@ -362,6 +362,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     } else {
                         it
                     }
+                }?.run {
+                    if (!inMixin) {
+                        val chainIds =
+                            swapViewModel.getAddresses(Web3Signer.currentWalletId).map {
+                                it.chainId
+                            }
+                        this.filter {
+                            it.chain.chainId in chainIds
+                        }
+                    } else {
+                        this
+                    }
                 }?.map { ra ->
                     (localTokens.find { swapToken -> swapToken.assetId == ra.assetId } ?: (
                             if (inMixin) {

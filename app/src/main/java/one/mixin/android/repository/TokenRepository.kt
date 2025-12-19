@@ -527,7 +527,7 @@ class TokenRepository
 
         fun web3TokenItemsExcludeHidden(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
-        fun web3TokenItemsByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsByWalletIds(walletIds)
+        fun web3TokenItemsExcludeHiddenWithBalance(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsExcludeHiddenWithBalance(walletId)
 
         fun web3TokenItemsAll(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsAll()
 
@@ -606,7 +606,7 @@ class TokenRepository
 
         suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> {
             val localLike = if (web3) {
-                web3TokenDao.fuzzySearchAsset(walletId ?: "", query, query).map { t -> t.toTokenItem() }
+                web3TokenDao.fuzzySearchAsset(walletId ?: "", query).map { t -> t.toTokenItem() }
             } else emptyList()
 
             val response =

@@ -82,34 +82,34 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
     suspend fun simpleAsset(id: String): Token?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 $POSTFIX_ASSET_ITEM")
     fun hiddenAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
     fun assetItemsNotHidden(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @RawQuery
     fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
     fun assetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
     suspend fun allAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("""$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
     fun assetItems(assetIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:ids)")
     suspend fun findTokenItems(ids: List<String>): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
@@ -123,38 +123,23 @@ interface TokenDao : BaseDao<Token> {
         symbol: String,
     ): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query(
-        """$PREFIX_ASSET_ITEM 
-        WHERE (a1.symbol LIKE '%' || :query || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :query || '%' $ESCAPE_SUFFIX)
-        AND (:chainId IS NULL OR a1.chain_id = :chainId)
-        ORDER BY 
-            a1.symbol = :query COLLATE NOCASE OR a1.name = :query COLLATE NOCASE DESC,
-            a1.price_usd*ae.balance DESC
-        """,
-    )
-    suspend fun fuzzySearchAsset(
-        query: String,
-        chainId: String?,
-    ): List<TokenItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
     fun assetItem(id: String): LiveData<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     suspend fun simpleAssetItem(assetId: String): TokenItem?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     fun assetItemFlow(assetId: String): Flow<TokenItem?>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) $POSTFIX_ASSET_ITEM")
     suspend fun findAssetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
 

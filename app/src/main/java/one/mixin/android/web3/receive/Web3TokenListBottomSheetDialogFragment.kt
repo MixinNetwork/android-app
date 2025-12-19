@@ -18,6 +18,7 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_WALLET_SEND
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
@@ -212,7 +213,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         walletId?.let {
-            bottomViewModel.web3TokenItemsExcludeHidden(it).observe(this) { items ->
+            bottomViewModel.web3TokenItemsExcludeHidden(it, PREF_WALLET_SEND == this.key).observe(this) { items ->
                 defaultAssets = items
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     adapter.tokens = ArrayList(defaultAssets)

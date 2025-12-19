@@ -49,6 +49,7 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
@@ -727,11 +728,6 @@ class BottomSheetViewModel
 
                         is Reference.HashValue -> {
                             reference.value
-                        }
-
-                        else -> {
-                            throw IllegalArgumentException("Reference type not supported")
-                            ""
                         }
                     }
                 }
@@ -1779,7 +1775,13 @@ class BottomSheetViewModel
 
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
 
-        fun web3TokenItemsExcludeHidden(walletId: String) = tokenRepository.web3TokenItemsExcludeHidden(walletId)
+        fun web3TokenItemsExcludeHidden(walletId: String, isSend: Boolean): LiveData<List<Web3TokenItem>> {
+            return if (isSend) {
+                tokenRepository.web3TokenItemsExcludeHiddenWithBalance(walletId)
+            } else {
+                tokenRepository.web3TokenItemsExcludeHidden(walletId)
+            }
+        }
 
         fun web3TokenItemsAll() = tokenRepository.web3TokenItemsAll()
 
