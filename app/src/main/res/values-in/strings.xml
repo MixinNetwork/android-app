@@ -600,6 +600,7 @@
     <string name="Sort">Urutkan</string>
     <string name="Start_Messaging">Mulai Mengirim Pesan</string>
     <string name="Status">Status</string>
+    <string name="Order_Status">Status</string>
     <string name="Sticker">Stiker</string>
     <string name="sticker_add_invalid_size">Memerlukan ukuran file stiker yang lebih besar dari 1KB dan kurang dari 1MB, lebar dan tinggi antara 128px dan 1024px.</string>
     <string name="storage_low_message">Ruang penyimpanan ponsel Anda hampir habis, sehingga dapat memengaruhi penggunaan Mixin oleh Anda dan bahkan dapat mengakibatkan rusak atau hilangnya obrolan serta data penting lainnya. Anda disarankan untuk menghapus aplikasi yang tidak digunakan untuk memberi ruang yang cukup</string>

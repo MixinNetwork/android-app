@@ -22,17 +22,39 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"/>
 
-    <TextView
-        android:id="@+id/privacy_tv"
+    <LinearLayout
+        android:id="@+id/privacy_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/Privacy_Wallet"
-        android:textColor="?attr/text_primary"
-        android:layout_below="@id/title"
         android:layout_marginTop="4dp"
-        android:breakStrategy="simple"
-        android:hyphenationFrequency="none"
-        android:textSize="16sp"
-        android:visibility="gone"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/privacy_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Privacy_Wallet"
+            android:textColor="?attr/text_primary"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/role_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/bg_round_4_solid_light_gray"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:textColor="?attr/text_remarks"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="Owner" />
+    </LinearLayout>
 
 </merge>

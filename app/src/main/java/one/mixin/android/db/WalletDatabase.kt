@@ -17,6 +17,8 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.vo.SafeWallets
 import one.mixin.android.vo.route.Order
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Chain
@@ -44,8 +46,9 @@ import kotlin.math.min
         Web3RawTransaction::class,
         Property::class,
         Order::class,
+        SafeWallets::class,
     ],
-    version = 5,
+    version = 6,
 )
 @TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
@@ -94,6 +97,12 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(" CREATE TABLE IF NOT EXISTS `safe_wallets` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))")
+            }
+        }
+
         fun getDatabase(context: Context): WalletDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -111,7 +120,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
                                 Executors.newFixedThreadPool(
@@ -138,6 +147,7 @@ abstract class WalletDatabase : RoomDatabase() {
     abstract fun web3PropertyDao(): Web3PropertyDao
     abstract fun web3RawTransactionDao(): Web3RawTransactionDao
     abstract fun orderDao(): OrderDao
+    abstract fun safeWalletsDao(): SafeWalletsDao
 
     override fun close() {
         super.close()

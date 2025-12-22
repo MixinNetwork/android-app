@@ -7,6 +7,8 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.web3.vo.isOwner
+import one.mixin.android.db.web3.vo.isTransferFeeFree
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
@@ -107,21 +109,31 @@ class SessionRequestViewModel
             web3Repository.web3TokenItemById(walletId, assetId)
         }
 
-        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Pair<String?, Boolean>? {
+        // index 0 is address, index 1 is privacy wallet, 2 is safe wallet, 3 is common wallet, 4 is fee free wallet
+        suspend fun checkAddressAndGetDisplayName(destination: String, chainId: String?): Triple<String?, Int, Boolean?>? {
             return withContext(Dispatchers.IO) {
                 if (chainId != null) {
-                    val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
-                    if (existsInAddresses) return@withContext Pair(null, false) // If the address exists in the deposit addresses, we don't need to show the name
+                    val existsInAddresses: Boolean = tokenRepository.findDepositEntry(chainId)?.destination == destination
+                    if (existsInAddresses) return@withContext Triple(null, 1, null) // Privacy Wallet
+                }
+
+                if (chainId != null) {
+                    val wallet = web3Repository.getWalletByAddress(destination, chainId)
+                    if (wallet != null) {
+                        val isOwner: Boolean = wallet.isOwner()
+                        return@withContext Triple(wallet.name, 2, isOwner) // Safe Wallet
+                    }
                 }
 
                 val wallet = web3Repository.getWalletByDestination(destination)
                 if (wallet != null) {
-                    return@withContext Pair(wallet.name, false)
+                    val walletIndex: Int = if (wallet.isTransferFeeFree()) 4 else 3
+                    return@withContext Triple(wallet.name, walletIndex, null)
                 }
                 if (chainId != null) {
                     val address = tokenRepository.matchAddress(destination, chainId)
                     if (address != null) {
-                        return@withContext Pair(address.label, true)
+                        return@withContext Triple(address.label, 0, null) // Address label
                     }
                 }
                 return@withContext null

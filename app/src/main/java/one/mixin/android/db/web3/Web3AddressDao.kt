@@ -3,8 +3,8 @@ package one.mixin.android.db.web3
 import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.db.BaseDao
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
-import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.vo.ChainItem
 
 @Dao
@@ -43,6 +43,16 @@ interface Web3AddressDao : BaseDao<Web3Address> {
     @Query("SELECT EXISTS(SELECT 1 FROM addresses WHERE destination = :address)")
     suspend fun addressMatch(address: String): Boolean
 
-    @Query("SELECT w.* FROM wallets w INNER JOIN addresses a ON w.wallet_id = a.wallet_id WHERE a.destination = :destination LIMIT 1")
-    suspend fun getWalletByDestination(destination: String): Web3Wallet?
+    @Query("""
+        SELECT w.* FROM (${Web3WalletDao.WALLET_ITEM_QUERY}) w 
+        INNER JOIN addresses a ON w.id = a.wallet_id 
+        WHERE a.destination = :destination LIMIT 1
+    """)
+    suspend fun getWalletByDestination(destination: String): WalletItem?
+
+    @Query("""
+        SELECT * FROM (${Web3WalletDao.WALLET_ITEM_QUERY}) w 
+        WHERE w.safeAddress = :destination AND w.safeChainId = :chainId LIMIT 1
+    """)
+    suspend fun getWalletByAddress(destination: String, chainId: String): WalletItem?
 }
