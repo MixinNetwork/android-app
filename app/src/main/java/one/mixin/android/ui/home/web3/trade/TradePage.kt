@@ -231,15 +231,17 @@ fun TradePage(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .padding(top = 4.dp, end = 4.dp),
             horizontalArrangement = Arrangement.Start,
         ) {
             tabs.forEachIndexed { index, tab ->
                 val isAdvancedTab: Boolean = index == 1
+                val showAdvancedBadge: Boolean = isAdvancedTab && !isLimitOrderTabBadgeDismissed
                 OutlinedTab(
                     text = tab.title,
                     selected = pagerState.currentPage == index,
-                    showBadge = isAdvancedTab && !isLimitOrderTabBadgeDismissed,
+                    showBadge = showAdvancedBadge,
                     onClick = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
