@@ -44,7 +44,7 @@ fun OpenOrderItem(order: Order, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 12.dp, horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.wrapContentSize()) {
             CoilImage(

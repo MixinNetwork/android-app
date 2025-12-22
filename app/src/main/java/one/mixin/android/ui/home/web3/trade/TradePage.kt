@@ -134,6 +134,7 @@ fun TradePage(
                 onLimitReview = onLimitReview,
                 onDeposit = onDeposit,
                 onLimitOrderClick = onLimitOrderClick,
+                onOrderList = onOrderList,
             )
         }
     )
@@ -178,7 +179,7 @@ fun TradePage(
         actions = {
             Box {
                 IconButton(onClick = {
-                    onOrderList(currentWalletId, pendingCount > 0)
+                    onOrderList(currentWalletId, false)
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_order),
