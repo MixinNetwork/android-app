@@ -122,7 +122,7 @@ fun TransferDestinationInputPage(
     }
 
     LaunchedEffect(token, web3Token) {
-        val chainId =  token?.chainId ?:web3Token?.chainId ?: return@LaunchedEffect
+        val chainId = token?.chainId ?: web3Token?.chainId ?: return@LaunchedEffect
         val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
         hasSafeWallet = safeWallets.isNotEmpty()
         safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
