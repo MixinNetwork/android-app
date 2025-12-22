@@ -3,12 +3,14 @@ package one.mixin.android.web3.swap
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainNetwork
@@ -125,6 +127,8 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             }
             avatar.bg.loadImage(token.icon, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chain.icon, R.drawable.ic_avatar_place_holder)
+            icSpam.isVisible = token.isSpam()
+            updateNameLayout(token.isSpam())
             nameTv.text = token.name
             balanceTv.text = "${token.balance ?: "0"} ${token.symbol}"
             val chainNetwork = getChainNetwork(token.assetId, token.chain.chainId, token.address)
@@ -144,5 +148,32 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
                 alert.setOnClickListener(null)
             }
         }
+    }
+
+    private fun updateNameLayout(isSpam: Boolean) {
+        val layoutParams: RelativeLayout.LayoutParams = binding.nameTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.RIGHT_OF)
+        if (isSpam) {
+            layoutParams.addRule(RelativeLayout.RIGHT_OF, R.id.ic_spam)
+            layoutParams.marginStart = 2.dp
+        } else {
+            layoutParams.addRule(RelativeLayout.RIGHT_OF, R.id.avatar)
+            layoutParams.marginStart = 16.dp
+        }
+        binding.nameTv.layoutParams = layoutParams
+        updateBalanceLayout(isSpam)
+    }
+
+    private fun updateBalanceLayout(isSpam: Boolean) {
+        val layoutParams: RelativeLayout.LayoutParams = binding.balanceTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.RIGHT_OF)
+        layoutParams.removeRule(RelativeLayout.ALIGN_START)
+        if (isSpam) {
+            layoutParams.addRule(RelativeLayout.ALIGN_START, R.id.ic_spam)
+            layoutParams.marginStart = 0
+        } else {
+            layoutParams.addRule(RelativeLayout.ALIGN_START, R.id.name_tv)
+        }
+        binding.balanceTv.layoutParams = layoutParams
     }
 }

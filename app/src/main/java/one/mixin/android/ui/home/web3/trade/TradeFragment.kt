@@ -739,7 +739,7 @@ class TradeFragment : BaseFragment() {
                         if (local.hidden == true) {
                             null
                         } else {
-                            token.copy(balance = local.balance, price = local.priceUsd)
+                            token.copy(balance = local.balance, price = local.priceUsd, level = local.level)
                         }
                     } else {
                         token

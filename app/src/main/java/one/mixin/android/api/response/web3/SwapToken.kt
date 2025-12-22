@@ -24,7 +24,8 @@ data class SwapToken(
     var balance: String? = null,
     var collectionHash: String? = null,
     var changeUsd: String? = null,
-    var isWeb3: Boolean = false
+    var isWeb3: Boolean = false,
+    @SerializedName("level") val level: Int? = null
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -88,6 +89,11 @@ data class SwapToken(
     @IgnoredOnParcel
     val balanceValue: BigDecimal
         get() = balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+    fun isSpam(): Boolean {
+        level ?: return false
+        return level <= Constants.AssetLevel.SPAM
+    }
 }
 
 interface Swappable : Parcelable {

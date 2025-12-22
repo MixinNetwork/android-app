@@ -389,7 +389,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             }
                             )
                             )?.let {
-                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = it.level)
                         }
                     return@map ra
                 }
