@@ -72,13 +72,14 @@ fun TradePage(
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
-    openLimit: Boolean,
+    initialTabIndex: Int,
     source: String,
     onSelectToken: (Boolean, SelectTokenType, Boolean) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onOrderList: (String, Boolean) -> Unit,
+    onTabChanged: (Int) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
 ) {
@@ -138,12 +139,10 @@ fun TradePage(
             )
         }
     )
-    val pagerState = rememberPagerState { tabs.size }
-    LaunchedEffect(openLimit) {
-        if (openLimit) {
-            pagerState.scrollToPage(1)
-        }
-    }
+    val pagerState = rememberPagerState(
+        initialPage = initialTabIndex.coerceIn(0, tabs.size - 1),
+        pageCount = { tabs.size },
+    )
     val coroutineScope = rememberCoroutineScope()
 
     PageScaffold(
@@ -241,6 +240,7 @@ fun TradePage(
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
                         }
+                        onTabChanged(index)
                     }
                 )
                 if (index < tabs.size - 1) {

@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
@@ -99,6 +100,8 @@ class TradeFragment : BaseFragment() {
         const val DefaultSlippage = 100
 
         const val maxLeftAmount = 0.01
+
+        private const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -208,6 +211,12 @@ class TradeFragment : BaseFragment() {
                     ) {
                         composable(TradeDestination.Swap.name) {
                             startOrdersPolling()
+                            val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+                            val initialTabIndex = remember(currentWalletId) {
+                                val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
+                                defaultSharedPreferences.getInt(preferenceKey, 0)
+                            }
+                            val openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
@@ -219,7 +228,7 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
-                                openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true,
+                                initialTabIndex = if (openLimit) 1 else initialTabIndex,
                                 source = getSource(),
                                 onSelectToken = { isReverse, type, isLimit ->
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
@@ -227,6 +236,10 @@ class TradeFragment : BaseFragment() {
                                     } else {
                                         selectCallback(swapTokens, isReverse, type, isLimit)
                                     }
+                                },
+                                onTabChanged = { index ->
+                                    val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
+                                    defaultSharedPreferences.putInt(preferenceKey, index)
                                 },
                                 onReview = { quote, from, to, amount ->
                                     AnalyticsTracker.trackTradePreview()
