@@ -123,6 +123,8 @@ class WithdrawBiometricItem(
     var trace: Trace?,
     val toWallet: Boolean = false,
     val isFeeWaived: Boolean = false,
+    val isSafeWallet: Boolean = false,
+    val isSafeWalletOwner: Boolean? = null,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, null) {
     // Check if the asset and fee balances are sufficient for withdrawal
     // Return 1 if sufficient, 2 if asset is insufficient, 3 if fee is insufficient

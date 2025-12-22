@@ -71,7 +71,6 @@ import one.mixin.android.ui.home.web3.components.Warning
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
@@ -104,8 +103,7 @@ fun SessionRequestPage(
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     val context = LocalContext.current
     var walletName by remember { mutableStateOf<String?>(null) }
-    val walletViewModel = hiltViewModel<WalletViewModel>()
-    var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
     var chainToken by remember { mutableStateOf<Web3TokenItem?>(null) }
 
     if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
@@ -129,7 +127,7 @@ fun SessionRequestPage(
 
     LaunchedEffect(account) {
         try {
-            walletDisplayInfo = walletViewModel.checkAddressAndGetDisplayName(account,null)
+            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account, null)
         } catch (e: Exception) {
             walletDisplayInfo = null
         }
@@ -352,7 +350,7 @@ fun SessionRequestPage(
                 ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionRequestUI.peerUI.name, footer = sessionRequestUI.peerUI.uri)
                 Box(modifier = Modifier.height(20.dp))
                 walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
-                    val (displayName, _) = walletDisplayInfo
+                    val (displayName, _, _) = walletDisplayInfo
                     ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
                 }, {
                     ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)

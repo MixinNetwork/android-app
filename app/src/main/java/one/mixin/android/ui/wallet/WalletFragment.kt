@@ -47,11 +47,13 @@ import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
+import one.mixin.android.job.RefreshSafeAccountsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
@@ -97,6 +99,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         classicWalletFragment.walletId = value.walletId
                     }
                     is WalletDestination.Watch -> {
+                        classicWalletFragment.walletId = value.walletId
+                    }
+                    is WalletDestination.Safe -> {
                         classicWalletFragment.walletId = value.walletId
                     }
                     is WalletDestination.Privacy -> {
@@ -174,6 +179,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     is WalletDestination.Import -> showImportBottom()
                     is WalletDestination.Watch -> showImportBottom()
                     is WalletDestination.Classic -> showClassicBottom()
+                    is WalletDestination.Safe -> showClassicBottom()
                     null -> showPrivacyBottom() // Default
                 }
             }
@@ -210,6 +216,15 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                             )
                         }
                     }
+                    is WalletDestination.Safe -> {
+                        val dest = selectedWalletDestination
+                        if (dest is WalletDestination.Safe) {
+                            WalletActivity.show(
+                                requireActivity(),
+                                WalletActivity.Destination.SearchWeb3(dest.walletId)
+                            )
+                        }
+                    }
                     is WalletDestination.Classic -> {
                         val dest = selectedWalletDestination
                         if (dest is WalletDestination.Classic) {
@@ -229,7 +244,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 AssetDashboardScreen(
                     onWalletCardClick = ::handleWalletCardClick,
                     onAddWalletClick = ::handleAddWalletClick
-                )
+                ) {
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+                }
             }
 
             titleRl.setOnClickListener {
@@ -367,6 +384,23 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     }
                 }
             }
+            is WalletDestination.Safe -> {
+                childFragmentManager.beginTransaction()
+                    .hide(privacyWalletFragment)
+                    .show(classicWalletFragment)
+                    .commit()
+                binding.titleTv.setText(R.string.Common_Wallet)
+                binding.tailIcon.setImageResource(R.drawable.ic_wallet_safe)
+                binding.tailIcon.isVisible = true
+                lifecycleScope.launch {
+                    walletViewModel.findWalletById(destination.walletId)?.let { wallet ->
+                        binding.titleTv.text = wallet.name.ifBlank { getString(R.string.Common_Wallet) }
+                        binding.titleRl.requestLayout()
+                    } ?: run {
+                        binding.titleTv.setText(R.string.Common_Wallet)
+                    }
+                }
+            }
         }
     }
 
@@ -403,6 +437,11 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     private fun handleWalletCardClick(destination: WalletDestination) {
+        if (destination is WalletDestination.Safe) {
+            WebActivity.show(requireContext(), url = destination.url ?: "", null, null, null)
+            closeMenu()
+            return
+        }
         selectedWalletDestination = destination
         update()
         if (destination is WalletDestination.Classic || destination is WalletDestination.Import) {
@@ -451,6 +490,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     override fun onResume() {
         super.onResume()
+        jobManager.addJobInBackground(RefreshSafeAccountsJob())
         if (classicWalletFragment.isVisible) classicWalletFragment.update()
     }
 

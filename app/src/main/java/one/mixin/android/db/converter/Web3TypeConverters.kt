@@ -33,4 +33,5 @@ class Web3TypeConverters {
 
     @TypeConverter
     fun toAppMetadata(json: String?): AppMetadata? = json?.let { gson.fromJson(it, AppMetadata::class.java) }
+
 }

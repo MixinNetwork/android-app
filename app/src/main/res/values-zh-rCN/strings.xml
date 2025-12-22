@@ -293,6 +293,10 @@
     <string name="Copy_link">复制链接</string>
     <string name="Create">创建</string>
     <string name="Created">创建于 %1$s</string>
+    <string name="Wallet_Safe">Safe 金库</string>
+    <string name="Wallet_Created">创建的钱包</string>
+    <string name="Wallet_Imported">导入的钱包</string>
+    <string name="Wallet_Watching">观察钱包</string>
     <string name="Create_PIN">创建钱包</string>
     <string name="created_this_group">%1$s创建了这个群组</string>
     <string name="Creating">正在创建…</string>
@@ -350,8 +354,8 @@
     <string name="desktop_login_no_pin">为了您的安全，登录桌面前请先设置 PIN 码！</string>
     <string name="limited_time_free">限时免费</string>
     <string name="cross_wallet_transaction_free_description">活动期间，钱包转账符合以下任意情况即可获得手续费全额返现：</string>
-    <string name="cross_wallet_transaction_free_condition_1">隐私钱包转账到普通钱包。</string>
-    <string name="cross_wallet_transaction_free_condition_2">普通钱包转账到其他普通钱包、隐私钱包或联系人。</string>
+    <string name="cross_wallet_transaction_free_condition_1">隐私钱包转账到普通钱包、Mixin Safe 金库。</string>
+    <string name="cross_wallet_transaction_free_condition_2">普通钱包转账到其他普通钱包、隐私钱包、Mixin Safe 金库或联系人。</string>
     <string name="cross_wallet_transaction_free_refund">手续费按月、按实际消耗的手续费币种和金额汇总返还到您的隐私钱包，阅读文档了解更多。</string>
     <string name="more_information">了解更多</string>
     <string name="url_cross_wallet_transaction_free">https://support.mixin.one/zh/article/cross-wallet-transaction-fee-event-1k9b47q</string>
@@ -1025,6 +1029,7 @@
     <string name="Stocks">股票</string>
     <string name="Start_Messaging">开始聊天</string>
     <string name="Status">交易状态</string>
+    <string name="Order_Status">状态</string>
     <string name="Stay_in_Mixin">留在 Mixin</string>
     <string name="Sticker">贴纸</string>
     <string name="sticker_add_invalid_size">贴纸要求大于 1KB 且小于 1MB，宽高大于 128 像素且小于 1024 像素。</string>
@@ -1923,6 +1928,14 @@
     <string name="Privacy_Wallet_Description">一个多链钱包，提供私密、免费和即时交易，满足您大部分需求。</string>
     <string name="Whats_Common_Wallet">什么是普通钱包？</string>
     <string name="Common_Wallet_Description">一个普通的多链钱包，可以访问去中心化应用和 DeFi 协议。</string>
+    <string name="Whats_Safe_Wallet">什么是 Safe 金库？</string>
+    <string name="Safe_Wallet_Description">基于比特币、以太坊等网络的多重签名冷钱包。</string>
+    <string name="Upgrade_Safe_Description">升级到 Mixin One 即可解锁 Mixin Safe，与你的家人、朋友或同事一起安全管理资产。</string>
+    <string name="Create_Safe">创建 Safe 金库</string>
+    <string name="Create_Safe_Description">您尚未拥有 Safe 金库。现在创建即可与家人、朋友或同事安全管理资产。</string>
+    <string name="Guideline">使用指南</string>
+    <string name="safe_learn_more_url" translatable="false">https://support.mixin.one/zh/article/mixin-safe-1bl8w6l/</string>
+    <string name="safe_create_guideline_url" translatable="false">https://support.mixin.one/zh/article/safe-1ljf7ld/</string>
     <string name="Approval">授权</string>
     <string name="unlimited">无限量</string>
     <string name="Transaction_Pending_Confirmation">有 1 笔交易处理中</string>
@@ -2139,5 +2152,7 @@
     <string name="Wallets_Selected_Count">%1$d 钱包</string>
     <string name="Invitee_Commission">被邀请人返现</string>
     <string name="Inviter">邀请人</string>
+    <string name="Wallet_Owner">所有者</string>
+    <string name="Wallet_Member">共管人</string>
     <string name="no_available_quotes_found">未找到可用报价。请尝试其他代币或金额。</string>
 </resources>

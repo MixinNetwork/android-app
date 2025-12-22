@@ -92,6 +92,8 @@ import java.time.Instant
 
 enum class FocusedField { NONE, IN_AMOUNT, OUT_AMOUNT, PRICE }
 
+private const val MAX_DISPLAY_ORDER_COUNT: Int = 10
+
 enum class ExpiryOption(@get:StringRes val labelRes: Int) {
     NEVER(R.string.expiry_never), MIN_10(R.string.expiry_10_min), HOUR_1(R.string.expiry_1_hour), DAY_1(R.string.expiry_1_day), DAY_3(R.string.expiry_3_days), WEEK_1(R.string.expiry_1_week), MONTH_1(R.string.expiry_1_month);
 
@@ -119,6 +121,7 @@ fun LimitOrderContent(
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onLimitOrderClick: (String) -> Unit,
+    onOrderList: (String, Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -153,6 +156,9 @@ fun LimitOrderContent(
     var isSubmitting by remember { mutableStateOf(false) }
 
     var limitOrders by remember { mutableStateOf<List<Order>>(emptyList()) }
+    val displayedLimitOrders: List<Order> = remember(limitOrders) {
+        limitOrders.take(MAX_DISPLAY_ORDER_COUNT)
+    }
 
     var expiryOption by remember { mutableStateOf(ExpiryOption.NEVER) }
 
@@ -491,16 +497,36 @@ fun LimitOrderContent(
                                 .wrapContentHeight()
                                 .clip(RoundedCornerShape(8.dp))
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                                .padding(16.dp),
+                                .padding(vertical = 16.dp),
                         ) {
-                            Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
+                            Text(modifier = Modifier.padding(horizontal = 16.dp), text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                             Spacer(modifier = Modifier.height(8.dp))
-                            limitOrders.forEach { order ->
+                            displayedLimitOrders.forEach { order ->
                                 OpenOrderItem(order = order, onClick = {
                                     keyboardController?.hide()
                                     focusManager.clearFocus()
                                     onLimitOrderClick(order.orderId)
                                 })
+                            }
+                            if (limitOrders.size > MAX_DISPLAY_ORDER_COUNT) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            keyboardController?.hide()
+                                            focusManager.clearFocus()
+                                            onOrderList(walletId, true)
+                                        },
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 8.dp, horizontal = 16.dp),
+                                        text = stringResource(R.string.view_all),
+                                        color = MixinAppTheme.colors.accent,
+                                    )
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(20.dp))

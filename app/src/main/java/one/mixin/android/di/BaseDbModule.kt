@@ -268,4 +268,8 @@ internal object BaseDbModule {
     @Provides
     fun provideOrderDao(db: WalletDatabase) = db.orderDao()
 
+
+    @Singleton
+    @Provides
+    fun provideSafeWalletsDao(db: WalletDatabase) = db.safeWalletsDao()
 }

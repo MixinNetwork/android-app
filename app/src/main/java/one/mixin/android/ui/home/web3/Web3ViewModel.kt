@@ -27,6 +27,7 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isTransferFeeFree
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
@@ -473,22 +474,28 @@ internal constructor(
         }
     }
 
-    // index 0 is address,index 1 is privacy wallet, 2 is common wallet, 3 is fee free wallet
-    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Pair<String, Int>? {
+    // index 0 is address, index 1 is privacy wallet, 2 is safe wallet, 3 is common wallet, 4 is fee free wallet
+    suspend fun checkAddressAndGetDisplayName(destination: String, tag: String?, chainId: String): Triple<String?, Int, Boolean?>? {
         return withContext(Dispatchers.IO) {
 
             if (tag.isNullOrBlank()) {
                 val existsInAddresses = tokenRepository.findDepositEntry(chainId)?.destination == destination
-                if (existsInAddresses) return@withContext Pair(MixinApplication.appContext.getString(R.string.Privacy_Wallet), 1)
+                if (existsInAddresses) return@withContext Triple(MixinApplication.appContext.getString(R.string.Privacy_Wallet), 1, null)
+            }
+
+            val safeWallet = web3Repository.getWalletByAddress(destination, chainId)
+            if (safeWallet != null) {
+                val isOwner: Boolean = safeWallet.isOwner()
+                return@withContext Triple(safeWallet.name, 2, isOwner)
             }
 
             val wallet = web3Repository.getWalletByDestination(destination)
             if (wallet != null) {
-                return@withContext Pair(wallet.name, if (wallet.isTransferFeeFree()) 3 else 2)
+                return@withContext Triple(wallet.name, if (wallet.isTransferFeeFree()) 4 else 3, null)
             }
 
             tokenRepository.findAddressByDestination(destination, tag ?: "", chainId)?.let { label ->
-                return@withContext Pair(label, 0)
+                return@withContext Triple(label, 0, null)
             }
             return@withContext null
         }

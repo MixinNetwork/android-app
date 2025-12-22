@@ -110,6 +110,8 @@ object Constants {
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
 
+        const val PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED = "pref_trade_limit_order_badge_dismissed"
+
         const val PREF_USED_WALLET = "pref_used_wallet"
 
         const val PREF_HAS_USED_WALLET_LIST = "pref_has_used_wallet_list"

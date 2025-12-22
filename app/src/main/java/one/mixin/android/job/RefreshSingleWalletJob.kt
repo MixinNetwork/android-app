@@ -7,10 +7,11 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.RxBus
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 class RefreshSingleWalletJob(
@@ -28,6 +29,9 @@ class RefreshSingleWalletJob(
             val wallet = web3WalletDao.getWalletById(walletId)
             if (wallet == null) {
                 return@runBlocking
+            } else if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
+                Timber.e("Skipping refresh for Mixin Safe wallet: $walletId")
+                return@runBlocking
             }
             fetchWalletAddresses(wallet)
             fetchWalletAssets(wallet)
@@ -39,7 +43,7 @@ class RefreshSingleWalletJob(
         }
     }
 
-    private suspend fun fetchWalletAddresses(wallet: Web3Wallet) {
+    private suspend fun fetchWalletAddresses(wallet: WalletItem) {
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getWalletAddresses(wallet.id)
@@ -66,7 +70,7 @@ class RefreshSingleWalletJob(
         )
     }
 
-    private suspend fun fetchWalletAssets(wallet: Web3Wallet) {
+    private suspend fun fetchWalletAssets(wallet: WalletItem) {
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getWalletAssets(wallet.id)

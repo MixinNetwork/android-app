@@ -101,7 +101,7 @@ buildscript {
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '4.3.1'
         ext.audioSwitchVersion = '1.1.8'
-        ext.balloonVersion = '1.6.13'
+        ext.balloonVersion = '1.7.0'
         ext.markdownVersion = '0.7.3'
 
         ext.bcVersion = '1.70'
@@ -129,7 +129,7 @@ buildscript {
         ext.activityComposeVersion = '1.12.2'
         ext.web3jCoreVersion = '4.11.0'
         ext.web3jCryptoVersion = '4.11.0'
-        ext.reownBomVersion = '1.5.1'
+        ext.reownBomVersion = '1.5.2'
         ext.kotsonVersion = '2.5.0'
         ext.playServicesMapsVersion = '19.2.0'
         ext.playServicesLocationVersion = '21.3.0'

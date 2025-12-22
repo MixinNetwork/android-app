@@ -31,6 +31,7 @@ import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.databinding.ViewReputationBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.job.RefreshWeb3TransactionsJob
@@ -70,7 +71,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment<PagedList<Web3Trans
                             putParcelable("args_transaction", transaction)
                             putString("args_chain", transaction.chainId)
                             putParcelable("args_token", token)
-                            putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet)
+                            putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet.toWeb3Wallet())
                         }
                     )
                 }

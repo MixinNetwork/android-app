@@ -84,6 +84,9 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT * FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
     fun findTokenById(walletId: String, assetId: String): Web3Token?
 
+    @Query("SELECT * FROM tokens WHERE asset_id = :assetId")
+    fun findAnyTokenById(assetId: String): Web3Token?
+
     @Query("UPDATE tokens SET amount = '0' WHERE wallet_id = :walletId AND asset_id NOT IN (:assetIds)")
     suspend fun updateBalanceToZeroForMissingAssets(walletId: String, assetIds: List<String>)
     
@@ -125,6 +128,12 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @Query("DELETE FROM tokens WHERE wallet_id = :walletId")
     suspend fun deleteByWalletId(walletId: String)
+
+    @Query("DELETE FROM tokens WHERE wallet_id IN (:walletIds)")
+    suspend fun deleteInByWalletIds(walletIds: List<String>)
+
+    @Query("DELETE FROM tokens WHERE wallet_id = :walletId AND asset_id NOT IN (:assetIds)")
+    suspend fun deleteNotIn(walletId: String, assetIds: List<String>)
 
     @Query(
         """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
