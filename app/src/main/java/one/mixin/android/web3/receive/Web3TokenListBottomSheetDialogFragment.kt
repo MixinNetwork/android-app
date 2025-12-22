@@ -344,48 +344,47 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         query: String,
         localTokens: MutableList<Web3TokenItem>
     ): List<Web3TokenItem> {
+        Timber.e("search: $query")
         if (query.isBlank()) return localTokens
         binding.pb.isVisible = true
-
-        val remoteAssets = if (type == TYPE_FROM_RECEIVE) {
-            val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
-            fuzzyResults.filter {
-                it.chainId in listOf(
-                    SOLANA_CHAIN_ID,
-                    ETHEREUM_CHAIN_ID,
-                    Base,
-                    Optimism,
-                    Arbitrum,
-                    Avalanche,
-                    BinanceSmartChain,
-                    Polygon,
-                )
-            }.map { item ->
-                localTokens.find { item.assetId == it.assetId }.let { local ->
+        val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
+        val remoteAssets = fuzzyResults.filter {
+            it.chainId in listOf(
+                SOLANA_CHAIN_ID,
+                ETHEREUM_CHAIN_ID,
+                Base,
+                Optimism,
+                Arbitrum,
+                Avalanche,
+                BinanceSmartChain,
+                Polygon,
+            )
+        }.map { item ->
+            bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
+                if (local != null && (local.level >= 10 || local.hidden == false)) {
                     local
-                        ?: Web3TokenItem(
-                            walletId = walletId ?: "",
-                            assetId = item.assetId,
-                            chainId = item.chainId,
-                            name = item.name,
-                            assetKey = item.assetKey ?: "",
-                            symbol = item.symbol,
-                            iconUrl = item.iconUrl,
-                            precision = 9,
-                            kernelAssetId = "",
-                            balance = item.balance,
-                            priceUsd = item.priceUsd,
-                            changeUsd = item.changeUsd,
-                            chainIcon = item.chainIconUrl,
-                            chainName = item.chainName,
-                            chainSymbol = item.chainSymbol,
-                            hidden = item.hidden,
-                            level = Constants.AssetLevel.VERIFIED
-                        )
+                } else {
+                    Web3TokenItem(
+                        walletId = walletId ?: "",
+                        assetId = item.assetId,
+                        chainId = item.chainId,
+                        name = item.name,
+                        assetKey = item.assetKey ?: "",
+                        symbol = item.symbol,
+                        iconUrl = item.iconUrl,
+                        precision = 9,
+                        kernelAssetId = "",
+                        balance = item.balance,
+                        priceUsd = item.priceUsd,
+                        changeUsd = item.changeUsd,
+                        chainIcon = item.chainIconUrl,
+                        chainName = item.chainName,
+                        chainSymbol = item.chainSymbol,
+                        hidden = item.hidden,
+                        level = Constants.AssetLevel.VERIFIED
+                    )
                 }
             }
-        } else {
-            emptyList()
         }
 
         binding.pb.isVisible = false
@@ -393,7 +392,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         return localTokens.plus(
             remoteAssets.filterNot { r ->
                 localTokens.any { l ->
-                    l.assetId == r.assetId
+                    l.chainId == r.chainId && l.assetId == r.assetId
                 }
             }).sortedByDescending {
             (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO)
