@@ -109,6 +109,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     fun setStocks(newStocks: List<SwapToken>) {
         stocks = newStocks
         if (isAdded) {
+            adapter.stocks = stocks
             initRadio()
         }
     }

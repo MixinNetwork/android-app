@@ -69,16 +69,19 @@ fun TradePage(
     limitTo: SwapToken?,
     inMixin: Boolean,
     orderBadge: Boolean,
+    isLimitOrderTabBadgeDismissed: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
-    openLimit: Boolean,
+    initialTabIndex: Int,
     source: String,
     onSelectToken: (Boolean, SelectTokenType, Boolean) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onOrderList: (String, Boolean) -> Unit,
+    onDismissLimitOrderTabBadge: () -> Unit,
+    onTabChanged: (Int) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
 ) {
@@ -134,15 +137,14 @@ fun TradePage(
                 onLimitReview = onLimitReview,
                 onDeposit = onDeposit,
                 onLimitOrderClick = onLimitOrderClick,
+                onOrderList = onOrderList,
             )
         }
     )
-    val pagerState = rememberPagerState { tabs.size }
-    LaunchedEffect(openLimit) {
-        if (openLimit) {
-            pagerState.scrollToPage(1)
-        }
-    }
+    val pagerState = rememberPagerState(
+        initialPage = initialTabIndex.coerceIn(0, tabs.size - 1),
+        pageCount = { tabs.size },
+    )
     val coroutineScope = rememberCoroutineScope()
 
     PageScaffold(
@@ -178,7 +180,7 @@ fun TradePage(
         actions = {
             Box {
                 IconButton(onClick = {
-                    onOrderList(currentWalletId, pendingCount > 0)
+                    onOrderList(currentWalletId, false)
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_order),
@@ -229,17 +231,25 @@ fun TradePage(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .padding(top = 4.dp, end = 4.dp),
             horizontalArrangement = Arrangement.Start,
         ) {
             tabs.forEachIndexed { index, tab ->
+                val isAdvancedTab: Boolean = index == 1
+                val showAdvancedBadge: Boolean = isAdvancedTab && !isLimitOrderTabBadgeDismissed
                 OutlinedTab(
                     text = tab.title,
                     selected = pagerState.currentPage == index,
+                    showBadge = showAdvancedBadge,
                     onClick = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
                         }
+                        if (isAdvancedTab) {
+                            onDismissLimitOrderTabBadge()
+                        }
+                        onTabChanged(index)
                     }
                 )
                 if (index < tabs.size - 1) {

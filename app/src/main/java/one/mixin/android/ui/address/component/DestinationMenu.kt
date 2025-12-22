@@ -81,7 +81,8 @@ fun DestinationMenu(
         Icon(
             modifier = Modifier.padding(8.dp),
             painter = painterResource(icon),
-            contentDescription = null
+            contentDescription = null,
+            tint = MixinAppTheme.colors.icon
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {

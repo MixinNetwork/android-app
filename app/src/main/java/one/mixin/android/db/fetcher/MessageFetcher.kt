@@ -73,7 +73,7 @@ class MessageFetcher
                     val cursor =
                         db.query(
                             "$SQL WHERE m.conversation_id = ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                            arrayOf(conversationId, INIT_SIZE),
+                            arrayOf(conversationId, INIT_SIZE.toString()),
                         )
                     val result = convertToMessageItems(cursor).reversed()
                     canLoadBelow = false
@@ -95,7 +95,7 @@ class MessageFetcher
                     val nextCursor =
                         db.query(
                             "$SQL WHERE m.conversation_id = ? AND m.rowid >= ? AND m.created_at >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-                            arrayOf(conversationId, rowId, createdAt, INIT_SIZE / 2),
+                            arrayOf(conversationId, rowId.toString(), createdAt, (INIT_SIZE / 2).toString()),
                         )
                     val result = convertToMessageItems(nextCursor)
                     canLoadBelow = result.size >= INIT_SIZE / 2
@@ -103,7 +103,7 @@ class MessageFetcher
                     val previousCursor =
                         db.query(
                             "$SQL WHERE m.conversation_id = ? AND m.rowid < ? AND m.created_at < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                            arrayOf(conversationId, rowId, createdAt, thresholdSize),
+                            arrayOf(conversationId, rowId.toString(), createdAt, thresholdSize.toString()),
                         )
                     val previous = convertToMessageItems(previousCursor).reversed()
                     canLoadAbove = previous.size >= thresholdSize
@@ -148,7 +148,7 @@ class MessageFetcher
                     val cursor =
                         db.query(
                             "$SQL WHERE m.conversation_id = ? AND m.rowid > ? AND m.created_at >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-                            arrayOf(conversationId, rowId, createdAt, PAGE_SIZE),
+                            arrayOf(conversationId, rowId.toString(), createdAt, PAGE_SIZE.toString()),
                         )
                     return@withContext convertToMessageItems(cursor).also {
                         if (it.size < PAGE_SIZE) {
@@ -181,7 +181,7 @@ class MessageFetcher
                     val cursor =
                         db.query(
                             "$SQL WHERE m.conversation_id = ? AND m.rowid < ? AND m.created_at <= ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                            arrayOf(conversationId, rowId, createdAt, PAGE_SIZE),
+                            arrayOf(conversationId, rowId.toString(), createdAt, PAGE_SIZE.toString()),
                         )
                     return@withContext convertToMessageItems(cursor).reversed().also {
                         if (it.size < PAGE_SIZE) {

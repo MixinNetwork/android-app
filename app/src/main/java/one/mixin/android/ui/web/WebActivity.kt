@@ -22,6 +22,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SixLayout
+import androidx.core.graphics.drawable.toDrawable
 
 @AndroidEntryPoint
 class WebActivity : BaseActivity() {
@@ -87,10 +88,10 @@ class WebActivity : BaseActivity() {
         setContentView(binding.root)
         getScreenshot()?.let {
             supportsS({
-                binding.background.background = BitmapDrawable(resources, it)
+                binding.background.background = it.toDrawable(resources)
                 binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
             }, {
-                binding.container.background = BitmapDrawable(resources, it.blurBitmap(25))
+                binding.container.background = it.blurBitmap(25).toDrawable(resources)
             })
         }
         binding.container.setOnClickListener {

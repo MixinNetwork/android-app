@@ -111,9 +111,10 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
-                android:text="@string/Stock"
+                android:text="@string/Stocks"
                 android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
+                android:textColor="@drawable/radio_button_text_selector"
+                android:visibility="gone"/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_eth"
@@ -204,17 +205,6 @@
                 android:textColor="@drawable/radio_button_text_selector" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_avalanche"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:text="@string/Avalanche"
-                android:textSize="14sp"
-                android:textColor="@drawable/radio_button_text_selector" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_toncoin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -222,6 +212,17 @@
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:text="@string/Toncoin"
+                android:textSize="14sp"
+                android:textColor="@drawable/radio_button_text_selector" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_avalanche"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:text="@string/Avalanche"
                 android:textSize="14sp"
                 android:textColor="@drawable/radio_button_text_selector" />
         </RadioGroup>
