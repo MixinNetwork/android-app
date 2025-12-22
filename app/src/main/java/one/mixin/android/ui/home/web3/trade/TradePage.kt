@@ -69,6 +69,7 @@ fun TradePage(
     limitTo: SwapToken?,
     inMixin: Boolean,
     orderBadge: Boolean,
+    isLimitOrderTabBadgeDismissed: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
@@ -79,6 +80,7 @@ fun TradePage(
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onOrderList: (String, Boolean) -> Unit,
+    onDismissLimitOrderTabBadge: () -> Unit,
     onTabChanged: (Int) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
@@ -233,12 +235,17 @@ fun TradePage(
             horizontalArrangement = Arrangement.Start,
         ) {
             tabs.forEachIndexed { index, tab ->
+                val isAdvancedTab: Boolean = index == 1
                 OutlinedTab(
                     text = tab.title,
                     selected = pagerState.currentPage == index,
+                    showBadge = isAdvancedTab && !isLimitOrderTabBadgeDismissed,
                     onClick = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(index)
+                        }
+                        if (isAdvancedTab) {
+                            onDismissLimitOrderTabBadge()
                         }
                         onTabChanged(index)
                     }

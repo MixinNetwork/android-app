@@ -499,7 +499,7 @@ fun LimitOrderContent(
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                                 .padding(vertical = 16.dp),
                         ) {
-                            Text(modifier = Modifier.padding(horizontal = 16.dp),, text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
+                            Text(modifier = Modifier.padding(horizontal = 16.dp), text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                             Spacer(modifier = Modifier.height(8.dp))
                             displayedLimitOrders.forEach { order ->
                                 OpenOrderItem(order = order, onClick = {

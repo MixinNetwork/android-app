@@ -55,6 +55,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
@@ -217,6 +218,14 @@ class TradeFragment : BaseFragment() {
                                 defaultSharedPreferences.getInt(preferenceKey, 0)
                             }
                             val openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true
+                            var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
+                            }
+
+                            if (openLimit && !isLimitOrderTabBadgeDismissed) {
+                                isLimitOrderTabBadgeDismissed = true
+                                defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                            }
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
@@ -225,6 +234,7 @@ class TradeFragment : BaseFragment() {
                                 limitTo = limitToToken,
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
+                                isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -235,6 +245,12 @@ class TradeFragment : BaseFragment() {
                                         selectCallback(swapTokens, isReverse, type, isLimit)
                                     } else {
                                         selectCallback(swapTokens, isReverse, type, isLimit)
+                                    }
+                                },
+                                onDismissLimitOrderTabBadge = {
+                                    if (!isLimitOrderTabBadgeDismissed) {
+                                        isLimitOrderTabBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
                                     }
                                 },
                                 onTabChanged = { index ->
