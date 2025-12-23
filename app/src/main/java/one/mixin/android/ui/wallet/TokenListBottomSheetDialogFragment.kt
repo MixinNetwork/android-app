@@ -307,41 +307,12 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun filter(s: String) {
-        if (s.isBlank() && currentChain == null) {
-            adapter.submitList(defaultAssets) {
-                binding.assetRv.scrollToPosition(0)
-            }
-            return
-        }
-        
-        if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
-            val assetList =
-                defaultAssets.filter {
-                    it.name.containsIgnoreCase(s) || it.symbol.containsIgnoreCase(s)
-                }.sortedByDescending { it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) }
-            adapter.submitList(assetList) {
-                binding.assetRv.scrollToPosition(0)
-            }
-        } else {
-            search(s)
-        }
-    }
-
     private fun loadData() {
         adapter.chain = currentChain
-        if (fromType == TYPE_FROM_SEND) {
-            if (defaultAssets.isEmpty()) {
-                binding.rvVa.displayedChild = POS_EMPTY_SEND
-            } else {
-                binding.rvVa.displayedChild = POS_RV
-            }
-        } else {
-            if (adapter.itemCount == 0) {
-                binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
-            } else {
-                binding.rvVa.displayedChild = POS_RV
-            }
+        binding.rvVa.displayedChild = when (adapter.getFilteredTokens().size) {
+            0 if fromType == TYPE_FROM_SEND -> POS_EMPTY_SEND
+            0 -> POS_EMPTY_RECEIVE
+            else -> POS_RV
         }
         binding.assetRv.scrollToPosition(0)
         binding.pb.isVisible = false

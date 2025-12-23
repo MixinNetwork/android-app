@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_WALLET_SEND
+import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
@@ -89,9 +90,9 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private val key by lazy {
         when (type) {
-            TYPE_FROM_SEND -> Constants.Account.PREF_WALLET_SEND
-            TYPE_FROM_RECEIVE -> Constants.Account.PREF_WALLET_RECEIVE
-            else -> Constants.Account.PREF_WALLET_SEND
+            TYPE_FROM_SEND -> PREF_WALLET_SEND
+            TYPE_FROM_RECEIVE -> PREF_WALLET_RECEIVE
+            else -> PREF_WALLET_SEND
         }
     }
 
@@ -344,7 +345,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         query: String,
         localTokens: MutableList<Web3TokenItem>
     ): List<Web3TokenItem> {
-        Timber.e("search: $query")
         if (query.isBlank()) return localTokens
         binding.pb.isVisible = true
         val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
