@@ -46,6 +46,7 @@ import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
+import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -313,16 +314,23 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.rvVa.displayedChild = POS_RV
                 binding.pb.isVisible = true
 
-                val localAssets = bottomViewModel.fuzzySearchAssets(query)
-                adapter.submitList(localAssets)
-                val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).map {
-                    val local = bottomViewModel.findAssetItemById(it.assetId)
-                    if (local != null) {
-                        it.copy(balance = local.balance)
-                    } else {
-                        it
+                val localAssets = bottomViewModel.fuzzySearchAssets(query)?.filter {
+                    if (TYPE_FROM_SEND == fromType){
+                        it.balance.toBigDecimalOrNull().run { this != null && this > BigDecimal.ZERO }
+                    }else{
+                        true
                     }
                 }
+                adapter.submitList(localAssets)
+                val remoteAssets = if (TYPE_FROM_SEND == fromType) emptyList() else
+                    bottomViewModel.queryAsset(walletId = null, query = query).map {
+                        val local = bottomViewModel.findAssetItemById(it.assetId)
+                        if (local != null) {
+                            it.copy(balance = local.balance)
+                        } else {
+                            it
+                        }
+                    }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 adapter.submitList(result) {

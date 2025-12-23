@@ -61,7 +61,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         const val TYPE_FROM_SEND = 0
         const val TYPE_FROM_RECEIVE = 1
 
-        const val WEB3_ASSET_PREFERENCE = "WEB3_TRANSFER_ASSET"
         const val ARGS_WALLET_ID = "args_wallet_id"
         fun newInstance(
             walletId: String? = null,
@@ -213,9 +212,16 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     )
         }
 
-        walletId?.let {
+        walletId?.let { it ->
             bottomViewModel.web3TokenItemsExcludeHidden(it, PREF_WALLET_SEND == this.key).observe(this) { items ->
-                defaultAssets = items
+                defaultAssets = if (type == TYPE_FROM_SEND)
+                    items.filter { t ->
+                        t.balance.toBigDecimalOrNull().run {
+                            this != null && this > BigDecimal.ZERO
+                        }
+                    } else {
+                    items
+                }
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     adapter.tokens = ArrayList(defaultAssets)
                 }
@@ -345,7 +351,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         query: String,
         localTokens: MutableList<Web3TokenItem>
     ): List<Web3TokenItem> {
-        if (query.isBlank()) return localTokens
+        if (query.isBlank() || TYPE_FROM_SEND ==  type) return localTokens
         binding.pb.isVisible = true
         val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
         val remoteAssets = fuzzyResults.filter {
@@ -401,11 +407,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     fun setOnAssetClick(callback: (Web3TokenItem) -> Unit): Web3TokenListBottomSheetDialogFragment {
         this.onAsset = callback
-        return this
-    }
-
-    fun setType(type: Int): Web3TokenListBottomSheetDialogFragment {
-        this.type = type
         return this
     }
 
