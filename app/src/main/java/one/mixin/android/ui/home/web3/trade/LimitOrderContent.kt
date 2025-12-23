@@ -503,7 +503,13 @@ fun LimitOrderContent(
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
                                 .padding(vertical = 16.dp),
                         ) {
-                            Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            Row(modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .clickable {
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                    onOrderList(walletId, true)
+                                }) {
                                 Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(
