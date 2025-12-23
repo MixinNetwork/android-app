@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
@@ -12,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferReceiveContentBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
 
@@ -88,6 +90,13 @@ class TransferContentReceiveItem : LinearLayout {
             privacyTv.setCompoundDrawablesRelative(null, null, drawable, null)
             if (isWalletOwner != null) {
                 roleTv.isVisible = true
+                if (isWalletOwner) {
+                    roleTv.setBackgroundResource(R.drawable.bg_round_4_solid_orange)
+                    roleTv.setTextColor(Color.WHITE)
+                } else {
+                    roleTv.setBackgroundResource(R.drawable.bg_round_4_solid_light_gray)
+                    roleTv.setTextColor(roleTv.context.colorAttr(R.attr.text_remarks))
+                }
                 roleTv.setText(if (isWalletOwner) R.string.Wallet_Owner else R.string.Wallet_Member)
             } else {
                 roleTv.isVisible = false
