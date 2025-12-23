@@ -53,7 +53,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TokenListBottomSheetDialogFragment"
         const val ARGS_FOR_TYPE = "args_for_type"
-        const val ARGS_ASSETS = "args_assets"
         const val ARGS_ASSET_ID = "args_asset_id"
 
         const val POS_RV = 0
@@ -68,12 +67,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         fun newInstance(
             fromType: Int,
-            assets: ArrayList<String>? = null,
             currentAssetId: String? = null,
         ) =
             TokenListBottomSheetDialogFragment().withArgs {
                 putInt(ARGS_FOR_TYPE, fromType)
-                putStringArrayList(ARGS_ASSETS, assets)
                 putString(ARGS_ASSET_ID, currentAssetId)
             }
     }
@@ -93,10 +90,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val adapter by lazy { SearchAdapter(requireArguments().getString(ARGS_ASSET_ID)) }
-
-    private val assetIds by lazy {
-        requireArguments().getStringArrayList(ARGS_ASSETS)
-    }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
@@ -241,14 +234,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             bottomViewModel.assetItemsNotHidden()
         }.observe(this) {
-            defaultAssets =
-                it.let { list ->
-                    if (!assetIds.isNullOrEmpty()) {
-                        list.filter { item -> assetIds!!.contains(item.assetId) }
-                    } else {
-                        list
-                    }
-                }
+            defaultAssets = it
             if (fromType == TYPE_FROM_SEND) {
                 adapter.submitList(defaultAssets)
                 if (defaultAssets.isEmpty()) {
@@ -327,14 +313,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.rvVa.displayedChild = POS_RV
                 binding.pb.isVisible = true
 
-                val localAssets =
-                    bottomViewModel.fuzzySearchAssets(query).let { list ->
-                        if (!assetIds.isNullOrEmpty()) {
-                            list?.filter { item -> assetIds!!.contains(item.assetId) }
-                        } else {
-                            list
-                        }
-                    }
+                val localAssets = bottomViewModel.fuzzySearchAssets(query)
                 adapter.submitList(localAssets)
                 val remoteAssets = bottomViewModel.queryAsset(walletId = null, query = query).map {
                     val local = bottomViewModel.findAssetItemById(it.assetId)
