@@ -178,7 +178,7 @@ fun SwapContent(
                 modifier = if (availableHeight != null) {
                     Modifier
                         .fillMaxWidth()
-                        .height(availableHeight/5*4)
+                        .height(availableHeight / 5 * 4)
                 } else {
                     Modifier.fillMaxSize()
                 }
@@ -258,32 +258,35 @@ fun SwapContent(
                             )
                         },
                         bottomCompose = {
-                            InputArea(
-                                modifier = Modifier,
-                                token = toToken,
-                                text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
-                                title = stringResource(id = R.string.swap_receive),
-                                readOnly = true,
-                                selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
-                                onDeposit = null,
-                            )
+                            Column {
+                                InputArea(
+                                    modifier = Modifier,
+                                    token = toToken,
+                                    text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
+                                    title = stringResource(id = R.string.swap_receive),
+                                    readOnly = true,
+                                    selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
+                                    onDeposit = null,
+                                )
+                                QuoteInfoBox(
+                                    availableHeight = availableHeight,
+                                    errorInfo = errorInfo,
+                                    quoteResult = quoteResult,
+                                    fromToken = fromToken,
+                                    toToken = toToken,
+                                    isLoading = isLoading,
+                                    inputText = inputText,
+                                    quoteMin = quoteMin,
+                                    quoteMax = quoteMax,
+                                    onInputTextChange = { inputText = it },
+                                    onInvalidFlagChange = { invalidFlag = !invalidFlag }
+                                )
+                            }
+
                         },
                         margin = 6.dp,
                     )
                 }
-                QuoteInfoBox(
-                    availableHeight = availableHeight,
-                    errorInfo = errorInfo,
-                    quoteResult = quoteResult,
-                    fromToken = fromToken,
-                    toToken = toToken,
-                    isLoading = isLoading,
-                    inputText = inputText,
-                    quoteMin = quoteMin,
-                    quoteMax = quoteMax,
-                    onInputTextChange = { inputText = it },
-                    onInvalidFlagChange = { invalidFlag = !invalidFlag }
-                )
                 Spacer(modifier = Modifier.height(if (availableHeight == null) 14.dp else 8.dp))
                 ReviewButton(
                     inputText = inputText,
@@ -436,11 +439,11 @@ fun QuoteInfoBox(
         modifier = if (availableHeight == null) {
             Modifier
                 .heightIn(min = 48.dp)
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 4.dp)
         } else {
             Modifier
                 .padding(vertical = 14.dp)
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 4.dp)
         }
     ) {
         if (errorInfo.isNullOrBlank()) {
