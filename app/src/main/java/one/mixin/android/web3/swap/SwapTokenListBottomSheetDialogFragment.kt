@@ -37,6 +37,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.withArgs
@@ -352,6 +353,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
         binding.pb.isVisible = true
+        val filterLocal = localTokens.filter {
+            it.name.containsIgnoreCase(s) ||
+                    it.symbol.containsIgnoreCase(s) ||
+                    it.chain.name.containsIgnoreCase(s)
+        }
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
@@ -397,7 +403,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )
-        return remoteList ?: emptyList()
+        val result = filterLocal + (remoteList?.filterNot { r ->
+            localTokens.any { l ->
+                l.chain.chainId == r.chain.chainId && l.assetId == r.assetId
+            }
+        } ?: emptyList())
+        return result
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {

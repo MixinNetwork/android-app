@@ -306,9 +306,9 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 binding.pb.isVisible = true
 
                 val localAssets = bottomViewModel.fuzzySearchAssets(query)?.filter {
-                    if (TYPE_FROM_SEND == fromType){
+                    if (TYPE_FROM_SEND == fromType) {
                         it.balance.toBigDecimalOrNull().run { this != null && this > BigDecimal.ZERO }
-                    }else{
+                    } else {
                         true
                     }
                 }
