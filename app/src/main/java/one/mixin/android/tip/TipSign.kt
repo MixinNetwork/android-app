@@ -126,6 +126,11 @@ fun tipPrivToPrivateKey(
             }
             return kp.secret
         }
+
+//        Constants.ChainId.BITCOIN_CHAIN_ID -> {
+//
+//        }
+
         else -> {
             val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString(), Bip44Path.ethereumPathString(index))
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.ethereum(index))

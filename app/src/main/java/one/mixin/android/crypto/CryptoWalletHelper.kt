@@ -18,11 +18,19 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.BitcoinNetwork
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.base.SegwitAddress
+import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.crypto.MnemonicCode
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.math.ec.ECPoint
 import org.sol4k.Base58
 import org.sol4k.Keypair.Companion.fromSecretKey
+import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import java.security.MessageDigest
 
 object CryptoWalletHelper {
@@ -110,13 +118,24 @@ object CryptoWalletHelper {
     }
 
     fun privateKeyToAddress(privateKey: String, chainId: String): String {
-        return if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-            val privateKeyBytes = Base58.decode(privateKey)
-            val keyPair = fromSecretKey(privateKeyBytes)
-            keyPair.publicKey.toBase58()
-        } else {
-            val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
-            EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
+        return when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                val privateKeyBytes: ByteArray = Base58.decode(privateKey)
+                val keyPair = fromSecretKey(privateKeyBytes)
+                keyPair.publicKey.toBase58()
+            }
+
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
+                val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+                val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
+                address.toString()
+            }
+
+            else -> {
+                val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
+                EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
+            }
         }
     }
 
@@ -134,6 +153,94 @@ object CryptoWalletHelper {
                 ?: throw IllegalArgumentException("Private key generation failed")
             EthKeyGenerator.privateKeyToAddress(privateKey)
         }
+    }
+
+    fun generateBitcoinSegwitAddress(
+        seedHex: String,
+        index: Int = 0,
+    ): String {
+        val seedBytes: ByteArray = Numeric.hexStringToByteArray(Numeric.prependHexPrefix(seedHex))
+        val masterKeyPair: Bip32ECKeyPair = Bip32ECKeyPair.generateKeyPair(seedBytes)
+        val bip84KeyPair: Bip32ECKeyPair = Bip32ECKeyPair.deriveKeyPair(masterKeyPair, Bip44Path.bitcoinSegwit(index))
+        val privateKeyBytes: ByteArray = Numeric.toBytesPadded(bip84KeyPair.privateKey, 32)
+        val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+        val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
+        val addressString: String = address.toString()
+        if (index == 0) {
+            val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(seedHex)
+            Timber.e("addressFromGo: $addressFromGo, addressString: $addressString")
+            if (addressFromGo != addressString) {
+                throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
+            }
+        }
+        return addressString
+    }
+
+    fun generateBitcoinTaprootAddress(
+        seedHex: String,
+        index: Int = 0,
+    ): String {
+        val seedBytes: ByteArray = Numeric.hexStringToByteArray(Numeric.prependHexPrefix(seedHex))
+        val masterKeyPair: Bip32ECKeyPair = Bip32ECKeyPair.generateKeyPair(seedBytes)
+        val bip86KeyPair: Bip32ECKeyPair = Bip32ECKeyPair.deriveKeyPair(masterKeyPair, Bip44Path.bitcoinTaproot(index))
+        val privateKeyBytes: ByteArray = Numeric.toBytesPadded(bip86KeyPair.privateKey, 32)
+        val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+        val internalPublicKeyCompressed: ByteArray = ecKey.pubKey
+        val outputKey: ByteArray = computeTaprootOutputKeyXOnly(internalPublicKeyCompressed)
+        val address: SegwitAddress = SegwitAddress.fromProgram(BitcoinNetwork.MAINNET, 1, outputKey)
+        val addressString: String = address.toBech32()
+        if (index == 0) {
+            val addressFromGo: String = Blockchain.generateBitcoinTaprootAddress(seedHex)
+            Timber.e("addressFromGo: $addressFromGo, addressString: $addressString")
+            if (addressFromGo != addressString) {
+                throw IllegalArgumentException("Generate illegal Bitcoin Taproot Address")
+            }
+        }
+        return addressString
+    }
+
+    private fun computeTaprootOutputKeyXOnly(internalPublicKeyCompressed: ByteArray): ByteArray {
+        val parameters = requireNotNull(ECNamedCurveTable.getParameterSpec("secp256k1"))
+        val curve = parameters.curve
+        val generator: ECPoint = parameters.g
+        val order: BigInteger = parameters.n
+        val internalPointDecoded: ECPoint = curve.decodePoint(internalPublicKeyCompressed).normalize()
+        val internalPoint: ECPoint = if (internalPointDecoded.affineYCoord.toBigInteger().testBit(0)) internalPointDecoded.negate().normalize() else internalPointDecoded
+        val internalKeyXOnly: ByteArray = toFixedLengthBytes(internalPoint.affineXCoord.toBigInteger(), 32)
+        val tweakHash: ByteArray = taggedHash("TapTweak", internalKeyXOnly)
+        val tweak: BigInteger = BigInteger(1, tweakHash).mod(order)
+        val outputPoint: ECPoint = if (tweak == BigInteger.ZERO) internalPoint else internalPoint.add(generator.multiply(tweak)).normalize()
+        if (outputPoint.isInfinity) {
+            throw IllegalArgumentException("Invalid Taproot output key")
+        }
+        return toFixedLengthBytes(outputPoint.affineXCoord.toBigInteger(), 32)
+    }
+
+    private fun taggedHash(
+        tag: String,
+        msg: ByteArray,
+    ): ByteArray {
+        val sha256: MessageDigest = MessageDigest.getInstance("SHA-256")
+        val tagHash: ByteArray = sha256.digest(tag.toByteArray(Charsets.US_ASCII))
+        sha256.reset()
+        sha256.update(tagHash)
+        sha256.update(tagHash)
+        sha256.update(msg)
+        return sha256.digest()
+    }
+
+    private fun toFixedLengthBytes(
+        value: BigInteger,
+        length: Int,
+    ): ByteArray {
+        val raw: ByteArray = value.toByteArray()
+        val normalized: ByteArray = if (raw.isNotEmpty() && raw[0] == 0.toByte()) raw.copyOfRange(1, raw.size) else raw
+        if (normalized.size > length) {
+            throw IllegalArgumentException("Value is too large")
+        }
+        val result = ByteArray(length)
+        System.arraycopy(normalized, 0, result, length - normalized.size, normalized.size)
+        return result
     }
 
     fun encryptPrivateKeyWithSpendKey(spendKey: ByteArray, privateKey: String): String {
