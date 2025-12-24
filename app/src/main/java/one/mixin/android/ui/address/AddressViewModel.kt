@@ -26,6 +26,8 @@ class AddressViewModel
 
     suspend fun findWeb3WalletById(walletId: String) = web3Repository.findWalletById(walletId)
 
+    suspend fun getSafeWalletsByChainId(chainId: String) = web3Repository.getSafeWalletsByChainId(chainId)
+
     suspend fun validateExternalAddress(
         assetId: String, chain: String, destination: String, tag: String?
     ) = accountRepository.validateExternalAddress(assetId, chain, destination, tag)

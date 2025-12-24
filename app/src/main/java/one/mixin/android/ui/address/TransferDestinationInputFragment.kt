@@ -35,6 +35,7 @@ import one.mixin.android.databinding.FragmentAddressInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.hideKeyboard
@@ -277,6 +278,38 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                 Timber.e(error)
                                             }) {
                                                 when {
+                                                    destinationWallet?.isMixinSafe()  == true-> {
+                                                        val toAddress = destinationWallet.safeAddress.orEmpty()
+                                                        when {
+                                                            token != null -> {
+                                                                navigateToInputFragmentWithBundle(
+                                                                    Bundle().apply {
+                                                                        putParcelable(InputFragment.ARGS_TOKEN, token)
+                                                                        putString(InputFragment.ARGS_TO_ADDRESS, toAddress)
+                                                                        putParcelable(ARGS_WALLET, wallet)
+                                                                    })
+                                                            }
+
+                                                            web3Token != null -> {
+                                                                val tokenToSend = web3Token!!
+                                                                val fromAddress = web3ViewModel.getAddressesByChainId(fromWalletId!!, tokenToSend.chainId)
+                                                                if (fromAddress == null || fromAddress.destination.isBlank()) {
+                                                                    toast(R.string.Alert_Not_Support)
+                                                                } else {
+                                                                    (chainToken ?: web3ViewModel.web3TokenItemById(tokenToSend.walletId, tokenToSend.chainId))?.let { chain ->
+                                                                        navigateToInputFragmentWithBundle(
+                                                                            Bundle().apply {
+                                                                                putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress.destination)
+                                                                                putString(InputFragment.ARGS_TO_ADDRESS, toAddress)
+                                                                                putParcelable(InputFragment.ARGS_WEB3_TOKEN, tokenToSend)
+                                                                                putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                                                                                putParcelable(ARGS_WALLET, wallet)
+                                                                            })
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
                                                     web3Token != null -> {
                                                         val tokenToSend = web3Token!!
                                                         val fromAddress = web3ViewModel.getAddressesByChainId(fromWalletId!!, tokenToSend.chainId)

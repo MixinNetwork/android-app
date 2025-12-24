@@ -9,9 +9,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.SafeAccount
 import one.mixin.android.databinding.ViewTransferContentBinding
-import one.mixin.android.extension.base64RawURLEncode
-import one.mixin.android.extension.hexString
-import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.session.Session
@@ -380,7 +377,7 @@ class TransferContent : LinearLayout {
             safeReceives.isVisible = true
             safeSender.setContent(R.string.Sender, safeAccount.address, selectable = true)
             safeSender.isVisible = true
-            safe.setContent(R.string.SAFE, safeAccount.name)
+            safe.setContent(R.string.SAFE, safeAccount.name, R.drawable.ic_wallet_safe, safeAccount.role)
             safe.isVisible = true
             network.isVisible = false
         }
@@ -410,10 +407,15 @@ class TransferContent : LinearLayout {
             address.isVisible = true
             sender.isVisible = true
             total.isVisible = true
-
             val label = withdrawBiometricItem.label
             if (label != null) {
-                address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
+                if (withdrawBiometricItem.isSafeWallet) {
+                    address.isVisible = false
+                    safeWallet.isVisible = true
+                    safeWallet.setContent(R.string.Receiver, label, R.drawable.ic_wallet_safe, withdrawBiometricItem.isSafeWalletOwner)
+                } else {
+                    address.setContentAndLabel(R.string.Receiver, withdrawBiometricItem.displayAddress(), withdrawBiometricItem.label, withdrawBiometricItem.toWallet)
+                }
             } else {
                 address.setContent(R.string.Receiver, withdrawBiometricItem.displayAddress())
             }

@@ -27,6 +27,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
@@ -172,7 +173,9 @@ constructor(
     suspend fun findWalletById(walletId: String) =
         web3WalletDao.getWalletById(walletId)?.updateWithLocalKeyInfo(context)
 
-    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String): List<Web3Wallet> {
+    suspend fun getSafeWalletsByChainId(chainId: String) =
+        web3WalletDao.getSafeWalletsByChainId(chainId).updateWithLocalKeyInfo(context)
+    suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String): List<WalletItem> {
         val wallets = if (chainId.isBlank()) {
             web3WalletDao.getWalletsExcludingByNameAllChains(excludeWalletId, query)
         } else {
@@ -226,6 +229,8 @@ constructor(
     }
 
     suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)?.updateWithLocalKeyInfo(MixinApplication.appContext)
+
+    suspend fun getWalletByAddress(destination: String, chainId: String) = web3AddressDao.getWalletByAddress(destination, chainId)?.updateWithLocalKeyInfo(MixinApplication.appContext)
 
     // Only deposit display
     suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? {

@@ -47,6 +47,12 @@
             app:selectable="true" />
 
         <one.mixin.android.ui.wallet.transfer.widget.TransferContentReceiveItem
+            android:id="@+id/safe_wallet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <one.mixin.android.ui.wallet.transfer.widget.TransferContentReceiveItem
             android:id="@+id/sender"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -82,7 +88,7 @@
             android:layout_height="wrap_content"
             android:visibility="gone" />
 
-        <one.mixin.android.ui.wallet.transfer.widget.TransferContentItem
+        <one.mixin.android.ui.wallet.transfer.widget.TransferContentReceiveItem
             android:id="@+id/safe"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

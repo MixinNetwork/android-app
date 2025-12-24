@@ -23,6 +23,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount
@@ -123,6 +124,7 @@ object Web3Signer {
             Chain.Blast.hexReference -> Chain.Blast
             Chain.Arbitrum.hexReference -> Chain.Arbitrum
             Chain.Optimism.hexReference -> Chain.Optimism
+            Chain.Avalanche.hexReference -> Chain.Avalanche
             Chain.Polygon.hexReference -> Chain.Polygon
             Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
             Chain.Solana.hexReference -> Chain.Solana
@@ -158,7 +160,7 @@ object Web3Signer {
         persist()
     }
 
-    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> Web3Wallet?) {
+    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> WalletItem?) {
         classicWalletId = PropertyHelper.findValueByKey(Keys.CLASSIC_WALLET_ID, classicQuery() ?: "")
         currentWalletId = PropertyHelper.findValueByKey(
             Keys.SELECTED_WEB3_WALLET_ID,
@@ -235,6 +237,11 @@ object Web3Signer {
                 currentChain = Chain.Optimism
                 persist()
                 Result.success(Chain.Optimism.name)
+            }
+            Chain.Avalanche.hexReference -> {
+                currentChain = Chain.Avalanche
+                persist()
+                Result.success(Chain.Avalanche.name)
             }
             Chain.Polygon.hexReference -> {
                 currentChain = Chain.Polygon

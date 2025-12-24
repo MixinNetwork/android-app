@@ -905,6 +905,7 @@
     <string name="Start">Comenzar</string>
     <string name="Start_Messaging">Empezar a enviar mensajes</string>
     <string name="Status">Estado</string>
+    <string name="Order_Status">Estado</string>
     <string name="Sticker">Pegatina</string>
     <string name="sticker_add_invalid_size">Requiere un tamaño de archivo de pegatinas de más de 1 KB y menos de 1 MB, ancho y alto entre 128 px y 1024 px.</string>
     <string name="Sticker_Store">Tienda de pegatinas</string>

@@ -17,8 +17,8 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
-import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.SolanaTxSource
+import one.mixin.android.web3.js.Web3Signer
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
@@ -187,6 +187,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.Arbitrum -> Chain.Arbitrum
         chainId == Constants.ChainId.Polygon-> Chain.Polygon
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
+        chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -198,6 +199,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.Base -> "ETH"
         chainId == Constants.ChainId.Optimism -> "ETH"
         chainId == Constants.ChainId.Arbitrum -> "ETH"
+        chainId == Constants.ChainId.Avalanche -> "AVAX"
         // chainId.equals("blast", true) -> "ETH"
         chainId == Constants.ChainId.BinanceSmartChain -> "POL"
         chainId == Constants.ChainId.Polygon -> "BNB"
@@ -295,7 +297,8 @@ suspend fun Web3TokenItem.buildTransaction(
                 (chainId == Constants.ChainId.Polygon && (assetKey == "0x0000000000000000000000000000000000000000" || assetKey == "0x0000000000000000000000000000000000001010")) ||
                 (chainId == Constants.ChainId.BinanceSmartChain && assetKey == "0x0000000000000000000000000000000000000000") ||
                 (chainId == Constants.ChainId.Optimism && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Arbitrum && assetKey == "0x0000000000000000000000000000000000000000")
+                (chainId == Constants.ChainId.Arbitrum && assetKey == "0x0000000000000000000000000000000000000000") ||
+                (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000")
             ) {
                 val value = Numeric.toHexStringWithPrefix(Convert.toWei(v, Convert.Unit.ETHER).toBigInteger())
                 WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)

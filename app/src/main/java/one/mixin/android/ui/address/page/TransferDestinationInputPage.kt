@@ -65,6 +65,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.SafeChain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
@@ -104,6 +105,8 @@ fun TransferDestinationInputPage(
         .collectAsState(initial = emptyList())
 
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
+    var hasSafeWallet by remember { mutableStateOf(false) }
+    var safeWalletChainId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(web3Token?.walletId) {
         if (web3Token?.walletId != null) {
@@ -116,6 +119,13 @@ fun TransferDestinationInputPage(
                 }
             }
         }
+    }
+
+    LaunchedEffect(token, web3Token) {
+        val chainId = token?.chainId ?: web3Token?.chainId ?: return@LaunchedEffect
+        val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
+        hasSafeWallet = safeWallets.isNotEmpty()
+        safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
     }
 
     val modalSheetState = rememberModalBottomSheetState(
@@ -350,6 +360,19 @@ fun TransferDestinationInputPage(
                                     free = true,
                                     onClick = {
                                         toWallet.invoke(web3Token.walletId)
+                                    },
+                                    isPrivacy = false
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            } else if (hasSafeWallet && safeWalletChainId != null) {
+                                // Show Safe wallet option
+                                DestinationMenu(
+                                    R.drawable.ic_destination_wallet,
+                                    R.string.My_Wallet,
+                                    stringResource(R.string.send_to_my_wallet_description),
+                                    free = true,
+                                    onClick = {
+                                        toWallet.invoke(null)
                                     },
                                     isPrivacy = false
                                 )

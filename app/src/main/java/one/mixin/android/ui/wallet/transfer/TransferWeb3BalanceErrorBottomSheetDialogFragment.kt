@@ -85,7 +85,8 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                             output = asset.assetId,
                             null,
                             null,
-                            inMixin = false
+                            inMixin = false,
+                            walletId = wallet?.id
                         )
                         dismiss()
                     }
@@ -112,7 +113,8 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                                     output = asset.assetId,
                                     null,
                                     null,
-                                    inMixin = false
+                                    inMixin = false,
+                                    walletId = wallet?.id
                                 )
                                 this@TransferWeb3BalanceErrorBottomSheetDialogFragment.dismiss()
                             } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {

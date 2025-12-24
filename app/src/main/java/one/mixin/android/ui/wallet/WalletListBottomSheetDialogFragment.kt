@@ -46,12 +46,17 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.WalletItem
+import one.mixin.android.db.web3.vo.isClassic
 import one.mixin.android.db.web3.vo.isImported
+import one.mixin.android.db.web3.vo.isMixinSafe
+import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
@@ -59,16 +64,19 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
+import one.mixin.android.ui.wallet.components.KEY_HIDE_SAFE_WALLET_INFO
 import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
+import one.mixin.android.ui.wallet.components.WalletCategoryFilter
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletInfoCard
+import one.mixin.android.vo.WalletCategory
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     private val viewModel by viewModels<WalletViewModel>()
-    private var onWalletClickListener: ((Web3Wallet?) -> Unit)? = null
+    private var onWalletClickListener: ((WalletItem?) -> Unit)? = null
     private var onDismissListener: (() -> Unit)? = null
 
     private val excludeWalletId: String? by lazy {
@@ -87,6 +95,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         MixinAppTheme {
             val searchQuery = remember { MutableStateFlow("") }
             val wallets by viewModel.walletsFlow.collectAsState()
+            val allWallets by viewModel.allWalletsFlow.collectAsState()
             LaunchedEffect(Unit) {
                 launch {
                     searchQuery.collect { query ->
@@ -107,7 +116,9 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             }
 
             WalletListScreen(
+                chainId = chainId,
                 wallets = wallets,
+                allWallets = allWallets,
                 excludeWalletId = excludeWalletId,
                 onQueryChanged = { query ->
                     lifecycleScope.launch {
@@ -116,7 +127,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 },
                 onWalletClick = { wallet ->
                     if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
-                        NoKeyWarningBottomSheetDialogFragment.newInstance(wallet).apply {
+                        NoKeyWarningBottomSheetDialogFragment.newInstance(wallet.toWeb3Wallet()).apply {
                             onConfirm = {
                                 this@WalletListBottomSheetDialogFragment.onWalletClickListener?.invoke(wallet)
                                 this@WalletListBottomSheetDialogFragment.dismiss()
@@ -138,7 +149,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
     }
 
-    fun setOnWalletClickListener(listener: (Web3Wallet?) -> Unit) {
+    fun setOnWalletClickListener(listener: (WalletItem?) -> Unit) {
         onWalletClickListener = listener
     }
 
@@ -171,30 +182,49 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
 sealed class WalletListItem {
     object PrivacyWallet : WalletListItem()
-    data class RegularWallet(val wallet: Web3Wallet) : WalletListItem() // common wallet or imported wallet
+    data class RegularWallet(val wallet: WalletItem) : WalletListItem() // common wallet or imported wallet
 }
 
 @Composable
 fun WalletListScreen(
-    wallets: List<Web3Wallet>,
+    chainId:String?,
+    wallets: List<WalletItem>,
+    allWallets: List<WalletItem>,
     excludeWalletId: String?,
     onQueryChanged: (String) -> Unit,
-    onWalletClick: (Web3Wallet?) -> Unit,
+    onWalletClick: (WalletItem?) -> Unit,
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var query by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
+    val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
-    val walletItems = remember(wallets, excludeWalletId, query) {
+    val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
+    val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
+    val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
+    val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
+
+    val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {
         buildList {
-            if (excludeWalletId != null && query.isEmpty()) {
+            if (excludeWalletId != null && query.isEmpty() && selectedCategory == null) {
                 add(WalletListItem.PrivacyWallet)
             }
             wallets.forEach { wallet ->
-                add(WalletListItem.RegularWallet(wallet))
+                val shouldShow = when (selectedCategory) {
+                    null -> true
+                    WalletCategory.MIXIN_SAFE.value -> wallet.isMixinSafe()
+                    WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
+                    "import" -> wallet.isImported()
+                    "watch" -> wallet.isWatch()
+                    else -> true
+                }
+                if (shouldShow) {
+                    add(WalletListItem.RegularWallet(wallet))
+                }
             }
         }
     }
@@ -218,6 +248,15 @@ fun WalletListScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            WalletCategoryFilter(
+                selectedCategory = selectedCategory,
+                hasImported = hasImported,
+                hasWatch = hasWatch,
+                hasSafe = hasSafe,
+                hasCreated = hasCreated,
+                onCategorySelected = { selectedCategory = it }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
                 when (item) {
@@ -248,6 +287,14 @@ fun WalletListScreen(
                                 destination = destination,
                                 onClick = { onWalletClick(wallet) },
                             )
+                        } else if (wallet.isMixinSafe()) {
+                            val destination = WalletDestination.Safe(wallet.id, wallet.isOwner(), wallet.safeChainId, wallet.safeUrl)
+                            WalletCard(
+                                name = wallet.name,
+                                destination = destination,
+                                onClick = { onWalletClick(wallet) },
+                                topArrow = false
+                            )
                         } else {
                             val destination = WalletDestination.Classic(wallet.id)
                             WalletCard(
@@ -264,11 +311,12 @@ fun WalletListScreen(
             }
             Spacer(modifier = Modifier.height(10.dp))
 
-            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value) {
+            if (!hidePrivacyWalletInfo.value || !hideCommonWalletInfo.value || !hideSafeWalletInfo.value) {
                 Spacer(modifier = Modifier.weight(1f))
                 WalletInfoCard(
                     hidePrivacyWalletInfo = hidePrivacyWalletInfo.value,
                     hideCommonWalletInfo = hideCommonWalletInfo.value,
+                    hideSafeWalletInfo = hideSafeWalletInfo.value,
                     onPrivacyClose = {
                         hidePrivacyWalletInfo.value = true
                         prefs.edit { putBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, true) }
@@ -276,6 +324,10 @@ fun WalletListScreen(
                     onCommonClose = {
                         hideCommonWalletInfo.value = true
                         prefs.edit { putBoolean(KEY_HIDE_COMMON_WALLET_INFO, true) }
+                    },
+                    onSafeClose = {
+                        hideSafeWalletInfo.value = true
+                        prefs.edit { putBoolean(KEY_HIDE_SAFE_WALLET_INFO, true) }
                     }
                 )
                 Spacer(modifier = Modifier.height(30.dp))
@@ -303,8 +355,7 @@ fun SearchBar(
                 .weight(1f)
                 .height(44.dp)
                 .background(
-                    color = MixinAppTheme.colors.backgroundWindow,
-                    shape = RoundedCornerShape(24.dp)
+                    color = MixinAppTheme.colors.backgroundWindow, shape = RoundedCornerShape(24.dp)
                 )
                 .padding(horizontal = 12.dp),
             textStyle = TextStyle(

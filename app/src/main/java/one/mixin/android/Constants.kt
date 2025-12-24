@@ -7,6 +7,7 @@ import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.Constants.ChainId.Arbitrum
+import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
@@ -108,6 +109,8 @@ object Constants {
         const val PREF_HAS_USED_SWAP = "pref_has_used_swap"
         const val PREF_HAS_USED_SWAP_TRANSACTION = "pref_has_used_swap_transaction" // -1: No data, 0: Never used, 1: Used before
         const val PREF_HAS_USED_MARKET = "pref_has_used_market"
+
+        const val PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED = "pref_trade_limit_order_badge_dismissed"
 
         const val PREF_USED_WALLET = "pref_used_wallet"
 
@@ -246,7 +249,9 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
+
     val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism)
+    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
@@ -255,6 +260,7 @@ object Constants {
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
         const val SOLANA_CHAIN_ID = "64692c23-8971-4cf4-84a7-4dd1271dd887"
+
         const val LIGHTNING_NETWORK_CHAIN_ID = "59c09123-95cc-3ffd-a659-0f9169074cee"
         const val MixinVirtualMachine = "a0ffd769-5850-4b48-9651-d2ae44a3e64d"
         const val Base = "3fb612c5-6844-3979-ae4a-5a84e79da870"
@@ -270,6 +276,8 @@ object Constants {
         const val BinanceBeaconChain = "17f78d7c-ed96-40ff-980c-5dc62fecbc85"
         const val BitShares = "05891083-63d2-4f3d-bfbe-d14d7fb9b25a"
         const val MobileCoin = "eea900a8-b327-488c-8d8d-1428702fe240"
+
+        const val Avalanche = "1f67ac58-87ba-3571-9781-e9413c046f34"
 
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }

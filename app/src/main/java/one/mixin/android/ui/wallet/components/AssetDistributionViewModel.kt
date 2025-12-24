@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.vo.safe.UnifiedAssetItem
@@ -24,8 +24,8 @@ class AssetDistributionViewModel @Inject constructor(
     private val web3Repository: Web3Repository
 ) : ViewModel() {
 
-    private val _wallets = MutableStateFlow<List<Web3Wallet>>(emptyList())
-    val wallets: StateFlow<List<Web3Wallet>> = _wallets
+    private val _wallets = MutableStateFlow<List<WalletItem>>(emptyList())
+    val wallets: StateFlow<List<WalletItem>> = _wallets
 
     fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {

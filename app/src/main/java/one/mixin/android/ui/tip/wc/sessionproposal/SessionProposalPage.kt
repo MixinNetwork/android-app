@@ -87,7 +87,7 @@ fun SessionProposalPage(
 
     LaunchedEffect(account) {
         try {
-            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account,null)
+            walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account, null)
         } catch (e: Exception) {
             walletDisplayInfo = null
         }

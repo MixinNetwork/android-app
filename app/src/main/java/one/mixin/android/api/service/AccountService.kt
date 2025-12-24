@@ -23,6 +23,7 @@ import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.SchemeResponse
 import one.mixin.android.api.response.SessionSecretResponse
+import one.mixin.android.api.response.UserSafe
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.response.referral.ReferralCodeInfo
 import one.mixin.android.vo.Account
@@ -251,4 +252,7 @@ interface AccountService {
     suspend fun getReferralCodeInfo(
         @Path("code") code: String,
     ): MixinResponse<ReferralCodeInfo>
+
+    @GET("safe/user_accounts")
+    suspend fun getUserAccounts(): MixinResponse<List<UserSafe>>
 }

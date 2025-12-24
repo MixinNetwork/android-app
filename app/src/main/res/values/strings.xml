@@ -303,6 +303,10 @@
     <string name="Create">Create</string>
     <string name="Created">Created %1$s</string>
     <string name="Create_PIN">Create PIN</string>
+    <string name="Wallet_Safe">Safe</string>
+    <string name="Wallet_Created">Created</string>
+    <string name="Wallet_Imported">Imported</string>
+    <string name="Wallet_Watching">Watching</string>
     <string name="created_this_group">%1$s created this group</string>
     <string name="Creating">Creating…</string>
     <string name="Creating_wallet_terminated_unexpectedly">Creating wallet terminated unexpectedly, click \"Continue\" to complete the creation</string>
@@ -363,8 +367,8 @@
     <string name="desktop_login_no_pin">For your account security, please set up the PIN before logging into the desktop app.</string>
     <string name="limited_time_free">Limited-time free</string>
     <string name="cross_wallet_transaction_free_description">During the event, wallet transfers that meet any of the following conditions will receive a full refund of the handling fee:</string>
-    <string name="cross_wallet_transaction_free_condition_1">Private wallet transfer to a regular wallet.</string>
-    <string name="cross_wallet_transaction_free_condition_2">Regular wallet transfer to other regular wallets, private wallets, or contacts.</string>
+    <string name="cross_wallet_transaction_free_condition_1">Private wallet transfer to a regular wallet or Mixin Safe.</string>
+    <string name="cross_wallet_transaction_free_condition_2">Regular wallet transfer to other regular wallets, private wallets, Mixin Safe, or contacts.</string>
     <string name="cross_wallet_transaction_free_refund">The handling fee will be refunded to your private wallet on a monthly basis, based on the actual currency and amount of the handling fee consumed. Read the documentation for more information.</string>
     <string name="more_information">more information</string>
     <string name="url_cross_wallet_transaction_free">https://support.mixin.one/en/article/cross-wallet-transaction-fee-event-1k9b47q</string>
@@ -1043,9 +1047,10 @@
     <string name="Sort">Sort</string>
     <string name="Sort_by">Sort by</string>
     <string name="Start">Start</string>
-    <string name="Stock">Stocks</string>
+    <string name="Stocks">Stocks</string>
     <string name="Start_Messaging">Start Messaging</string>
     <string name="Status">Status</string>
+    <string name="Order_Status">Status</string>
     <string name="Stay_in_Mixin">Stay in Mixin</string>
     <string name="Sticker">Sticker</string>
     <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 1MB, width and height between 128px and 1024px.</string>
@@ -1531,6 +1536,7 @@
     <string name="TRON">TRON</string>
     <string name="Optimism">Optimism</string>
     <string name="Arbitrum">Arbitrum</string>
+    <string name="Avalanche">Avalanche</string>
     <string name="Toncoin">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
@@ -1966,6 +1972,14 @@
     <string name="Privacy_Wallet_Description">A multi-chain wallet with private, free, and instant transactions to meet most of your needs.</string>
     <string name="Whats_Common_Wallet">What\'s the Common Wallet?</string>
     <string name="Common_Wallet_Description">A common multi-chain wallet that accesses decentralized applications and DeFi protocols.</string>
+    <string name="Whats_Safe_Wallet">What\'s the Mixin Safe?</string>
+    <string name="Safe_Wallet_Description">A multi-signature cold wallet based on Bitcoin, Ethereum, and other networks.</string>
+    <string name="Upgrade_Safe_Description">Upgrade to Mixin One to unlock Mixin Safe and securely manage assets with your family, friends, or colleagues.</string>
+    <string name="Create_Safe">Create Safe</string>
+    <string name="Create_Safe_Description">You don\'t have a Safe yet. Create one now and securely manage assets with your family, friends, or colleagues.</string>
+    <string name="Guideline">Guideline</string>
+    <string name="safe_learn_more_url" translatable="false">https://support.mixin.one/en/article/what-is-mixin-safe-g20z2m/</string>
+    <string name="safe_create_guideline_url" translatable="false">https://support.mixin.one/en/article/how-to-create-a-safe-on-mixin-1ehi2mf/</string>
     <string name="Approval">Approval</string>
     <string name="Approved">Approved</string>
     <string name="unlimited">unlimited</string>
@@ -2194,5 +2208,7 @@
     <string name="Wallets_Selected_Count">%1$d Wallets</string>
     <string name="Invitee_Commission">Invitee Commission</string>
     <string name="Inviter">Inviter</string>
+    <string name="Wallet_Owner">Owner</string>
+    <string name="Wallet_Member">Member</string>
     <string name="no_available_quotes_found">No available quotes found. Please try a different token or amount.</string>
 </resources>

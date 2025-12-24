@@ -8,6 +8,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -30,6 +31,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.QuoteColorEvent
@@ -192,14 +194,17 @@ class ClassicWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                                             toast(R.string.Data_error)
                                             return@launch
                                         }
-                                        val wallet = web3ViewModel.findWalletById(walletId)
+                                        val wallet = web3ViewModel.findWalletById(walletId)?.toWeb3Wallet()
                                         val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)
                                         if (wallet == null) {
                                             toast(R.string.Data_error)
                                             return@launch
                                         }
-
-                                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId) ?: return@launch
+                                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                                        if (chain == null) {
+                                            toast(R.string.Data_error)
+                                            return@launch
+                                        }
                                         Timber.e("chain ${chain.name} ${token.chainId} ${chain.chainId}")
                                         WalletActivity.navigateToWalletActivity(this@ClassicWalletFragment.requireActivity(), address?.destination, token, chain, wallet)
                                     }

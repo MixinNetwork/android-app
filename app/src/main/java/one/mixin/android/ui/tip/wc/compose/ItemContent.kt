@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.DrawableRes
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -45,10 +46,12 @@ import one.mixin.android.vo.User
 @Composable
 fun ItemWalletContent(
     title: String,
+    @DrawableRes iconRes: Int = R.drawable.ic_wallet_privacy,
     fontSize: TextUnit = 16.sp,
     padding: Dp = 20.dp,
     walletId: String? = null,
     walletName: String? = null,
+    isWalletOwner: Boolean? = null,
 ) {
     Column(
         modifier =
@@ -70,12 +73,24 @@ fun ItemWalletContent(
                 fontSize = fontSize,
             )
             Spacer(modifier = Modifier.width(4.dp))
-            if (walletId == null) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(20.dp)
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp)
+            )
+            if (isWalletOwner != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = stringResource(if (isWalletOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
+                    color = if (isWalletOwner) Color.White else MixinAppTheme.colors.textRemarks,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .background(
+                            color = if (isWalletOwner) MixinAppTheme.colors.walletOrange.copy(0.3f) else MixinAppTheme.colors.backgroundGrayLight,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 4.dp)
                 )
             }
         }

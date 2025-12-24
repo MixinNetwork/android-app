@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
@@ -54,6 +55,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.safeNavigateUp
@@ -99,6 +101,8 @@ class TradeFragment : BaseFragment() {
         const val DefaultSlippage = 100
 
         const val maxLeftAmount = 0.01
+
+        private const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -163,9 +167,14 @@ class TradeFragment : BaseFragment() {
     ): View {
         initAmount()
         lifecycleScope.launch {
+            val chainIds = walletId?.let {
+                swapViewModel.getAddresses(it).map {
+                    it.chainId
+                }
+            }
             initFromTo()
-            refreshTokens()
-            refreshStocks()
+            refreshTokens(chainIds)
+            refreshStocks(chainIds)
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -203,6 +212,20 @@ class TradeFragment : BaseFragment() {
                     ) {
                         composable(TradeDestination.Swap.name) {
                             startOrdersPolling()
+                            val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+                            val initialTabIndex = remember(currentWalletId) {
+                                val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
+                                defaultSharedPreferences.getInt(preferenceKey, 0)
+                            }
+                            val openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true
+                            var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
+                                mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
+                            }
+
+                            if (openLimit && !isLimitOrderTabBadgeDismissed) {
+                                isLimitOrderTabBadgeDismissed = true
+                                defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                            }
                             TradePage(
                                 walletId = walletId,
                                 swapFrom = fromToken,
@@ -211,10 +234,11 @@ class TradeFragment : BaseFragment() {
                                 limitTo = limitToToken,
                                 inMixin = inMixin(),
                                 orderBadge = orderBadge,
+                                isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
-                                openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true,
+                                initialTabIndex = if (openLimit) 1 else initialTabIndex,
                                 source = getSource(),
                                 onSelectToken = { isReverse, type, isLimit ->
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
@@ -222,6 +246,16 @@ class TradeFragment : BaseFragment() {
                                     } else {
                                         selectCallback(swapTokens, isReverse, type, isLimit)
                                     }
+                                },
+                                onDismissLimitOrderTabBadge = {
+                                    if (!isLimitOrderTabBadgeDismissed) {
+                                        isLimitOrderTabBadgeDismissed = true
+                                        defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
+                                    }
+                                },
+                                onTabChanged = { index ->
+                                    val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
+                                    defaultSharedPreferences.putInt(preferenceKey, index)
                                 },
                                 onReview = { quote, from, to, amount ->
                                     AnalyticsTracker.trackTradePreview()
@@ -643,7 +677,8 @@ class TradeFragment : BaseFragment() {
             toToken = tempToToken
         }
     }
-    private suspend fun refreshStocks() {
+    private suspend fun refreshStocks(chainIds: List<String>?) {
+        val chainIdSet: Set<String>? = chainIds?.toSet()?.takeIf { it.isNotEmpty() }
         requestRouteAPI(
             invokeNetwork = { swapViewModel.web3Tokens(getSource(), category = "stock") },
             successBlock = { resp ->
@@ -653,7 +688,7 @@ class TradeFragment : BaseFragment() {
             failureBlock = { r ->
                 if (r.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                    refreshStocks()
+                    refreshStocks(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
                     alertDialogBuilder()
                         .setTitle(R.string.Update_Mixin)
@@ -670,8 +705,15 @@ class TradeFragment : BaseFragment() {
                 }
                 return@requestRouteAPI true
             },
-        )?.let { remote ->
-            stocks = remote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
+        )?.let { remote: List<SwapToken> ->
+            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+                remote
+            } else {
+                remote.filter { token: SwapToken ->
+                    chainIdSet.contains(token.chain.chainId)
+                }
+            }
+            stocks = filteredRemote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
                 val t = web3tokens?.firstOrNull { web3Token ->
                     (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
                 } ?: return@map token
@@ -683,7 +725,8 @@ class TradeFragment : BaseFragment() {
             }
         }
     }
-    private suspend fun refreshTokens() {
+    private suspend fun refreshTokens(chainIds: List<String>?) {
+        val chainIdSet: Set<String>? = chainIds?.toSet()?.takeIf { it.isNotEmpty() }
         requestRouteAPI(
             invokeNetwork = { swapViewModel.web3Tokens(getSource()) },
             successBlock = { resp ->
@@ -693,7 +736,7 @@ class TradeFragment : BaseFragment() {
             failureBlock = { r ->
                 if (r.errorCode == 401) {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                    refreshTokens()
+                    refreshTokens(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
                     alertDialogBuilder()
                         .setTitle(R.string.Update_Mixin)
@@ -710,9 +753,16 @@ class TradeFragment : BaseFragment() {
                 }
                 return@requestRouteAPI true
             },
-        )?.let { remote ->
+        )?.let { remote: List<SwapToken> ->
+            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+                remote
+            } else {
+                remote.filter { token: SwapToken ->
+                    chainIdSet.contains(token.chain.chainId)
+                }
+            }
             if (!inMixin()) {
-                remoteSwapTokens = remote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
+                remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
                     val t = web3tokens?.firstOrNull { web3Token ->
                         (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
                     } ?: return@map token
@@ -737,7 +787,7 @@ class TradeFragment : BaseFragment() {
                     (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
                 }
             } else {
-                remoteSwapTokens = remote.map { token ->
+                remoteSwapTokens = filteredRemote.map { token ->
                     val t = tokenItems?.firstOrNull { tokenItem ->
                         tokenItem.assetId == token.assetId
                     } ?: return@map token
@@ -793,7 +843,7 @@ class TradeFragment : BaseFragment() {
 
     private fun getPreferenceKey(isLimit: Boolean): String {
         return if (isLimit) {
-            if (inMixin()) PREF_LIMIT_SWAP_LAST_PAIR else "${PREF_WEB3_LIMIT_SWAP_LAST_PAIR} ${Web3Signer.currentWalletId}"
+            if (inMixin()) PREF_LIMIT_SWAP_LAST_PAIR else "$PREF_WEB3_LIMIT_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"
         } else {
             if (inMixin()) PREF_SWAP_LAST_PAIR else "$PREF_WEB3_SWAP_LAST_PAIR ${Web3Signer.currentWalletId}"
         }

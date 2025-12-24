@@ -115,6 +115,7 @@ import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshSafeAccountsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
@@ -539,7 +540,7 @@ class MainActivity : BlazeBaseActivity() {
             }
 
             jobManager.addJobInBackground(RefreshContactJob())
-
+            jobManager.addJobInBackground(RefreshSafeAccountsJob())
 
             if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
                 lifecycleScope.launch {

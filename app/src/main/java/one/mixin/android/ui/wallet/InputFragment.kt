@@ -495,7 +495,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 val trace = (assetBiometricItem as? WithdrawBiometricItem)?.traceId ?: UUID.randomUUID().toString()
                                 val networkFee = NetworkFee(feeItem, currentFee?.fee ?: "0")
                                 val toWallet = web3ViewModel.anyAddressExists(listOf(address.destination))
-                                val (_, index) = web3ViewModel.checkAddressAndGetDisplayName(address.destination, null, chainId = chainId) ?: Pair(null, 0)
+                                val (_, index, isSafeWalletOwner) = web3ViewModel.checkAddressAndGetDisplayName(address.destination, null, chainId = chainId) ?: Triple(null, 0, null)
                                 val withdrawBiometricItem = WithdrawBiometricItem(
                                     address,
                                     networkFee,
@@ -507,7 +507,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     PaymentStatus.pending.name,
                                     null,
                                     toWallet,
-                                    isFeeWaived = index == 3
+                                    isFeeWaived = index == 1 || index == 2 || index == 4,  // Privacy(1), Safe(2), Fee-free(4)
+                                    isSafeWallet = index == 2,
+                                    isSafeWalletOwner = isSafeWalletOwner,
                                 )
 
                                 prepareCheck(withdrawBiometricItem)
@@ -542,7 +544,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     isFeeWaived = isFeeWaived,
                                     onTxhash = { _, serializedTx ->
                                     },
-                                    onDismiss = { isDone->
+                                    onDismiss = { isDone ->
                                         if (isDone) {
                                             val navController = findNavController()
                                             val backStackEntryCount = parentFragmentManager.backStackEntryCount
@@ -701,8 +703,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun renderTitle(toAddress: String, tag: String? = null) {
         lifecycleScope.launch {
-            val (label, index) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Pair(null, 0)
-            isFeeWaived = index == 1 || index == 3
+            val (label, index, _) = web3ViewModel.checkAddressAndGetDisplayName(requireNotNull(toAddress), tag, requireNotNull(token?.chainId ?: web3Token?.chainId)) ?: Triple(null, 0, null)
+            isFeeWaived = index == 1 || index == 2 || index == 4  // Privacy(1), Safe(2), Fee-free(4)
             binding.titleView.setLabel(
                 getString(R.string.Send_To_Title),
                 label,

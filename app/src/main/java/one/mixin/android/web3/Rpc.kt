@@ -1,5 +1,6 @@
 package one.mixin.android.web3
 
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.api.handleMixinResponse
@@ -9,7 +10,6 @@ import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.web3.js.Web3Signer
 import org.sol4k.PublicKey
 import org.sol4k.api.AccountInfo
-import org.sol4k.rpc.TokenAmount
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
@@ -136,3 +136,11 @@ class Rpc(
         )
     }
 }
+
+// waiting for org.sol4k.rpc.TokenAmount fix type of amount
+@Serializable
+data class TokenAmount(
+    val amount: String,
+    val decimals: Int,
+    val uiAmountString: String,
+)
