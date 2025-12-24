@@ -11,12 +11,14 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityLandingBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_CHANGE_PHONE_ACCOUNT
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 import javax.inject.Inject
@@ -53,7 +55,9 @@ class LandingActivity : BaseActivity() {
     private val binding by viewBinding(ActivityLandingBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         super.onCreate(savedInstanceState)
+        SystemUIManager.setSafePadding(window, color = colorFromAttribute(R.attr.bg_white), imePadding = true, onlyStatus = true)
         checkVersion()
         setContentView(binding.root)
         val pin = intent.getStringExtra(ARGS_PIN)
