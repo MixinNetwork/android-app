@@ -377,7 +377,7 @@ class TransferContent : LinearLayout {
             safeReceives.isVisible = true
             safeSender.setContent(R.string.Sender, safeAccount.address, selectable = true)
             safeSender.isVisible = true
-            safe.setContent(R.string.SAFE, safeAccount.name)
+            safe.setContent(R.string.SAFE, safeAccount.name, R.drawable.ic_wallet_safe, safeAccount.role)
             safe.isVisible = true
             network.isVisible = false
         }

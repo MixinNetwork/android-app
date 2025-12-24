@@ -250,11 +250,11 @@ fun WalletCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = stringResource(if (destination.isOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
-                            color = MixinAppTheme.colors.textRemarks,
+                            color = if (destination.isOwner) Color.White else MixinAppTheme.colors.textRemarks,
                             fontSize = 12.sp,
                             modifier = Modifier
                                 .background(
-                                    color = MixinAppTheme.colors.backgroundGrayLight,
+                                    color = if (destination.isOwner) MixinAppTheme.colors.walletOrange.copy(0.3f) else MixinAppTheme.colors.backgroundGrayLight,
                                     shape = RoundedCornerShape(4.dp)
                                 )
                                 .padding(horizontal = 4.dp)

@@ -44,6 +44,7 @@ class AppColors(
     val tipError: Color = Color(0xFFF67070),
     val walletRed: Color = Color(0xFFF67070),
     val walletGreen: Color = Color(0xFF50BD5C),
+    val walletOrange: Color = Color(0xFFFFAA00),
     val marketRed: Color = if (isP3Supported) Color(
         colorSpace = ColorSpaces.DisplayP3,
         red = 0.898f,
