@@ -58,7 +58,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         const val POS_RV = 0
         const val POS_EMPTY_RECEIVE = 1
-        const val POS_EMPTY_SEND = 2
 
         const val TYPE_FROM_SEND = 0
         const val TYPE_FROM_RECEIVE = 1
@@ -201,13 +200,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
-            if (fromType == TYPE_FROM_SEND) {
-                depositTv.isVisible = onDeposit != null
-                depositTv.setOnClickListener {
-                    onDeposit?.invoke()
-                    dismiss()
-                }
-            }
 
             @SuppressLint("AutoDispose")
             disposable =
@@ -239,7 +231,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (fromType == TYPE_FROM_SEND) {
                 adapter.submitList(defaultAssets)
                 if (defaultAssets.isEmpty()) {
-                    binding.rvVa.displayedChild = POS_EMPTY_SEND
+                    binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 } else {
                     binding.rvVa.displayedChild = POS_RV
                 }
@@ -297,7 +289,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun loadData() {
         adapter.chain = currentChain
         binding.rvVa.displayedChild = when (adapter.getFilteredTokens().size) {
-            0 if fromType == TYPE_FROM_SEND -> POS_EMPTY_SEND
             0 -> POS_EMPTY_RECEIVE
             else -> POS_RV
         }

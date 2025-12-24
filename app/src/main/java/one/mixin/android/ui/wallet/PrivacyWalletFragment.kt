@@ -138,7 +138,7 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                             .setOnAssetClick {
                                 WalletActivity.navigateToWalletActivity(this@PrivacyWalletFragment.requireActivity(), it)
                             }.setOnDepositClick {
-                                showReceiveAssetList()
+                                // do nothing
                             }
                             .showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                     }
