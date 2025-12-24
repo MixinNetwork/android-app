@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet.transfer.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
@@ -12,7 +13,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferReceiveContentBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.vo.User
 
 class TransferContentReceiveItem : LinearLayout {
@@ -55,6 +58,39 @@ class TransferContentReceiveItem : LinearLayout {
     @SuppressLint("SetTextI18n")
     fun setContent(
         @StringRes titleRes: Int,
+        label: String,
+        @DrawableRes iconRes: Int,
+        role: String?,
+    ) {
+        _binding.apply {
+            title.text = context.getString(titleRes).uppercase()
+            userContainer.isVisible = false
+            privacyContainer.isVisible = true
+            privacyTv.text = label
+            val drawable = ContextCompat.getDrawable(context, iconRes)
+            drawable?.setBounds(0, 0, 22.dp, 22.dp)
+            privacyTv.compoundDrawablePadding = 4.dp
+            privacyTv.setCompoundDrawablesRelative(null, null, drawable, null)
+            if (role.isNullOrBlank()) {
+                roleTv.isVisible = false
+            } else {
+                roleTv.isVisible = true
+                roleTv.setBackgroundResource(R.drawable.bg_round_4_solid_light_gray)
+                roleTv.setTextColor(roleTv.context.colorAttr(R.attr.text_remarks))
+                roleTv.setText(
+                    if (role.equalsIgnoreCase("owner")) {
+                        R.string.Wallet_Owner
+                    } else {
+                        R.string.Wallet_Member
+                    }
+                )
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun setContent(
+        @StringRes titleRes: Int,
         privacy: Boolean = true
     ) {
         _binding.apply {
@@ -88,6 +124,13 @@ class TransferContentReceiveItem : LinearLayout {
             privacyTv.setCompoundDrawablesRelative(null, null, drawable, null)
             if (isWalletOwner != null) {
                 roleTv.isVisible = true
+                if (isWalletOwner) {
+                    roleTv.setBackgroundResource(R.drawable.bg_round_4_solid_orange)
+                    roleTv.setTextColor(Color.WHITE)
+                } else {
+                    roleTv.setBackgroundResource(R.drawable.bg_round_4_solid_light_gray)
+                    roleTv.setTextColor(roleTv.context.colorAttr(R.attr.text_remarks))
+                }
                 roleTv.setText(if (isWalletOwner) R.string.Wallet_Owner else R.string.Wallet_Member)
             } else {
                 roleTv.isVisible = false
