@@ -129,6 +129,8 @@ android {
         }
     }
 
+    testBuildType "debug"
+
     signingConfigs {
         debug {
             storeFile file('keys/debug.keystore')
@@ -136,6 +138,7 @@ android {
             keyAlias 'AndroidDebugKey'
             keyPassword 'android'
         }
+
         if (project.hasProperty("RELEASE_STORE_FILE")) {
             release {
                 keyAlias "${RELEASE_KEY_ALIAS}"
@@ -146,7 +149,6 @@ android {
         }
     }
 
-    testBuildType "staging"
 
     buildTypes {
         release {
