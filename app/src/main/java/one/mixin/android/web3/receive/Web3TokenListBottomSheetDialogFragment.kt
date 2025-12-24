@@ -34,7 +34,6 @@ import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.RecentTokens
@@ -124,15 +123,15 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     }
 
                     R.id.radio_arbritrum -> {
-                        Arbitrum
+                        ChainId.Arbitrum
                     }
 
                     R.id.radio_optimism -> {
-                        Optimism
+                        ChainId.Optimism
                     }
 
                     R.id.radio_toncoin -> {
-                        TON_CHAIN_ID
+                        ChainId.TON_CHAIN_ID
                     }
 
                     R.id.radio_avalanche -> {
