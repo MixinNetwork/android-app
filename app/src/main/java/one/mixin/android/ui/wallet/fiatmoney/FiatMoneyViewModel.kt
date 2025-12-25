@@ -34,8 +34,10 @@ import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentsUtil
 import one.mixin.android.vo.Card
@@ -218,9 +220,11 @@ class FiatMoneyViewModel
             tokenRepository.rampWebUrl(
                 RampWebUrlRequest(
                     amount = amount,
-                    asset_id = assetId,
+                    assetId = assetId,
                     currency = currency,
-                    destination = destination
+                    destination = destination,
+                    phone = Session.getAccount()?.phone,
+                    phoneVerifiedAt = Session.getAccount()?.phoneVerifiedAt,
                 )
             )
 
