@@ -34,7 +34,6 @@ import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
