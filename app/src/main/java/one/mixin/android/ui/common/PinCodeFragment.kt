@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
+import one.mixin.android.extension.hideKeyboard
 
 abstract class PinCodeFragment(
     @LayoutRes contentLayoutId: Int,
@@ -66,6 +68,15 @@ abstract class PinCodeFragment(
         verificationKeyboard.setOnClickKeyboardListener(mKeyboardListener)
         verificationCover.isClickable = true
         verificationNextFab.setOnClickListener { clickNextFab() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        requireActivity().currentFocus?.clearFocus()
+        requireActivity().hideKeyboard()
+        verificationCover.requestFocus()
+        verificationCover.hideKeyboard()
     }
 
     protected fun handleFailure(r: MixinResponse<*>) {
