@@ -44,15 +44,30 @@ interface Web3AddressDao : BaseDao<Web3Address> {
     suspend fun addressMatch(address: String): Boolean
 
     @Query("""
-        SELECT w.* FROM (${Web3WalletDao.WALLET_ITEM_QUERY}) w 
+                  SELECT w.* FROM (            SELECT wallet_id AS id, category, name, created_at AS createdAt, updated_at AS updatedAt, 
+                   NULL AS safeRole, NULL AS safeChainId, NULL AS safeAddress, NULL AS safeUrl 
+            FROM wallets
+            UNION ALL
+            SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
+                   role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
+            FROM safe_wallets
+) w 
         INNER JOIN addresses a ON w.id = a.wallet_id 
         WHERE a.destination = :destination LIMIT 1
     """)
     suspend fun getWalletByDestination(destination: String): WalletItem?
 
-    @Query("""
-        SELECT * FROM (${Web3WalletDao.WALLET_ITEM_QUERY}) w 
-        WHERE w.safeAddress = :destination AND w.safeChainId = :chainId LIMIT 1
+@Query("""
+        SELECT * FROM (            SELECT wallet_id AS id, category, name, created_at AS createdAt, updated_at AS updatedAt, 
+                   NULL AS safeRole, NULL AS safeChainId, NULL AS safeAddress, NULL AS safeUrl 
+            FROM wallets
+            UNION ALL
+            SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
+                   role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
+            FROM safe_wallets
+) w 
+ WHERE w.safeAddress = :destination AND w.safeChainId = :chainId LIMIT 1
+
     """)
-    suspend fun getWalletByAddress(destination: String, chainId: String): WalletItem?
+suspend fun getWalletByAddress(destination: String, chainId: String): WalletItem?
 }
