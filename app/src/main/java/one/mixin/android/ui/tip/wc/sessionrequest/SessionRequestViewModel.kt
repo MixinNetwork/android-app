@@ -118,7 +118,7 @@ class SessionRequestViewModel
                 }
 
                 if (chainId != null) {
-                    val wallet = web3Repository.getWalletByAddress(destination, chainId)
+                    val wallet = web3Repository.getSafeWalletByAddress(destination, chainId)
                     if (wallet != null) {
                         val isOwner: Boolean = wallet.isOwner()
                         return@withContext Triple(wallet.name, 2, isOwner) // Safe Wallet

@@ -43,31 +43,25 @@ interface Web3AddressDao : BaseDao<Web3Address> {
     @Query("SELECT EXISTS(SELECT 1 FROM addresses WHERE destination = :address)")
     suspend fun addressMatch(address: String): Boolean
 
-    @Query("""
-                  SELECT w.* FROM (            SELECT wallet_id AS id, category, name, created_at AS createdAt, updated_at AS updatedAt, 
-                   NULL AS safeRole, NULL AS safeChainId, NULL AS safeAddress, NULL AS safeUrl 
-            FROM wallets
-            UNION ALL
-            SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
-                   role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
-            FROM safe_wallets
-) w 
-        INNER JOIN addresses a ON w.id = a.wallet_id 
-        WHERE a.destination = :destination LIMIT 1
-    """)
-    suspend fun getWalletByDestination(destination: String): WalletItem?
+    @Query(
+        """
+        SELECT wallet_id AS id, category, name, created_at AS createdAt, updated_at AS updatedAt,
+               NULL AS safeRole, NULL AS safeChainId, NULL AS safeAddress, NULL AS safeUrl
+        FROM wallets
+        WHERE wallet_id IN (SELECT wallet_id FROM addresses WHERE destination = :destination)
+        LIMIT 1
+        """,
+    )
+    suspend fun getWalletByDestination(destination: String): WalletItem? // Only find with wallets
 
-@Query("""
-        SELECT * FROM (            SELECT wallet_id AS id, category, name, created_at AS createdAt, updated_at AS updatedAt, 
-                   NULL AS safeRole, NULL AS safeChainId, NULL AS safeAddress, NULL AS safeUrl 
-            FROM wallets
-            UNION ALL
-            SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
-                   role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
-            FROM safe_wallets
-) w 
- WHERE w.safeAddress = :destination AND w.safeChainId = :chainId LIMIT 1
-
-    """)
-suspend fun getWalletByAddress(destination: String, chainId: String): WalletItem?
+    @Query(
+        """
+        SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
+               role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
+        FROM safe_wallets
+        WHERE address = :destination AND chain_id = :chainId
+        LIMIT 1
+        """,
+    )
+    suspend fun getSafeWalletByAddress(destination: String, chainId: String): WalletItem? // Only find with safe_wallets
 }
