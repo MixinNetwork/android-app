@@ -24,9 +24,9 @@ class SurpriseLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout
 
     companion object {
         // Christmas and new year
-        val christmas = System.currentTimeMillis() in 1734969600000..1735920000000
+        val christmas = System.currentTimeMillis() in 1766505600000..1767456000000
 
         // Lunar New Year
-        val lunarNewYear = System.currentTimeMillis() in 1737993600000..1738684800000
+        val lunarNewYear = System.currentTimeMillis() in 1771257600000..1771948800000
     }
 }
