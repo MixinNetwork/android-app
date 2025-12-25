@@ -35,6 +35,7 @@ class SurpriseLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout
             val christmasBase = Calendar.getInstance().apply {
                 clear()
                 set(year, Calendar.DECEMBER, 25, 0, 0, 0)
+                set(Calendar.MILLISECOND, 0)
             }
             val start = christmasBase.timeInMillis - MILLIS_PER_DAY
             val end = christmasBase.timeInMillis + MILLIS_PER_DAY * 10
@@ -55,6 +56,10 @@ class SurpriseLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout
                         set(ChineseCalendar.EXTENDED_YEAR, year)
                         set(ChineseCalendar.MONTH, 0)
                         set(ChineseCalendar.DAY_OF_MONTH, 1)
+                        set(ChineseCalendar.HOUR_OF_DAY, 0)
+                        set(ChineseCalendar.MINUTE, 0)
+                        set(ChineseCalendar.SECOND, 0)
+                        set(ChineseCalendar.MILLISECOND, 0)
                     }
                     val start = newYearDay.timeInMillis
                     val end = start + 6 * MILLIS_PER_DAY
@@ -66,6 +71,10 @@ class SurpriseLinearLayout(context: Context, attrs: AttributeSet) : LinearLayout
                         set(ChineseCalendar.EXTENDED_YEAR, year + 1)
                         set(ChineseCalendar.MONTH, 0)
                         set(ChineseCalendar.DAY_OF_MONTH, 1)
+                        set(ChineseCalendar.HOUR_OF_DAY, 0)
+                        set(ChineseCalendar.MINUTE, 0)
+                        set(ChineseCalendar.SECOND, 0)
+                        set(ChineseCalendar.MILLISECOND, 0)
                     }
                     val start = nextYearDay.timeInMillis - MILLIS_PER_DAY
                     val end = nextYearDay.timeInMillis
