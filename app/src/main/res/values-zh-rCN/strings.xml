@@ -1918,6 +1918,14 @@
     <string name="For_your_security">为了您的安全，请输入您的密码</string>
     <string name="Privacy_Wallet">隐私钱包</string>
     <string name="Other">其他</string>
+    <string name="classic_wallet_btc_intro_title">普通钱包现已支持比特币</string>
+    <string name="classic_wallet_btc_feature_decentralized_title">去中心化</string>
+    <string name="classic_wallet_btc_feature_decentralized_desc">完全去中心化的钱包，你掌控私钥。</string>
+    <string name="classic_wallet_btc_feature_seamless_title">无缝体验</string>
+    <string name="classic_wallet_btc_feature_seamless_desc">闪电般的交互体验，页面加载与响应更迅速。</string>
+    <string name="classic_wallet_btc_feature_compatibility_title">兼容性</string>
+    <string name="classic_wallet_btc_feature_compatibility_desc">支持从其他钱包导入私钥与观察地址。</string>
+    <string name="classic_wallet_btc_unlock_by_pin">使用 PIN 解锁</string>
     <string name="Total_Balance">所有资产</string>
     <string name="total_balance_tip">观察钱包、隐藏的资产不计入统计</string>
     <string name="Delete_Web3_Transactions">删除 Web3 交易数据</string>

@@ -8,12 +8,16 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
+import org.bitcoinj.base.BitcoinNetwork
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.ECKey
 import org.sol4k.Keypair
 import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.utils.Numeric
+import java.math.BigInteger
 
 const val TAG_TIP_SIGN = "TIP_sign"
 
@@ -115,6 +119,20 @@ fun tipPrivToPrivateKey(
     val masterKeyPair = Bip32ECKeyPair.generateKeyPair(priv)
 
     when (chainId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> {
+            val bip84KeyPair = generateBip44Key(masterKeyPair, Bip44Path.bitcoinSegwit(index))
+            val privateKeyBytes: ByteArray = Numeric.toBytesPadded(bip84KeyPair.privateKey, 32)
+            if (index == 0) {
+                val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+                val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
+                val addressString: String = address.toString()
+                val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(priv.hexString())
+                if (addressFromGo != addressString) {
+                    throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
+                }
+            }
+            return privateKeyBytes
+        }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString(), Bip44Path.solanaPathString(index))
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
@@ -126,11 +144,6 @@ fun tipPrivToPrivateKey(
             }
             return kp.secret
         }
-
-//        Constants.ChainId.BITCOIN_CHAIN_ID -> {
-//
-//        }
-
         else -> {
             val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString(), Bip44Path.ethereumPathString(index))
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.ethereum(index))
@@ -159,6 +172,18 @@ fun privateKeyToAddress(
                 throw IllegalArgumentException("Generate illegal Address")
             }
             return address
+        }
+        Constants.ChainId.BITCOIN_CHAIN_ID -> {
+            val bip84KeyPair = generateBip44Key(masterKeyPair, Bip44Path.bitcoinSegwit(index))
+            val privateKeyBytes: ByteArray = Numeric.toBytesPadded(bip84KeyPair.privateKey, 32)
+            val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+            val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
+            val addressString: String = address.toString()
+            val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(priv.hexString())
+            if (addressFromGo != addressString) {
+                throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
+            }
+            return addressString
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))

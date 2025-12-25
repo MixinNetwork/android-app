@@ -74,6 +74,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
@@ -1772,10 +1773,22 @@ class BottomSheetViewModel
             context: Context,
             pin: String,
             chainId: String,
+            index: Int = 0
         ): String {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return privateKeyToAddress(spendKey, chainId)
+            return privateKeyToAddress(spendKey, chainId, index)
+        }
+
+        suspend fun getTipPrivateKey(
+            context: Context,
+            pin: String,
+            chainId: String,
+            index: Int = 0,
+        ): ByteArray {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
+            return tipPrivToPrivateKey(spendKey, chainId, index)
         }
 
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
