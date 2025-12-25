@@ -10,6 +10,7 @@ import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowManager
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -226,6 +227,15 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        requireActivity().currentFocus?.clearFocus()
+        requireActivity().hideKeyboard()
+        binding.mobileEt.requestFocus()
+        binding.mobileEt.hideKeyboard()
     }
 
     private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {

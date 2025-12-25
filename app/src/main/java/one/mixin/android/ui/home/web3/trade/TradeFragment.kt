@@ -92,8 +92,8 @@ class TradeFragment : BaseFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
+
         const val ARGS_WALLET_ID = "args_wallet_id"
-        const val ARGS_OPEN_LIMIT = "args_open_limit"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -102,7 +102,7 @@ class TradeFragment : BaseFragment() {
 
         const val maxLeftAmount = 0.01
 
-        private const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
+        const val PREF_TRADE_SELECTED_TAB_PREFIX: String = "pref_trade_selected_tab_"
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -111,7 +111,6 @@ class TradeFragment : BaseFragment() {
             inMixin: Boolean = true,
             referral: String? = null,
             walletId: String? = null,
-            openLimit: Boolean = false,
         ): TradeFragment =
             TradeFragment().withArgs {
                 input?.let { putString(ARGS_INPUT, it) }
@@ -120,7 +119,6 @@ class TradeFragment : BaseFragment() {
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
-                putBoolean(ARGS_OPEN_LIMIT, openLimit)
             }
     }
 
@@ -217,12 +215,11 @@ class TradeFragment : BaseFragment() {
                                 val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
                                 defaultSharedPreferences.getInt(preferenceKey, 0)
                             }
-                            val openLimit = arguments?.getBoolean(ARGS_OPEN_LIMIT, false) == true
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
                                 mutableStateOf(defaultSharedPreferences.getBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, false))
                             }
 
-                            if (openLimit && !isLimitOrderTabBadgeDismissed) {
+                            if (!isLimitOrderTabBadgeDismissed) {
                                 isLimitOrderTabBadgeDismissed = true
                                 defaultSharedPreferences.putBoolean(Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED, true)
                             }
@@ -238,7 +235,7 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
-                                initialTabIndex = if (openLimit) 1 else initialTabIndex,
+                                initialTabIndex = initialTabIndex,
                                 source = getSource(),
                                 onSelectToken = { isReverse, type, isLimit ->
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
