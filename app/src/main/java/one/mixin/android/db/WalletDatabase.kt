@@ -60,46 +60,46 @@ abstract class WalletDatabase : RoomDatabase() {
         private lateinit var supportSQLiteDatabase: SupportSQLiteDatabase
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP TABLE IF EXISTS transactions")
-                database.execSQL("DELETE FROM properties") // delete old offset
-                database.execSQL(
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS transactions")
+                db.execSQL("DELETE FROM properties") // delete old offset
+                db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `transactions` (`transaction_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`, `chain_id`, `address`))
                     """
                 )
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_address_transaction_at` ON `transactions` (`address`, `transaction_at`)")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_address_transaction_at` ON `transactions` (`address`, `transaction_at`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`)")
             }
         }
 
         val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE tokens ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.VERIFIED}")
-                database.execSQL("ALTER TABLE transactions ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.UNKNOWN}")
-                database.execSQL("DELETE FROM properties WHERE `key` IN (SELECT DISTINCT destination FROM addresses)") // delete old offset
-                database.execSQL("DROP INDEX IF EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at`")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at_level` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`, `level`)")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE tokens ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.VERIFIED}")
+                db.execSQL("ALTER TABLE transactions ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.UNKNOWN}")
+                db.execSQL("DELETE FROM properties WHERE `key` IN (SELECT DISTINCT destination FROM addresses)") // delete old offset
+                db.execSQL("DROP INDEX IF EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at`")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at_level` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`, `level`)")
             }
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT")
             }
         }
 
         val MIGRATION_4_5 = object : Migration(4, 5) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `orders` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `orders` (`state`, `created_at`)")
-                database.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `orders` (`order_type`, `created_at`)")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `orders` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `orders` (`state`, `created_at`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `orders` (`order_type`, `created_at`)")
             }
         }
 
         val MIGRATION_5_6 = object : Migration(5, 6) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(" CREATE TABLE IF NOT EXISTS `safe_wallets` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `safe_wallets` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))")
             }
         }
 
