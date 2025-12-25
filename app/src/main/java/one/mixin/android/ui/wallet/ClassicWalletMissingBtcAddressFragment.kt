@@ -8,21 +8,22 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentClassicWalletMissingBtcAddressIntroBinding
-import one.mixin.android.extension.toHex
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.session.Session
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.util.encodeToBase58WithChecksum
 import one.mixin.android.util.viewBinding
-import org.web3j.utils.Numeric
+import org.bitcoinj.crypto.ECKey
 import timber.log.Timber
+import java.math.BigInteger
+import java.time.Instant
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -67,40 +68,60 @@ class ClassicWalletMissingBtcAddressFragment : Fragment(R.layout.fragment_classi
             Timber.d("$TAG no classic wallets, skip")
             return true
         }
-        Timber.d("$TAG getTipAddress start chainId=${Constants.ChainId.BITCOIN_CHAIN_ID}")
-        val btcAddress: String = bottomViewModel.getTipAddress(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
-        Timber.d("$TAG getTipAddress success btcAddress=$btcAddress")
-        val updateRequest = WalletRequest(
-            name = null,
-            category = null,
-            addresses = listOf(
-                Web3AddressRequest(
-                    destination = btcAddress,
-                    chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
-                    path = Bip44Path.bitcoinSegwitPathString(),
-                ),
-            ),
-        )
-        Timber.d("$TAG updateRequest.addresses=${updateRequest.addresses}")
-        Timber.w("$TAG wallet update logic is currently disabled (commented out). No updateWallet/getWalletAddresses/insert will be executed.")
-//        classicWallets.forEach { walletItem ->
-//            val hasBtcAddress: Boolean = web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) != null
-//            if (hasBtcAddress) return@forEach
-//            val updateResponse = web3Repository.updateWallet(walletItem.id, updateRequest)
-//            if (updateResponse.isSuccess.not()) {
-//                return false
-//            }
-//            val addressesResponse = web3Repository.routeService.getWalletAddresses(walletItem.id)
-//            if (addressesResponse.isSuccess.not() || addressesResponse.data.isNullOrEmpty()) {
-//                return false
-//            }
-//            web3Repository.insertAddressList(addressesResponse.data!!)
-//        }
-        classicWallets.forEach { walletItem ->
+        for (walletItem in classicWallets) {
             val hasBtcAddress: Boolean = web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) != null
             Timber.d("$TAG walletId=${walletItem.id} hasBtcAddress=$hasBtcAddress")
+            if (hasBtcAddress) {
+                continue
+            }
+            val localAddresses = web3Repository.getAddresses(walletItem.id)
+            val localPath: String? = localAddresses.firstOrNull { it.path.isNullOrBlank().not() }?.path
+            val derivationIndex: Int = localPath?.let { CryptoWalletHelper.extractIndexFromPath(it) } ?: 0
+
+            Timber.d("$TAG walletId=${walletItem.id} localPath=$localPath derivationIndex=$derivationIndex")
+            val btcAddress: String = bottomViewModel.getTipAddress(
+                requireContext(),
+                pin,
+                Constants.ChainId.BITCOIN_CHAIN_ID,
+                derivationIndex,
+            )
+            val now: Instant = Instant.now()
+            val userId: String = requireNotNull(Session.getAccountId())
+            val message = "$btcAddress\n$userId\n${now.epochSecond}"
+            val btcPrivateKey: ByteArray = bottomViewModel.getTipPrivateKey(
+                requireContext(),
+                pin,
+                Constants.ChainId.BITCOIN_CHAIN_ID,
+                derivationIndex,
+            )
+            val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, btcPrivateKey), true)
+            @Suppress("DEPRECATION")
+            val signature: String = ecKey.signMessage(message)
+            Timber.d("$TAG walletId=${walletItem.id} derived btcAddress=$btcAddress")
+            val updateRequest = WalletRequest(
+                name = null,
+                category = null,
+                addresses = listOf(
+                    Web3AddressRequest(
+                        destination = btcAddress,
+                        chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                        path = Bip44Path.bitcoinSegwitPathString(derivationIndex),
+                        signature = signature,
+                        timestamp = now.toString(),
+                    ),
+                ),
+            )
+            Timber.d("$TAG walletId=${walletItem.id} updateRequest.addresses=${updateRequest.addresses}")
+            val updateResponse = web3Repository.updateWallet(walletItem.id, updateRequest)
+            Timber.d(
+                "$TAG walletId=${walletItem.id} updateWallet isSuccess=${updateResponse.isSuccess} errorCode=${updateResponse.errorCode} errorDescription=${updateResponse.errorDescription}",
+            )
+            if (updateResponse.isSuccess.not()) {
+                return false
+            }
+
         }
-        Timber.d("$TAG addBtcAddressIfNeeded end (skipped actual update)")
+        Timber.d("$TAG addBtcAddressIfNeeded end")
         return true
     }
 

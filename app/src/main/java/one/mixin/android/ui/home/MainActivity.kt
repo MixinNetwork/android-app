@@ -1124,10 +1124,10 @@ class MainActivity : BlazeBaseActivity(), ClassicWalletMissingBtcAddressFragment
         return withContext(Dispatchers.IO) {
             val classicWallets = web3Repository.web3WalletDao.getAllClassicWallets()
             if (classicWallets.isEmpty()) return@withContext false
-            val hasAnyBtcAddress: Boolean = classicWallets.any { walletItem ->
-                web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) != null
+            val shouldShowBtcAddress: Boolean = classicWallets.any { walletItem ->
+                web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) == null
             }
-            return@withContext hasAnyBtcAddress.not()
+            return@withContext shouldShowBtcAddress
         }
     }
 
