@@ -16,6 +16,7 @@ fun mockAccount(): Account {
         "",
         "",
         "",
+        "",
         "", // PinToken is AES key encrypted with RSA
         "",
         "",
