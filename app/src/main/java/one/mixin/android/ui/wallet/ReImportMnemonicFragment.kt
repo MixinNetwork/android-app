@@ -27,6 +27,8 @@ import one.mixin.android.ui.landing.components.MnemonicState
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.WalletCategory
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
@@ -62,6 +64,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
         lifecycleScope.launch {
             walletId?.let {
                 evmAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.ETHEREUM_CHAIN_ID)
+                // Solana addresses are derived differently (Ed25519 / Base58), so we validate against a dedicated Solana address entry.
                 solAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.SOLANA_CHAIN_ID)
             }
         }
@@ -78,10 +81,13 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 state = MnemonicState.Import,
                 mnemonicList = scannedMnemonicList,
                 onComplete = { words ->
-                    viewModel.saveWeb3PrivateKey(requireContext(), viewModel.getSpendKey()!!, walletId!!, words)
-                    toast(R.string.Success)
-                    RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.CREATE))
-                    activity?.finish()
+                    lifecycleScope.launch {
+                        viewModel.saveWeb3PrivateKey(requireContext(), viewModel.getSpendKey()!!, walletId!!, words)
+                        validateMnemonicForOtherWallets(words)
+                        toast(R.string.Success)
+                        RxBus.publish(WalletRefreshedEvent(walletId, WalletOperationType.CREATE))
+                        activity?.finish()
+                    }
                 },
                 onScan = { getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true)) },
                 validate = ::validateMnemonic
@@ -107,6 +113,44 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
             }
         }
         return null
+    }
+
+    private suspend fun validateMnemonicForOtherWallets(mnemonic: List<String>) {
+        val mnemonicPhrase: String = mnemonic.joinToString(" ")
+        val currentSpendKey: ByteArray? = viewModel.getSpendKey()
+        val context: Context = requireContext()
+        val wallets = viewModel.getAllNoKeyWallets()
+        wallets.forEach { wallet ->
+            if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
+                val evmAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.ETHEREUM_CHAIN_ID)
+                val solAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.SOLANA_CHAIN_ID)
+                val isEvmMatch: Boolean = evmAddress?.let { address: Web3Address ->
+                    val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
+                    val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.ETHEREUM_CHAIN_ID, "", index)
+                    derivedAddress.equals(address.destination, ignoreCase = true)
+                } ?: false
+                val isSolanaMatch: Boolean = solAddress?.let { address: Web3Address ->
+                    val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
+                    val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.SOLANA_CHAIN_ID, "", index)
+                    derivedAddress.equals(address.destination, ignoreCase = true)
+                } ?: false
+                val isWalletMatch: Boolean = (evmAddress == null || isEvmMatch) && (solAddress == null || isSolanaMatch) && (isEvmMatch || isSolanaMatch)
+                if (!isWalletMatch) {
+                    return@forEach
+                }
+                if (currentSpendKey == null) {
+                    Timber.e("Spend key is null, cannot save wallets.")
+                    return@forEach
+                }
+                val isSaved: Boolean = viewModel.saveWeb3PrivateKey(context, currentSpendKey, wallet.id, mnemonic)
+                if (!isSaved) {
+                    return@forEach
+                }
+                RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.CREATE))
+                Timber.e("Save wallet key: ${wallet.id}")
+                return@forEach
+            }
+        }
     }
 
     companion object {

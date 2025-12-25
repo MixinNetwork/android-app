@@ -42,6 +42,7 @@ import one.mixin.android.extension.appendQueryParamsFromOtherUri
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
@@ -51,6 +52,7 @@ import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -83,6 +85,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -1071,6 +1074,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         } else {
             AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
         }
+        defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", 0)
         SwapActivity.show(requireContext(), input, output, amount, referral)
         dismiss()
     }
@@ -1093,7 +1097,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         } else {
             AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.SCHEMA)
         }
-        SwapActivity.show(requireContext(), input, output, amount, referral, openLimit = openLimit)
+
+        defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}", if (openLimit) 1 else 0)
+        SwapActivity.show(requireContext(), input, output, amount, referral)
         dismiss()
     }
 

@@ -20,15 +20,18 @@ import one.mixin.android.R
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.WalletDatabase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.putInt
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -102,13 +105,18 @@ class OrderDetailFragment : BaseFragment() {
                         },
                         onTryAgain = {walletId, type, payAssetId, receiveAssetId ->
                             val inMixin = walletId == null || walletId == Session.getAccountId()
-                            val isLimit = type.equals("limit", true)
+                            if (type.equals("limit", true)) {
+                                defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${walletId ?: Session.getAccountId() ?: ""}", 1)
+                            } else {
+                                defaultSharedPreferences.putInt("$PREF_TRADE_SELECTED_TAB_PREFIX${walletId ?: Session.getAccountId() ?: ""}", 0)
+
+                            }
                             activity?.finish()
                             AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.TRADE_DETAIL)
                             if (inMixin) {
-                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = true, walletId = null, openLimit = isLimit)
+                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = true, walletId = null)
                             } else {
-                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = false, walletId = walletId, openLimit = isLimit)
+                                SwapActivity.show(requireContext(), input = payAssetId, output = receiveAssetId, inMixin = false, walletId = walletId)
                             }
                         },
                         pop = {

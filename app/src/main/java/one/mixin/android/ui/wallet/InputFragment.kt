@@ -307,7 +307,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                             val address =
-                                                if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                                                when (web3Token?.chainId) {
+                                                    Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                                                    in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
+                                                    else -> null
+                                                }
                                             this@InputFragment.view?.navigate(
                                                 R.id.action_input_fragment_to_web3_address_fragment,
                                                 Bundle().apply {
@@ -365,7 +369,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
                                         val address =
-                                            if (web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                                            when (web3Token?.chainId) {
+                                                Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
+                                                in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
+                                                else -> null
+                                            }
                                         this@InputFragment.view?.navigate(
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {

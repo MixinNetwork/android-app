@@ -122,14 +122,12 @@ fun tipPrivToPrivateKey(
         Constants.ChainId.BITCOIN_CHAIN_ID -> {
             val bip84KeyPair = generateBip44Key(masterKeyPair, Bip44Path.bitcoinSegwit(index))
             val privateKeyBytes: ByteArray = Numeric.toBytesPadded(bip84KeyPair.privateKey, 32)
-            if (index == 0) {
-                val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
-                val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
-                val addressString: String = address.toString()
-                val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(priv.hexString())
-                if (addressFromGo != addressString) {
-                    throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
-                }
+            val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
+            val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
+            val addressString: String = address.toString()
+            val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(priv.hexString(), Bip44Path.bitcoinSegwitPathString(index))
+            if (addressFromGo != addressString) {
+                throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
             }
             return privateKeyBytes
         }
@@ -179,7 +177,7 @@ fun privateKeyToAddress(
             val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
             val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
             val addressString: String = address.toString()
-            val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(priv.hexString())
+            val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(priv.hexString(), Bip44Path.bitcoinSegwitPathString(index))
             if (addressFromGo != addressString) {
                 throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
             }
