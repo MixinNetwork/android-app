@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
-
 @Entity(tableName = "safe_wallets")
 @Parcelize
 class SafeWallets(
