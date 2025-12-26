@@ -52,9 +52,11 @@ class ClassicWalletMissingBtcAddressFragment : Fragment(R.layout.fragment_classi
         val biometricInfo: BiometricInfo? = null
         PinInputBottomSheetDialogFragment
             .newInstance(title = null, biometricInfo = biometricInfo, from = 1)
-            .setOnComplete { pin, _ ->
-                lifecycleScope.launch {
+            .setOnComplete { pin, dialog ->
+                this@ClassicWalletMissingBtcAddressFragment.lifecycleScope.launch {
+                    dialog.dismiss()
                     addBtcAddressIfNeeded(pin)
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
             }
             .showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
