@@ -129,12 +129,43 @@ class RefreshWeb3Job : BaseJob(
                     val web3Addresses = addressesResponse.data!!
                     web3AddressDao.insertList(web3Addresses)
                     Timber.d("Inserted ${web3Addresses.size} addresses into database")
+                    val btcAddress = web3Addresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
+                    if (btcAddress.isNullOrBlank().not()) {
+                        fetchBtcOutputs(walletId = walletId, address = btcAddress)
+                    }
                 } else {
                     Timber.d("No addresses found for wallet $walletId")
                 }
             },
             failureBlock = { response ->
                 Timber.e("Failed to fetch addresses for wallet $walletId: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            },
+            defaultErrorHandle = {}
+        )
+    }
+
+    private suspend fun fetchBtcOutputs(walletId: String, address: String) {
+        requestRouteAPI(
+            invokeNetwork = {
+                routeService.getWalletOutputs(walletId = walletId, address = address)
+            },
+            successBlock = { response ->
+                val outputs = response.data
+                if (outputs.isNullOrEmpty()) {
+                    Timber.d("Fetched 0 BTC outputs for walletId=$walletId address=$address")
+                    return@requestRouteAPI
+                }
+                Timber.d("Fetched ${outputs.size} BTC outputs for walletId=$walletId address=$address")
+                outputs.take(50).forEach { output ->
+                    Timber.d("BTC output id=${output.outputId} tx=${output.transactionHash} vout=${output.outputIndex} amount=${output.amount} address=${output.address} pubkeyType=${output.pubkeyType} status=${output.status}")
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to fetch BTC outputs for walletId=$walletId address=$address: ${response.errorCode} - ${response.errorDescription}")
                 false
             },
             requestSession = {
