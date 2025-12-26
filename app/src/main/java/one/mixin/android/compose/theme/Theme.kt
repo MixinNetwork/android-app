@@ -16,12 +16,20 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
 
-val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
+val isP3Supported by lazy {
+    if (isP3Enabled) {
+        MixinApplication.appContext.isScreenWideColorGamut()
+    } else {
+        false
+    }
+}
+private var isP3Enabled = true
 
 class AppColors(
     val primary: Color,
@@ -158,9 +166,10 @@ private val LocalColors = compositionLocalOf { LightColorPalette }
 
 @Composable
 fun MixinAppTheme(
-    darkTheme: Boolean = MixinApplication.get().isNightMode(),
+    darkTheme: Boolean = if (LocalInspectionMode.current) false else MixinApplication.get().isNightMode(),
     content: @Composable () -> Unit,
 ) {
+    isP3Enabled = !LocalInspectionMode.current
     val colors =
         if (darkTheme) {
             DarkColorPalette
