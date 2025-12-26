@@ -485,7 +485,7 @@ internal constructor(
                 if (existsInAddresses) return@withContext Triple(MixinApplication.appContext.getString(R.string.Privacy_Wallet), 1, null)
             }
 
-            val safeWallet = web3Repository.getWalletByAddress(destination, chainId)
+            val safeWallet = web3Repository.getSafeWalletByAddress(destination, chainId)
             if (safeWallet != null) {
                 val isOwner: Boolean = safeWallet.isOwner()
                 return@withContext Triple(safeWallet.name, 2, isOwner)

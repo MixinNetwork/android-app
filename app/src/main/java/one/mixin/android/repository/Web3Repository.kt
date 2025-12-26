@@ -230,7 +230,7 @@ constructor(
 
     suspend fun getWalletByDestination(destination: String) = web3AddressDao.getWalletByDestination(destination)?.updateWithLocalKeyInfo(MixinApplication.appContext)
 
-    suspend fun getWalletByAddress(destination: String, chainId: String) = web3AddressDao.getWalletByAddress(destination, chainId)?.updateWithLocalKeyInfo(MixinApplication.appContext)
+    suspend fun getSafeWalletByAddress(destination: String, chainId: String) = web3AddressDao.getSafeWalletByAddress(destination, chainId)?.updateWithLocalKeyInfo(MixinApplication.appContext)
 
     // Only deposit display
     suspend fun getTokenByWalletAndAssetId(walletId: String, assetId: String): Web3TokenItem? {
