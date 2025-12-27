@@ -26,9 +26,9 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildAddressBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.conversation.link.CollectionBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
@@ -183,7 +183,7 @@ class NewSchemeParser(
             } else {
                 val token = asset?.let { checkAsset(it) ?: return Result.failure(ParserError(FAILURE)) }
                 if (token == null) {
-                    val bottom = AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                    val bottom = TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                         .apply {
                             asyncOnAsset = { selectedAsset ->
                                 bottomSheet.requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
@@ -193,7 +193,7 @@ class NewSchemeParser(
                                 }
                             }
                         }
-                    bottom.show(bottomSheet.parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    bottom.show(bottomSheet.parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 } else {
                     val biometricItem = createBiometricItem(token, payType, urlQueryParser, amount, traceId, from)
                     if (biometricItem == null) return Result.failure(ParserError(FAILURE))

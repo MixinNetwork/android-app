@@ -19,6 +19,8 @@ import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
 
 object Constants {
+    const val DEFAULT_ICON_URL: String = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
+
     object API {
         const val DOMAIN = "https://mixin.one"
         const val URL = "https://api.mixin.one/"

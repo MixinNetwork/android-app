@@ -502,7 +502,9 @@ class TokenRepository
         fun assetItemsNotHidden() = tokenDao.assetItemsNotHidden()
         fun assetItemsNotHiddenRaw() = tokenDao.assetItemsNotHiddenRaw(
             RoomRawQuery(
-            "$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN", onBindStatement = {}
+            "$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN", onBindStatement = {
+                    it.bindText(1, Constants.DEFAULT_ICON_URL)
+                }
         ))
 
         fun assetItems() = tokenDao.assetItems()
@@ -521,13 +523,11 @@ class TokenRepository
 
         suspend fun findWeb3AssetItemsWithBalance(walletId: String): List<Web3TokenItem> = web3TokenDao.findAssetItemsWithBalance(walletId)
 
-        suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem> = tokenDao.web3TokenItems(chainIds)
-
         fun web3TokenItems(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId)
 
-        fun web3TokenItems(walletId: String, level:Int): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItems(walletId, level)
+        fun web3TokenItemsExcludeHidden(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
-        fun web3TokenItemsByWalletIds(walletIds: List<String>): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsByWalletIds(walletIds)
+        fun web3TokenItemsExcludeHiddenWithBalance(walletId: String): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsExcludeHiddenWithBalance(walletId)
 
         fun web3TokenItemsAll(): LiveData<List<Web3TokenItem>> = web3TokenDao.web3TokenItemsAll()
 
@@ -606,7 +606,7 @@ class TokenRepository
 
         suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> {
             val localLike = if (web3) {
-                web3TokenDao.fuzzySearchAsset(walletId ?: "", query, query).map { t -> t.toTokenItem() }
+                web3TokenDao.fuzzySearchAsset(walletId ?: "", query).map { t -> t.toTokenItem() }
             } else emptyList()
 
             val response =

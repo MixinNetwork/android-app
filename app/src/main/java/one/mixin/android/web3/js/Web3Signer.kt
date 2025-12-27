@@ -7,8 +7,8 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
-import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.putString
@@ -23,7 +23,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.web3.Web3Exception
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount

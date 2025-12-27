@@ -77,9 +77,9 @@ import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
@@ -230,13 +230,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
         binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
-                AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
                     .apply {
                         setOnAssetClick { selectedAsset ->
                             requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
                             WalletActivity.showInputForUser(requireActivity(), selectedAsset, user)
                         }
-                    }.show(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                    }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 this@UserBottomSheetDialogFragment.dismiss()
                 RxBus.publish(BotCloseEvent())
             } else {

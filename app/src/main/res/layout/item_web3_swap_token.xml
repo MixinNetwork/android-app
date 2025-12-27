@@ -27,12 +27,24 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true" />
 
+    <ImageView
+        android:id="@+id/ic_spam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/avatar"
+        android:src="@drawable/ic_spam_token"
+        android:layout_alignTop="@id/name_tv"
+        android:layout_alignBottom="@id/name_tv"
+        android:layout_marginStart="@dimen/margin16"
+        android:translationY="-1dp"
+        android:visibility="gone"/>
+
     <TextView
         android:id="@+id/name_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/avatar"
-        android:layout_toEndOf="@id/avatar"
+        android:layout_toEndOf="@id/ic_spam"
         android:maxWidth="200dp"
         android:minWidth="30dp"
         android:textColor="?attr/text_primary"

@@ -54,6 +54,10 @@ class SearchView : FrameLayout {
             height = size
         }
 
+        binding.root.setOnClickListener {
+            binding.searchEt.showKeyboard()
+        }
+
         binding.searchEt.apply {
             hint = resources.getString(R.string.Search)
             addTextChangedListener(watcher)

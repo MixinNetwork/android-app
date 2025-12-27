@@ -79,7 +79,8 @@ data class Web3Token(
             ),
             balance = balance,
             price = priceUsd,
-            isWeb3 = true
+            isWeb3 = true,
+            level = level
         )
     }
 

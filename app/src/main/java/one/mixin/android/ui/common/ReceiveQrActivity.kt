@@ -9,7 +9,6 @@ import android.os.Bundle
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.jakewharton.rxbinding3.view.preDraws
 import com.uber.autodispose.android.lifecycle.autoDispose
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,8 +35,8 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.home.MainActivity.Companion.SCAN
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.BackupMnemonicPhraseWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositShareActivity
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -174,7 +173,7 @@ class ReceiveQrActivity : BaseActivity() {
     }
 
     private fun showReceiveAssetList() {
-        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
+        TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
             .setOnAssetClick { asset ->
                 InputAmountBottomSheetDialogFragment.newInstance(
                     asset,
@@ -203,7 +202,7 @@ class ReceiveQrActivity : BaseActivity() {
                         }
                     }
                 }.showNow(supportFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
-            }.showNow(supportFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+            }.showNow(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
     }
 
 }

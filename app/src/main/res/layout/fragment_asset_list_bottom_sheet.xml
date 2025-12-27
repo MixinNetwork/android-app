@@ -54,7 +54,7 @@
             android:layout_centerVertical="true"
             android:layout_toStartOf="@id/close_ib"
             android:layout_marginEnd="64dp"
-            android:visibility="invisible" />
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/close_ib"
