@@ -105,7 +105,7 @@ buildscript {
         ext.markdownVersion = '0.7.3'
 
         ext.bcVersion = '1.70'
-        ext.jsonVersion = '20250517'
+        ext.jsonVersion = '20251224'
         ext.composeVersion = '1.10.0'
         ext.accompanistVersion = '0.36.0'
         ext.web3jVersion = '4.8.7-android'
@@ -122,7 +122,7 @@ buildscript {
         ext.protobufVersion = '3.11.0'
         ext.appsFlyerVersion ='6.17.3'
         ext.installreferrerVersion ='2.2'
-        ext.billingVersion ='8.2.1'
+        ext.billingVersion ='8.3.0'
 
         ext.lottieComposeVersion = '6.7.1'
         ext.composeBomVersion = '2025.12.01'

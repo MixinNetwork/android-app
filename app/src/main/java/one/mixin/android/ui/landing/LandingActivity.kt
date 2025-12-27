@@ -57,7 +57,7 @@ class LandingActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
         super.onCreate(savedInstanceState)
-        SystemUIManager.setSafePadding(window, color = colorFromAttribute(R.attr.bg_white), imePadding = true, onlyStatus = true)
+        SystemUIManager.setSafePadding(window, color = colorFromAttribute(R.attr.bg_white), imePadding = true)
         checkVersion()
         setContentView(binding.root)
         val pin = intent.getStringExtra(ARGS_PIN)

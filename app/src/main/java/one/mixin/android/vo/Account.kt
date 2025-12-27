@@ -20,6 +20,8 @@ data class Account(
     @SerializedName("avatar_url")
     val avatarUrl: String?,
     var phone: String,
+    @SerializedName("phone_verified_at")
+    var phoneVerifiedAt: String?,
     @SerializedName("avatar_base64")
     val avatarBase64: String?,
     @SerializedName("pin_token")
