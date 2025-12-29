@@ -2,6 +2,7 @@ package one.mixin.android.tip.wc.internal
 
 import com.reown.walletkit.client.Wallet
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
@@ -34,6 +35,8 @@ sealed class Chain(
     object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "43114", "0xa86a", "Avalanche C-Chain", "AVAX", listOf("https://api.avax.network/ext/bc/C/rpc"))
 
     object Solana : Chain(SOLANA_CHAIN_ID, "solana", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
+
+    object Bitcoin : Chain(BITCOIN_CHAIN_ID, "BTC", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ", "Solana", "SOL", listOf("https://api.mainnet-beta.solana.com"))
 
     val chainId: String
         get() {

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -30,6 +31,7 @@ import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isTransferFeeFree
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toHex
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
@@ -60,6 +62,12 @@ import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
+import org.bitcoinj.base.Address
+import org.bitcoinj.base.Coin
+import org.bitcoinj.base.Sha256Hash
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.params.MainNetParams
+import org.bitcoinj.script.Script
 import org.sol4k.Convert.lamportToSol
 import org.sol4k.PublicKey
 import org.sol4kt.VersionedTransactionCompat
@@ -293,6 +301,40 @@ internal constructor(
         transaction: JsSignMessage,
         fromAddress: String,
     ): BigDecimal? {
+        if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val response = withContext(Dispatchers.IO) {
+                runCatching {
+                    // kotlin
+                    val params = MainNetParams.get()
+
+                    val tx = Transaction()
+                    val recipientAddress = Address.fromString(params, fromAddress)
+                    val amountToSend = Coin.parseCoin("0.00015")
+                    tx.addOutput(amountToSend, recipientAddress)
+                    //
+                    val prevTxHash = Sha256Hash.wrap("05be305b487a8172e505e4de01a09f55f4190d607cf1fd9aacd187397dec35e5")
+                    val outIndex: Long = 0L
+                    val emptyScript = Script.parse(byteArrayOf())
+                    tx.addInput(prevTxHash, outIndex, emptyScript)
+                    val rawTxHex: String = tx.serialize().toHex()
+                    web3Repository.estimateFee(
+                        EstimateFeeRequest(
+                            chainId = token.chainId,
+                            rawTransaction = rawTxHex,
+                            data = null,
+                            from = null,
+                            to = null,
+                            value = null,
+                        )
+                    )
+                }.getOrNull()
+            }
+            if (response?.isSuccess != true || response.data == null) return BigDecimal.ZERO
+            val unitPrice: BigDecimal = response.data!!.unitPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+            val unitLimit: BigDecimal = response.data!!.unitLimit?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
+            val totalFeeSatoshis: BigDecimal = unitPrice.multiply(unitLimit)
+            return totalFeeSatoshis
+        }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
             val tx = VersionedTransactionCompat.from(transaction.data ?: "")

@@ -82,8 +82,9 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Base -> "ETH"
             chainId == Constants.ChainId.Arbitrum -> "Arbitrum One"
             chainId == Constants.ChainId.Optimism -> "Optimism"
-            chainId == Constants.ChainId.BinanceSmartChain -> "Polygon"
-            chainId == Constants.ChainId.Polygon -> "BNB Chain"
+            chainId == Constants.ChainId.Polygon -> "Polygon"
+            chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
+            chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
@@ -200,9 +201,9 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.Optimism -> "ETH"
         chainId == Constants.ChainId.Arbitrum -> "ETH"
         chainId == Constants.ChainId.Avalanche -> "AVAX"
-        // chainId.equals("blast", true) -> "ETH"
-        chainId == Constants.ChainId.BinanceSmartChain -> "POL"
-        chainId == Constants.ChainId.Polygon -> "BNB"
+        chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
+        chainId == Constants.ChainId.Polygon -> "POL"
+        chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -315,6 +316,9 @@ suspend fun Web3TokenItem.buildTransaction(
                 val data = FunctionEncoder.encode(function)
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }
+        return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
+    } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+        val transaction = WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null,"0x0", null)
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
     } else {
         throw IllegalStateException("Not support: $chainId")
