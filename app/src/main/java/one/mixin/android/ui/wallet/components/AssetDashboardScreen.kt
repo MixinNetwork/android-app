@@ -167,34 +167,33 @@ fun AssetDashboardScreen(
                     }
                 }
             }
+            val hasImported = wallets.any { it.isImported() }
+            val hasWatch = wallets.any { it.isWatch() }
+            val hasSafe = wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }
+
+            WalletCategoryFilter(
+                selectedCategory = selectedCategory,
+                hasImported = hasImported,
+                hasWatch = hasWatch,
+                hasSafe = hasSafe,
+                showSafeBadge = hasSafe && !hasSeenSafeCategoryBadge.value,
+                onCategorySelected = {
+                    isWalletInfoCardVisible = false
+                    if (it == WalletCategory.MIXIN_SAFE.value) {
+                        prefs.edit { putBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, true) }
+                        hasSeenSafeCategoryBadge.value = true
+                    }
+                    selectedCategory = it
+                }
+            )
+            Spacer(modifier = Modifier.height(18.dp))
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                TotalAssetsCard()
+                TotalAssetsCard(selectedCategory = selectedCategory)
                 Spacer(modifier = Modifier.height(20.dp))
-
-                val hasImported = wallets.any { it.isImported() }
-                val hasWatch = wallets.any { it.isWatch() }
-                val hasSafe = wallets.any { it.category == WalletCategory.MIXIN_SAFE.value }
-
-                WalletCategoryFilter(
-                    selectedCategory = selectedCategory,
-                    hasImported = hasImported,
-                    hasWatch = hasWatch,
-                    hasSafe = hasSafe,
-                    showSafeBadge = hasSafe && !hasSeenSafeCategoryBadge.value,
-                    onCategorySelected = {
-                        isWalletInfoCardVisible = false
-                        if (it == WalletCategory.MIXIN_SAFE.value) {
-                            prefs.edit { putBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, true) }
-                            hasSeenSafeCategoryBadge.value = true
-                        }
-                        selectedCategory = it
-                    }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
 
                 // Privacy wallet - always show if no filter or "all" selected
                 if (selectedCategory == null) {
@@ -227,7 +226,7 @@ fun AssetDashboardScreen(
 
                 wallets.forEach { wallet ->
                     val shouldShow = when (selectedCategory) {
-                        null -> true // Show all
+                        null -> wallet.category != WalletCategory.MIXIN_SAFE.value // Exclude safe wallets when no category filter is selected
                         WalletCategory.MIXIN_SAFE.value -> wallet.category == WalletCategory.MIXIN_SAFE.value
                         WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
                         "import" -> wallet.isImported()

@@ -38,7 +38,7 @@ fun WalletCategoryFilter(
             selected = selectedCategory == null,
             onClick = { onCategorySelected(null) },
         )
-        
+
         if (hasSafe) {
             OutlinedTab(
                 text = stringResource(R.string.Wallet_Safe),
@@ -64,7 +64,7 @@ fun WalletCategoryFilter(
                 onClick = { onCategorySelected("import") },
             )
         }
-        
+
         // Watching
         if (hasWatch) {
             OutlinedTab(

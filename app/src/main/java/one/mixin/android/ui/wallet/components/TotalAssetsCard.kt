@@ -48,7 +48,8 @@ import java.math.BigDecimal
 
 @Composable
 fun TotalAssetsCard(
-    viewModel: AssetDistributionViewModel = hiltViewModel()
+    viewModel: AssetDistributionViewModel = hiltViewModel(),
+    selectedCategory: String? = null
 ) {
     var combinedDistribution by remember { mutableStateOf<List<AssetDistribution>>(emptyList()) }
     var totalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
@@ -65,7 +66,7 @@ fun TotalAssetsCard(
 
         val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { event ->
+            .subscribe { _ ->
                 refreshTrigger++
             }
 
@@ -75,9 +76,9 @@ fun TotalAssetsCard(
         }
     }
 
-    LaunchedEffect(refreshTrigger) {
-        combinedDistribution = viewModel.getTokenDistribution()
-        totalBalance = viewModel.getTokenTotalBalance()
+    LaunchedEffect(refreshTrigger, selectedCategory) {
+        combinedDistribution = viewModel.getTokenDistribution(false, selectedCategory)
+        totalBalance = viewModel.getTokenTotalBalance(false, selectedCategory)
     }
 
     Column(
@@ -100,7 +101,7 @@ fun TotalAssetsCard(
                 )
                 if (showTooltip) {
                     val xOffset = with(LocalDensity.current) {
-                        (-24).dp.toPx()
+                        (-44).dp.toPx()
                     }.toInt()
                     Tooltip(
                         text = stringResource(id = R.string.total_balance_tip),
@@ -129,4 +130,3 @@ fun TotalAssetsCard(
         Distribution(combinedDistribution, destination = null)
     }
 }
-

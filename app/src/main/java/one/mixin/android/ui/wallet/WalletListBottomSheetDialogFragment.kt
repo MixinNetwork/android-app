@@ -215,7 +215,7 @@ fun WalletListScreen(
             }
             wallets.forEach { wallet ->
                 val shouldShow = when (selectedCategory) {
-                    null -> true
+                    null -> wallet.category != WalletCategory.MIXIN_SAFE.value
                     WalletCategory.MIXIN_SAFE.value -> wallet.isMixinSafe()
                     WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
                     "import" -> wallet.isImported()
