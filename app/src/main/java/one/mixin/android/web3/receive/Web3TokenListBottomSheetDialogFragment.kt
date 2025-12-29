@@ -351,7 +351,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         query: String,
         localTokens: MutableList<Web3TokenItem>
     ): List<Web3TokenItem> {
-        if (query.isBlank() || TYPE_FROM_SEND ==  type) return localTokens
+        if (query.isBlank() || TYPE_FROM_SEND == type) return localTokens
         binding.pb.isVisible = true
         val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
         val remoteAssets = fuzzyResults.filter {
