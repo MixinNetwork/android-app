@@ -87,7 +87,7 @@ fun ItemWalletContent(
                     fontSize = 12.sp,
                     modifier = Modifier
                         .background(
-                            color = if (isWalletOwner) MixinAppTheme.colors.walletOrange.copy(0.3f) else MixinAppTheme.colors.backgroundGrayLight,
+                            color = if (isWalletOwner) MixinAppTheme.colors.walletOrange.copy(0.6f) else MixinAppTheme.colors.backgroundGrayLight,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 4.dp)
