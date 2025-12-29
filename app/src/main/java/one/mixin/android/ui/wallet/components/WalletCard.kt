@@ -254,7 +254,7 @@ fun WalletCard(
                             fontSize = 12.sp,
                             modifier = Modifier
                                 .background(
-                                    color = if (destination.isOwner) MixinAppTheme.colors.walletOrange.copy(0.3f) else MixinAppTheme.colors.backgroundGrayLight,
+                                    color = if (destination.isOwner) MixinAppTheme.colors.walletOrange.copy(0.6f) else MixinAppTheme.colors.backgroundGrayLight,
                                     shape = RoundedCornerShape(4.dp)
                                 )
                                 .padding(horizontal = 4.dp)
