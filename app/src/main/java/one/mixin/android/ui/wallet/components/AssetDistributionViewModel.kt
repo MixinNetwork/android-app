@@ -30,7 +30,11 @@ class AssetDistributionViewModel @Inject constructor(
 
     fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {
-            _wallets.value = web3Repository.getAllWallets()
+            val wallets = web3Repository.getAllWallets().map {
+                it.value = getWeb3TokenTotalBalance(it.id)
+                it
+            }
+            _wallets.value = wallets.sortedByDescending { it.value }
         }
     }
 
