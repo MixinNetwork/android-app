@@ -3,6 +3,7 @@ package one.mixin.android.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -47,6 +48,7 @@ fun Tooltip(
     ) {
         Box(
             modifier = Modifier
+                .widthIn(max = 240.dp)
                 .shadow(elevation = 1.dp, shape = tooltipShape)
                 .background(
                     color = MixinAppTheme.colors.background,

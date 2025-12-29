@@ -2155,4 +2155,6 @@
     <string name="Wallet_Owner">所有者</string>
     <string name="Wallet_Member">共管人</string>
     <string name="no_available_quotes_found">未找到可用报价。请尝试其他代币或金额。</string>
+    <string name="wallet_summary_tip_all">Safe 金库、观察钱包和隐藏的资产不计入统计</string>
+    <string name="wallet_summary_tip_safe">共管的 Safe 金库不计入统计</string>
 </resources>

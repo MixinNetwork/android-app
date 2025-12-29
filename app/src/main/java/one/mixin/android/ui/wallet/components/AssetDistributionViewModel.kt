@@ -11,6 +11,8 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.WalletItem
+import one.mixin.android.db.web3.vo.isMixinSafe
+import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.vo.WalletCategory
@@ -41,7 +43,7 @@ class AssetDistributionViewModel @Inject constructor(
     suspend fun getTokenDistribution(excludeWeb3: Boolean = false, selectedCategory: String? = null): List<AssetDistribution> = withContext(Dispatchers.IO) {
         val walletIds = when (selectedCategory) {
             null -> _wallets.value.filter { it.hasLocalPrivateKey && it.category != WalletCategory.MIXIN_SAFE.value }.map { it.id }
-            WalletCategory.MIXIN_SAFE.value -> _wallets.value.filter { it.category == WalletCategory.MIXIN_SAFE.value }.map { it.id }
+            WalletCategory.MIXIN_SAFE.value -> _wallets.value.filter { it.category == WalletCategory.MIXIN_SAFE.value && it.isOwner()}.map { it.id }
             WalletCategory.CLASSIC.value -> _wallets.value.filter { it.category == WalletCategory.CLASSIC.value }.map { it.id }
             "import" -> _wallets.value.filter { it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value || it.category == WalletCategory.IMPORTED_MNEMONIC.value }.map { it.id }
             "watch" -> _wallets.value.filter { it.category == WalletCategory.WATCH_ADDRESS.value }.map { it.id }
@@ -130,7 +132,7 @@ class AssetDistributionViewModel @Inject constructor(
     suspend fun getTokenTotalBalance(excludeWeb3: Boolean = false, selectedCategory: String? = null): BigDecimal = withContext(Dispatchers.IO) {
         val walletIds = when (selectedCategory) {
             null -> _wallets.value.filter { it.hasLocalPrivateKey && it.category != WalletCategory.MIXIN_SAFE.value }.map { it.id }
-            WalletCategory.MIXIN_SAFE.value -> _wallets.value.filter { it.category == WalletCategory.MIXIN_SAFE.value }.map { it.id }
+            WalletCategory.MIXIN_SAFE.value -> _wallets.value.filter { it.category == WalletCategory.MIXIN_SAFE.value && it.isOwner()}.map { it.id }
             WalletCategory.CLASSIC.value -> _wallets.value.filter { it.category == WalletCategory.CLASSIC.value }.map { it.id }
             "import" -> _wallets.value.filter { it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value || it.category == WalletCategory.IMPORTED_MNEMONIC.value }.map { it.id }
             "watch" -> _wallets.value.filter { it.category == WalletCategory.WATCH_ADDRESS.value }.map { it.id }

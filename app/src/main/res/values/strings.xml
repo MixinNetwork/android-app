@@ -2211,4 +2211,6 @@
     <string name="Wallet_Owner">Owner</string>
     <string name="Wallet_Member">Member</string>
     <string name="no_available_quotes_found">No available quotes found. Please try a different token or amount.</string>
+    <string name="wallet_summary_tip_all">Safes, watch wallets, and hidden assets are excluded from the total</string>
+    <string name="wallet_summary_tip_safe">Co-managed safes are excluded from the total</string>
 </resources>
