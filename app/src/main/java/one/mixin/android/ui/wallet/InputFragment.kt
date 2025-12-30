@@ -528,7 +528,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
                             lifecycleScope.launch(
                                 CoroutineExceptionHandler { _, error ->
-                                    ErrorHandler.Companion.handleError(error)
+                                    Timber.e("Error: ${error.message}")
+                                    ErrorHandler.handleError(error)
                                     alertDialog.dismiss()
                                 },
                             ) {
@@ -999,8 +1000,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         } else {
             baseValue.toPlainString()
         }
-
-        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).stripTrailingZeros().toPlainString()
+        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).setScale(8, RoundingMode.DOWN).toPlainString()
         updateUI()
     }
 

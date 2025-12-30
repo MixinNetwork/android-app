@@ -247,7 +247,7 @@ internal constructor(
             val response = withContext(Dispatchers.IO) {
                 runCatching {
                     val localUtxos = outputsByWalletId(token.walletId)
-                    val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.0000001", localUtxos)
+                    val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
                     web3Repository.estimateFee(
                         EstimateFeeRequest(
                             chainId = token.chainId,
