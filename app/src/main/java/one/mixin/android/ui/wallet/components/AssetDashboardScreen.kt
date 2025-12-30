@@ -226,7 +226,7 @@ fun AssetDashboardScreen(
 
                 wallets.forEach { wallet ->
                     val shouldShow = when (selectedCategory) {
-                        null -> wallet.category != WalletCategory.MIXIN_SAFE.value // Exclude safe wallets when no category filter is selected
+                        null -> wallet.category != WalletCategory.MIXIN_SAFE.value &&  wallet.category != WalletCategory.WATCH_ADDRESS.value // Exclude safe, watching wallets when no category filter is selected
                         WalletCategory.MIXIN_SAFE.value -> wallet.category == WalletCategory.MIXIN_SAFE.value
                         WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
                         "import" -> wallet.isImported()
