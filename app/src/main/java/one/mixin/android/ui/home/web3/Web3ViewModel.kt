@@ -142,20 +142,6 @@ internal constructor(
         }
     }
 
-    fun getLatestActiveSignSessions(): List<ConnectionUI> {
-        val v2List =
-            WalletConnectV2.getListOfActiveSessions().mapIndexed { index, wcSession ->
-                ConnectionUI(
-                    index = index,
-                    icon = wcSession.metaData?.icons?.firstOrNull(),
-                    name = wcSession.metaData!!.name.takeIf { it.isNotBlank() } ?: "Dapp",
-                    uri = wcSession.metaData!!.url.takeIf { it.isNotBlank() } ?: "Not provided",
-                    data = wcSession.topic,
-                )
-            }
-        return v2List
-    }
-
     fun dapps(chainId: String): List<Dapp> {
         val gson = GsonHelper.customGson
         val dapps = MixinApplication.get().defaultSharedPreferences.getString("dapp_$chainId", null)
@@ -174,34 +160,12 @@ internal constructor(
         }
     }
 
-    private fun updateTokens(chain: String, tokens: List<Web3Token>) {
-        val tokenMap = if (chain == ChainType.ethereum.name) evmTokenMap else solanaTokenMap
-        val newTokenIds = tokens.map { "${it.chainId}${it.assetKey}" }.toSet()
-
-        val missingTokenIds = tokenMap.keys - newTokenIds
-        missingTokenIds.forEach { tokenId ->
-            val token = tokenMap[tokenId]
-            if (token != null) {
-                tokenMap[tokenId] = token.copy(balance = "0")
-            }
-        }
-
-        tokens.forEach { token ->
-            val tokenId = "${token.chainId}${token.assetKey}"
-            tokenMap[tokenId] = token
-        }
-    }
-
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     suspend fun findBotPublicKey(
         conversationId: String,
         botId: String,
     ) = userRepository.findBotPublicKey(conversationId, botId)
-
-    suspend fun findAddres(token: Web3Token): String? {
-        return tokenRepository.findDepositEntry(token.chainId)?.destination
-    }
 
     suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
@@ -286,17 +250,6 @@ internal constructor(
     fun inscriptionStateByHash(inscriptionHash: String) =
         tokenRepository.inscriptionStateByHash(inscriptionHash)
 
-    private suspend fun getSolMinimumBalanceForRentExemption(address: PublicKey): BigDecimal =
-        withContext(Dispatchers.IO) {
-            try {
-                val accountInfo = rpc.getAccountInfo(address) ?: return@withContext BigDecimal.ZERO
-                val mb = rpc.getMinimumBalanceForRentExemption(accountInfo.space) ?: return@withContext BigDecimal.ZERO
-                return@withContext lamportToSol(BigDecimal(mb))
-            } catch (e: Exception) {
-                return@withContext BigDecimal.ZERO
-            }
-        }
-
     suspend fun calcFee(
         token: Web3TokenItem,
         transaction: JsSignMessage,
@@ -380,9 +333,6 @@ internal constructor(
         withContext(Dispatchers.IO) {
             return@withContext rpc.isBlockhashValid(blockhash) ?: false
         }
-
-    suspend fun getBotPublicKey(botId: String, force: Boolean) =
-        userRepository.getBotPublicKey(botId, force)
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io())
@@ -480,16 +430,6 @@ internal constructor(
         return web3Repository.getAddressesByChainId(walletId, chainId)
     }
 
-    suspend fun getClassicWalletId(): String? = web3Repository.getClassicWalletId()
-
-    suspend fun getTransactionsById(traceId: String) = tokenRepository.getTransactionsById(traceId)
-
-    suspend fun findTokensByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem> = withContext(Dispatchers.IO) {
-        return@withContext web3Repository.findWeb3TokenItemsByIds(walletId, assetIds)
-    }
-
-    suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(hash, chainId)
-
     suspend fun getWalletName(walletId: String): String? = web3Repository.findWalletById(walletId)?.name
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
@@ -498,18 +438,11 @@ internal constructor(
 
     suspend fun getAddressesGroupedByDestination(walletId: String) = web3Repository.getAddressesGroupedByDestination(walletId)
 
-    companion object {
-        private val evmTokenMap = mutableMapOf<String, Web3Token>()
-        private val solanaTokenMap = mutableMapOf<String, Web3Token>()
-    }
-
     fun marketById(assetId: String) = tokenRepository.marketById(assetId)
 
     suspend fun getPendingRawTransactions(walletId: String) = tokenRepository.getPendingRawTransactions(walletId)
 
     suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
-
-    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = tokenRepository.getPendingRawTransactions(walletId, chainId)
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 

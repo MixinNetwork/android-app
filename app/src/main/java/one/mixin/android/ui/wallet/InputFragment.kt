@@ -835,8 +835,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (
-                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas ||
-                        (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
+                    web3Token != null && (chainToken == null || gas == null || (chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < gas ||
+                            (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
                     insufficientFeeBalance.isVisible = gas != null
                     addTv.text = "${getString(R.string.Add)} ${chainToken?.symbol ?: ""}"

@@ -190,6 +190,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
         chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
+        chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
