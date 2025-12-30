@@ -198,7 +198,6 @@ fun WalletListScreen(
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var query by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
@@ -208,6 +207,18 @@ fun WalletListScreen(
     val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
     val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
     val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
+    var selectedCategory by remember {
+        mutableStateOf<String?>(
+            when {
+                hasAll -> null
+                hasSafe -> WalletCategory.MIXIN_SAFE.value
+                hasSafe -> "import"
+                hasSafe -> "watch"
+                hasCreated -> WalletCategory.CLASSIC.value
+                else -> null
+            }
+        )
+    }
 
     val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {
         buildList {
