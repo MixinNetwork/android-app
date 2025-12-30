@@ -19,7 +19,7 @@ class SearchAdapter(private val currentAssetId: String? = null) : ListAdapter<To
             }
         }
     
-    private fun getFilteredTokens(): List<TokenItem> {
+    fun getFilteredTokens(): List<TokenItem> {
         return if (chain.isNullOrBlank()) {
             allTokens
         } else {

@@ -17,11 +17,11 @@ import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.AssetId.USDC_ASSET_BASE_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_BEP_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_POL_ID
 import one.mixin.android.Constants.AssetId.USDC_ASSET_SOL_ID
-import one.mixin.android.Constants.AssetId.USDC_ASSET_BASE_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_BEP_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_POL_ID
@@ -46,7 +46,6 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.web3.js.Web3Signer
-import timber.log.Timber
 
 @AndroidEntryPoint
 class Web3AddressFragment : BaseFragment() {

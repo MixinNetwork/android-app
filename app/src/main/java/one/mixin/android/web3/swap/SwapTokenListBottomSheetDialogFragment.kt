@@ -37,9 +37,9 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapViewModel
@@ -48,8 +48,8 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.swap.Components.RecentSwapTokens
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
+
 @AndroidEntryPoint
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -316,7 +316,6 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }
                 return@launch
             }
-
             val assetList = if (isStockMode && s.isBlank()) {
                 stocks.toMutableList()
             } else {
@@ -354,6 +353,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
         binding.pb.isVisible = true
+        val filterLocal = localTokens.filter {
+            it.name.containsIgnoreCase(s) ||
+                    it.symbol.containsIgnoreCase(s) ||
+                    it.chain.name.containsIgnoreCase(s)
+        }
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
             successBlock = { resp ->
@@ -363,10 +367,35 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     } else {
                         it
                     }
-                }?.map { ra ->
-                    localTokens.find { swapToken -> swapToken.assetId == ra.assetId }?.let {
-                        return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash)
+                }?.run {
+                    if (!inMixin) {
+                        val chainIds =
+                            swapViewModel.getAddresses(Web3Signer.currentWalletId).map {
+                                it.chainId
+                            }
+                        this.filter {
+                            it.chain.chainId in chainIds
+                        }
+                    } else {
+                        this
                     }
+                }?.map { ra ->
+                    (localTokens.find { swapToken -> swapToken.assetId == ra.assetId } ?: (
+                            if (inMixin) {
+                                swapViewModel.findToken(ra.assetId)?.run {
+                                    if (hidden == false) null
+                                    else this
+                                }?.toSwapToken()
+                            } else {
+                                swapViewModel.web3TokenItemById(ra.walletId ?: "", ra.assetId)?.run {
+                                    if (hidden == false) null
+                                    else this
+                                }?.toSwapToken()
+                            }
+                            )
+                            )?.let {
+                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = it.level)
+                        }
                     return@map ra
                 }
             },
@@ -374,7 +403,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )
-        return remoteList ?: emptyList()
+        val result = filterLocal + (remoteList?.filterNot { r ->
+            localTokens.any { l ->
+                l.chain.chainId == r.chain.chainId && l.assetId == r.assetId
+            }
+        } ?: emptyList())
+        return result
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {

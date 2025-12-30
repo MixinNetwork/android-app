@@ -4,13 +4,14 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
 import one.mixin.android.extension.equalsIgnoreCase
 import java.math.BigDecimal
 
 @Suppress("EqualsOrHashCode")
 @Parcelize
 data class SwapToken(
-    @SerializedName("wallet_id") val walletId: String?,
+    @SerializedName("wallet_id") var walletId: String?,
     @SerializedName("address") val address: String,
     @SerializedName("assetId") val assetId: String,
     @SerializedName("decimals") val decimals: Int,
@@ -23,7 +24,8 @@ data class SwapToken(
     var balance: String? = null,
     var collectionHash: String? = null,
     var changeUsd: String? = null,
-    var isWeb3: Boolean = false
+    var isWeb3: Boolean = false,
+    @SerializedName("level") val level: Int? = null
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -87,6 +89,11 @@ data class SwapToken(
     @IgnoredOnParcel
     val balanceValue: BigDecimal
         get() = balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+    fun isSpam(): Boolean {
+        level ?: return false
+        return level <= Constants.AssetLevel.SPAM
+    }
 }
 
 interface Swappable : Parcelable {
@@ -100,6 +107,14 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
             if (o1 == null && o2 == null) return@Comparator 0
             if (o1 == null) return@Comparator 1
             if (o2 == null) return@Comparator -1
+
+            val hasIcon1 = o1.icon != Constants.DEFAULT_ICON_URL
+            val hasIcon2 = o2.icon != Constants.DEFAULT_ICON_URL
+            if (hasIcon1 && !hasIcon2) {
+                return@Comparator -1
+            } else if (!hasIcon1 && hasIcon2) {
+                return@Comparator 1
+            }
 
             if (query.isNullOrBlank().not()) {
                 val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
@@ -138,17 +153,7 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 return@Comparator -1
             }
 
-            val hasIcon1 = o1.icon != defaultIcon
-            val hasIcon2 = o2.icon != defaultIcon
-            if (hasIcon1 && !hasIcon2) {
-                return@Comparator -1
-            } else if (!hasIcon1 && hasIcon2) {
-                return@Comparator 1
-            }
-
             return@Comparator o1.name.compareTo(o2.name)
         }
     )
 }
-
-private const val defaultIcon = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"

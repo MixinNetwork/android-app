@@ -759,12 +759,17 @@ class TradeFragment : BaseFragment() {
                 }
             }
             if (!inMixin()) {
-                remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.map { token ->
-                    val t = web3tokens?.firstOrNull { web3Token ->
-                        (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
-                    } ?: return@map token
-                    token.balance = t.balance
-                    token
+                remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.mapNotNull { token ->
+                    val local = swapViewModel.web3TokenItemById(walletId ?: "", token.assetId)
+                    if (local != null) {
+                        if (local.hidden == true) {
+                            null
+                        } else {
+                            token.copy(balance = local.balance, price = local.priceUsd, level = local.level)
+                        }
+                    } else {
+                        token
+                    }
                 }.sortByKeywordAndBalance()
 
                 swapTokens = swapTokens.union(remoteSwapTokens).toList().sortByKeywordAndBalance()
@@ -784,13 +789,17 @@ class TradeFragment : BaseFragment() {
                     (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
                 }
             } else {
-                remoteSwapTokens = filteredRemote.map { token ->
-                    val t = tokenItems?.firstOrNull { tokenItem ->
-                        tokenItem.assetId == token.assetId
-                    } ?: return@map token
-                    token.balance = t.balance
-                    token.price = t.priceUsd
-                    token
+                remoteSwapTokens = filteredRemote.mapNotNull { token ->
+                    val local = swapViewModel.findToken(token.assetId)
+                    if (local != null) {
+                        if (local.hidden == true) {
+                            null
+                        } else {
+                            token.copy(balance = local.balance, price = local.priceUsd)
+                        }
+                    } else {
+                        token
+                    }
                 }.sortByKeywordAndBalance()
                 swapTokens = swapTokens.union(remoteSwapTokens).toList().sortByKeywordAndBalance()
                 if (fromToken == null) {
