@@ -203,6 +203,7 @@ fun WalletListScreen(
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
+    val hasAll = remember(allWallets) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
     val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
     val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
     val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
@@ -250,6 +251,7 @@ fun WalletListScreen(
         ) {
             WalletCategoryFilter(
                 selectedCategory = selectedCategory,
+                hasAll = hasAll,
                 hasImported = hasImported,
                 hasWatch = hasWatch,
                 hasSafe = hasSafe,

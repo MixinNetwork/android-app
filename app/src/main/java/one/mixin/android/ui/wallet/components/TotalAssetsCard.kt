@@ -91,7 +91,7 @@ fun TotalAssetsCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.Total_Balance), color = MixinAppTheme.colors.textPrimary)
             Spacer(modifier = Modifier.width(4.dp))
-            if (selectedCategory == null || selectedCategory == WalletCategory.MIXIN_SAFE.value) {
+            if (selectedCategory != "watch") {
                 Box {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_tip),
@@ -109,7 +109,8 @@ fun TotalAssetsCard(
                             text = stringResource(
                                 id =
                                     if (selectedCategory == WalletCategory.MIXIN_SAFE.value) R.string.wallet_summary_tip_safe
-                                    else R.string.wallet_summary_tip_all
+                                    else if (selectedCategory == null) R.string.wallet_summary_tip_all
+                                    else R.string.total_balance_tip
                             ),
                             onDismissRequest = { showTooltip = false },
                             offset = IntOffset(xOffset, with(LocalDensity.current) {
