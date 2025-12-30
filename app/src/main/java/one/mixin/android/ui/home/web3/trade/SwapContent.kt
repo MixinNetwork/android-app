@@ -268,6 +268,7 @@ fun SwapContent(
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
                                     onDeposit = null,
                                 )
+                                Spacer(modifier = Modifier.height(16.dp))
                                 QuoteInfoBox(
                                     availableHeight = availableHeight,
                                     errorInfo = errorInfo,
@@ -436,22 +437,14 @@ fun QuoteInfoBox(
     onInvalidFlagChange: () -> Unit
 ) {
     Box(
-        modifier = if (availableHeight == null) {
-            Modifier
-                .heightIn(min = 48.dp)
-                .padding(horizontal = 4.dp)
-        } else {
-            Modifier
-                .padding(vertical = 14.dp)
-                .padding(horizontal = 4.dp)
-        }
+        modifier = if(availableHeight == null) Modifier.heightIn(48.dp) else Modifier
     ) {
         if (errorInfo.isNullOrBlank()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 16.dp)
                     .alpha(if (quoteResult == null) 0f else 1f),
             ) {
                 quoteResult?.let { quote ->
@@ -474,6 +467,7 @@ fun QuoteInfoBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
+                    .padding(horizontal = 16.dp)
                     .alpha(if (errorInfo.isBlank()) 0f else 1f)
             ) {
                 Text(

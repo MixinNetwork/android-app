@@ -250,7 +250,7 @@ fun TradePage(
                             onDismissLimitOrderTabBadge()
                         }
                         onTabChanged(index)
-                    }
+                    },
                 )
                 if (index < tabs.size - 1) {
                     Spacer(modifier = Modifier.width(10.dp))
