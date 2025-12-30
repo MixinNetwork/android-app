@@ -1130,6 +1130,10 @@ class WebFragment : BaseFragment() {
                 return@launch
             }
             val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
+            if (publicKey.isNullOrBlank()) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
             webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
         }

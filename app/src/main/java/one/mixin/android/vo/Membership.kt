@@ -38,12 +38,12 @@ data class Membership(
 }
 
 @DrawableRes
-fun Membership?.membershipIcon(force: Boolean = false): Int = when {
+fun Membership?.membershipIcon(force: Boolean = false): Int? = when {
     this == null -> View.NO_ID
     plan == Plan.ADVANCE -> R.drawable.ic_membership_advance
     plan == Plan.ELITE -> R.drawable.ic_membership_elite
     force && plan == Plan.PROSPERITY -> R.drawable.ic_membership_prosperity
-    else -> View.NO_ID
+    else -> null
 }
 
 enum class Plan(val value: String) {
