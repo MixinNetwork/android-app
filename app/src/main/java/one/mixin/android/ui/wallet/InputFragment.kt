@@ -531,8 +531,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
-                                val transaction =
+                                val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByWalletId(token.walletId))
+                                } else {
                                     token.buildTransaction(rpc, fromAddress, toAddress, amount)
+                                }
                                 showBrowserBottomSheetDialogFragment(
                                     requireActivity(),
                                     transaction,

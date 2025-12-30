@@ -9,7 +9,9 @@ import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.vo.Fiats
@@ -19,6 +21,12 @@ import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.Coin
+import org.bitcoinj.base.Sha256Hash
+import org.bitcoinj.base.Address as BtcAddress
+import org.bitcoinj.core.Transaction as BtcTransaction
+import org.bitcoinj.params.MainNetParams
+import org.bitcoinj.script.Script
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
@@ -216,6 +224,7 @@ suspend fun Web3TokenItem.buildTransaction(
     fromAddress: String,
     toAddress: String,
     v: String,
+    localUtxos: List<WalletOutput>? = null,
 ): JsSignMessage {
     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
         Web3Signer.useSolana()
@@ -319,8 +328,24 @@ suspend fun Web3TokenItem.buildTransaction(
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
     } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-        val transaction = WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null,"0x0", null)
-        return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
+        // Build a bitcoin transaction used for fee estimation. Use provided utxos if present.
+        val params = MainNetParams.get()
+        val tx = BtcTransaction(params)
+        val recipientAddress = BtcAddress.fromString(params, toAddress)
+        val amountToSend = Coin.parseCoin(v)
+        tx.addOutput(amountToSend, recipientAddress)
+        if (!localUtxos.isNullOrEmpty()) {
+            val utxo = localUtxos.first()
+            val prevTxHash = Sha256Hash.wrap(utxo.transactionHash)
+            val outIndex: Long = utxo.outputIndex
+            val emptyScript = Script.parse(byteArrayOf())
+            tx.addInput(prevTxHash, outIndex, emptyScript)
+        } else {
+            throw IllegalArgumentException("localUtxos is null or empty")
+        }
+
+        val rawTxHex: String = tx.serialize().toHex()
+        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = rawTxHex)
     } else {
         throw IllegalStateException("Not support: $chainId")
     }

@@ -25,13 +25,12 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3RawTransaction
-import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.db.web3.vo.isTransferFeeFree
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.toHex
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
@@ -51,7 +50,6 @@ import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.ConnectionUI
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.User
 import one.mixin.android.vo.assetIdToAsset
@@ -60,17 +58,8 @@ import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.SafeCollection
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
-import one.mixin.android.web3.ChainType
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
-import org.bitcoinj.base.Address
-import org.bitcoinj.base.Coin
-import org.bitcoinj.base.Sha256Hash
-import org.bitcoinj.core.Transaction
-import org.bitcoinj.params.MainNetParams
-import org.bitcoinj.script.Script
-import org.sol4k.Convert.lamportToSol
-import org.sol4k.PublicKey
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
@@ -250,6 +239,7 @@ internal constructor(
     fun inscriptionStateByHash(inscriptionHash: String) =
         tokenRepository.inscriptionStateByHash(inscriptionHash)
 
+    suspend fun outputsByWalletId(walletId: String) = web3Repository.outputsByWalletId(walletId)
     suspend fun calcFee(
         token: Web3TokenItem,
         transaction: JsSignMessage,
@@ -258,34 +248,12 @@ internal constructor(
         if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
             val response = withContext(Dispatchers.IO) {
                 runCatching {
-                    val params = MainNetParams.get()
-                    val tx = Transaction()
-                    val recipientAddress = Address.fromString(params, fromAddress)
-                    val amountToSend = Coin.parseCoin("0.00015")
-                    tx.addOutput(amountToSend, recipientAddress)
-
-                    // Try to use a real UTXO from local DB for fee estimation
-                    val localUtxos = try {
-                        web3Repository.outputsByWalletId(token.walletId)
-                    } catch (e: Exception) {
-                        emptyList()
-                    }
-
-                    if (localUtxos.isNotEmpty()) {
-                        val utxo = localUtxos.first()
-                        val prevTxHash = Sha256Hash.wrap(utxo.transactionHash)
-                        val outIndex: Long = utxo.outputIndex
-                        val emptyScript = Script.parse(byteArrayOf())
-                        tx.addInput(prevTxHash, outIndex, emptyScript)
-                    } else {
-                        return@withContext null
-                    }
-
-                    val rawTxHex: String = tx.serialize().toHex()
+                    val localUtxos = outputsByWalletId(token.walletId)
+                    val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.0000001", localUtxos)
                     web3Repository.estimateFee(
                         EstimateFeeRequest(
                             chainId = token.chainId,
-                            rawTransaction = rawTxHex,
+                            rawTransaction = jsMsg.data,
                             data = null,
                             from = null,
                             to = null,
