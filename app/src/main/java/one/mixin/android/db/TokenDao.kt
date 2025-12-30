@@ -8,6 +8,7 @@ import androidx.room.RoomRawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import one.mixin.android.Constants
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PriceAndChange
@@ -34,7 +35,7 @@ interface TokenDao : BaseDao<Token> {
         const val POSTFIX =
             " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM =
-            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
+            " ORDER BY (CASE WHEN a1.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE ae.hidden IS NULL OR NOT ae.hidden $POSTFIX_ASSET_ITEM"
     }
@@ -73,7 +74,7 @@ interface TokenDao : BaseDao<Token> {
     suspend fun findAllTokenIds(): List<String>
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' $POSTFIX_ASSET_ITEM limit 1")
-    fun getXIN(): TokenItem?
+    fun getXIN(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): TokenItem?
 
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
     fun asset(id: String): LiveData<Token>
@@ -81,38 +82,34 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
     suspend fun simpleAsset(id: String): Token?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 $POSTFIX_ASSET_ITEM")
-    fun hiddenAssetItems(): LiveData<List<TokenItem>>
+    fun hiddenAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
-    fun assetItemsNotHidden(): LiveData<List<TokenItem>>
+    fun assetItemsNotHidden(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @RawQuery
     fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
-    fun assetItems(): LiveData<List<TokenItem>>
+    fun assetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
-    suspend fun allAssetItems(): List<TokenItem>
+    suspend fun allAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("""$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
-    fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>>
+    fun assetItems(assetIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:ids)")
     suspend fun findTokenItems(ids: List<String>): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.chain_id IN (:chainIds) AND balance > 0 $POSTFIX")
-    suspend fun web3TokenItems(chainIds: List<String>): List<TokenItem>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
@@ -126,29 +123,28 @@ interface TokenDao : BaseDao<Token> {
         symbol: String,
     ): List<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
     fun assetItem(id: String): LiveData<TokenItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     suspend fun simpleAssetItem(assetId: String): TokenItem?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     fun assetItemFlow(assetId: String): Flow<TokenItem?>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
-    fun assetItemsWithBalance(): LiveData<List<TokenItem>>
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) $POSTFIX_ASSET_ITEM")
+    fun assetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 $POSTFIX_ASSET_ITEM")
-    suspend fun findAssetItemsWithBalance(): List<TokenItem>
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) $POSTFIX_ASSET_ITEM")
+    suspend fun findAssetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
 
     @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC")
     suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem>
-
 
     @Query("SELECT asset_id FROM tokens WHERE asset_id = :id")
     fun checkExists(id: String): String?

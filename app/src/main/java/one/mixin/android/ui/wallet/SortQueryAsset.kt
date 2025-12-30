@@ -1,10 +1,10 @@
 package one.mixin.android.ui.wallet
 
+import one.mixin.android.Constants
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
-private const val defaultIconUrl = "https://images.mixin.one/yH_I5b0GiV2zDmvrXRyr3bK5xusjfy5q7FX3lw3mM2Ryx4Dfuj6Xcw8SHNRnDKm7ZVE3_LvpKlLdcLrlFQUBhds=s128"
 
 fun sortQueryAsset(
     query: String,
@@ -22,6 +22,14 @@ fun sortQueryAsset(
             if (o1 == null && o2 == null) return@Comparator 0
             if (o1 == null) return@Comparator 1
             if (o2 == null) return@Comparator -1
+
+            val hasIcon1 = o1.iconUrl != Constants.DEFAULT_ICON_URL
+            val hasIcon2 = o2.iconUrl != Constants.DEFAULT_ICON_URL
+            if (hasIcon1 && !hasIcon2) {
+                return@Comparator -1
+            } else if (!hasIcon1 && hasIcon2) {
+                return@Comparator 1
+            }
 
             val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
             val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
@@ -47,14 +55,6 @@ fun sortQueryAsset(
                 return@Comparator 1
             } else if (priceFiat1 != BigDecimal.ZERO && priceFiat2 == BigDecimal.ZERO) {
                 return@Comparator -1
-            }
-
-            val hasIcon1 = o1.iconUrl != defaultIconUrl
-            val hasIcon2 = o2.iconUrl != defaultIconUrl
-            if (hasIcon1 && !hasIcon2) {
-                return@Comparator -1
-            } else if (!hasIcon1 && hasIcon2) {
-                return@Comparator 1
             }
 
             return@Comparator o1.name.compareTo(o2.name)

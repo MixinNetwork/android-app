@@ -6,11 +6,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.databinding.ItemSearchContactBinding
 import one.mixin.android.databinding.ItemSearchDappBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
 import one.mixin.android.databinding.ItemSearchMarketBinding
 import one.mixin.android.databinding.ItemSearchTipBinding
+import one.mixin.android.ui.search.holder.AssetHolder
 import one.mixin.android.ui.search.holder.BotHolder
 import one.mixin.android.ui.search.holder.DappHolder
 import one.mixin.android.ui.search.holder.HeaderHolder
@@ -19,6 +21,7 @@ import one.mixin.android.ui.search.holder.UrlHolder
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.safe.TokenItem
 
 class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null
@@ -40,7 +43,8 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
     override fun onBindHeaderViewHolder(holder: HeaderHolder, position: Int) {
         val context = holder.itemView.context
         when (getItemViewType(position)) {
-            TypeMarket.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.marketShowMore())
+            TypeAsset.index -> holder.bind(context.getText(R.string.ASSETS).toString(), data.assetShowMore())
+            TypeMarket.index -> holder.bind(context.getText(R.string.Market).toString(), data.marketShowMore())
             TypeDapp.index -> holder.bind(context.getText(R.string.DAPPS).toString(), data.dappShowMore())
             TypeBot.index -> holder.bind(context.getText(R.string.BOTS).toString(), data.botShowMore())
         }
@@ -58,7 +62,14 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
 
     @SuppressLint("NotifyDataSetChanged")
     fun setData(marketList: List<Market>?, dappList: List<Dapp>?, botList: List<SearchBot>?, url: String?) {
-        data = SearchExploreDataPackage(marketList, dappList, botList, url)
+        data = SearchExploreDataPackage(assetList = null, marketList = marketList, dappList = dappList, botList = botList, url = url)
+        data.showTip = shouldTips()
+        notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setAssets(assets: List<TokenItem>?) {
+        data.assetList = assets
         data.showTip = shouldTips()
         notifyDataSetChanged()
     }
@@ -97,6 +108,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> (holder as UrlHolder).bind(query, onItemClickListener)
+            TypeAsset.index -> (holder as AssetHolder).bind(data.getItem(position) as TokenItem, query, onItemClickListener)
             TypeMarket.index -> (holder as MarketHolder).bind(data.getItem(position) as Market, query, onItemClickListener)
             TypeDapp.index -> (holder as DappHolder).bind(data.getItem(position) as Dapp, query, onItemClickListener)
             TypeBot.index -> (holder as BotHolder).bind(data.getItem(position) as SearchBot, query, onItemClickListener)
@@ -107,6 +119,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
 
     fun getTypeData(position: Int) =
         when (getItemViewType(position)) {
+            TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
             TypeMarket.index -> if (data.marketShowMore()) data.marketList else null
             TypeDapp.index -> if (data.dappShowMore()) data.dappList else null
             TypeBot.index -> if (data.botShowMore()) data.botList else null
@@ -116,6 +129,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
             0 -> UrlHolder(ItemSearchTipBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            TypeAsset.index -> AssetHolder(ItemSearchAssetBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeMarket.index -> MarketHolder(ItemSearchMarketBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeDapp.index -> DappHolder(ItemSearchDappBinding.inflate(LayoutInflater.from(parent.context), parent, false))
             TypeBot.index -> BotHolder(ItemSearchContactBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -124,6 +138,7 @@ class SearchExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), St
 
     override fun getItemViewType(position: Int) =
         when (data.getItem(position)) {
+            is TokenItem -> TypeAsset.index
             is Market -> TypeMarket.index
             is Dapp -> TypeDapp.index
             is SearchBot -> TypeBot.index
