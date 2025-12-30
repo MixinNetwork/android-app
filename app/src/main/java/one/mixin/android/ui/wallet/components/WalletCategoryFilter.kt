@@ -17,6 +17,7 @@ import one.mixin.android.vo.WalletCategory
 @Composable
 fun WalletCategoryFilter(
     selectedCategory: String?,
+    hasAll: Boolean = true,
     hasImported: Boolean = false,
     hasWatch: Boolean = false,
     hasSafe: Boolean = false,
@@ -33,12 +34,14 @@ fun WalletCategoryFilter(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // All
-        OutlinedTab(
-            text = stringResource(R.string.All),
-            selected = selectedCategory == null,
-            onClick = { onCategorySelected(null) },
-        )
-        
+        if (hasAll) {
+            OutlinedTab(
+                text = stringResource(R.string.All),
+                selected = selectedCategory == null,
+                onClick = { onCategorySelected(null) },
+            )
+        }
+
         if (hasSafe) {
             OutlinedTab(
                 text = stringResource(R.string.Wallet_Safe),
@@ -64,7 +67,7 @@ fun WalletCategoryFilter(
                 onClick = { onCategorySelected("import") },
             )
         }
-        
+
         // Watching
         if (hasWatch) {
             OutlinedTab(

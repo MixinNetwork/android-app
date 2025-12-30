@@ -5,6 +5,7 @@ import androidx.room.Ignore
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.vo.WalletCategory
+import java.math.BigDecimal
 
 @Parcelize
 data class WalletItem(
@@ -21,6 +22,9 @@ data class WalletItem(
 
     @Ignore
     var hasLocalPrivateKey: Boolean = false
+
+    @Ignore
+    var value: BigDecimal = BigDecimal.ZERO
 
     val safeChain: SafeChain?
         get() = SafeChain.fromValue(safeChainId)

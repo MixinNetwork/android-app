@@ -11,8 +11,11 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.WalletItem
+import one.mixin.android.db.web3.vo.isMixinSafe
+import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.UnifiedAssetItem
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -29,14 +32,25 @@ class AssetDistributionViewModel @Inject constructor(
 
     fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {
-            _wallets.value = web3Repository.getAllWallets()
+            val wallets = web3Repository.getAllWallets().map {
+                it.value = getWeb3TokenTotalBalance(it.id)
+                it
+            }
+            _wallets.value = wallets.sortedByDescending { it.value }
         }
     }
 
-    suspend fun getTokenDistribution(excludeWeb3: Boolean = false): List<AssetDistribution> = withContext(Dispatchers.IO) {
-        val walletIds = _wallets.value.filter { it.hasLocalPrivateKey }.map { it.id }
+    suspend fun getTokenDistribution(excludeWeb3: Boolean = false, selectedCategory: String? = null): List<AssetDistribution> = withContext(Dispatchers.IO) {
+        val walletIds = when (selectedCategory) {
+            null -> _wallets.value.filter { it.hasLocalPrivateKey && it.category != WalletCategory.MIXIN_SAFE.value }.map { it.id }
+            WalletCategory.MIXIN_SAFE.value -> _wallets.value.filter { it.category == WalletCategory.MIXIN_SAFE.value && it.isOwner()}.map { it.id }
+            WalletCategory.CLASSIC.value -> _wallets.value.filter { it.category == WalletCategory.CLASSIC.value }.map { it.id }
+            "import" -> _wallets.value.filter { it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value || it.category == WalletCategory.IMPORTED_MNEMONIC.value }.map { it.id }
+            "watch" -> _wallets.value.filter { it.category == WalletCategory.WATCH_ADDRESS.value }.map { it.id }
+            else -> wallets.value.filter { it.hasLocalPrivateKey && it.category != WalletCategory.MIXIN_SAFE.value }.map { it.id }
+        }
         val web3Tokens = if (excludeWeb3) emptyList() else web3Repository.allWeb3Tokens(walletIds)
-        val tokens = tokenRepository.findUnifiedAssetItem()
+        val tokens = if (selectedCategory == null) tokenRepository.findUnifiedAssetItem() else emptyList()
 
         val unifiedAssets = mutableListOf<UnifiedAssetItem>()
         unifiedAssets.addAll(tokens)
@@ -115,10 +129,17 @@ class AssetDistributionViewModel @Inject constructor(
         }
     }
 
-    suspend fun getTokenTotalBalance(excludeWeb3: Boolean = false): BigDecimal = withContext(Dispatchers.IO) {
-        val walletIds = _wallets.value.filter { it.hasLocalPrivateKey }.map { it.id }
+    suspend fun getTokenTotalBalance(excludeWeb3: Boolean = false, selectedCategory: String? = null): BigDecimal = withContext(Dispatchers.IO) {
+        val walletIds = when (selectedCategory) {
+            null -> _wallets.value.filter { it.hasLocalPrivateKey && it.category != WalletCategory.MIXIN_SAFE.value }.map { it.id }
+            WalletCategory.MIXIN_SAFE.value -> _wallets.value.filter { it.category == WalletCategory.MIXIN_SAFE.value && it.isOwner()}.map { it.id }
+            WalletCategory.CLASSIC.value -> _wallets.value.filter { it.category == WalletCategory.CLASSIC.value }.map { it.id }
+            "import" -> _wallets.value.filter { it.category == WalletCategory.IMPORTED_PRIVATE_KEY.value || it.category == WalletCategory.IMPORTED_MNEMONIC.value }.map { it.id }
+            "watch" -> _wallets.value.filter { it.category == WalletCategory.WATCH_ADDRESS.value }.map { it.id }
+            else -> wallets.value.filter { it.hasLocalPrivateKey && it.category != WalletCategory.MIXIN_SAFE.value }.map { it.id }
+        }
         val web3Tokens = if (excludeWeb3) emptyList() else web3Repository.allWeb3Tokens(walletIds)
-        val tokens = tokenRepository.findUnifiedAssetItem()
+        val tokens = if (selectedCategory == null) tokenRepository.findUnifiedAssetItem() else emptyList()
 
         val unifiedAssets = mutableListOf<UnifiedAssetItem>()
         unifiedAssets.addAll(tokens)
@@ -182,6 +203,3 @@ class AssetDistributionViewModel @Inject constructor(
 
     suspend fun getAddresses(walletId:String) = web3Repository.getAddresses(walletId)
 }
-
-
-

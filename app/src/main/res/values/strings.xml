@@ -1971,7 +1971,7 @@
     <string name="Exchanges_or_Wallets_desc">Receive from other exchange or on-chain wallet using a crypto network.</string>
     <string name="View_Document">View Document</string>
     <string name="Total_Balance">Total Balance</string>
-    <string name="total_balance_tip">Watch-only wallets and hidden assets are not included in the statistics.</string>
+    <string name="total_balance_tip">Hidden assets are not included in the statistics.</string>
     <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
     <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
     <string name="Web3_Transactions_Deleted">Web3 transaction data has been deleted and will be re-synchronized</string>
@@ -2219,4 +2219,6 @@
     <string name="Wallet_Owner">Owner</string>
     <string name="Wallet_Member">Member</string>
     <string name="no_available_quotes_found">No available quotes found. Please try a different token or amount.</string>
+    <string name="wallet_summary_tip_all">Safes, watch wallets, and hidden assets are excluded from the total</string>
+    <string name="wallet_summary_tip_safe">Co-managed safes are excluded from the total</string>
 </resources>

@@ -44,11 +44,13 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.components.Tooltip
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
+import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 
 @Composable
 fun TotalAssetsCard(
-    viewModel: AssetDistributionViewModel = hiltViewModel()
+    viewModel: AssetDistributionViewModel = hiltViewModel(),
+    selectedCategory: String? = null
 ) {
     var combinedDistribution by remember { mutableStateOf<List<AssetDistribution>>(emptyList()) }
     var totalBalance by remember { mutableStateOf(BigDecimal.ZERO) }
@@ -65,7 +67,7 @@ fun TotalAssetsCard(
 
         val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { event ->
+            .subscribe { _ ->
                 refreshTrigger++
             }
 
@@ -75,9 +77,9 @@ fun TotalAssetsCard(
         }
     }
 
-    LaunchedEffect(refreshTrigger) {
-        combinedDistribution = viewModel.getTokenDistribution()
-        totalBalance = viewModel.getTokenTotalBalance()
+    LaunchedEffect(refreshTrigger, selectedCategory) {
+        combinedDistribution = viewModel.getTokenDistribution(false, selectedCategory)
+        totalBalance = viewModel.getTokenTotalBalance(false, selectedCategory)
     }
 
     Column(
@@ -89,25 +91,34 @@ fun TotalAssetsCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.Total_Balance), color = MixinAppTheme.colors.textPrimary)
             Spacer(modifier = Modifier.width(4.dp))
-            Box {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_tip),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clickable { showTooltip = true },
-                    tint = MixinAppTheme.colors.textAssist
-                )
-                if (showTooltip) {
-                    val xOffset = with(LocalDensity.current) {
-                        (-24).dp.toPx()
-                    }.toInt()
-                    Tooltip(
-                        text = stringResource(id = R.string.total_balance_tip),
-                        onDismissRequest = { showTooltip = false },
-                        offset = IntOffset(xOffset, 0),
-                        arrowOffsetX = 24.dp,
+            if (selectedCategory != "watch") {
+                Box {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_tip),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clickable { showTooltip = true },
+                        tint = MixinAppTheme.colors.textAssist
                     )
+                    if (showTooltip) {
+                        val xOffset = with(LocalDensity.current) {
+                            (-24).dp.toPx()
+                        }.toInt()
+                        Tooltip(
+                            text = stringResource(
+                                id =
+                                    if (selectedCategory == WalletCategory.MIXIN_SAFE.value) R.string.wallet_summary_tip_safe
+                                    else if (selectedCategory == null) R.string.wallet_summary_tip_all
+                                    else R.string.total_balance_tip
+                            ),
+                            onDismissRequest = { showTooltip = false },
+                            offset = IntOffset(xOffset, with(LocalDensity.current) {
+                                (44).dp.toPx()
+                            }.toInt()),
+                            arrowOffsetX = 24.dp,
+                        )
+                    }
                 }
             }
         }
@@ -129,4 +140,3 @@ fun TotalAssetsCard(
         Distribution(combinedDistribution, destination = null)
     }
 }
-

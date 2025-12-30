@@ -198,15 +198,27 @@ fun WalletListScreen(
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var query by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
+    val hasAll = remember(allWallets) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
     val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
     val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
     val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
     val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
+    var selectedCategory by remember(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
+        mutableStateOf(
+            when {
+                hasAll -> null
+                hasSafe -> WalletCategory.MIXIN_SAFE.value
+                hasCreated -> WalletCategory.CLASSIC.value
+                hasSafe -> "import"
+                hasSafe -> "watch"
+                else -> null
+            }
+        )
+    }
 
     val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {
         buildList {
@@ -215,7 +227,7 @@ fun WalletListScreen(
             }
             wallets.forEach { wallet ->
                 val shouldShow = when (selectedCategory) {
-                    null -> true
+                    null -> wallet.category != WalletCategory.MIXIN_SAFE.value &&  wallet.category != WalletCategory.WATCH_ADDRESS.value
                     WalletCategory.MIXIN_SAFE.value -> wallet.isMixinSafe()
                     WalletCategory.CLASSIC.value -> wallet.category == WalletCategory.CLASSIC.value
                     "import" -> wallet.isImported()
@@ -248,14 +260,17 @@ fun WalletListScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            WalletCategoryFilter(
-                selectedCategory = selectedCategory,
-                hasImported = hasImported,
-                hasWatch = hasWatch,
-                hasSafe = hasSafe,
-                hasCreated = hasCreated,
-                onCategorySelected = { selectedCategory = it }
-            )
+            if (hasAll || hasWatch || hasSafe || hasWatch || hasCreated) {
+                WalletCategoryFilter(
+                    selectedCategory = selectedCategory,
+                    hasAll = hasAll,
+                    hasImported = hasImported,
+                    hasWatch = hasWatch,
+                    hasSafe = hasSafe,
+                    hasCreated = hasCreated,
+                    onCategorySelected = { selectedCategory = it }
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
