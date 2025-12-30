@@ -41,6 +41,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3BitCoinJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
@@ -1234,9 +1235,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         binding.loadingProgressBar.isVisible = true
         binding.contentTextView.isVisible = false
         val fromAddress = fromAddress ?: return
+        if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            jobManager.addJobInBackground(RefreshWeb3BitCoinJob(t.walletId))
+        }
         val transaction =
             try {
-                t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
+                if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance, web3ViewModel.outputsByWalletId(t.walletId))
+                } else {
+                    t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
+                }
             } catch (e: Exception) {
                 Timber.w(e)
                 if (dialog.isShowing) {

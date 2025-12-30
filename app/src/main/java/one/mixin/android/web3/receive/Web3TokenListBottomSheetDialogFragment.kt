@@ -18,10 +18,16 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.ChainId
+import one.mixin.android.Constants.Account.PREF_WALLET_SEND
+import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
+import one.mixin.android.Constants.ChainId.Base
+import one.mixin.android.Constants.ChainId.BinanceSmartChain
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Optimism
+import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
@@ -39,6 +45,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
@@ -54,7 +61,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         const val TYPE_FROM_SEND = 0
         const val TYPE_FROM_RECEIVE = 1
 
-        const val WEB3_ASSET_PREFERENCE = "WEB3_TRANSFER_ASSET"
         const val ARGS_WALLET_ID = "args_wallet_id"
         fun newInstance(
             walletId: String? = null,
@@ -83,9 +89,9 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private val key by lazy {
         when (type) {
-            TYPE_FROM_SEND -> Constants.Account.PREF_WALLET_SEND
-            TYPE_FROM_RECEIVE -> Constants.Account.PREF_WALLET_RECEIVE
-            else -> Constants.Account.PREF_WALLET_SEND
+            TYPE_FROM_SEND -> PREF_WALLET_SEND
+            TYPE_FROM_RECEIVE -> PREF_WALLET_RECEIVE
+            else -> PREF_WALLET_SEND
         }
     }
 
@@ -103,35 +109,35 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
                     R.id.radio_eth -> {
-                        ChainId.ETHEREUM_CHAIN_ID
+                        ETHEREUM_CHAIN_ID
                     }
 
                     R.id.radio_solana -> {
-                        ChainId.SOLANA_CHAIN_ID
+                        SOLANA_CHAIN_ID
                     }
 
                     R.id.radio_base -> {
-                        ChainId.Base
+                        Base
                     }
 
                     R.id.radio_bsc -> {
-                        ChainId.BinanceSmartChain
+                        BinanceSmartChain
                     }
 
                     R.id.radio_polygon -> {
-                        ChainId.Polygon
+                        Polygon
                     }
 
                     R.id.radio_arbritrum -> {
-                        ChainId.Arbitrum
+                        Arbitrum
                     }
 
                     R.id.radio_optimism -> {
-                        ChainId.Optimism
+                        Optimism
                     }
 
                     R.id.radio_toncoin -> {
-                        ChainId.TON_CHAIN_ID
+                        TON_CHAIN_ID
                     }
 
                     R.id.radio_avalanche -> {
@@ -192,10 +198,9 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         {
                             if (it.isNullOrBlank()) {
                                 binding.rvVa.displayedChild = POS_RV
-                                adapter.tokens = ArrayList(defaultAssets.filter { item ->
-                                    ((currentChain != null && item.chainId == currentChain) || currentChain == null)
-                                })
+                                adapter.tokens = ArrayList(defaultAssets)
                             } else {
+                                Timber.e("textChanges: $it")
                                 if (it.toString() != currentQuery) {
                                     currentQuery = it.toString()
                                     currentSearch?.cancel()
@@ -207,17 +212,18 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     )
         }
 
-        walletId?.let {
-            if (type == TYPE_FROM_RECEIVE) {
-                bottomViewModel.web3TokenItems(it, Constants.AssetLevel.VERIFIED)
-            } else {
-                bottomViewModel.web3TokenItems(it)
-            }.observe(this) { items ->
-                defaultAssets = items
+        walletId?.let { it ->
+            bottomViewModel.web3TokenItemsExcludeHidden(it, PREF_WALLET_SEND == this.key).observe(this) { items ->
+                defaultAssets = if (type == TYPE_FROM_SEND)
+                    items.filter { t ->
+                        t.balance.toBigDecimalOrNull().run {
+                            this != null && this > BigDecimal.ZERO
+                        }
+                    } else {
+                    items
+                }
                 if (binding.searchEt.et.text.isNullOrBlank()) {
-                    adapter.tokens = ArrayList(defaultAssets.filter { item ->
-                        ((currentChain != null && item.chainId == currentChain) || currentChain == null)
-                    })
+                    adapter.tokens = ArrayList(defaultAssets)
                 }
                 if (defaultAssets.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_SEND
@@ -313,9 +319,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 return@launch
             }
             val assetList =
-                defaultAssets.filter {
-                    (currentChain != null && it.chainId == currentChain) || currentChain == null
-                }.toMutableList()
+                defaultAssets.toMutableList()
 
             val total = search(s, assetList)
             adapter.tokens = ArrayList(total.filter {
@@ -347,48 +351,46 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         query: String,
         localTokens: MutableList<Web3TokenItem>
     ): List<Web3TokenItem> {
-        if (query.isBlank()) return localTokens
+        if (query.isBlank() || TYPE_FROM_SEND == type) return localTokens
         binding.pb.isVisible = true
-
-        val remoteAssets = if (type == TYPE_FROM_RECEIVE) {
-            val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
-            fuzzyResults.filter {
-                it.chainId in listOf(
-                    ChainId.SOLANA_CHAIN_ID,
-                    ChainId.ETHEREUM_CHAIN_ID,
-                    ChainId.Base,
-                    ChainId.Optimism,
-                    ChainId.Arbitrum,
-                    ChainId.Avalanche,
-                    ChainId.BinanceSmartChain,
-                    ChainId.Polygon,
-                )
-            }.map { item ->
-                localTokens.find { item.assetId == it.assetId }.let { local ->
+        val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
+        val remoteAssets = fuzzyResults.filter {
+            it.chainId in listOf(
+                SOLANA_CHAIN_ID,
+                ETHEREUM_CHAIN_ID,
+                Base,
+                Optimism,
+                Arbitrum,
+                Avalanche,
+                BinanceSmartChain,
+                Polygon,
+            )
+        }.map { item ->
+            bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
+                if (local != null && (local.level >= 10 || local.hidden == false)) {
                     local
-                        ?: Web3TokenItem(
-                            walletId = walletId ?: "",
-                            assetId = item.assetId,
-                            chainId = item.chainId,
-                            name = item.name,
-                            assetKey = item.assetKey ?: "",
-                            symbol = item.symbol,
-                            iconUrl = item.iconUrl,
-                            precision = 9,
-                            kernelAssetId = "",
-                            balance = item.balance,
-                            priceUsd = item.priceUsd,
-                            changeUsd = item.changeUsd,
-                            chainIcon = item.chainIconUrl,
-                            chainName = item.chainName,
-                            chainSymbol = item.chainSymbol,
-                            hidden = item.hidden,
-                            level = Constants.AssetLevel.VERIFIED
-                        )
+                } else {
+                    Web3TokenItem(
+                        walletId = walletId ?: "",
+                        assetId = item.assetId,
+                        chainId = item.chainId,
+                        name = item.name,
+                        assetKey = item.assetKey ?: "",
+                        symbol = item.symbol,
+                        iconUrl = item.iconUrl,
+                        precision = 9,
+                        kernelAssetId = "",
+                        balance = item.balance,
+                        priceUsd = item.priceUsd,
+                        changeUsd = item.changeUsd,
+                        chainIcon = item.chainIconUrl,
+                        chainName = item.chainName,
+                        chainSymbol = item.chainSymbol,
+                        hidden = item.hidden,
+                        level = Constants.AssetLevel.VERIFIED
+                    )
                 }
             }
-        } else {
-            emptyList()
         }
 
         binding.pb.isVisible = false
@@ -396,7 +398,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         return localTokens.plus(
             remoteAssets.filterNot { r ->
                 localTokens.any { l ->
-                    l.assetId == r.assetId
+                    l.chainId == r.chainId && l.assetId == r.assetId
                 }
             }).sortedByDescending {
             (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO)
@@ -405,11 +407,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     fun setOnAssetClick(callback: (Web3TokenItem) -> Unit): Web3TokenListBottomSheetDialogFragment {
         this.onAsset = callback
-        return this
-    }
-
-    fun setType(type: Int): Web3TokenListBottomSheetDialogFragment {
-        this.type = type
         return this
     }
 

@@ -43,8 +43,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.web3.trade.SwapActivity
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
-import one.mixin.android.ui.wallet.AssetListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
@@ -134,13 +134,13 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
                         sendReceiveView.buyBadge.isVisible = false
                     }
                     sendReceiveView.send.setOnClickListener {
-                        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
+                        TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_SEND)
                             .setOnAssetClick {
                                 WalletActivity.navigateToWalletActivity(this@PrivacyWalletFragment.requireActivity(), it)
                             }.setOnDepositClick {
-                                showReceiveAssetList()
+                                // do nothing
                             }
-                            .showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+                            .showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                     }
                     sendReceiveView.receive.setOnClickListener {
                         if (!Session.saltExported() && Session.isAnonymous()) {
@@ -441,10 +441,10 @@ class PrivacyWalletFragment : BaseFragment(R.layout.fragment_privacy_wallet), He
     }
 
     private fun showReceiveAssetList() {
-        AssetListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
+        TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_RECEIVE)
             .setOnAssetClick { asset ->
                 WalletActivity.showWithToken(requireActivity(), asset, WalletActivity.Destination.Deposit)
-            }.showNow(parentFragmentManager, AssetListBottomSheetDialogFragment.TAG)
+            }.showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
     }
 
     override fun <T> onNormalItemClick(item: T) {

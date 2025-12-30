@@ -50,6 +50,8 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
@@ -173,7 +175,17 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onAssetClick(tokenItem: TokenItem) {
-                    // do nothing
+                    searchViewModel.saveRecentSearch(
+                        requireContext().defaultSharedPreferences,
+                        RecentSearch(
+                            RecentSearchType.ASSET,
+                            iconUrl = tokenItem.iconUrl,
+                            title = tokenItem.symbol,
+                            subTitle = tokenItem.name,
+                            primaryKey = tokenItem.assetId,
+                        ),
+                    )
+                    activity?.let { WalletActivity.showWithToken(it, tokenItem, Destination.Transactions) }
                 }
 
                 override fun onDappClick(dapp: Dapp) {
@@ -229,6 +241,13 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                                 }
                             }
                         }
+                        RecentSearchType.ASSET -> {
+                            lifecycleScope.launch {
+                                val assetId: String = search.primaryKey ?: return@launch
+                                val tokenItem: TokenItem = searchViewModel.findOrSyncTokenItemByAssetId(assetId) ?: return@launch
+                                WalletActivity.showWithToken(requireActivity(), tokenItem, Destination.Transactions)
+                            }
+                        }
                         RecentSearchType.DAPP->{
                             WebActivity.show(requireContext(), search.subTitle?:"", null)
                         }
@@ -269,6 +288,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     private var searchMarketsJob: Job? = null
     private var searchBotsJob: Job? = null
     private var searchDappsJob: Job? = null
+    private var refreshAssetsJob: Job? = null
 
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String?) {
@@ -277,7 +297,29 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         searchMarketsJob?.cancel()
         searchBotsJob?.cancel()
         searchDappsJob?.cancel()
+        refreshAssetsJob?.cancel()
         searchJob = fuzzySearch(keyword)
+    }
+
+    private suspend fun refreshAssetItems(tokenItems: List<TokenItem>?) {
+        if (tokenItems.isNullOrEmpty()) return
+        val newItems: List<TokenItem> = withContext(Dispatchers.IO) {
+            searchViewModel.queryAssets(tokenItems.take(3).map { it.assetId })
+        }
+        if (newItems.isEmpty()) return
+        val mergedItems: List<TokenItem> = if (newItems.size == tokenItems.size) {
+            newItems
+        } else {
+            val mutableItems: MutableList<TokenItem> = tokenItems.toMutableList()
+            mutableItems.forEachIndexed { index: Int, tokenItem: TokenItem ->
+                newItems.find { it.assetId == tokenItem.assetId }?.let { refreshedTokenItem: TokenItem ->
+                    mutableItems[index] = refreshedTokenItem
+                }
+            }
+            mutableItems
+        }
+        searchAdapter.setAssets(mergedItems)
+        decoration.invalidateHeaders()
     }
 
     private fun fuzzySearch(keyword: String?) =
@@ -320,22 +362,30 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                         }
                         updateRv(searchDappsJob)
                     }
-            }
 
-            searchMarketsJob =
-                launch {
-                    searchViewModel.fuzzyMarkets(cancellationSignal, keyword).let { markets ->
-                        searchAdapter.setMarkets(markets)
+                val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
+                searchAdapter.setAssets(tokenItems)
+                refreshAssetsJob =
+                    launch {
+                        refreshAssetItems(tokenItems)
+                        updateRv(refreshAssetsJob)
                     }
-                    updateRv(searchMarketsJob)
-                }
+            } else {
+                searchMarketsJob =
+                    launch {
+                        searchViewModel.fuzzyMarkets(cancellationSignal, keyword).let { markets ->
+                            searchAdapter.setMarkets(markets)
+                        }
+                        updateRv(searchMarketsJob)
+                    }
+            }
         }
 
     private fun allJobIsCompleted(job: Job?): Boolean {
         val jobsToCheck = if (hideRecent) {
-            listOf(searchMarketsJob)
+            listOf(searchMarketsJob, refreshAssetsJob)
         } else {
-            listOf(searchUrlJob, searchMarketsJob, searchBotsJob, searchDappsJob)
+            listOf(searchUrlJob, searchMarketsJob, searchBotsJob, searchDappsJob, refreshAssetsJob)
         }
 
         return jobsToCheck.filter {

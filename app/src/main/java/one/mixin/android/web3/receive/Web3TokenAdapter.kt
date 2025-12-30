@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
@@ -121,10 +122,38 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
             if (token.priceUsd == "0") {
                 priceTv.setText(R.string.NA)
                 changeTv.visibility = View.GONE
+                updatePriceAsCentered()
             } else {
                 priceTv.text = "${Fiats.getSymbol()}${token.priceFiat().numberFormat2()}"
                 changeTv.visibility = View.VISIBLE
+                updatePriceAsNormal()
             }
         }
+    }
+
+    private fun updatePriceAsCentered() {
+        val layoutParams: RelativeLayout.LayoutParams = binding.priceTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.ALIGN_BASELINE)
+        layoutParams.removeRule(RelativeLayout.BELOW)
+        layoutParams.addRule(RelativeLayout.CENTER_VERTICAL)
+        layoutParams.topMargin = 0
+        binding.priceTv.layoutParams = layoutParams
+    }
+
+    private fun updatePriceAsNormal() {
+        val layoutParams: RelativeLayout.LayoutParams = binding.priceTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.CENTER_VERTICAL)
+        layoutParams.addRule(RelativeLayout.ALIGN_BASELINE, R.id.balance_as)
+        layoutParams.topMargin = getPriceTopMarginPx()
+        binding.priceTv.layoutParams = layoutParams
+    }
+
+    private fun getPriceTopMarginPx(): Int {
+        val density: Float = binding.root.resources.displayMetrics.density
+        return (PRICE_TOP_MARGIN_DP * density).toInt()
+    }
+
+    private companion object {
+        private const val PRICE_TOP_MARGIN_DP: Int = 2
     }
 }

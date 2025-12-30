@@ -342,6 +342,10 @@ internal constructor(
 
     suspend fun findMarketItemByCoinId(coinId: String) = tokenRepository.findMarketItemByCoinId(coinId)
 
+    suspend fun findOrSyncTokenItemByAssetId(assetId: String): TokenItem? {
+        return tokenRepository.findOrSyncAsset(assetId)
+    }
+
     private val _recentSearches = MutableStateFlow<List<RecentSearch>>(emptyList())
     val recentSearches = _recentSearches.asStateFlow()
 

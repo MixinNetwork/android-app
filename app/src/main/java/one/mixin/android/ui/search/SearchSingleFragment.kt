@@ -144,8 +144,6 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 override fun onMarketClick(market: Market) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
-                            searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.MARKET, iconUrl = marketItem.iconUrl, title = marketItem.symbol, primaryKey = marketItem.coinId))
-                            RxBus.publish(SearchEvent())
                             WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
                         }
                     }
