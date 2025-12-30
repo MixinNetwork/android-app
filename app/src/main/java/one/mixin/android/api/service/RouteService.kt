@@ -21,11 +21,7 @@ import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.api.response.SafeAsset
-import one.mixin.android.api.response.SchemeResponse
-import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.UserAddressView
-import one.mixin.android.api.response.UserSafe
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.StakeAccount
@@ -36,7 +32,6 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.api.response.web3.Web3WalletResponse
-import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
@@ -62,7 +57,8 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
- 
+import one.mixin.android.api.response.web3.WalletOutput
+
 import retrofit2.http.Query
 
 interface RouteService {

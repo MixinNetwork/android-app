@@ -82,6 +82,7 @@ import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.WalletOutputDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
@@ -305,6 +306,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var outputDao: OutputDao
+
+    @Inject
+    @Transient
+    lateinit var walletOutputDao: WalletOutputDao
 
     @Inject
     @Transient

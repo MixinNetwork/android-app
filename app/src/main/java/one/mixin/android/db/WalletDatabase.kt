@@ -8,8 +8,11 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.db.converter.Web3TypeConverters
+import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.WalletOutputDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
 import one.mixin.android.db.web3.Web3RawTransactionDao
@@ -17,9 +20,7 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
-import one.mixin.android.db.web3.SafeWalletsDao
 import one.mixin.android.db.web3.vo.SafeWallets
-import one.mixin.android.vo.route.Order
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3RawTransaction
@@ -30,6 +31,7 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.vo.Property
+import one.mixin.android.vo.route.Order
 import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -47,8 +49,9 @@ import kotlin.math.min
         Property::class,
         Order::class,
         SafeWallets::class,
+        WalletOutput::class,
     ],
-    version = 6,
+    version = 7,
 )
 @TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
@@ -103,6 +106,13 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT, `pubkey_type` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_outputs_wallet_id_created_at` ON `outputs` (`wallet_id`, `created_at`)")
+            }
+        }
+
         fun getDatabase(context: Context): WalletDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -120,7 +130,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
                                 Executors.newFixedThreadPool(
@@ -146,6 +156,8 @@ abstract class WalletDatabase : RoomDatabase() {
     abstract fun web3ChainDao(): Web3ChainDao
     abstract fun web3PropertyDao(): Web3PropertyDao
     abstract fun web3RawTransactionDao(): Web3RawTransactionDao
+
+    abstract fun walletOutputDao(): WalletOutputDao
     abstract fun orderDao(): OrderDao
     abstract fun safeWalletsDao(): SafeWalletsDao
 

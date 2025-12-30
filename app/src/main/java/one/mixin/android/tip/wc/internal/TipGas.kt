@@ -55,3 +55,22 @@ private fun convertToGasLimit(
         defaultLimit
     }
 }
+
+private fun estimateFeeInSatoshi(unitPrice: String, unitLimit: String): BigDecimal {
+    return try {
+        val price = BigDecimal(unitPrice)
+        val limit = BigDecimal(unitLimit)
+        price.multiply(limit)
+    } catch (e: Exception) {
+        BigDecimal.ZERO
+    }
+}
+
+private fun satoshiToBtc(satoshis: BigDecimal, scale: Int = 8): BigDecimal {
+    return satoshis.divide(BigDecimal("100000000"), scale, RoundingMode.HALF_UP)
+}
+
+fun estimateFeeInBtc(unitPrice: String, unitLimit: String, scale: Int = 8): BigDecimal {
+    val sats = estimateFeeInSatoshi(unitPrice, unitLimit)
+    return satoshiToBtc(sats, scale)
+}

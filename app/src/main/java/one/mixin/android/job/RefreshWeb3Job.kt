@@ -11,6 +11,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
@@ -23,6 +24,9 @@ import one.mixin.android.event.WalletOperationType
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
+import kotlin.collections.isNullOrEmpty
+import kotlin.collections.take
+
 class RefreshWeb3Job : BaseJob(
     Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
 ) {
@@ -159,9 +163,13 @@ class RefreshWeb3Job : BaseJob(
                     Timber.d("Fetched 0 BTC outputs for walletId=$walletId address=$address")
                     return@requestRouteAPI
                 }
-                Timber.d("Fetched ${outputs.size} BTC outputs for walletId=$walletId address=$address")
-                outputs.take(50).forEach { output ->
-                    Timber.d("BTC output id=${output.outputId} tx=${output.transactionHash} vout=${output.outputIndex} amount=${output.amount} address=${output.address} pubkeyType=${output.pubkeyType} status=${output.status}")
+                try {
+                    outputs.forEach { it.walletId = walletId }
+                    // use suspend insert to let Room handle the list insertion in coroutine
+                    walletOutputDao.insertListSuspend(outputs)
+                    Timber.d("Inserted ${outputs.size} BTC outputs into database for walletId=$walletId")
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to insert BTC outputs for walletId=$walletId into DB")
                 }
             },
             failureBlock = { response ->

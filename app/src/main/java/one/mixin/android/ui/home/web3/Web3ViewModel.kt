@@ -43,6 +43,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.buildTipGas
+import one.mixin.android.tip.wc.internal.estimateFeeInBtc
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState
@@ -304,18 +305,29 @@ internal constructor(
         if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
             val response = withContext(Dispatchers.IO) {
                 runCatching {
-                    // kotlin
                     val params = MainNetParams.get()
-
                     val tx = Transaction()
                     val recipientAddress = Address.fromString(params, fromAddress)
                     val amountToSend = Coin.parseCoin("0.00015")
                     tx.addOutput(amountToSend, recipientAddress)
-                    //
-                    val prevTxHash = Sha256Hash.wrap("05be305b487a8172e505e4de01a09f55f4190d607cf1fd9aacd187397dec35e5")
-                    val outIndex: Long = 0L
-                    val emptyScript = Script.parse(byteArrayOf())
-                    tx.addInput(prevTxHash, outIndex, emptyScript)
+
+                    // Try to use a real UTXO from local DB for fee estimation
+                    val localUtxos = try {
+                        web3Repository.outputsByWalletId(token.walletId)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+
+                    if (localUtxos.isNotEmpty()) {
+                        val utxo = localUtxos.first()
+                        val prevTxHash = Sha256Hash.wrap(utxo.transactionHash)
+                        val outIndex: Long = utxo.outputIndex
+                        val emptyScript = Script.parse(byteArrayOf())
+                        tx.addInput(prevTxHash, outIndex, emptyScript)
+                    } else {
+                        return@withContext null
+                    }
+
                     val rawTxHex: String = tx.serialize().toHex()
                     web3Repository.estimateFee(
                         EstimateFeeRequest(
@@ -330,10 +342,9 @@ internal constructor(
                 }.getOrNull()
             }
             if (response?.isSuccess != true || response.data == null) return BigDecimal.ZERO
-            val unitPrice: BigDecimal = response.data!!.unitPrice?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-            val unitLimit: BigDecimal = response.data!!.unitLimit?.toBigDecimalOrNull() ?: return BigDecimal.ZERO
-            val totalFeeSatoshis: BigDecimal = unitPrice.multiply(unitLimit)
-            return totalFeeSatoshis
+            val unitPrice: String = response.data!!.unitPrice!!
+            val unitLimit: String = response.data!!.unitLimit!!
+            return estimateFeeInBtc(unitPrice, unitLimit)
         }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
