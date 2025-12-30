@@ -207,14 +207,14 @@ fun WalletListScreen(
     val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
     val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
     val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
-    var selectedCategory by remember {
-        mutableStateOf<String?>(
+    var selectedCategory by remember(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
+        mutableStateOf(
             when {
                 hasAll -> null
                 hasSafe -> WalletCategory.MIXIN_SAFE.value
+                hasCreated -> WalletCategory.CLASSIC.value
                 hasSafe -> "import"
                 hasSafe -> "watch"
-                hasCreated -> WalletCategory.CLASSIC.value
                 else -> null
             }
         )
@@ -260,15 +260,17 @@ fun WalletListScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            WalletCategoryFilter(
-                selectedCategory = selectedCategory,
-                hasAll = hasAll,
-                hasImported = hasImported,
-                hasWatch = hasWatch,
-                hasSafe = hasSafe,
-                hasCreated = hasCreated,
-                onCategorySelected = { selectedCategory = it }
-            )
+            if (hasAll || hasWatch || hasSafe || hasWatch || hasCreated) {
+                WalletCategoryFilter(
+                    selectedCategory = selectedCategory,
+                    hasAll = hasAll,
+                    hasImported = hasImported,
+                    hasWatch = hasWatch,
+                    hasSafe = hasSafe,
+                    hasCreated = hasCreated,
+                    onCategorySelected = { selectedCategory = it }
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
