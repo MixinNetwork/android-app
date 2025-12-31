@@ -33,6 +33,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
@@ -64,6 +65,8 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.params.MainNetParams
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4k.exception.RpcException
@@ -349,7 +352,13 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             try {
                 step = Step.Loading
                 errorInfo = null
-                if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
+                if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {
+                    val rawHex = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    val tx = Web3Signer.signBTCTransaction(priv, rawHex)
+                    Timber.e("tx $tx")
+//                    viewModel.postRawTx(tx, Constants.ChainId.BITCOIN_CHAIN_ID, , toAddress, token?.assetId, if (isFeeWaived) "free" else null)
+                } else if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
                     val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
@@ -572,4 +581,3 @@ fun showBrowserBottomSheetDialogFragment(
         BrowserWalletBottomSheetDialogFragment.TAG,
     )
 }
-

@@ -346,7 +346,7 @@ suspend fun Web3TokenItem.buildTransaction(
         }
 
         val rawTxHex: String = tx.serialize().toHex()
-        return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = rawTxHex)
+        return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex)
     } else {
         throw IllegalStateException("Not support: $chainId")
     }

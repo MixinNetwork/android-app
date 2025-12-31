@@ -26,6 +26,8 @@ class JsSignMessage(
         const val TYPE_RAW_TRANSACTION = 4
         const val TYPE_SIGN_IN = 5
 
+        const val TYPE_BTC_TRANSACTION = 6
+
         fun isSignMessage(type: Int): Boolean =
             type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
 

@@ -24,6 +24,13 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
+import org.bitcoinj.base.LegacyAddress
+import org.bitcoinj.core.*
+import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.params.MainNetParams
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
+import org.bitcoinj.script.ScriptChunk
 import org.sol4k.Keypair
 import org.sol4kt.SignInAccount
 import org.sol4kt.SignInInput
@@ -40,6 +47,8 @@ import org.web3j.protocol.core.Response
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
+import java.nio.ByteBuffer
+import java.time.Instant
 import org.sol4k.Constants as ConstantsSolana
 
 object Web3Signer {
@@ -366,6 +375,50 @@ object Web3Signer {
         System.arraycopy(signature.s, 0, b, 32, 32)
         System.arraycopy(signature.v, 0, b, 64, 1)
         return Numeric.toHexString(b)
+    }
+
+    fun signBTCTransaction(priv: ByteArray, rawHex: String): String {
+        val params = MainNetParams.get()
+        val key = ECKey.fromPrivate(priv)
+
+        val rawTxBytes = rawHex.hexStringToByteArray()
+        val transaction = Transaction.read(ByteBuffer.wrap(rawTxBytes))
+
+        val input = transaction.getInput(0)
+
+        val scriptPubKey = input.connectedOutput?.scriptPubKey
+            ?: ScriptBuilder.createOutputScript(LegacyAddress.fromKey(params, key))
+
+        val sigHash = transaction.hashForSignature(0, scriptPubKey, Transaction.SigHash.ALL, false)
+
+        val ecSig = key.sign(sigHash)
+
+        val derSignature = ecSig.encodeToDER()
+        val sigHashType = byteArrayOf(Transaction.SigHash.ALL.byteValue())
+        val signature = derSignature + sigHashType
+
+        val pubKey = key.pubKey
+
+        val scriptSig = ScriptBuilder()
+            .data(signature)
+            .data(pubKey)
+            .build()
+
+        val signedInput = TransactionInput(
+            null,
+            scriptSig.program,
+            input.outpoint,
+            input.sequenceNumber
+        )
+
+        val signedTx = Transaction(params)
+        signedTx.addInput(signedInput)
+
+        for (output in transaction.outputs) {
+            signedTx.addOutput(output)
+        }
+
+        return signedTx.serialize().toHex()
     }
 
     fun signSolanaMessage(

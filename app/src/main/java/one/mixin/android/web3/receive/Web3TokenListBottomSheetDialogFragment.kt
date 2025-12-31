@@ -18,8 +18,8 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_WALLET_SEND
 import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
+import one.mixin.android.Constants.Account.PREF_WALLET_SEND
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
