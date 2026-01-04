@@ -238,6 +238,7 @@ internal constructor(
         tokenRepository.inscriptionStateByHash(inscriptionHash)
 
     suspend fun outputsByWalletId(walletId: String) = web3Repository.outputsByWalletId(walletId)
+    suspend fun outputsByHash(walletId: String) = web3Repository.outputsByHash(walletId)
     suspend fun calcFee(
         token: Web3TokenItem,
         transaction: JsSignMessage,

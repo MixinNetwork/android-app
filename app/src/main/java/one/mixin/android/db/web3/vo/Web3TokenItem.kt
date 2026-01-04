@@ -21,6 +21,7 @@ import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.LegacyAddress
 import org.bitcoinj.base.Sha256Hash
@@ -334,27 +335,37 @@ suspend fun Web3TokenItem.buildTransaction(
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
     } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-        val params = MainNetParams.get()
+        val addressParser = AddressParser.getDefault()
         if (!localUtxos.isNullOrEmpty()) {
-            val utxo = localUtxos.first()
-            val changeAddress = BtcAddress.fromString(params, fromAddress)
-            val recipientAddress = BtcAddress.fromString(params, toAddress)
-            val prevTxHash = Sha256Hash.wrap(utxo.transactionHash)
-            val prevOutputIndex = utxo.outputIndex
-            val utxoAmount = Coin.valueOf((0.0002f * 100000000L).toLong())
-            val tx = BtcTransaction(params)
-            val sendAmount = Coin.valueOf(1000)
-            val fee = Coin.valueOf(1000)
-            val changeAmount = utxoAmount.subtract(sendAmount).subtract(fee)
+            val changeAddress = addressParser.parseAddress( fromAddress)
+            val recipientAddress = addressParser.parseAddress( toAddress)
+            val sendAmount = Coin.parseCoin(v)
+            val fee = Coin.valueOf(0)
+            val targetAmount = sendAmount.add(fee)
+            var selectedAmount = Coin.ZERO
+            val selectedUtxos: MutableList<WalletOutput> = mutableListOf()
+            for (localUtxo: WalletOutput in localUtxos) {
+                if (selectedAmount.isGreaterThan(targetAmount) || selectedAmount == targetAmount) {
+                    break
+                }
+                selectedUtxos.add(localUtxo)
+                selectedAmount = selectedAmount.add(Coin.parseCoin(localUtxo.amount))
+            }
+            val changeAmount = selectedAmount.subtract(targetAmount)
+            if (changeAmount.isNegative) {
+                throw IllegalArgumentException("insufficient balance")
+            }
+            val tx = BtcTransaction()
             tx.addOutput(sendAmount, recipientAddress)
-            tx.addOutput(changeAmount, changeAddress)
-            val outPoint = TransactionOutPoint(prevOutputIndex, prevTxHash)
-            val input = TransactionInput( tx, byteArrayOf(), outPoint)
-//            val utxoScript = ScriptBuilder.createOutputScript(changeAddress)
-//            val scriptSig: Script = ScriptBuilder.createInputScript(
-//                tx.calculateSignature(0, ECKey(), utxoScript, BtcTransaction.SigHash.ALL, false)
-//            )
-            tx.addInput(input)
+            if (!changeAmount.isZero) {
+                tx.addOutput(changeAmount, changeAddress)
+            }
+            for (selectedUtxo: WalletOutput in selectedUtxos) {
+                val prevTxHash = Sha256Hash.wrap(selectedUtxo.transactionHash)
+                val outPoint = TransactionOutPoint(selectedUtxo.outputIndex, prevTxHash)
+                val input = TransactionInput(tx, byteArrayOf(), outPoint)
+                tx.addInput(input)
+            }
             val rawTxHex: String = tx.serialize().toHex()
             return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex)
 

@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.components
 
 import one.mixin.android.api.response.web3.SwapToken
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 data class PriceDisplayState(
     val fromToken: SwapToken?,

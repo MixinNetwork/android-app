@@ -109,6 +109,10 @@ class BrowserWalletBottomSheetViewModel
             web3Repository.outputsByWalletId(walletId)
         }
 
+        suspend fun outputsByHash(walletId: String): WalletOutput? = withContext(Dispatchers.IO) {
+            web3Repository.outputsByHash(walletId)
+        }
+
         suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
             web3Repository.web3TokenItemById(walletId, assetId)
         }

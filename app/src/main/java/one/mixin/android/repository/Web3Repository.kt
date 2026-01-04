@@ -268,4 +268,6 @@ constructor(
     }
 
     suspend fun outputsByWalletId(walletId: String): List<WalletOutput> = walletOutputDao.outputsByWalletId(walletId)
+
+    suspend fun outputsByHash(walletId: String): WalletOutput? = walletOutputDao.outputsByHash(walletId)
 }
