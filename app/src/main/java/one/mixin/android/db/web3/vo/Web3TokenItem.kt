@@ -22,11 +22,16 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.Coin
+import org.bitcoinj.base.LegacyAddress
 import org.bitcoinj.base.Sha256Hash
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionOutPoint
+import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.base.Address as BtcAddress
 import org.bitcoinj.core.Transaction as BtcTransaction
 import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
@@ -329,24 +334,33 @@ suspend fun Web3TokenItem.buildTransaction(
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
     } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-        // Build a bitcoin transaction used for fee estimation. Use provided utxos if present.
         val params = MainNetParams.get()
-        val tx = BtcTransaction(params)
-        val recipientAddress = BtcAddress.fromString(params, toAddress)
-        val amountToSend = Coin.parseCoin(v)
-        tx.addOutput(amountToSend, recipientAddress)
         if (!localUtxos.isNullOrEmpty()) {
             val utxo = localUtxos.first()
+            val changeAddress = BtcAddress.fromString(params, fromAddress)
+            val recipientAddress = BtcAddress.fromString(params, toAddress)
             val prevTxHash = Sha256Hash.wrap(utxo.transactionHash)
-            val outIndex: Long = utxo.outputIndex
-            val emptyScript = Script.parse(byteArrayOf())
-            tx.addInput(prevTxHash, outIndex, emptyScript)
-        } else {
+            val prevOutputIndex = utxo.outputIndex
+            val utxoAmount = Coin.valueOf((0.0002f * 100000000L).toLong())
+            val tx = BtcTransaction(params)
+            val sendAmount = Coin.valueOf(1000)
+            val fee = Coin.valueOf(1000)
+            val changeAmount = utxoAmount.subtract(sendAmount).subtract(fee)
+            tx.addOutput(sendAmount, recipientAddress)
+            tx.addOutput(changeAmount, changeAddress)
+            val outPoint = TransactionOutPoint(prevOutputIndex, prevTxHash)
+            val input = TransactionInput( tx, byteArrayOf(), outPoint)
+//            val utxoScript = ScriptBuilder.createOutputScript(changeAddress)
+//            val scriptSig: Script = ScriptBuilder.createInputScript(
+//                tx.calculateSignature(0, ECKey(), utxoScript, BtcTransaction.SigHash.ALL, false)
+//            )
+            tx.addInput(input)
+            val rawTxHex: String = tx.serialize().toHex()
+            return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex)
+
+        }else{
             throw IllegalArgumentException("localUtxos is null or empty")
         }
-
-        val rawTxHex: String = tx.serialize().toHex()
-        return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex)
     } else {
         throw IllegalStateException("Not support: $chainId")
     }
