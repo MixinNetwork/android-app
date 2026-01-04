@@ -22,8 +22,7 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
             UNION ALL
             SELECT wallet_id AS id, 'mixin_safe' AS category, name, created_at AS createdAt, updated_at AS updatedAt,
                    role AS safeRole, chain_id AS safeChainId, address AS safeAddress, url AS safeUrl
-            FROM safe_wallets
-        """
+            FROM `safe_wallets`"""
     }
 
     @Query("""

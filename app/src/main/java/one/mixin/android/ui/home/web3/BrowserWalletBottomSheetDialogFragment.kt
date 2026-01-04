@@ -1,9 +1,5 @@
 package one.mixin.android.ui.home.web3
 
-import org.bitcoinj.core.*
-import org.bitcoinj.script.ScriptBuilder
-import org.bitcoinj.wallet.SendRequest
-import java.math.BigInteger
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
@@ -72,13 +68,21 @@ import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.bitcoinj.base.Address
+import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
-import org.bitcoinj.base.LegacyAddress
+import org.bitcoinj.base.Network
+import org.bitcoinj.base.ScriptType
 import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.Transaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionOutPoint
+import org.bitcoinj.core.TransactionOutput
+import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4k.exception.RpcException
@@ -89,10 +93,9 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import java.nio.ByteBuffer
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-
-import org.bitcoinj.base.Address as BtcAddress
 import org.bitcoinj.core.Transaction as BtcTransaction
 
 @AndroidEntryPoint
@@ -370,11 +373,11 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {
                     val rawHex = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
-                    val walletId = token?.walletId ?: throw IllegalArgumentException("empty walletId")
                     val key: ECKey = ECKey.fromPrivate(priv, true)
-                    val tx = signTransaction("bc1qv26xgckkeqxkl7j6npuegr7nez2wlu3qjuh59t","bc1qdpk2f7pt2xgl85zcth25f0kcn9xzej3j4znwmr",key, viewModel.outputsByWalletId(walletId))
-                    // Todo
-                    Timber.e("tx $tx")
+                    val signedHex = signTransaction(rawHex, key, viewModel.outputsByWalletId(token!!.walletId))
+                    val fromAddress: String = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
+                    viewModel.postRawTx(signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
+                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
@@ -423,40 +426,31 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             }
         }
 
-    private fun signTransaction(fromAddress: String, toAddress: String, signingKey: ECKey, localUtxos: List<WalletOutput>): String {
-        val params = MainNetParams.get()
-        val changeAddress = BtcAddress.fromString(params, fromAddress)
-        val recipientAddress = BtcAddress.fromString(params, toAddress)
-        val tx = Transaction()
-        val sendAmount = Coin.valueOf(1000)
-        val fee = Coin.valueOf(1000)
-        val targetAmount = sendAmount.add(fee)
-        var selectedAmount = Coin.ZERO
-        val selectedUtxos: MutableList<WalletOutput> = mutableListOf()
-        for (localUtxo: WalletOutput in localUtxos) {
-            if (selectedAmount.isGreaterThan(targetAmount) || selectedAmount == targetAmount) {
-                break
-            }
-            selectedUtxos.add(localUtxo)
-            selectedAmount = selectedAmount.add(Coin.parseCoin(localUtxo.amount))
+    private fun signTransaction(unsignedRawHex: String, signingKey: ECKey, localUtxos: List<WalletOutput>): String {
+        val rawTxBytes: ByteArray = unsignedRawHex.hexStringToByteArray()
+        val transaction: Transaction = Transaction.read(ByteBuffer.wrap(rawTxBytes))
+        val utxoMap: Map<String, WalletOutput> = localUtxos.associateBy { utxo -> "${utxo.transactionHash}:${utxo.outputIndex}" }
+        val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
+        transaction.inputs.forEachIndexed { inputIndex: Int, input: TransactionInput ->
+            val prevHash: String = input.outpoint.hash().toString()
+            val prevIndex: Long = input.outpoint.index()
+            val utxoKey = "$prevHash:$prevIndex"
+            val utxo: WalletOutput = utxoMap[utxoKey] ?: throw IllegalArgumentException("Missing utxo for input[$inputIndex] $utxoKey")
+            val utxoAmount: Coin = Coin.parseCoin(utxo.amount)
+            if (utxoAmount.isZero) throw IllegalArgumentException("Invalid utxo amount on input[$inputIndex]")
+            val signature = transaction.calculateWitnessSignature(
+                inputIndex,
+                signingKey,
+                scriptCode,
+                utxoAmount,
+                Transaction.SigHash.ALL,
+                false,
+            )
+            val witness: TransactionWitness = TransactionWitness.of(signature.encodeToBitcoin(), signingKey.pubKey)
+            val newInput: TransactionInput = input.withScriptBytes(byteArrayOf()).withWitness(witness)
+            transaction.replaceInput(inputIndex, newInput)
         }
-        val changeAmount = selectedAmount.subtract(targetAmount)
-        if (changeAmount.isNegative) {
-            throw IllegalArgumentException("insufficient balance")
-        }
-        tx.addOutput(sendAmount, recipientAddress)
-        val utxoScript = ScriptBuilder.createOutputScript(changeAddress)
-        if (!changeAmount.isZero) {
-            tx.addOutput(changeAmount, changeAddress)
-        }
-        for (selectedUtxo: WalletOutput in selectedUtxos) {
-            val prevTxHash = Sha256Hash.wrap(selectedUtxo.transactionHash)
-            val outPoint = TransactionOutPoint(selectedUtxo.outputIndex, prevTxHash)
-            val utxoAmount = Coin.parseCoin(selectedUtxo.amount)
-            tx.addSignedInput(outPoint, utxoScript, utxoAmount, signingKey)
-        }
-        val rawTxHex: String = tx.serialize().toHex()
-        return rawTxHex
+        return transaction.serialize().toHex()
     }
 
     override fun onDismiss(dialog: DialogInterface) {
