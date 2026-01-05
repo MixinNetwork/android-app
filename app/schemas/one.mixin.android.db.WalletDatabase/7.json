@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "3eae8310a92ce2932f4ba3792e0ec9fc",
+    "identityHash": "cba9fbc615d25150e42ad9dd4e0af921",
     "entities": [
       {
         "tableName": "tokens",
@@ -682,17 +682,11 @@
       },
       {
         "tableName": "outputs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT, `pubkey_type` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT, `pubkey_type` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))",
         "fields": [
           {
             "fieldPath": "outputId",
             "columnName": "output_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "walletId",
-            "columnName": "wallet_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -759,7 +753,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3eae8310a92ce2932f4ba3792e0ec9fc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cba9fbc615d25150e42ad9dd4e0af921')"
     ]
   }
 }

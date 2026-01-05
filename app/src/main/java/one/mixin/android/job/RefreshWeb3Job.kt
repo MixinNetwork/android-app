@@ -159,15 +159,11 @@ class RefreshWeb3Job : BaseJob(
             },
             successBlock = { response ->
                 val outputs = response.data
-                if (outputs.isNullOrEmpty()) {
-                    Timber.d("Fetched 0 BTC outputs for walletId=$walletId address=$address")
-                    return@requestRouteAPI
-                }
                 try {
-                    outputs.forEach { it.walletId = walletId }
                     // use suspend insert to let Room handle the list insertion in coroutine
-                    walletOutputDao.insertListSuspend(outputs)
-                    Timber.d("Inserted ${outputs.size} BTC outputs into database for walletId=$walletId")
+                    val safeOutputs: List<WalletOutput> = outputs ?: emptyList()
+                    walletOutputDao.mergeOutputsForAddress(address, safeOutputs)
+                    Timber.d("Merged ${safeOutputs.size} BTC outputs into database for walletId=$walletId")
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to insert BTC outputs for walletId=$walletId into DB")
                 }

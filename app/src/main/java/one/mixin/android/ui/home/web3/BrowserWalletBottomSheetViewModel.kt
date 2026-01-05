@@ -105,12 +105,15 @@ class BrowserWalletBottomSheetViewModel
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
 
-        suspend fun outputsByWalletId(walletId: String): List<WalletOutput> = withContext(Dispatchers.IO) {
-            web3Repository.outputsByWalletId(walletId)
+        suspend fun outputsByAddress(address: String): List<WalletOutput> = withContext(Dispatchers.IO) {
+            web3Repository.walletOutputDao.outputsByAddress(address)
         }
 
-        suspend fun outputsByHash(walletId: String): WalletOutput? = withContext(Dispatchers.IO) {
-            web3Repository.outputsByHash(walletId)
+        suspend fun markOutputsToSigned(outputIds: List<String>) = withContext(Dispatchers.IO) {
+            if (outputIds.isEmpty()) {
+                return@withContext
+            }
+            web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
         }
 
         suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {

@@ -494,7 +494,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         }
     }
     
-    private suspend fun createSpeedUpMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
+    private fun createSpeedUpMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
         val decodedTx = TransactionDecoder.decode(rawTransaction.raw)
         
         val nonce = rawTransaction.nonce

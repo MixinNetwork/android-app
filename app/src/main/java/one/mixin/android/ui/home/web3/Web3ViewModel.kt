@@ -237,8 +237,7 @@ internal constructor(
     fun inscriptionStateByHash(inscriptionHash: String) =
         tokenRepository.inscriptionStateByHash(inscriptionHash)
 
-    suspend fun outputsByWalletId(walletId: String) = web3Repository.outputsByWalletId(walletId)
-    suspend fun outputsByHash(walletId: String) = web3Repository.outputsByHash(walletId)
+    suspend fun outputsByAddress(address: String) = web3Repository.outputsByAddress(address)
     suspend fun calcFee(
         token: Web3TokenItem,
         transaction: JsSignMessage,
@@ -247,7 +246,7 @@ internal constructor(
         if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
             val response = withContext(Dispatchers.IO) {
                 runCatching {
-                    val localUtxos = outputsByWalletId(token.walletId)
+                    val localUtxos = outputsByAddress(fromAddress)
                     val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
                     web3Repository.estimateFee(
                         EstimateFeeRequest(
