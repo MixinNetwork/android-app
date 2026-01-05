@@ -67,20 +67,13 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
-import org.bitcoinj.base.Address
-import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
-import org.bitcoinj.base.Network
 import org.bitcoinj.base.ScriptType
-import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.core.TransactionInput
-import org.bitcoinj.core.TransactionOutPoint
-import org.bitcoinj.core.TransactionOutput
 import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
-import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Base58
@@ -96,7 +89,6 @@ import java.math.BigDecimal
 import java.nio.ByteBuffer
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-import org.bitcoinj.core.Transaction as BtcTransaction
 
 @AndroidEntryPoint
 class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -207,6 +199,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 signMessage.isSpeedUp,
                 tipGas,
                 solanaTx?.calcFee(Web3Signer.address),
+                signMessage.fee,
                 parsedTx,
                 signMessage.solanaTxSource,
                 asset,

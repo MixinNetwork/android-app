@@ -534,7 +534,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 },
                             ) {
                                 val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                    token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByWalletId(token.walletId))
+                                    token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByWalletId(token.walletId), gas)
                                 } else {
                                     token.buildTransaction(rpc, fromAddress, toAddress, amount)
                                 }
@@ -1241,7 +1241,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val transaction =
             try {
                 if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance, web3ViewModel.outputsByWalletId(t.walletId))
+                    t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance, web3ViewModel.outputsByWalletId(t.walletId), gas)
                 } else {
                     t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
                 }

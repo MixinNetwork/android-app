@@ -232,6 +232,7 @@ suspend fun Web3TokenItem.buildTransaction(
     toAddress: String,
     v: String,
     localUtxos: List<WalletOutput>? = null,
+    gas: BigDecimal? = BigDecimal.ZERO,
 ): JsSignMessage {
     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
         Web3Signer.useSolana()
@@ -340,7 +341,7 @@ suspend fun Web3TokenItem.buildTransaction(
             val changeAddress = addressParser.parseAddress( fromAddress)
             val recipientAddress = addressParser.parseAddress( toAddress)
             val sendAmount = Coin.parseCoin(v)
-            val fee = Coin.valueOf(0)
+            val fee = Coin.parseCoin((gas ?: BigDecimal.ZERO).toString())
             val targetAmount = sendAmount.add(fee)
             var selectedAmount = Coin.ZERO
             val selectedUtxos: MutableList<WalletOutput> = mutableListOf()
@@ -367,7 +368,7 @@ suspend fun Web3TokenItem.buildTransaction(
                 tx.addInput(input)
             }
             val rawTxHex: String = tx.serialize().toHex()
-            return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex)
+            return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex, fee = gas)
 
         }else{
             throw IllegalArgumentException("localUtxos is null or empty")

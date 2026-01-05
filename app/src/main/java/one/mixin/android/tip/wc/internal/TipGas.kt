@@ -33,29 +33,8 @@ data class TipGas(
 }
 
 fun buildTipGas(assetId: String, response: EstimateFeeResponse): TipGas {
-    return TipGas(assetId, response.gasLimit!!.toBigInteger(), response.maxFeePerGas!!.toBigInteger(), response.maxPriorityFeePerGas!!.toBigInteger())
+    return TipGas(assetId, response.gasLimit!!.toBigInteger(), response.maxFeePerGas!!.toBigInteger(), response.maxPriorityFeePerGas!!.toBigInteger(), )
 }
-
-private fun convertToGasLimit(
-    estimate: EthEstimateGas,
-    defaultLimit: BigInteger?,
-): BigInteger? {
-    return if (estimate.hasError()) {
-        // out of gas
-        if (estimate.error.code == -32000) {
-            defaultLimit
-        } else {
-            BigInteger.ZERO
-        }
-    } else if (estimate.amountUsed > BigInteger.ZERO) {
-        estimate.amountUsed
-    } else if (defaultLimit == null || defaultLimit == BigInteger.ZERO) {
-        BigInteger(DEFAULT_GAS_LIMIT_FOR_NONFUNGIBLE_TOKENS)
-    } else {
-        defaultLimit
-    }
-}
-
 private fun estimateFeeInSatoshi(unitPrice: String, unitLimit: String): BigDecimal {
     return try {
         val price = BigDecimal(unitPrice)

@@ -93,6 +93,7 @@ fun BrowserPage(
     isSpeedUp: Boolean,
     tipGas: TipGas?,
     solanaFee: BigDecimal?,
+    btcFee: BigDecimal?,
     parsedTx: ParsedTx?,
     solanaTxSource: SolanaTxSource,
     asset: Token?,
@@ -325,7 +326,7 @@ fun BrowserPage(
                     )
                     Box(modifier = Modifier.height(10.dp))
                 }
-                val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                val fee = tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros()?: btcFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
