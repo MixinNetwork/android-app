@@ -234,7 +234,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         requireActivity().currentFocus?.clearFocus()
         requireActivity().hideKeyboard()
-        binding.mobileEt.requestFocus()
         binding.mobileEt.hideKeyboard()
     }
 
