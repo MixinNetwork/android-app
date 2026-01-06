@@ -14,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.databinding.FragmentWeb3TransactionBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
@@ -23,17 +24,20 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
+import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -44,9 +48,22 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
+import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.Coin
+import org.bitcoinj.base.Sha256Hash
+import org.bitcoinj.core.Transaction as BtcTransaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionOutPoint
+import org.bitcoinj.core.TransactionOutput
+import org.bitcoinj.params.MainNetParams
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.web3j.crypto.TransactionDecoder
 import org.web3j.utils.Numeric
+import java.math.BigDecimal
+import java.nio.ByteBuffer
 import javax.inject.Inject
+import kotlin.collections.indexOfFirst
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -55,6 +72,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         const val ARGS_TRANSACTION = "args_transaction"
         const val ARGS_CHAIN = "args_chain"
         const val ARGS_WALLET = "args_wallet"
+
+        private val BTC_NETWORK_PARAMS = MainNetParams.get()
+        private const val BTC_RBF_SEQUENCE: Long = 0xfffffffdL
+        private val BTC_DUST_THRESHOLD: Coin = Coin.valueOf(546L)
+        private val BTC_SPEED_UP_MINIMUM_INCREMENT: Coin = Coin.valueOf(500L)
+        private const val BTC_SPEED_UP_MULTIPLIER_NUMERATOR: Long = 5L
+        private const val BTC_SPEED_UP_MULTIPLIER_DENOMINATOR: Long = 4L
+        private val BTC_SATOSHIS_PER_BTC: BigDecimal = BigDecimal("100000000")
 
         fun newInstance(
             transaction: Web3TransactionItem,
@@ -462,35 +487,57 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private fun handleSpeedUp(rawTransaction: Web3RawTransaction) {
         lifecycleScope.launch {
-            val jsSignMessage = createSpeedUpMessage(rawTransaction)
-            
-            showGasCheckAndBrowserBottomSheetDialogFragment(
-                requireActivity(),
-                jsSignMessage,
-                token = token,
-                chainToken = token,
-                currentTitle = getString(R.string.Speed_Up_Transaction),
-                onDone = { result ->
-
-                }
-            )
+            if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                val jsSignMessage = createBtcSpeedUpMessage(rawTransaction)
+                showBrowserBottomSheetDialogFragment(
+                    requireActivity(),
+                    jsSignMessage,
+                    token = token,
+                    chainToken = token,
+                    currentTitle = getString(R.string.Speed_Up_Transaction),
+                    onDone = { _ ->
+                    },
+                )
+            } else {
+                val jsSignMessage = createSpeedUpMessage(rawTransaction)
+                showGasCheckAndBrowserBottomSheetDialogFragment(
+                    requireActivity(),
+                    jsSignMessage,
+                    token = token,
+                    chainToken = token,
+                    currentTitle = getString(R.string.Speed_Up_Transaction),
+                    onDone = { _ ->
+                    },
+                )
+            }
         }
     }
     
     private fun handleCancelTransaction(rawTransaction: Web3RawTransaction) {
         lifecycleScope.launch {
-            val jsSignMessage = createCancelMessage(rawTransaction)
-            
-            showGasCheckAndBrowserBottomSheetDialogFragment(
-                requireActivity(),
-                jsSignMessage,
-                token = token,
-                chainToken = token,
-                currentTitle = getString(R.string.Cancel_Transaction),
-                onDone = { result ->
-
-                }
-            )
+            if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                val jsSignMessage = createBtcCancelMessage(rawTransaction)
+                showBrowserBottomSheetDialogFragment(
+                    requireActivity(),
+                    jsSignMessage,
+                    token = token,
+                    chainToken = token,
+                    currentTitle = getString(R.string.Cancel_Transaction),
+                    onDone = { _ ->
+                    },
+                )
+            } else {
+                val jsSignMessage = createCancelMessage(rawTransaction)
+                showGasCheckAndBrowserBottomSheetDialogFragment(
+                    requireActivity(),
+                    jsSignMessage,
+                    token = token,
+                    chainToken = token,
+                    currentTitle = getString(R.string.Cancel_Transaction),
+                    onDone = { _ ->
+                    },
+                )
+            }
         }
     }
     
@@ -529,11 +576,206 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             isSpeedUp = true
         )
     }
-    
-    private suspend fun createCancelMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
-        val decodedTx = TransactionDecoder.decode(rawTransaction.raw)
-        val nonce = rawTransaction.nonce
 
+    private suspend fun createBtcSpeedUpMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
+        val fromAddress: String = transaction.getFromAddress()
+        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress)
+        val unsignedReplacementHex: String = buildBtcReplacementTransactionHex(rawTransaction.raw, fromAddress, localUtxos)
+        val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
+        return JsSignMessage(
+            callbackId = System.currentTimeMillis(),
+            type = JsSignMessage.TYPE_BTC_TRANSACTION,
+            data = unsignedReplacementHex,
+            solanaTxSource = SolanaTxSource.InnerTransfer,
+            isSpeedUp = true,
+            fee = estimatedFeeBtc,
+        )
+    }
+
+    private suspend fun createBtcCancelMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
+        val fromAddress: String = transaction.getFromAddress()
+        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress)
+        val unsignedReplacementHex: String = buildBtcCancelTransactionHex(rawTransaction.raw, fromAddress, localUtxos)
+        val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
+        return JsSignMessage(
+            callbackId = System.currentTimeMillis(),
+            type = JsSignMessage.TYPE_BTC_TRANSACTION,
+            data = unsignedReplacementHex,
+            solanaTxSource = SolanaTxSource.InnerTransfer,
+            isCancelTx = true,
+            fee = estimatedFeeBtc,
+        )
+    }
+
+    private fun buildBtcCancelTransactionHex(
+        rawTransactionHex: String,
+        fromAddress: String,
+        localUtxos: List<WalletOutput>,
+    ): String {
+        val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
+        val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
+        val originalInputs: List<TransactionInput> = originalTx.inputs
+        val inputAmount: Coin = calculateInputAmount(originalInputs, localUtxos)
+        val originalOutputAmount: Coin = originalTx.outputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
+        val currentFee: Coin = inputAmount.subtract(originalOutputAmount)
+        val desiredFee: Coin = calculateDesiredBtcSpeedUpFee(currentFee)
+        val sendToSelf: Coin = inputAmount.subtract(desiredFee)
+        if (sendToSelf.isNegative || sendToSelf.isZero) {
+            throw IllegalArgumentException("insufficient balance")
+        }
+        if (sendToSelf.isLessThan(BTC_DUST_THRESHOLD)) {
+            throw IllegalArgumentException("insufficient balance")
+        }
+        val replacementTx = BtcTransaction()
+        for (input: TransactionInput in originalInputs) {
+            val outPoint = TransactionOutPoint(input.outpoint.index(), input.outpoint.hash())
+            val txInput = TransactionInput(replacementTx, byteArrayOf(), outPoint)
+            txInput.withSequence(BTC_RBF_SEQUENCE)
+            replacementTx.addInput(txInput)
+        }
+        val script: Script = buildP2wpkhScript(fromAddress)
+        replacementTx.addOutput(sendToSelf, script)
+        return replacementTx.serialize().toHex()
+    }
+
+    private fun buildBtcReplacementTransactionHex(
+        rawTransactionHex: String,
+        fromAddress: String,
+        localUtxos: List<WalletOutput>,
+    ): String {
+        val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
+        val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
+        val fromScriptBytes: ByteArray = buildP2wpkhScript(fromAddress).program
+        val originalInputs = originalTx.inputs
+        val originalOutputs = originalTx.outputs
+        val inputAmount: Coin = calculateInputAmount(originalInputs, localUtxos)
+        val outputAmount: Coin = originalOutputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
+        val currentFee: Coin = inputAmount.subtract(outputAmount)
+        val desiredFee: Coin = calculateDesiredBtcSpeedUpFee(currentFee)
+        val feeDelta: Coin = desiredFee.subtract(currentFee)
+        if (feeDelta.isZero || feeDelta.isNegative) {
+            return cleanedRawHex
+        }
+        val changeOutputIndex: Int? = originalOutputs.indexOfFirst { output ->
+            output.scriptBytes.contentEquals(fromScriptBytes)
+        }.takeIf { index -> index >= 0 }
+        val additionalUtxo: WalletOutput? = if (changeOutputIndex == null) {
+            findAdditionalUtxo(originalInputs, localUtxos)
+        } else {
+            val currentChange: Coin = originalOutputs[changeOutputIndex].value
+            if (currentChange.isGreaterThan(feeDelta)) null else findAdditionalUtxo(originalInputs, localUtxos)
+        }
+        val replacementTx = BtcTransaction()
+        for (input in originalInputs) {
+            val outPoint = TransactionOutPoint(input.outpoint.index, input.outpoint.hash)
+            val txInput = TransactionInput(replacementTx, byteArrayOf(), outPoint)
+            txInput.withSequence(BTC_RBF_SEQUENCE)
+            replacementTx.addInput(txInput)
+        }
+        if (additionalUtxo != null) {
+            val outPoint = TransactionOutPoint(additionalUtxo.outputIndex, Sha256Hash.wrap(additionalUtxo.transactionHash))
+            val txInput = TransactionInput(replacementTx, byteArrayOf(), outPoint)
+            txInput.withSequence(BTC_RBF_SEQUENCE)
+            replacementTx.addInput(txInput)
+        }
+        val adjustedOutputs: List<Pair<Coin, Script>> = buildAdjustedOutputs(
+            originalOutputs = originalOutputs,
+            fromScriptBytes = fromScriptBytes,
+            feeDelta = feeDelta,
+            additionalInput = additionalUtxo,
+        )
+        for ((value, script) in adjustedOutputs) {
+            replacementTx.addOutput(value, script)
+        }
+        return replacementTx.serialize().toHex()
+    }
+
+    private fun buildAdjustedOutputs(
+        originalOutputs: List<TransactionOutput>,
+        fromScriptBytes: ByteArray,
+        feeDelta: Coin,
+        additionalInput: WalletOutput?,
+    ): List<Pair<Coin, Script>> {
+        val outputs: MutableList<Pair<Coin, Script>> = mutableListOf()
+        val changeIndex: Int = originalOutputs.indexOfFirst { output -> output.scriptBytes.contentEquals(fromScriptBytes) }
+        val extraInputAmount: Coin = if (additionalInput == null) Coin.ZERO else Coin.parseCoin(additionalInput.amount)
+        for ((index, output) in originalOutputs.withIndex()) {
+            if (index != changeIndex) {
+                outputs.add(output.value to Script(output.scriptBytes))
+                continue
+            }
+            val updatedChange: Coin = output.value.add(extraInputAmount).subtract(feeDelta)
+            if (updatedChange.isGreaterThan(BTC_DUST_THRESHOLD) || updatedChange == BTC_DUST_THRESHOLD) {
+                outputs.add(updatedChange to Script(output.scriptBytes))
+            }
+        }
+        if (changeIndex < 0 && additionalInput != null) {
+            val updatedChange: Coin = extraInputAmount.subtract(feeDelta)
+            if (updatedChange.isGreaterThan(BTC_DUST_THRESHOLD) || updatedChange == BTC_DUST_THRESHOLD) {
+                outputs.add(updatedChange to Script(fromScriptBytes))
+            }
+        }
+        return outputs
+    }
+
+    private fun buildP2wpkhScript(address: String): Script {
+        val addressParser: AddressParser = AddressParser.getDefault()
+        val parsedAddress = addressParser.parseAddress(address)
+        return ScriptBuilder.createOutputScript(parsedAddress)
+    }
+
+    private fun calculateInputAmount(
+        inputs: List<TransactionInput>,
+        localUtxos: List<WalletOutput>,
+    ): Coin {
+        var total: Coin = Coin.ZERO
+        for (input: TransactionInput in inputs) {
+            val utxo = localUtxos.firstOrNull { local ->
+                local.transactionHash.equals(input.outpoint.hash().toString(), ignoreCase = true) &&
+                    local.outputIndex == input.outpoint.index()
+            } ?: continue
+            total = total.add(Coin.parseCoin(utxo.amount))
+        }
+        return total
+    }
+
+    private fun findAdditionalUtxo(
+        existingInputs: List<TransactionInput>,
+        localUtxos: List<WalletOutput>,
+    ): WalletOutput? {
+        for (utxo: WalletOutput in localUtxos) {
+            val exists: Boolean = existingInputs.any { input ->
+                utxo.transactionHash.equals(input.outpoint.hash().toString(), ignoreCase = true) &&
+                    utxo.outputIndex == input.outpoint.index()
+            }
+            if (!exists) {
+                return utxo
+            }
+        }
+        return null
+    }
+
+    private fun calculateDesiredBtcSpeedUpFee(currentFee: Coin): Coin {
+        val multiplied: Coin = currentFee.multiply(BTC_SPEED_UP_MULTIPLIER_NUMERATOR).divide(BTC_SPEED_UP_MULTIPLIER_DENOMINATOR)
+        val minimum: Coin = currentFee.add(BTC_SPEED_UP_MINIMUM_INCREMENT)
+        return if (multiplied.isGreaterThan(minimum)) multiplied else minimum
+    }
+
+    private fun estimateBtcFeeFromUnsignedTransaction(
+        unsignedTransactionHex: String,
+        localUtxos: List<WalletOutput>,
+    ): BigDecimal {
+        val cleanedHex: String = unsignedTransactionHex.removePrefix("0x").trim()
+        val tx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
+        val inputAmount: Coin = calculateInputAmount(tx.inputs, localUtxos)
+        val outputAmount: Coin = tx.outputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
+        val feeSatoshi: BigDecimal = BigDecimal.valueOf(inputAmount.subtract(outputAmount).value)
+        return feeSatoshi.divide(BTC_SATOSHIS_PER_BTC)
+    }
+
+
+    private fun createCancelMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
+        val nonce = rawTransaction.nonce
         return JsSignMessage(
             callbackId = System.currentTimeMillis(),
             type = JsSignMessage.TYPE_TRANSACTION,

@@ -1462,12 +1462,7 @@ class TokenRepository
 
     suspend fun getPendingTransactions(walletId: String) = web3TransactionDao.getPendingTransactions(walletId)
 
-    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = web3RawTransactionDao.getPendingRawTransactions(
-        walletId, chainId)
-
-    suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
-
-    suspend fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
+    fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 
