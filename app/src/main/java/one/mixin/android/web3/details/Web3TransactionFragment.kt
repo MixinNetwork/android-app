@@ -579,7 +579,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun createBtcSpeedUpMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
         val fromAddress: String = transaction.getFromAddress()
-        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress)
+        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         val unsignedReplacementHex: String = buildBtcReplacementTransactionHex(rawTransaction.raw, fromAddress, localUtxos)
         val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
         return JsSignMessage(
@@ -594,7 +594,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun createBtcCancelMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
         val fromAddress: String = transaction.getFromAddress()
-        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress)
+        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         val unsignedReplacementHex: String = buildBtcCancelTransactionHex(rawTransaction.raw, fromAddress, localUtxos)
         val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
         return JsSignMessage(

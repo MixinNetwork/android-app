@@ -8,29 +8,29 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface WalletOutputDao: BaseDao<WalletOutput> {
-    @Query("SELECT * FROM outputs WHERE address = :address AND status='unspent' ORDER BY created_at DESC")
-    suspend fun outputsByAddress(address: String): List<WalletOutput>
+    @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent' ORDER BY created_at DESC")
+    suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput>
 
-    @Query("SELECT * FROM outputs WHERE transaction_hash = :hash AND status='unspent'")
-    suspend fun outputsByHash(hash: String): WalletOutput?
+    @Query("SELECT * FROM outputs WHERE transaction_hash = :hash AND asset_id = :assetId AND status='unspent'")
+    suspend fun outputsByHash(hash: String, assetId: String): WalletOutput?
 
-    @Query("DELETE FROM outputs WHERE address = :address")
-    suspend fun deleteByAddress(address: String)
+    @Query("DELETE FROM outputs WHERE address = :address AND asset_id = :assetId")
+    suspend fun deleteByAddress(address: String, assetId: String)
 
     @Query("SELECT output_id FROM outputs WHERE output_id IN (:ids) AND status = 'signed'")
     suspend fun findSignedOutputIds(ids: List<String>): List<String>
 
-    @Query("SELECT output_id FROM outputs WHERE address = :address AND status = 'unspent' AND output_id NOT IN (:remoteOutputIds)")
-    suspend fun findLocalUnspentOutputIdsNotIn(address: String, remoteOutputIds: List<String>): List<String>
+    @Query("SELECT output_id FROM outputs WHERE address = :address AND asset_id = :assetId AND status = 'unspent' AND output_id NOT IN (:remoteOutputIds)")
+    suspend fun findLocalUnspentOutputIdsNotIn(address: String, assetId: String, remoteOutputIds: List<String>): List<String>
 
-    @Query("SELECT output_id FROM outputs WHERE address = :address AND status = 'unspent'")
-    suspend fun findLocalUnspentOutputIds(address: String): List<String>
+    @Query("SELECT output_id FROM outputs WHERE address = :address AND asset_id = :assetId AND status = 'unspent'")
+    suspend fun findLocalUnspentOutputIds(address: String, assetId: String): List<String>
 
     @Query("UPDATE outputs SET status = 'signed' WHERE output_id IN (:outputIds)")
     suspend fun updateOutputsToSigned(outputIds: List<String>): Int
 
     @Transaction
-    suspend fun mergeOutputsForAddress(address: String, remoteOutputs: List<WalletOutput>) {
+    suspend fun mergeOutputsForAddress(address: String, assetId: String, remoteOutputs: List<WalletOutput>) {
         val remoteOutputIds: List<String> = remoteOutputs.map { it.outputId }
         val signedOutputIds: List<String> = if (remoteOutputIds.isEmpty()) emptyList() else findSignedOutputIds(remoteOutputIds)
         val outputsToInsert: List<WalletOutput> = if (signedOutputIds.isEmpty()) {
@@ -42,9 +42,9 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
             insertListSuspend(outputsToInsert)
         }
         val localUnspentNotInRemote: List<String> = if (remoteOutputIds.isEmpty()) {
-            findLocalUnspentOutputIds(address)
+            findLocalUnspentOutputIds(address, assetId)
         } else {
-            findLocalUnspentOutputIdsNotIn(address, remoteOutputIds)
+            findLocalUnspentOutputIdsNotIn(address, assetId, remoteOutputIds)
         }
         if (localUnspentNotInRemote.isNotEmpty()) {
             updateOutputsToSigned(localUnspentNotInRemote)

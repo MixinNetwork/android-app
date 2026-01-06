@@ -12,6 +12,10 @@ data class WalletOutput(
     @ColumnInfo(name = "output_id")
     val outputId: String,
 
+    @SerializedName("asset_id")
+    @ColumnInfo(name = "asset_id")
+    val assetId: String,
+
     @SerializedName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String,

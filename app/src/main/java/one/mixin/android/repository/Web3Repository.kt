@@ -267,7 +267,7 @@ constructor(
         return orderDao.getPendingOrdersByWallet(walletId)
     }
 
-    suspend fun outputsByAddress(address: String): List<WalletOutput> = walletOutputDao.outputsByAddress(address)
+    suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput> = walletOutputDao.outputsByAddress(address, assetId)
 
-    suspend fun outputsByHash(hash: String): WalletOutput? = walletOutputDao.outputsByHash(hash)
+    suspend fun outputsByHash(hash: String, assetId: String): WalletOutput? = walletOutputDao.outputsByHash(hash, assetId)
 }

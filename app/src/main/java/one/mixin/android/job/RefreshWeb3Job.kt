@@ -184,7 +184,7 @@ class RefreshWeb3Job : BaseJob(
                 try {
                     // use suspend insert to let Room handle the list insertion in coroutine
                     val safeOutputs: List<WalletOutput> = outputs ?: emptyList()
-                    walletOutputDao.mergeOutputsForAddress(address, safeOutputs)
+                    walletOutputDao.mergeOutputsForAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID, safeOutputs)
                     Timber.d("Merged ${safeOutputs.size} BTC outputs into database for walletId=$walletId")
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to insert BTC outputs for walletId=$walletId into DB")

@@ -108,7 +108,7 @@ abstract class WalletDatabase : RoomDatabase() {
 
         val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT, `pubkey_type` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT, `pubkey_type` TEXT, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
             }
         }
 
