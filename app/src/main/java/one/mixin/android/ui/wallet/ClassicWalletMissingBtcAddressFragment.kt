@@ -20,6 +20,7 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.viewBinding
+import org.bitcoinj.base.ScriptType
 import org.bitcoinj.crypto.ECKey
 import timber.log.Timber
 import java.math.BigInteger
@@ -97,8 +98,7 @@ class ClassicWalletMissingBtcAddressFragment : Fragment(R.layout.fragment_classi
                 derivationIndex,
             )
             val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, btcPrivateKey), true)
-            @Suppress("DEPRECATION")
-            val signature: String = ecKey.signMessage(message)
+            val signature: String = ecKey.signMessage(message, ScriptType.P2WPKH)
             Timber.d("$TAG walletId=${walletItem.id} derived btcAddress=$btcAddress")
             val updateRequest = WalletRequest(
                 name = null,

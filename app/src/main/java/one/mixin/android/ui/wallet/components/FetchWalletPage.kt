@@ -66,6 +66,7 @@ data class IndexedWallet(
     val name: String,
     val ethereumWallet: CryptoWallet,
     val solanaWallet: CryptoWallet,
+    val btcWallet: CryptoWallet,
     val assets: List<AssetView> = emptyList(),
     val exists: Boolean
 ) {

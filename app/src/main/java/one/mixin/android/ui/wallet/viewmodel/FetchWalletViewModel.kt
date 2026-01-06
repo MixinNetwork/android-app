@@ -36,11 +36,14 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.ECKey
 import org.sol4k.Base58
 import org.sol4k.Keypair
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.Instant
 import javax.inject.Inject
 
@@ -128,13 +131,20 @@ class FetchWalletViewModel @Inject constructor(
                             CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
                         val solanaWallet =
                             CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
+                        val btcWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = index)
 
                         val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${localMaxIndex + 1}"
-                        IndexedWallet( name, ethereumWallet, solanaWallet, exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address)))
+                        IndexedWallet(
+                            name = name,
+                            ethereumWallet = ethereumWallet,
+                            solanaWallet = solanaWallet,
+                            btcWallet = btcWallet,
+                            exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address)),
+                        )
                     }
 
                     val addresses = wallets.flatMap {
-                        listOf(it.ethereumWallet.address, it.solanaWallet.address)
+                        listOf(it.ethereumWallet.address, it.solanaWallet.address, it.btcWallet.address)
                     }
                     val response = web3Repository.searchAssetsByAddresses(addresses)
                     if (response.isSuccess && response.data != null) {
@@ -152,7 +162,9 @@ class FetchWalletViewModel @Inject constructor(
                                     tokensMap[wallet.ethereumWallet.address] ?: emptyList()
                                 val solanaTokens =
                                     tokensMap[wallet.solanaWallet.address] ?: emptyList()
-                                val allTokens = (evmTokens + solanaTokens).sortedByDescending {
+                                val btcTokens =
+                                    tokensMap[wallet.btcWallet.address] ?: emptyList()
+                                val allTokens = (evmTokens + solanaTokens + btcTokens).sortedByDescending {
                                     (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                                 }
                                 wallet.copy(assets = allTokens)
@@ -191,6 +203,13 @@ class FetchWalletViewModel @Inject constructor(
                 val walletsToCreate = selectedWalletInfos.value.map {
                     val category = WalletCategory.IMPORTED_MNEMONIC.value
                     val addresses = listOf(
+                        createSignedWeb3AddressRequest(
+                            destination = it.btcWallet.address,
+                            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                            path = it.btcWallet.path,
+                            privateKey = it.btcWallet.privateKey,
+                            category = category
+                        ),
                         createSignedWeb3AddressRequest(
                             destination = it.ethereumWallet.address,
                             chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
@@ -322,6 +341,9 @@ class FetchWalletViewModel @Inject constructor(
                 Constants.ChainId.SOLANA_CHAIN_ID -> {
                     val kp = Keypair.fromSecretKey(it)
                     kp.secret.encodeToBase58String()
+                }
+                Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                    Numeric.toHexString(it)
                 }
                 in Constants.Web3EvmChainIds -> {
                     Numeric.toHexString(it)
@@ -530,11 +552,14 @@ class FetchWalletViewModel @Inject constructor(
         category: String
     ): Web3AddressRequest {
         val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
-        return when {
-            chainId == Constants.ChainId.SOLANA_CHAIN_ID -> {
+        return when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
                 createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
             }
-            chainId in Constants.Web3EvmChainIds -> {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
+            }
+            in Constants.Web3EvmChainIds -> {
                 createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
             }
             else -> {
@@ -565,6 +590,9 @@ class FetchWalletViewModel @Inject constructor(
                 Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
             } else if(chainId in Constants.Web3EvmChainIds){
                 Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+            } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
+                ecKey.signMessage(message, ScriptType.P2WPKH)
             } else {
                 null
             }

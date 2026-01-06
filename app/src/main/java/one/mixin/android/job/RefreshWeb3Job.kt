@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -45,19 +46,40 @@ class RefreshWeb3Job : BaseJob(
                 Timber.e("EVM or Solana address is not set")
                 return@runBlocking
             }
+            val btcAddress = PropertyHelper.findValueByKey(BTC_ADDRESS, "")
             createWallet(
-                applicationContext.getString(R.string.Common_Wallet), WalletCategory.CLASSIC.value, listOf(
-                    Web3AddressRequest(
-                        destination = erc20Address,
-                        chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                        path = Bip44Path.ethereumPathString()
-                    ),
-                    Web3AddressRequest(
-                        destination = solAddress,
-                        chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                        path = Bip44Path.solanaPathString()
+                applicationContext.getString(R.string.Common_Wallet), WalletCategory.CLASSIC.value, if (btcAddress.isBlank().not()) {
+                    listOf(
+                        Web3AddressRequest(
+                            destination = btcAddress,
+                            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                            path = Bip44Path.bitcoinSegwitPathString()
+                        ),
+                        Web3AddressRequest(
+                            destination = erc20Address,
+                            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                            path = Bip44Path.ethereumPathString()
+                        ),
+                        Web3AddressRequest(
+                            destination = solAddress,
+                            chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                            path = Bip44Path.solanaPathString()
+                        )
                     )
-                )
+                } else {
+                    listOf(
+                        Web3AddressRequest(
+                            destination = erc20Address,
+                            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                            path = Bip44Path.ethereumPathString()
+                        ),
+                        Web3AddressRequest(
+                            destination = solAddress,
+                            chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                            path = Bip44Path.solanaPathString()
+                        )
+                    )
+                }
             )
         } else {
             wallets.forEach { wallet ->
