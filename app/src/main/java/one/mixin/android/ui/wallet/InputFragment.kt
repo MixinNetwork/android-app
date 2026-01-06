@@ -1241,7 +1241,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val transaction =
             try {
                 if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance, web3ViewModel.outputsByAddress(fromAddress), gas)
+                    t.buildTransaction(rpc, fromAddress, toAddress, "0.00000001", web3ViewModel.outputsByAddress(fromAddress), gas)
                 } else {
                     t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
                 }

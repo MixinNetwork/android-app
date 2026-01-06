@@ -17,6 +17,7 @@ import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
@@ -592,7 +593,7 @@ class FetchWalletViewModel @Inject constructor(
                 Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
             } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                 val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
-                ecKey.signMessage(message, ScriptType.P2WPKH)
+                Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
             } else {
                 null
             }

@@ -172,16 +172,16 @@ object CryptoWalletHelper {
     ): String {
         return when (chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> {
-                val keyPair = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                newKeyPairFromSeed(keyPair).publicKey.encodeToBase58String()
+                val privateKey: ByteArray = SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                newKeyPairFromSeed(privateKey).publicKey.encodeToBase58String()
             }
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val wallet: CryptoWallet = mnemonicToBitcoinSegwitWallet(mnemonic, passphrase, index)
-                wallet.address
+                BitcoinKeyGenerator.mnemonicToAddress(mnemonic, passphrase, index)
             }
             in Constants.Web3EvmChainIds -> {
-                val privateKey = EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
-                    ?: throw IllegalArgumentException("Private key generation failed")
+                val privateKey: ByteArray =
+                    EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                        ?: throw IllegalArgumentException("Private key generation failed")
                 EthKeyGenerator.privateKeyToAddress(privateKey)
             }
             else -> {

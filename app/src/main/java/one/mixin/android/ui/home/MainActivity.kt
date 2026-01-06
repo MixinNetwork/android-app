@@ -68,11 +68,9 @@ import one.mixin.android.Constants.INTERVAL_7_DAYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.api.ResponseError
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.databinding.ActivityMainBinding
@@ -117,8 +115,8 @@ import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshSafeAccountsJob
+import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
@@ -173,8 +171,8 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
-import one.mixin.android.ui.wallet.ClassicWalletMissingBtcAddressFragment
 import one.mixin.android.ui.wallet.WalletFragment
+import one.mixin.android.ui.wallet.WalletMissingBtcAddressFragment
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -191,6 +189,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.worker.SessionWorker
@@ -199,7 +198,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : BlazeBaseActivity(), ClassicWalletMissingBtcAddressFragment.Callback {
+class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
     private lateinit var navigationController: NavigationController
 
     @Inject
@@ -1083,9 +1082,9 @@ class MainActivity : BlazeBaseActivity(), ClassicWalletMissingBtcAddressFragment
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
                     lifecycleScope.launch {
-                        val shouldBlockNavigation: Boolean = shouldShowClassicWalletMissingBtcAddress()
+                        val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
                         if (shouldBlockNavigation) {
-                            showClassicWalletMissingBtcAddressFragment()
+                            showWalletMissingBtcAddressFragment()
                             isRestoringBottomNavSelection = true
                             binding.bottomNav.selectedItemId = lastBottomNavItemId
                             return@launch
@@ -1121,32 +1120,34 @@ class MainActivity : BlazeBaseActivity(), ClassicWalletMissingBtcAddressFragment
         findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideContainer()
     }
 
-    private suspend fun shouldShowClassicWalletMissingBtcAddress(): Boolean {
+    private suspend fun shouldShowWalletMissingBtcAddress(): Boolean {
         return withContext(Dispatchers.IO) {
-            val classicWallets = web3Repository.web3WalletDao.getAllClassicWallets()
-            if (classicWallets.isEmpty()) return@withContext false
-            val shouldShowBtcAddress: Boolean = classicWallets.any { walletItem ->
+            val wallets = web3Repository.getAllWallets().filter { walletItem ->
+                walletItem.category == WalletCategory.CLASSIC.value || (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
+            }
+            if (wallets.isEmpty()) return@withContext false
+            val shouldShowBtcAddress: Boolean = wallets.any { walletItem ->
                 web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) == null
             }
             return@withContext shouldShowBtcAddress
         }
     }
 
-    private fun showClassicWalletMissingBtcAddressFragment() {
-        val fragment = supportFragmentManager.findFragmentByTag(ClassicWalletMissingBtcAddressFragment.TAG)
+    private fun showWalletMissingBtcAddressFragment() {
+        val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
         if (fragment != null) return
-        val newFragment = ClassicWalletMissingBtcAddressFragment
+        val newFragment = WalletMissingBtcAddressFragment
             .newInstance()
         supportFragmentManager
             .beginTransaction()
             .setReorderingAllowed(true)
-            .add(R.id.internal_container, newFragment, ClassicWalletMissingBtcAddressFragment.TAG)
-            .addToBackStack(ClassicWalletMissingBtcAddressFragment.TAG)
+            .add(R.id.internal_container, newFragment, WalletMissingBtcAddressFragment.TAG)
+            .addToBackStack(WalletMissingBtcAddressFragment.TAG)
             .commitAllowingStateLoss()
     }
 
-    override fun onClassicWalletMissingBtcAddressPinSuccess() {
-        supportFragmentManager.popBackStack(ClassicWalletMissingBtcAddressFragment.TAG, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+    override fun onWalletMissingBtcAddressPinSuccess() {
+        supportFragmentManager.popBackStack(WalletMissingBtcAddressFragment.TAG, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
         binding.bottomNav.selectedItemId = R.id.nav_wallet
         switchToDestination(NavigationController.Wallet)
         lastBottomNavItemId = R.id.nav_wallet

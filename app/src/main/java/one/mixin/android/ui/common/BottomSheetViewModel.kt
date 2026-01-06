@@ -1786,6 +1786,19 @@ class BottomSheetViewModel
             return tipPrivToPrivateKey(spendKey, chainId, index)
         }
 
+        suspend fun getSpendKey(
+            context: Context,
+            pin: String,
+        ): ByteArray {
+            val result = tip.getOrRecoverTipPriv(context, pin)
+            return tip.getSpendPrivFromEncryptedSalt(
+                tip.getMnemonicFromEncryptedPreferences(context),
+                tip.getEncryptedSalt(context),
+                pin,
+                result.getOrThrow(),
+            )
+        }
+
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
 
         fun web3TokenItemsExcludeHidden(walletId: String, isSend: Boolean): LiveData<List<Web3TokenItem>> {

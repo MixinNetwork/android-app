@@ -393,7 +393,6 @@ val classicChain = listOf(
     R.drawable.ic_chain_arbitrum_eth,
     R.drawable.ic_chain_optimism,
     R.drawable.ic_chain_avax,
-    // R.drawable.ic_chain_blast,
     R.drawable.ic_chain_sol,
 
     )
