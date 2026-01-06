@@ -308,6 +308,7 @@ interface RouteService {
     suspend fun getWalletOutputs(
         @Query("wallet_id") walletId: String? = null,
         @Query("address") address: String? = null,
+        @Query("asset_id") assetId: String? = null,
     ): MixinResponse<List<WalletOutput>>
 
     @GET("transactions")

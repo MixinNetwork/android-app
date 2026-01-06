@@ -43,7 +43,7 @@ class RefreshWeb3BitCoinJob(val walletId: String) : BaseJob(
     private suspend fun fetchBtcOutputs(walletId: String, address: String) {
         requestRouteAPI(
             invokeNetwork = {
-                routeService.getWalletOutputs(walletId = walletId, address = address)
+                routeService.getWalletOutputs(walletId = walletId, address = address, assetId = Constants.ChainId.BITCOIN_CHAIN_ID)
             },
             successBlock = { response ->
                 val outputs = response.data

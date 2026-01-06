@@ -1128,6 +1128,7 @@ class TokenRepository
                 var receiveAssetId: String? = null
 
                 val txType = when {
+                    assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
                     raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
                     (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
                     raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
@@ -1149,7 +1150,11 @@ class TokenRepository
                     }
                     TransactionType.TRANSFER_OUT.value -> {
                         raw.simulateTx?.balanceChanges?.firstOrNull {
-                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < java.math.BigDecimal.ZERO } == true
+                            if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                raw.account != it.to
+                            } else {
+                                it.amount.toBigDecimalOrNull()?.let { amt -> amt < java.math.BigDecimal.ZERO } == true
+                            }
                         }?.let {
                             sendAssetId = it.assetId
                             receiveAssetId = it.assetId
