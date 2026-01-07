@@ -27,6 +27,7 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
@@ -624,13 +625,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val originalOutputAmount: Coin = originalTx.outputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
         val currentFee: Coin = inputAmount.subtract(originalOutputAmount)
         val desiredFee: Coin = calculateDesiredBtcSpeedUpFee(currentFee)
-        val sendToSelf: Coin = inputAmount.subtract(desiredFee)
-        if (sendToSelf.isNegative || sendToSelf.isZero) {
-            throw IllegalArgumentException("insufficient balance")
-        }
-        if (sendToSelf.isLessThan(BTC_DUST_THRESHOLD)) {
-            throw IllegalArgumentException("insufficient balance")
-        }
+        val feeDelta: Coin = desiredFee.subtract(currentFee)
         val replacementTx = BtcTransaction()
         for (input: TransactionInput in originalInputs) {
             val outPoint = TransactionOutPoint(input.outpoint.index(), input.outpoint.hash())
@@ -638,8 +633,31 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             txInput.withSequence(BTC_RBF_SEQUENCE)
             replacementTx.addInput(txInput)
         }
-        val script: Script = buildP2wpkhScript(fromAddress)
-        replacementTx.addOutput(sendToSelf, script)
+        val selfScript: Script = buildP2wpkhScript(fromAddress)
+        val originalOutputValues: List<Coin> = originalTx.outputs.map { it.value }
+        if (feeDelta.isZero || feeDelta.isNegative) {
+            for (value: Coin in originalOutputValues) {
+                replacementTx.addOutput(value, selfScript)
+            }
+            return replacementTx.serialize().toHex()
+        }
+        val maxIndex: Int = originalOutputValues.indices.maxByOrNull { index -> originalOutputValues[index].value } ?: -1
+        if (maxIndex < 0) {
+            throw IllegalArgumentException("insufficient balance")
+        }
+        val adjustedMax: Coin = originalOutputValues[maxIndex].subtract(feeDelta)
+        if (adjustedMax.isNegative || adjustedMax.isZero || adjustedMax.isLessThan(BTC_DUST_THRESHOLD)) {
+            val sendToSelf: Coin = inputAmount.subtract(desiredFee)
+            if (sendToSelf.isNegative || sendToSelf.isZero || sendToSelf.isLessThan(BTC_DUST_THRESHOLD)) {
+                throw IllegalArgumentException("insufficient balance")
+            }
+            replacementTx.addOutput(sendToSelf, selfScript)
+            return replacementTx.serialize().toHex()
+        }
+        originalOutputValues.forEachWithIndex { index, value ->
+            val outputValue: Coin = if (index == maxIndex) adjustedMax else value
+            replacementTx.addOutput(outputValue, selfScript)
+        }
         return replacementTx.serialize().toHex()
     }
 
