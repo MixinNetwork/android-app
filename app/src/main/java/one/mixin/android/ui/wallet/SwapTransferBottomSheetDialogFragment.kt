@@ -72,6 +72,7 @@ import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -81,12 +82,14 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.toHex
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.TokenRepository
@@ -101,6 +104,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.biometric.isUtxoException
@@ -128,10 +132,20 @@ import one.mixin.android.web3.js.Web3Signer
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import org.bitcoinj.base.BitcoinNetwork
+import org.bitcoinj.base.Coin
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionWitness
+import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
+import java.nio.ByteBuffer
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
@@ -162,6 +176,41 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     putString(ARGS_DISPLAY_USER_ID, swapResult.displayUserId)
                 }
         }
+    }
+
+    private data class BtcSignedResult(
+        val signedHex: String,
+        val consumedOutputIds: List<String>,
+    )
+
+    private fun signBtcTransaction(unsignedRawHex: String, signingKey: ECKey, localUtxos: List<WalletOutput>): BtcSignedResult {
+        val rawTxBytes: ByteArray = unsignedRawHex.hexStringToByteArray()
+        val transaction: Transaction = Transaction.read(ByteBuffer.wrap(rawTxBytes))
+        val utxoMap: Map<String, WalletOutput> = localUtxos.associateBy { utxo -> "${utxo.transactionHash}:${utxo.outputIndex}" }
+        val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
+        val consumedOutputIds: MutableList<String> = mutableListOf()
+        transaction.inputs.forEachIndexed { inputIndex: Int, input: TransactionInput ->
+            val prevHash: String = input.outpoint.hash().toString()
+            val prevIndex: Long = input.outpoint.index()
+            val utxoKey = "$prevHash:$prevIndex"
+            val utxo: WalletOutput = utxoMap[utxoKey] ?: throw IllegalArgumentException("Missing utxo for input[$inputIndex] $utxoKey")
+            consumedOutputIds.add(utxo.outputId)
+            val utxoAmount: Coin = Coin.parseCoin(utxo.amount)
+            if (utxoAmount.isZero) throw IllegalArgumentException("Invalid utxo amount on input[$inputIndex]")
+            val signature = transaction.calculateWitnessSignature(
+                inputIndex,
+                signingKey,
+                scriptCode,
+                utxoAmount,
+                Transaction.SigHash.ALL,
+                false,
+            )
+            val witness: TransactionWitness = TransactionWitness.of(signature.encodeToBitcoin(), signingKey.pubKey)
+            val newInput: TransactionInput = input.withScriptBytes(byteArrayOf()).withWitness(witness)
+            transaction.replaceInput(inputIndex, newInput)
+        }
+        val signedHex: String = transaction.serialize().toHex()
+        return BtcSignedResult(signedHex = signedHex, consumedOutputIds = consumedOutputIds)
     }
 
 
@@ -252,6 +301,9 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private var web3Transaction: JsSignMessage? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
+    private var btcFee: BigDecimal? by mutableStateOf(null)
+
+    private var senderAddress: String? by mutableStateOf(null)
 
     private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
     private var asset: TokenItem? by mutableStateOf(null)
@@ -423,9 +475,9 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     ItemPriceContent(title = stringResource(id = R.string.Price).uppercase(), inAmount = inAmount, inAsset = inAsset, outAmount = outAmount, outAsset = outAsset)
                     Box(modifier = Modifier.height(20.dp))
                     if (source == "web3") {
-                        if (tipGas != null || solanaFee != null) {
+                        if (tipGas != null || solanaFee != null || btcFee != null) {
                             val transaction = web3Transaction?.wcEthereumTransaction
-                            val fee = solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                            val fee = btcFee?.stripTrailingZeros() ?: solanaFee?.stripTrailingZeros() ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: BigDecimal.ZERO
                             if (fee == BigDecimal.ZERO) {
                                 FeeInfo(
                                     amount = "$fee",
@@ -446,7 +498,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     }
                     Box(modifier = Modifier.height(20.dp))
                     if (source == "web3") {
-                        val account = if (web3Transaction?.type == JsSignMessage.TYPE_RAW_TRANSACTION) Web3Signer.solanaAddress else Web3Signer.evmAddress
+                        val account = senderAddress ?: ""
                         LaunchedEffect(account) {
                             try {
                                 walletDisplayInfo = web3ViewModel.checkAddressAndGetDisplayName(account, null, inAsset.chain.chainId)
@@ -620,6 +672,25 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
                             }
 
+                            JsSignMessage.TYPE_BTC_TRANSACTION -> {
+                                val rawHex: String = web3Transaction!!.data ?: throw IllegalArgumentException("empty btc transaction hex")
+                                val priv: ByteArray = bottomViewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
+                                val key: ECKey = ECKey.fromPrivate(priv, true)
+                                val fromAddress: String = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
+                                val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                                val signedResult: BtcSignedResult = signBtcTransaction(rawHex, key, localUtxos)
+                                bottomViewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, inAsset.assetId)
+                                web3ViewModel.markOutputsToSigned(signedResult.consumedOutputIds)
+                                defaultSharedPreferences.putLong(
+                                    Constants.BIOMETRIC_PIN_CHECK,
+                                    System.currentTimeMillis(),
+                                )
+                                context?.updatePinCheck()
+                                step = Step.Done
+                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                            }
+
                             else -> {
                                 throw IllegalArgumentException("invalid signMessage type ${web3Transaction!!.type}")
                             }
@@ -751,12 +822,48 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
-                            val transaction = token.buildTransaction(
-                                rpc,
-                                if (token.chainId == Constants.ChainId.Solana) Web3Signer.solanaAddress else Web3Signer.evmAddress,
-                                depositDestination,
-                                requireArguments().getString(ARGS_IN_AMOUNT)!!
-                            )
+                            val fromAddress: String = if (token.chainId == Constants.ChainId.Solana) {
+                                Web3Signer.solanaAddress
+                            } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
+                                requireNotNull(btcAddress?.destination) { "btc address not found" }
+                            } else {
+                                Web3Signer.evmAddress
+                            }
+                            senderAddress = fromAddress
+                            val localUtxos: List<WalletOutput>? = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                            } else {
+                                null
+                            }
+                            val inputAmount: String = requireArguments().getString(ARGS_IN_AMOUNT)!!
+                            val transaction: JsSignMessage = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                val zeroFeeTx: JsSignMessage = token.buildTransaction(
+                                    rpc = rpc,
+                                    fromAddress = fromAddress,
+                                    toAddress = depositDestination,
+                                    v = inputAmount,
+                                    localUtxos = localUtxos,
+                                    gas = BigDecimal.ZERO,
+                                )
+                                val estimatedFee: BigDecimal = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress) ?: BigDecimal.ZERO
+                                btcFee = estimatedFee
+                                token.buildTransaction(
+                                    rpc = rpc,
+                                    fromAddress = fromAddress,
+                                    toAddress = depositDestination,
+                                    v = inputAmount,
+                                    localUtxos = localUtxos,
+                                    gas = estimatedFee,
+                                )
+                            } else {
+                                token.buildTransaction(
+                                    rpc,
+                                    fromAddress,
+                                    depositDestination,
+                                    inputAmount,
+                                )
+                            }
                             web3Transaction = transaction
                             this@SwapTransferBottomSheetDialogFragment.token = token
 
@@ -764,7 +871,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             refreshEstimatedGasAndAsset(chain)
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to build transaction")
-                            errorInfo = e.message
+                            errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else e.message
                             step = Step.Error
                         }
                     }
@@ -796,6 +903,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
         if (chain == Chain.Solana) {
             refreshSolana()
+            return
+        }
+        if (chain == Chain.Bitcoin) {
+            tickerFlow(15.seconds)
+                .onEach {
+                    asset = bottomViewModel.refreshAsset(chain.assetId)
+                }
+                .launchIn(lifecycleScope)
             return
         }
 

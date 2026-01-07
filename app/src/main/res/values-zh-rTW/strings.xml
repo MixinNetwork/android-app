@@ -1060,4 +1060,5 @@
     <string name="classic_wallet_btc_feature_compatibility_title">相容性</string>
     <string name="classic_wallet_btc_feature_compatibility_desc">支援從其他錢包匯入私鑰與觀察地址。</string>
     <string name="classic_wallet_btc_unlock_by_pin">使用 PIN 解鎖</string>
+    <string name="no_available_utxo">沒有可用 UTXO</string>
 </resources>

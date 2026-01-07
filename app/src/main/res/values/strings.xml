@@ -1425,6 +1425,7 @@
     <string name="Purchase_Total_Amount">Purchase Total Amount</string>
     <string name="chat_with_us">Chat with us</string>
     <string name="insufficient_balance">Insufficient balance</string>
+    <string name="no_available_utxo">No available UTXO</string>
     <string name="utxo_count_exceeded">This transaction consumes too many UTXOs, please try to combine UTXOs or split the transaction.</string>
     <string name="Combine_utxo">Combine UTXOs</string>
     <string name="Legacy_Network">Legacy Network</string>

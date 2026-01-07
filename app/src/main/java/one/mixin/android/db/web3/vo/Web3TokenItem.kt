@@ -21,6 +21,7 @@ import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.LegacyAddress
@@ -370,8 +371,8 @@ suspend fun Web3TokenItem.buildTransaction(
             val rawTxHex: String = tx.serialize().toHex()
             return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex, fee = gas)
 
-        }else{
-            throw IllegalArgumentException("localUtxos is null or empty")
+        } else {
+            throw EmptyUtxoException
         }
     } else {
         throw IllegalStateException("Not support: $chainId")

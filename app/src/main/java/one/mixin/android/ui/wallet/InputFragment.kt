@@ -54,6 +54,7 @@ import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
@@ -534,10 +535,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 },
                             ) {
                                 val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                    token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), gas)
+                                    runCatching {
+                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), gas)
+                                    }.onFailure { e ->
+                                        if (e is EmptyUtxoException) {
+                                            ErrorHandler.handleError(e)
+                                        }
+                                    }.getOrNull()
                                 } else {
                                     token.buildTransaction(rpc, fromAddress, toAddress, amount)
-                                }
+                                } ?: return@launch
                                 showBrowserBottomSheetDialogFragment(
                                     requireActivity(),
                                     transaction,

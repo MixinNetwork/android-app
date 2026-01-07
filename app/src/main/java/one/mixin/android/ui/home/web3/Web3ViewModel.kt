@@ -240,6 +240,13 @@ internal constructor(
     suspend fun outputsByAddress(address: String, assetId: String) = web3Repository.outputsByAddress(address, assetId)
 
     suspend fun outputsByAddressForSigning(address: String, assetId: String) = web3Repository.outputsByAddressForSigning(address, assetId)
+
+    suspend fun markOutputsToSigned(outputIds: List<String>) {
+        if (outputIds.isEmpty()) return
+        withContext(Dispatchers.IO) {
+            web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
+        }
+    }
     suspend fun calcFee(
         token: Web3TokenItem,
         transaction: JsSignMessage,

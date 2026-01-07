@@ -548,7 +548,7 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun openSwapTransfer(swapResult: SwapResponse, from: SwapToken, to: SwapToken) {
-        if (from.chain.chainId == Constants.ChainId.Solana || inMixin()) {
+        if (from.chain.chainId == Constants.ChainId.Solana || from.chain.chainId == Constants.ChainId.BITCOIN_CHAIN_ID || inMixin()) {
             AnalyticsTracker.trackTradePreview()
             SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to).apply {
                 setOnDone {
