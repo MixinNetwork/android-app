@@ -238,6 +238,8 @@ internal constructor(
         tokenRepository.inscriptionStateByHash(inscriptionHash)
 
     suspend fun outputsByAddress(address: String, assetId: String) = web3Repository.outputsByAddress(address, assetId)
+
+    suspend fun outputsByAddressForSigning(address: String, assetId: String) = web3Repository.outputsByAddressForSigning(address, assetId)
     suspend fun calcFee(
         token: Web3TokenItem,
         transaction: JsSignMessage,

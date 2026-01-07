@@ -11,6 +11,9 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent' ORDER BY created_at DESC")
     suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput>
 
+    @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status IN ('unspent', 'signed') ORDER BY created_at DESC")
+    suspend fun outputsByAddressForSigning(address: String, assetId: String): List<WalletOutput>
+
     @Query("SELECT * FROM outputs WHERE transaction_hash = :hash AND asset_id = :assetId AND status='unspent'")
     suspend fun outputsByHash(hash: String, assetId: String): WalletOutput?
 

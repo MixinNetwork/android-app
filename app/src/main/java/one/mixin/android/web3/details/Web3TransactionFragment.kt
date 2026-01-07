@@ -576,7 +576,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun createBtcSpeedUpMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
         val fromAddress: String = transaction.getFromAddress()
-        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddressForSigning(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         val unsignedReplacementHex: String = buildBtcReplacementTransactionHex(rawTransaction.raw, fromAddress, localUtxos)
         val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
         return JsSignMessage(
@@ -591,7 +591,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun createBtcCancelMessage(rawTransaction: Web3RawTransaction): JsSignMessage {
         val fromAddress: String = transaction.getFromAddress()
-        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddressForSigning(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         val unsignedReplacementHex: String = buildBtcCancelTransactionHex(rawTransaction.raw, fromAddress, localUtxos)
         val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
         return JsSignMessage(
@@ -698,18 +698,18 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         val extraInputAmount: Coin = if (additionalInput == null) Coin.ZERO else Coin.parseCoin(additionalInput.amount)
         for ((index, output) in originalOutputs.withIndex()) {
             if (index != changeIndex) {
-                outputs.add(output.value to Script(output.scriptBytes))
+                outputs.add(output.value to Script.parse(output.scriptBytes))
                 continue
             }
             val updatedChange: Coin = output.value.add(extraInputAmount).subtract(feeDelta)
             if (updatedChange.isGreaterThan(BTC_DUST_THRESHOLD) || updatedChange == BTC_DUST_THRESHOLD) {
-                outputs.add(updatedChange to Script(output.scriptBytes))
+                outputs.add(updatedChange to Script.parse(output.scriptBytes))
             }
         }
         if (changeIndex < 0 && additionalInput != null) {
             val updatedChange: Coin = extraInputAmount.subtract(feeDelta)
             if (updatedChange.isGreaterThan(BTC_DUST_THRESHOLD) || updatedChange == BTC_DUST_THRESHOLD) {
-                outputs.add(updatedChange to Script(fromScriptBytes))
+                outputs.add(updatedChange to Script.parse(fromScriptBytes))
             }
         }
         return outputs

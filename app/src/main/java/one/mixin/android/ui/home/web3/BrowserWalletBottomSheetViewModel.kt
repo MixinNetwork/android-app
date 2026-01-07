@@ -109,6 +109,10 @@ class BrowserWalletBottomSheetViewModel
             web3Repository.outputsByAddress(address, assetId)
         }
 
+        suspend fun outputsByAddressForSigning(address: String, assetId: String): List<WalletOutput> = withContext(Dispatchers.IO) {
+            web3Repository.outputsByAddressForSigning(address, assetId)
+        }
+
         suspend fun markOutputsToSigned(outputIds: List<String>) = withContext(Dispatchers.IO) {
             if (outputIds.isEmpty()) {
                 return@withContext
