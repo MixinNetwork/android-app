@@ -258,13 +258,8 @@ class RefreshWeb3Job : BaseJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
-                    web3TokenDao.insertList(assets)
-                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
-                        val btcAddress = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination
-                        if (!btcAddress.isNullOrBlank()) {
-                            refreshBitcoinTokenAmountByOutputs(walletId, btcAddress)
-                        }
-                    }
+                    val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, assets)
+                    web3TokenDao.insertList(tokensToInsert)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {

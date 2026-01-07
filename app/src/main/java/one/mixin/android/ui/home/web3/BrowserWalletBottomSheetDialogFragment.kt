@@ -375,7 +375,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                     val signedResult: BtcSignedResult = signTransaction(rawHex, key, localUtxos)
                     viewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
-                    viewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.consumedOutputIds)
+                    viewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.signedHex, signedResult.consumedOutputIds)
                     onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"\");")
                 } else if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
