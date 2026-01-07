@@ -36,6 +36,7 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -57,6 +58,13 @@ constructor(
     val walletOutputDao: WalletOutputDao,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
+
+    suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
+        if (walletId.isBlank() || address.isBlank()) return
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+    }
 
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 

@@ -113,11 +113,12 @@ class BrowserWalletBottomSheetViewModel
             web3Repository.outputsByAddressForSigning(address, assetId)
         }
 
-        suspend fun markOutputsToSigned(outputIds: List<String>) = withContext(Dispatchers.IO) {
+        suspend fun markOutputsToSigned(walletId: String, fromAddress: String, outputIds: List<String>) = withContext(Dispatchers.IO) {
             if (outputIds.isEmpty()) {
                 return@withContext
             }
             web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
+            web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
         }
 
         suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {

@@ -25,6 +25,7 @@ import one.mixin.android.event.WalletOperationType
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
+import java.math.BigDecimal
 import kotlin.collections.isNullOrEmpty
 import kotlin.collections.take
 
@@ -143,6 +144,12 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
+    private suspend fun refreshBitcoinAmountByOutputs(walletId: String, address: String) {
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+    }
+
     private suspend fun fetchWalletAddresses(walletId: String) {
         requestRouteAPI(
             invokeNetwork = {
@@ -185,6 +192,7 @@ class RefreshWeb3Job : BaseJob(
                     // use suspend insert to let Room handle the list insertion in coroutine
                     val safeOutputs: List<WalletOutput> = outputs ?: emptyList()
                     walletOutputDao.mergeOutputsForAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID, safeOutputs)
+                    refreshBitcoinAmountByOutputs(walletId, address)
                     Timber.d("Merged ${safeOutputs.size} BTC outputs into database for walletId=$walletId")
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to insert BTC outputs for walletId=$walletId into DB")
@@ -236,7 +244,7 @@ class RefreshWeb3Job : BaseJob(
             },
             successBlock = { response ->
                 val assets = response.data
-                if (assets != null && assets.isNotEmpty()) {
+                if (!assets.isNullOrEmpty()) {
                     Timber.d("Fetched ${assets.size} assets for wallet $walletId")
                     val assetIds = assets.map { it.assetId }
                     web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
@@ -258,6 +266,12 @@ class RefreshWeb3Job : BaseJob(
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
                     web3TokenDao.insertList(assets)
+                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
+                        val btcAddress = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination
+                        if (!btcAddress.isNullOrBlank()) {
+                            refreshBitcoinAmountByOutputs(walletId, btcAddress)
+                        }
+                    }
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
@@ -315,7 +329,7 @@ class RefreshWeb3Job : BaseJob(
             val response = tokenService.getChains()
             if (response.isSuccess) {
                 val chains = response.data
-                if (chains != null && chains.isNotEmpty()) {
+                if (!chains.isNullOrEmpty()) {
                     Timber.d("Fetched ${chains.size} chains")
                     val web3Chains = chains.map { chain ->
                         Web3Chain(

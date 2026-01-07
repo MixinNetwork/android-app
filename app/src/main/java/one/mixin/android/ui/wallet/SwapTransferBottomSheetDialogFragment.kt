@@ -680,7 +680,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
                                 val signedResult: BtcSignedResult = signBtcTransaction(rawHex, key, localUtxos)
                                 bottomViewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, inAsset.assetId)
-                                web3ViewModel.markOutputsToSigned(signedResult.consumedOutputIds)
+                                web3ViewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.consumedOutputIds)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
                                     System.currentTimeMillis(),

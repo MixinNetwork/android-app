@@ -24,6 +24,7 @@ import one.mixin.android.event.WalletOperationType
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
+import java.math.BigDecimal
 import kotlin.collections.isNullOrEmpty
 import kotlin.collections.take
 
@@ -51,6 +52,7 @@ class RefreshWeb3BitCoinJob(val walletId: String) : BaseJob(
                     // use suspend insert to let Room handle the list insertion in coroutine
                     val safeOutputs: List<WalletOutput> = outputs ?: emptyList()
                     walletOutputDao.mergeOutputsForAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID, safeOutputs)
+                    refreshBitcoinAmountByOutputs(walletId, address)
                     Timber.d("Merged ${safeOutputs.size} BTC outputs into database for walletId=$walletId")
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to insert BTC outputs for walletId=$walletId into DB")
@@ -65,5 +67,11 @@ class RefreshWeb3BitCoinJob(val walletId: String) : BaseJob(
             },
             defaultErrorHandle = {}
         )
+    }
+
+    private suspend fun refreshBitcoinAmountByOutputs(walletId: String, address: String) {
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
     }
 }

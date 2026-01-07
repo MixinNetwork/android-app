@@ -5,11 +5,15 @@ import androidx.room.Query
 import androidx.room.Transaction
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.BaseDao
+import java.math.BigDecimal
 
 @Dao
 interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent' ORDER BY created_at DESC")
     suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput>
+
+    @Query("SELECT amount FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent'")
+    suspend fun findUnspentAmounts(address: String, assetId: String): List<String>
 
     @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status IN ('unspent', 'signed') ORDER BY created_at DESC")
     suspend fun outputsByAddressForSigning(address: String, assetId: String): List<WalletOutput>
@@ -52,5 +56,16 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
         if (localUnspentNotInRemote.isNotEmpty()) {
             updateOutputsToSigned(localUnspentNotInRemote)
         }
+    }
+
+    suspend fun sumUnspentAmount(address: String, assetId: String): BigDecimal {
+        val amounts: List<String> = findUnspentAmounts(address, assetId)
+        if (amounts.isEmpty()) return BigDecimal.ZERO
+        var total: BigDecimal = BigDecimal.ZERO
+        for (amount: String in amounts) {
+            val value: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            total = total.add(value)
+        }
+        return total
     }
 }

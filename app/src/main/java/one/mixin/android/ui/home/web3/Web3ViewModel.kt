@@ -241,10 +241,11 @@ internal constructor(
 
     suspend fun outputsByAddressForSigning(address: String, assetId: String) = web3Repository.outputsByAddressForSigning(address, assetId)
 
-    suspend fun markOutputsToSigned(outputIds: List<String>) {
+    suspend fun markOutputsToSigned(walletId: String, fromAddress: String, outputIds: List<String>) {
         if (outputIds.isEmpty()) return
         withContext(Dispatchers.IO) {
             web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
+            web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
         }
     }
     suspend fun calcFee(
