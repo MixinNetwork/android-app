@@ -439,7 +439,6 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private fun handleWalletCardClick(destination: WalletDestination) {
         if (destination is WalletDestination.Safe) {
             WebActivity.show(requireContext(), url = destination.url ?: "", null, null, null)
-            closeMenu()
             return
         }
         selectedWalletDestination = destination
