@@ -585,9 +585,7 @@ class TokenRepository
             orderDao.deleteAllOrders()
         }
 
-        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(Web3Signer.currentWalletId, hash, chainId)
-
-        fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
+        suspend fun getRawTransactionByHashAndChain(walletId: String, hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
 
         fun observeOrder(orderId: String) = orderDao.observeOrder(orderId)
 
@@ -1150,11 +1148,7 @@ class TokenRepository
                     }
                     TransactionType.TRANSFER_OUT.value -> {
                         raw.simulateTx?.balanceChanges?.firstOrNull {
-                            if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                raw.account != it.to
-                            } else {
-                                it.amount.toBigDecimalOrNull()?.let { amt -> amt < java.math.BigDecimal.ZERO } == true
-                            }
+                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < java.math.BigDecimal.ZERO } == true
                         }?.let {
                             sendAssetId = it.assetId
                             receiveAssetId = it.assetId

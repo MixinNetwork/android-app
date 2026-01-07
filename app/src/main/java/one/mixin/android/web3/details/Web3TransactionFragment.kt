@@ -60,6 +60,7 @@ import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.web3j.crypto.TransactionDecoder
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import javax.inject.Inject
@@ -374,15 +375,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             } else {
                 assetChangesLl.visibility = View.GONE
             }
-            
             if (transaction.status == TransactionStatus.PENDING.value
                 && transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
                 lifecycleScope.launch {
-                    val pendingRawTx = web3ViewModel.getPendingRawTransactions(transaction.chainId)
-                        .firstOrNull { it.hash == transaction.transactionHash }
-                    
+                    val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
                     val shouldShowActions = pendingRawTx != null
-                    
                     if (shouldShowActions) {
                         actions.isVisible = true
                         
@@ -645,7 +642,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     ): String {
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
         val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
-        val fromScriptBytes: ByteArray = buildP2wpkhScript(fromAddress).program
+        val fromScriptBytes: ByteArray = buildP2wpkhScript(fromAddress).program()
         val originalInputs = originalTx.inputs
         val originalOutputs = originalTx.outputs
         val inputAmount: Coin = calculateInputAmount(originalInputs, localUtxos)

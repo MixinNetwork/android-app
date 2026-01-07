@@ -408,6 +408,8 @@ internal constructor(
 
     suspend fun getPendingRawTransactions(walletId: String) = tokenRepository.getPendingRawTransactions(walletId)
 
+    suspend fun getRawTransactionByHashAndChain(walletId: String, hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(walletId, hash, chainId)
+
     suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
