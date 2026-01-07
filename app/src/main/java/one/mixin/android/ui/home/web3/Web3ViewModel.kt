@@ -270,9 +270,10 @@ internal constructor(
                 }.getOrNull()
             }
             if (response?.isSuccess != true || response.data == null) return BigDecimal.ZERO
-            val unitPrice: String = response.data!!.unitPrice!!
-            val unitLimit: String = response.data!!.unitLimit!!
-            return estimateFeeInBtc(unitPrice, unitLimit)
+            val feeRate: String? = response.data!!.feeRate
+            val unitLimit: String? = response.data!!.unitLimit
+            if (feeRate.isNullOrBlank() || unitLimit.isNullOrBlank()) return BigDecimal.ZERO
+            return estimateFeeInBtc(feeRate, unitLimit)
         }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {

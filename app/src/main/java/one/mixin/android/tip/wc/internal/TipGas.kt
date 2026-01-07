@@ -35,9 +35,9 @@ data class TipGas(
 fun buildTipGas(assetId: String, response: EstimateFeeResponse): TipGas {
     return TipGas(assetId, response.gasLimit!!.toBigInteger(), response.maxFeePerGas!!.toBigInteger(), response.maxPriorityFeePerGas!!.toBigInteger(), )
 }
-private fun estimateFeeInSatoshi(unitPrice: String, unitLimit: String): BigDecimal {
+private fun estimateFeeInSatoshi(feeRate: String, unitLimit: String): BigDecimal {
     return try {
-        val price = BigDecimal(unitPrice)
+        val price = BigDecimal(feeRate)
         val limit = BigDecimal(unitLimit)
         price.multiply(limit)
     } catch (e: Exception) {
@@ -49,7 +49,7 @@ private fun satoshiToBtc(satoshis: BigDecimal, scale: Int = 8): BigDecimal {
     return satoshis.divide(BigDecimal("100000000"), scale, RoundingMode.HALF_UP)
 }
 
-fun estimateFeeInBtc(unitPrice: String, unitLimit: String, scale: Int = 8): BigDecimal {
-    val sats = estimateFeeInSatoshi(unitPrice, unitLimit)
+fun estimateFeeInBtc(feeRate: String, unitLimit: String, scale: Int = 8): BigDecimal {
+    val sats = estimateFeeInSatoshi(feeRate, unitLimit)
     return satoshiToBtc(sats, scale)
 }
