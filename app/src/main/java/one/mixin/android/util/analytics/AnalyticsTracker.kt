@@ -5,12 +5,15 @@ import android.os.Bundle
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.analytics.FirebaseAnalytics
 import one.mixin.android.MixinApplication
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Plan
 import java.math.BigDecimal
 
 object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
+
+    private const val PREF_NOTIFICATION_PERMISSION_REQUESTED: String = "pref_notification_permission_requested"
 
     fun trackSignUpStart(type: String) {
         val params = Bundle().apply {
@@ -84,7 +87,12 @@ object AnalyticsTracker {
     }
 
     fun setHasEmergencyContact(account: Account) {
+        setHasRecoveryContact(account)
         firebaseAnalytics.setUserProperty("has_emergency_contact", account.hasEmergencyContact.toString())
+    }
+
+    fun setHasRecoveryContact(account: Account) {
+        firebaseAnalytics.setUserProperty("has_recovery_contact", account.hasEmergencyContact.toString())
     }
 
     fun setMembership(account: Account) {
@@ -92,24 +100,56 @@ object AnalyticsTracker {
     }
 
     fun setNotificationAuthStatus(context: Context) {
-        firebaseAnalytics.setUserProperty(
-            "notification_auth_status", if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
-                "authorized"
-            } else {
-                "denied"
-            }
-        )
+        val hasRequested: Boolean = context.defaultSharedPreferences.getBoolean(PREF_NOTIFICATION_PERMISSION_REQUESTED, false)
+        val status: String = getNotificationAuthStatus(context, hasRequested)
+        firebaseAnalytics.setUserProperty("notification_auth_status", status)
+    }
+
+    fun setNotificationPermissionRequested(context: Context) {
+        context.defaultSharedPreferences.edit().putBoolean(PREF_NOTIFICATION_PERMISSION_REQUESTED, true).apply()
+    }
+
+    fun refreshUserPropertiesOnAppOpen(
+        context: Context,
+        account: Account?,
+        totalUsd: Int,
+    ) {
+        account?.let {
+            setHasRecoveryContact(it)
+            setHasEmergencyContact(it)
+            setMembership(it)
+        }
+        setAssetLevel(totalUsd)
+        setNotificationAuthStatus(context)
     }
 
     fun setAssetLevel(totalUsd: Int) {
-        val level = when {
-            totalUsd >= 10000 -> "v10000"
-            totalUsd >= 1000 -> "v1000"
+        val level: String = getAssetLevel(totalUsd)
+        firebaseAnalytics.setUserProperty("asset_level", level)
+    }
+
+    private fun getNotificationAuthStatus(context: Context, hasRequested: Boolean): String {
+        if (!hasRequested) {
+            return "none"
+        }
+        return if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            "authorized"
+        } else {
+            "denied"
+        }
+    }
+
+    private fun getAssetLevel(totalUsd: Int): String {
+        return when {
+            totalUsd >= 10_000_000 -> "v10,000,000"
+            totalUsd >= 1_000_000 -> "v1,000,000"
+            totalUsd >= 100_000 -> "v100,000"
+            totalUsd >= 10_000 -> "v10,000"
+            totalUsd >= 1_000 -> "v1,000"
             totalUsd >= 100 -> "v100"
             totalUsd >= 1 -> "v1"
             else -> "v0"
         }
-        firebaseAnalytics.setUserProperty("asset_level", level)
     }
 
     fun trackTradeTokenSelect(method: String) {

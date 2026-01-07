@@ -30,6 +30,7 @@ import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.util.viewBinding
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import timber.log.Timber
@@ -125,6 +126,7 @@ class VerificationEmergencyFragment : PinCodeFragment(R.layout.fragment_verifica
                     val a = response.data as Account
                     Session.storeAccount(a)
                     Session.setHasEmergencyContact(a.hasEmergencyContact)
+                    AnalyticsTracker.setHasRecoveryContact(a)
                     activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
                         (it as? EmergencyContactFragment)?.setEmergencySet()
                     }

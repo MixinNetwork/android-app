@@ -78,7 +78,6 @@ import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -355,15 +354,7 @@ class ConversationListFragment : LinkFragment() {
             }
 
         initSearch()
-        analytics()
-    }
-
-    private fun analytics() {
-        lifecycleScope.launch{
-            val totalUsd = conversationListViewModel.findTotalUSDBalance()
-            AnalyticsTracker.setAssetLevel(totalUsd)
-            AnalyticsTracker.setNotificationAuthStatus(requireContext())
-        }
+        
     }
 
     private fun openSearch() {

@@ -122,6 +122,7 @@ import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
@@ -221,6 +222,9 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var web3Repository: Web3Repository
+
+    @Inject
+    lateinit var tokenRepository: TokenRepository
 
     @Inject
     lateinit var participantDao: ParticipantDao
@@ -431,9 +435,24 @@ class MainActivity : BlazeBaseActivity() {
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .autoDispose(stopScope)
                 .subscribe(
-                    { _ -> },
+                    { _ ->
+                        AnalyticsTracker.setNotificationPermissionRequested(this)
+                        AnalyticsTracker.setNotificationAuthStatus(this)
+                    },
                     {},
                 )
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val totalUsd: Int = tokenRepository.findTotalUSDBalance()
+            val account = Session.getAccount()
+            withContext(Dispatchers.Main) {
+                AnalyticsTracker.refreshUserPropertiesOnAppOpen(
+                    context = this@MainActivity,
+                    account = account,
+                    totalUsd = totalUsd,
+                )
+            }
         }
     }
 
