@@ -61,6 +61,9 @@ class RefreshWeb3TokenJob(
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
                     web3TokenDao.insertList(assets)
+                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
+                        refreshBitcoinTokenAmountByWalletId(walletId)
+                    }
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
@@ -90,6 +93,9 @@ class RefreshWeb3TokenJob(
                 if (asset != null) {
                     Timber.d("Fetched ${asset.symbol} assets for address ${address}")
                     web3TokenDao.insert(asset)
+                    if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                        refreshBitcoinTokenAmountByDestination(address)
+                    }
                     fetchChain(listOf(asset.chainId))
                     Timber.d("Inserted ${asset.symbol} into database")
                 } else {

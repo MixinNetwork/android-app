@@ -8,6 +8,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
+import one.mixin.android.Constants
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -93,6 +94,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
+import java.math.BigDecimal
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
@@ -446,6 +448,23 @@ abstract class BaseJob(params: Params) : Job(params) {
                             )
                     )
             )
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByOutputs(walletId: String, address: String) {
+        if (walletId.isBlank() || address.isBlank()) return
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByWalletId(walletId: String) {
+        val address: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return
+        refreshBitcoinTokenAmountByOutputs(walletId, address)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByDestination(destination: String) {
+        val walletId: String = web3AddressDao.getWalletByDestination(destination)?.id ?: return
+        refreshBitcoinTokenAmountByOutputs(walletId, destination)
     }
 
     public override fun shouldReRunOnThrowable(

@@ -99,6 +99,9 @@ class RefreshSingleWalletJob(
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
                     web3TokenDao.insertList(assets)
+                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
+                        refreshBitcoinTokenAmountByWalletId(wallet.id)
+                    }
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {

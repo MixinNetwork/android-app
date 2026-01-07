@@ -107,6 +107,9 @@ class RefreshOrdersJob(
         }
         if (web3Tokens.isNotEmpty()) {
             web3TokenDao.insertList(web3Tokens)
+            if (web3Tokens.any { it.assetId == one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID }) {
+                refreshBitcoinTokenAmountByWalletId(walletId)
+            }
         }
     }
 
