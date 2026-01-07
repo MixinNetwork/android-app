@@ -486,6 +486,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                 val jsSignMessage = createBtcSpeedUpMessage(rawTransaction)
+                val fromAddress: String = transaction.getFromAddress()
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
                     jsSignMessage,
@@ -493,6 +494,9 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     chainToken = token,
                     currentTitle = getString(R.string.Speed_Up_Transaction),
                     onDone = { _ ->
+                        lifecycleScope.launch {
+                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw)
+                        }
                     },
                 )
             } else {
@@ -514,6 +518,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         lifecycleScope.launch {
             if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                 val jsSignMessage = createBtcCancelMessage(rawTransaction)
+                val fromAddress: String = transaction.getFromAddress()
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
                     jsSignMessage,
@@ -521,6 +526,9 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     chainToken = token,
                     currentTitle = getString(R.string.Cancel_Transaction),
                     onDone = { _ ->
+                        lifecycleScope.launch {
+                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw)
+                        }
                     },
                 )
             } else {

@@ -21,6 +21,9 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("SELECT * FROM outputs WHERE transaction_hash = :hash AND asset_id = :assetId AND status='unspent'")
     suspend fun outputsByHash(hash: String, assetId: String): WalletOutput?
 
+    @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND address = :address AND asset_id = :assetId AND status='unspent'")
+    suspend fun deleteUnspentByHashAndAddress(hash: String, address: String, assetId: String): Int
+
     @Query("DELETE FROM outputs WHERE address = :address AND asset_id = :assetId")
     suspend fun deleteByAddress(address: String, assetId: String)
 

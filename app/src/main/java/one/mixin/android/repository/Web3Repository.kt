@@ -106,6 +106,24 @@ constructor(
         return changeOutputs.size
     }
 
+    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String): Int {
+        val cleanedHex: String = rawTransactionHex.removePrefix("0x").trim()
+        if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
+        val tx: Transaction = runCatching {
+            Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
+        }.getOrNull() ?: return 0
+        val txHash: String = tx.txId.toString()
+        val params = MainNetParams.get()
+        val hasChangeOutput: Boolean = tx.outputs.any { output ->
+            val address: String = runCatching {
+                output.scriptPubKey.getToAddress(params, true).toString()
+            }.getOrNull() ?: return@any false
+            address == fromAddress
+        }
+        if (!hasChangeOutput) return 0
+        return walletOutputDao.deleteUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+    }
+
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
     suspend fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)

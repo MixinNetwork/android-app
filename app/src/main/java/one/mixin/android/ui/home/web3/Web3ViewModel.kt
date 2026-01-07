@@ -241,6 +241,16 @@ internal constructor(
 
     suspend fun outputsByAddressForSigning(address: String, assetId: String) = web3Repository.outputsByAddressForSigning(address, assetId)
 
+    suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String): Int {
+        return withContext(Dispatchers.IO) {
+            val deletedCount: Int = web3Repository.deleteBitcoinUnspentChangeOutputs(fromAddress, rawTransactionHex)
+            if (deletedCount > 0) {
+                web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+            }
+            deletedCount
+        }
+    }
+
     suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>) {
         if (outputIds.isEmpty()) return
         withContext(Dispatchers.IO) {
