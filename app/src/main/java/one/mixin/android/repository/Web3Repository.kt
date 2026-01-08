@@ -37,8 +37,9 @@ import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
+import org.bitcoinj.base.Address
+import org.bitcoinj.base.AddressParser
 import timber.log.Timber
-import org.bitcoinj.core.Address
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
@@ -75,15 +76,15 @@ constructor(
     }
 
     suspend fun insertBitcoinChangeOutputs(fromAddress: String, signedHex: String): Int {
+        val addressParser = AddressParser.getDefault()
         val cleanedHex: String = signedHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {
             Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
         }.getOrNull() ?: return 0
         val txHash: String = tx.txId.toString()
-        val params = MainNetParams.get()
         val fromParsedAddress: Address = runCatching {
-            Address.fromString(params, fromAddress)
+            addressParser.parseAddress(fromAddress)
         }.getOrNull() ?: return 0
         val fromScript: Script = runCatching {
             ScriptBuilder.createOutputScript(fromParsedAddress)
