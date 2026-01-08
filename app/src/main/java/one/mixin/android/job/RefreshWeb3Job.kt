@@ -21,6 +21,8 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.isClassic
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
@@ -225,9 +227,11 @@ class RefreshWeb3Job : BaseJob(
                     }
                     web3AddressDao.insertList(embeddedAddresses)
                     MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
-                    val btcAddress: String? = embeddedAddresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
-                    if (!btcAddress.isNullOrBlank()) {
-                        fetchBtcOutputs(walletId = wallet.id, address = btcAddress)
+                    if (wallet.isImported() || wallet.isClassic()) {
+                        val btcAddress: String? = embeddedAddresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
+                        if (!btcAddress.isNullOrBlank()) {
+                            fetchBtcOutputs(walletId = wallet.id, address = btcAddress)
+                        }
                     }
                 }
             },
