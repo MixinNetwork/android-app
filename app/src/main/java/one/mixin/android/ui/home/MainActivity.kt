@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -1147,7 +1148,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     override fun onWalletMissingBtcAddressPinSuccess() {
-        supportFragmentManager.popBackStack(WalletMissingBtcAddressFragment.TAG, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        supportFragmentManager.popBackStack(WalletMissingBtcAddressFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         binding.bottomNav.selectedItemId = R.id.nav_wallet
         switchToDestination(NavigationController.Wallet)
         lastBottomNavItemId = R.id.nav_wallet

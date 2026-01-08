@@ -35,7 +35,6 @@ class WalletMissingBtcAddressFragment : Fragment(R.layout.fragment_wallet_missin
             if (isSuccess) {
                 this@WalletMissingBtcAddressFragment.lifecycleScope.launch {
                     (activity as? Callback)?.onWalletMissingBtcAddressPinSuccess()
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
             }
         }
