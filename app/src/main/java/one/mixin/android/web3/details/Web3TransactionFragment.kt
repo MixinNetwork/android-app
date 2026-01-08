@@ -24,12 +24,12 @@ import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toHex
@@ -38,8 +38,8 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
-import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.WalletCategory
@@ -52,7 +52,6 @@ import one.mixin.android.widget.BottomSheet
 import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.Sha256Hash
-import org.bitcoinj.core.Transaction as BtcTransaction
 import org.bitcoinj.core.TransactionInput
 import org.bitcoinj.core.TransactionOutPoint
 import org.bitcoinj.core.TransactionOutput
@@ -61,11 +60,10 @@ import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.web3j.crypto.TransactionDecoder
 import org.web3j.utils.Numeric
-import timber.log.Timber
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import javax.inject.Inject
-import kotlin.collections.indexOfFirst
+import org.bitcoinj.core.Transaction as BtcTransaction
 
 @AndroidEntryPoint
 class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction) {
@@ -75,7 +73,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         const val ARGS_CHAIN = "args_chain"
         const val ARGS_WALLET = "args_wallet"
 
-        private val BTC_NETWORK_PARAMS = MainNetParams.get()
         private const val BTC_RBF_SEQUENCE: Long = 0xfffffffdL
         private val BTC_DUST_THRESHOLD: Coin = Coin.valueOf(546L)
         private val BTC_SPEED_UP_MINIMUM_INCREMENT: Coin = Coin.valueOf(500L)

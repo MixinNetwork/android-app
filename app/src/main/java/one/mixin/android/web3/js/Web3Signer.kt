@@ -25,11 +25,11 @@ import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
 import org.bitcoinj.base.Coin
-import org.bitcoinj.base.LegacyAddress
-import org.bitcoinj.core.*
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.crypto.TransactionSignature
-import org.bitcoinj.params.MainNetParams
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Keypair
