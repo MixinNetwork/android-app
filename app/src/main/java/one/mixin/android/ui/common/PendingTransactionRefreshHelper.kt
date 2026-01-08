@@ -5,6 +5,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionsJob
@@ -66,6 +67,13 @@ object PendingTransactionRefreshHelper {
                                r.data?.state == TransactionStatus.SUCCESS.value) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
                                     jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                                }
+                                if (transition.chainId == Constants.ChainId.BITCOIN_CHAIN_ID && r.data?.state == TransactionStatus.NOT_FOUND.value) {
+                                    web3ViewModel.deleteBitcoinUnspentChangeOutputs(
+                                        walletId = walletId,
+                                        fromAddress = transition.account,
+                                        rawTransactionHex = transition.raw,
+                                    )
                                 }
                                 if (r.data?.state != TransactionStatus.SUCCESS.value) {
                                     web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)

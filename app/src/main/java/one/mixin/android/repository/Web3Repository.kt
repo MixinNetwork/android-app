@@ -38,7 +38,10 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import timber.log.Timber
+import org.bitcoinj.core.Address
 import org.bitcoinj.core.Transaction
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.bitcoinj.params.MainNetParams
 import java.nio.ByteBuffer
 import java.util.UUID
@@ -79,12 +82,16 @@ constructor(
         }.getOrNull() ?: return 0
         val txHash: String = tx.txId.toString()
         val params = MainNetParams.get()
+        val fromParsedAddress: Address = runCatching {
+            Address.fromString(params, fromAddress)
+        }.getOrNull() ?: return 0
+        val fromScript: Script = runCatching {
+            ScriptBuilder.createOutputScript(fromParsedAddress)
+        }.getOrNull() ?: return 0
+        val fromScriptBytes: ByteArray = fromScript.program()
         val now: String = nowInUtc()
         val changeOutputs: List<WalletOutput> = tx.outputs.mapIndexedNotNull { index, output ->
-            val address: String = runCatching {
-                output.scriptPubKey.getToAddress(params, true).toString()
-            }.getOrNull() ?: return@mapIndexedNotNull null
-            if (address != fromAddress) return@mapIndexedNotNull null
+            if (!output.scriptBytes.contentEquals(fromScriptBytes)) return@mapIndexedNotNull null
             val amount: String = output.value.toPlainString()
             val outputId: String = UUID.nameUUIDFromBytes("$txHash:$index".toByteArray()).toString()
             WalletOutput(
@@ -114,12 +121,14 @@ constructor(
         }.getOrNull() ?: return 0
         val txHash: String = tx.txId.toString()
         val params = MainNetParams.get()
-        val hasChangeOutput: Boolean = tx.outputs.any { output ->
-            val address: String = runCatching {
-                output.scriptPubKey.getToAddress(params, true).toString()
-            }.getOrNull() ?: return@any false
-            address == fromAddress
-        }
+        val fromParsedAddress: Address = runCatching {
+            Address.fromString(params, fromAddress)
+        }.getOrNull() ?: return 0
+        val fromScript: Script = runCatching {
+            ScriptBuilder.createOutputScript(fromParsedAddress)
+        }.getOrNull() ?: return 0
+        val fromScriptBytes: ByteArray = fromScript.program()
+        val hasChangeOutput: Boolean = tx.outputs.any { output -> output.scriptBytes.contentEquals(fromScriptBytes) }
         if (!hasChangeOutput) return 0
         return walletOutputDao.deleteUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
     }
