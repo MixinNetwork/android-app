@@ -43,6 +43,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.route.OrderState
+import one.mixin.android.vo.route.isCancelling
+import one.mixin.android.vo.route.isPending
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -144,8 +146,8 @@ class OrderDetailFragment : BaseFragment() {
         refreshJob = viewLifecycleOwner.lifecycleScope.launch {
             while (isActive) {
                 val local = withContext(Dispatchers.IO) { walletDatabase.orderDao().observeOrder(orderId).first() }
-                val isPending = local?.state == OrderState.PENDING.value
-                if (!isPending && local != null) break
+
+                if (local != null && (!local.isCancelling() && !local.isPending())) break
                 withContext(Dispatchers.IO) {
                     val type = local?.orderType
                     val resp = if (type == "swap") {
