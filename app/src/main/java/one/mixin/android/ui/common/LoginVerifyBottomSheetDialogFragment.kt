@@ -29,6 +29,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -165,6 +166,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
     }
 
     private suspend fun addBtcAddressIfNeeded(pin: String): Boolean {
+        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return false
         val wallets = web3Repository.getAllWallets().filter { walletItem ->
             walletItem.category == WalletCategory.CLASSIC.value ||
                 walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value

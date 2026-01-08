@@ -22,6 +22,8 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.R
 import one.mixin.android.event.WalletOperationType
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
@@ -84,7 +86,7 @@ class RefreshWeb3Job : BaseJob(
         } else {
             wallets.forEach { wallet ->
                 if (web3AddressDao.getAddressesByWalletId(wallet.id).any {
-                        it.path == null || it.path.isBlank()
+                        it.path.isNullOrBlank()
                     }) {
                     try {
                         routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
@@ -154,6 +156,7 @@ class RefreshWeb3Job : BaseJob(
                     Timber.d("Fetched ${addressesResponse.data?.size} addresses for wallet $walletId")
                     val web3Addresses = addressesResponse.data!!
                     web3AddressDao.insertList(web3Addresses)
+                    MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                     Timber.d("Inserted ${web3Addresses.size} addresses into database")
                     val btcAddress = web3Addresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
                     if (btcAddress.isNullOrBlank().not()) {
@@ -208,14 +211,23 @@ class RefreshWeb3Job : BaseJob(
                 routeService.getWallets()
             },
             successBlock = { response ->
-                val wallets = response.data
-                wallets?.let {
-                    web3WalletDao.insertList(it)
-                    wallets.forEach { wallet ->
-                        if (wallet.id == renameWalletId) {
-                            RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
-                        }
+                val wallets: List<Web3Wallet> = response.data ?: emptyList()
+                if (wallets.isEmpty()) return@requestRouteAPI
+                web3WalletDao.insertList(wallets)
+                wallets.forEach { wallet ->
+                    if (wallet.id == renameWalletId) {
+                        RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
+                    }
+                    val embeddedAddresses = wallet.addresses
+                    if (embeddedAddresses.isNullOrEmpty()) {
                         fetchWalletAddresses(wallet.id)
+                        return@forEach
+                    }
+                    web3AddressDao.insertList(embeddedAddresses)
+                    MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
+                    val btcAddress: String? = embeddedAddresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
+                    if (!btcAddress.isNullOrBlank()) {
+                        fetchBtcOutputs(walletId = wallet.id, address = btcAddress)
                     }
                 }
             },

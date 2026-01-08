@@ -1123,6 +1123,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private suspend fun shouldShowWalletMissingBtcAddress(): Boolean {
         return withContext(Dispatchers.IO) {
+            if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return@withContext false
             val wallets = web3Repository.getAllWallets().filter { walletItem ->
                 walletItem.category == WalletCategory.CLASSIC.value || (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
             }

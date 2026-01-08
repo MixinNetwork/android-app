@@ -31,7 +31,7 @@ import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Tx
 import one.mixin.android.api.response.web3.Validator
-import one.mixin.android.api.response.web3.Web3WalletResponse
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 import one.mixin.android.db.web3.vo.Web3Token
@@ -57,7 +57,6 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.web3.WalletOutput
 
 import retrofit2.http.Query
 
@@ -273,7 +272,7 @@ interface RouteService {
     @POST("wallets")
     suspend fun createWallet(
         @Body request: WalletRequest
-    ): MixinResponse<Web3WalletResponse>
+    ): MixinResponse<Web3Wallet>
 
     @GET("wallets")
     suspend fun getWallets(): MixinResponse<List<Web3Wallet>>
