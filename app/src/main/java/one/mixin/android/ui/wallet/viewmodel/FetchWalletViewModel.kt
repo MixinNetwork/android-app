@@ -511,17 +511,24 @@ class FetchWalletViewModel @Inject constructor(
                 val walletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
                 val regex = """^$walletName (\d+)$""".toRegex()
                 val maxIndex = names
-                    .filterNotNull()
                     .mapNotNull { name ->
                         regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
                     }.maxOrNull() ?: 0
                 val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${maxIndex + 1}"
                 val evmAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
                 val solAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
+                val btcAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
                 val walletRequest = WalletRequest(
                     name = name,
                     category = WalletCategory.CLASSIC.value,
                     addresses = listOf(
+                        createSignedWeb3AddressRequest(
+                            destination = btcAddress,
+                            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                            path = Bip44Path.bitcoinSegwitPathString(classicIndex),
+                            privateKey = tipPrivToPrivateKey(currentSpendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
+                            category = WalletCategory.CLASSIC.value
+                        ),
                         createSignedWeb3AddressRequest(
                             destination = evmAddress,
                             chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,

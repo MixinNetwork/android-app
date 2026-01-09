@@ -1150,6 +1150,14 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     override fun onWalletMissingBtcAddressPinSuccess() {
         supportFragmentManager.popBackStack(WalletMissingBtcAddressFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
+        if (fragment != null) {
+            supportFragmentManager
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .remove(fragment)
+                .commitAllowingStateLoss()
+        }
         binding.bottomNav.selectedItemId = R.id.nav_wallet
         switchToDestination(NavigationController.Wallet)
         lastBottomNavItemId = R.id.nav_wallet
