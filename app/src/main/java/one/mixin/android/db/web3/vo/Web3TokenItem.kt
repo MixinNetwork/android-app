@@ -359,7 +359,8 @@ suspend fun Web3TokenItem.buildTransaction(
             }
             val tx = BtcTransaction()
             tx.addOutput(sendAmount, recipientAddress)
-            if (!changeAmount.isZero) {
+            val minimumChangeAmount: Coin = Coin.valueOf(1000)
+            if (changeAmount.isGreaterThan(minimumChangeAmount) || changeAmount == minimumChangeAmount) {
                 tx.addOutput(changeAmount, changeAddress)
             }
             for (selectedUtxo: WalletOutput in selectedUtxos) {
