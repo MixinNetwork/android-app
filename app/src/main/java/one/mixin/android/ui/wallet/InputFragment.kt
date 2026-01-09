@@ -534,6 +534,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
+                                if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    val minBtcAmount: BigDecimal = BigDecimal("0.0001")
+                                    val inputAmount: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    if (inputAmount < minBtcAmount) {
+                                        toast(getString(R.string.single_transaction_should_be_greater_than, minBtcAmount.toPlainString(), token.symbol))
+                                        return@launch
+                                    }
+                                }
                                 val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                                     runCatching {
                                         token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), gas)
@@ -1160,7 +1168,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             val asset = t.asset ?: return@launch
 
             if (item is WithdrawBiometricItem) {
-                t as WithdrawBiometricItem
                 val address = t.address
                 val dust = address.dust?.toBigDecimalOrNull()
                 val amountDouble = amount.toBigDecimalOrNull()
