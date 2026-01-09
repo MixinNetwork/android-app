@@ -74,7 +74,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         const val ARGS_WALLET = "args_wallet"
 
         private const val BTC_RBF_SEQUENCE: Long = 0xfffffffdL
-        private val BTC_DUST_THRESHOLD: Coin = Coin.valueOf(546L)
+        private val BTC_DUST_THRESHOLD: Coin = Coin.valueOf(1000L)
         private val BTC_SPEED_UP_MINIMUM_INCREMENT: Coin = Coin.valueOf(500L)
         private const val BTC_SPEED_UP_MULTIPLIER_NUMERATOR: Long = 5L
         private const val BTC_SPEED_UP_MULTIPLIER_DENOMINATOR: Long = 4L
