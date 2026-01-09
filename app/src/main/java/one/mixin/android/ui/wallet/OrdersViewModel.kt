@@ -32,9 +32,9 @@ class OrdersViewModel @Inject constructor(
 
     suspend fun refreshPendingOrders(): Boolean = withContext(Dispatchers.IO) {
         val orderDao = database.orderDao()
-        val pending = orderDao.getPendingOrders()
-        if (pending.isEmpty()) return@withContext false
-        val ids = pending.map { it.orderId }
+        val pendingOrders = orderDao.getPendingOrders() + orderDao.getCancellingOrders()
+        if (pendingOrders.isEmpty()) return@withContext false
+        val ids = pendingOrders.map { it.orderId }
         val resp = routeService.getLimitOrders(ids)
         if (resp.isSuccess && resp.data != null) {
             orderDao.insertListSuspend(resp.data!!)

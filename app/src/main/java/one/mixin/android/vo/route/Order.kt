@@ -74,3 +74,7 @@ data class Order(
     @SerializedName("expired_at")
     val expiredAt: String? = null,
 ) : Parcelable
+
+fun Order.isPending() = state == OrderState.PENDING.value
+
+fun Order.isCancelling() = state == OrderState.CANCELLING.value

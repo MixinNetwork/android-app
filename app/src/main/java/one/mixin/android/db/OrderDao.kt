@@ -47,6 +47,9 @@ interface OrderDao : BaseDao<Order> {
     @Query("SELECT * FROM orders WHERE state = 'pending' ORDER BY created_at ASC")
     suspend fun getPendingOrders(): List<Order>
 
+    @Query("SELECT * FROM orders WHERE state = 'cancelling' ORDER BY created_at ASC")
+    suspend fun getCancellingOrders(): List<Order>
+
     @Query("SELECT * FROM orders WHERE wallet_id = :walletId AND state = 'pending' ORDER BY created_at DESC")
     suspend fun getPendingOrdersByWallet(walletId: String): List<Order>
 
