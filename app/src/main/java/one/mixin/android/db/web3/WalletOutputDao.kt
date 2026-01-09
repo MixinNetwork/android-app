@@ -39,6 +39,9 @@ interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("UPDATE outputs SET status = 'signed' WHERE output_id IN (:outputIds)")
     suspend fun updateOutputsToSigned(outputIds: List<String>): Int
 
+    @Query("DELETE FROM outputs WHERE transaction_hash = :hash AND output_index = :outputIndex AND address = :address AND asset_id = :assetId AND status = 'signed'")
+    suspend fun deleteSignedByOutpoint(hash: String, outputIndex: Long, address: String, assetId: String): Int
+
     @Transaction
     suspend fun mergeOutputsForAddress(address: String, assetId: String, remoteOutputs: List<WalletOutput>) {
         val remoteOutputIds: List<String> = remoteOutputs.map { it.outputId }

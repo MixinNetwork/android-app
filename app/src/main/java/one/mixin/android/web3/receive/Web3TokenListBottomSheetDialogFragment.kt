@@ -102,6 +102,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioAll.isVisible = true
             radioEth.isVisible = true
             radioTron.isVisible = false
+            radioToncoin.isVisible = false
             radioBase.isVisible = true
             radioBsc.isVisible = true
             radioPolygon.isVisible = true

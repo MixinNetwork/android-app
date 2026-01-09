@@ -73,6 +73,7 @@ object PendingTransactionRefreshHelper {
                                         walletId = walletId,
                                         fromAddress = transition.account,
                                         rawTransactionHex = transition.raw,
+                                        shouldDeleteInputs = true,
                                     )
                                 }
                                 if (r.data?.state != TransactionStatus.SUCCESS.value) {

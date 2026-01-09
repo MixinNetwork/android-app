@@ -114,7 +114,7 @@ constructor(
         return changeOutputs.size
     }
 
-    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String): Int {
+    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String, shouldDeleteInputs: Boolean): Int {
         val cleanedHex: String = rawTransactionHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {
@@ -130,8 +130,21 @@ constructor(
         }.getOrNull() ?: return 0
         val fromScriptBytes: ByteArray = fromScript.program()
         val hasChangeOutput: Boolean = tx.outputs.any { output -> output.scriptBytes.contentEquals(fromScriptBytes) }
-        if (!hasChangeOutput) return 0
-        return walletOutputDao.deleteUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        var deletedInputsCount: Int = 0
+        if (shouldDeleteInputs) {
+            for (input in tx.inputs) {
+                val outPoint = input.outpoint ?: continue
+                val previousHash: String = outPoint.hash().toString()
+                val outputIndex: Long = outPoint.index()
+                deletedInputsCount += walletOutputDao.deleteSignedByOutpoint(previousHash, outputIndex, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+            }
+        }
+        val deletedChangeOutputsCount: Int = if (hasChangeOutput) {
+            walletOutputDao.deleteUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        } else {
+            0
+        }
+        return deletedChangeOutputsCount + deletedInputsCount
     }
 
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)

@@ -263,7 +263,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
                 transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
                     fromTv.text = fromAddress
-                    fromLl.isVisible = true
+                    fromLl.isVisible = fromAddress.isBlank().not()
                     toLl.isVisible = false
                 }
                 transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
@@ -493,7 +493,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     currentTitle = getString(R.string.Speed_Up_Transaction),
                     onDone = { _ ->
                         lifecycleScope.launch {
-                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw)
+                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw, shouldDeleteInputs = false)
                         }
                     },
                 )
@@ -525,7 +525,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     currentTitle = getString(R.string.Cancel_Transaction),
                     onDone = { _ ->
                         lifecycleScope.launch {
-                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw)
+                            web3ViewModel.deleteBitcoinUnspentChangeOutputs(wallet.id, fromAddress, rawTransaction.raw, shouldDeleteInputs = false)
                         }
                     },
                 )
