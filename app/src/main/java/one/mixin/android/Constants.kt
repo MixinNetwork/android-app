@@ -120,6 +120,8 @@ object Constants {
 
         const val PREF_HAS_USED_ADD_WALLET = "pref_has_used_add_wallet"
 
+        const val PREF_WALLET_CATEGORY_FILTER = "pref_wallet_category_filter"
+
         const val PREF_TO_SWAP = "pref_to_swap"
         const val PREF_FROM_SWAP = "pref_from_swap"
         const val PREF_TO_LIMIT_SWAP = "pref_to_limit_swap"
