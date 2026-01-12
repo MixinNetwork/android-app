@@ -20,7 +20,7 @@ class JsSignMessage(
     val isCancelTx: Boolean = false,
     val fee: BigDecimal? = null, // only btc
     val rate: BigDecimal? = null, // only btc
-    val transactionSize: Int? = null, // only btc, bytes
+    val virtualSize: Int? = null, // only btc, vbytes
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0

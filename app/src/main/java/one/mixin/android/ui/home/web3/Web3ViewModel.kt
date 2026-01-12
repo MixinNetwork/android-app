@@ -272,7 +272,7 @@ internal constructor(
         if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
             val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.assetId) }
             val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
-            val transactionSize: Int? = jsMsg.transactionSize
+            val virtualSize: Int? = jsMsg.virtualSize
             val response = withContext(Dispatchers.IO) {
                 runCatching {
                     web3Repository.estimateFee(
@@ -289,8 +289,8 @@ internal constructor(
             }
             if (response?.isSuccess != true || response.data == null) return Pair(null, null)
             val feeRate: String? = response.data!!.feeRate
-            if (feeRate.isNullOrBlank() || transactionSize == null || transactionSize <= 0) return Pair(null, null)
-            return Pair(estimateFeeInBtc(feeRate, transactionSize), feeRate.toBigDecimalOrNull())
+            if (feeRate.isNullOrBlank() || virtualSize == null || virtualSize <= 0) return Pair(null, null)
+            return Pair(estimateFeeInBtc(feeRate, virtualSize), feeRate.toBigDecimalOrNull())
         }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {

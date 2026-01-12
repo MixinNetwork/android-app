@@ -24,16 +24,10 @@ import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.Coin
-import org.bitcoinj.base.LegacyAddress
 import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.TransactionInput
 import org.bitcoinj.core.TransactionOutPoint
-import org.bitcoinj.crypto.ECKey
-import org.bitcoinj.base.Address as BtcAddress
 import org.bitcoinj.core.Transaction as BtcTransaction
-import org.bitcoinj.params.MainNetParams
-import org.bitcoinj.script.Script
-import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
@@ -50,6 +44,7 @@ import org.web3j.abi.datatypes.Function
 import org.web3j.abi.datatypes.Uint
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -346,7 +341,7 @@ suspend fun Web3TokenItem.buildTransaction(
             var selectedAmount = Coin.ZERO
             val selectedUtxos: MutableList<WalletOutput> = mutableListOf()
             var feeBtc: BigDecimal = BigDecimal.ZERO
-            var transactionSize: Int = 0
+            var virtualSize: Int = 0
             var changeAmount: Coin = Coin.ZERO
             val minimumChangeAmount: Coin = Coin.valueOf(1000)
             for (localUtxo: WalletOutput in localUtxos) {
@@ -363,8 +358,8 @@ suspend fun Web3TokenItem.buildTransaction(
                     val input = TransactionInput(candidateTx, byteArrayOf(), outPoint)
                     candidateTx.addInput(input)
                 }
-                transactionSize = candidateTx.serialize().size
-                val feeSatoshis: BigDecimal = feeRate.multiply(BigDecimal(transactionSize)).setScale(0, RoundingMode.UP)
+                virtualSize = candidateTx.virtualSize()
+                val feeSatoshis: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
                 feeBtc = feeSatoshis.divide(BigDecimal("100000000"), 8, RoundingMode.HALF_UP)
                 val targetAmount: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
                 changeAmount = selectedAmount.subtract(targetAmount)
@@ -373,8 +368,8 @@ suspend fun Web3TokenItem.buildTransaction(
                 }
                 if (changeAmount.isGreaterThan(minimumChangeAmount) || changeAmount == minimumChangeAmount) {
                     candidateTx.addOutput(changeAmount, changeAddress)
-                    transactionSize = candidateTx.serialize().size
-                    val feeSatoshisWithChange: BigDecimal = feeRate.multiply(BigDecimal(transactionSize)).setScale(0, RoundingMode.UP)
+                    virtualSize = candidateTx.virtualSize()
+                    val feeSatoshisWithChange: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
                     feeBtc = feeSatoshisWithChange.divide(BigDecimal("100000000"), 8, RoundingMode.HALF_UP)
                     val targetAmountWithChange: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
                     changeAmount = selectedAmount.subtract(targetAmountWithChange)
@@ -395,9 +390,18 @@ suspend fun Web3TokenItem.buildTransaction(
                 val input = TransactionInput(tx, byteArrayOf(), outPoint)
                 tx.addInput(input)
             }
-            transactionSize = tx.serialize().size
+            virtualSize = tx.virtualSize()
             val rawTxHex: String = tx.serialize().toHex()
-            return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex, fee = feeBtc, transactionSize = transactionSize, rate = rate)
+            // Todo remove debug logs
+            Timber.e("rawTxHex: $rawTxHex virtualSize: $virtualSize rate: $rate")
+            return JsSignMessage(
+                callbackId = 0,
+                type = JsSignMessage.TYPE_BTC_TRANSACTION,
+                data = rawTxHex,
+                fee = feeBtc,
+                rate = rate,
+                virtualSize = virtualSize,
+            )
 
         } else {
             throw EmptyUtxoException
@@ -405,4 +409,8 @@ suspend fun Web3TokenItem.buildTransaction(
     } else {
         throw IllegalStateException("Not support: $chainId")
     }
+}
+
+private fun BtcTransaction.virtualSize(): Int {
+    return (weight + 3) / 4
 }
