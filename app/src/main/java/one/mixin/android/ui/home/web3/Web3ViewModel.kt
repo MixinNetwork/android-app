@@ -283,9 +283,9 @@ internal constructor(
             }
             if (response?.isSuccess != true || response.data == null) return null
             val feeRate: String? = response.data!!.feeRate
-            val unitLimit: String? = response.data!!.unitLimit
-            if (feeRate.isNullOrBlank() || unitLimit.isNullOrBlank()) return null
-            return estimateFeeInBtc(feeRate, unitLimit)
+            val txSize: String? = response.data!!.txSize
+            if (feeRate.isNullOrBlank() || txSize.isNullOrBlank()) return null
+            return estimateFeeInBtc(feeRate, txSize)
         }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {

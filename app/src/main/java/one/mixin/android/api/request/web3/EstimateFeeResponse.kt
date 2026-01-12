@@ -9,5 +9,6 @@ data class EstimateFeeResponse(
     @SerializedName("max_priority_fee_per_gas") val maxPriorityFeePerGas: String?,
     @SerializedName("unit_price") val unitPrice: String?,
     @SerializedName("unit_limit") val unitLimit: String?,
-    @SerializedName("fee_rate") val feeRate: String?
+    @SerializedName("fee_rate") val feeRate: String?,
+    @SerializedName("tx_size") val txSize: String?
 )
