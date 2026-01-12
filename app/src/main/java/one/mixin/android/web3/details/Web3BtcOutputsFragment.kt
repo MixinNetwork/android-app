@@ -9,9 +9,11 @@ import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -84,7 +86,7 @@ class Web3BtcOutputsFragment : BaseFragment() {
             }
         }
         binding.outputsRv.adapter = adapter
-        refreshOutputs()
+        observeOutputs()
     }
 
     override fun onDestroyView() {
@@ -92,11 +94,14 @@ class Web3BtcOutputsFragment : BaseFragment() {
         _binding = null
     }
 
-    private fun refreshOutputs() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val outputs: List<WalletOutput> = web3ViewModel.outputsByAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID)
-            launch(Dispatchers.Main) {
-                adapter.submitList(outputs)
+    private fun observeOutputs() {
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                web3ViewModel
+                    .observeOutputsByAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    .collectLatest { outputs: List<WalletOutput> ->
+                        adapter.submitList(outputs)
+                    }
             }
         }
     }
@@ -147,7 +152,6 @@ class Web3BtcOutputsFragment : BaseFragment() {
             }.onFailure { err ->
                 Timber.e(err)
             }
-            refreshOutputs()
             loadingDialog?.dismiss()
             loadingDialog = null
         }

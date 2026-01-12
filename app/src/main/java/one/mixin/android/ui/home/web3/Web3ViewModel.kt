@@ -21,6 +21,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.db.web3.vo.Web3Address
@@ -240,6 +241,10 @@ internal constructor(
     suspend fun outputsByAddress(address: String, assetId: String) = web3Repository.outputsByAddress(address, assetId)
 
     suspend fun outputsByAddressForSigning(address: String, assetId: String) = web3Repository.outputsByAddressForSigning(address, assetId)
+
+    fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>> {
+        return web3Repository.observeOutputsByAddress(address, assetId)
+    }
 
     suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String, shouldDeleteInputs: Boolean): Int {
         return withContext(Dispatchers.IO) {

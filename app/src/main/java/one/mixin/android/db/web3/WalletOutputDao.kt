@@ -3,6 +3,7 @@ package one.mixin.android.db.web3
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.BaseDao
 import java.math.BigDecimal
@@ -11,6 +12,9 @@ import java.math.BigDecimal
 interface WalletOutputDao: BaseDao<WalletOutput> {
     @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent' ORDER BY created_at DESC")
     suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput>
+
+    @Query("SELECT * FROM outputs WHERE address = :address AND asset_id = :assetId ORDER BY created_at DESC")
+    fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>>
 
     @Query("SELECT amount FROM outputs WHERE address = :address AND asset_id = :assetId AND status='unspent'")
     suspend fun findUnspentAmounts(address: String, assetId: String): List<String>

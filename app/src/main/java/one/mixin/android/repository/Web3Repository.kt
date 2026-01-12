@@ -6,6 +6,7 @@ import androidx.lifecycle.switchMap
 import androidx.paging.DataSource
 import androidx.room.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.AddressSearchRequest
@@ -217,6 +218,10 @@ constructor(
                 }
             )
         }
+    }
+
+    fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>> {
+        return walletOutputDao.observeOutputsByAddress(address, assetId)
     }
 
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()
