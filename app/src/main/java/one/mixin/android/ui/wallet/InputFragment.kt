@@ -1126,6 +1126,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 binding.contentTextView.text = "${it.fee.numberFormat8()} ${it.token.symbol}"
                 updateUI()
             }
+        } else {
+            if (dialog.isShowing) {
+                dialog.dismiss()
+            }
         }
         binding.contentTextView.isVisible = true
         binding.loadingProgressBar.isVisible = false
@@ -1255,7 +1259,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val transaction =
             try {
                 if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    t.buildTransaction(rpc, fromAddress, toAddress, "0.00000001", web3ViewModel.outputsByAddress(fromAddress, t.assetId), gas)
+                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.assetId), gas)
                 } else {
                     t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
                 }
@@ -1271,6 +1275,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
           refreshGas(t)
         } else if (isAdded) {
             gas = web3ViewModel.calcFee(t, transaction, fromAddress)
+            if (gas == null) {
+                delay(3000)
+                if (dialog.isShowing) {
+                    dialog.dismiss()
+                }
+                refreshGas(t)
+            }
             if (chainToken?.assetId == t.assetId) {
                 val balance = runCatching {
                     tokenBalance.toBigDecimalOrNull()?.subtract(gas ?: BigDecimal.ZERO)

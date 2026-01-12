@@ -13,7 +13,7 @@ import timber.log.Timber
 
 class RefreshWeb3TransactionsJob(
     val walletId: String? = null
-) : BaseJob(Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP + (walletId ?: "all")).requireNetwork(),) {
+) : BaseJob(Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP + (walletId ?: "all")).requireNetwork()) {
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshWeb3TransactionsJob"

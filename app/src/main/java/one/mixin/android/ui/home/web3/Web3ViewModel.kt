@@ -281,10 +281,10 @@ internal constructor(
                     )
                 }.getOrNull()
             }
-            if (response?.isSuccess != true || response.data == null) return BigDecimal.ZERO
+            if (response?.isSuccess != true || response.data == null) return null
             val feeRate: String? = response.data!!.feeRate
             val unitLimit: String? = response.data!!.unitLimit
-            if (feeRate.isNullOrBlank() || unitLimit.isNullOrBlank()) return BigDecimal.ZERO
+            if (feeRate.isNullOrBlank() || unitLimit.isNullOrBlank()) return null
             return estimateFeeInBtc(feeRate, unitLimit)
         }
         val chain = token.getChainFromName()
@@ -307,7 +307,7 @@ internal constructor(
                     )
                 }.getOrNull()
             }
-            if (r?.isSuccess != true) return BigDecimal.ZERO
+            if (r?.isSuccess != true) return null
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
                 tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
