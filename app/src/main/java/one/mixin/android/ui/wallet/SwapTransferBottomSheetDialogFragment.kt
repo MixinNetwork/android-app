@@ -679,7 +679,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 val fromAddress: String = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
                                 val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
                                 val signedResult: BtcSignedResult = signBtcTransaction(rawHex, key, localUtxos)
-                                bottomViewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, inAsset.assetId)
+                                bottomViewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, inAsset.assetId, rate = web3Transaction?.rate?.toPlainString())
                                 web3ViewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.signedHex, signedResult.consumedOutputIds)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
@@ -844,17 +844,17 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     toAddress = depositDestination,
                                     v = inputAmount,
                                     localUtxos = localUtxos,
-                                    gas = BigDecimal.ZERO,
+                                    rate = BigDecimal.ONE,
                                 )
-                                val estimatedFee: BigDecimal = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress) ?: BigDecimal.ZERO
-                                btcFee = estimatedFee
+                                val estimatedFee = web3ViewModel.calcFee(token, zeroFeeTx, fromAddress)
+                                btcFee = estimatedFee.first ?: BigDecimal.ZERO
                                 token.buildTransaction(
                                     rpc = rpc,
                                     fromAddress = fromAddress,
                                     toAddress = depositDestination,
                                     v = inputAmount,
                                     localUtxos = localUtxos,
-                                    gas = estimatedFee,
+                                    rate = estimatedFee.second,
                                 )
                             } else {
                                 token.buildTransaction(

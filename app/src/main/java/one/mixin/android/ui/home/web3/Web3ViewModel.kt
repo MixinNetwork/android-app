@@ -263,12 +263,13 @@ internal constructor(
         token: Web3TokenItem,
         transaction: JsSignMessage,
         fromAddress: String,
-    ): BigDecimal? {
+    ): Pair<BigDecimal?, BigDecimal?> {
         if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.assetId) }
+            val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
+            val transactionSize: Int? = jsMsg.transactionSize
             val response = withContext(Dispatchers.IO) {
                 runCatching {
-                    val localUtxos = outputsByAddress(fromAddress, token.assetId)
-                    val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
                     web3Repository.estimateFee(
                         EstimateFeeRequest(
                             chainId = token.chainId,
@@ -281,17 +282,16 @@ internal constructor(
                     )
                 }.getOrNull()
             }
-            if (response?.isSuccess != true || response.data == null) return null
+            if (response?.isSuccess != true || response.data == null) return Pair(null, null)
             val feeRate: String? = response.data!!.feeRate
-            val txSize: String? = response.data!!.txSize
-            if (feeRate.isNullOrBlank() || txSize.isNullOrBlank()) return null
-            return estimateFeeInBtc(feeRate, txSize)
+            if (feeRate.isNullOrBlank() || transactionSize == null || transactionSize <= 0) return Pair(null, null)
+            return Pair(estimateFeeInBtc(feeRate, transactionSize), feeRate.toBigDecimalOrNull())
         }
         val chain = token.getChainFromName()
         if (chain == Chain.Solana) {
             val tx = VersionedTransactionCompat.from(transaction.data ?: "")
             val fee = tx.calcFee(fromAddress)
-            return fee
+            return Pair(fee, null)
         } else {
             val r = withContext(Dispatchers.IO) {
                 runCatching {
@@ -307,10 +307,10 @@ internal constructor(
                     )
                 }.getOrNull()
             }
-            if (r?.isSuccess != true) return null
+            if (r?.isSuccess != true) return Pair(null, null)
             return withContext(Dispatchers.IO) {
                 val tipGas = buildTipGas(chain.chainId, r.data!!)
-                tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO
+                Pair(tipGas.displayValue(transaction.wcEthereumTransaction?.maxFeePerGas) ?: BigDecimal.ZERO, null)
             }
         }
     }

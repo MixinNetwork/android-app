@@ -19,6 +19,8 @@ class JsSignMessage(
     val isSpeedUp: Boolean = false,
     val isCancelTx: Boolean = false,
     val fee: BigDecimal? = null, // only btc
+    val rate: BigDecimal? = null, // only btc
+    val transactionSize: Int? = null, // only btc, bytes
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0

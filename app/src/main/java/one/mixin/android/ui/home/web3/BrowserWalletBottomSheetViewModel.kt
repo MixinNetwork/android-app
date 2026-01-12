@@ -94,8 +94,8 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String?, assetId: String? = null, feeType: String? = null) = withContext(Dispatchers.IO) {
-            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to, feeType), assetId)
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String?, assetId: String? = null, feeType: String? = null, rate: String? = null) = withContext(Dispatchers.IO) {
+            val resp = assetRepo.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to, feeType), assetId, rate)
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException

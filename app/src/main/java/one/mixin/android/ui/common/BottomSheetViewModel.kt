@@ -1825,8 +1825,8 @@ class BottomSheetViewModel
             return requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId))
         }
 
-        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String, assetId: String? = null) {
-            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to), assetId)
+        suspend fun postRawTx(rawTx: String, web3ChainId: String, account: String, to: String, assetId: String? = null, rate: String? = null) {
+            val resp = tokenRepository.postRawTx(Web3RawTransactionRequest(web3ChainId, rawTx, account, to), assetId, rate)
             if (!resp.isSuccess) {
                 val err = resp.error!!
                 // simulate RpcException

@@ -10,5 +10,4 @@ data class EstimateFeeResponse(
     @SerializedName("unit_price") val unitPrice: String?,
     @SerializedName("unit_limit") val unitLimit: String?,
     @SerializedName("fee_rate") val feeRate: String?,
-    @SerializedName("tx_size") val txSize: String?
 )
