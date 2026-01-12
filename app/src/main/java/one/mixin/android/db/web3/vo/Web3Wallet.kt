@@ -12,6 +12,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.db.web3.vo.Web3Address
 
 enum class SafeChain(val value: String, val chainId: String) {
     BITCOIN("1", Constants.ChainId.BITCOIN_CHAIN_ID),
@@ -55,6 +56,11 @@ data class Web3Wallet(
     @Ignore
     @IgnoredOnParcel
     var hasLocalPrivateKey: Boolean = false
+
+    @Ignore
+    @IgnoredOnParcel
+    @SerializedName("addresses")
+    var addresses: List<Web3Address>? = null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

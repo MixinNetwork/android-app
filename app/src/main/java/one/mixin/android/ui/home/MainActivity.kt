@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -50,6 +51,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
+import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
@@ -114,8 +116,8 @@ import one.mixin.android.job.RefreshDappJob
 import one.mixin.android.job.RefreshExternalSchemeJob
 import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshSafeAccountsJob
+import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RefreshWeb3Job
 import one.mixin.android.job.RestoreTransactionJob
@@ -171,6 +173,7 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
+import one.mixin.android.ui.wallet.WalletMissingBtcAddressFragment
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -187,6 +190,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.worker.SessionWorker
@@ -195,7 +199,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : BlazeBaseActivity() {
+class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
     private lateinit var navigationController: NavigationController
 
     @Inject
@@ -221,6 +225,9 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var web3Repository: Web3Repository
+
+    private var lastBottomNavItemId: Int = R.id.nav_chat
+    private var isRestoringBottomNavSelection: Boolean = false
 
     @Inject
     lateinit var participantDao: ParticipantDao
@@ -352,7 +359,7 @@ class MainActivity : BlazeBaseActivity() {
                                 isVisible = try {
                                     defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
                                         ?.split(",")?.toSet() ?: emptySet()
-                                } catch (e: Exception) {
+                                } catch (_: Exception) {
                                     emptySet()
                                 }.size != SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
                                 backgroundColor = Color.RED
@@ -368,12 +375,22 @@ class MainActivity : BlazeBaseActivity() {
                     if (e is WCEvent.V2) {
                         if (e.requestType != WalletConnect.RequestType.Connect) {
                             val type = e.chainType ?: TYPE_ETH
-                            if (type == TYPE_SOLANA && PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank()) {
-                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                            } else if (type == TYPE_ETH && PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank()) {
-                                WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing((MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG)
-                            } else {
-                                WalletConnectActivity.show(this@MainActivity, e)
+                            when (type) {
+                                TYPE_SOLANA if PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank() -> {
+                                    WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing(
+                                        (MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager
+                                            ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG
+                                    )
+                                }
+                                TYPE_ETH if PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank() -> {
+                                    WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing(
+                                        (MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager
+                                            ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG
+                                    )
+                                }
+                                else -> {
+                                    WalletConnectActivity.show(this@MainActivity, e)
+                                }
                             }
                         } else {
                             WalletConnectActivity.show(this@MainActivity, e)
@@ -548,7 +565,7 @@ class MainActivity : BlazeBaseActivity() {
                         try {
                             if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
                                 LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                                    onDismissCallback = { success ->
+                                    onDismissCallback = { _ ->
                                         jobManager.addJobInBackground(RefreshWeb3Job())
                                     }
                                 }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
@@ -605,7 +622,7 @@ class MainActivity : BlazeBaseActivity() {
         val currentVersion =
             try {
                 readVersion(getDatabasePath(DB_NAME))
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 0
             }
         return currentVersion > MINI_VERSION && CURRENT_VERSION != currentVersion
@@ -697,7 +714,7 @@ class MainActivity : BlazeBaseActivity() {
                         AppUpdateOptions.defaultOptions(AppUpdateType.FLEXIBLE),
                         0x01,
                     )
-                } catch (ignored: IntentSender.SendIntentException) {
+                } catch (_: IntentSender.SendIntentException) {
                 }
             } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                 popupSnackbarForCompleteUpdate()
@@ -989,6 +1006,10 @@ class MainActivity : BlazeBaseActivity() {
             bottomNav.menu.findItem(R.id.nav_chat).isChecked = true
 
             bottomNav.setOnItemSelectedListener {
+                if (isRestoringBottomNavSelection) {
+                    isRestoringBottomNavSelection = false
+                    return@setOnItemSelectedListener true
+                }
                 handleNavigationItemSelected(it.itemId)
                 return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_market)
             }
@@ -1006,7 +1027,7 @@ class MainActivity : BlazeBaseActivity() {
             val market = try {
                 defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
                     ?.split(",")?.toSet() ?: emptySet()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 emptySet()
             }.size < SHOW_DOT_BOT_IDS.size || defaultSharedPreferences.getBoolean(Account.PREF_HAS_USED_MARKET, true)
             binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
@@ -1055,14 +1076,25 @@ class MainActivity : BlazeBaseActivity() {
         when (itemId) {
             R.id.nav_chat -> {
                 switchToDestination(NavigationController.ConversationList)
+                lastBottomNavItemId = itemId
             }
 
             R.id.nav_wallet -> {
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
-                    switchToDestination(NavigationController.Wallet)
+                    lifecycleScope.launch {
+                        val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
+                        if (shouldBlockNavigation) {
+                            showWalletMissingBtcAddressFragment()
+                            isRestoringBottomNavSelection = true
+                            binding.bottomNav.selectedItemId = lastBottomNavItemId
+                            return@launch
+                        }
+                        switchToDestination(NavigationController.Wallet)
+                        lastBottomNavItemId = itemId
+                    }
                 } else {
-                    val id = requireNotNull(defaultSharedPreferences.getString(Constants.DEVICE_ID, null)) { "required deviceId can not be null" }
+                    val id = requireNotNull(defaultSharedPreferences.getString(DEVICE_ID, null)) { "required deviceId can not be null" }
                     TipActivity.show(this, TipBundle(TipType.Create, id, TryConnecting))
                 }
                 findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
@@ -1070,6 +1102,7 @@ class MainActivity : BlazeBaseActivity() {
 
             R.id.nav_market -> {
                 switchToDestination(NavigationController.Market)
+                lastBottomNavItemId = itemId
                 findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
 
                 findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
@@ -1077,6 +1110,7 @@ class MainActivity : BlazeBaseActivity() {
 
             R.id.nav_more -> {
                 switchToDestination(NavigationController.Explore)
+                lastBottomNavItemId = itemId
                 findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
@@ -1085,6 +1119,48 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
         findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideContainer()
+    }
+
+    private suspend fun shouldShowWalletMissingBtcAddress(): Boolean {
+        return withContext(Dispatchers.IO) {
+            if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return@withContext false
+            val wallets = web3Repository.getAllWallets().filter { walletItem ->
+                walletItem.category == WalletCategory.CLASSIC.value || (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
+            }
+            if (wallets.isEmpty()) return@withContext false
+            val shouldShowBtcAddress: Boolean = wallets.any { walletItem ->
+                web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) == null
+            }
+            return@withContext shouldShowBtcAddress
+        }
+    }
+
+    private fun showWalletMissingBtcAddressFragment() {
+        val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
+        if (fragment != null) return
+        val newFragment = WalletMissingBtcAddressFragment
+            .newInstance()
+        supportFragmentManager
+            .beginTransaction()
+            .setReorderingAllowed(true)
+            .add(R.id.internal_container, newFragment, WalletMissingBtcAddressFragment.TAG)
+            .addToBackStack(WalletMissingBtcAddressFragment.TAG)
+            .commitAllowingStateLoss()
+    }
+
+    override fun onWalletMissingBtcAddressPinSuccess() {
+        supportFragmentManager.popBackStack(WalletMissingBtcAddressFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
+        if (fragment != null) {
+            supportFragmentManager
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .remove(fragment)
+                .commitAllowingStateLoss()
+        }
+        binding.bottomNav.selectedItemId = R.id.nav_wallet
+        switchToDestination(NavigationController.Wallet)
+        lastBottomNavItemId = R.id.nav_wallet
     }
 
     private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
@@ -1125,7 +1201,7 @@ class MainActivity : BlazeBaseActivity() {
     private val activityResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
-        if (result.resultCode != Activity.RESULT_OK) {
+        if (result.resultCode != RESULT_OK) {
             // Handle the case where the update was not successful
             openMarket()
         } else {
@@ -1153,10 +1229,6 @@ class MainActivity : BlazeBaseActivity() {
         circleId: String?,
     ) {
         findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.selectCircle(name, circleId)
-    }
-
-    fun setCircleName(name: String?) {
-        findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.setCircleName(name)
     }
 
     fun sortAction() {
@@ -1204,26 +1276,6 @@ class MainActivity : BlazeBaseActivity() {
                 }
             }
         }
-    }
-
-    fun tintColor(c: Int?) {
-        val s = colorFromAttribute(R.attr.bg_white)
-        if (c == null) {
-            binding.bottomNav.setBackgroundColor(s)
-        } else {
-            binding.bottomNav.setBackgroundColor(mixColor(s, c))
-        }
-    }
-
-    private fun mixColor(
-        color1: Int,
-        color2: Int,
-    ): Int {
-        val a = (color1 ushr 24) * 0.5f + (color2 ushr 24) * 0.5f
-        val r = ((color1 shr 16) and 0xFF) * 0.5f + ((color2 shr 16) and 0xFF) * 0.5f
-        val g = ((color1 shr 8) and 0xFF) * 0.5f + ((color2 shr 8) and 0xFF) * 0.5f
-        val b = (color1 and 0xFF) * 0.5f + (color2 and 0xFF) * 0.5f
-        return ((a.toInt() shl 24) or (r.toInt() shl 16) or (g.toInt() shl 8) or b.toInt())
     }
 
     private fun initFragmentsFromSavedState(savedInstanceState: Bundle?) {

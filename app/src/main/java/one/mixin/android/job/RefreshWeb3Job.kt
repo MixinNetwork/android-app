@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -11,6 +12,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokensExtra
@@ -19,10 +21,17 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.isClassic
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.event.WalletOperationType
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
+import kotlin.collections.isNullOrEmpty
+import kotlin.collections.take
+
 class RefreshWeb3Job : BaseJob(
     Params(PRIORITY_UI_HIGH).singleInstanceBy(GROUP).requireNetwork(),
 ) {
@@ -41,24 +50,45 @@ class RefreshWeb3Job : BaseJob(
                 Timber.e("EVM or Solana address is not set")
                 return@runBlocking
             }
+            val btcAddress = PropertyHelper.findValueByKey(BTC_ADDRESS, "")
             createWallet(
-                applicationContext.getString(R.string.Common_Wallet), WalletCategory.CLASSIC.value, listOf(
-                    Web3AddressRequest(
-                        destination = erc20Address,
-                        chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                        path = Bip44Path.ethereumPathString()
-                    ),
-                    Web3AddressRequest(
-                        destination = solAddress,
-                        chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                        path = Bip44Path.solanaPathString()
+                applicationContext.getString(R.string.Common_Wallet), WalletCategory.CLASSIC.value, if (btcAddress.isBlank().not()) {
+                    listOf(
+                        Web3AddressRequest(
+                            destination = btcAddress,
+                            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                            path = Bip44Path.bitcoinSegwitPathString()
+                        ),
+                        Web3AddressRequest(
+                            destination = erc20Address,
+                            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                            path = Bip44Path.ethereumPathString()
+                        ),
+                        Web3AddressRequest(
+                            destination = solAddress,
+                            chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                            path = Bip44Path.solanaPathString()
+                        )
                     )
-                )
+                } else {
+                    listOf(
+                        Web3AddressRequest(
+                            destination = erc20Address,
+                            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                            path = Bip44Path.ethereumPathString()
+                        ),
+                        Web3AddressRequest(
+                            destination = solAddress,
+                            chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                            path = Bip44Path.solanaPathString()
+                        )
+                    )
+                }
             )
         } else {
             wallets.forEach { wallet ->
                 if (web3AddressDao.getAddressesByWalletId(wallet.id).any {
-                        it.path == null || it.path.isBlank()
+                        it.path.isNullOrBlank()
                     }) {
                     try {
                         routeService.updateWallet(wallet.id, WalletRequest(name = MixinApplication.appContext.getString(R.string.Common_Wallet), null, null))
@@ -128,7 +158,12 @@ class RefreshWeb3Job : BaseJob(
                     Timber.d("Fetched ${addressesResponse.data?.size} addresses for wallet $walletId")
                     val web3Addresses = addressesResponse.data!!
                     web3AddressDao.insertList(web3Addresses)
+                    MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                     Timber.d("Inserted ${web3Addresses.size} addresses into database")
+                    val btcAddress = web3Addresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
+                    if (btcAddress.isNullOrBlank().not()) {
+                        fetchBtcOutputs(walletId = walletId, address = btcAddress)
+                    }
                 } else {
                     Timber.d("No addresses found for wallet $walletId")
                 }
@@ -144,20 +179,59 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
+    private suspend fun fetchBtcOutputs(walletId: String, address: String) {
+        requestRouteAPI(
+            invokeNetwork = {
+                routeService.getWalletOutputs(walletId = walletId, address = address, assetId = Constants.ChainId.BITCOIN_CHAIN_ID)
+            },
+            successBlock = { response ->
+                val outputs = response.data
+                try {
+                    // use suspend insert to let Room handle the list insertion in coroutine
+                    val safeOutputs: List<WalletOutput> = outputs ?: emptyList()
+                    walletOutputDao.mergeOutputsForAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID, safeOutputs)
+                    refreshBitcoinTokenAmountByOutputs(walletId, address)
+                    Timber.d("Merged ${safeOutputs.size} BTC outputs into database for walletId=$walletId")
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to insert BTC outputs for walletId=$walletId into DB")
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to fetch BTC outputs for walletId=$walletId address=$address: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+            },
+            defaultErrorHandle = {}
+        )
+    }
+
     private suspend fun fetchWallets(renameWalletId: String? = null) {
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getWallets()
             },
             successBlock = { response ->
-                val wallets = response.data
-                wallets?.let {
-                    web3WalletDao.insertList(it)
-                    wallets.forEach { wallet ->
-                        if (wallet.id == renameWalletId) {
-                            RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
-                        }
+                val wallets: List<Web3Wallet> = response.data ?: emptyList()
+                if (wallets.isEmpty()) return@requestRouteAPI
+                web3WalletDao.insertList(wallets)
+                wallets.forEach { wallet ->
+                    if (wallet.id == renameWalletId) {
+                        RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.RENAME))
+                    }
+                    val embeddedAddresses = wallet.addresses
+                    if (embeddedAddresses.isNullOrEmpty()) {
                         fetchWalletAddresses(wallet.id)
+                        return@forEach
+                    }
+                    web3AddressDao.insertList(embeddedAddresses)
+                    MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
+                    if (wallet.isImported() || wallet.isClassic()) {
+                        val btcAddress: String? = embeddedAddresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
+                        if (!btcAddress.isNullOrBlank()) {
+                            fetchBtcOutputs(walletId = wallet.id, address = btcAddress)
+                        }
                     }
                 }
             },
@@ -179,7 +253,7 @@ class RefreshWeb3Job : BaseJob(
             },
             successBlock = { response ->
                 val assets = response.data
-                if (assets != null && assets.isNotEmpty()) {
+                if (!assets.isNullOrEmpty()) {
                     Timber.d("Fetched ${assets.size} assets for wallet $walletId")
                     val assetIds = assets.map { it.assetId }
                     web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
@@ -200,7 +274,8 @@ class RefreshWeb3Job : BaseJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
-                    web3TokenDao.insertList(assets)
+                    val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, assets)
+                    web3TokenDao.insertList(tokensToInsert)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
@@ -258,7 +333,7 @@ class RefreshWeb3Job : BaseJob(
             val response = tokenService.getChains()
             if (response.isSuccess) {
                 val chains = response.data
-                if (chains != null && chains.isNotEmpty()) {
+                if (!chains.isNullOrEmpty()) {
                     Timber.d("Fetched ${chains.size} chains")
                     val web3Chains = chains.map { chain ->
                         Web3Chain(

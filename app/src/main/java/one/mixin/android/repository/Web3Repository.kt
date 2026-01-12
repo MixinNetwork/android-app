@@ -21,6 +21,8 @@ import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.WalletOutputDao
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.updateWithLocalKeyInfo
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Chain
@@ -29,11 +31,21 @@ import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.WalletItem
+import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
+import org.bitcoinj.base.Address
+import org.bitcoinj.base.AddressParser
 import timber.log.Timber
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
+import org.bitcoinj.params.MainNetParams
+import java.nio.ByteBuffer
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,8 +64,88 @@ constructor(
     val userRepository: UserRepository,
     val web3ChainDao: Web3ChainDao,
     val orderDao: OrderDao,
+    val walletOutputDao: WalletOutputDao,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
+
+    suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
+        if (walletId.isBlank() || address.isBlank()) return
+        val totalUnspent = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+    }
+
+    suspend fun insertBitcoinChangeOutputs(fromAddress: String, signedHex: String): Int {
+        val addressParser = AddressParser.getDefault()
+        val cleanedHex: String = signedHex.removePrefix("0x").trim()
+        if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
+        val tx: Transaction = runCatching {
+            Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
+        }.getOrNull() ?: return 0
+        val txHash: String = tx.txId.toString()
+        val fromParsedAddress: Address = runCatching {
+            addressParser.parseAddress(fromAddress)
+        }.getOrNull() ?: return 0
+        val fromScript: Script = runCatching {
+            ScriptBuilder.createOutputScript(fromParsedAddress)
+        }.getOrNull() ?: return 0
+        val fromScriptBytes: ByteArray = fromScript.program()
+        val now: String = nowInUtc()
+        val changeOutputs: List<WalletOutput> = tx.outputs.mapIndexedNotNull { index, output ->
+            if (!output.scriptBytes.contentEquals(fromScriptBytes)) return@mapIndexedNotNull null
+            val amount: String = output.value.toPlainString()
+            val outputId: String = UUID.nameUUIDFromBytes("$txHash:$index".toByteArray()).toString()
+            WalletOutput(
+                outputId = outputId,
+                assetId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                transactionHash = txHash,
+                outputIndex = index.toLong(),
+                amount = amount,
+                address = fromAddress,
+                pubkeyHex = null,
+                pubkeyType = null,
+                status = "unspent",
+                createdAt = now,
+                updatedAt = now,
+            )
+        }
+        if (changeOutputs.isEmpty()) return 0
+        walletOutputDao.insertListSuspend(changeOutputs)
+        return changeOutputs.size
+    }
+
+    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String, shouldDeleteInputs: Boolean): Int {
+        val cleanedHex: String = rawTransactionHex.removePrefix("0x").trim()
+        if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
+        val tx: Transaction = runCatching {
+            Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
+        }.getOrNull() ?: return 0
+        val txHash: String = tx.txId.toString()
+        val params = MainNetParams.get()
+        val fromParsedAddress: Address = runCatching {
+            Address.fromString(params, fromAddress)
+        }.getOrNull() ?: return 0
+        val fromScript: Script = runCatching {
+            ScriptBuilder.createOutputScript(fromParsedAddress)
+        }.getOrNull() ?: return 0
+        val fromScriptBytes: ByteArray = fromScript.program()
+        val hasChangeOutput: Boolean = tx.outputs.any { output -> output.scriptBytes.contentEquals(fromScriptBytes) }
+        var deletedInputsCount: Int = 0
+        if (shouldDeleteInputs) {
+            for (input in tx.inputs) {
+                val outPoint = input.outpoint ?: continue
+                val previousHash: String = outPoint.hash().toString()
+                val outputIndex: Long = outPoint.index()
+                deletedInputsCount += walletOutputDao.deleteSignedByOutpoint(previousHash, outputIndex, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+            }
+        }
+        val deletedChangeOutputsCount: Int = if (hasChangeOutput) {
+            walletOutputDao.deleteUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        } else {
+            0
+        }
+        return deletedChangeOutputsCount + deletedInputsCount
+    }
 
     suspend fun web3TokenItemByAddress(address: String) = web3TokenDao.web3TokenItemByAddress(address)
 
@@ -263,4 +355,11 @@ constructor(
     suspend fun getPendingOrdersByWallet(walletId: String): List<Order> {
         return orderDao.getPendingOrdersByWallet(walletId)
     }
+
+    suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput> = walletOutputDao.outputsByAddress(address, assetId)
+
+    suspend fun outputsByAddressForSigning(address: String, assetId: String): List<WalletOutput> =
+        walletOutputDao.outputsByAddressForSigning(address, assetId)
+
+    suspend fun outputsByHash(hash: String, assetId: String): WalletOutput? = walletOutputDao.outputsByHash(hash, assetId)
 }

@@ -7,6 +7,7 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
 import org.web3j.utils.Numeric
+import java.math.BigDecimal
 
 @Parcelize
 class JsSignMessage(
@@ -16,7 +17,8 @@ class JsSignMessage(
     val data: String? = null,
     val solanaTxSource: SolanaTxSource = SolanaTxSource.InnerTransfer,
     val isSpeedUp: Boolean = false,
-    val isCancelTx: Boolean = false
+    val isCancelTx: Boolean = false,
+    val fee: BigDecimal? = null, // only btc
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
@@ -25,6 +27,8 @@ class JsSignMessage(
         const val TYPE_TRANSACTION = 3
         const val TYPE_RAW_TRANSACTION = 4
         const val TYPE_SIGN_IN = 5
+
+        const val TYPE_BTC_TRANSACTION = 6
 
         fun isSignMessage(type: Int): Boolean =
             type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN

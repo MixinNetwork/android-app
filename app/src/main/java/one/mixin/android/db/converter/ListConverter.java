@@ -1,6 +1,7 @@
 package one.mixin.android.db.converter;
 
 import androidx.room.TypeConverter;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

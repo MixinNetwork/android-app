@@ -9,7 +9,9 @@ import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.Swappable
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.toHex
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.vo.Fiats
@@ -19,6 +21,19 @@ import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
+import org.bitcoinj.base.AddressParser
+import org.bitcoinj.base.Coin
+import org.bitcoinj.base.LegacyAddress
+import org.bitcoinj.base.Sha256Hash
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionOutPoint
+import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.base.Address as BtcAddress
+import org.bitcoinj.core.Transaction as BtcTransaction
+import org.bitcoinj.params.MainNetParams
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Constants.TOKEN_2022_PROGRAM_ID
 import org.sol4k.Constants.TOKEN_PROGRAM_ID
 import org.sol4k.Convert.solToLamport
@@ -82,8 +97,9 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Base -> "ETH"
             chainId == Constants.ChainId.Arbitrum -> "Arbitrum One"
             chainId == Constants.ChainId.Optimism -> "Optimism"
-            chainId == Constants.ChainId.BinanceSmartChain -> "Polygon"
-            chainId == Constants.ChainId.Polygon -> "BNB Chain"
+            chainId == Constants.ChainId.Polygon -> "Polygon"
+            chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
+            chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
@@ -190,6 +206,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
         chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
+        chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
@@ -201,9 +218,9 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.Optimism -> "ETH"
         chainId == Constants.ChainId.Arbitrum -> "ETH"
         chainId == Constants.ChainId.Avalanche -> "AVAX"
-        // chainId.equals("blast", true) -> "ETH"
-        chainId == Constants.ChainId.BinanceSmartChain -> "POL"
-        chainId == Constants.ChainId.Polygon -> "BNB"
+        chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
+        chainId == Constants.ChainId.Polygon -> "POL"
+        chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -215,6 +232,8 @@ suspend fun Web3TokenItem.buildTransaction(
     fromAddress: String,
     toAddress: String,
     v: String,
+    localUtxos: List<WalletOutput>? = null,
+    gas: BigDecimal? = BigDecimal.ZERO,
 ): JsSignMessage {
     if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
         Web3Signer.useSolana()
@@ -317,6 +336,45 @@ suspend fun Web3TokenItem.buildTransaction(
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
+    } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+        val addressParser = AddressParser.getDefault()
+        if (!localUtxos.isNullOrEmpty()) {
+            val changeAddress = addressParser.parseAddress( fromAddress)
+            val recipientAddress = addressParser.parseAddress( toAddress)
+            val sendAmount = Coin.parseCoin(v)
+            val fee = Coin.parseCoin((gas ?: BigDecimal.ZERO).toString())
+            val targetAmount = sendAmount.add(fee)
+            var selectedAmount = Coin.ZERO
+            val selectedUtxos: MutableList<WalletOutput> = mutableListOf()
+            for (localUtxo: WalletOutput in localUtxos) {
+                if (selectedAmount.isGreaterThan(targetAmount) || selectedAmount == targetAmount) {
+                    break
+                }
+                selectedUtxos.add(localUtxo)
+                selectedAmount = selectedAmount.add(Coin.parseCoin(localUtxo.amount))
+            }
+            val changeAmount = selectedAmount.subtract(targetAmount)
+            if (changeAmount.isNegative) {
+                throw IllegalArgumentException("insufficient balance")
+            }
+            val tx = BtcTransaction()
+            tx.addOutput(sendAmount, recipientAddress)
+            val minimumChangeAmount: Coin = Coin.valueOf(1000)
+            if (changeAmount.isGreaterThan(minimumChangeAmount) || changeAmount == minimumChangeAmount) {
+                tx.addOutput(changeAmount, changeAddress)
+            }
+            for (selectedUtxo: WalletOutput in selectedUtxos) {
+                val prevTxHash = Sha256Hash.wrap(selectedUtxo.transactionHash)
+                val outPoint = TransactionOutPoint(selectedUtxo.outputIndex, prevTxHash)
+                val input = TransactionInput(tx, byteArrayOf(), outPoint)
+                tx.addInput(input)
+            }
+            val rawTxHex: String = tx.serialize().toHex()
+            return JsSignMessage(0, JsSignMessage.TYPE_BTC_TRANSACTION, data = rawTxHex, fee = gas)
+
+        } else {
+            throw EmptyUtxoException
+        }
     } else {
         throw IllegalStateException("Not support: $chainId")
     }

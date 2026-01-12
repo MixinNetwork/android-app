@@ -1417,6 +1417,7 @@
     <string name="withdrawal_pending">提现中</string>
     <string name="consolidation_utxo">合并 UTXO</string>
     <string name="consolidation_utxo_description">您的 UTXOs 数量超过了256，为了发送体验，请输入 PIN 整合 UTXOs 后再操作</string>
+    <string name="no_available_utxo">没有可用 UTXO</string>
     <string name="depost_address_updated">%1$s 充值地址已更新</string>
     <string name="depost_address_updated_description">您的 %1$s 充值地址已更新，充值地址将随着系统或网络升级而自动更新，旧的地址仍可充值并会自动入账，但是不推荐使用。</string>
     <string name="login_verify_pin">我们会定期向您询问，以帮助您记忆。</string>
@@ -1918,6 +1919,14 @@
     <string name="For_your_security">为了您的安全，请输入您的密码</string>
     <string name="Privacy_Wallet">隐私钱包</string>
     <string name="Other">其他</string>
+    <string name="classic_wallet_btc_intro_title">普通钱包现已支持比特币</string>
+    <string name="classic_wallet_btc_feature_decentralized_title">去中心化</string>
+    <string name="classic_wallet_btc_feature_decentralized_desc">完全去中心化的钱包，你掌控私钥。</string>
+    <string name="classic_wallet_btc_feature_seamless_title">无缝体验</string>
+    <string name="classic_wallet_btc_feature_seamless_desc">闪电般的交互体验，页面加载与响应更迅速。</string>
+    <string name="classic_wallet_btc_feature_compatibility_title">兼容性</string>
+    <string name="classic_wallet_btc_feature_compatibility_desc">支持从其他钱包导入私钥与观察地址。</string>
+    <string name="classic_wallet_btc_unlock_by_pin">使用 PIN 解锁</string>
     <string name="Total_Balance">所有资产</string>
     <string name="total_balance_tip">隐藏的资产不计入统计</string>
     <string name="Delete_Web3_Transactions">删除 Web3 交易数据</string>

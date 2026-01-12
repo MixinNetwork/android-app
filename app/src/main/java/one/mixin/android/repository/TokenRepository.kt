@@ -585,9 +585,7 @@ class TokenRepository
             orderDao.deleteAllOrders()
         }
 
-        suspend fun getRawTransactionByHashAndChain(hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(Web3Signer.currentWalletId, hash, chainId)
-
-        fun snapshotsByUserId(opponentId: String) = safeSnapshotDao.snapshotsByUserId(opponentId)
+        suspend fun getRawTransactionByHashAndChain(walletId: String, hash: String, chainId: String) = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
 
         fun observeOrder(orderId: String) = orderDao.observeOrder(orderId)
 
@@ -1128,6 +1126,7 @@ class TokenRepository
                 var receiveAssetId: String? = null
 
                 val txType = when {
+                    assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
                     raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
                     (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
                     raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
@@ -1462,12 +1461,7 @@ class TokenRepository
 
     suspend fun getPendingTransactions(walletId: String) = web3TransactionDao.getPendingTransactions(walletId)
 
-    suspend fun getPendingRawTransactions(walletId: String, chainId: String) = web3RawTransactionDao.getPendingRawTransactions(
-        walletId, chainId)
-
-    suspend fun deletePending(hash: String, chainId: String) = web3TransactionDao.deletePending(hash, chainId)
-
-    suspend fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
+    fun updateTransaction(hash: String, status: String, chainId: String) = web3TransactionDao.updateTransaction(hash, status, chainId)
 
     suspend fun insertWeb3RawTransaction(raw: Web3RawTransaction) = web3RawTransactionDao.insertSuspend(raw)
 

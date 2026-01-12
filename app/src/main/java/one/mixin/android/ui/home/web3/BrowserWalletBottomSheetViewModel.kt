@@ -13,6 +13,7 @@ import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
@@ -103,6 +104,23 @@ class BrowserWalletBottomSheetViewModel
         }
 
         suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+
+        suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput> = withContext(Dispatchers.IO) {
+            web3Repository.outputsByAddress(address, assetId)
+        }
+
+        suspend fun outputsByAddressForSigning(address: String, assetId: String): List<WalletOutput> = withContext(Dispatchers.IO) {
+            web3Repository.outputsByAddressForSigning(address, assetId)
+        }
+
+        suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>) = withContext(Dispatchers.IO) {
+            if (outputIds.isEmpty()) {
+                return@withContext
+            }
+            web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
+            web3Repository.insertBitcoinChangeOutputs(fromAddress, signedHex)
+            web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+        }
 
         suspend fun web3TokenItemById(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
             web3Repository.web3TokenItemById(walletId, assetId)

@@ -8,6 +8,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
+import one.mixin.android.Constants
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -82,6 +83,7 @@ import one.mixin.android.db.web3.Web3TokensExtraDao
 import one.mixin.android.db.web3.Web3TransactionDao
 import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.WalletOutputDao
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
@@ -92,8 +94,10 @@ import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
+import java.math.BigDecimal
 import java.net.SocketTimeoutException
 import javax.inject.Inject
+import one.mixin.android.db.web3.vo.Web3Token
 
 abstract class BaseJob(params: Params) : Job(params) {
     @InstallIn(SingletonComponent::class)
@@ -308,6 +312,10 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
+    lateinit var walletOutputDao: WalletOutputDao
+
+    @Inject
+    @Transient
     lateinit var rawTransactionDao: RawTransactionDao
 
     @Inject
@@ -441,6 +449,54 @@ abstract class BaseJob(params: Params) : Job(params) {
                             )
                     )
             )
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByOutputs(walletId: String, address: String) {
+        if (walletId.isBlank() || address.isBlank()) return
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByWalletId(walletId: String) {
+        val address: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return
+        refreshBitcoinTokenAmountByOutputs(walletId, address)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByDestination(destination: String) {
+        val walletId: String = web3AddressDao.getWalletByDestination(destination)?.id ?: return
+        refreshBitcoinTokenAmountByOutputs(walletId, destination)
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, token: Web3Token): Web3Token {
+        if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
+        val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return token
+        val unspentAmounts: List<String> = walletOutputDao.findUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (unspentAmounts.isEmpty()) return token
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        return token.copy(balance = amount)
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
+        if (tokens.none { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) return tokens
+        val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return tokens
+        val unspentAmounts: List<String> = walletOutputDao.findUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (unspentAmounts.isEmpty()) return tokens
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        return tokens.map { token ->
+            if (token.assetId == Constants.ChainId.BITCOIN_CHAIN_ID) token.copy(balance = amount) else token
+        }
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsertByDestination(destination: String, token: Web3Token): Web3Token {
+        if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
+        val unspentAmounts: List<String> = walletOutputDao.findUnspentAmounts(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (unspentAmounts.isEmpty()) return token
+        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        return token.copy(balance = amount)
     }
 
     public override fun shouldReRunOnThrowable(

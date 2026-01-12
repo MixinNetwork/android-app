@@ -41,6 +41,7 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshWeb3BitCoinJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
@@ -53,6 +54,7 @@ import one.mixin.android.ui.common.WaitingBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
@@ -527,12 +529,30 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                 }
                             lifecycleScope.launch(
                                 CoroutineExceptionHandler { _, error ->
-                                    ErrorHandler.Companion.handleError(error)
+                                    Timber.e("Error: ${error.message}")
+                                    ErrorHandler.handleError(error)
                                     alertDialog.dismiss()
                                 },
                             ) {
-                                val transaction =
+                                if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    val minBtcAmount: BigDecimal = BigDecimal("0.0001")
+                                    val inputAmount: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                                    if (inputAmount < minBtcAmount) {
+                                        toast(getString(R.string.single_transaction_should_be_greater_than, minBtcAmount.toPlainString(), token.symbol))
+                                        return@launch
+                                    }
+                                }
+                                val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    runCatching {
+                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), gas)
+                                    }.onFailure { e ->
+                                        if (e is EmptyUtxoException) {
+                                            ErrorHandler.handleError(e)
+                                        }
+                                    }.getOrNull()
+                                } else {
                                     token.buildTransaction(rpc, fromAddress, toAddress, amount)
+                                } ?: return@launch
                                 showBrowserBottomSheetDialogFragment(
                                     requireActivity(),
                                     transaction,
@@ -835,8 +855,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (
-                    web3Token != null && (chainToken == null || gas == null || chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO < gas ||
-                        (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
+                    web3Token != null && (chainToken == null || gas == null || (chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) < gas ||
+                            (web3Token?.assetId == chainToken?.assetId && (gas ?: BigDecimal.ZERO).add(BigDecimal(v)) > (web3Token?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO)))
                 ) {
                     insufficientFeeBalance.isVisible = gas != null
                     addTv.text = "${getString(R.string.Add)} ${chainToken?.symbol ?: ""}"
@@ -995,8 +1015,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         } else {
             baseValue.toPlainString()
         }
-
-        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).stripTrailingZeros().toPlainString()
+        v = BigDecimal(v).multiply(percentageOfBalance).max(BigDecimal.ZERO).setScale(8, RoundingMode.DOWN).toPlainString()
         updateUI()
     }
 
@@ -1107,6 +1126,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 binding.contentTextView.text = "${it.fee.numberFormat8()} ${it.token.symbol}"
                 updateUI()
             }
+        } else {
+            if (dialog.isShowing) {
+                dialog.dismiss()
+            }
         }
         binding.contentTextView.isVisible = true
         binding.loadingProgressBar.isVisible = false
@@ -1149,7 +1172,6 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             val asset = t.asset ?: return@launch
 
             if (item is WithdrawBiometricItem) {
-                t as WithdrawBiometricItem
                 val address = t.address
                 val dust = address.dust?.toBigDecimalOrNull()
                 val amountDouble = amount.toBigDecimalOrNull()
@@ -1231,9 +1253,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         binding.loadingProgressBar.isVisible = true
         binding.contentTextView.isVisible = false
         val fromAddress = fromAddress ?: return
+        if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            jobManager.addJobInBackground(RefreshWeb3BitCoinJob(t.walletId))
+        }
         val transaction =
             try {
-                t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
+                if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.assetId), gas)
+                } else {
+                    t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
+                }
             } catch (e: Exception) {
                 Timber.w(e)
                 if (dialog.isShowing) {
@@ -1246,6 +1275,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
           refreshGas(t)
         } else if (isAdded) {
             gas = web3ViewModel.calcFee(t, transaction, fromAddress)
+            if (gas == null) {
+                delay(3000)
+                if (dialog.isShowing) {
+                    dialog.dismiss()
+                }
+                refreshGas(t)
+            }
             if (chainToken?.assetId == t.assetId) {
                 val balance = runCatching {
                     tokenBalance.toBigDecimalOrNull()?.subtract(gas ?: BigDecimal.ZERO)

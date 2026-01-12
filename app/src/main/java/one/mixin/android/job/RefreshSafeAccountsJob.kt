@@ -91,7 +91,8 @@ class RefreshSafeAccountsJob : BaseJob(
             val tokens = account.assets.mapNotNull { asset ->
                 convertSafeAssetToWeb3Token(walletId, asset)
             }
-            web3TokenDao.insertList(tokens)
+            val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, tokens)
+            web3TokenDao.insertList(tokensToInsert)
             web3TokenDao.deleteNotIn(account.accountId, tokens.map { it.assetId })
             Timber.d("Saved ${tokens.size} tokens for wallet $walletId")
         } else {

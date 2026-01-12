@@ -60,7 +60,8 @@ class RefreshWeb3TokenJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
-                    web3TokenDao.insertList(assets)
+                    val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, assets)
+                    web3TokenDao.insertList(tokensToInsert)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {
@@ -89,7 +90,8 @@ class RefreshWeb3TokenJob(
                 val asset = response.data
                 if (asset != null) {
                     Timber.d("Fetched ${asset.symbol} assets for address ${address}")
-                    web3TokenDao.insert(asset)
+                    val tokenToInsert = applyBitcoinTokenBalanceBeforeInsertByDestination(address, asset)
+                    web3TokenDao.insert(tokenToInsert)
                     fetchChain(listOf(asset.chainId))
                     Timber.d("Inserted ${asset.symbol} into database")
                 } else {
