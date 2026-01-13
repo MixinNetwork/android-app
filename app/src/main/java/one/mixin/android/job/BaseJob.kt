@@ -453,8 +453,8 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     protected suspend fun refreshBitcoinTokenAmountByOutputs(walletId: String, address: String) {
         if (walletId.isBlank() || address.isBlank()) return
-        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
     }
 
@@ -471,20 +471,20 @@ abstract class BaseJob(params: Params) : Job(params) {
     protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, token: Web3Token): Web3Token {
         if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
         val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return token
-        val unspentAmounts: List<String> = walletOutputDao.findUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        if (unspentAmounts.isEmpty()) return token
-        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (amounts.isEmpty()) return token
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         return token.copy(balance = amount)
     }
 
     protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
         if (tokens.none { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) return tokens
         val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return tokens
-        val unspentAmounts: List<String> = walletOutputDao.findUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        if (unspentAmounts.isEmpty()) return tokens
-        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (amounts.isEmpty()) return tokens
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         return tokens.map { token ->
             if (token.assetId == Constants.ChainId.BITCOIN_CHAIN_ID) token.copy(balance = amount) else token
         }
@@ -492,10 +492,10 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     protected suspend fun applyBitcoinTokenBalanceBeforeInsertByDestination(destination: String, token: Web3Token): Web3Token {
         if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
-        val unspentAmounts: List<String> = walletOutputDao.findUnspentAmounts(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
-        if (unspentAmounts.isEmpty()) return token
-        val totalUnspent: BigDecimal = walletOutputDao.sumUnspentAmount(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (amounts.isEmpty()) return token
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         return token.copy(balance = amount)
     }
 

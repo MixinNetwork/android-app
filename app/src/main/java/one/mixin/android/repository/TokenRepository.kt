@@ -1161,6 +1161,9 @@ class TokenRepository
                             sendAssetId = it.assetId
                             receiveAssetId = it.assetId
                         }
+                        if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID && sendAssetId == null) {
+                            sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+                        }
                     }
                     else -> {
                         sendAssetId = assetId

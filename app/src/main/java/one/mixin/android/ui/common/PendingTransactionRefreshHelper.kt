@@ -61,8 +61,14 @@ object PendingTransactionRefreshHelper {
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || 
                                            r.data?.state == TransactionStatus.FAILED.value || 
                                            r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value)) {
-                            web3ViewModel.insertRawTransaction(r.data!!)
-                            if (r.data?.state == TransactionStatus.FAILED.value || 
+                            r.data?.let {
+                                if (it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                    web3ViewModel.insertRawTransaction(it.copy(nonce = transition.nonce))
+                                } else {
+                                    web3ViewModel.insertRawTransaction(it)
+                                }
+                            }
+                            if (r.data?.state == TransactionStatus.FAILED.value ||
                                r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || 
                                r.data?.state == TransactionStatus.SUCCESS.value) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {

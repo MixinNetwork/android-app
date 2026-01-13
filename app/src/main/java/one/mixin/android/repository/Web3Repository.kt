@@ -45,6 +45,7 @@ import org.bitcoinj.core.Transaction
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.bitcoinj.params.MainNetParams
+import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.util.UUID
 import javax.inject.Inject
@@ -71,8 +72,8 @@ constructor(
 
     suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
         if (walletId.isBlank() || address.isBlank()) return
-        val totalUnspent = walletOutputDao.sumUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val amount: String = totalUnspent.stripTrailingZeros().toPlainString()
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
     }
 
@@ -84,16 +85,24 @@ constructor(
             Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
         }.getOrNull() ?: return 0
         val txHash: String = tx.txId.toString()
-        val fromParsedAddress: Address = runCatching {
-            addressParser.parseAddress(fromAddress)
-        }.getOrNull() ?: return 0
-        val fromScript: Script = runCatching {
-            ScriptBuilder.createOutputScript(fromParsedAddress)
-        }.getOrNull() ?: return 0
-        val fromScriptBytes: ByteArray = fromScript.program()
+        val inputAddresses: Set<String> = tx.inputs.mapNotNull { input ->
+            val outPoint = input.outpoint ?: return@mapNotNull null
+            val previousHash: String = outPoint.hash().toString()
+            val outputIndex: Long = outPoint.index()
+            walletOutputDao.outputByOutpoint(previousHash, outputIndex, Constants.ChainId.BITCOIN_CHAIN_ID)?.address
+        }.toSet()
+        if (inputAddresses.isEmpty()) return 0
+        val inputScriptBytesByAddress: Map<String, ByteArray> = inputAddresses.mapNotNull { address ->
+            val parsedAddress: Address = runCatching { addressParser.parseAddress(address) }.getOrNull() ?: return@mapNotNull null
+            val script: Script = runCatching { ScriptBuilder.createOutputScript(parsedAddress) }.getOrNull() ?: return@mapNotNull null
+            address to script.program()
+        }.toMap()
+        if (inputScriptBytesByAddress.isEmpty()) return 0
         val now: String = nowInUtc()
         val changeOutputs: List<WalletOutput> = tx.outputs.mapIndexedNotNull { index, output ->
-            if (!output.scriptBytes.contentEquals(fromScriptBytes)) return@mapIndexedNotNull null
+            val matchedAddress: String = inputScriptBytesByAddress.entries.firstOrNull { (_, scriptBytes) ->
+                output.scriptBytes.contentEquals(scriptBytes)
+            }?.key ?: return@mapIndexedNotNull null
             val amount: String = output.value.toPlainString()
             val outputId: String = UUID.nameUUIDFromBytes("$txHash:$index".toByteArray()).toString()
             WalletOutput(
@@ -102,10 +111,10 @@ constructor(
                 transactionHash = txHash,
                 outputIndex = index.toLong(),
                 amount = amount,
-                address = fromAddress,
+                address = matchedAddress,
                 pubkeyHex = null,
                 pubkeyType = null,
-                status = "unspent",
+                status = "pending",
                 createdAt = now,
                 updatedAt = now,
             )

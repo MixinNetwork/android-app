@@ -185,7 +185,11 @@ class Web3BtcOutputsFragment : BaseFragment() {
                 name.text = item.outputId
                 hash.text = item.transactionHash
                 value.text = item.amount
-                value.textColorResource = if (item.status == "unspent") R.color.wallet_green else R.color.wallet_pink
+                value.textColorResource = when (item.status) {
+                    "unspent" -> R.color.wallet_green
+                    "pending" -> R.color.wallet_pending_text_color
+                    else -> R.color.wallet_pink
+                }
             }
             binding.root.setOnLongClickListener {
                 onLongClick(item)

@@ -344,6 +344,8 @@ suspend fun Web3TokenItem.buildTransaction(
                 feeRate = feeRate,
                 minimumChangeSatoshis = 1000L,
             )
+            // Todo remove debug logs
+            Timber.e("rawTxHex: ${built.rawHex} virtualSize: ${built.virtualSize} rate: $rate")
             return JsSignMessage(
                 callbackId = 0,
                 type = JsSignMessage.TYPE_BTC_TRANSACTION,
