@@ -22,8 +22,10 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.Coin
+import org.bitcoinj.base.LegacyAddress
 import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.TransactionInput
 import org.bitcoinj.core.TransactionOutPoint
@@ -332,75 +334,23 @@ suspend fun Web3TokenItem.buildTransaction(
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
     } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-        val addressParser = AddressParser.getDefault()
         if (!localUtxos.isNullOrEmpty()) {
-            val changeAddress = addressParser.parseAddress( fromAddress)
-            val recipientAddress = addressParser.parseAddress( toAddress)
-            val sendAmount = Coin.parseCoin(v)
             val feeRate: BigDecimal = rate ?: BigDecimal.ONE
-            var selectedAmount = Coin.ZERO
-            val selectedUtxos: MutableList<WalletOutput> = mutableListOf()
-            var feeBtc: BigDecimal = BigDecimal.ZERO
-            var virtualSize: Int = 0
-            var changeAmount: Coin = Coin.ZERO
-            val minimumChangeAmount: Coin = Coin.valueOf(1000)
-            for (localUtxo: WalletOutput in localUtxos) {
-                if (selectedAmount.isGreaterThan(sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))) || selectedAmount == sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))) {
-                    break
-                }
-                selectedUtxos.add(localUtxo)
-                selectedAmount = selectedAmount.add(Coin.parseCoin(localUtxo.amount))
-                val candidateTx = BtcTransaction()
-                candidateTx.addOutput(sendAmount, recipientAddress)
-                for (utxo: WalletOutput in selectedUtxos) {
-                    val prevTxHash = Sha256Hash.wrap(utxo.transactionHash)
-                    val outPoint = TransactionOutPoint(utxo.outputIndex, prevTxHash)
-                    val input = TransactionInput(candidateTx, byteArrayOf(), outPoint)
-                    candidateTx.addInput(input)
-                }
-                virtualSize = candidateTx.virtualSize()
-                val feeSatoshis: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
-                feeBtc = feeSatoshis.divide(BigDecimal("100000000"), 8, RoundingMode.HALF_UP)
-                val targetAmount: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
-                changeAmount = selectedAmount.subtract(targetAmount)
-                if (changeAmount.isNegative) {
-                    continue
-                }
-                if (changeAmount.isGreaterThan(minimumChangeAmount) || changeAmount == minimumChangeAmount) {
-                    candidateTx.addOutput(changeAmount, changeAddress)
-                    virtualSize = candidateTx.virtualSize()
-                    val feeSatoshisWithChange: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
-                    feeBtc = feeSatoshisWithChange.divide(BigDecimal("100000000"), 8, RoundingMode.HALF_UP)
-                    val targetAmountWithChange: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
-                    changeAmount = selectedAmount.subtract(targetAmountWithChange)
-                }
-            }
-            val targetAmount: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
-            if (selectedAmount.isLessThan(targetAmount)) {
-                throw IllegalArgumentException("insufficient balance")
-            }
-            val tx = BtcTransaction()
-            tx.addOutput(sendAmount, recipientAddress)
-            if (changeAmount.isGreaterThan(minimumChangeAmount) || changeAmount == minimumChangeAmount) {
-                tx.addOutput(changeAmount, changeAddress)
-            }
-            for (selectedUtxo: WalletOutput in selectedUtxos) {
-                val prevTxHash = Sha256Hash.wrap(selectedUtxo.transactionHash)
-                val outPoint = TransactionOutPoint(selectedUtxo.outputIndex, prevTxHash)
-                val input = TransactionInput(tx, byteArrayOf(), outPoint)
-                tx.addInput(input)
-            }
-            virtualSize = tx.virtualSize()
-            val rawTxHex: String = tx.serialize().toHex()
-            // Todo remove debug logs
-            Timber.e("rawTxHex: $rawTxHex virtualSize: $virtualSize rate: $rate")
+            val built: BtcTransactionBuilder.BuiltBtcTransaction = BtcTransactionBuilder.buildSendTransaction(
+                fromAddress = fromAddress,
+                toAddress = toAddress,
+                amountBtc = v,
+                localUtxos = localUtxos,
+                feeRate = feeRate,
+                minimumChangeSatoshis = 1000L,
+            )
             return JsSignMessage(
                 callbackId = 0,
                 type = JsSignMessage.TYPE_BTC_TRANSACTION,
-                data = rawTxHex,
-                fee = feeBtc,
+                data = built.rawHex,
+                fee = built.feeBtc,
                 rate = rate,
-                virtualSize = virtualSize,
+                virtualSize = built.virtualSize,
             )
 
         } else {
@@ -411,6 +361,6 @@ suspend fun Web3TokenItem.buildTransaction(
     }
 }
 
-private fun BtcTransaction.virtualSize(): Int {
+fun BtcTransaction.virtualSize(): Int {
     return (weight + 3) / 4
 }

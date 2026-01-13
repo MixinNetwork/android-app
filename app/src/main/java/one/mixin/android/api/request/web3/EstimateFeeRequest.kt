@@ -8,8 +8,8 @@ data class EstimateFeeRequest(
     @SerializedName("raw_transaction")
     val rawTransaction: String?,
     val data: String?,
-
     val from: String? = null,
     val to: String? = null,
     val value: String? = null,
+    val rate: String? = null,
 )

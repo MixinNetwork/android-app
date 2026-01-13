@@ -119,6 +119,24 @@ internal constructor(
         }
     }
 
+    suspend fun estimateBtcFeeRate(rawTransactionHex: String, currentRate: String?): BigDecimal? {
+        val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
+        val response = withContext(Dispatchers.IO) {
+            runCatching {
+                web3Repository.estimateFee(
+                    EstimateFeeRequest(
+                        chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                        rawTransaction = cleanedRawHex,
+                        data = null,
+                        rate = currentRate,
+                    )
+                )
+            }.getOrNull()
+        }
+        if (response?.isSuccess != true || response.data == null) return null
+        return response.data!!.feeRate?.toBigDecimalOrNull()
+    }
+
     fun disconnect(
         version: WalletConnect.Version,
         topic: String,
