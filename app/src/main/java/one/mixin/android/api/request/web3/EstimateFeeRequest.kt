@@ -11,5 +11,6 @@ data class EstimateFeeRequest(
     val from: String? = null,
     val to: String? = null,
     val value: String? = null,
+    @SerializedName("fee_rate")
     val rate: String? = null,
 )

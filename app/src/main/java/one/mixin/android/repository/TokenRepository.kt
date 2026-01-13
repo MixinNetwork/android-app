@@ -146,6 +146,7 @@ import one.mixin.android.web3.js.Web3Signer
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
+import java.math.BigDecimal
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -1146,9 +1147,9 @@ class TokenRepository
                         raw.simulateTx?.balanceChanges?.forEach { bc ->
                             val amt = bc.amount.toBigDecimalOrNull()
                             if (amt != null) {
-                                if (amt < java.math.BigDecimal.ZERO) {
+                                if (amt < BigDecimal.ZERO) {
                                     sendAssetId = bc.assetId
-                                } else if (amt > java.math.BigDecimal.ZERO) {
+                                } else if (amt > BigDecimal.ZERO) {
                                     receiveAssetId = bc.assetId
                                 }
                             }
@@ -1156,13 +1157,10 @@ class TokenRepository
                     }
                     TransactionType.TRANSFER_OUT.value -> {
                         raw.simulateTx?.balanceChanges?.firstOrNull {
-                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < java.math.BigDecimal.ZERO } == true
+                            it.amount.toBigDecimalOrNull()?.let { amt -> amt < BigDecimal.ZERO } == true
                         }?.let {
                             sendAssetId = it.assetId
                             receiveAssetId = it.assetId
-                        }
-                        if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID && sendAssetId == null) {
-                            sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
                         }
                     }
                     else -> {
