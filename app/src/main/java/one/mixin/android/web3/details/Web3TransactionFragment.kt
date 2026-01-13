@@ -81,6 +81,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         private const val BTC_SPEED_UP_MULTIPLIER_NUMERATOR: Long = 5L
         private const val BTC_SPEED_UP_MULTIPLIER_DENOMINATOR: Long = 4L
         private val BTC_SATOSHIS_PER_BTC: BigDecimal = BigDecimal("100000000")
+        private const val BTC_MINIMUM_CHANGE_SATOSHIS: Long = 1000L
 
         fun newInstance(
             transaction: Web3TransactionItem,
@@ -527,11 +528,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 val localRateString: String = rawTransaction.nonce
                 val currentRate: BigDecimal? = getCurrentBtcFeeRate(rawTransaction.raw, localRateString)
                 val localRate: BigDecimal? = localRateString.toBigDecimalOrNull()
-                if (currentRate != null && localRate != null && currentRate.compareTo(localRate) == 0) {
-                    toast(getString(R.string.web3_btc_cancel_not_allowed_same_fee_rate))
-                    return@launch
+                val shouldUseApiRate: Boolean = currentRate != null && localRate != null && currentRate > localRate
+                val selectedRate: BigDecimal? = if (shouldUseApiRate) {
+                    currentRate
+                } else {
+                    localRate ?: currentRate
                 }
-                val jsSignMessage = createBtcCancelMessage(rawTransaction, currentRate)
+                val additionalFeeSatoshis: Long = if (shouldUseApiRate) 0L else 1L
+                val jsSignMessage = createBtcCancelMessage(rawTransaction, selectedRate, additionalFeeSatoshis)
                 val fromAddress: String = transaction.getFromAddress()
                 showBrowserBottomSheetDialogFragment(
                     requireActivity(),
@@ -622,7 +626,23 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         )
     }
 
-    private suspend fun createBtcCancelMessage(rawTransaction: Web3RawTransaction, feeRate: BigDecimal?): JsSignMessage {
+    private fun calculateBtcFeeSatoshis(
+        inputs: List<TransactionInput>,
+        outputs: List<TransactionOutput>,
+        localUtxos: List<WalletOutput>,
+    ): Long {
+        val inputAmount: Coin = calculateInputAmount(inputs, localUtxos)
+        val outputAmount: Coin = outputs.fold(Coin.ZERO) { acc: Coin, output: TransactionOutput ->
+            acc.add(output.value)
+        }
+        return inputAmount.subtract(outputAmount).value
+    }
+
+    private suspend fun createBtcCancelMessage(
+        rawTransaction: Web3RawTransaction,
+        feeRate: BigDecimal?,
+        additionalFeeSatoshis: Long,
+    ): JsSignMessage {
         val fromAddress: String = transaction.getFromAddress()
         val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddressForSigning(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         val unsignedReplacementHex: String = if (feeRate == null) {
@@ -633,11 +653,17 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 fromAddress = fromAddress,
                 localUtxos = localUtxos,
                 feeRate = feeRate,
-                minimumChangeSatoshis = 1000L,
-                maxExtraInputs = 2,
+                minimumChangeSatoshis = BTC_MINIMUM_CHANGE_SATOSHIS,
+                additionalFeeSatoshis = additionalFeeSatoshis,
             )
         }
-        val estimatedFeeBtc: BigDecimal = estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
+        val estimatedFeeBtc: BigDecimal = if (feeRate == null) {
+            estimateBtcFeeFromUnsignedTransaction(unsignedReplacementHex, localUtxos)
+        } else {
+            val tx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(unsignedReplacementHex.hexStringToByteArray()))
+            val feeSatoshi: BigDecimal = BigDecimal.valueOf(calculateBtcFeeSatoshis(tx.inputs, tx.outputs, localUtxos))
+            feeSatoshi.divide(BTC_SATOSHIS_PER_BTC)
+        }
         return JsSignMessage(
             callbackId = System.currentTimeMillis(),
             type = JsSignMessage.TYPE_BTC_TRANSACTION,

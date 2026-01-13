@@ -192,6 +192,7 @@ object BtcTransactionBuilder {
         feeRate: BigDecimal,
         minimumChangeSatoshis: Long = 1000L,
         maxExtraInputs: Int = 2,
+        additionalFeeSatoshis: Long = 0L,
     ): String {
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
         val originalTx: BtcTransaction = BtcTransaction.read(java.nio.ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
@@ -211,7 +212,10 @@ object BtcTransactionBuilder {
                 replacementTx.addOutput(value, selfScript)
             }
             val virtualSize: Int = replacementTx.virtualSize()
-            val desiredFeeSats: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
+            val desiredFeeSats: BigDecimal = feeRate
+                .multiply(BigDecimal(virtualSize))
+                .setScale(0, RoundingMode.UP)
+                .add(BigDecimal.valueOf(additionalFeeSatoshis))
             val desiredFee: Coin = Coin.valueOf(desiredFeeSats.longValueExact())
             val currentFee: Coin = candidateInputAmount.subtract(originalTx.outputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) })
             val feeDelta: Coin = desiredFee.subtract(currentFee)

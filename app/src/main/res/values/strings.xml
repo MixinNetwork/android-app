@@ -2000,7 +2000,6 @@
     <string name="web3_transaction_cancel_warning">If the transaction is too far along cancellation may not be possible.</string>
     <string name="web3_transaction_speed_up_warning">If the transaction is too far along this may not be possible.</string>
     <string name="web3_btc_speed_up_not_needed">No need to speed up.</string>
-    <string name="web3_btc_cancel_not_allowed_same_fee_rate">Cannot cancel when fee rate is unchanged.</string>
     <string name="url_privacy_wallet">https://support.mixin.one/en/article/what-is-a-privacy-wallet-1ng5j8f/</string>
     <string name="url_classic_wallet">https://support.mixin.one/en/article/what-is-a-common-wallet-y0rxkx/</string>
     <string name="preauthorize_amount">PRE-AUTHORIZE AMOUNT</string>
