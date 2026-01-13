@@ -39,7 +39,7 @@ class RefreshWeb3TokenJob(
             },
             successBlock = { response ->
                 val assets = response.data
-                if (assets != null && assets.isNotEmpty()) {
+                if (!assets.isNullOrEmpty()) {
                     Timber.d("Fetched ${assets.size} assets for wallet $walletId")
                     val assetIds = assets.map { it.assetId }
                     web3TokenDao.updateBalanceToZeroForMissingAssets(walletId, assetIds)
@@ -59,6 +59,9 @@ class RefreshWeb3TokenJob(
                         }
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
+                    }
+                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
+                        jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
                     }
                     val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, assets)
                     web3TokenDao.insertList(tokensToInsert)
