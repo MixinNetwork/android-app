@@ -1,6 +1,7 @@
 package one.mixin.android.web3.js
 
 import okio.Buffer
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
 import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -196,7 +197,7 @@ object Web3Signer {
             val addresses = queryAddress(walletId)
             path = addresses.firstOrNull()?.path ?: ""
             evmAddress =
-                addresses.firstOrNull { it.chainId != SOLANA_CHAIN_ID }?.destination
+                addresses.firstOrNull { it.chainId in Constants.Web3ChainIds }?.destination
                     ?: ""
             solanaAddress =
                 addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
