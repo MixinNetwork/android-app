@@ -353,21 +353,29 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             if (transaction.status == TransactionStatus.PENDING.value
                 && transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
                 lifecycleScope.launch {
-                    val pendingRawTx = web3ViewModel.getPendingRawTransactions(transaction.chainId)
-                        .firstOrNull { it.hash == transaction.transactionHash }
-                    
-                    val shouldShowActions = pendingRawTx != null
-                    
-                    if (shouldShowActions) {
-                        actions.isVisible = true
-                        
-                        actions.speedUp.setOnClickListener {
-                            handleSpeedUp(pendingRawTx)
-                        }
-                        
-                        actions.cancelTx.setOnClickListener {
-                            handleCancelTransaction(pendingRawTx)
-                        }
+                    updateActions()
+                }
+            }
+        }
+    }
+
+    private fun updateActions() {
+        lifecycleScope.launch {
+            binding.apply {
+                val pendingRawTx = web3ViewModel.getPendingRawTransactions(transaction.chainId)
+                    .firstOrNull { it.hash == transaction.transactionHash }
+
+                val shouldShowActions = pendingRawTx != null
+
+                if (shouldShowActions) {
+                    actions.isVisible = true
+
+                    actions.speedUp.setOnClickListener {
+                        handleSpeedUp(pendingRawTx)
+                    }
+
+                    actions.cancelTx.setOnClickListener {
+                        handleCancelTransaction(pendingRawTx)
                     }
                 }
             }
@@ -458,6 +466,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
             }
         }
+        updateActions()
     }
 
     private fun handleSpeedUp(rawTransaction: Web3RawTransaction) {
