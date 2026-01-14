@@ -57,7 +57,7 @@ object PendingTransactionRefreshHelper {
                                r.isSuccess && r.data?.state == TransactionStatus.NOT_FOUND.value || 
                                r.data?.state == TransactionStatus.SUCCESS.value) {
                                 if (r.data?.state == TransactionStatus.SUCCESS.value) {
-                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
+                                    jobManager.addJobInBackground(RefreshWeb3TransactionsJob(walletId))
                                 }
                                 if (r.data?.state != TransactionStatus.SUCCESS.value) {
                                     web3ViewModel.updateTransaction(transition.hash, r.data?.state!!, transition.chainId)
