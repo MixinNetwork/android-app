@@ -46,15 +46,7 @@ object PendingTransactionRefreshHelper {
         try {
             while (true) {
                 val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(walletId)
-                if (pendingRawTransaction.isEmpty()) {
-                    val pendingTransaction = web3ViewModel.getPendingTransactions(walletId)
-                    if (pendingTransaction.isNotEmpty()) {
-                        jobManager.addJobInBackground(RefreshWeb3TransactionsJob())
-                        delay(5_000)
-                    } else {
-                        delay(10_000)
-                    }
-                } else {
+                if (pendingRawTransaction.isEmpty().not()) {
                     pendingRawTransaction.forEach { transition ->
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && (r.data?.state == TransactionStatus.SUCCESS.value || 
