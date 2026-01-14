@@ -469,7 +469,6 @@ class WebFragment : BaseFragment() {
     private fun initView() {
         activity?.window?.let { window->
             SystemUIManager.lightUI(window , requireContext().isNightMode().not())
-            SystemUIManager.setSafePaddingOnce(window = window, color = requireContext().colorFromAttribute(R.attr.bg_white), R.id.container)
         }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
