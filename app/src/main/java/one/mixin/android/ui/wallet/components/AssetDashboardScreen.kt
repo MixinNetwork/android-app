@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.reactivex.android.schedulers.AndroidSchedulers
 import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
+import one.mixin.android.Constants.Account.PREF_WALLET_CATEGORY_FILTER
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -88,7 +89,7 @@ fun AssetDashboardScreen(
     val hasSeenSafeCategoryBadge = remember { mutableStateOf(prefs.getBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, false)) }
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    var selectedCategory by remember { mutableStateOf<String?>(prefs.getString(PREF_WALLET_CATEGORY_FILTER, null)) }
     var isWalletInfoCardVisible by remember { mutableStateOf(true) }
 
     var refreshTrigger by remember { mutableIntStateOf(0) }
@@ -182,6 +183,13 @@ fun AssetDashboardScreen(
                     if (it == WalletCategory.MIXIN_SAFE.value) {
                         prefs.edit { putBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, true) }
                         hasSeenSafeCategoryBadge.value = true
+                    }
+                    prefs.edit {
+                        if (it.isNullOrBlank()) {
+                            remove(PREF_WALLET_CATEGORY_FILTER)
+                        } else {
+                            putString(PREF_WALLET_CATEGORY_FILTER, it)
+                        }
                     }
                     selectedCategory = it
                 }
