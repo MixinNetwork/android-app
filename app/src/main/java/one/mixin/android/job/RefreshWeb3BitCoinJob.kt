@@ -20,6 +20,8 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.isClassic
+import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.web3.js.Web3Signer
@@ -36,8 +38,11 @@ class RefreshWeb3BitCoinJob(val walletId: String) : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
-        val address = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?:return@runBlocking
-        fetchBtcOutputs(walletId, address.destination)
+        val wallet = web3WalletDao.getWalletById(walletId) ?: return@runBlocking
+        if (wallet.isImported() || wallet.isClassic()) {
+            val address = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID) ?: return@runBlocking
+            fetchBtcOutputs(walletId, address.destination)
+        }
     }
 
     private suspend fun fetchBtcOutputs(walletId: String, address: String) {

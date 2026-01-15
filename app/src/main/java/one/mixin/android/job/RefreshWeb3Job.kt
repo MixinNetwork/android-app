@@ -19,6 +19,8 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.WalletCategory
+import one.mixin.android.vo.foursquare.Category
 import timber.log.Timber
 
 class RefreshWeb3Job : BaseJob(
@@ -46,7 +48,7 @@ class RefreshWeb3Job : BaseJob(
         }
     }
 
-    private suspend fun fetchWalletAddresses(walletId: String) {
+    private suspend fun fetchWalletAddresses(walletId: String, category: String) {
         requestRouteAPI(
             invokeNetwork = {
                 routeService.getWalletAddresses(walletId)
@@ -59,9 +61,11 @@ class RefreshWeb3Job : BaseJob(
                     web3AddressDao.insertList(web3Addresses)
                     MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                     Timber.d("Inserted ${web3Addresses.size} addresses into database")
-                    val btcAddress = web3Addresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
-                    if (btcAddress.isNullOrBlank().not()) {
-                        fetchBtcOutputs(walletId = walletId, address = btcAddress)
+                    if (category in listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_MNEMONIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value)) {
+                        val btcAddress = web3Addresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
+                        if (btcAddress.isNullOrBlank().not()) {
+                            fetchBtcOutputs(walletId = walletId, address = btcAddress)
+                        }
                     }
                 } else {
                     Timber.d("No addresses found for wallet $walletId")
@@ -121,7 +125,7 @@ class RefreshWeb3Job : BaseJob(
                     }
                     val embeddedAddresses = wallet.addresses
                     if (embeddedAddresses.isNullOrEmpty()) {
-                        fetchWalletAddresses(wallet.id)
+                        fetchWalletAddresses(wallet.id, wallet.category)
                         return@forEach
                     }
                     web3AddressDao.insertList(embeddedAddresses)

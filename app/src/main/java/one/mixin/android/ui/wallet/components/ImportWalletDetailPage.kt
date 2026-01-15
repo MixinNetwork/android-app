@@ -86,6 +86,7 @@ fun ImportWalletDetailPage(
     val walletViewModel: Web3ViewModel = hiltViewModel()
 
     val networks = mapOf(
+        "BTC" to Constants.ChainId.BITCOIN_CHAIN_ID,
         "Ethereum" to Constants.ChainId.ETHEREUM_CHAIN_ID,
         "Base" to Constants.ChainId.Base,
         "BSC" to Constants.ChainId.BinanceSmartChain,
@@ -93,7 +94,6 @@ fun ImportWalletDetailPage(
         "Arbitrum" to Constants.ChainId.Arbitrum,
         "Optimism" to Constants.ChainId.Optimism,
         "Avalanche" to Constants.ChainId.Avalanche,
-        "BTC" to Constants.ChainId.BITCOIN_CHAIN_ID,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
     var expanded by remember { mutableStateOf(false) }
