@@ -14,7 +14,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -51,9 +50,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
 import one.mixin.android.Constants.Account
-import one.mixin.android.Constants.Account.ChainAddress.BTC_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
@@ -164,9 +160,6 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_ETH
-import one.mixin.android.ui.tip.wc.WalletUnlockBottomSheetDialogFragment.Companion.TYPE_SOLANA
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
@@ -373,28 +366,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             .subscribe { e ->
                 lifecycleScope.launch {
                     if (e is WCEvent.V2) {
-                        if (e.requestType != WalletConnect.RequestType.Connect) {
-                            val type = e.chainType ?: TYPE_ETH
-                            when (type) {
-                                TYPE_SOLANA if PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isBlank() -> {
-                                    WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing(
-                                        (MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager
-                                            ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG
-                                    )
-                                }
-                                TYPE_ETH if PropertyHelper.findValueByKey(EVM_ADDRESS, "").isBlank() -> {
-                                    WalletUnlockBottomSheetDialogFragment.getInstance(type).showIfNotShowing(
-                                        (MixinApplication.get().topActivity as? AppCompatActivity)?.supportFragmentManager
-                                            ?: supportFragmentManager, WalletUnlockBottomSheetDialogFragment.TAG
-                                    )
-                                }
-                                else -> {
-                                    WalletConnectActivity.show(this@MainActivity, e)
-                                }
-                            }
-                        } else {
-                            WalletConnectActivity.show(this@MainActivity, e)
-                        }
+                        WalletConnectActivity.show(this@MainActivity, e)
                     } else {
                         WalletConnectActivity.show(this@MainActivity, e)
                     }
@@ -559,7 +531,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             jobManager.addJobInBackground(RefreshContactJob())
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
 
-            if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && (PropertyHelper.findValueByKey(EVM_ADDRESS, "").isEmpty() || PropertyHelper.findValueByKey(SOLANA_ADDRESS, "").isEmpty())) {
+            val hasClassicWallet: Boolean = web3Repository.getClassicWalletId() != null
+            if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && hasClassicWallet) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
                         try {
@@ -1123,7 +1096,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private suspend fun shouldShowWalletMissingBtcAddress(): Boolean {
         return withContext(Dispatchers.IO) {
-            if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return@withContext false
+            if (!defaultSharedPreferences.getBoolean(Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return@withContext false
             val wallets = web3Repository.getAllWallets().filter { walletItem ->
                 walletItem.category == WalletCategory.CLASSIC.value || (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
             }

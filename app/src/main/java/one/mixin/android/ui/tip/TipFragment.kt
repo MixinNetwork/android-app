@@ -23,6 +23,8 @@ import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
+import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.crypto.initFromSeedAndSign
@@ -42,25 +44,37 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshSingleWalletJob
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.tip.bip44.Bip44Path
+import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.WalletPasswordFragment
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
+import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.vo.WalletCategory
+import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.time.Instant
 import javax.inject.Inject
 import kotlin.math.ceil
 
@@ -89,6 +103,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     @Inject
     lateinit var accountService: AccountService
+
+    @Inject
+    lateinit var web3Repository: Web3Repository
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     private val tipBundle: TipBundle by lazy { requireArguments().getTipBundle() }
 
@@ -605,11 +625,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
             return@runCatching if (registerResp.isSuccess) {
                 val solAddress = viewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
                 PropertyHelper.updateKeyValue(SOLANA_ADDRESS, solAddress)
-                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
                 val evmAddress = viewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
                 PropertyHelper.updateKeyValue(EVM_ADDRESS, evmAddress)
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
                 Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
                 Session.storeAccount(requireNotNull(registerResp.data) { "required account can not be null" })
+                createWallet(spendSeed)
                 if (Session.hasPhone()) { // Only clear Phone user
                     removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                 }
@@ -627,6 +648,104 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 false
             }
         }
+
+    private suspend fun createWallet(spendKey: ByteArray) {
+        val hasClassicWallet: Boolean = web3Repository.getClassicWalletId() != null
+        if (hasClassicWallet) {
+            return
+        }
+        val walletName: String = requireContext().getString(R.string.Common_Wallet)
+        val classicIndex = 0
+        val btcAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
+        val evmAddress: String = privateKeyToAddress(spendKey, ETHEREUM_CHAIN_ID, classicIndex)
+        val solAddress: String = privateKeyToAddress(spendKey, SOLANA_CHAIN_ID, classicIndex)
+        val addresses: List<Web3AddressRequest> = listOf(
+            createSignedWeb3AddressRequest(
+                destination = evmAddress,
+                chainId = ETHEREUM_CHAIN_ID,
+                path = Bip44Path.ethereumPathString(classicIndex),
+                privateKey = tipPrivToPrivateKey(spendKey, ETHEREUM_CHAIN_ID, classicIndex),
+                category = WalletCategory.CLASSIC.value
+            ),
+            createSignedWeb3AddressRequest(
+                destination = solAddress,
+                chainId = SOLANA_CHAIN_ID,
+                path = Bip44Path.solanaPathString(classicIndex),
+                privateKey = tipPrivToPrivateKey(spendKey, SOLANA_CHAIN_ID, classicIndex),
+                category = WalletCategory.CLASSIC.value
+            ),
+            createSignedWeb3AddressRequest(
+                destination = btcAddress,
+                chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                path = Bip44Path.bitcoinSegwitPathString(classicIndex),
+                privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
+                category = WalletCategory.CLASSIC.value
+            ),
+        )
+        val walletRequest = WalletRequest(
+            name = walletName,
+            category = WalletCategory.CLASSIC.value,
+            addresses = addresses
+        )
+        requestRouteAPI(
+            invokeNetwork = { web3Repository.createWallet(walletRequest) },
+            successBlock = { response ->
+                response.data?.let { wallet ->
+                    web3Repository.insertWallet(
+                        Web3Wallet(
+                            id = wallet.id,
+                            name = wallet.name,
+                            category = wallet.category,
+                            createdAt = wallet.createdAt,
+                            updatedAt = wallet.updatedAt,
+                        )
+                    )
+                    val walletAddresses = wallet.addresses ?: emptyList()
+                    if (walletAddresses.isNotEmpty()) {
+                        web3Repository.insertAddressList(walletAddresses)
+                    }
+                }
+            },
+            requestSession = { ids ->
+                web3Repository.fetchSessionsSuspend(ids)
+            }
+        )
+    }
+
+    private fun createSignedWeb3AddressRequest(
+        destination: String,
+        chainId: String,
+        path: String?,
+        privateKey: ByteArray,
+        category: String
+    ): Web3AddressRequest {
+        val selfId = Session.getAccountId()
+        if (category == WalletCategory.WATCH_ADDRESS.value) {
+            return Web3AddressRequest(
+                destination = destination,
+                chainId = chainId,
+                path = path,
+            )
+        }
+        val now = Instant.now()
+        val message = "$destination\n$selfId\n${now.epochSecond}"
+        val signature =
+            if (chainId == SOLANA_CHAIN_ID) {
+                Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
+            } else if (chainId in Constants.Web3EvmChainIds) {
+                Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+            } else {
+                null
+            }
+
+        return Web3AddressRequest(
+            destination = destination,
+            chainId = chainId,
+            path = path,
+            signature = signature,
+            timestamp = now.toString()
+        )
+    }
 
     private fun showVerifyPin(
         title: String? = null,
