@@ -55,6 +55,7 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.hexString
@@ -142,10 +143,14 @@ import one.mixin.android.vo.utxo.consolidationOutput
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.ECKey
 import org.sol4k.exception.RpcException
+import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -1839,14 +1844,14 @@ class BottomSheetViewModel
                 createSignedWeb3AddressRequest(
                     destination = evmAddress,
                     chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                    path = one.mixin.android.tip.bip44.Bip44Path.ethereumPathString(classicIndex),
+                    path = Bip44Path.ethereumPathString(classicIndex),
                     privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex),
                     category = WalletCategory.CLASSIC.value
                 ),
                 createSignedWeb3AddressRequest(
                     destination = solAddress,
                     chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                    path = one.mixin.android.tip.bip44.Bip44Path.solanaPathString(classicIndex),
+                    path = Bip44Path.solanaPathString(classicIndex),
                     privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
                     category = WalletCategory.CLASSIC.value
                 ),
@@ -1938,9 +1943,12 @@ class BottomSheetViewModel
             val signature: String? = if (privateKey != null) {
                 val message = "$destination\n$selfId\n${now.epochSecond}"
                 if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                    org.web3j.utils.Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
+                    Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
                 } else if (chainId in Constants.Web3EvmChainIds) {
                     Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+                } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
+                    Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
                 } else {
                     null
                 }

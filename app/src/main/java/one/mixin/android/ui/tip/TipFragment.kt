@@ -69,11 +69,15 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import org.bitcoinj.base.ScriptType
+import org.bitcoinj.crypto.ECKey
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigInteger
 import java.time.Instant
 import javax.inject.Inject
 import kotlin.math.ceil
@@ -734,6 +738,9 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
             } else if (chainId in Constants.Web3EvmChainIds) {
                 Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+            } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
+                Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
             } else {
                 null
             }

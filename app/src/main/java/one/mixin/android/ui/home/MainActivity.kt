@@ -532,7 +532,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
 
             val hasClassicWallet: Boolean = web3Repository.getClassicWalletId() != null
-            if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && hasClassicWallet) {
+            if (!defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) && !hasClassicWallet) {
                 lifecycleScope.launch {
                     withContext(Dispatchers.Main) {
                         try {
