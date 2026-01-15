@@ -18,6 +18,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.MIXIN_FREE_FEE
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -38,6 +39,8 @@ import one.mixin.android.api.request.buildKernelTransferGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalFeeGhostKeyRequest
 import one.mixin.android.api.request.buildWithdrawalSubmitGhostKeyRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -75,6 +78,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.MaxCountNotEnoughUtxoException
 import one.mixin.android.ui.common.biometric.NotEnoughUtxoException
@@ -83,6 +87,7 @@ import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.common.message.CleanMessageHelper
 import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.reportException
@@ -129,10 +134,14 @@ import one.mixin.android.vo.utxo.SignResult
 import one.mixin.android.vo.utxo.SignedTransaction
 import one.mixin.android.vo.utxo.changeToOutput
 import one.mixin.android.vo.utxo.consolidationOutput
+import one.mixin.android.vo.WalletCategory
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.Web3Signer
 import org.sol4k.exception.RpcException
 import timber.log.Timber
 import java.io.File
 import java.math.BigDecimal
+import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
 
@@ -1771,6 +1780,141 @@ class BottomSheetViewModel
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
             return privateKeyToAddress(spendKey, chainId)
+        }
+
+        suspend fun ensureClassicWallet(pin: String) {
+            val context: Context = MixinApplication.appContext
+            val classicWalletId: String? = web3Repository.getClassicWalletId()
+            if (classicWalletId != null) {
+                return
+            }
+            syncWalletsFromRoute()
+            val syncedClassicWalletId: String? = web3Repository.getClassicWalletId()
+            if (syncedClassicWalletId != null) {
+                return
+            }
+            val tipPrivResult = tip.getOrRecoverTipPriv(context, pin)
+            val spendKey: ByteArray = tip.getSpendPrivFromEncryptedSalt(
+                tip.getMnemonicFromEncryptedPreferences(context),
+                tip.getEncryptedSalt(context),
+                pin,
+                tipPrivResult.getOrThrow()
+            )
+            val walletName: String = context.getString(R.string.Common_Wallet)
+            val classicIndex = 0
+            val evmAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
+            val solAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
+            val addresses: List<Web3AddressRequest> = listOf(
+                createSignedWeb3AddressRequest(
+                    destination = evmAddress,
+                    chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                    path = one.mixin.android.tip.bip44.Bip44Path.ethereumPathString(classicIndex),
+                    privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex),
+                    category = WalletCategory.CLASSIC.value
+                ),
+                createSignedWeb3AddressRequest(
+                    destination = solAddress,
+                    chainId = Constants.ChainId.SOLANA_CHAIN_ID,
+                    path = one.mixin.android.tip.bip44.Bip44Path.solanaPathString(classicIndex),
+                    privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
+                    category = WalletCategory.CLASSIC.value
+                )
+            )
+            val walletRequest = WalletRequest(
+                name = walletName,
+                category = WalletCategory.CLASSIC.value,
+                addresses = addresses
+            )
+            requestRouteAPI(
+                invokeNetwork = { web3Repository.createWallet(walletRequest) },
+                successBlock = { response ->
+                    response.data?.let { wallet ->
+                        web3Repository.insertWallet(
+                            one.mixin.android.db.web3.vo.Web3Wallet(
+                                id = wallet.id,
+                                name = wallet.name,
+                                category = wallet.category,
+                                createdAt = wallet.createdAt,
+                                updatedAt = wallet.updatedAt,
+                            )
+                        )
+                        val walletAddresses = wallet.addresses ?: emptyList()
+                        if (walletAddresses.isNotEmpty()) {
+                            web3Repository.insertAddressList(walletAddresses)
+                        }
+                    }
+                },
+                requestSession = { ids ->
+                    userRepository.fetchSessionsSuspend(ids)
+                }
+            )
+        }
+
+        private suspend fun syncWalletsFromRoute() {
+            requestRouteAPI(
+                invokeNetwork = { web3Repository.routeService.getWallets() },
+                successBlock = { response ->
+                    val wallets = response.data ?: emptyList()
+                    if (wallets.isEmpty()) {
+                        return@requestRouteAPI
+                    }
+                    web3Repository.web3WalletDao.insertListSuspend(wallets)
+                    wallets.forEach { wallet ->
+                        requestRouteAPI(
+                            invokeNetwork = { web3Repository.routeService.getWalletAddresses(wallet.id) },
+                            successBlock = { addressResponse ->
+                                val addresses = addressResponse.data ?: emptyList()
+                                if (addresses.isNotEmpty()) {
+                                    web3Repository.web3AddressDao.insertListSuspend(addresses)
+                                }
+                            },
+                            requestSession = { ids ->
+                                userRepository.fetchSessionsSuspend(ids)
+                            }
+                        )
+                    }
+                },
+                requestSession = { ids ->
+                    userRepository.fetchSessionsSuspend(ids)
+                }
+            )
+        }
+
+        private fun createSignedWeb3AddressRequest(
+            destination: String,
+            chainId: String,
+            path: String?,
+            privateKey: ByteArray?,
+            category: String,
+        ): Web3AddressRequest {
+            val selfId = Session.getAccountId()
+            if (category == WalletCategory.WATCH_ADDRESS.value) {
+                return Web3AddressRequest(
+                    destination = destination,
+                    chainId = chainId,
+                    path = path,
+                )
+            }
+            val now = Instant.now()
+            val signature: String? = if (privateKey != null) {
+                val message = "$destination\n$selfId\n${now.epochSecond}"
+                if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
+                    org.web3j.utils.Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
+                } else if (chainId in Constants.Web3EvmChainIds) {
+                    Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+            return Web3AddressRequest(
+                destination = destination,
+                chainId = chainId,
+                path = path,
+                signature = signature,
+                timestamp = now.toString()
+            )
         }
 
         fun web3TokenItems(walletId: String) = tokenRepository.web3TokenItems(walletId)
