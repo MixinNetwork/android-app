@@ -230,6 +230,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                                         putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
                                     }
                                     putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet)
+                                    putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
                                     putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
                                     putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
                                 }
