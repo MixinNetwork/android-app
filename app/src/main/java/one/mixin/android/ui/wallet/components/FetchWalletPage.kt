@@ -452,7 +452,7 @@ fun WalletItem(
                 }
             } else {
                 val totalValue = wallet.totalValue
-                wallet.assets.take(2).sortedBy { it.value }.forEach { asset ->
+                wallet.assets.take(2).forEach { asset ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CoilImage(
                             model = asset.iconUrl,
