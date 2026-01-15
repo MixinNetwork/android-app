@@ -150,7 +150,7 @@ constructor(
             }
         }
         val deletedChangeOutputsCount: Int = if (hasChangeOutput) {
-            walletOutputDao.deleteUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+            walletOutputDao.deletePendingAndUnspentByHashAndAddress(txHash, fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
         } else {
             0
         }
@@ -231,6 +231,10 @@ constructor(
 
     fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>> {
         return walletOutputDao.observeOutputsByAddress(address, assetId)
+    }
+
+    suspend fun deleteOutputsByAddress(address: String, assetId: String): Unit {
+        walletOutputDao.deleteByAddress(address, assetId)
     }
 
     suspend fun getClassicWalletId(): String? = web3WalletDao.getClassicWalletId()

@@ -13,8 +13,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.WalletOutput
@@ -148,6 +150,9 @@ class Web3BtcOutputsFragment : BaseFragment() {
             loadingDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply { setCancelable(false) }
             loadingDialog?.show()
             runCatching {
+                withContext(Dispatchers.IO) {
+                    web3ViewModel.deleteOutputsByAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                }
                 jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
             }.onFailure { err ->
                 Timber.e(err)

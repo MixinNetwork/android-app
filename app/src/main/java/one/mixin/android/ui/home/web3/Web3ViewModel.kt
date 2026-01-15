@@ -264,6 +264,10 @@ internal constructor(
         return web3Repository.observeOutputsByAddress(address, assetId)
     }
 
+    suspend fun deleteOutputsByAddress(address: String, assetId: String): Unit {
+        web3Repository.deleteOutputsByAddress(address, assetId)
+    }
+
     suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String, shouldDeleteInputs: Boolean): Int {
         return withContext(Dispatchers.IO) {
             val deletedCount: Int = web3Repository.deleteBitcoinUnspentChangeOutputs(fromAddress, rawTransactionHex, shouldDeleteInputs)

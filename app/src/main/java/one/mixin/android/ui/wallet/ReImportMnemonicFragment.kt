@@ -24,6 +24,8 @@ import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhraseInput
 import one.mixin.android.ui.landing.components.MnemonicState
@@ -58,6 +60,9 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
 
     @Inject
     lateinit var web3Repository: Web3Repository
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -182,6 +187,8 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
         val response = web3Repository.updateWallet(walletId, updateRequest)
         if (!response.isSuccess) {
             Timber.e("Failed to update BTC address walletId=$walletId errorCode=${response.errorCode} errorDescription=${response.errorDescription}")
+        } else {
+            jobManager.addJobInBackground(RefreshSingleWalletJob(response.data!!.id))
         }
     }
 

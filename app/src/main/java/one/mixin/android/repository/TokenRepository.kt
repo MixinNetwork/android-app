@@ -1169,6 +1169,10 @@ class TokenRepository
                     }
                 }
 
+                if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                    sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+                    receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+                }
                 web3TransactionDao.insert(
                     Web3Transaction(
                         transactionHash = raw.hash,
