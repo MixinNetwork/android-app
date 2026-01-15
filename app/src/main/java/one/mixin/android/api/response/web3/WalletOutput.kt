@@ -34,11 +34,11 @@ data class WalletOutput(
 
     @SerializedName("pubkey_hex")
     @ColumnInfo(name = "pubkey_hex")
-    val pubkeyHex: String? = null,
+    val pubkeyHex: String,
 
     @SerializedName("pubkey_type")
     @ColumnInfo(name = "pubkey_type")
-    val pubkeyType: String? = null,
+    val pubkeyType: String,
 
     @SerializedName("status")
     @ColumnInfo(name = "status")
