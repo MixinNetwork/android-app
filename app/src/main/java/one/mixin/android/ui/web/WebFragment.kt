@@ -468,7 +468,6 @@ class WebFragment : BaseFragment() {
     private fun initView() {
         activity?.window?.let { window->
             SystemUIManager.lightUI(window , requireContext().isNightMode().not())
-            SystemUIManager.setSafePaddingOnce(window = window, color = requireContext().colorFromAttribute(R.attr.bg_white), R.id.container)
         }
         binding.suspiciousLinkView.listener =
             object : SuspiciousLinkView.SuspiciousListener {
@@ -1678,13 +1677,12 @@ class WebFragment : BaseFragment() {
 
     private fun setStatusBarColor(content: String) {
         try {
-            Timber.e("setStatusBarColor $content")
             val color = content.replace("\"", "")
             val c = color.toColorInt()
             val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
-            Timber.e("setStatusBarColor error: ${e.stackTraceToString()}")
+            Timber.e("setStatusBarColor error: ${e.stackTraceToString()} ${content.ifBlank { "" }}")
             context?.let {
                 refreshByLuminance(it.isNightMode(), it.colorFromAttribute(R.attr.icon_white))
             }

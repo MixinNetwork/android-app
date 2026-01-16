@@ -122,6 +122,7 @@ class AllOrdersFragment : BaseTransactionsFragment<PagedList<OrderItem>>(R.layou
                     sortMenu.show()
                 }
             }
+            empty.walletTransactionsEmpty.setText(R.string.NO_ORDERS)
             transactionsRv.itemAnimator = null
             transactionsRv.adapter = adapter
 

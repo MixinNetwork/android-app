@@ -23,6 +23,7 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SixLayout
 import androidx.core.graphics.drawable.toDrawable
+import one.mixin.android.extension.colorFromAttribute
 
 @AndroidEntryPoint
 class WebActivity : BaseActivity() {
@@ -84,6 +85,7 @@ class WebActivity : BaseActivity() {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
         }
         super.onCreate(savedInstanceState)
+        SystemUIManager.setSafePaddingOnce(window = window, color = colorFromAttribute(R.attr.bg_white), R.id.container)
         binding = ActivityWebBinding.inflate(layoutInflater)
         setContentView(binding.root)
         getScreenshot()?.let {
@@ -138,9 +140,8 @@ class WebActivity : BaseActivity() {
                 isExpand = true
                 supportFragmentManager.beginTransaction().show(f).commit()
                 if (f is WebFragment) {
-                    val dark = isDarkColor(f.titleColor)
-                    SystemUIManager.setSafePadding(window, f.titleColor, true)
-                    SystemUIManager.lightUI(window, !dark)
+                    val isDark: Boolean = isDarkColor(f.titleColor)
+                    SystemUIManager.lightUI(window, !isDark)
                 }
             } else {
                 onBackPressedDispatcher.onBackPressed()
@@ -176,14 +177,10 @@ class WebActivity : BaseActivity() {
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
         clip.shareable?.let { extras.putBoolean(WebFragment.ARGS_SHAREABLE, it) }
         isExpand = true
-
-        SystemUIManager.setSafePadding(
-            window,
-            clip.titleColor.apply {
-                val dark = isDarkColor(this)
-                SystemUIManager.lightUI(window, !dark)
-            }, true
-        )
+        val safeColor: Int = clip.titleColor.apply {
+            val isDark: Boolean = isDarkColor(this)
+            SystemUIManager.lightUI(window, !isDark)
+        }
         releaseWeb()
         supportFragmentManager.beginTransaction().add(
             R.id.container,
